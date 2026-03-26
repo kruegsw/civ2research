@@ -38,10 +38,10 @@ export function FUN_0055002d(unaff_EBP) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_00551cd0(param_1) {
+export function FUN_00551cd0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_004fa569();
   if ((param_1 & 1) !== 0) {
@@ -62,7 +62,7 @@ export function FUN_00551cd0(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function egptr_00551D20(this) {
+export function egptr_00551D20(_this) {
 
 
   // DEVIATION: C pointer — return *(char **)(this + 0x2c);
@@ -670,7 +670,7 @@ export function FUN_00552e5b(param_1) {
 // Size: 675 bytes
 // ============================================================
 
-export function FUN_00552ed2() {
+export function FUN_00552ed2(in_ECX) {
 
 
   let pCVar1;
@@ -679,7 +679,7 @@ export function FUN_00552ed2() {
   let iVar4;
   let iVar5;
   let pvVar6;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // DEVIATION: SEH
   let local_40;
   let local_3c;
@@ -873,7 +873,7 @@ export function FUN_0055339f(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function _COleCntrFrameWnd_00553444(this) {
+export function _COleCntrFrameWnd_00553444(_this) {
 
 
   // DEVIATION: SEH
@@ -1547,7 +1547,7 @@ export function FUN_0055499f() {
     uVar5 = FUN_00428b0c(s32(DAT_00627cc4, local_20 * 0x18),local_20,0);
     FUN_0059edf0(uVar5,uVar4,uVar7);
     while (-1 < s8(DAT_00627cce[local_20 * 0x18])) {
-      uVar4 = (s8(DAT_00627cce[local_20 * 0x18]) >>> 0);
+      uVar4 = ((s8(DAT_00627cce[local_20 * 0x18])) >>> 0);
       uVar7 = 0;
       local_20 = uVar4;
       uVar5 = FUN_00428b0c(s32(DAT_00627cc4, uVar4 * 0x18),uVar4,0);
@@ -2307,7 +2307,7 @@ export function FUN_00555d70() {
     // DEVIATION: MFC — _Timevec::~_Timevec(DAT_006aa864);
     local_1c = local_1c + extraout_EAX;
     // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(DAT_0066c7a8);
-    if ((pCVar3 + -0xc) <= local_1c) {
+    if (pCVar3 + -0xc <= local_1c) {
       local_1c = 2;
       local_18 = local_18 + 0x30;
     }
@@ -3123,8 +3123,8 @@ export function FUN_00557e2c() {
     FUN_0040ff60(1,DAT_00679640);
     uVar2 = FUN_00493c7d(DAT_0064bcba);
     FUN_0040ff60(0,uVar2);
-    FUN_00421da0(0,(((DAT_0064bc60) << 16 >> 16) & 2) >> 1);
-    FUN_00421da0(1,(((DAT_0064bc60) << 16 >> 16) & 4) >> 2);
+    FUN_00421da0(0,(shortDAT_0064bc60 & 2) >> 1);
+    FUN_00421da0(1,(shortDAT_0064bc60 & 4) >> 2);
     FUN_00421da0(2,DAT_0064bcbc);
     FUN_00421da0(3,DAT_0064bcbe);
     FUN_00421da0(4,DAT_0064bcc0);
@@ -3161,7 +3161,7 @@ export function FUN_00557e2c() {
         FUN_0055818d();
         return;
       }
-      iVar3 = FUN_00518ec0(s_EDITVICTORYOBJ_00633908,((DAT_0064bcb4) << 16 >> 16)[iVar1],
+      iVar3 = FUN_00518ec0(s_EDITVICTORYOBJ_00633908,shortDAT_0064bcb4[iVar1],
                                  local_1c);
       if (iVar3 === 0) {
         DAT_0064bcb4[iVar1] = local_1c._0_2_;
@@ -3221,10 +3221,10 @@ export function FUN_0055819b() {
     while( true ) {
       while( true ) {
         while( true ) {
-          FUN_00421da0(0,(((DAT_0064bc60) << 16 >> 16) & 0x10) >> 4);
-          FUN_00421da0(1,(((DAT_0064bc60) << 16 >> 16) & 0x20) >> 5);
-          FUN_00421da0(2,(((DAT_0064bc60) << 16 >> 16) & 0x40) >> 6);
-          FUN_00421da0(3,(((DAT_0064bc60) << 16 >> 16) & 0x8000) >> 0xf);
+          FUN_00421da0(0,(shortDAT_0064bc60 & 0x10) >> 4);
+          FUN_00421da0(1,(shortDAT_0064bc60 & 0x20) >> 5);
+          FUN_00421da0(2,(shortDAT_0064bc60 & 0x40) >> 6);
+          FUN_00421da0(3,(shortDAT_0064bc60 & 0x8000) >> 0xf);
           iVar1 = FUN_00421ea0(s_EDITRULES_00633918);
           if (iVar1 === 0) {
             return;
@@ -3683,7 +3683,7 @@ export function FUN_00559e3c(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function _CMiniFrameWnd_00559ED4(this) {
+export function _CMiniFrameWnd_00559ED4(_this) {
 
 
   // DEVIATION: SEH
@@ -3910,7 +3910,7 @@ export function FUN_0055a192(param_1, param_2) {
     param_1 = 0;
     break;
   case 1:
-    param_1 = ((DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7)) >> 3) + 1;
+    param_1 = (DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7) >> 3) + 1;
     break;
   case 2:
     iVar1 = FUN_004080c0();
@@ -3919,7 +3919,7 @@ export function FUN_0055a192(param_1, param_2) {
   case 3:
     iVar1 = FUN_004080c0();
     param_1 = ((iVar1 - (param_2 + 0x10)) -
-              ((DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7)) >> 3)) + -1;
+              (DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7) >> 3)) + -1;
     break;
   case 4:
     param_1 = FUN_004080c0();
@@ -3929,7 +3929,7 @@ export function FUN_0055a192(param_1, param_2) {
     }
     break;
   case 6:
-    param_1 = ((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3) + 1;
+    param_1 = (DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7) >> 3) + 1;
     break;
   case 7:
     iVar1 = FUN_00414bb0();
@@ -3938,7 +3938,7 @@ export function FUN_0055a192(param_1, param_2) {
   case 8:
     iVar1 = FUN_00414bb0();
     param_1 = ((iVar1 - (param_2 + 0x10)) -
-              ((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3)) + -1;
+              (DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7) >> 3)) + -1;
     break;
   case 9:
     param_1 = FUN_00414bb0();
@@ -4017,14 +4017,14 @@ export function FUN_0055a329(param_1, param_2) {
 // Size: 330 bytes
 // ============================================================
 
-export function FUN_0055a41d(param_1, param_2, param_3) {
+export function FUN_0055a41d(in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
   let uVar2;
   let iVar3;
   let iVar4;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   let uVar5;
   let local_14 = [0];
   let local_10;
@@ -5387,7 +5387,7 @@ export function FUN_0055d1e2(param_1, param_2) {
     else {
       if (local_10 === 1) {
         if (((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 8) !== 0) &&
-           ((((u8(DAT_0064c6b0[param_1 * 0x594]) + (6 - ((DAT_00655b08) >>> 0)) * 2) <
+           (((u8(DAT_0064c6b0[param_1 * 0x594]) + (6 - ((DAT_00655b08) >>> 0)) * 2 <
               u8(DAT_0064c6b0[param_2 * 0x594]) || (bVar1)) &&
             ((DAT_0064c6c2[param_1 * 0x594 + param_2 * 4] & 4) === 0)))) {
           FUN_00467825(param_1,param_2,0x40000);
@@ -5396,7 +5396,7 @@ export function FUN_0055d1e2(param_1, param_2) {
         }
       }
       else if ((((local_10 === 2) && ((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 8) !== 0)) &&
-               (((u8(DAT_0064c6b0[param_2 * 0x594]) + (6 - ((DAT_00655b08) >>> 0)) * 2)
+               ((u8(DAT_0064c6b0[param_2 * 0x594]) + (6 - ((DAT_00655b08) >>> 0)) * 2
                  < u8(DAT_0064c6b0[param_1 * 0x594]) || (bVar1)))) &&
               ((DAT_0064c6c2[param_1 * 4 + param_2 * 0x594] & 4) === 0)) {
         FUN_00467825(param_1,param_2,0x40000);

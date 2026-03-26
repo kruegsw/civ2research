@@ -122,7 +122,7 @@ export function FUN_005a120b(in_ECX, param_1, param_2) {
     iVar1 = iVar2 - iVar1;
     if ((iVar1 < 0) ||
        (in_ECX[param_1[3] + 0x17] * in_ECX[0xe] - iVar1 === 0 ||
-        (in_ECX[param_1[3] + 0x17] * in_ECX[0xe]) < iVar1)) {
+        in_ECX[param_1[3] + 0x17] * in_ECX[0xe] < iVar1)) {
       local_18 = 0;
     }
     else {
@@ -132,7 +132,7 @@ export function FUN_005a120b(in_ECX, param_1, param_2) {
       local_28 = in_ECX[param_1[3] + 0x7c] * local_2c + in_ECX[param_1[3] + 0x76];
       FUN_004086c0(local_14[0],local_20,local_28,in_ECX[param_1[3] + 0x7a],
                          in_ECX[param_1[3] + 0x7c]);
-      local_18 = (((uint *) >>> 0)in_ECX[0x88] === param_1);
+      local_18 = ((in_ECX[0x88] === param_1) >>> 0);
       if (local_18 === 0) {
         local_1c = in_ECX[0x24];
       }
@@ -2108,7 +2108,7 @@ export function FUN_005a577e(in_ECX) {
       }
     }
     if (in_ECX[0xc] + in_ECX[0xd] !== 0) {
-      for (local_1c = 0; local_1c < (in_ECX[0xc] + in_ECX[0xd]); local_1c = local_1c + 1) {
+      for (local_1c = 0; local_1c < in_ECX[0xc] + in_ECX[0xd]; local_1c = local_1c + 1) {
         FUN_0040f380();
       }
     }
@@ -2538,10 +2538,10 @@ export function FUN_005a6c45() {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__vector_deleting_destructor__005A9320(param_1) {
+export function FID_conflict__vector_deleting_destructor__005A9320(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   if ((param_1 & 2) === 0) {
     FUN_0040f930();
@@ -2571,10 +2571,10 @@ export function FID_conflict__vector_deleting_destructor__005A9320(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__vector_deleting_destructor__005A93B0(param_1) {
+export function FID_conflict__vector_deleting_destructor__005A93B0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   if ((param_1 & 2) === 0) {
     FUN_00418870();
@@ -2604,10 +2604,10 @@ export function FID_conflict__vector_deleting_destructor__005A93B0(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__vector_deleting_destructor__005A9440(param_1) {
+export function FID_conflict__vector_deleting_destructor__005A9440(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   if ((param_1 & 2) === 0) {
     FUN_0040f570();
@@ -2629,10 +2629,10 @@ export function FID_conflict__vector_deleting_destructor__005A9440(param_1) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005a94d0(param_1) {
+export function FUN_005a94d0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_00418ea0();
   if ((param_1 & 1) !== 0) {
@@ -2656,10 +2656,10 @@ export function FUN_005a94d0(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__vector_deleting_destructor__005A9520(param_1) {
+export function FID_conflict__vector_deleting_destructor__005A9520(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   if ((param_1 & 2) === 0) {
     FUN_00453ba0();
@@ -2681,10 +2681,10 @@ export function FID_conflict__vector_deleting_destructor__005A9520(param_1) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005a95b0(param_1) {
+export function FUN_005a95b0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_0044cba0();
   if ((param_1 & 1) !== 0) {
@@ -3040,11 +3040,11 @@ export function FUN_005a9b5d(param_1, param_2, param_3, param_4, param_5, param_
       local_28 = local_34 % pCVar2;
       while (local_30 < pCVar4) {
         pCVar6 = pCVar2 + (local_30 - local_28);
-        if (pCVar4 <= (pCVar2 + (local_30 - local_28))) {
+        if (pCVar4 <= pCVar2 + (local_30 - local_28)) {
           pCVar6 = pCVar4;
         }
         pCVar7 = pCVar3 + (local_8 - local_2c);
-        if (pCVar5 <= (pCVar3 + (local_8 - local_2c))) {
+        if (pCVar5 <= pCVar3 + (local_8 - local_2c)) {
           pCVar7 = pCVar5;
         }
         FUN_005a9afe(param_2,param_1,local_28,local_2c,local_30,local_8,
@@ -4574,7 +4574,7 @@ export function FUN_005ae24d(param_1, param_2) {
   if (param_2 < 1) {
     param_2 = ~param_2 + 1;
   }
-  return (param_1 + param_2) >> 1;
+  return param_1 + param_2 >> 1;
 }
 
 
@@ -4596,12 +4596,12 @@ export function FUN_005ae296(param_1, param_2) {
   if (param_2 < 1) {
     param_2 = ~param_2 + 1;
   }
-  iVar1 = (param_2 + param_1) >> 1;
+  iVar1 = param_2 + param_1 >> 1;
   if (param_2 < param_1) {
-    local_8 = param_1 - (((iVar1 - param_2) + 1) >> 1);
+    local_8 = param_1 - ((iVar1 - param_2) + 1 >> 1);
   }
   else {
-    local_8 = param_2 - (((iVar1 - param_1) + 1) >> 1);
+    local_8 = param_2 - ((iVar1 - param_1) + 1 >> 1);
   }
   return local_8;
 }
@@ -4729,7 +4729,7 @@ export function FUN_005ae580() {
   FUN_0040ffa0(s_PBEM1_00635dcc,1);
   FUN_0059ea99(DAT_00666542);
   FUN_005f22d0(DAT_0064bb08,DAT_00655020);
-  iVar1 = -(((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3) + 1);
+  iVar1 = -((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7) >> 3) + 1);
   uVar2 = FUN_005226fa(0,iVar1);
   FUN_0059e783(uVar2,iVar1);
   iVar1 = FUN_0040bc80(0);
@@ -6601,7 +6601,7 @@ function LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, uVar2) {
   FUN_0040ffa0(s_PBEM1_00635dcc,1);
   FUN_0059ea99(DAT_00666542);
   FUN_005f22d0(DAT_0064bb08,DAT_00655020);
-  iVar1 = -(((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3) + 1);
+  iVar1 = -((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7) >> 3) + 1);
   uVar2 = FUN_005226fa(0,iVar1);
   FUN_0059e783(uVar2,iVar1);
   iVar1 = FUN_0040bc80(0);

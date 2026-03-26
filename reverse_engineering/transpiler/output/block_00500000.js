@@ -576,7 +576,7 @@ export function FUN_00501440(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function OnClose_005014BF(this) {
+export function OnClose_005014BF(_this) {
 
 
   FUN_0046ac89(2);
@@ -606,10 +606,10 @@ export function FUN_005014e5() {
 // Size: 38 bytes
 // ============================================================
 
-export function FUN_0050152b() {
+export function FUN_0050152b(in_ECX) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_005014e5();
   // DEVIATION: MFC — CMiniDockFrameWnd::OnClose(in_ECX);
@@ -830,7 +830,7 @@ export function FUN_00501819(param_1) {
     // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
     if (s8(DAT_0064f349[iVar1 * 0x58]) - DAT_006a6604 <= param_1) {
       // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-      param_1 = param_1 - (((s8) << 16 >> 16)(DAT_0064f349[iVar1 * 0x58]) - ((DAT_006a6604) << 16 >> 16));
+      param_1 = param_1 - (((s8(DAT_0064f349[iVar1 * 0x58])) << 16 >> 16) - ((DAT_006a6604) << 16 >> 16));
       if (param_1 < DAT_006a6604) {
         iVar2 = param_1;
         iVar1 = iVar2;
@@ -1475,7 +1475,7 @@ export function FUN_005025d5(in_ECX, param_1) {
     iVar2 = FUN_00511690(0xe);
     FUN_0043c910(DAT_00679640,s32(in_ECX, 0x165c),iVar1 - iVar2,uVar5);
     FUN_005baee0(0x29,10,1,1);
-    local_40 = ((s32(in_ECX, 0x15d4) >>> 0) === 3);
+    local_40 = ((s32(in_ECX, 0x15d4) === 3) >>> 0);
     local_f0 = s8(DAT_0064f349[s32(in_ECX, 0x159c) * 0x58]) * ((DAT_0064bcca) >>> 0) +
                DAT_006a65d8 * DAT_006a6608;
     local_48 = DAT_006a65c8;
@@ -1898,9 +1898,9 @@ export function FUN_005025d5(in_ECX, param_1) {
     }
     iVar1 = FUN_00511690(1);
     local_4c = local_4c + local_40 + iVar1;
-    if (0 < (DAT_006a65d0 - DAT_006a6580)) {
+    if (0 < DAT_006a65d0 - DAT_006a6580) {
       local_fc = local_10 + 1;
-      for (local_3c = 0; local_3c < (DAT_006a65d0 - DAT_006a6580); local_3c = local_3c + 1) {
+      for (local_3c = 0; local_3c < DAT_006a65d0 - DAT_006a6580; local_3c = local_3c + 1) {
         FUN_005cef31(local_1b0,in_ECX,local_fc,local_4c);
         local_fc = local_fc + local_70;
       }
@@ -2306,7 +2306,7 @@ export function FUN_0050503e(in_ECX, param_1) {
     }
     else {
       local_38 = s8(DAT_0064f379[s32(in_ECX, 0x159c) * 0x58]);
-      local_34 = (s8(DAT_0064b1c8[local_38 * 0x14]) >>> 0);
+      local_34 = ((s8(DAT_0064b1c8[local_38 * 0x14])) >>> 0);
       local_4c = FUN_00472d20(local_38,s8(DAT_0064f348)
                                                         [s32(in_ECX, 0x159c) * 0x58]);
       local_48 = 0xffffffff;
@@ -2358,7 +2358,7 @@ export function FUN_0050503e(in_ECX, param_1) {
       FUN_004bb800(local_14[0],1,1);
       FUN_004bb800(local_14[0],local_40 + 2,2);
       local_1c = 0;
-      // DEVIATION: C pointer — local_24 = (s16(DAT_0064f35c, *(int *) >>> 0)(in_ECX + 0x159c) * 0x58);
+      // DEVIATION: C pointer — local_24 = ((s16(DAT_0064f35c, s32(in_ECX, 0x159c) * 0x58)) >>> 0);
       local_28 = local_14[0];
       local_30 = local_10;
       FUN_0047df20(s32(in_ECX, 0x15d4) * 4 + -8);
@@ -2925,7 +2925,7 @@ export function FUN_00506637(param_1) {
                                      s16(DAT_006560f2, param_1 * 0x20));
           if (-1 < iVar1) {
             w16(DAT_0064f35c, iVar1 * 0x58, 
-                 (((s8(DAT_0064b1c8) << 16 >> 16)
+                 (short)((int)(s8(DAT_0064b1c8)
                                           [u8(DAT_006560f6[param_1 * 0x20]) * 0x14] *
                               ((DAT_0064bccc) >>> 0)) / 2) + s16(DAT_0064f35c, iVar1 * 0x58);
             // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
@@ -3162,7 +3162,7 @@ export function FUN_00506a42(param_1) {
   case 7:
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
     w16(DAT_0064f35c, iVar2 * 0x58, 
-         (((s8(DAT_0064b1c8[u8(DAT_006560f6[iVar1 * 0x20]) << 16 >> 16) * 0x14])
+         (short)((int)(s8(DAT_0064b1c8[u8(DAT_006560f6[iVar1 * 0x20]) * 0x14])
                       * ((DAT_0064bccc) >>> 0)) / 2) + s16(DAT_0064f35c, iVar2 * 0x58);
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
     FUN_004e7492(iVar2);
@@ -3418,7 +3418,7 @@ export function citywin_70E5_005070E5(in_ECX) {
     FUN_0040bc10(0x56);
     FUN_0040fe40();
     for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {
-      local_60 = ((s8(DAT_0064f37b[s32(in_ECX, 0x159c) >>> 0) * 0x58 + local_30]) < 0);
+      local_60 = ((s8(DAT_0064f37b[s32(in_ECX, 0x159c) * 0x58 + local_30]) < 0) >>> 0);
       if (local_60 !== 0) {
         FUN_0040fea0();
       }
@@ -3442,7 +3442,7 @@ export function citywin_70E5_005070E5(in_ECX) {
     FUN_0040bc10(0x57);
     FUN_0040fe40();
     for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {
-      local_60 = ((s8(DAT_0064f37e[s32(in_ECX, 0x159c) >>> 0) * 0x58 + local_30]) < 0);
+      local_60 = ((s8(DAT_0064f37e[s32(in_ECX, 0x159c) * 0x58 + local_30]) < 0) >>> 0);
       if (local_60 !== 0) {
         FUN_0040fea0();
       }
@@ -4078,7 +4078,7 @@ export function citywin_8EC6_00508EC6(in_ECX) {
 // Size: 647 bytes
 // ============================================================
 
-export function citywin_9028_00509028() {
+export function citywin_9028_00509028(in_ECX) {
 
 
   let pCVar1;
@@ -4086,7 +4086,7 @@ export function citywin_9028_00509028() {
   let uVar3;
   let iVar4;
   let iVar5;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   let uVar6;
   let local_10;
   
@@ -4129,7 +4129,7 @@ export function citywin_9028_00509028() {
   else {
     w32(in_ECX, 0x15c8, 0);
   }
-  uVar6 = ((s32(in_ECX, 0x15d4) >>> 0) < 3);
+  uVar6 = ((s32(in_ECX, 0x15d4) < 3) >>> 0);
   uVar3 = FUN_00511690(0xc);
   FUN_0043c6c0(1,uVar3,uVar6);
   if ((s32(in_ECX, 0x15c4) === s32(in_ECX, 0x15cc)) &&
@@ -4572,7 +4572,7 @@ export function city_button_buy_00509B48(param_1) {
     FUN_004271e8(0,s32(DAT_0064c488, iVar4 * -8));
   }
   else {
-    local_368 = (s8(DAT_0064b1c8[iVar3 * 0x14]) >>> 0);
+    local_368 = ((s8(DAT_0064b1c8[iVar3 * 0x14])) >>> 0);
     uVar8 = 999;
     uVar7 = 0;
     uVar6 = ((DAT_0064bccc) >>> 0);
@@ -6442,13 +6442,13 @@ export function citywin_DBDE_0050DBDE(param_1) {
 // Size: 498 bytes
 // ============================================================
 
-export function citywin_DCB6_0050DCB6() {
+export function citywin_DCB6_0050DCB6(in_ECX) {
 
 
   let iVar1;
   let iVar2;
   let uVar3;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   let uVar4;
   let uVar5;
   let uVar6;

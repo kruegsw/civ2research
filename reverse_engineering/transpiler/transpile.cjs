@@ -99,7 +99,9 @@ function replaceTypedPtrDeref(line) {
 }
 
 // ── Cast replacement using balanced expression extraction ──────────
-function replaceCast(line, castType, helper) {
+// helper: string like 's8' → wraps as s8(expr)
+// transformFn: function(expr) → custom output (used when helper is null)
+function replaceCast(line, castType, helper, transformFn) {
   const pattern = new RegExp('\\(\\s*' + castType + '\\s*\\)', 'g');
   let result = '';
   let lastIdx = 0;
@@ -109,23 +111,34 @@ function replaceCast(line, castType, helper) {
     result += line.substring(lastIdx, match.index);
     const afterCast = match.index + match[0].length;
 
+    let exprStr = null;
+    let endIdx = afterCast;
+
     // Check if followed by (expr) — parenthesized expression
-    const afterTrimIdx = afterCast;
-    if (afterTrimIdx < line.length && line[afterTrimIdx] === '(') {
-      const balanced = extractBalancedParens(line, afterTrimIdx);
+    if (afterCast < line.length && line[afterCast] === '(') {
+      const balanced = extractBalancedParens(line, afterCast);
       if (balanced) {
-        result += helper + '(' + balanced.content + ')';
-        lastIdx = balanced.end + 1;
-        pattern.lastIndex = lastIdx;
-        continue;
+        exprStr = balanced.content;
+        endIdx = balanced.end + 1;
       }
     }
 
     // Otherwise: followed by a word (possibly with brackets)
-    const expr = extractExpression(line, afterTrimIdx);
-    if (expr) {
-      result += helper + '(' + expr.expr + ')';
-      lastIdx = expr.end;
+    if (exprStr === null) {
+      const expr = extractExpression(line, afterCast);
+      if (expr) {
+        exprStr = expr.expr;
+        endIdx = expr.end;
+      }
+    }
+
+    if (exprStr !== null) {
+      if (helper) {
+        result += helper + '(' + exprStr + ')';
+      } else if (transformFn) {
+        result += transformFn(exprStr);
+      }
+      lastIdx = endIdx;
       pattern.lastIndex = lastIdx;
     } else {
       // Can't extract — pass through
@@ -188,50 +201,45 @@ function transformLine(line, ctx) {
     out = replaceCast(out, 'byte', 'u8');
     out = replaceCast(out, 'undefined1', 'u8');
 
-    // ── Nested cast: (uint) after unsigned helper → drop ──
+    // ── All remaining casts use balanced expression extraction ──
+
+    // (uint) after unsigned helper → drop
     out = out.replace(/\(\s*uint\s*\)\s*(u8|u16|u32)\(/g, '$1(');
+    // (uint) → expr >>> 0
+    out = replaceCast(out, 'uint', null, expr => '((' + expr + ') >>> 0)');
 
-    // ── Cast: (uint) before a helper function call → helper(...) >>> 0 ──
-    out = out.replace(/\(\s*uint\s*\)\s*(s8|s16|s32)\(([^)]*)\)/g, '($1($2) >>> 0)');
-
-    // ── Cast: (uint)(expr) → (expr) >>> 0 ──
-    out = out.replace(/\(\s*uint\s*\)\s*\(([^)]+)\)/g, '(($1) >>> 0)');
-
-    // ── Cast: (uint)variable → (variable) >>> 0 ──
-    out = out.replace(/\(\s*uint\s*\)(\w+)(?!\s*\()/g, '(($1) >>> 0)');
-
-    // ── Cast: (int)(expr >>> 0) → (expr) | 0 ──
+    // (int)(expr >>> 0) → (expr) | 0
     out = out.replace(/\(\s*int\s*\)\s*\(\s*\(([^)]+)\)\s*>>>\s*0\s*\)/g, '(($1) | 0)');
+    // (int) → drop (no-op)
+    out = replaceCast(out, 'int', null, expr => expr);
 
-    // ── Cast: (int)(expr) → expr (no-op — just remove the cast) ──
-    out = out.replace(/\(\s*int\s*\)\s*(?=\()/g, '');
-    out = out.replace(/\(\s*int\s*\)\s*(?=\w)/g, '');
+    // (short) → sign-extend 16-bit
+    out = replaceCast(out, 'short', null, expr => '((' + expr + ') << 16 >> 16)');
 
-    // ── Cast: (short)(expr) → ((expr) << 16 >> 16) ──
-    out = out.replace(/\(\s*short\s*\)\s*\(([^)]+)\)/g, '(($1) << 16 >> 16)');
-    out = out.replace(/\(\s*short\s*\)(\w+)/g, '(($1) << 16 >> 16)');
+    // (ushort) → mask 16-bit
+    out = replaceCast(out, 'ushort', null, expr => '((' + expr + ') & 0xFFFF)');
 
-    // ── Cast: (ushort)(expr) → (expr) & 0xFFFF ──
-    out = out.replace(/\(\s*ushort\s*\)\s*\(([^)]+)\)/g, '(($1) & 0xFFFF)');
-    out = out.replace(/\(\s*ushort\s*\)(\w+)/g, '(($1) & 0xFFFF)');
+    // (bool) → ternary
+    out = replaceCast(out, 'bool', null, expr => '((' + expr + ') ? 1 : 0)');
 
-    // ── Cast: (bool)(expr) → (expr) ? 1 : 0 ──
-    out = out.replace(/\(\s*bool\s*\)\s*\(([^)]+)\)/g, '(($1) ? 1 : 0)');
-    out = out.replace(/\(\s*bool\s*\)(\w+)/g, '(($1) ? 1 : 0)');
+    // (undefined4) → drop (no-op)
+    out = replaceCast(out, 'undefined4', null, expr => expr);
 
-    // ── Cast: (undefined4)(expr) → expr (no-op) ──
-    out = out.replace(/\(\s*undefined4\s*\)\s*\(([^)]+)\)/g, '($1)');
-    out = out.replace(/\(\s*undefined4\s*\)(\w+)/g, '($1)');
-
-    // ── Cast: (undefined2)(expr) → (expr) & 0xFFFF ──
-    out = out.replace(/\(\s*undefined2\s*\)\s*\(([^)]+)\)/g, '(($1) & 0xFFFF)');
-    out = out.replace(/\(\s*undefined2\s*\)(\w+)/g, '(($1) & 0xFFFF)');
+    // (undefined2) → mask 16-bit
+    out = replaceCast(out, 'undefined2', null, expr => '((' + expr + ') & 0xFFFF)');
 
     // ── Cast: (longlong) division → | 0 ──
     out = out.replace(/\(\s*(?:u?longlong)\s*\)/g, '');
 
     // ── bRam → DAT_ ──
     out = out.replace(/\bbRam([0-9a-fA-F]{8})/g, 'DAT_$1');
+
+    // ── C struct member access: expr->member → s32(expr, 0).member ──
+    // or just comment out as DEVIATION since -> is typically MFC object access
+    if (/->/.test(out) && !/\/\/|DEVIATION/.test(out)) {
+      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C struct — $2');
+      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
+    }
 
     // ── &local_XX → local_XX (drop &) ──
     out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
@@ -399,13 +407,19 @@ function processFunction(headerLines, bodyLines, ctx) {
   const regParams = [];
   const localArrays = new Set();
 
-  // Find register params (in_EAX, in_ECX, etc.) and callee-saved (unaff_ESI, etc.)
-  const regOrder = ['in_EAX', 'in_ECX', 'in_EDX', 'unaff_ESI', 'unaff_EDI', 'unaff_EBP'];
+  // Find register params (in_EAX, in_ECX, etc.) and callee-saved (unaff_*)
+  // Scan body for ANY unaff_ or in_E declaration and promote to parameter
+  const regOrder = ['in_EAX', 'in_ECX', 'in_EDX'];
   for (const reg of regOrder) {
     if (new RegExp('\\b' + reg + '\\b').test(bodyText) &&
-        new RegExp('^\\s*(?:int|uint|undefined4|undefined|code)\\s+\\*?' + reg, 'm').test(bodyText)) {
+        new RegExp('^\\s*\\w[\\w\\s*]*\\s+\\*?' + reg + '\\s*;', 'm').test(bodyText)) {
       regParams.push(reg);
     }
+  }
+  // Find ALL unaff_ declarations dynamically
+  for (const m of bodyText.matchAll(/^\s*\w[\w\s*]*\s+\*?(unaff_\w+)\s*;/gm)) {
+    if (m[1] === 'unaff_FS_OFFSET') continue; // SEH — handled separately
+    if (!regParams.includes(m[1])) regParams.push(m[1]);
   }
 
   // Find &local_XX patterns
@@ -413,8 +427,8 @@ function processFunction(headerLines, bodyLines, ctx) {
     localArrays.add(m[1]);
   }
 
-  // Build JS signature
-  const allParams = [...regParams, ...sigParams];
+  // Build JS signature — rename reserved words
+  const allParams = [...regParams, ...sigParams].map(p => p === 'this' ? '_this' : p);
   const jsSig = 'export function ' + funcName + '(' + allParams.join(', ') + ') {';
 
   // Check if function returns a value

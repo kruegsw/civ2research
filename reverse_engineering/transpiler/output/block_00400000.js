@@ -851,7 +851,7 @@ export function FUN_00408170(in_ECX, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function SetDlgCtrlID_004081B0(this, param_1) {
+export function SetDlgCtrlID_004081B0(_this, param_1) {
 
 
   let iVar1;
@@ -1121,7 +1121,7 @@ export function FUN_00408580(in_ECX, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_004085C0(this, param_1) {
+export function EnableStackedTabs_004085C0(_this, param_1) {
 
 
   w32(this, 0x110, param_1);
@@ -1397,7 +1397,7 @@ export function FUN_0040897f() {
     }
   }
   for (local_24 = 0; local_24 < DAT_006d1162; local_24 = local_24 + 1) {
-    for (local_20 = (((local_24 & 1) >>> 0) !== 0); local_20 < DAT_006d1160;
+    for (local_20 = (((local_24 & 1) !== 0) >>> 0); local_20 < DAT_006d1160;
         local_20 = local_20 + 2) {
       bVar1 = FUN_005b89bb(local_20,local_24);
       local_1c = ((bVar1) >>> 0);
@@ -1521,8 +1521,8 @@ export function FUN_00408d33(param_1) {
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_0040bc40(8);
-  FUN_0059e783(-(((DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7)) >> 3) +
-                      1),-(((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3
+  FUN_0059e783(-((DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7) >> 3) +
+                      1),-((DAT_006ab19c + -0x1e0 + (DAT_006ab19c + -0x1e0 >> 0x1f & 7) >> 3
                            ) + 1));
   uVar2 = FUN_00428b0c(s32(DAT_00628420, 8));
   FUN_0059e6a9(uVar2);
@@ -1636,7 +1636,7 @@ export function FUN_00408d33(param_1) {
       local_4c = DAT_006d1162 / 0xc;
     }
     else {
-      local_4c = (DAT_006d1162 + (DAT_006d1162 >> 0x1f & 7)) >> 3;
+      local_4c = DAT_006d1162 + (DAT_006d1162 >> 0x1f & 7) >> 3;
     }
     if (local_4c < 3) {
       local_4c = 2;
@@ -1645,7 +1645,7 @@ export function FUN_00408d33(param_1) {
     local_354 = 0;
     local_5c = 0;
     for (local_30 = 0; local_30 < DAT_006d1164; local_30 = local_30 + 1) {
-      local_35c = ((local_50) >>> 0)[1];
+      local_35c = ((local_50[1]) >>> 0);
       if (local_35c === 0) {
         local_38 = 10;
       }
@@ -1722,7 +1722,7 @@ export function FUN_00408d33(param_1) {
     local_50 = DAT_00636598;
     local_34 = DAT_00636598 + (DAT_006d1164 * 3 + -3) * 2;
     for (local_354 = 0; local_354 < DAT_006d1162; local_354 = local_354 + 1) {
-      if (DAT_006d1162 >> 1 === local_354 || ((DAT_006d1162 >> 1) - local_354) < 0) {
+      if (DAT_006d1162 >> 1 === local_354 || (DAT_006d1162 >> 1) - local_354 < 0) {
         local_28 = ~((DAT_006d1162 >> 1) - local_354) + 1;
       }
       else {
@@ -1747,7 +1747,7 @@ export function FUN_00408d33(param_1) {
         local_54 = _rand();
         local_54 = local_54 % (DAT_00624ef4 * 4 + local_3b0 + 5);
       }
-      for (local_5c = (((local_354 & 1) >>> 0) !== 0); local_5c < DAT_006d1160;
+      for (local_5c = (((local_354 & 1) !== 0) >>> 0); local_5c < DAT_006d1160;
           local_5c = local_5c + 2) {
         bVar1 = s32(local_50, 0);
         if (bVar1 === 10) {
@@ -1863,7 +1863,7 @@ export function FUN_00408d33(param_1) {
         local_5c = FUN_005ae052(s8(DAT_00628350[iVar4]) + local_5c);
         local_354 = local_354 + s8(DAT_00628360[iVar4]);
       }
-      if (DAT_006d1162 >> 1 === local_354 || ((DAT_006d1162 >> 1) - local_354) < 0) {
+      if (DAT_006d1162 >> 1 === local_354 || (DAT_006d1162 >> 1) - local_354 < 0) {
         local_28 = ~((DAT_006d1162 >> 1) - local_354) + 1;
       }
       else {
@@ -3156,7 +3156,7 @@ export function FUN_0040c7d0(in_ECX) {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_0040cd64(unaff_ESI, param_1) {
+export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
 
 
   let iVar1;
@@ -3168,7 +3168,7 @@ export function FUN_0040cd64(unaff_ESI, param_1) {
   let iVar7;
   let iVar8;
   let extraout_EAX;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // unaff_ESI → promoted to parameter
   // DEVIATION: SEH
   let uVar9;
@@ -3235,7 +3235,7 @@ export function FUN_0040cd64(unaff_ESI, param_1) {
     w32(in_ECX, 0x348, 1);
   }
   while (s32(in_ECX, 0x2dc) <
-         (10 - (u8(DAT_0064c6b3[param_1 * 0x594]) +
+         (int)(10 - (u8(DAT_0064c6b3[param_1 * 0x594]) +
                     u8(DAT_0064c6b4[param_1 * 0x594])))) {
     if (u8(DAT_0064c6b4[param_1 * 0x594]) < s32(in_ECX, 0x2dc)) {
       DAT_0064c6b4[param_1 * 0x594] = DAT_0064c6b4[param_1 * 0x594] + 0x01;
@@ -3411,8 +3411,8 @@ export function FUN_0040cd64(unaff_ESI, param_1) {
   *(DAT_0064c6b4 + param_1 * 0x594) = in_ECX[0x2e0];
   *(DAT_0064c6b3 + param_1 * 0x594) = in_ECX[0x2e8];
   if ((DAT_00655af8 < 0xb) && (u8(DAT_0064c6b5[param_1 * 0x594]) < 2)) {
-    _DAT_0064bc1a = ((u8) & 0xFFFF)(DAT_0064c6b3[param_1 * 0x594]);
-    _DAT_0064bc1c = ((u8) & 0xFFFF)(DAT_0064c6b4[param_1 * 0x594]);
+    _DAT_0064bc1a = ((u8(DAT_0064c6b3[param_1 * 0x594])) & 0xFFFF);
+    _DAT_0064bc1c = ((u8(DAT_0064c6b4[param_1 * 0x594])) & 0xFFFF);
     FUN_004a73d9();
   }
   if (local_464[0] !== 0) {
@@ -3557,7 +3557,7 @@ export function FUN_0040decc(param_1) {
       if (iVar1 < u8(DAT_0064c6b4[param_1 * 0x594])) {
         FUN_0040ddc6(param_1);
       }
-      if (iVar1 < (10 - (u8(DAT_0064c6b3[param_1 * 0x594]) +
+      if (iVar1 < (int)(10 - (u8(DAT_0064c6b3[param_1 * 0x594]) +
                              u8(DAT_0064c6b4[param_1 * 0x594])))) {
         FUN_0040ddc6(param_1);
       }
@@ -3610,7 +3610,7 @@ export function FUN_0040e017() {
   for (local_318 = 0; local_318 < DAT_00655b18; local_318 = local_318 + 1) {
     if (s32(DAT_0064f394, local_318 * 0x58) !== 0) {
       bVar1 = false;
-      uVar3 = (s8(DAT_0064f348[local_318 * 0x58]) >>> 0);
+      uVar3 = ((s8(DAT_0064f348[local_318 * 0x58])) >>> 0);
       if ((DAT_00655b07 !== 0) || (((DAT_00655af0 & 0x80) !== 0 && ((DAT_0064bc60 & 8) !== 0)))) {
         bVar1 = true;
       }
@@ -3787,7 +3787,7 @@ export function FUN_0040ef70(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function __Timevec_0040EFA0(this) {
+export function __Timevec_0040EFA0(_this) {
 
 
   // DEVIATION: C pointer — gdi_8514(*(undefined4 *)this);
@@ -3817,10 +3817,10 @@ export function FUN_0040efd0(in_ECX, param_1) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_0040f010(param_1) {
+export function FUN_0040f010(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_005bd915();
   if ((param_1 & 1) !== 0) {
@@ -4018,7 +4018,7 @@ export function FUN_0040f2c6(unaff_EBP) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0040F320(this, param_1) {
+export function EnableStackedTabs_0040F320(_this, param_1) {
 
 
   w32(this, 0xa4, param_1);

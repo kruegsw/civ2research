@@ -93,7 +93,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     w32(local_18 * 4 + 0x6acb10, 0, 0);
   }
   bVar1 = DAT_006560f7[param_1 * 0x20];
-  uVar7 = (s8(bVar1) >>> 0);
+  uVar7 = ((s8(bVar1)) >>> 0);
   iVar8 = s16(DAT_006560f0, param_1 * 0x20);
   iVar9 = s16(DAT_006560f2, param_1 * 0x20);
   local_a0 = FUN_0057e2c3(param_1);
@@ -106,7 +106,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     local_98 = ((DAT_0064bcc8) >>> 0);
   }
   if (param_3 !== 0) {
-    local_a0 = (local_a0 * local_98) / ((DAT_0064bcc8) | 0);
+    local_a0 = local_a0 * local_98 / ((DAT_0064bcc8) | 0);
   }
   uVar11 = FUN_005ae052(s8(DAT_00628350[param_2]) + iVar8);
   iVar10 = s8(DAT_00628360[param_2]) + iVar9;
@@ -118,7 +118,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
   }
   local_c = FUN_0057e6e2(local_c,param_1);
   bVar2 = DAT_006560f7[local_c * 0x20];
-  uVar12 = (s8(bVar2) >>> 0);
+  uVar12 = ((s8(bVar2)) >>> 0);
   local_64 = FUN_0057e33a(local_c,0,param_1);
   local_34 = s8(DAT_0064b1c7[u8(DAT_006560f6[local_c * 0x20]) * 0x14]);
   if (((DAT_0064b1ca[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0x03) &&
@@ -216,7 +216,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     }
     else {
       local_a0 = (DAT_00655b08 + 1) * local_a0;
-      local_a0 = (local_a0 + (local_a0 >> 0x1f & 3)) >> 2;
+      local_a0 = local_a0 + (local_a0 >> 0x1f & 3) >> 2;
     }
     if (-1 < DAT_006acb08) {
       if (s16(DAT_0064c708, uVar12 * 0x594) < 2) {
@@ -349,7 +349,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
          (iVar13 = FUN_00453e51(uVar7,0x18), iVar13 !== 0)) {
         local_6c = local_6c + -0x32;
       }
-      if ((-1 < (local_6c + u8(DAT_0064c6be[uVar12 * 0x594]) * -10)) &&
+      if ((-1 < local_6c + u8(DAT_0064c6be[uVar12 * 0x594]) * -10) &&
          ((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)) {
         FUN_0055f5a3(uVar7,1);
       }
@@ -806,7 +806,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
         bVar6 = DAT_006560fa[local_c * 0x20];
         DAT_006560fa[local_c * 0x20] = DAT_006560fa[local_c * 0x20] + s8(local_78);
         if (((bVar3) && (local_2c !== 0)) &&
-           ((u8(DAT_006560fa[local_c * 0x20]) / local_2c)
+           (u8(DAT_006560fa[local_c * 0x20]) / local_2c
             !== ((bVar6) | 0) / local_2c)) {
           bVar4 = true;
           FUN_004b0b53(0xff,2,0,0,0);
@@ -840,7 +840,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
       bVar6 = DAT_006560fa[param_1 * 0x20];
       DAT_006560fa[param_1 * 0x20] = DAT_006560fa[param_1 * 0x20] + s8(local_34);
       if (((bVar3) && (local_2c !== 0)) &&
-         ((u8(DAT_006560fa[param_1 * 0x20]) / local_2c) !==
+         (u8(DAT_006560fa[param_1 * 0x20]) / local_2c !==
           ((bVar6) | 0) / local_2c)) {
         bVar4 = true;
         FUN_004b0b53(0xff,2,0,0,0);
@@ -1529,7 +1529,7 @@ export function FUN_00586eb0(in_ECX) {
 // Size: 1731 bytes
 // ============================================================
 
-export function FUN_00586f16() {
+export function FUN_00586f16(in_ECX) {
 
 
   let iVar1;
@@ -1538,7 +1538,7 @@ export function FUN_00586f16() {
   let uVar4;
   let extraout_EAX;
   let iVar5;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // DEVIATION: SEH
   let uVar6;
   let uVar7;
@@ -1617,7 +1617,7 @@ export function FUN_00586f16() {
   // DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0);
   w32(in_ECX, 0x2e4, extraout_EAX + 8);
   w32(in_ECX, 0x2e0, 
-       (s32(in_ECX, 300) + -10 + (s32(in_ECX, 300) + -10 >> 0x1f & 3)) >> 2);
+       s32(in_ECX, 300) + -10 + (s32(in_ECX, 300) + -10 >> 0x1f & 3) >> 2);
   iVar5 = (s32(in_ECX, 0x128) + s32(in_ECX, 0x130)) - (s32(in_ECX, 0x2e4) + 2);
   iVar1 = s32(in_ECX, 0x124);
   FUN_004086c0(local_454,iVar1 + 2,iVar5,s32(in_ECX, 0x2e0),
@@ -2297,7 +2297,7 @@ export function FUN_0058878e(param_1) {
                                          // DEVIATION(cont): (param_1 * 0x2004 +
                                           // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *
                                           // DEVIATION(cont): 4 + 0x43f8 + local_38)), local_58 == -1)) break;
-      iVar4 = (-((s32(local_38, 0x154) >>> 0) === 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
+      iVar4 = (-((s32(local_38, 0x154) === 0) >>> 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
       local_30[0].left = local_30[0].left + iVar4 + -3;
       if (iVar6 === 0) {
         local_64 = DAT_00635a18;
@@ -2766,12 +2766,12 @@ export function FUN_00589dc5(param_1) {
   _File = FUN_0041508c(param_1,DAT_0063481c);
   if (_File !== 0x0) {
     local_8 = 1;
-    while (((local_8 !== 0 && ((_File->_flag & 0x10) === 0)) &&
-           (pcVar1 = _fgets(local_58,0x4f,_File), pcVar1 !== 0x0))) {
-      for (local_5c = 0; sVar2 = _strlen(local_58), local_5c < sVar2; local_5c = local_5c + 1)
-      {
-        if (local_58[local_5c] < 32) {
-          local_58[local_5c] = 0;
+    // DEVIATION: C struct — while (((local_8 !== 0 && ((_File->_flag & 0x10) === 0)) &&
+           // DEVIATION(cont): (pcVar1 = _fgets(local_58,0x4f,_File), pcVar1 != (char *)0x0))) {
+      // DEVIATION(cont): for (local_5c = 0; sVar2 = _strlen(local_58), local_5c < (int)sVar2; local_5c = local_5c + 1)
+      // DEVIATION(cont): {
+        // DEVIATION(cont): if (local_58[local_5c] < ' ') {
+          // DEVIATION(cont): local_58[local_5c] = '\0';
         }
       }
       iVar3 = _strncmp(local_58,DAT_00634820,3);
@@ -2839,8 +2839,8 @@ export function FUN_00589fc9(param_1, param_2, param_3) {
   _File = FUN_0041508c(param_2,DAT_00634840);
   if (_File !== 0x0) {
     for (local_58 = 1; local_58 <= param_3; local_58 = local_58 + 1) {
-      if (((_File->_flag & 0x10) !== 0) ||
-         (pcVar1 = _fgets(local_54,0x4c,_File), pcVar1 === 0x0)) LAB_0058a0bc_helper(local_5c); return;
+      // DEVIATION: C struct — if (((_File->_flag & 0x10) !== 0) ||
+         // DEVIATION(cont): (pcVar1 = _fgets(local_54,0x4c,_File), pcVar1 == (char *)0x0)) LAB_0058a0bc_helper(local_5c); return;
     }
     for (local_58 = 0; sVar2 = _strlen(local_54), local_58 < sVar2; local_58 = local_58 + 1) {
       if (local_54[local_58] < 32) {
@@ -3277,7 +3277,7 @@ export function FUN_0058ac38() {
   for (local_28 = 0; local_28 < 6; local_28 = local_28 + 1) {
     iVar4 = (iVar1 * 3) / 2 + (local_28 / 3) * iVar1 * 4 + DAT_006ace80;
     iVar5 = (local_28 % 3) * iVar3 * 5;
-    iVar5 = ((iVar5 + (iVar5 >> 0x1f & 3)) >> 2) + ((iVar3 + (iVar2 >> 0x1f & 3)) >> 2)
+    iVar5 = (iVar5 + (iVar5 >> 0x1f & 3) >> 2) + (iVar3 + (iVar2 >> 0x1f & 3) >> 2)
             + DAT_006ace7c;
     FUN_004086c0(local_14,iVar5,iVar4,iVar3,iVar1);
     FUN_005a99fc(DAT_006acd58,local_14,10,10);
@@ -3353,8 +3353,8 @@ export function FUN_0058ae6c(param_1, param_2) {
     }
     iVar4 = (local_2c % 3) * iVar3 * 5;
     FUN_004086c0(local_18[0],
-                       ((iVar4 + (iVar4 >> 0x1f & 3)) >> 2) +
-                       ((iVar3 + (iVar2 >> 0x1f & 3)) >> 2),
+                       (iVar4 + (iVar4 >> 0x1f & 3) >> 2) +
+                       (iVar3 + (iVar2 >> 0x1f & 3) >> 2),
                        (iVar1 * 3) / 2 + (local_2c / 3) * iVar1 * 4,iVar3,iVar1);
     if ((-1 < s32(DAT_006acd38, local_2c * 4)) &&
        (iVar4 = FUN_0058ae20(param_1,param_2,local_18[0],local_14,local_10,local_c), iVar4 !== 0))
@@ -3551,11 +3551,11 @@ export function FUN_0058b47e(param_1, param_2) {
   FUN_0058a61b(param_1,0xd,0,0,0x21c,0x118,0,0,0);
   // DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0);
   local_68 = extraout_EAX + 8;
-  local_60 = (DAT_006ace84 + (DAT_006ace84 >> 0x1f & 3)) >> 2;
+  local_60 = DAT_006ace84 + (DAT_006ace84 >> 0x1f & 3) >> 2;
   for (local_214 = 0; local_214 < 6; local_214 = local_214 + 1) {
     iVar2 = (local_214 % 3) * local_60 * 5;
-    local_64 = ((iVar2 + (iVar2 >> 0x1f & 3)) >> 2) +
-               ((local_60 + (local_60 >> 0x1f & 3)) >> 2) + DAT_006ace7c;
+    local_64 = (iVar2 + (iVar2 >> 0x1f & 3) >> 2) +
+               (local_60 + (local_60 >> 0x1f & 3) >> 2) + DAT_006ace7c;
     FUN_004086c0(local_5c,local_64,
                        local_68 * 3 + (local_214 / 3) * local_68 * 4 + DAT_006ace80,local_60,
                        local_68);
@@ -3856,7 +3856,7 @@ export function FUN_0058c295() {
         iVar4 = FUN_0043cf76(sVar2,sVar3);
         if (-1 < iVar4) {
           w16(DAT_0064f35c, iVar4 * 0x58, 
-               (((s8(DAT_0064b1c8) << 16 >> 16)
+               (short)((int)(s8(DAT_0064b1c8)
                                         [u8(DAT_006560f6[local_14 * 0x20]) * 0x14] *
                             ((DAT_0064bccc) >>> 0)) / 2) + s16(DAT_0064f35c, iVar4 * 0x58);
           // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
@@ -4949,9 +4949,9 @@ export function FUN_0058f040(param_1) {
   let local_8;
   
   bVar2 = DAT_006560f7[param_1 * 0x20];
-  uVar3 = (s8(bVar2) >>> 0);
+  uVar3 = ((s8(bVar2)) >>> 0);
   iVar4 = s16(DAT_006560f0, param_1 * 0x20);
-  uVar5 = (s16(DAT_006560f2, param_1 * 0x20) >>> 0);
+  uVar5 = ((s16(DAT_006560f2, param_1 * 0x20)) >>> 0);
   local_50 = uVar5;
   if ((uVar3 !== 0) &&
      (local_50 = s8(DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]),
@@ -5124,7 +5124,7 @@ export function FUN_0058f040(param_1) {
          (u8(DAT_00655c22[uVar3]) < u8(DAT_00655c22[DAT_00655c21]))) {
         uVar7 = _rand();
         uVar10 = uVar7 >> 0x1f;
-        if ((((uVar7 ^ uVar10) - uVar10 & 7 ^ uVar10) - uVar10) < ((DAT_00655b08) | 0)) {
+        if (((uVar7 ^ uVar10) - uVar10 & 7 ^ uVar10) - uVar10 < ((DAT_00655b08) | 0)) {
           local_50 = 0;
           LAB_0058f1bc_helper(bVar1, bVar2, iVar4, iVar6, iVar9, local_10, local_14, local_20, local_28, local_38, local_3c, local_40, local_48, local_4c, local_50, local_60, local_8, local_c, param_1, uVar10, uVar3, uVar5, uVar7, uVar8); return;
         }
@@ -5440,7 +5440,7 @@ export function FUN_0058fedb(param_1, param_2) {
       FUN_0046e020(0x2c,1,0,0);
     }
     w16(DAT_0064f35c, param_2 * 0x58, 
-         ((s8) << 16 >> 16)(DAT_0064b1c8[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]) *
+         ((s8(DAT_0064b1c8[u8(DAT_006560f6[param_1 * 0x20]) * 0x14])) << 16 >> 16) *
          ((DAT_0064bccc) & 0xFFFF) + s16(DAT_0064f35c, param_2 * 0x58);
     FUN_0040ff60(0,DAT_0064f360 + param_2 * 0x58);
     FUN_00421da0(0,s8(DAT_0064b1c8)
@@ -5875,7 +5875,7 @@ function LAB_00588e17_helper(iVar1, iVar2, iVar3, iVar4, iVar6, local_18, local_
                                          // DEVIATION(cont): (param_1 * 0x2004 +
                                           // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *
                                           // DEVIATION(cont): 4 + 0x43f8 + local_38)), local_58 == -1)) break;
-      iVar4 = (-((s32(local_38, 0x154) >>> 0) === 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
+      iVar4 = (-((s32(local_38, 0x154) === 0) >>> 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
       local_30[0].left = local_30[0].left + iVar4 + -3;
       if (iVar6 === 0) {
         local_64 = DAT_00635a18;
@@ -6021,7 +6021,7 @@ LAB_00588e17:
                                          // DEVIATION(cont): (param_1 * 0x2004 +
                                           // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *
                                           // DEVIATION(cont): 4 + 0x43f8 + local_38)), local_58 == -1)) break;
-      iVar4 = (-((s32(local_38, 0x154) >>> 0) === 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
+      iVar4 = (-((s32(local_38, 0x154) === 0) >>> 0) & 0xffffffe2) + 0x5a + DAT_0062d858;
       local_30[0].left = local_30[0].left + iVar4 + -3;
       if (iVar6 === 0) {
         local_64 = DAT_00635a18;
@@ -6406,7 +6406,7 @@ function LAB_0058f1bc_helper(bVar1, bVar2, iVar4, iVar6, iVar9, local_10, local_
          (u8(DAT_00655c22[uVar3]) < u8(DAT_00655c22[DAT_00655c21]))) {
         uVar7 = _rand();
         uVar10 = uVar7 >> 0x1f;
-        if ((((uVar7 ^ uVar10) - uVar10 & 7 ^ uVar10) - uVar10) < ((DAT_00655b08) | 0)) {
+        if (((uVar7 ^ uVar10) - uVar10 & 7 ^ uVar10) - uVar10 < ((DAT_00655b08) | 0)) {
           local_50 = 0;
           LAB_0058f1bc_helper(bVar1, bVar2, iVar4, iVar6, iVar9, local_10, local_14, local_20, local_28, local_38, local_3c, local_40, local_48, local_4c, local_50, local_60, local_8, local_c, param_1, uVar10, uVar3, uVar5, uVar7, uVar8); return;
         }

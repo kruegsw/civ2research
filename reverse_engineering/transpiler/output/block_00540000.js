@@ -3607,7 +3607,7 @@ export function FUN_0054f16b(in_ECX) {
 // Size: 3035 bytes
 // ============================================================
 
-export function FUN_0054f3b9() {
+export function FUN_0054f3b9(in_ECX) {
 
 
   let iVar1;
@@ -3616,7 +3616,7 @@ export function FUN_0054f3b9() {
   let uVar4;
   let extraout_EAX;
   let iVar5;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // DEVIATION: SEH
   let uVar6;
   let uVar7;

@@ -332,7 +332,7 @@ export function FUN_004f0a9c(param_1) {
       local_1c = 0;
       switch(local_24) {
       case 1:
-        local_1c = (s8(DAT_0064f349[param_1 * 0x58]) >>> 0);
+        local_1c = ((s8(DAT_0064f349[param_1 * 0x58])) >>> 0);
         break;
       case 2:
         local_1c = ((DAT_0064bcd5) >>> 0);
@@ -523,10 +523,10 @@ export function FUN_004f3d60(in_ECX) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_004f3e20(param_1) {
+export function FUN_004f3e20(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_004f3e70();
   if ((param_1 & 1) !== 0) {
@@ -1255,7 +1255,7 @@ export function FUN_004f4809(in_ECX) {
 // Size: 3950 bytes
 // ============================================================
 
-export function FUN_004f4b9f() {
+export function FUN_004f4b9f(in_ECX) {
 
 
   let iVar1;
@@ -1267,7 +1267,7 @@ export function FUN_004f4b9f() {
   let iVar5;
   let extraout_EAX_01;
   let iVar6;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // DEVIATION: SEH
   let local_8c;
   let local_88;
@@ -1433,7 +1433,7 @@ export function FUN_004f4b9f() {
   FUN_0040f7d0();
   FUN_0040f840();
   FUN_0040f880(0 /* ADDR:LAB_004037fb */);
-  iVar6 = (iVar5 + (iVar5 >> 0x1f & 3)) >> 2;
+  iVar6 = iVar5 + (iVar5 >> 0x1f & 3) >> 2;
   SetRect(local_24[0],iVar2,iVar1,iVar6 + iVar2,local_14 + iVar1);
   if (in_ECX === 0x0) {
     local_64 = 0x0;
@@ -2004,7 +2004,7 @@ export function FUN_004f66c6(in_ECX) {
          (s32(in_ECX, 0x1f3c) + local_60 + local_5c < s32(in_ECX, 0x1b34))) {
         // DEVIATION: C pointer — local_78 = s32(in_ECX, 0x1b38 + (s32(in_ECX, 0x1f3c) + local_60 + local_5c) * 4)
         // DEVIATION(cont): ;
-        local_30 = ((s32(in_ECX, 0x1f3c) >>> 0) + local_60 + local_5c === DAT_006a85a0);
+        local_30 = ((s32(in_ECX, 0x1f3c) + local_60 + local_5c === DAT_006a85a0) >>> 0);
         if (local_30 === 0) {
           local_34 = DAT_00635a1c;
           local_48 = DAT_00635a20;
@@ -2150,7 +2150,7 @@ export function FUN_004f66c6(in_ECX) {
           iVar1 = FUN_004a6980();
           iVar2 = FUN_004a6980();
           iVar3 = FUN_004a6980();
-          local_6c = ((iVar1 + (iVar1 >> 0x1f & 3)) >> 2) + iVar2 / 6 + iVar3 +
+          local_6c = (iVar1 + (iVar1 >> 0x1f & 3) >> 2) + iVar2 / 6 + iVar3 +
                      DAT_0062d858 * 2;
           local_38 = DAT_00644fb4;
           local_144 = local_6c;
@@ -3082,10 +3082,10 @@ export function FUN_004f8d51() {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__scalar_deleting_destructor__004FA0F0(param_1) {
+export function FID_conflict__scalar_deleting_destructor__004FA0F0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   // DEVIATION: MFC — CControlBarInfo::~CControlBarInfo(in_ECX);
   if ((param_1 & 1) !== 0) {
@@ -3106,7 +3106,7 @@ export function FID_conflict__scalar_deleting_destructor__004FA0F0(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function _CControlBarInfo_004FA140(this) {
+export function _CControlBarInfo_004FA140(_this) {
 
 
   // DEVIATION: SEH
@@ -3971,8 +3971,8 @@ export function FUN_004fb29f(param_1) {
               (((iVar2 < local_24[1] || (local_24[2] < iVar2)) || (local_24[3] < iVar2))));
       DAT_006560ff[local_3c * 0x20] = 0xb;
       DAT_006560fc[local_3c * 0x20] = 0x37;
-      w16(DAT_00656102, local_3c * 0x20, ((s32) << 16 >> 16)(param_1, 0xbc));
-      w16(DAT_00656104, local_3c * 0x20, ((s32) << 16 >> 16)(param_1, 0xc0));
+      w16(DAT_00656102, local_3c * 0x20, ((s32(param_1, 0xbc)) << 16 >> 16));
+      w16(DAT_00656104, local_3c * 0x20, ((s32(param_1, 0xc0)) << 16 >> 16));
       local_38 = local_38 + 1;
     } while ((local_38 < s32(param_1, 0x98)) || (s32(param_1, 0x98) === -2));
   }
@@ -5986,7 +5986,7 @@ function LAB_004f6d04_helper(iVar1, iVar2, iVar3, in_ECX, local_10c, local_11c, 
           iVar1 = FUN_004a6980();
           iVar2 = FUN_004a6980();
           iVar3 = FUN_004a6980();
-          local_6c = ((iVar1 + (iVar1 >> 0x1f & 3)) >> 2) + iVar2 / 6 + iVar3 +
+          local_6c = (iVar1 + (iVar1 >> 0x1f & 3) >> 2) + iVar2 / 6 + iVar3 +
                      DAT_0062d858 * 2;
           local_38 = DAT_00644fb4;
           local_144 = local_6c;

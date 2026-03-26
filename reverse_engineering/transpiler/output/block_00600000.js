@@ -728,7 +728,7 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
     _Size = _Size & 0xfffffffe;
     __flush(_File);
     __freebuf(_File);
-    _File->_flag = _File->_flag & 0xffffc2f3;
+    // DEVIATION: C struct — _File->_flag = _File->_flag & 0xffffc2f3;
     if ((_Mode & 4) === 0) {
       if (_Buf === 0x0) {
         _Buf = __malloc_dbg(_Size,2,"setvbuf.c",0x85);
@@ -736,21 +736,21 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
           _DAT_0063aed8 = _DAT_0063aed8 + 1;
           return -1;
         }
-        _File->_flag = _File->_flag | 0x408;
+        // DEVIATION: C struct — _File->_flag = _File->_flag | 0x408;
       }
       else {
-        _File->_flag = _File->_flag | 0x500;
+        // DEVIATION: C struct — _File->_flag = _File->_flag | 0x500;
       }
     }
     else {
-      _File->_flag = _File->_flag | 4;
-      _Buf = _File->_charbuf;
+      // DEVIATION: C struct — _File->_flag = _File->_flag | 4;
+      // DEVIATION: C struct — _Buf = _File->_charbuf;
       _Size = 2;
     }
-    _File->_bufsiz = _Size;
-    _File->_base = _Buf;
-    _File->_ptr = _File->_base;
-    _File->_cnt = 0;
+    // DEVIATION: C struct — _File->_bufsiz = _Size;
+    // DEVIATION: C struct — _File->_base = _Buf;
+    // DEVIATION: C struct — _File->_ptr = _File->_base;
+    // DEVIATION: C struct — _File->_cnt = 0;
   }
   else {
     local_c = -1;
@@ -815,10 +815,10 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
   let lVar1;
   let iVar2;
   
-  if (((param_1->ExceptionRecord->ExceptionCode === 0xe06d7363) &&
-      (param_1->ExceptionRecord->NumberParameters === 3)) &&
-     (param_1->ExceptionRecord->ExceptionInformation[0] === 0x19930520)) {
-    terminate();
+  // DEVIATION: C struct — if (((param_1->ExceptionRecord->ExceptionCode === 0xe06d7363) &&
+      // DEVIATION(cont): (param_1->ExceptionRecord->NumberParameters == 3)) &&
+     // DEVIATION(cont): (param_1->ExceptionRecord->ExceptionInformation[0] == 0x19930520)) {
+    // DEVIATION(cont): terminate();
     lVar1 = 1;
   }
   else {
@@ -1361,7 +1361,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,(intptr_t)local_8);
-        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (local_18 & 0x1f) * 8) = local_3c | 1;
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -1387,7 +1387,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                    // DEVIATION(cont): (local_18 & 0x1f) * 8) =
                // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 +
                         // DEVIATION(cont): (local_18 & 0x1f) * 8) | 0x20;
@@ -1470,7 +1470,7 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
   let iVar1;
   
   if ((((param_1) >>> 0) < DAT_006e6b2c) &&
-     // DEVIATION: C pointer — (*(int *)(s32(DAT_006e69f0 + ((param_1 & 0xffffffe0) >> 3), 0) +
+     // DEVIATION: C pointer — (*(int *)(s32(DAT_006e69f0 + (param_1 & 0xffffffe0 >> 3), 0) +
               // DEVIATION(cont): (param_1 & 0x1fU) * 8) == -1)) {
     // DEVIATION(cont): if (DAT_00639fd0 == 1) {
       // DEVIATION(cont): if (param_1 == 0) {
@@ -1514,7 +1514,7 @@ export function __free_osfhnd_00601F40(param_1) {
   let iVar1;
   
   if (((((param_1) >>> 0) < DAT_006e6b2c) &&
-      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((param_1 & 0xffffffe0) >> 3), 0) + 4 +
+      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (param_1 & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (param_1 & 0x1fU) * 8) & 1) != 0)) &&
      // DEVIATION(cont): (*(int *)(*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) +
               // DEVIATION(cont): (param_1 & 0x1fU) * 8) != -1)) {
@@ -1560,7 +1560,7 @@ export function __get_osfhandle_00602060(_FileHandle) {
   let iVar1;
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
-     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
     // DEVIATION(cont): iVar1 = *(intptr_t *)
              // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
@@ -1621,7 +1621,7 @@ export function __open_osfhandle_006020E0(_OSFileHandle, _Flags) {
     }
     else {
       __set_osfhnd(uVar2,_OSFileHandle);
-      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((uVar2 & 0xffffffe0) >> 3), 0) + 4 +
+      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (uVar2 & 0xffffffe0 >> 3), 0) + 4 +
                // DEVIATION(cont): (uVar2 & 0x1f) * 8) = local_10 | 1;
     }
   }
@@ -1648,7 +1648,7 @@ export function __commit_006021E0(_FileHandle) {
   let local_8;
   
   if (((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
-      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) &&
      // DEVIATION(cont): ((*(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
@@ -1687,7 +1687,7 @@ export function __isatty_006022C0(_FileHandle) {
   let uVar1;
   
   if (((_FileHandle) >>> 0) < DAT_006e6b2c) {
-    // DEVIATION: C pointer — uVar1 = (int)*(char *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) +
+    // DEVIATION: C pointer — uVar1 = (int)*(char *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) +
                            // DEVIATION(cont): 4 + (_FileHandle & 0x1fU) * 8) & 0x40;
   }
   else {
@@ -1770,22 +1770,22 @@ export function __aulldiv_006023E0(param_1, param_2, param_3, param_4) {
   uVar9 = param_3;
   if (param_4 === 0) {
     uVar3 = param_2 / param_3;
-    iVar4 = ((param_2 % param_3 << 0x20 | param_1) /
+    iVar4 = (int)((param_2 % param_3 << 0x20 | param_1) /
                  param_3);
   }
   else {
     do {
       uVar5 = uVar8 >> 1;
-      uVar9 = uVar9 >> 1 | (((uVar8 & 1) >>> 0) !== 0) << 0x1f;
+      uVar9 = uVar9 >> 1 | (((uVar8 & 1) !== 0) >>> 0) << 0x1f;
       uVar7 = uVar6 >> 1;
-      uVar3 = uVar3 >> 1 | (((uVar6 & 1) >>> 0) !== 0) << 0x1f;
+      uVar3 = uVar3 >> 1 | (((uVar6 & 1) !== 0) >>> 0) << 0x1f;
       uVar8 = uVar5;
       uVar6 = uVar7;
     } while (uVar5 !== 0);
     uVar1 = CONCAT44(uVar7,uVar3) / uVar9;
     iVar4 = uVar1;
     lVar2 = param_3 * (uVar1 & 0xffffffff);
-    uVar3 = (( >>> 0)lVar2 >> 0x20);
+    uVar3 = ((lVar2 >> 0x20) >>> 0);
     uVar8 = uVar3 + iVar4 * param_4;
     if (((CARRY4(uVar3,iVar4 * param_4)) || (param_2 < uVar8)) ||
        ((param_2 <= uVar8 && (param_1 < ((lVar2) >>> 0))))) {
@@ -1828,23 +1828,23 @@ export function __aullrem_00602450(param_1, param_2, param_3, param_4) {
   uVar9 = param_2;
   uVar10 = param_3;
   if (param_4 === 0) {
-    iVar6 = ((param_2 % param_3 << 0x20 | param_1) %
+    iVar6 = (int)((param_2 % param_3 << 0x20 | param_1) %
                  param_3);
     iVar7 = 0;
   }
   else {
     do {
       uVar5 = uVar4 >> 1;
-      uVar10 = uVar10 >> 1 | (((uVar4 & 1) >>> 0) !== 0) << 0x1f;
+      uVar10 = uVar10 >> 1 | (((uVar4 & 1) !== 0) >>> 0) << 0x1f;
       uVar8 = uVar9 >> 1;
-      uVar3 = uVar3 >> 1 | (((uVar9 & 1) >>> 0) !== 0) << 0x1f;
+      uVar3 = uVar3 >> 1 | (((uVar9 & 1) !== 0) >>> 0) << 0x1f;
       uVar4 = uVar5;
       uVar9 = uVar8;
     } while (uVar5 !== 0);
     uVar1 = CONCAT44(uVar8,uVar3) / uVar10;
     uVar3 = uVar1 * param_4;
     lVar2 = (uVar1 & 0xffffffff) * param_3;
-    uVar9 = (( >>> 0)lVar2 >> 0x20);
+    uVar9 = ((lVar2 >> 0x20) >>> 0);
     uVar4 = ((lVar2) >>> 0);
     uVar10 = uVar9 + uVar3;
     if (((CARRY4(uVar9,uVar3)) || (param_2 < uVar10)) || ((param_2 <= uVar10 && (param_1 < uVar4))))
@@ -2088,7 +2088,7 @@ export function __hw_cw_00602820(param_1) {
   let uVar1;
   let uVar2;
   
-  uVar1 = (((param_1 & 0x10) & 0xFFFF) !== 0);
+  uVar1 = (((param_1 & 0x10) !== 0) & 0xFFFF);
   if ((param_1 & 8) !== 0) {
     uVar1 = uVar1 | 4;
   }
@@ -2210,7 +2210,7 @@ export function __ZeroTail_00602A90(param_1, param_2) {
   let local_10;
   let local_8;
   
-  local_10 = (param_2 + (param_2 >> 0x1f & 0x1f)) >> 5;
+  local_10 = param_2 + (param_2 >> 0x1f & 0x1f) >> 5;
   bVar2 = u8(param_2 >> 0x1f);
   local_8 = 0x1f - (((u8(param_2) ^ bVar2) - bVar2 & 0x1f ^ bVar2) - bVar2);
   uVar1 = ~(-1 << (local_8 & 0x1f)) & u32(param_1, local_10 * 4);
@@ -2245,7 +2245,7 @@ export function __IncMan_00602B30(param_1, param_2) {
   let local_10;
   let local_8;
   
-  local_10 = (param_2 + (param_2 >> 0x1f & 0x1f)) >> 5;
+  local_10 = param_2 + (param_2 >> 0x1f & 0x1f) >> 5;
   bVar1 = u8(param_2 >> 0x1f);
   local_8 = 0x1f - (((u8(param_2) ^ bVar1) - bVar1 & 0x1f ^ bVar1) - bVar1);
   local_14 = ___addl(s32(param_1, local_10 * 4),1 << (local_8 & 0x1f),
@@ -2279,7 +2279,7 @@ export function __RoundMan_00602BF0(param_1, param_2) {
   let local_c;
   
   local_1c = 0;
-  local_14 = (param_2 + (param_2 >> 0x1f & 0x1f)) >> 5;
+  local_14 = param_2 + (param_2 >> 0x1f & 0x1f) >> 5;
   bVar2 = u8(param_2 >> 0x1f);
   local_c = 0x1f - (((u8(param_2) ^ bVar2) - bVar2 & 0x1f ^ bVar2) - bVar2);
   if ((1 << (local_c & 0x1f) & u32(param_1, local_14 * 4)) !== 0) {
@@ -2398,7 +2398,7 @@ export function __ShrMan_00602DB0(param_1, param_2) {
   let local_c;
   let local_8;
   
-  iVar3 = (param_2 + (param_2 >> 0x1f & 0x1f)) >> 5;
+  iVar3 = param_2 + (param_2 >> 0x1f & 0x1f) >> 5;
   local_8 = u8(param_2 >> 0x1f);
   local_8 = ((u8(param_2) ^ local_8) - local_8 & 0x1f ^ local_8) - local_8;
   local_c = 0;
@@ -2451,7 +2451,7 @@ export function __ld12cvt_00602EA0(param_1, param_2, param_3) {
   local_24 = param_1[5] & 0x8000;
   local_1c[0] = u32(param_1, 3);
   local_18 = u32(param_1, 1);
-  local_14 = (s32(param_1, 0) >>> 0) << 0x10;
+  local_14 = ((s32(param_1, 0)) >>> 0) << 0x10;
   if (local_8 === -0x3fff) {
     local_c = 0;
     iVar1 = __IsZeroMan(local_1c[0]);
@@ -2578,11 +2578,11 @@ export function __ld12told_00603170(_Ifp, _Ld) {
   let local_c;
   let local_8;
   
-  local_8 = CONCAT22(local_8._2_2_,s16(_Ifp->ld12 + 10, 0)) & 0xffff7fff;
-  uVar1 = u16(_Ifp->ld12 + 10, 0);
-  local_14[0] = s32(_Ifp->ld12 + 6, 0);
-  local_10 = s32(_Ifp->ld12 + 2, 0);
-  // DEVIATION: C pointer — local_c = (uint)*(ushort *)_Ifp->ld12 << 0x10;
+  // DEVIATION: C struct — local_8 = CONCAT22(local_8._2_2_,s16(_Ifp->ld12 + 10, 0)) & 0xffff7fff;
+  // DEVIATION: C struct — uVar1 = u16(_Ifp->ld12 + 10, 0);
+  // DEVIATION: C struct — local_14[0] = s32(_Ifp->ld12 + 6, 0);
+  // DEVIATION: C struct — local_10 = s32(_Ifp->ld12 + 2, 0);
+  // DEVIATION: C struct — local_c = (uint)*(ushort *)_Ifp->ld12 << 0x10;
   iVar2 = __RoundMan(local_14[0],0x40);
   if (iVar2 !== 0) {
     local_14[0] = 0x80000000;
@@ -2590,7 +2590,7 @@ export function __ld12told_00603170(_Ifp, _Ld) {
   }
   local_18 = ((local_8 & 0xffff) === 0x7fff);
   w32(_Ld->ld + 4, 0, local_14);
-  // DEVIATION: C pointer — *(undefined4 *)_Ld->ld = local_10;
+  // DEVIATION: C struct — *(undefined4 *)_Ld->ld = local_10;
   w16(_Ld->ld + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
   return local_18;
 }
@@ -2972,50 +2972,50 @@ export function __isindst_006039B0(_Time) {
   if (DAT_0063b2b4 === 0) {
     return 0;
   }
-  if ((_Time->tm_year !== DAT_0063b350) || (_Time->tm_year !== DAT_0063b360)) {
-    if (DAT_006e55e0 === 0) {
-      cvtdate(1,1,_Time->tm_year,4,1,0,0,2,0,0,0);
-      cvtdate(0,1,_Time->tm_year,10,5,0,0,2,0,0,0);
+  // DEVIATION: C struct — if ((_Time->tm_year !== DAT_0063b350) || (_Time->tm_year !== DAT_0063b360)) {
+    // DEVIATION(cont): if (DAT_006e55e0 == 0) {
+      // DEVIATION(cont): cvtdate(1,1,_Time->tm_year,4,1,0,0,2,0,0,0);
+      // DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,10,5,0,0,2,0,0,0);
     }
     else {
       if (DAT_006e5680 === 0) {
-        cvtdate(1,1,_Time->tm_year,DAT_006e5682,DAT_006e5686,DAT_006e5684,0,DAT_006e5688,
-                DAT_006e568a,DAT_006e568c,DAT_006e568e);
+        // DEVIATION: C struct — cvtdate(1,1,_Time->tm_year,DAT_006e5682,DAT_006e5686,DAT_006e5684,0,DAT_006e5688,
+                // DEVIATION(cont): DAT_006e568a,DAT_006e568c,DAT_006e568e);
       }
       else {
-        cvtdate(1,0,_Time->tm_year,DAT_006e5682,0,0,DAT_006e5686,DAT_006e5688,DAT_006e568a,
-                DAT_006e568c,DAT_006e568e);
+        // DEVIATION: C struct — cvtdate(1,0,_Time->tm_year,DAT_006e5682,0,0,DAT_006e5686,DAT_006e5688,DAT_006e568a,
+                // DEVIATION(cont): DAT_006e568c,DAT_006e568e);
       }
       if (DAT_006e562c === 0) {
-        cvtdate(0,1,_Time->tm_year,DAT_006e562e,DAT_006e5632,DAT_006e5630,0,DAT_006e5634,
-                DAT_006e5636,DAT_006e5638,DAT_006e563a);
+        // DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,DAT_006e562e,DAT_006e5632,DAT_006e5630,0,DAT_006e5634,
+                // DEVIATION(cont): DAT_006e5636,DAT_006e5638,DAT_006e563a);
       }
       else {
-        cvtdate(0,0,_Time->tm_year,DAT_006e562e,0,0,DAT_006e5632,DAT_006e5634,DAT_006e5636,
-                DAT_006e5638,DAT_006e563a);
+        // DEVIATION: C struct — cvtdate(0,0,_Time->tm_year,DAT_006e562e,0,0,DAT_006e5632,DAT_006e5634,DAT_006e5636,
+                // DEVIATION(cont): DAT_006e5638,DAT_006e563a);
       }
     }
   }
   if (DAT_0063b354 < DAT_0063b364) {
-    if ((_Time->tm_yday < DAT_0063b354) || (DAT_0063b364 < _Time->tm_yday)) {
-      return 0;
+    // DEVIATION: C struct — if ((_Time->tm_yday < DAT_0063b354) || (DAT_0063b364 < _Time->tm_yday)) {
+      // DEVIATION(cont): return 0;
     }
-    if ((DAT_0063b354 < _Time->tm_yday) && (_Time->tm_yday < DAT_0063b364)) {
-      return 1;
+    // DEVIATION: C struct — if ((DAT_0063b354 < _Time->tm_yday) && (_Time->tm_yday < DAT_0063b364)) {
+      // DEVIATION(cont): return 1;
     }
   }
   else {
-    if ((_Time->tm_yday < DAT_0063b364) || (DAT_0063b354 < _Time->tm_yday)) {
-      return 1;
+    // DEVIATION: C struct — if ((_Time->tm_yday < DAT_0063b364) || (DAT_0063b354 < _Time->tm_yday)) {
+      // DEVIATION(cont): return 1;
     }
-    if ((DAT_0063b364 < _Time->tm_yday) && (_Time->tm_yday < DAT_0063b354)) {
-      return 0;
+    // DEVIATION: C struct — if ((DAT_0063b364 < _Time->tm_yday) && (_Time->tm_yday < DAT_0063b354)) {
+      // DEVIATION(cont): return 0;
     }
   }
-  iVar1 = (_Time->tm_hour * 0xe10 + _Time->tm_min * 0x3c + _Time->tm_sec) * 1000;
-  if (_Time->tm_yday === DAT_0063b354) {
-    if (iVar1 < DAT_0063b358) {
-      iVar1 = 0;
+  // DEVIATION: C struct — iVar1 = (_Time->tm_hour * 0xe10 + _Time->tm_min * 0x3c + _Time->tm_sec) * 1000;
+  // DEVIATION: C struct — if (_Time->tm_yday === DAT_0063b354) {
+    // DEVIATION(cont): if (iVar1 < DAT_0063b358) {
+      // DEVIATION(cont): iVar1 = 0;
     }
     else {
       iVar1 = 1;
@@ -3141,7 +3141,7 @@ export function __chsize_00603F30(_FileHandle, _Size) {
   FUN_005f35f0();
   local_1020 = 0;
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
-     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
     // DEVIATION(cont): if (_Size < 0) {
       // DEVIATION(cont): pcStackY_20 = "chsize.c";
@@ -3292,8 +3292,8 @@ export function ___shl_12_006042E0(param_1) {
   let local_c;
   let local_8;
   
-  local_8 = (((int) >>> 0)(s32(param_1, 0) & -0x80000000) !== 0);
-  // DEVIATION: C pointer — local_c = (((*(byte *) >>> 0)(param_1 + 7) & 0x80) !== 0);
+  local_8 = ((s32(param_1, 0) & -0x80000000 !== 0) >>> 0);
+  // DEVIATION: C pointer — local_c = (((*(byte *)(param_1 + 7) & 0x80) !== 0) >>> 0);
   w32(param_1, 0, s32(param_1, 0) << 1);
   param_1[1] = param_1[1] * 2 | local_8;
   param_1[2] = param_1[2] * 2 | local_c;
@@ -3368,7 +3368,7 @@ export function ___mtold12_006043E0(param_1, param_2, param_3) {
     ___shl_12(param_3);
     ___add_12(param_3,local_10[0]);
     ___shl_12(param_3);
-    local_10[0] = (s32(param_1, 0) >>> 0);
+    local_10[0] = ((s32(param_1, 0)) >>> 0);
     local_c = 0;
     local_8 = 0;
     ___add_12(param_3,local_10[0]);
@@ -4277,12 +4277,12 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
   let iVar2;
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
-     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
     // DEVIATION(cont): cVar1 = *(char *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
                      // DEVIATION(cont): (_FileHandle & 0x1fU) * 8);
     if (_Mode === 0x8000) {
-      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) =
            // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
                     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x7f;
@@ -4292,7 +4292,7 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
         DAT_00639f14 = 0x16;
         return -1;
       }
-      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+      // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) =
            // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
                     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) | 0x80;
@@ -4433,11 +4433,11 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
           iVar6 = CONCAT22(local_18[2],local_18[1]);
         }
       }
-      local_18[0] = ((((iVar2) << 16 >> 16) >>> 0) >> 0x10);
+      local_18[0] = ((((iVar2) >>> 0) >> 0x10) << 16 >> 16);
       uStack_1a = ((iVar2) & 0xFFFF);
       bStack_11 = u8(((sVar1) & 0xFFFF) >> 8);
       uStack_12 = u8(sVar1);
-      local_18[2] = ((((iVar6) << 16 >> 16) >>> 0) >> 0x10);
+      local_18[2] = ((((iVar6) >>> 0) >> 0x10) << 16 >> 16);
       local_18[1] = ((iVar6) << 16 >> 16);
       if (local_38 < 0x7fff) {
         // DEVIATION: C pointer — *(undefined2 *)param_1 = uStack_1a;
@@ -4512,9 +4512,9 @@ export function ___multtenpow12_00606110(param_1, param_2, param_3) {
         local_c = (local_8 + uVar1 * 0xc);
         if (0x7fff < s32(local_c, 0)) {
           // DEVIATION: C pointer — local_18[0] = (ushort)*(undefined4 *)local_c;
-          // DEVIATION: C pointer — uStack_16._0_2_ = (((uint) & 0xFFFF)*(undefined4 *)local_c >> 0x10);
-          uStack_16._2_2_ = ((s32) & 0xFFFF)(local_c, 2);
-          uStack_12 = (((s32(local_c, 2) & 0xFFFF) >>> 0) >> 0x10);
+          // DEVIATION: C pointer — uStack_16._0_2_ = (((uint)*(undefined4 *)local_c >> 0x10) & 0xFFFF);
+          uStack_16._2_2_ = ((s32(local_c, 2)) & 0xFFFF);
+          uStack_12 = ((((s32(local_c, 2)) >>> 0) >> 0x10) & 0xFFFF);
           local_10 = s32(local_c, 4);
           uStack_16 = CONCAT22(uStack_16._2_2_,((uStack_16) & 0xFFFF)) + -1;
           local_c = local_18[0];
@@ -5176,7 +5176,7 @@ export function __filelength_006075E0(_FileHandle) {
   let local_8;
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
-     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3), 0) + 4 +
+     // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
     // DEVIATION(cont): _Offset = __lseek(_FileHandle,0,1);
     if (_Offset === -1) {
@@ -5222,12 +5222,12 @@ export function FUN_006076a0(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function __strupr_006076C0(unaff_EDI, _String) {
+export function __strupr_006076C0(unaff_ESI, unaff_EDI, _String) {
 
 
   let _LpDestStr;
   let iVar1;
-  let unaff_ESI;
+  // unaff_ESI → promoted to parameter
   // unaff_EDI → promoted to parameter
   let local_10;
   let local_c;
@@ -5266,12 +5266,12 @@ export function __strupr_006076C0(unaff_EDI, _String) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function __strlwr_006077F0(unaff_EDI, _String) {
+export function __strlwr_006077F0(unaff_ESI, unaff_EDI, _String) {
 
 
   let _LpDestStr;
   let iVar1;
-  let unaff_ESI;
+  // unaff_ESI → promoted to parameter
   // unaff_EDI → promoted to parameter
   let local_10;
   let local_c;
@@ -5404,7 +5404,7 @@ function LAB_006019fc_helper(iVar4, local_10, local_14, local_18, local_1c, loca
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,(intptr_t)local_8);
-        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (local_18 & 0x1f) * 8) = local_3c | 1;
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -5430,7 +5430,7 @@ function LAB_006019fc_helper(iVar4, local_10, local_14, local_18, local_1c, loca
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                    // DEVIATION(cont): (local_18 & 0x1f) * 8) =
                // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 +
                         // DEVIATION(cont): (local_18 & 0x1f) * 8) | 0x20;
@@ -5532,7 +5532,7 @@ LAB_006019fc:
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,(intptr_t)local_8);
-        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (local_18 & 0x1f) * 8) = local_3c | 1;
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -5558,7 +5558,7 @@ LAB_006019fc:
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                    // DEVIATION(cont): (local_18 & 0x1f) * 8) =
                // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 +
                         // DEVIATION(cont): (local_18 & 0x1f) * 8) | 0x20;
@@ -5646,7 +5646,7 @@ LAB_006019fc:
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,(intptr_t)local_8);
-        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+        // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                  // DEVIATION(cont): (local_18 & 0x1f) * 8) = local_3c | 1;
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -5672,7 +5672,7 @@ LAB_006019fc:
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + ((local_18 & 0xffffffe0) >> 3), 0) + 4 +
+          // DEVIATION: C pointer — *(byte *)(s32(DAT_006e69f0 + (local_18 & 0xffffffe0 >> 3), 0) + 4 +
                    // DEVIATION(cont): (local_18 & 0x1f) * 8) =
                // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 +
                         // DEVIATION(cont): (local_18 & 0x1f) * 8) | 0x20;

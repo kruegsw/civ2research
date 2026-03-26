@@ -9,7 +9,7 @@
 
 // /* WARNING: Unable to track spacebase fully for stack */
 
-export function FUN_0061a000() {
+export function FUN_0061a000(unaff_SI, unaff_DI) {
 
 
   let puVar1;
@@ -32,8 +32,8 @@ export function FUN_0061a000() {
   let sVar18;
   let sVar19;
   let sVar20;
-  let unaff_SI;
-  let unaff_DI;
+  // unaff_SI → promoted to parameter
+  // unaff_DI → promoted to parameter
   let in_SS;
   let in_DS;
   let uVar22;
@@ -43,7 +43,7 @@ export function FUN_0061a000() {
   
   sVar20 = ((auStack_2) << 16 >> 16);
   sVar18 = ((auStack_2) << 16 >> 16);
-  iVar21 = CONCAT22(((((auStack_2) << 16 >> 16) >>> 0) >> 0x10),sVar20 + -0x16);
+  iVar21 = CONCAT22(((((auStack_2) >>> 0) >> 0x10) << 16 >> 16),sVar20 + -0x16);
   w16(iVar21, -4, in_DS);
   w16(iVar21, -6, unaff_SI);
   w16(iVar21, -8, unaff_DI);
@@ -70,8 +70,8 @@ export function FUN_0061a000() {
     sVar19 = s32(psVar3, 0);
     do {
       puVar4 = segment(in_SS,sVar20 + 0x16);
-      uVar22 = (((uint) & 0xFFFF)s32(puVar4, 0) >> 0x10);
-      sVar17 = ((s32) << 16 >> 16)(puVar4, 0);
+      uVar22 = ((((s32(puVar4, 0)) >>> 0) >> 0x10) & 0xFFFF);
+      sVar17 = ((s32(puVar4, 0)) << 16 >> 16);
       psVar3 = segment(in_SS,sVar20 + 0x28);
       psVar5 = segment(in_SS,sVar20 + -0x10);
       psVar6 = segment(in_SS,sVar20 + 0x22);
@@ -96,8 +96,8 @@ export function FUN_0061a000() {
       puVar7 = segment(in_SS,sVar20 + 0x2a);
       puVar8 = segment(in_SS,sVar20 + -0x14);
       // DEVIATION: SEH
-                                 s32(piVar9, 0) + ((ushort) >>> 0)((s32(psVar3, 0) + s32(psVar5, 0)) * 4)) + (s32(puVar7, 0) >>> 0)
-                        + (s32(puVar8, 0) >>> 0));
+                                 s32(piVar9, 0) + ((ushort) >>> 0)((s32(psVar3, 0) + s32(psVar5, 0)) * 4)) + ((s32(puVar7, 0)) >>> 0)
+                        + ((s32(puVar8, 0)) >>> 0));
       psVar3 = segment(in_SS,sVar20 + 0x32);
       if ((s32(psVar3, 0) < 0) || (cVar13 !== s8(s32(psVar3, 0)))) {
         pcVar10 = segment(in_SS,sVar20 + -0x16);
@@ -130,7 +130,7 @@ export function FUN_0061a000() {
 
 // /* WARNING: Unable to track spacebase fully for stack */
 
-export function FUN_0061a759() {
+export function FUN_0061a759(unaff_SI, unaff_DI) {
 
 
   let puVar1;
@@ -156,9 +156,9 @@ export function FUN_0061a759() {
   let uVar21;
   let iVar22;
   let sVar23;
-  let unaff_SI;
+  // unaff_SI → promoted to parameter
   let sVar25;
-  let unaff_DI;
+  // unaff_DI → promoted to parameter
   let pcVar26;
   let in_SS;
   let in_DS;
@@ -167,7 +167,7 @@ export function FUN_0061a759() {
   
   sVar23 = ((auStack_2) << 16 >> 16);
   sVar17 = ((auStack_2) << 16 >> 16);
-  iVar24 = CONCAT22(((((auStack_2) << 16 >> 16) >>> 0) >> 0x10),sVar23 + -0x18);
+  iVar24 = CONCAT22(((((auStack_2) >>> 0) >> 0x10) << 16 >> 16),sVar23 + -0x18);
   w16(iVar24, -4, in_DS);
   w16(iVar24, -6, unaff_SI);
   w16(iVar24, -8, unaff_DI);
@@ -176,13 +176,13 @@ export function FUN_0061a759() {
   puVar2 = segment(in_SS,sVar23 + 0x12);
   uVar16 = s32(puVar2, 0);
   puVar3 = segment(in_SS,sVar23 + -6);
-  w32(puVar3, 0, ((((uVar16) << 16 >> 16) >>> 0) >> 0x10));
+  w32(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
   puVar3 = segment(in_SS,sVar23 + -8);
   w32(puVar3, 0, ((uVar16) << 16 >> 16));
   puVar2 = segment(in_SS,sVar23 + 0x16);
   uVar16 = s32(puVar2, 0);
   puVar3 = segment(in_SS,sVar23 + -10);
-  w32(puVar3, 0, ((((uVar16) << 16 >> 16) >>> 0) >> 0x10));
+  w32(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
   puVar3 = segment(in_SS,sVar23 + -0xc);
   w32(puVar3, 0, ((uVar16) << 16 >> 16));
   puVar1 = segment(in_SS,sVar23 + 0xe);
@@ -199,7 +199,7 @@ export function FUN_0061a759() {
     uVar19 = s32(puVar6, 0);
   }
   puVar6 = segment(in_SS,sVar23 + 0x1c);
-  pcVar26 = ((s32(puVar1, 0) & 0xffff) + ((uVar19) >>> 0) * iVar22 + (s32(puVar6, 0) >>> 0));
+  pcVar26 = ((s32(puVar1, 0) & 0xffff) + ((uVar19) >>> 0) * iVar22 + ((s32(puVar6, 0)) >>> 0));
   puVar3 = segment(in_SS,sVar23 + 0x2e);
   puVar7 = segment(in_SS,sVar23 + -0xe);
   w32(puVar7, 0, s32(puVar3, 0));
@@ -224,7 +224,7 @@ export function FUN_0061a759() {
     while( true ) {
       psVar4 = segment(s32(puVar3, 0),s32(puVar7, 0));
       sVar25 = ((iVar20) << 16 >> 16);
-      uVar21 = ((((iVar20) & 0xFFFF) >>> 0) >> 0x10);
+      uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
       if (s32(psVar4, 0) <= sVar25) break;
       iVar22 = iVar22 + u16(iVar22, -2) + 4;
       iVar20 = CONCAT22(uVar21,sVar25 + 1);
@@ -289,7 +289,7 @@ export function FUN_0061a759() {
     psVar4 = segment(in_SS,sVar23 + -0x10);
     psVar5 = segment(in_SS,sVar23 + -0x10);
     w32(psVar5, 0, s32(psVar4, 0) + 2);
-    uVar21 = ((((iVar20) & 0xFFFF) >>> 0) >> 0x10);
+    uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
     sVar25 = s16(iVar24, -10) + -1;
     if (sVar25 < 1) {
       return;

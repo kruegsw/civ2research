@@ -143,7 +143,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
     }
     cVar1 = DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14];
     bVar2 = DAT_006560f7[param_1 * 0x20];
-    uVar10 = (s8(bVar2) >>> 0);
+    uVar10 = ((s8(bVar2)) >>> 0);
     iVar11 = FUN_0043cf76(local_bc,local_d0);
     if (iVar11 < 0) {
       FUN_005b99e8(local_bc,local_d0,uVar10,1);
@@ -179,11 +179,11 @@ export function FUN_0059062c(param_1, param_2, param_3) {
     local_44 = FUN_005b8da4(local_ec,local_fc);
     local_28 = FUN_005b2e69(local_ec,local_fc);
     if (-1 < local_28) {
-      local_44 = (s8(DAT_006560f7[local_28 * 0x20]) >>> 0);
+      local_44 = ((s8(DAT_006560f7[local_28 * 0x20])) >>> 0);
     }
     iVar11 = FUN_0043cf76(local_ec,local_fc);
     if (-1 < iVar11) {
-      local_44 = (s8(DAT_0064f348[iVar11 * 0x58]) >>> 0);
+      local_44 = ((s8(DAT_0064f348[iVar11 * 0x58])) >>> 0);
     }
     if (param_2 < 0) {
       FUN_005b6787(param_1);
@@ -293,7 +293,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
       bVar5 = true;
     }
     if ((-1 < local_28) && (s8(DAT_006560f7[local_28 * 0x20]) !== uVar10)) {
-      local_44 = (s8(DAT_006560f7[local_28 * 0x20]) >>> 0);
+      local_44 = ((s8(DAT_006560f7[local_28 * 0x20])) >>> 0);
       if ((local_54 !== 0) &&
          ((cVar1 === 0 &&
           ((DAT_0064b1bc[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] & 4) === 0)))) {
@@ -554,7 +554,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
         if ((DAT_006ad0d0 === 0) || ((DAT_006ad0cc & 1) === 0)) {
           if (((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0) &&
              (iVar11 = FUN_005b2c3d(param_1), param_1 = iVar15,
-             iVar11 < (DAT_0064bcc8 - 1))) LAB_00594a80_helper(bVar2, bVar6, local_2c, local_30, local_bc, local_d0, local_f0, param_1, uVar10); return;
+             iVar11 < DAT_0064bcc8 - 1)) LAB_00594a80_helper(bVar2, bVar6, local_2c, local_30, local_bc, local_d0, local_f0, param_1, uVar10); return;
         }
         else {
           uVar16 = FUN_005b2c3d(param_1);
@@ -630,7 +630,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
     DAT_006560ff[local_100 * 0x20] = 0xff;
   }
   if ((-1 < iVar11) && (s8(DAT_0064f348[iVar11 * 0x58]) !== uVar10)) {
-    local_44 = (s8(DAT_0064f348[iVar11 * 0x58]) >>> 0);
+    local_44 = ((s8(DAT_0064f348[iVar11 * 0x58])) >>> 0);
     if ((cVar1 !== 0) &&
        ((cVar1 !== 0x01 ||
         (DAT_0064b1c3[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] !== 0)))) {
@@ -714,7 +714,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
      && ((((DAT_006ad0d0 !== 0 && ((DAT_006ad0cc & 1) !== 0)) ||
           ((DAT_006d1da0 === uVar10 && ((DAT_006ad0cc & 1) !== 0)))) ||
          (((DAT_006ad0cc & 2) !== 0 && ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)))))) {
-    if (local_24 === 1 || (local_24 - 1) < 0) {
+    if (local_24 === 1 || local_24 - 1 < 0) {
       local_118 = 0;
     }
     else {
@@ -1116,7 +1116,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
       if (iVar11 !== 0) {
         local_c4 = local_c4 << 1;
       }
-      if ((local_c4 - 1) < 1) {
+      if (local_c4 - 1 < 1) {
         local_120 = 0;
       }
       else {
@@ -1434,11 +1434,11 @@ export function FUN_00596b00(param_1, param_2) {
   local_8 = DAT_00634f64[param_2 * 3];
   if ((param_2 === 1) || (param_2 === 2)) {
     iVar1 = (s16(DAT_0064caa8, param_1 * 0x594) + 1) - (param_2 * 2 + -2);
-    local_8 = FUN_005adfa0(local_8,0,(iVar1 + (iVar1 >> 0x1f & 3)) >> 2);
+    local_8 = FUN_005adfa0(local_8,0,iVar1 + (iVar1 >> 0x1f & 3) >> 2);
   }
   else if (param_2 !== 0) {
     iVar1 = (s16(DAT_0064caa8, param_1 * 0x594) + 1) - (param_2 * 4 + -0xc);
-    local_8 = FUN_005adfa0(local_8,0,(iVar1 + (iVar1 >> 0x1f & 7)) >> 3);
+    local_8 = FUN_005adfa0(local_8,0,iVar1 + (iVar1 >> 0x1f & 7) >> 3);
     if ((1 << (u8(param_1) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0) {
       local_8 = FUN_005adfa0(local_8,0,1);
     }
@@ -1675,7 +1675,7 @@ export function FUN_00596eec(param_1, param_2) {
   DAT_006ad0dc = (iVar4 * 100) / iVar6;
   local_c = ((DAT_0064bcdc) >>> 0);
   if ((bVar1 & 8) !== 0) {
-    local_c = (local_c * 3) >> 2;
+    local_c = local_c * 3 >> 2;
   }
   local_8 = 1;
   for (; 100 < local_c; local_c = local_c >> 1) {
@@ -1693,11 +1693,11 @@ export function FUN_00596eec(param_1, param_2) {
   uVar5 = FUN_00596c08(param_1,1,0,iVar4 * 10);
   iVar4 = FUN_00596e92(uVar5);
   iVar4 = FUN_005adfa0(iVar4 * 10);
-  local_10 = (local_c * local_18) / (iVar4 + 1);
+  local_10 = local_c * local_18 / (iVar4 + 1);
   iVar4 = FUN_00596e92(s16(DAT_0064caac, param_1 * 0x594));
   iVar4 = FUN_00596e92(s16(DAT_0064caaa, param_1 * 0x594),0,iVar4 * 10);
   iVar4 = FUN_005adfa0(iVar4 * 10);
-  local_14 = (local_c * local_18) / (iVar4 + 1);
+  local_14 = local_c * local_18 / (iVar4 + 1);
   if (1 < local_8) {
     DAT_006ad0f4 = local_8 * DAT_006ad0f4;
     local_10 = local_8 * local_10;
@@ -4750,12 +4750,12 @@ export function FUN_0059df8a(in_ECX) {
 // Size: 306 bytes
 // ============================================================
 
-export function FUN_0059dfb9(param_1, param_2, param_3, param_4) {
+export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
   let iVar2;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   if ((u8(in_ECX[0x3c]) & 0x20) === 0) {
     FUN_00497ea0(in_ECX + 0x254,9,s16(in_ECX, 0x262));
@@ -4807,7 +4807,7 @@ export function FUN_0059e0eb(in_ECX, param_1, param_2) {
       local_8 = local_8[7]) {
   }
   if (((local_8 !== 0x0) && (-1 < local_8[3])) &&
-     (sVar1 = _strlen(param_2), (sVar1 + 1) <= local_8[3])) {
+     (sVar1 = _strlen(param_2), sVar1 + 1 <= local_8[3])) {
     FUN_005f22d0(local_8[2],param_2);
     return 1;
   }
@@ -4858,7 +4858,7 @@ export function FUN_0059e18b(in_ECX, param_1, param_2, param_3, param_4, param_5
   }
   if (0 < param_4) {
     sVar2 = _strlen(param_1);
-    if ((sVar2 + 1) < param_4) {
+    if (sVar2 + 1 < param_4) {
       iVar3 = FUN_00498159(in_ECX + 0x254,param_4 + 1);
       piVar1[2] = iVar3;
       piVar1[3] = param_4 + 1;
@@ -5013,7 +5013,7 @@ export function FUN_0059e472(in_ECX, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function SetObjectSchema_0059E4A4(this, param_1) {
+export function SetObjectSchema_0059E4A4(_this, param_1) {
 
 
   w32(this, 0xc, param_1);
@@ -5132,7 +5132,7 @@ export function FUN_0059e5c9(in_ECX, param_1, param_2, param_3) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059E624(this, param_1) {
+export function EnableStackedTabs_0059E624(_this, param_1) {
 
 
   w32(this, 200, param_1);
@@ -5228,7 +5228,7 @@ export function FUN_0059e6ff(in_ECX, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function delbuf_0059E762(this, param_1) {
+export function delbuf_0059E762(_this, param_1) {
 
 
   w32(this, 0x1c, param_1);
@@ -5531,7 +5531,7 @@ export function FUN_0059eb42(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EB68(this, param_1) {
+export function EnableStackedTabs_0059EB68(_this, param_1) {
 
 
   w32(this, 0xd8, param_1);
@@ -5550,7 +5550,7 @@ export function EnableStackedTabs_0059EB68(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EB8C(this, param_1) {
+export function EnableStackedTabs_0059EB8C(_this, param_1) {
 
 
   w32(this, 0x23c, param_1);
@@ -5569,7 +5569,7 @@ export function EnableStackedTabs_0059EB8C(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EBB0(this, param_1) {
+export function EnableStackedTabs_0059EBB0(_this, param_1) {
 
 
   w32(this, 0x240, param_1);
@@ -5588,7 +5588,7 @@ export function EnableStackedTabs_0059EBB0(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EBD4(this, param_1) {
+export function EnableStackedTabs_0059EBD4(_this, param_1) {
 
 
   w32(this, 0x244, param_1);
@@ -5607,7 +5607,7 @@ export function EnableStackedTabs_0059EBD4(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EBF8(this, param_1) {
+export function EnableStackedTabs_0059EBF8(_this, param_1) {
 
 
   w32(this, 0x248, param_1);
@@ -5626,7 +5626,7 @@ export function EnableStackedTabs_0059EBF8(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EC1C(this, param_1) {
+export function EnableStackedTabs_0059EC1C(_this, param_1) {
 
 
   w32(this, 0x24c, param_1);
@@ -5645,7 +5645,7 @@ export function EnableStackedTabs_0059EC1C(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EC40(this, param_1) {
+export function EnableStackedTabs_0059EC40(_this, param_1) {
 
 
   w32(this, 0x250, param_1);
@@ -5664,7 +5664,7 @@ export function EnableStackedTabs_0059EC40(this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function EnableStackedTabs_0059EC64(this, param_1) {
+export function EnableStackedTabs_0059EC64(_this, param_1) {
 
 
   w32(this, 0x130, param_1);
@@ -6885,7 +6885,7 @@ LAB_00594255:
       if (iVar11 !== 0) {
         local_c4 = local_c4 << 1;
       }
-      if ((local_c4 - 1) < 1) {
+      if (local_c4 - 1 < 1) {
         local_120 = 0;
       }
       else {
@@ -7068,7 +7068,7 @@ function LAB_00592870_helper(bVar2, bVar4, bVar5, bVar6, bVar8, cVar1, cVar7, iV
      && ((((DAT_006ad0d0 !== 0 && ((DAT_006ad0cc & 1) !== 0)) ||
           ((DAT_006d1da0 === uVar10 && ((DAT_006ad0cc & 1) !== 0)))) ||
          (((DAT_006ad0cc & 2) !== 0 && ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)))))) {
-    if (local_24 === 1 || (local_24 - 1) < 0) {
+    if (local_24 === 1 || local_24 - 1 < 0) {
       local_118 = 0;
     }
     else {
@@ -7470,7 +7470,7 @@ LAB_00594255:
       if (iVar11 !== 0) {
         local_c4 = local_c4 << 1;
       }
-      if ((local_c4 - 1) < 1) {
+      if (local_c4 - 1 < 1) {
         local_120 = 0;
       }
       else {
@@ -7802,7 +7802,7 @@ LAB_00594255:
       if (iVar11 !== 0) {
         local_c4 = local_c4 << 1;
       }
-      if ((local_c4 - 1) < 1) {
+      if (local_c4 - 1 < 1) {
         local_120 = 0;
       }
       else {
@@ -7979,7 +7979,7 @@ function LAB_00594255_helper(bVar2, bVar4, bVar5, bVar6, bVar8, cVar1, iVar11, i
       if (iVar11 !== 0) {
         local_c4 = local_c4 << 1;
       }
-      if ((local_c4 - 1) < 1) {
+      if (local_c4 - 1 < 1) {
         local_120 = 0;
       }
       else {

@@ -12,7 +12,7 @@
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function egptr_00530E80(this) {
+export function egptr_00530E80(_this) {
 
 
   // DEVIATION: C pointer — return *(char **)(this + 0x2c);
@@ -91,7 +91,7 @@ export function FUN_00530fb0(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function width_00530FE0(this) {
+export function width_00530FE0(_this) {
 
 
   return s32(this, 0x30);
@@ -667,7 +667,7 @@ export function FUN_0053184d(param_1) {
               else {
                 local_34c = 2;
               }
-              local_8 = (((local_34c >> 1) -
+              local_8 = (int)(((local_34c >> 1) -
                               s8(DAT_006554f9)
                                          [s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]) + -1
                              + u8(DAT_0064c932[param_1 * 0x594 + local_278])) / local_34c
@@ -709,16 +709,16 @@ export function FUN_0053184d(param_1) {
                  s16(DAT_0064c70a, param_1 * 0x594) + 1);
           }
           w16(DAT_0064c710, param_1 * 0x594, 
-               ((s8) << 16 >> 16)(DAT_0064b1c4[local_274 * 0x14]) +
+               ((s8(DAT_0064b1c4[local_274 * 0x14])) << 16 >> 16) +
                s16(DAT_0064c710, param_1 * 0x594);
           w16(DAT_0064c70e, param_1 * 0x594, 
-               ((s8) << 16 >> 16)(DAT_0064b1c4[local_274 * 0x14]) +
-               ((s8) << 16 >> 16)(DAT_0064b1c5[local_274 * 0x14]) +
+               ((s8(DAT_0064b1c4[local_274 * 0x14])) << 16 >> 16) +
+               ((s8(DAT_0064b1c5[local_274 * 0x14])) << 16 >> 16) +
                s16(DAT_0064c70e, param_1 * 0x594);
           if (-1 < local_278) {
             w16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594, 
                  s16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594) +
-                 ((s8) << 16 >> 16)(DAT_0064b1c4[local_274 * 0x14]);
+                 ((s8(DAT_0064b1c4[local_274 * 0x14])) << 16 >> 16);
           }
         }
       }
@@ -757,7 +757,7 @@ export function FUN_0053184d(param_1) {
           w16(DAT_0064c708, param_1 * 0x594, 
                s16(DAT_0064c708, param_1 * 0x594) + 1);
           w16(DAT_0064c70c, param_1 * 0x594, 
-               ((s8) << 16 >> 16)(DAT_0064f349[local_344 * 0x58]) +
+               ((s8(DAT_0064f349[local_344 * 0x58])) << 16 >> 16) +
                s16(DAT_0064c70c, param_1 * 0x594);
           if (-1 < s8(DAT_0064f379[local_344 * 0x58])) {
             DAT_0064c7f4[param_1 * 0x594 + s8(DAT_0064f379[local_344 * 0x58])] =
@@ -825,7 +825,7 @@ export function FUN_0053184d(param_1) {
     local_270 = u8(DAT_0064ca32[param_1 * 0x594 + local_278]);
     for (local_38 = 1; local_38 < 8; local_38 = local_38 + 1) {
       if ((s16(DAT_0064c832, local_38 * 0x594 + local_278 * 2) !== 0) &&
-         (((((int) >>> 0)u16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594) >> 2) <
+         ((((u16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594) >> 2) >>> 0) <
            u16(DAT_0064c8b2, local_38 * 0x594 + local_278 * 2) ||
           (DAT_0064c932[local_38 * 0x594 + local_278] !== 0)))) {
         if (param_1 !== local_38) {
@@ -896,7 +896,7 @@ export function FUN_0053184d(param_1) {
       local_264 = local_264 + 1;
     }
     iVar3 = (u16(DAT_0064c832, local_278 * 2 + param_1 * 0x594) + local_14c) * 2;
-    local_254 = ((iVar3 - s16(DAT_00666130, local_278 * 0x10) >>> 0) !== 0 &&
+    local_254 = (uint)(iVar3 - s16(DAT_00666130, local_278 * 0x10) !== 0 &&
                       s16(DAT_00666130, local_278 * 0x10) <= iVar3);
     if (DAT_0064c9f2[param_1 * 0x594 + local_278] === 0) {
       local_368 = s8(DAT_006554f9[s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]) +
@@ -906,7 +906,7 @@ export function FUN_0053184d(param_1) {
       local_368 = local_264;
     }
     if (s16(DAT_00666132, local_278 * 0x10) <
-        ((u8(DAT_0064c932[param_1 * 0x594 + local_278]) + local_28) * local_368 + 2)
+        (u8(DAT_0064c932[param_1 * 0x594 + local_278]) + local_28) * local_368 + 2
        ) {
       local_254 = 1;
     }
@@ -1074,7 +1074,7 @@ export function FUN_0053184d(param_1) {
                     DAT_0062ee08 = 0xffffffff;
                     FUN_004e80b1(iVar4);
                     w16(DAT_0064f35c, iVar4 * 0x58, 
-                         (((s8(DAT_0064b1c8) << 16 >> 16)
+                         (short)((s8(DAT_0064b1c8)
                                         [u8(DAT_006560f6[local_354 * 0x20]) * 0x14] *
                                  DAT_006a657c) / 2) + s16(DAT_0064f35c, iVar4 * 0x58);
                   }
@@ -1149,7 +1149,7 @@ export function FUN_0053184d(param_1) {
                         }
                         else if (((DAT_0064cab9[local_24 * 6 + param_1 * 0x594] & 1) !== 0) &&
                                 (((DAT_00655af8 >> 1) + local_24 & 1) !== 0)) {
-                          local_30 = ((((local_30 <=
+                          local_30 = (int)((((local_30 <=
                                              s8(DAT_0064b1c2)
                                                         [u8(DAT_006560f6)
                                                                      [local_354 * 0x20] * 0x14] /
@@ -1161,7 +1161,7 @@ export function FUN_0053184d(param_1) {
                       }
                       else {
                         local_30 = ((aiStack_33c[local_24] /
-                                    ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
+                                    (int)((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
                                          + 1)) * local_30) /
                                    (s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) + 1);
 // LAB_00534c18: (code below also in LAB_00534c18_helper, kept for 1:1 audit)
@@ -1171,7 +1171,7 @@ export function FUN_0053184d(param_1) {
                             (((local_30 <=
                                s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) * iVar3 ||
                               (aiStack_33c[local_24] /
-                               ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1)
+                               (DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1
                                === iVar3)) &&
                              (iVar4 = FUN_005b8ca6(local_258,local_26c), iVar4 < 0)))))) {
                           if (((local_27c !== 0) && (aiStack_33c[local_24] === iVar3)) &&
@@ -1444,7 +1444,7 @@ export function FUN_005351aa() {
     iVar15 = FUN_005b53b6(iVar8,6);
     if ((((1 < iVar13 - iVar15) || (iVar12 !== 0)) && (DAT_0064b1ca[uVar20 * 0x14] !== 0x01)) ||
        ((bVar21 = DAT_0063f660 === 0, iVar13 = FUN_005b50ad(iVar8,2),
-        (bVar21 + 2 + ((iVar12 === 0) >>> 0)) <= iVar13 &&
+        bVar21 + 2 + ((iVar12 === 0) >>> 0) <= iVar13 &&
         (s8(DAT_0064b1c5[uVar20 * 0x14]) <= s8(DAT_0064b1c4[uVar20 * 0x14])))))
     LAB_005359af_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
     DAT_006560ff[iVar8 * 0x20] = 1;
@@ -1551,7 +1551,7 @@ export function FUN_005351aa() {
                              s16(DAT_006560f2, iVar13 * 0x20));
           LAB_0053692c_helper(iVar10, iVar11, iVar8); return;
         }
-        if (((DAT_00655af8 & 7) + 4) <= DAT_0063f660) {
+        if ((DAT_00655af8 & 7) + 4 <= DAT_0063f660) {
           FUN_005b6042(iVar8,1);
           return 1;
         }
@@ -2271,7 +2271,7 @@ export function FUN_00537331(param_1, param_2, param_3, param_4, param_5, param_
                                   [u8(DAT_006560f6[param_1 * 0x20]) * 0x14] *
                        s8(DAT_0064b1c7)
                                   [u8(DAT_006560f6[param_1 * 0x20]) * 0x14] *
-                       (3 - (((u16(DAT_006560f4, param_1 * 0x20) >>> 0) & 0x2000) === 0));
+                       (3 - (((u16(DAT_006560f4, param_1 * 0x20) & 0x2000) === 0) >>> 0));
             if ((DAT_0064b1c9[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] !== 0) &&
                (iVar12 = FUN_005b50ad(param_1,2), iVar12 === 1)) {
               local_1c = local_1c * 2;
@@ -2279,7 +2279,7 @@ export function FUN_00537331(param_1, param_2, param_3, param_4, param_5, param_
             bVar10 = FUN_005b89bb(s16(DAT_006560f0, param_1 * 0x20),
                                         s16(DAT_006560f2, param_1 * 0x20));
             if ((local_1c * s8(DAT_00627cc9[((bVar10) >>> 0) * 0x18]) >> 1) * 3 <=
-                ((3 - (((uVar6 & 0x2000) | 0) === 0)) * cVar1 * cVar2 * cVar3 * 2
+                (int)((3 - (((uVar6 & 0x2000) === 0) >>> 0)) * cVar1 * cVar2 * cVar3 * 2
                      )) LAB_00537ec2_helper(bVar10, cVar1, cVar2, cVar3, iVar11, iVar12, iVar13, iVar8, local_10, local_14, local_18, local_1c, local_20, local_24, local_2c, local_30, local_44, local_4c, local_50, local_58, local_64, local_8, local_c, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, sVar4, uVar16, uVar6); return;
           }
         }
@@ -2601,7 +2601,7 @@ export function FUN_00538a29() {
   local_b4 = 0;
   local_168 = DAT_00655afe;
   bVar7 = DAT_006560f7[local_168 * 0x20];
-  uVar8 = (s8(bVar7) >>> 0);
+  uVar8 = ((s8(bVar7)) >>> 0);
   if (uVar8 === 0) {
     uVar9 = FUN_005351aa();
     return uVar9;
@@ -2634,7 +2634,7 @@ export function FUN_00538a29() {
   local_80 = ((bVar6) >>> 0);
   iVar10 = FUN_005b8a81(local_d4[0],local_e8[0]);
   bVar6 = FUN_005b94d5(local_d4[0],local_e8[0]);
-  local_bc = (((bVar6 & 0x42) >>> 0) === 0x40);
+  local_bc = (((bVar6 & 0x42) === 0x40) >>> 0);
   if (((8 < local_3c) || (iVar10 !== local_58)) && ((1 << (bVar7 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0))
   {
     w16(DAT_006560f4, local_168 * 0x20, 
@@ -2686,7 +2686,7 @@ export function FUN_00538a29() {
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 6)) {
       local_f0 = 1;
     }
@@ -2781,7 +2781,7 @@ export function FUN_00538a29() {
     }
     else {
 // LAB_005397e7: (code below also in LAB_005397e7_helper, kept for 1:1 audit)
-      if (((((DAT_00655af0 & 0x80) === 0) || ((((DAT_0064bc60) << 16 >> 16) & 0x8000) === 0)) ||
+      if (((((DAT_00655af0 & 0x80) === 0) || ((shortDAT_0064bc60 & 0x8000) === 0)) ||
           (uVar8 !== 1)) ||
          ((((DAT_0064cc61 & 0x20) !== 0 || (5 < ((DAT_00655af8) << 16 >> 16))) ||
           (0x4f < s16(DAT_006560f0, local_168 * 0x20))))) {
@@ -2828,7 +2828,7 @@ export function FUN_00538a29() {
                     if (iVar12 === 0) {
                       if (iVar11 === iVar10) {
 // LAB_00539cb3: (code below also in LAB_00539cb3_helper, kept for 1:1 audit)
-                        local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0);
+                        local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0);
                         local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                       // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
                                                                      // DEVIATION(cont): local_134 * 0x58),
@@ -2836,7 +2836,7 @@ export function FUN_00538a29() {
                                                                      // DEVIATION(cont): local_134 * 0x58));
                         if ((u8(DAT_00656100[local_168 * 0x20]) % 3 !== local_134 % 3
                             ) && (uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]),
-                                 (((uVar15 & 0x10) >> 4) + 3) < local_70)) {
+                                 ((uVar15 & 0x10) >> 4) + 3 < local_70)) {
                           local_70 = local_70 + 8;
                         }
                         if (local_78 === uVar8) {
@@ -2850,7 +2850,7 @@ export function FUN_00538a29() {
                                ((iVar11 = FUN_00598d45(uVar8), iVar11 === 0 &&
                                 ((u8(DAT_00655c22[local_78]) < u8(DAT_00655c22[uVar8]) ||
                                  ((((DAT_006560f6[local_168 * 0x20] !== 47 &&
-                                    ((u8(DAT_0064c6b0[local_78 * 0x594]) -
+                                    ((int)(u8(DAT_0064c6b0[local_78 * 0x594]) -
                                           u8(DAT_0064c6b0[uVar8 * 0x594])) < 10)) &&
                                    (((4 < u8(DAT_0064c6b5[uVar8 * 0x594]) ||
                                      (u8(DAT_00655c22[local_78]) < 7)) ||
@@ -2943,7 +2943,7 @@ export function FUN_00538a29() {
                   local_18 = 0;
                   for (local_78 = 1; local_78 < 8; local_78 = local_78 + 1) {
                     if (local_78 === uVar8) {
-                      iVar11 = (u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1) >> 1;
+                      iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1 >> 1;
                     }
                     else {
                       iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) * 2;
@@ -3004,7 +3004,7 @@ export function FUN_00538a29() {
                   uVar9 = FUN_00467904(uVar8,s8(DAT_0064f348[local_134 * 0x58]),0,
                                              100);
                   local_cc = FUN_005adfa0(uVar9);
-                  local_70 = ((200 - local_cc) * local_70) / 100;
+                  local_70 = (200 - local_cc) * local_70 / 100;
                 }
                 if (local_c4 === 0) {
                   local_70 = local_70 / 2;
@@ -3251,7 +3251,7 @@ export function FUN_00538a29() {
              (local_cc = FUN_005b8af0(local_d4[0],local_e8[0]), local_cc < 1)) ||
             (local_cc === uVar8)) ||
            ((((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 4) !== 0 &&
-             ((u8(DAT_0064c6be[local_cc * 0x594]) -
+             ((int)(u8(DAT_0064c6be[local_cc * 0x594]) -
                    s8(DAT_0064c6e8[uVar8 * 0x594 + local_cc])) < 7)) &&
             (((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 8) !== 0 || (2 < local_3c)))))) {
 // LAB_0053b8f0: (code below also in LAB_0053b8f0_helper, kept for 1:1 audit)
@@ -3308,7 +3308,7 @@ export function FUN_00538a29() {
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -3467,7 +3467,7 @@ export function FUN_00538a29() {
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -3490,7 +3490,7 @@ export function FUN_00538a29() {
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -3918,7 +3918,7 @@ export function FUN_00538a29() {
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -3978,7 +3978,7 @@ export function FUN_00538a29() {
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -4126,7 +4126,7 @@ export function FUN_00538a29() {
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -4165,8 +4165,8 @@ export function FUN_00538a29() {
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -4262,7 +4262,7 @@ export function FUN_00538a29() {
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -4566,11 +4566,11 @@ export function FUN_00538a29() {
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar3, bVar4, cVar1, iVar10, iVar11, iVar19, local_144, local_158, local_168, local_3c, local_40, local_58, local_78, local_80, local_88, local_90, local_a4, local_bc, local_c4, local_c8, local_d4, local_e4, local_e8, uVar15, uVar20, uVar8); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -4749,12 +4749,12 @@ export function FUN_00538a29() {
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -4994,7 +4994,7 @@ export function FUN_00538a29() {
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -5037,11 +5037,11 @@ export function FUN_00538a29() {
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar3, bVar4, cVar1, iVar10, iVar11, iVar19, local_144, local_158, local_168, local_38, local_3c, local_40, local_50, local_58, local_64, local_78, local_80, local_88, local_90, local_a4, local_bc, local_c4, local_c8, local_d4, local_e4, local_e8, local_fc, uVar15, uVar20, uVar8); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -5186,7 +5186,7 @@ export function FUN_00538a29() {
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -5500,7 +5500,7 @@ export function FUN_00538a29() {
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -5526,7 +5526,7 @@ export function FUN_00538a29() {
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -5588,7 +5588,7 @@ function LAB_0053232b_helper(bVar2, iVar3, iVar4, local_144, local_148, local_14
           w16(DAT_0064c708, param_1 * 0x594, 
                s16(DAT_0064c708, param_1 * 0x594) + 1);
           w16(DAT_0064c70c, param_1 * 0x594, 
-               ((s8) << 16 >> 16)(DAT_0064f349[local_344 * 0x58]) +
+               ((s8(DAT_0064f349[local_344 * 0x58])) << 16 >> 16) +
                s16(DAT_0064c70c, param_1 * 0x594);
           if (-1 < s8(DAT_0064f379[local_344 * 0x58])) {
             DAT_0064c7f4[param_1 * 0x594 + s8(DAT_0064f379[local_344 * 0x58])] =
@@ -5656,7 +5656,7 @@ function LAB_0053232b_helper(bVar2, iVar3, iVar4, local_144, local_148, local_14
     local_270 = u8(DAT_0064ca32[param_1 * 0x594 + local_278]);
     for (local_38 = 1; local_38 < 8; local_38 = local_38 + 1) {
       if ((s16(DAT_0064c832, local_38 * 0x594 + local_278 * 2) !== 0) &&
-         (((((int) >>> 0)u16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594) >> 2) <
+         ((((u16(DAT_0064c8b2, local_278 * 2 + param_1 * 0x594) >> 2) >>> 0) <
            u16(DAT_0064c8b2, local_38 * 0x594 + local_278 * 2) ||
           (DAT_0064c932[local_38 * 0x594 + local_278] !== 0)))) {
         if (param_1 !== local_38) {
@@ -5727,7 +5727,7 @@ function LAB_0053232b_helper(bVar2, iVar3, iVar4, local_144, local_148, local_14
       local_264 = local_264 + 1;
     }
     iVar3 = (u16(DAT_0064c832, local_278 * 2 + param_1 * 0x594) + local_14c) * 2;
-    local_254 = ((iVar3 - s16(DAT_00666130, local_278 * 0x10) >>> 0) !== 0 &&
+    local_254 = (uint)(iVar3 - s16(DAT_00666130, local_278 * 0x10) !== 0 &&
                       s16(DAT_00666130, local_278 * 0x10) <= iVar3);
     if (DAT_0064c9f2[param_1 * 0x594 + local_278] === 0) {
       local_368 = s8(DAT_006554f9[s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]) +
@@ -5737,7 +5737,7 @@ function LAB_0053232b_helper(bVar2, iVar3, iVar4, local_144, local_148, local_14
       local_368 = local_264;
     }
     if (s16(DAT_00666132, local_278 * 0x10) <
-        ((u8(DAT_0064c932[param_1 * 0x594 + local_278]) + local_28) * local_368 + 2)
+        (u8(DAT_0064c932[param_1 * 0x594 + local_278]) + local_28) * local_368 + 2
        ) {
       local_254 = 1;
     }
@@ -5905,7 +5905,7 @@ LAB_005340a6:
                     DAT_0062ee08 = 0xffffffff;
                     FUN_004e80b1(iVar4);
                     w16(DAT_0064f35c, iVar4 * 0x58, 
-                         (((s8(DAT_0064b1c8) << 16 >> 16)
+                         (short)((s8(DAT_0064b1c8)
                                         [u8(DAT_006560f6[local_354 * 0x20]) * 0x14] *
                                  DAT_006a657c) / 2) + s16(DAT_0064f35c, iVar4 * 0x58);
                   }
@@ -5980,7 +5980,7 @@ LAB_005340a6:
                         }
                         else if (((DAT_0064cab9[local_24 * 6 + param_1 * 0x594] & 1) !== 0) &&
                                 (((DAT_00655af8 >> 1) + local_24 & 1) !== 0)) {
-                          local_30 = ((((local_30 <=
+                          local_30 = (int)((((local_30 <=
                                              s8(DAT_0064b1c2)
                                                         [u8(DAT_006560f6)
                                                                      [local_354 * 0x20] * 0x14] /
@@ -5992,7 +5992,7 @@ LAB_005340a6:
                       }
                       else {
                         local_30 = ((aiStack_33c[local_24] /
-                                    ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
+                                    (int)((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
                                          + 1)) * local_30) /
                                    (s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) + 1);
 LAB_00534c18:
@@ -6002,7 +6002,7 @@ LAB_00534c18:
                             (((local_30 <=
                                s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) * iVar3 ||
                               (aiStack_33c[local_24] /
-                               ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1)
+                               (DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1
                                === iVar3)) &&
                              (iVar4 = FUN_005b8ca6(local_258,local_26c), iVar4 < 0)))))) {
                           if (((local_27c !== 0) && (aiStack_33c[local_24] === iVar3)) &&
@@ -6202,7 +6202,7 @@ LAB_005340a6:
                     DAT_0062ee08 = 0xffffffff;
                     FUN_004e80b1(iVar4);
                     w16(DAT_0064f35c, iVar4 * 0x58, 
-                         (((s8(DAT_0064b1c8) << 16 >> 16)
+                         (short)((s8(DAT_0064b1c8)
                                         [u8(DAT_006560f6[local_354 * 0x20]) * 0x14] *
                                  DAT_006a657c) / 2) + s16(DAT_0064f35c, iVar4 * 0x58);
                   }
@@ -6277,7 +6277,7 @@ LAB_005340a6:
                         }
                         else if (((DAT_0064cab9[local_24 * 6 + param_1 * 0x594] & 1) !== 0) &&
                                 (((DAT_00655af8 >> 1) + local_24 & 1) !== 0)) {
-                          local_30 = ((((local_30 <=
+                          local_30 = (int)((((local_30 <=
                                              s8(DAT_0064b1c2)
                                                         [u8(DAT_006560f6)
                                                                      [local_354 * 0x20] * 0x14] /
@@ -6289,7 +6289,7 @@ LAB_005340a6:
                       }
                       else {
                         local_30 = ((aiStack_33c[local_24] /
-                                    ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
+                                    (int)((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
                                          + 1)) * local_30) /
                                    (s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) + 1);
 LAB_00534c18:
@@ -6299,7 +6299,7 @@ LAB_00534c18:
                             (((local_30 <=
                                s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) * iVar3 ||
                               (aiStack_33c[local_24] /
-                               ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1)
+                               (DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1
                                === iVar3)) &&
                              (iVar4 = FUN_005b8ca6(local_258,local_26c), iVar4 < 0)))))) {
                           if (((local_27c !== 0) && (aiStack_33c[local_24] === iVar3)) &&
@@ -6469,7 +6469,7 @@ function LAB_005340a6_helper(bVar2, iVar3, iVar4, local_18, local_24, local_258,
                     DAT_0062ee08 = 0xffffffff;
                     FUN_004e80b1(iVar4);
                     w16(DAT_0064f35c, iVar4 * 0x58, 
-                         (((s8(DAT_0064b1c8) << 16 >> 16)
+                         (short)((s8(DAT_0064b1c8)
                                         [u8(DAT_006560f6[local_354 * 0x20]) * 0x14] *
                                  DAT_006a657c) / 2) + s16(DAT_0064f35c, iVar4 * 0x58);
                   }
@@ -6544,7 +6544,7 @@ function LAB_005340a6_helper(bVar2, iVar3, iVar4, local_18, local_24, local_258,
                         }
                         else if (((DAT_0064cab9[local_24 * 6 + param_1 * 0x594] & 1) !== 0) &&
                                 (((DAT_00655af8 >> 1) + local_24 & 1) !== 0)) {
-                          local_30 = ((((local_30 <=
+                          local_30 = (int)((((local_30 <=
                                              s8(DAT_0064b1c2)
                                                         [u8(DAT_006560f6)
                                                                      [local_354 * 0x20] * 0x14] /
@@ -6556,7 +6556,7 @@ function LAB_005340a6_helper(bVar2, iVar3, iVar4, local_18, local_24, local_258,
                       }
                       else {
                         local_30 = ((aiStack_33c[local_24] /
-                                    ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
+                                    (int)((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0)
                                          + 1)) * local_30) /
                                    (s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) + 1);
 LAB_00534c18:
@@ -6566,7 +6566,7 @@ LAB_00534c18:
                             (((local_30 <=
                                s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) * iVar3 ||
                               (aiStack_33c[local_24] /
-                               ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1)
+                               (DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1
                                === iVar3)) &&
                              (iVar4 = FUN_005b8ca6(local_258,local_26c), iVar4 < 0)))))) {
                           if (((local_27c !== 0) && (aiStack_33c[local_24] === iVar3)) &&
@@ -6666,7 +6666,7 @@ function LAB_00534c18_helper(bVar2, iVar3, iVar4, local_18, local_24, local_258,
                             (((local_30 <=
                                s8(DAT_0064cab9[local_24 * 6 + param_1 * 0x594]) * iVar3 ||
                               (aiStack_33c[local_24] /
-                               ((DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1)
+                               (DAT_0064cab8[local_24 * 6 + param_1 * 0x594] === 0) + 1
                                === iVar3)) &&
                              (iVar4 = FUN_005b8ca6(local_258,local_26c), iVar4 < 0)))))) {
                           if (((local_27c !== 0) && (aiStack_33c[local_24] === iVar3)) &&
@@ -6810,7 +6810,7 @@ function LAB_00535741_helper(bVar21, bVar6, cVar5, iVar10, iVar11, iVar12, iVar1
     iVar15 = FUN_005b53b6(iVar8,6);
     if ((((1 < iVar13 - iVar15) || (iVar12 !== 0)) && (DAT_0064b1ca[uVar20 * 0x14] !== 0x01)) ||
        ((bVar21 = DAT_0063f660 === 0, iVar13 = FUN_005b50ad(iVar8,2),
-        (bVar21 + 2 + ((iVar12 === 0) >>> 0)) <= iVar13 &&
+        bVar21 + 2 + ((iVar12 === 0) >>> 0) <= iVar13 &&
         (s8(DAT_0064b1c5[uVar20 * 0x14]) <= s8(DAT_0064b1c4[uVar20 * 0x14])))))
     LAB_005359af_helper(bVar21, bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_64, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
     DAT_006560ff[iVar8 * 0x20] = 1;
@@ -6917,7 +6917,7 @@ LAB_005359af:
                              s16(DAT_006560f2, iVar13 * 0x20));
           LAB_0053692c_helper(bVar21, bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_64, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
         }
-        if (((DAT_00655af8 & 7) + 4) <= DAT_0063f660) {
+        if ((DAT_00655af8 & 7) + 4 <= DAT_0063f660) {
           FUN_005b6042(iVar8,1);
           return 1;
         }
@@ -7272,7 +7272,7 @@ function LAB_005359af_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar1
                              s16(DAT_006560f2, iVar13 * 0x20));
           LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
         }
-        if (((DAT_00655af8 & 7) + 4) <= DAT_0063f660) {
+        if ((DAT_00655af8 & 7) + 4 <= DAT_0063f660) {
           FUN_005b6042(iVar8,1);
           return 1;
         }
@@ -8118,7 +8118,7 @@ function LAB_00537ec2_helper(bVar10, cVar1, cVar2, cVar3, iVar11, iVar12, iVar13
                                   [u8(DAT_006560f6[param_1 * 0x20]) * 0x14] *
                        s8(DAT_0064b1c7)
                                   [u8(DAT_006560f6[param_1 * 0x20]) * 0x14] *
-                       (3 - (((u16(DAT_006560f4, param_1 * 0x20) >>> 0) & 0x2000) === 0));
+                       (3 - (((u16(DAT_006560f4, param_1 * 0x20) & 0x2000) === 0) >>> 0));
             if ((DAT_0064b1c9[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] !== 0) &&
                (iVar12 = FUN_005b50ad(param_1,2), iVar12 === 1)) {
               local_1c = local_1c * 2;
@@ -8126,7 +8126,7 @@ function LAB_00537ec2_helper(bVar10, cVar1, cVar2, cVar3, iVar11, iVar12, iVar13
             bVar10 = FUN_005b89bb(s16(DAT_006560f0, param_1 * 0x20),
                                         s16(DAT_006560f2, param_1 * 0x20));
             if ((local_1c * s8(DAT_00627cc9[((bVar10) >>> 0) * 0x18]) >> 1) * 3 <=
-                ((3 - (((uVar6 & 0x2000) | 0) === 0)) * cVar1 * cVar2 * cVar3 * 2
+                (int)((3 - (((uVar6 & 0x2000) === 0) >>> 0)) * cVar1 * cVar2 * cVar3 * 2
                      )) LAB_00537ec2_helper(bVar10, cVar1, cVar2, cVar3, iVar11, iVar12, iVar13, iVar8, local_10, local_14, local_18, local_1c, local_20, local_24, local_2c, local_30, local_44, local_4c, local_50, local_58, local_64, local_8, local_c, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, sVar4, uVar16, uVar6); return;
           }
         }
@@ -8481,7 +8481,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -8507,7 +8507,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -8667,7 +8667,7 @@ function LAB_0053be12_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -8690,7 +8690,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -9118,7 +9118,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -9178,7 +9178,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -9326,7 +9326,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -9365,8 +9365,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -9462,7 +9462,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -9766,11 +9766,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -9949,12 +9949,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -10194,7 +10194,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -10237,11 +10237,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -10386,7 +10386,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -10700,7 +10700,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -10726,7 +10726,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -10839,7 +10839,7 @@ function LAB_005392a6_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
     }
     else {
 LAB_005397e7:
-      if (((((DAT_00655af0 & 0x80) === 0) || ((((DAT_0064bc60) << 16 >> 16) & 0x8000) === 0)) ||
+      if (((((DAT_00655af0 & 0x80) === 0) || ((shortDAT_0064bc60 & 0x8000) === 0)) ||
           (uVar8 !== 1)) ||
          ((((DAT_0064cc61 & 0x20) !== 0 || (5 < ((DAT_00655af8) << 16 >> 16))) ||
           (0x4f < s16(DAT_006560f0, local_168 * 0x20))))) {
@@ -10886,7 +10886,7 @@ LAB_005397e7:
                     if (iVar12 === 0) {
                       if (iVar11 === iVar10) {
 LAB_00539cb3:
-                        local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0);
+                        local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0);
                         local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                       // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
                                                                      // DEVIATION(cont): local_134 * 0x58),
@@ -10894,7 +10894,7 @@ LAB_00539cb3:
                                                                      // DEVIATION(cont): local_134 * 0x58));
                         if ((u8(DAT_00656100[local_168 * 0x20]) % 3 !== local_134 % 3
                             ) && (uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]),
-                                 (((uVar15 & 0x10) >> 4) + 3) < local_70)) {
+                                 ((uVar15 & 0x10) >> 4) + 3 < local_70)) {
                           local_70 = local_70 + 8;
                         }
                         if (local_78 === uVar8) {
@@ -10908,7 +10908,7 @@ LAB_00539cb3:
                                ((iVar11 = FUN_00598d45(uVar8), iVar11 === 0 &&
                                 ((u8(DAT_00655c22[local_78]) < u8(DAT_00655c22[uVar8]) ||
                                  ((((DAT_006560f6[local_168 * 0x20] !== 47 &&
-                                    ((u8(DAT_0064c6b0[local_78 * 0x594]) -
+                                    ((int)(u8(DAT_0064c6b0[local_78 * 0x594]) -
                                           u8(DAT_0064c6b0[uVar8 * 0x594])) < 10)) &&
                                    (((4 < u8(DAT_0064c6b5[uVar8 * 0x594]) ||
                                      (u8(DAT_00655c22[local_78]) < 7)) ||
@@ -11001,7 +11001,7 @@ LAB_00539b29:
                   local_18 = 0;
                   for (local_78 = 1; local_78 < 8; local_78 = local_78 + 1) {
                     if (local_78 === uVar8) {
-                      iVar11 = (u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1) >> 1;
+                      iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1 >> 1;
                     }
                     else {
                       iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) * 2;
@@ -11062,7 +11062,7 @@ LAB_00539b29:
                   uVar9 = FUN_00467904(uVar8,s8(DAT_0064f348[local_134 * 0x58]),0,
                                              100);
                   local_cc = FUN_005adfa0(uVar9);
-                  local_70 = ((200 - local_cc) * local_70) / 100;
+                  local_70 = (200 - local_cc) * local_70 / 100;
                 }
                 if (local_c4 === 0) {
                   local_70 = local_70 / 2;
@@ -11309,7 +11309,7 @@ LAB_00539b29:
              (local_cc = FUN_005b8af0(local_d4[0],local_e8[0]), local_cc < 1)) ||
             (local_cc === uVar8)) ||
            ((((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 4) !== 0 &&
-             ((u8(DAT_0064c6be[local_cc * 0x594]) -
+             ((int)(u8(DAT_0064c6be[local_cc * 0x594]) -
                    s8(DAT_0064c6e8[uVar8 * 0x594 + local_cc])) < 7)) &&
             (((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 8) !== 0 || (2 < local_3c)))))) {
 LAB_0053b8f0:
@@ -11366,7 +11366,7 @@ LAB_0053b8f0:
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -11525,7 +11525,7 @@ LAB_0053be12:
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -11548,7 +11548,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -11976,7 +11976,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -12036,7 +12036,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -12184,7 +12184,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -12223,8 +12223,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -12320,7 +12320,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -12624,11 +12624,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_f0, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -12807,12 +12807,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -13052,7 +13052,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -13095,11 +13095,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_f0, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -13244,7 +13244,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -13558,7 +13558,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -13584,7 +13584,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -13677,7 +13677,7 @@ function LAB_0053b8f0_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -13836,7 +13836,7 @@ LAB_0053be12:
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -13859,7 +13859,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -14287,7 +14287,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -14347,7 +14347,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -14495,7 +14495,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -14534,8 +14534,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -14631,7 +14631,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -14935,11 +14935,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -15118,12 +15118,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -15363,7 +15363,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -15406,11 +15406,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -15555,7 +15555,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -15869,7 +15869,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -15895,7 +15895,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -16023,7 +16023,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -16049,7 +16049,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -16287,7 +16287,7 @@ function LAB_005414d7_helper(bVar22, bVar23, bVar3, bVar4, bVar7, cVar1, iVar10,
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -16330,11 +16330,11 @@ function LAB_005414d7_helper(bVar22, bVar23, bVar3, bVar4, bVar7, cVar1, iVar10,
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar3, bVar4, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_118, local_14, local_144, local_14c, local_158, local_168, local_18, local_38, local_3c, local_40, local_48, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_80, local_88, local_90, local_a0, local_a4, local_ac, local_bc, local_c4, local_c8, local_cc, local_d0, local_d4, local_e4, local_e8, local_fc, uVar15, uVar17, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -16479,7 +16479,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -16793,7 +16793,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -16819,7 +16819,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -16859,7 +16859,7 @@ LAB_00541001:
 }
 
 function LAB_005397e7_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9) {
-      if (((((DAT_00655af0 & 0x80) === 0) || ((((DAT_0064bc60) << 16 >> 16) & 0x8000) === 0)) ||
+      if (((((DAT_00655af0 & 0x80) === 0) || ((shortDAT_0064bc60 & 0x8000) === 0)) ||
           (uVar8 !== 1)) ||
          ((((DAT_0064cc61 & 0x20) !== 0 || (5 < ((DAT_00655af8) << 16 >> 16))) ||
           (0x4f < s16(DAT_006560f0, local_168 * 0x20))))) {
@@ -16906,7 +16906,7 @@ function LAB_005397e7_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                     if (iVar12 === 0) {
                       if (iVar11 === iVar10) {
 LAB_00539cb3:
-                        local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0);
+                        local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0);
                         local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                       // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
                                                                      // DEVIATION(cont): local_134 * 0x58),
@@ -16914,7 +16914,7 @@ LAB_00539cb3:
                                                                      // DEVIATION(cont): local_134 * 0x58));
                         if ((u8(DAT_00656100[local_168 * 0x20]) % 3 !== local_134 % 3
                             ) && (uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]),
-                                 (((uVar15 & 0x10) >> 4) + 3) < local_70)) {
+                                 ((uVar15 & 0x10) >> 4) + 3 < local_70)) {
                           local_70 = local_70 + 8;
                         }
                         if (local_78 === uVar8) {
@@ -16928,7 +16928,7 @@ LAB_00539cb3:
                                ((iVar11 = FUN_00598d45(uVar8), iVar11 === 0 &&
                                 ((u8(DAT_00655c22[local_78]) < u8(DAT_00655c22[uVar8]) ||
                                  ((((DAT_006560f6[local_168 * 0x20] !== 47 &&
-                                    ((u8(DAT_0064c6b0[local_78 * 0x594]) -
+                                    ((int)(u8(DAT_0064c6b0[local_78 * 0x594]) -
                                           u8(DAT_0064c6b0[uVar8 * 0x594])) < 10)) &&
                                    (((4 < u8(DAT_0064c6b5[uVar8 * 0x594]) ||
                                      (u8(DAT_00655c22[local_78]) < 7)) ||
@@ -17021,7 +17021,7 @@ LAB_00539b29:
                   local_18 = 0;
                   for (local_78 = 1; local_78 < 8; local_78 = local_78 + 1) {
                     if (local_78 === uVar8) {
-                      iVar11 = (u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1) >> 1;
+                      iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1 >> 1;
                     }
                     else {
                       iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) * 2;
@@ -17082,7 +17082,7 @@ LAB_00539b29:
                   uVar9 = FUN_00467904(uVar8,s8(DAT_0064f348[local_134 * 0x58]),0,
                                              100);
                   local_cc = FUN_005adfa0(uVar9);
-                  local_70 = ((200 - local_cc) * local_70) / 100;
+                  local_70 = (200 - local_cc) * local_70 / 100;
                 }
                 if (local_c4 === 0) {
                   local_70 = local_70 / 2;
@@ -17329,7 +17329,7 @@ LAB_00539b29:
              (local_cc = FUN_005b8af0(local_d4[0],local_e8[0]), local_cc < 1)) ||
             (local_cc === uVar8)) ||
            ((((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 4) !== 0 &&
-             ((u8(DAT_0064c6be[local_cc * 0x594]) -
+             ((int)(u8(DAT_0064c6be[local_cc * 0x594]) -
                    s8(DAT_0064c6e8[uVar8 * 0x594 + local_cc])) < 7)) &&
             (((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 8) !== 0 || (2 < local_3c)))))) {
 LAB_0053b8f0:
@@ -17386,7 +17386,7 @@ LAB_0053b8f0:
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -17545,7 +17545,7 @@ LAB_0053be12:
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -17568,7 +17568,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -17996,7 +17996,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -18056,7 +18056,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -18204,7 +18204,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -18243,8 +18243,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -18340,7 +18340,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -18644,11 +18644,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -18827,12 +18827,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -19072,7 +19072,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -19115,11 +19115,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -19264,7 +19264,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -19578,7 +19578,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -19604,7 +19604,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -19679,7 +19679,7 @@ function LAB_00539b29_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                   local_18 = 0;
                   for (local_78 = 1; local_78 < 8; local_78 = local_78 + 1) {
                     if (local_78 === uVar8) {
-                      iVar11 = (u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1) >> 1;
+                      iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1 >> 1;
                     }
                     else {
                       iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) * 2;
@@ -19740,7 +19740,7 @@ function LAB_00539b29_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                   uVar9 = FUN_00467904(uVar8,s8(DAT_0064f348[local_134 * 0x58]),0,
                                              100);
                   local_cc = FUN_005adfa0(uVar9);
-                  local_70 = ((200 - local_cc) * local_70) / 100;
+                  local_70 = (200 - local_cc) * local_70 / 100;
                 }
                 if (local_c4 === 0) {
                   local_70 = local_70 / 2;
@@ -19987,7 +19987,7 @@ function LAB_00539b29_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
              (local_cc = FUN_005b8af0(local_d4[0],local_e8[0]), local_cc < 1)) ||
             (local_cc === uVar8)) ||
            ((((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 4) !== 0 &&
-             ((u8(DAT_0064c6be[local_cc * 0x594]) -
+             ((int)(u8(DAT_0064c6be[local_cc * 0x594]) -
                    s8(DAT_0064c6e8[uVar8 * 0x594 + local_cc])) < 7)) &&
             (((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 8) !== 0 || (2 < local_3c)))))) {
 LAB_0053b8f0:
@@ -20044,7 +20044,7 @@ LAB_0053b8f0:
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -20203,7 +20203,7 @@ LAB_0053be12:
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -20226,7 +20226,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -20654,7 +20654,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -20714,7 +20714,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -20862,7 +20862,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -20901,8 +20901,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -20998,7 +20998,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -21302,11 +21302,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -21485,12 +21485,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -21730,7 +21730,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -21773,11 +21773,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -21922,7 +21922,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -22236,7 +22236,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -22262,7 +22262,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -22302,7 +22302,7 @@ LAB_00541001:
 }
 
 function LAB_00539cb3_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9) {
-                        local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0);
+                        local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0);
                         local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                       // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
                                                                      // DEVIATION(cont): local_134 * 0x58),
@@ -22310,7 +22310,7 @@ function LAB_00539cb3_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                                                                      // DEVIATION(cont): local_134 * 0x58));
                         if ((u8(DAT_00656100[local_168 * 0x20]) % 3 !== local_134 % 3
                             ) && (uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]),
-                                 (((uVar15 & 0x10) >> 4) + 3) < local_70)) {
+                                 ((uVar15 & 0x10) >> 4) + 3 < local_70)) {
                           local_70 = local_70 + 8;
                         }
                         if (local_78 === uVar8) {
@@ -22324,7 +22324,7 @@ function LAB_00539cb3_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                                ((iVar11 = FUN_00598d45(uVar8), iVar11 === 0 &&
                                 ((u8(DAT_00655c22[local_78]) < u8(DAT_00655c22[uVar8]) ||
                                  ((((DAT_006560f6[local_168 * 0x20] !== 47 &&
-                                    ((u8(DAT_0064c6b0[local_78 * 0x594]) -
+                                    ((int)(u8(DAT_0064c6b0[local_78 * 0x594]) -
                                           u8(DAT_0064c6b0[uVar8 * 0x594])) < 10)) &&
                                    (((4 < u8(DAT_0064c6b5[uVar8 * 0x594]) ||
                                      (u8(DAT_00655c22[local_78]) < 7)) ||
@@ -22417,7 +22417,7 @@ LAB_00539b29:
                   local_18 = 0;
                   for (local_78 = 1; local_78 < 8; local_78 = local_78 + 1) {
                     if (local_78 === uVar8) {
-                      iVar11 = (u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1) >> 1;
+                      iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) + 1 >> 1;
                     }
                     else {
                       iVar11 = u8(DAT_0064c972[uVar8 * 0x594 + iVar10]) * 2;
@@ -22478,7 +22478,7 @@ LAB_00539b29:
                   uVar9 = FUN_00467904(uVar8,s8(DAT_0064f348[local_134 * 0x58]),0,
                                              100);
                   local_cc = FUN_005adfa0(uVar9);
-                  local_70 = ((200 - local_cc) * local_70) / 100;
+                  local_70 = (200 - local_cc) * local_70 / 100;
                 }
                 if (local_c4 === 0) {
                   local_70 = local_70 / 2;
@@ -22725,7 +22725,7 @@ LAB_00539b29:
              (local_cc = FUN_005b8af0(local_d4[0],local_e8[0]), local_cc < 1)) ||
             (local_cc === uVar8)) ||
            ((((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 4) !== 0 &&
-             ((u8(DAT_0064c6be[local_cc * 0x594]) -
+             ((int)(u8(DAT_0064c6be[local_cc * 0x594]) -
                    s8(DAT_0064c6e8[uVar8 * 0x594 + local_cc])) < 7)) &&
             (((DAT_0064c6c0[local_cc * 4 + uVar8 * 0x594] & 8) !== 0 || (2 < local_3c)))))) {
 LAB_0053b8f0:
@@ -22782,7 +22782,7 @@ LAB_0053b8f0:
                     FUN_0049301b(uVar8,local_d4[0],local_e8[0],1,3);
                   }
                   if (local_11c < local_b0) {
-                    local_cc = (s8(DAT_006560ff[local_168 * 0x20]) >>> 0);
+                    local_cc = ((s8(DAT_006560ff[local_168 * 0x20])) >>> 0);
                     DAT_006560ff[local_168 * 0x20] = 2;
                     iVar11 = FUN_0057e6e2(local_168,0xffffffff);
                     if ((iVar11 === local_168) &&
@@ -22941,7 +22941,7 @@ LAB_0053be12:
                               if ((DAT_0064ca32[uVar8 * 0x594 + iVar12] === 0x04) ||
                                  (DAT_0064c9f2[uVar8 * 0x594 + iVar12] === 0)) {
                                 local_70 = local_70 -
-                                           // DEVIATION: C pointer — ((uint)*(ushort *)
+                                           // DEVIATION: C pointer — (uint*(ushort *)
                                                         // DEVIATION(cont): (&DAT_0064c8b2 + uVar8 * 0x594 + iVar12 * 2)
                                            // DEVIATION(cont): >> 2);
                               }
@@ -22964,7 +22964,7 @@ LAB_0053c1e5:
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -23392,7 +23392,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -23452,7 +23452,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -23600,7 +23600,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -23639,8 +23639,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -23736,7 +23736,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -24040,11 +24040,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -24223,12 +24223,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -24468,7 +24468,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -24511,11 +24511,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -24660,7 +24660,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -24974,7 +24974,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -25000,7 +25000,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -25043,7 +25043,7 @@ function LAB_0053c1e5_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5
                         }
                         if (((iVar19 === 0) &&
                             (((s8(DAT_006560fd[iVar11 * 0x20]) ^
-                              ((DAT_00655af8) << 16 >> 16) - 1 & 3) & 3) !== 0)) &&
+                              shortDAT_00655af8 - 1 & 3) & 3) !== 0)) &&
                            (((local_c & 0x20) === 0 ||
                             ((local_c === 0x20 ||
                              (local_34 <
@@ -25471,7 +25471,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -25531,7 +25531,7 @@ LAB_0053cdd1:
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -25679,7 +25679,7 @@ LAB_0053cdd1:
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -25718,8 +25718,8 @@ LAB_0053cdd1:
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -25815,7 +25815,7 @@ LAB_0053cdd1:
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -26119,11 +26119,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_1c, local_20, local_28, local_2c, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_a0, local_a4, local_a8, local_ac, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -26302,12 +26302,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -26547,7 +26547,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -26590,11 +26590,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_110, local_114, local_118, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_1c, local_20, local_28, local_2c, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_a0, local_a4, local_a8, local_ac, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e4, local_e8, local_fc, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -26739,7 +26739,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -27053,7 +27053,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -27079,7 +27079,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -27196,7 +27196,7 @@ function LAB_0053cdd1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 !== uVar8)) &&
                            (((DAT_0064c6c1[local_78 * 4 + uVar8 * 0x594] & 0x20) !== 0 &&
                             // DEVIATION: C pointer — (iVar12 = FUN_005b8d62((int)*(short *)(DAT_0064f340 +
@@ -27256,7 +27256,7 @@ function LAB_0053cdd1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                         for (local_134 = s8(DAT_006560fd[iVar11 * 0x20]) & 7;
                             local_134 < DAT_00655b18; local_134 = local_134 + 8) {
                           if ((((((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                                 (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                                 (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                                  local_78 !== uVar8)) &&
                                 ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 8) === 0)) &&
                                (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) === 0 ||
@@ -27404,7 +27404,7 @@ function LAB_0053cdd1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                       for (local_134 = 0; local_134 < DAT_00655b18;
                           local_134 = local_134 + 1) {
                         if (((s32(DAT_0064f394, local_134 * 0x58) !== 0) &&
-                            (local_78 = (s8(DAT_0064f348[local_134 * 0x58]) >>> 0),
+                            (local_78 = ((s8(DAT_0064f348[local_134 * 0x58])) >>> 0),
                             local_78 === uVar8)) &&
                            ((local_70 = FUN_005ae31d(local_d4[0],local_e8[0],
                                                            // DEVIATION: C pointer — (int)*(short *)(DAT_0064f340 +
@@ -27443,8 +27443,8 @@ function LAB_0053cdd1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                        (DAT_0064b1c9[u8(DAT_006560f6[local_168 * 0x20]) * 0x14] !==
                         0)) {
                       if (DAT_006560fc[local_168 * 0x20] === 86) {
-                        local_17c = (s16(DAT_00656102, local_168 * 0x20) >>> 0);
-                        local_74 = (s16(DAT_00656104, local_168 * 0x20) >>> 0);
+                        local_17c = ((s16(DAT_00656102, local_168 * 0x20)) >>> 0);
+                        local_74 = ((s16(DAT_00656104, local_168 * 0x20)) >>> 0);
                       }
                       else {
                         local_74 = FUN_0059a791(0,DAT_006d1162 + -1);
@@ -27540,7 +27540,7 @@ function LAB_0053cdd1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                     if (((((s32(DAT_0065610a, local_168 * 0x20) !== 0) &&
                           (0x04 < s8(DAT_0064b1ca)
                                           [u8(DAT_006560f6[local_168 * 0x20]) * 0x14]))
-                         && ((local_78 = (s8(DAT_006560f7[local_168 * 0x20]) >>> 0),
+                         && ((local_78 = ((s8(DAT_006560f7[local_168 * 0x20])) >>> 0),
                              local_78 !== uVar8 &&
                              (((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 6) === 0 &&
                               (iVar11 = FUN_005ae1b0(local_d4[0],local_e8[0],
@@ -27844,11 +27844,11 @@ LAB_0053fc8d:
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_110, local_114, local_118, local_134, local_14, local_144, local_14c, local_158, local_160, local_168, local_170, local_17c, local_18, local_1c, local_20, local_28, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_a0, local_a4, local_ac, local_b4, local_b8, local_bc, local_c, local_c4, local_c8, local_cc, local_d0, local_d4, local_e4, local_e8, local_fc, uVar15, uVar17, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -28027,12 +28027,12 @@ LAB_0053fc8d:
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -28272,7 +28272,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -28315,11 +28315,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_110, local_114, local_118, local_134, local_14, local_144, local_14c, local_158, local_160, local_168, local_170, local_17c, local_18, local_1c, local_20, local_28, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_90, local_94, local_98, local_a0, local_a4, local_ac, local_b4, local_b8, local_bc, local_c, local_c4, local_c8, local_cc, local_d0, local_d4, local_e4, local_e8, local_fc, uVar15, uVar17, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -28464,7 +28464,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -28778,7 +28778,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -28804,7 +28804,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -28984,11 +28984,11 @@ function LAB_0053fc8d_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
                                           [s16(DAT_0064c6a6, uVar8 * 0x594) * 0x30] + 1) *
                                    s16(DAT_00666132, iVar10 * 0x10),
                          iVar11 + u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * -0x10 !== 0
-                         && (u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10) <=
+                         && u8(DAT_0064c932[uVar8 * 0x594 + iVar10]) * 0x10 <=
                             iVar11)) LAB_005436c1_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_118, local_134, local_14, local_144, local_14c, local_158, local_168, local_170, local_18, local_38, local_3c, local_40, local_48, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_80, local_88, local_90, local_94, local_a0, local_a4, local_ac, local_b4, local_bc, local_c4, local_c8, local_cc, local_d0, local_d4, local_e4, local_e8, local_fc, uVar15, uVar17, uVar20, uVar21, uVar8, uVar9); return;
                       if (local_3c < 2) {
                         for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-                          local_7c = ((DAT_00655af8) << 16 >> 16) + local_60 & 7;
+                          local_7c = shortDAT_00655af8 + local_60 & 7;
                           uVar9 = FUN_005ae052(s8(DAT_00628350[local_7c]) + local_d4[0]);
                           local_74 = s8(DAT_00628360[local_7c]) + local_e8[0];
                           iVar11 = FUN_004087c0(uVar9,local_74);
@@ -29167,12 +29167,12 @@ function LAB_0053fc8d_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, 
             }
           }
           else {
-            local_cc = (s8(DAT_0064b1c5) >>> 0)
+            local_cc = ((s8(DAT_0064b1c5)) >>> 0)
                                    [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
             iVar11 = FUN_0043d20a(local_40,8);
             if (iVar11 === 0) {
               if ((u16(DAT_006560f4, local_168 * 0x20) & 0x100) !== 0) {
-                local_cc = (local_cc * 3) / 2;
+                local_cc = local_cc * 3 / 2;
               }
             }
             else {
@@ -29412,7 +29412,7 @@ LAB_005414d7:
                 }
                 if (-1 < s8(DAT_006560fb[local_168 * 0x20])) {
                   if (s8(DAT_006560fb[local_168 * 0x20]) === local_60 ||
-                      (s8(DAT_006560fb[local_168 * 0x20]) - local_60) < 0) {
+                      s8(DAT_006560fb[local_168 * 0x20]) - local_60 < 0) {
                     local_cc = ~(s8(DAT_006560fb[local_168 * 0x20]) - local_60) + 1;
                   }
                   else {
@@ -29455,11 +29455,11 @@ LAB_005414d7:
                       ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 6) !== 0)) &&
                      ((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 8) === 0)) {
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) && (local_c4 === 0))
                     LAB_0054168e_helper(bVar22, bVar23, bVar3, bVar4, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_118, local_134, local_14, local_144, local_14c, local_158, local_168, local_170, local_18, local_38, local_3c, local_40, local_48, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_80, local_88, local_90, local_94, local_a0, local_a4, local_ac, local_b4, local_bc, local_c4, local_c8, local_cc, local_d0, local_d4, local_e4, local_e8, local_fc, uVar15, uVar17, uVar20, uVar21, uVar8, uVar9); return;
                     if ((((DAT_0064c6c0[local_5c * 4 + uVar8 * 0x594] & 4) !== 0) &&
-                        ((u8(DAT_0064c6be[local_5c * 0x594]) -
+                        ((int)(u8(DAT_0064c6be[local_5c * 0x594]) -
                               s8(DAT_0064c6e8[uVar8 * 0x595])) < 7)) ||
                        (iVar11 = FUN_00467904(uVar8,local_5c), iVar11 < 0x32)) {
                       local_18 = local_18 + -5;
@@ -29604,7 +29604,7 @@ LAB_005429fe:
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -29918,7 +29918,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -29944,7 +29944,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -29994,7 +29994,7 @@ function LAB_00541001_helper(bVar22, bVar3, cVar1, iVar10, iVar11, iVar19, local
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -30020,7 +30020,7 @@ function LAB_00541001_helper(bVar22, bVar3, cVar1, iVar10, iVar11, iVar19, local
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -30072,7 +30072,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -30098,7 +30098,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -30159,7 +30159,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -30185,7 +30185,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -30346,7 +30346,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -30372,7 +30372,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -30609,7 +30609,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -30635,7 +30635,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -30760,7 +30760,7 @@ function LAB_005429fe_helper(bVar22, bVar23, bVar3, bVar4, bVar7, cVar1, iVar10,
                           {
                             local_ac = 2;
                           }
-                          local_cc = (s8(DAT_0064b1ca) >>> 0)
+                          local_cc = ((s8(DAT_0064b1ca)) >>> 0)
                                                  [u8(DAT_006560f6[local_54 * 0x20]) *
                                                   0x14];
                           if ((local_78 === 0) && (local_cc === 7)) {
@@ -31074,7 +31074,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -31100,7 +31100,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -31400,7 +31400,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -31426,7 +31426,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }
@@ -31728,7 +31728,7 @@ LAB_00541001:
        (((local_88 < 0 ||
          (((local_88 === local_40 || (4 < iVar19)) ||
           ((DAT_0064c6c1[s8(DAT_0064f348[local_88 * 0x58]) * 4 + uVar8 * 0x594] & 0x20) !== 0
-          )))) || (6 < (u8(DAT_0064c6be)
+          )))) || (6 < (int)(u8(DAT_0064c6be)
                                          [s8(DAT_0064f348[local_88 * 0x58]) * 0x594] -
                             s8(DAT_0064c6e8)
                                        [uVar8 * 0x594 + s8(DAT_0064f348[local_88 * 0x58])]
@@ -31754,7 +31754,7 @@ LAB_00541001:
     local_78 = FUN_005b8af0(local_d4[0],local_e8[0]);
     if ((((0 < local_78) && (local_78 !== uVar8)) &&
         ((DAT_0064c6c0[local_78 * 4 + uVar8 * 0x594] & 4) !== 0)) &&
-       ((u8(DAT_0064c6be[local_78 * 0x594]) -
+       ((int)(u8(DAT_0064c6be[local_78 * 0x594]) -
              s8(DAT_0064c6e8[uVar8 * 0x594 + local_78])) < 7)) {
       local_c4 = 0;
     }

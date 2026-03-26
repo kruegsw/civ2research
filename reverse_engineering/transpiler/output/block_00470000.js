@@ -430,10 +430,10 @@ export function FUN_00470c1c() {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_00471020(param_1) {
+export function FUN_00471020(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_004704ec();
   if ((param_1 & 1) !== 0) {
@@ -454,7 +454,7 @@ export function FUN_00471020(param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function GetActiveView_00471070(this) {
+export function GetActiveView_00471070(_this) {
 
 
   let pCVar1;
@@ -475,7 +475,7 @@ export function GetActiveView_00471070(this) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function GetActiveView_004710A0(this) {
+export function GetActiveView_004710A0(_this) {
 
 
   let pCVar1;
@@ -1278,10 +1278,10 @@ export function FUN_004723e5(unaff_EBP) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_004728c0(param_1) {
+export function FUN_004728c0(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_0047147a();
   if ((param_1 & 1) !== 0) {
@@ -1438,7 +1438,7 @@ export function FUN_00472cf0(param_1, param_2) {
 
 
   param_1 = (param_2 + 8) * param_1;
-  return (param_1 + (param_1 >> 0x1f & 7)) >> 3;
+  return param_1 + (param_1 >> 0x1f & 7) >> 3;
 }
 
 
@@ -1626,10 +1626,10 @@ export function FUN_00473064() {
 export function FUN_0047314e(param_1, param_2) {
 
 
-  w32(param_2, 0, ((s32) << 16 >> 16)(param_1, 0));
-  param_2[2] = ((param_1) << 16 >> 16)[2];
-  param_2[1] = ((param_1) << 16 >> 16)[1];
-  param_2[3] = ((param_1) << 16 >> 16)[3];
+  w32(param_2, 0, ((s32(param_1, 0)) << 16 >> 16));
+  param_2[2] = ((param_1[2]) << 16 >> 16);
+  param_2[1] = ((param_1[1]) << 16 >> 16);
+  param_2[3] = ((param_1[3]) << 16 >> 16);
   return;
 }
 
@@ -3250,7 +3250,7 @@ export function load_verify_units_00477D8C(param_1, param_2, param_3) {
       }
       if (local_870 !== 0) {
         iVar3 = _rand();
-        local_abc = ((iVar3 * (local_870 + 1) >>> 0)) >> 0xf;
+        local_abc = ((iVar3 * (local_870 + 1)) >>> 0) >> 0xf;
         if (local_abc !== 0) {
           pvVar5 = FindFirstFileA(local_974,local_ab4[0]);
           while (local_abc = local_abc - 1, local_abc !== 0) {
@@ -3694,9 +3694,9 @@ export function FUN_00479fbe(in_ECX) {
   w32(in_ECX, 0x310, s32(in_ECX, 0x308) / 2);
   w32(in_ECX, 0x314, s32(in_ECX, 0x30c) / 2);
   w32(in_ECX, 0x318, 
-       (s32(in_ECX, 0x308) + (s32(in_ECX, 0x308) >> 0x1f & 3)) >> 2);
+       s32(in_ECX, 0x308) + (s32(in_ECX, 0x308) >> 0x1f & 3) >> 2);
   w32(in_ECX, 0x31c, 
-       (s32(in_ECX, 0x30c) + (s32(in_ECX, 0x30c) >> 0x1f & 3)) >> 2);
+       s32(in_ECX, 0x30c) + (s32(in_ECX, 0x30c) >> 0x1f & 3) >> 2);
   w32(in_ECX, 800, s32(in_ECX, 0x308));
   w32(in_ECX, 0x324, s32(in_ECX, 0x30c) + s32(in_ECX, 0x314));
   w32(in_ECX, 0x2f8, 
@@ -3766,7 +3766,7 @@ export function FUN_00479fbe(in_ECX) {
     FUN_00417ef0(0,local_8);
     w32(in_ECX, 0x348, local_8);
   }
-  local_8 = (s32(in_ECX, 0x30c) + (s32(in_ECX, 0x30c) >> 0x1f & 3)) >> 2;
+  local_8 = s32(in_ECX, 0x30c) + (s32(in_ECX, 0x30c) >> 0x1f & 3) >> 2;
   if (s32(in_ECX, 0x34c) !== local_8) {
     FUN_00417ef0(1,local_8);
     w32(in_ECX, 0x34c, local_8);
@@ -3791,19 +3791,19 @@ export function FUN_0047a540(in_ECX, param_1, param_2, param_3, param_4) {
   let local_10;
   let local_8;
   
-  param_3 = param_3 - ((s32) << 16 >> 16)(in_ECX, 0x124);
-  param_4 = param_4 - ((s32) << 16 >> 16)(in_ECX, 0x128);
+  param_3 = param_3 - ((s32(in_ECX, 0x124)) << 16 >> 16);
+  param_4 = param_4 - ((s32(in_ECX, 0x128)) << 16 >> 16);
   if ((param_3 < 0) || (param_4 < 0)) {
     uVar2 = 1;
   }
   else if ((param_3 < s32(in_ECX, 300)) && (param_4 < s32(in_ECX, 0x130))) {
-    param_3 = param_3 - ((s32) << 16 >> 16)(in_ECX, 0x330);
-    param_4 = param_4 - ((s32) << 16 >> 16)(in_ECX, 0x334);
+    param_3 = param_3 - ((s32(in_ECX, 0x330)) << 16 >> 16);
+    param_4 = param_4 - ((s32(in_ECX, 0x334)) << 16 >> 16);
     local_10 = (param_3 / s32(in_ECX, 0x308)) * 2 + s32(in_ECX, 0x2e8) + 1;
-    local_8 = ((param_4 / s32(in_ECX, 0x30c) << 16 >> 16)) * 2 +
-              ((s32) << 16 >> 16)(in_ECX, 0x2ec) + 1;
-    iVar3 = FUN_005c0bf2(((param_3 % s32(in_ECX, 0x308) << 16 >> 16)),
-                         ((param_4 % s32(in_ECX, 0x30c) << 16 >> 16)));
+    local_8 = ((param_4 / s32(in_ECX, 0x30c)) << 16 >> 16) * 2 +
+              ((s32(in_ECX, 0x2ec)) << 16 >> 16) + 1;
+    iVar3 = FUN_005c0bf2(short(param_3 % s32(in_ECX, 0x308)),
+                         short(param_4 % s32(in_ECX, 0x30c)));
     iVar3 = iVar3 + -10 >> 4;
     if (iVar3 !== 0) {
       local_10 = local_10 + s8(DAT_0062833b[iVar3]);
@@ -4037,15 +4037,15 @@ export function FUN_0047a8c9(in_ECX, param_1, param_2, param_3, param_4, param_5
   else {
     local_9c = 0;
     local_80 = FUN_005b8931(param_4,param_5);
-    local_a4 = (s32(local_80, 0) >>> 0);
+    local_a4 = ((s32(local_80, 0)) >>> 0);
     local_6c = local_a4 & 0xf;
     local_20 = local_a4 & 0x80;
     if (param_6 < 1) {
-      local_88 = ((local_80) >>> 0)[1];
+      local_88 = ((local_80[1]) >>> 0);
     }
     else {
       pbVar4 = FUN_005b898b(param_4,param_5,param_6);
-      local_88 = (s32(pbVar4, 0) >>> 0);
+      local_88 = ((s32(pbVar4, 0)) >>> 0);
     }
   }
   for (local_54 = 0; local_54 < 4; local_54 = local_54 + 1) {
@@ -4195,7 +4195,7 @@ export function FUN_0047a8c9(in_ECX, param_1, param_2, param_3, param_4, param_5
         }
         else {
           pbVar4 = FUN_005b898b(local_ac,local_60,param_6);
-          local_68 = (s32(pbVar4, 0) >>> 0);
+          local_68 = ((s32(pbVar4, 0)) >>> 0);
         }
         if (((local_68 & 0x12) !== 0) &&
            ((local_90 = local_90 + 1, local_40 === 0 || ((local_68 & 0x22) === 0)))) {
@@ -4214,7 +4214,7 @@ export function FUN_0047a8c9(in_ECX, param_1, param_2, param_3, param_4, param_5
           }
           else {
             pbVar4 = FUN_005b898b(local_ac,local_60,param_6);
-            local_68 = (s32(pbVar4, 0) >>> 0);
+            local_68 = ((s32(pbVar4, 0)) >>> 0);
           }
           if ((local_68 & 0x22) !== 0) {
             local_94 = local_94 + 1;
@@ -5170,7 +5170,7 @@ export function FUN_0047dce0(in_ECX) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function _CBitmapButton_0047DE10(this) {
+export function _CBitmapButton_0047DE10(_this) {
 
 
   // DEVIATION: SEH
@@ -5597,7 +5597,7 @@ export function FUN_0047e2b3() {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
+export function FUN_0047e94e(in_ECX, unaff_EBX, unaff_ESI, param_1, param_2) {
 
 
   let piVar1;
@@ -5607,7 +5607,7 @@ export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
   let uVar5;
   let iVar6;
   // in_ECX → promoted to parameter
-  let unaff_EBX;
+  // unaff_EBX → promoted to parameter
   // unaff_ESI → promoted to parameter
   // DEVIATION: SEH
   let bVar7;
@@ -5870,7 +5870,7 @@ export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
         w32(in_ECX, 0x56c, uVar5);
         break;
       case 6:
-        DAT_006ad6ac = ((local_20[0]) & 0xFFFF)[4];
+        DAT_006ad6ac = ((local_20[4]) & 0xFFFF);
         FUN_005f22d0(DAT_006ad6ae,local_20[0] + 0x12);
         FUN_005f22d0(DAT_006ad7b2,local_24 + 0x116);
         break;
@@ -6181,10 +6181,10 @@ export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
         break;
       case 0x30:
         FUN_004823d6(local_20[0],local_40[0]);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) === 0) {
-          DAT_00654fb0 = ((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) | DAT_00654fb0;
-          FUN_0046b14d(0x26,local_58[0],((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) === 0) {
+          DAT_00654fb0 = ((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) | DAT_00654fb0;
+          FUN_0046b14d(0x26,local_58[0],shortDAT_00654fb0,0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         else {
@@ -6194,10 +6194,10 @@ export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
       case 0x31:
         FUN_004823d6(local_20[0],local_40[0]);
         DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) !== 0) {
-          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) & DAT_00654fb0;
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) !== 0) {
+          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) & DAT_00654fb0;
           DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         break;
@@ -6215,7 +6215,7 @@ export function FUN_0047e94e(in_ECX, unaff_ESI, param_1, param_2) {
         DAT_00654fac = ((local_40[0]) << 16 >> 16);
         DAT_00654fae = ((local_3c) << 16 >> 16);
         DAT_006ad684 = s8(local_38);
-        DAT_00654c7c = ((s8) << 16 >> 16)(local_38);
+        DAT_00654c7c = ((s8(local_38)) << 16 >> 16);
         break;
       case 0x34:
         FUN_004823d6(local_20[0],local_40[0]);
@@ -7181,7 +7181,7 @@ function LAB_00482295_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14
         w32(in_ECX, 0x56c, uVar5);
         break;
       case 6:
-        DAT_006ad6ac = ((local_20[0]) & 0xFFFF)[4];
+        DAT_006ad6ac = ((local_20[4]) & 0xFFFF);
         FUN_005f22d0(DAT_006ad6ae,local_20[0] + 0x12);
         FUN_005f22d0(DAT_006ad7b2,local_24 + 0x116);
         break;
@@ -7492,10 +7492,10 @@ function LAB_00482295_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14
         break;
       case 0x30:
         FUN_004823d6(local_20[0],local_40[0]);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) === 0) {
-          DAT_00654fb0 = ((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) | DAT_00654fb0;
-          FUN_0046b14d(0x26,local_58[0],((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) === 0) {
+          DAT_00654fb0 = ((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) | DAT_00654fb0;
+          FUN_0046b14d(0x26,local_58[0],shortDAT_00654fb0,0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         else {
@@ -7505,10 +7505,10 @@ function LAB_00482295_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14
       case 0x31:
         FUN_004823d6(local_20[0],local_40[0]);
         DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) !== 0) {
-          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) & DAT_00654fb0;
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) !== 0) {
+          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) & DAT_00654fb0;
           DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         break;
@@ -7526,7 +7526,7 @@ function LAB_00482295_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14
         DAT_00654fac = ((local_40[0]) << 16 >> 16);
         DAT_00654fae = ((local_3c) << 16 >> 16);
         DAT_006ad684 = s8(local_38);
-        DAT_00654c7c = ((s8) << 16 >> 16)(local_38);
+        DAT_00654c7c = ((s8(local_38)) << 16 >> 16);
         break;
       case 0x34:
         FUN_004823d6(local_20[0],local_40[0]);
@@ -8301,7 +8301,7 @@ LAB_00482295:
         w32(in_ECX, 0x56c, uVar5);
         break;
       case 6:
-        DAT_006ad6ac = ((local_20[0]) & 0xFFFF)[4];
+        DAT_006ad6ac = ((local_20[4]) & 0xFFFF);
         FUN_005f22d0(DAT_006ad6ae,local_20[0] + 0x12);
         FUN_005f22d0(DAT_006ad7b2,local_24 + 0x116);
         break;
@@ -8612,10 +8612,10 @@ LAB_00482295:
         break;
       case 0x30:
         FUN_004823d6(local_20[0],local_40[0]);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) === 0) {
-          DAT_00654fb0 = ((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) | DAT_00654fb0;
-          FUN_0046b14d(0x26,local_58[0],((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) === 0) {
+          DAT_00654fb0 = ((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) | DAT_00654fb0;
+          FUN_0046b14d(0x26,local_58[0],shortDAT_00654fb0,0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         else {
@@ -8625,10 +8625,10 @@ LAB_00482295:
       case 0x31:
         FUN_004823d6(local_20[0],local_40[0]);
         DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-        if ((((DAT_00654fb0) << 16 >> 16) & 1 << (u8(local_3c) & 0x1f)) !== 0) {
-          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0xFFFF) & 0x1f)) & DAT_00654fb0;
+        if ((shortDAT_00654fb0 & 1 << (u8(local_3c) & 0x1f)) !== 0) {
+          DAT_00654fb0 = ~((1 << (u8(local_3c) & 0x1f)) & 0xFFFF) & DAT_00654fb0;
           DAT_00655b0b = DAT_00655b0b & u8(DAT_00654fb0);
-          FUN_0046b14d(0x2a,0xff,((DAT_00654fb0) << 16 >> 16),0,0,0,0,0,0,0);
+          FUN_0046b14d(0x2a,0xff,shortDAT_00654fb0,0,0,0,0,0,0,0);
           _DAT_006c90a0 = _DAT_006c90a0 + 1;
         }
         break;
@@ -8646,7 +8646,7 @@ LAB_00482295:
         DAT_00654fac = ((local_40[0]) << 16 >> 16);
         DAT_00654fae = ((local_3c) << 16 >> 16);
         DAT_006ad684 = s8(local_38);
-        DAT_00654c7c = ((s8) << 16 >> 16)(local_38);
+        DAT_00654c7c = ((s8(local_38)) << 16 >> 16);
         break;
       case 0x34:
         FUN_004823d6(local_20[0],local_40[0]);

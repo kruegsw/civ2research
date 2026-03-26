@@ -3074,8 +3074,8 @@ export function FUN_004d17bf(in_ECX) {
     FUN_00407ff0();
     for (local_2a0 = 0; local_2a0 < 7; local_2a0 = local_2a0 + 1) {
       FUN_00407ff0();
-      if (((local_c88) | 0)[local_2a0 * 0x1c + 1] <=
-          s32(DAT_006a5b10, ((local_c88) >>> 0)[local_2a0 * 0x1c] * 4)) {
+      if (((local_c88[local_2a0 * 0x1c + 1]) | 0) <=
+          s32(DAT_006a5b10, ((local_c88[local_2a0 * 0x1c]) >>> 0) * 4)) {
         if (local_c88[local_2a0 * 0x1c] === 1) {
           bVar1 = local_c88[local_2a0 * 0x1c + 1];
           iVar2 = FUN_00596c08(s32(in_ECX, 0x1cc),1);
@@ -3146,8 +3146,8 @@ export function FUN_004d17bf(in_ECX) {
     }
     local_17c = 0;
     for (local_2a0 = 7; local_2a0 < 0x1f; local_2a0 = local_2a0 + 1) {
-      if (((local_c88) | 0)[local_2a0 * 0x1c + 1] <=
-          s32(DAT_006a5b10, ((local_c88) >>> 0)[local_2a0 * 0x1c] * 4)) {
+      if (((local_c88[local_2a0 * 0x1c + 1]) | 0) <=
+          s32(DAT_006a5b10, ((local_c88[local_2a0 * 0x1c]) >>> 0) * 4)) {
         local_17c = local_2a0;
       }
     }
@@ -3162,8 +3162,8 @@ export function FUN_004d17bf(in_ECX) {
       for (local_2a0 = 0x1f; local_2a0 < 0x58; local_2a0 = local_2a0 + 1) {
         FUN_00407ff0();
         FUN_00407ff0();
-        if (((local_c88) | 0)[local_2a0 * 0x1c + 1] <=
-            s32(DAT_006a5b10, ((local_c88) >>> 0)[local_2a0 * 0x1c] * 4)) {
+        if (((local_c88[local_2a0 * 0x1c + 1]) | 0) <=
+            s32(DAT_006a5b10, ((local_c88[local_2a0 * 0x1c]) >>> 0) * 4)) {
           if (local_c88[local_2a0 * 0x1c] === 1) {
             bVar1 = local_c88[local_2a0 * 0x1c + 1];
             iVar2 = FUN_00596c08(s32(in_ECX, 0x1cc),1);
@@ -4533,10 +4533,10 @@ export function FUN_004d8af0(in_ECX) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_004d8b20(param_1) {
+export function FUN_004d8b20(in_ECX, param_1) {
 
 
-  let in_ECX;
+  // in_ECX → promoted to parameter
   
   FUN_005dd1a0();
   if ((param_1 & 1) !== 0) {
@@ -5231,7 +5231,7 @@ export function FUN_004d9b93(in_ECX) {
 // Size: 2205 bytes
 // ============================================================
 
-export function FUN_004da107() {
+export function FUN_004da107(in_ECX) {
 
 
   let iVar1;
@@ -5241,7 +5241,7 @@ export function FUN_004da107() {
   let extraout_EAX;
   let iVar5;
   let extraout_EAX_00;
-  let in_ECX;
+  // in_ECX → promoted to parameter
   // DEVIATION: SEH
   let uVar6;
   let uVar7;
@@ -5316,7 +5316,7 @@ export function FUN_004da107() {
   // DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0);
   w32(in_ECX, 0x2e4, extraout_EAX + 8);
   w32(in_ECX, 0x2e0, 
-       (s32(in_ECX, 300) + -10 + (s32(in_ECX, 300) + -10 >> 0x1f & 3)) >> 2);
+       s32(in_ECX, 300) + -10 + (s32(in_ECX, 300) + -10 >> 0x1f & 3) >> 2);
   iVar5 = (s32(in_ECX, 0x128) + s32(in_ECX, 0x130)) - (s32(in_ECX, 0x2e4) + 2);
   iVar1 = s32(in_ECX, 0x124);
   FUN_004086c0(local_454,iVar1 + 2,iVar5,s32(in_ECX, 0x2e0),
@@ -5569,8 +5569,8 @@ export function FUN_004db23f(param_1, param_2) {
     DAT_0062e508 = 0;
   }
   else {
-    while ((_File->_flag & 0x10) === 0) {
-      lVar1 = _ftell(_File);
+    // DEVIATION: C struct — while ((_File->_flag & 0x10) === 0) {
+      // DEVIATION(cont): lVar1 = _ftell(_File);
       pcVar2 = _fgets(local_108[0],0xff,_File);
       if (pcVar2 === 0x0) break;
       FUN_0056b810(local_108[0]);
@@ -5733,7 +5733,7 @@ export function FUN_004db690(in_ECX, param_1) {
     puVar2[5] = DAT_006d1da0;
     puVar2[6] = s32(in_ECX, 0x118);
     puVar2[7] = uVar1;
-    if (local_10 + puVar2 < ((local_c + (int) >>> 0)(puVar2 + 8))) {
+    if (local_10 + puVar2 < ((local_c + puVar2 + 8) >>> 0)) {
       FUN_005dae6b(7,s__CharPtr_pChunk___sizeChunk0_<__(_0062e764,
                    s_D__Ss_Franklinton_parleywin_tran_0062e738,0x9f);
     }
