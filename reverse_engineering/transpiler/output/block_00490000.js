@@ -2689,7 +2689,7 @@ export function FUN_00495e0c(in_ECX) {
   FUN_0043c840(local_608,DAT_0062cba0);
   FUN_0043c840(local_608,
                      (PTR_DAT_0062c9e0)
-                     // DEVIATION: C pointer — [s16(DAT_0064c6a6, (uint)*(byte *)(in_ECX + 0x1085) * 0x594)]);
+                     )); // DEVIATION: C-syntax — ); // DEVIATION: C pointer — [s16(DAT_0064c6a6, (uint)*(byte *)(in_ECX + 0x1085) * 0x594)]);
   local_601 = 0;
   FUN_0043c840(local_4c8,local_608);
   FUN_0043c840(local_4c8,DAT_0062cba8);

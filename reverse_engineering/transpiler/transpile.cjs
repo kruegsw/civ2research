@@ -184,6 +184,15 @@ function makeDeviation(line, reason, ctx) {
   // Line ends with ;
   if (/;\s*$/.test(content)) {
     ctx.deviationContinuation = false;
+    // Check if this line has MORE closing parens than opening — extract excess
+    let lineParens = 0;
+    for (const ch of content) { if (ch === '(') lineParens++; if (ch === ')') lineParens--; }
+    if (lineParens < 0) {
+      // Extract excess closing parens + ;
+      const excess = -lineParens;
+      const closers = ')'.repeat(excess) + ';';
+      return indent + closers + ' // DEVIATION: ' + reason + ' — ' + content;
+    }
     return indent + '// DEVIATION: ' + reason + ' — ' + content;
   }
   // Multi-line — set continuation

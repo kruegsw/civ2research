@@ -1750,7 +1750,7 @@ export function FUN_00424ae9() {
   }
   else {
     for (; (local_8 !== 0 &&
-           // DEVIATION: C pointer — (s32(local_8, 0x2c) !== s32(s32(s32(DAT_006ad108, 0) + 0x220, 0) + 4, 0)));
+           ); // DEVIATION: C pointer — (s32(local_8, 0x2c) !== s32(s32(s32(DAT_006ad108, 0) + 0x220, 0) + 4, 0)));
         local_8 = s32(local_8, 0x20)) {
     }
     if (local_8 !== 0) {

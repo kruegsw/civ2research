@@ -254,7 +254,7 @@ export function FUN_004b0a41() {
   for (local_c = 0; local_c < 0x17; local_c = local_c + 1) {
     _memcpy
               (local_8,DAT_0067a424[local_c * 6],
-               // DEVIATION: C pointer — *(size_t *)(DAT_0067a410 + local_c * 0x18));
+               )); // DEVIATION: C-syntax — ); // DEVIATION: C pointer — *(size_t *)(DAT_0067a410 + local_c * 0x18));
     local_8 = (local_8 + DAT_0067a414[local_c * 6]);
   }
   DAT_00679fe8 = DAT_0062d0bc;

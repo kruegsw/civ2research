@@ -5043,7 +5043,7 @@ export function findenv_00606ED0(param_1, param_2) {
     }
     iVar1 = __mbsnbicoll(param_1,s32(local_8, 0),param_2);
     if ((iVar1 === 0) &&
-       // DEVIATION: C pointer — ((*(char *)(param_2 + s32(local_8, 0)) === 61 || (*(char *)(param_2 + s32(local_8, 0)) === 0)))) break;
+       )); // DEVIATION: C-syntax — ); // DEVIATION: C pointer — ((*(char *)(param_2 + s32(local_8, 0)) === 61 || (*(char *)(param_2 + s32(local_8, 0)) === 0)))) break;
     local_8 = local_8 + 1;
   }
   return local_8 - DAT_00639f3c >> 2;

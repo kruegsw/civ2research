@@ -2508,7 +2508,7 @@ export function FUN_0041541a() {
     if (s32(DAT_00625160, local_14 * 8) === 9) {
       iVar1 = FUN_00418740();
       _sprintf(local_10,DAT_006251a8,
-               // DEVIATION: C pointer — s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58));
+               ); // DEVIATION: C pointer — s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58));
       FUN_00418a30(local_10);
     }
     else if (s32(DAT_00625160, local_14 * 8) === 0xc) {
