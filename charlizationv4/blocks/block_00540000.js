@@ -188,7 +188,7 @@ export function FUN_00548c78(param_1, param_2, param_3, param_4, param_5, param_
   
   local_10 = 0;
   local_8 = param_6;
-  param_7 = FUN_00548b70(param_6,param_7,param_8,&param_6,local_14[0]);
+  param_7 = FUN_00548b70(param_6,param_7,param_8,param_6,local_14[0]);
   if (((local_8 !== 0) && (param_6 !== local_8)) && (param_5 !== local_8)) {
     param_5 = (param_6 * param_5) / local_8;
   }
@@ -224,7 +224,7 @@ export function FUN_00548df0() {
 
   let hWnd;
   
-  hWnd = (HWND)FUN_00418770();
+  hWnd = FUN_00418770();
   SetFocus(hWnd);
   FUN_0054f16b();
   return;
@@ -1397,7 +1397,7 @@ export function show_messagebox_B0ED_0054B0ED() {
       lpCaption = s_File_I_O_Error_00632b38;
       lpText = local_24;
       iVar1 = FUN_00414d10();
-      // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar1 + 4),lpText,lpCaption,uType);
+      MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
     }
     G.DAT_006a1d7c = 0;
     // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006a4f88 + 0x48));
@@ -2323,7 +2323,7 @@ export function FUN_0054c4a1() {
     else if (uVar4 === 2) {
       do {
         if (local_120[4] === 0) {
-          local_120[4] = ((G.DAT_00633168) >>> 0);
+          local_120[4] = ( >>> 0);
         }
         if (G.DAT_006a4f88 === 0) {
           local_130 = 0;
@@ -2869,10 +2869,10 @@ export function show_messagebox_D4E6_0054D4E6() {
   if (local_c !== -1) {
     if ((G.DAT_0064b994 < 0x1c4) || (piVar1 = FUN_004fa617(), piVar1 === 0x0)) {
       uType = 0;
-      lpCaption = (LPCSTR)FUN_00428b0c(s32(G.DAT_00628420, 0x8d0));
-      lpText = (LPCSTR)FUN_00428b0c(s32(G.DAT_00628420, 0x8e8));
+      lpCaption = FUN_00428b0c(s32(G.DAT_00628420, 0x8d0));
+      lpText = FUN_00428b0c(s32(G.DAT_00628420, 0x8e8));
       iVar2 = FUN_00414d10();
-      // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar2 + 4),lpText,lpCaption,uType);
+      MessageBoxA(*(iVar2 + 4),lpText,lpCaption,uType);
     }
     else {
       w32(piVar1, 0, 1 << (u8(local_c) & 0x1f));
@@ -3548,9 +3548,9 @@ export function show_messagebox_EED0_0054EED0() {
   }
   else {
     uType = 0;
-    lpCaption = (LPCSTR)FUN_00428b0c(s32(G.DAT_00628420, 0x8d0));
-    lpText = (LPCSTR)FUN_00428b0c(s32(G.DAT_00628420, 0x8cc));
-    MessageBoxA((HWND)0x0,lpText,lpCaption,uType);
+    lpCaption = FUN_00428b0c(s32(G.DAT_00628420, 0x8d0));
+    lpText = FUN_00428b0c(s32(G.DAT_00628420, 0x8cc));
+    MessageBoxA(0x0,lpText,lpCaption,uType);
   }
   FUN_00548df0();
   return;

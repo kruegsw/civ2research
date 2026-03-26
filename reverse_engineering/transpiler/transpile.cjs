@@ -21,7 +21,8 @@ const OUT_DIR = path.join(__dirname, 'output');
 // Ensure output dir exists
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
-// ── Balanced paren extraction ──────────────────────────────────────
+// ── Balanced extraction helpers ────────────────────────────────────
+
 // Extract the contents of a balanced (...) starting at position `start`
 function extractBalancedParens(str, start) {
   if (str[start] !== '(') return null;
@@ -32,6 +33,37 @@ function extractBalancedParens(str, start) {
     if (depth === 0) return { content: str.substring(start + 1, i), end: i };
   }
   return null;
+}
+
+// Extract a C expression starting at `start` — handles word, word[expr], word[expr][expr],
+// and nested brackets/parens within. Stops at operators, commas, semicolons, or unbalanced closing.
+function extractExpression(str, start) {
+  let i = start;
+  // Skip leading whitespace
+  while (i < str.length && str[i] === ' ') i++;
+  const exprStart = i;
+
+  // Must start with a word character
+  if (i >= str.length || !/[a-zA-Z_0-9]/.test(str[i])) return null;
+
+  // Consume word
+  while (i < str.length && /[a-zA-Z_0-9]/.test(str[i])) i++;
+
+  // Consume bracket/paren groups: [expr] or (expr)
+  while (i < str.length && (str[i] === '[' || str[i] === '(')) {
+    const open = str[i];
+    const close = open === '[' ? ']' : ')';
+    let depth = 1;
+    i++;
+    while (i < str.length && depth > 0) {
+      if (str[i] === open) depth++;
+      if (str[i] === close) depth--;
+      i++;
+    }
+  }
+
+  if (i === exprStart) return null;
+  return { expr: str.substring(exprStart, i), end: i };
 }
 
 // Replace *(TYPE *)(expr) with helper(base, offset) using balanced parens
@@ -61,6 +93,45 @@ function replaceTypedPtrDeref(line) {
     }
     lastIdx = balanced.end + 1;
     typePattern.lastIndex = lastIdx;
+  }
+  result += line.substring(lastIdx);
+  return result;
+}
+
+// ── Cast replacement using balanced expression extraction ──────────
+function replaceCast(line, castType, helper) {
+  const pattern = new RegExp('\\(\\s*' + castType + '\\s*\\)', 'g');
+  let result = '';
+  let lastIdx = 0;
+  let match;
+
+  while ((match = pattern.exec(line)) !== null) {
+    result += line.substring(lastIdx, match.index);
+    const afterCast = match.index + match[0].length;
+
+    // Check if followed by (expr) — parenthesized expression
+    const afterTrimIdx = afterCast;
+    if (afterTrimIdx < line.length && line[afterTrimIdx] === '(') {
+      const balanced = extractBalancedParens(line, afterTrimIdx);
+      if (balanced) {
+        result += helper + '(' + balanced.content + ')';
+        lastIdx = balanced.end + 1;
+        pattern.lastIndex = lastIdx;
+        continue;
+      }
+    }
+
+    // Otherwise: followed by a word (possibly with brackets)
+    const expr = extractExpression(line, afterTrimIdx);
+    if (expr) {
+      result += helper + '(' + expr.expr + ')';
+      lastIdx = expr.end;
+      pattern.lastIndex = lastIdx;
+    } else {
+      // Can't extract — pass through
+      result += match[0];
+      lastIdx = afterCast;
+    }
   }
   result += line.substring(lastIdx);
   return result;
@@ -111,17 +182,11 @@ function transformLine(line, ctx) {
 
     // ── Typed pointer WRITE: handled at statement level below ──
 
-    // ── Cast: (char)(expr) → s8(expr) ──
-    out = out.replace(/\(\s*char\s*\)\s*\(([^)]+)\)/g, 's8($1)');
-    out = out.replace(/\(\s*char\s*\)(\w+(?:\[[^\]]*\])*)/g, 's8($1)');
-
-    // ── Cast: (byte)(expr) → u8(expr) ──
-    out = out.replace(/\(\s*byte\s*\)\s*\(([^)]+)\)/g, 'u8($1)');
-    out = out.replace(/\(\s*byte\s*\)(\w+(?:\[[^\]]*\])*)/g, 'u8($1)');
-
-    // ── Cast: (undefined1)(expr) → u8(expr) ──
-    out = out.replace(/\(\s*undefined1\s*\)\s*\(([^)]+)\)/g, 'u8($1)');
-    out = out.replace(/\(\s*undefined1\s*\)(\w+)/g, 'u8($1)');
+    // ── Cast: (char)expr → s8(expr), (byte)expr → u8(expr) ──
+    // Uses balanced expression extraction for nested brackets
+    out = replaceCast(out, 'char', 's8');
+    out = replaceCast(out, 'byte', 'u8');
+    out = replaceCast(out, 'undefined1', 'u8');
 
     // ── Nested cast: (uint) after unsigned helper → drop ──
     out = out.replace(/\(\s*uint\s*\)\s*(u8|u16|u32)\(/g, '$1(');
@@ -171,15 +236,17 @@ function transformLine(line, ctx) {
     // ── &local_XX → local_XX (drop &) ──
     out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
 
-    // ── & (address-of) → drop for arrays, deviate for labels ──
+    // ── & (address-of) → drop or placeholder ──
     out = out.replace(/&(DAT_[0-9a-fA-F]+)/g, '$1');
-    out = out.replace(/&(s_\w+)/g, '$1'); // &s_STRING → s_STRING
-    // &LAB_ / &LAB_XXXX → 0 (label address, usually SEH)
+    out = out.replace(/&(s_\w+)/g, '$1');
+    out = out.replace(/&(PTR_\w+)/g, '$1');
     out = out.replace(/&(LAB_[0-9a-fA-F]+)/g, '0 /* ADDR:$1 */');
     out = out.replace(/&(switchD_\w+)/g, '0 /* ADDR:$1 */');
     out = out.replace(/&(code_r\w+)/g, '0 /* ADDR:$1 */');
     out = out.replace(/&(joined_r\w+)/g, '0 /* ADDR:$1 */');
-    out = out.replace(/&(PTR_\w+)/g, '$1');
+    // &stack, &local_ (already handled above), any remaining &word
+    out = out.replace(/&(stack\w+)/g, '0 /* ADDR:$1 */');
+    out = out.replace(/&(\w+)/g, '$1'); // catch-all: drop & for any remaining
 
     // ── C++ class method calls and destructor calls → DEVIATION ──
     if (/\w+::~?\w+\s*[(\[]/.test(out) && !/\/\//.test(out.split('::')[0])) {
@@ -194,9 +261,13 @@ function transformLine(line, ctx) {
       (m, name) => 's32(' + name + ', 0)');
 
     // ── C-style pointer casts without dereference: (TYPE *)expr → expr ──
-    // Only strip when NOT preceded by * (dereference handled separately)
     out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\()/g, '');
     out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\w)/g, '');
+
+    // ── Remaining C type casts: (HWND), (LRESULT), (CWnd *), etc. ──
+    // Any (ALLCAPS_WORD) or (TypeName *) that's still present → drop
+    out = out.replace(/\(\s*[A-Z][A-Z_0-9]+\s*\)/g, '');
+    out = out.replace(/\(\s*[A-Z]\w+\s*\*\s*\)/g, '');
 
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
     // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
@@ -592,6 +663,20 @@ function processFunction(headerLines, bodyLines, ctx) {
       for (const ch of t) { if (ch === '(') depth++; if (ch === ')') depth--; }
       if (depth > 0) {
         transformed = transformed.replace(/;\s*$/, ');');
+      }
+    }
+
+    // ── Final safety: catch any remaining C-only syntax ──
+    const ft = transformed.trim();
+    if (ft && !ft.startsWith('//') && !ft.startsWith('/*') && !ft.startsWith('}') && !ft.startsWith('{')) {
+      // Check for patterns that are invalid JS
+      if (/\*\s*\(\s*\w+\s*\*/.test(ft) ||  // *(type *)
+          /\(\s*void\s*\)\s*\w/.test(ft) ||  // (void)expr
+          /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
+          /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) ||  // C function signature
+          /^[A-Z]\w+\s*::\s*~?[A-Z]/.test(ft)) {  // C++ class::method
+        transformed = transformed.replace(/^(\s*)/, '$1// DEVIATION(C-syntax): ');
+        if (!/;\s*$/.test(ft)) ctx.deviationContinuation = true;
       }
     }
 

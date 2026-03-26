@@ -1313,14 +1313,14 @@ export function FUN_004f4b9f() {
   w32(in_ECX, 0x5e0, 400);
   iVar1 = FUN_0040ef70();
   w32(in_ECX, 0x5e4, iVar1 + DAT_0062d864 * 2 + DAT_0062d85c * 2);
-  SetRect((LPRECT)(in_ECX + 0x5e8),0,0,s32(in_ECX, 0x5dc),s32(in_ECX, 0x5e0));
+  SetRect((in_ECX + 0x5e8),0,0,s32(in_ECX, 0x5dc),s32(in_ECX, 0x5e0));
   iVar1 = s32(in_ECX, 0x5e0);
   iVar2 = s32(in_ECX, 0x5e4) + DAT_0062d85c;
   // DEVIATION: MFC — _Timevec::~_Timevec(DAT_0068abe0);
-  SetRect((LPRECT)(in_ECX + 0x5f8),0,0,s32(in_ECX, 0x5dc) + (DAT_0062d860 + DAT_0062d858) * -2
+  SetRect((in_ECX + 0x5f8),0,0,s32(in_ECX, 0x5dc) + (DAT_0062d860 + DAT_0062d858) * -2
           ,(iVar1 - iVar2) +
            ((DAT_0062d85c * -3 + DAT_0062d868 * -2) - extraout_EAX) + DAT_0062d864 * -2);
-  OffsetRect((LPRECT)(in_ECX + 0x5f8),DAT_0062d860 + DAT_0062d858,
+  OffsetRect((in_ECX + 0x5f8),DAT_0062d860 + DAT_0062d858,
              s32(in_ECX, 0x5e4) + DAT_0062d85c);
   iVar1 = FUN_004080c0();
   iVar2 = FUN_00414bb0();
@@ -1540,9 +1540,9 @@ export function FUN_004f4b9f() {
     local_88 = in_ECX + 0x48;
   }
   FUN_004bb620(local_88,0xfaa,in_ECX + 0x5f8,DAT_0062f01c,0x122,0);
-  // DEVIATION: C pointer — local_24[0].left = *(LONG *)(in_ECX + 0x5f8);
-  // DEVIATION: C pointer — local_24[0].top = *(LONG *)(in_ECX + 0x5fc);
-  // DEVIATION: C pointer — local_24[0].right = *(LONG *)(in_ECX + 0x600);
+  local_24[0].left = *(in_ECX + 0x5f8);
+  local_24[0].top = *(in_ECX + 0x5fc);
+  local_24[0].right = *(in_ECX + 0x600);
   iVar1 = s32(in_ECX, 0x604);
   local_24[0].bottom = iVar1;
   iVar2 = GetSystemMetrics(3);
@@ -2858,7 +2858,7 @@ export function FUN_004f7c99(in_ECX) {
           uVar6 = FUN_00428b0c(s32(DAT_00628420, 0xb00));
           FUN_005f22e0(DAT_00679640,uVar6);
         }
-        sVar4 = _strlen(DAT_00679640);
+        sVar4 = _strlen;
         pvVar5 = operator_new(sVar4 + 1);
         w32(local_c, 0, pvVar5);
         FUN_005f22d0(s32(local_c, 0),DAT_00679640);
@@ -2898,7 +2898,7 @@ export function FUN_004f7c99(in_ECX) {
           local_8[2] = local_c;
         }
         local_c[2] = 0;
-        sVar4 = _strlen(DAT_00679642);
+        sVar4 = _strlen;
         pvVar5 = operator_new(sVar4 + 1);
         w32(local_c, 0, pvVar5);
         FUN_005f22d0(s32(local_c, 0),DAT_00679642);
@@ -5934,7 +5934,7 @@ export function FUN_004fc516(in_ECX, param_1, param_2) {
   }
 // LAB_004ff6f7: (code below also in LAB_004ff6f7_helper, kept for 1:1 audit)
   if (local_44 !== 0) {
-    __chdir(DAT_00655020);
+    __chdir;
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }
@@ -6177,7 +6177,7 @@ function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
 
 function LAB_004ff6f7_helper(local_44) {
   if (local_44 !== 0) {
-    __chdir(DAT_00655020);
+    __chdir;
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }
@@ -6784,7 +6784,7 @@ function LAB_004fe0af_helper(iVar1, iVar4, in_ECX, local_14, local_18, local_20,
   }
 LAB_004ff6f7:
   if (local_44 !== 0) {
-    __chdir(DAT_00655020);
+    __chdir;
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }

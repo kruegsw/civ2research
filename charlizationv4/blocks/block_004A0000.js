@@ -68,7 +68,7 @@ export function FUN_004a2055(param_1, param_2) {
     if ((G.DAT_0062cd20 !== 0x0) && (sVar3 = _strlen(local_210), sVar3 !== 0)) {
       local_8 = FUN_004db481(local_210,local_264);
     }
-    __chdir(G.DAT_00655020);
+    __chdir;
     if (((G.DAT_0062cd20 === 0x0) &&
         (G.DAT_0062cd20 = FUN_0041508c(local_210,G.DAT_0062cd2c),
         G.DAT_0062cd20 !== 0x0)) && (sVar3 = _strlen(local_210), sVar3 !== 0)) {
@@ -93,15 +93,15 @@ export function FUN_004a2055(param_1, param_2) {
       }
       pcVar4 = _fgets(G.DAT_00679640,0xff,G.DAT_0062cd20);
       if (pcVar4 !== 0x0) {
-        FUN_0056b810(G.DAT_00679640);
-        FUN_004d007e(G.DAT_00679640);
+        FUN_0056b810;
+        FUN_004d007e;
         iVar5 = __strcmpi(G.DAT_00679640,local_264);
         if (iVar5 === 0) {
           bVar1 = true;
         }
       }
     }
-    sVar3 = _strlen(G.DAT_00679640);
+    sVar3 = _strlen;
     G.DAT_00673f14 = G.DAT_00679640 + sVar3;
     local_214 = 0;
   }
@@ -151,9 +151,9 @@ export function FUN_004a23fc(param_1) {
   local_8 = 0x0;
   if (((G.DAT_0062cd20->_flag & 0x10) === 0) &&
      (pcVar1 = _fgets(G.DAT_00679640,0xff,G.DAT_0062cd20), pcVar1 !== 0x0)) {
-    FUN_0056b810(G.DAT_00679640);
+    FUN_0056b810;
     if (param_1 === 1) {
-      FUN_004d007e(G.DAT_00679640);
+      FUN_004d007e;
     }
     G.DAT_00673f14 = G.DAT_00679640;
     local_8 = G.DAT_00679640;
@@ -219,7 +219,7 @@ export function FUN_004a2552() {
 
   let sVar1;
   
-  sVar1 = _strlen(G.DAT_00679640);
+  sVar1 = _strlen;
   G.DAT_00673f14 = G.DAT_00679640 + sVar1;
   return;
 }
@@ -237,7 +237,7 @@ export function FUN_004a257a() {
   let uVar1;
   
   FUN_004a23fc(1);
-  uVar1 = FUN_00428a95(G.DAT_00679640);
+  uVar1 = FUN_00428a95;
   return uVar1;
 }
 
@@ -579,9 +579,9 @@ export function FUN_004a3426() {
     }
     w16(G.DAT_00655500, local_8 * 0x30, 
          ((s32) << 16 >> 16)(G.DAT_006a2d28, local_8 * 0x58));
-    G.DAT_006554f8[local_8 * 0x30] = s8(s32)(G.DAT_006a2d2c, local_8 * 0x58) + -1;
-    G.DAT_006554f9[local_8 * 0x30] = s8(s32)(G.DAT_006a2d30, local_8 * 0x58) + -1;
-    G.DAT_006554fa[local_8 * 0x30] = s8(s32)(G.DAT_006a2d34, local_8 * 0x58) + -1;
+    G.DAT_006554f8[local_8 * 0x30] = s8(s32(G.DAT_006a2d2c, local_8 * 0x58)) + -1;
+    G.DAT_006554f9[local_8 * 0x30] = s8(s32(G.DAT_006a2d30, local_8 * 0x58)) + -1;
+    G.DAT_006554fa[local_8 * 0x30] = s8(s32(G.DAT_006a2d34, local_8 * 0x58)) + -1;
   }
   for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
     sVar3 = 0xf;
@@ -964,7 +964,7 @@ export function show_messagebox_4249_004A4249() {
     lpCaption = s_File_I_O_Error_0062ce00;
     lpText = local_24;
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar1 + 4),lpText,lpCaption,uType);
+    MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
   }
   G.DAT_006a1d7c = 0;
   // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006a4f88 + 0x48));

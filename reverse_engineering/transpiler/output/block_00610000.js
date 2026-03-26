@@ -101,7 +101,7 @@ export function FUN_0061a000() {
                                  s32(piVar9, 0) + ((ushort) >>> 0)((s32(psVar3, 0) + s32(psVar5, 0)) * 4)) + (s32(puVar7, 0) >>> 0)
                         + (s32(puVar8, 0) >>> 0));
       psVar3 = segment(in_SS,sVar20 + 0x32);
-      if ((s32(psVar3, 0) < 0) || (cVar13 !== s8(s32)(psVar3, 0))) {
+      if ((s32(psVar3, 0) < 0) || (cVar13 !== s8(s32(psVar3, 0)))) {
         pcVar10 = segment(in_SS,sVar20 + -0x16);
         w32(pcVar10, 0, cVar13);
         psVar3 = segment(in_SS,sVar18 + -0x12);

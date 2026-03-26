@@ -2209,19 +2209,19 @@ export function FUN_004c6bf5(param_1, param_2) {
     if (((DAT_0064c6c0[DAT_006d1da0 * 0x594 + local_80 * 4] & 0x80) === 0) &&
        (iVar3 = FUN_00453e51(DAT_006d1da0,0x18), iVar3 === 0)) {
       if (local_38c !== 0) {
-        FUN_004aef36(DAT_00679640);
-        FUN_004af01a(DAT_00679640);
+        FUN_004aef36;
+        FUN_004af01a;
         FUN_0040bc10(0xed);
-        FUN_004af03b(DAT_00679640);
+        FUN_004af03b;
       }
       FUN_0059edf0(DAT_00679640,0,0);
     }
     FUN_004a23fc(1);
     if (local_38c !== 0) {
-      FUN_004aef36(DAT_00679640);
-      FUN_004af01a(DAT_00679640);
+      FUN_004aef36;
+      FUN_004af01a;
       FUN_0040bc10(0xed);
-      FUN_004af03b(DAT_00679640);
+      FUN_004af03b;
     }
     FUN_0059edf0(DAT_00679640,1,0);
     FUN_004a23fc(1);
@@ -2677,7 +2677,7 @@ export function FUN_004c6bf5(param_1, param_2) {
     }
     DAT_006560fe[param_1 * 0x20] =
          DAT_006560fe[param_1 * 0x20] -
-         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0]))];
+         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0])]);
     cVar1 = DAT_006560fe[param_1 * 0x20];
     iVar3 = _rand();
     DAT_006560fe[param_1 * 0x20] = cVar1 + s8(iVar3 % 6);
@@ -2964,7 +2964,7 @@ export function pick_up_unit_004c9528_004C9528(param_1, param_2) {
   if ((DAT_0064c6b5[param_2 * 0x594] === 0x03) && (9 < local_c)) {
     local_c = 10;
   }
-  local_18 = s8(DAT_0064b1c8[u8(DAT_006560f6[param_1 * 0x20])) * 0x14] *
+  local_18 = s8(DAT_0064b1c8[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]) *
              ((s32(DAT_0064c6a2, iVar2 * 0x594) + 0x2ee) / (local_c + 2));
   if (local_18 < 0) {
     local_18 = 30000;
@@ -3675,10 +3675,10 @@ export function show_messagebox_CA35_004CCA35(param_1, param_2) {
   
   if (u16(param_1, 0x10) < (param_2 & 0xffff)) {
     uType = 0;
-    lpCaption = (LPCSTR)FUN_00428b0c(s32(DAT_00628420, 0x8d0));
-    lpText = (LPCSTR)FUN_00428b0c(s32(DAT_00628420, 0x8e8));
+    lpCaption = FUN_00428b0c(s32(DAT_00628420, 0x8d0));
+    lpText = FUN_00428b0c(s32(DAT_00628420, 0x8e8));
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar1 + 4),lpText,lpCaption,uType);
+    MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
     uVar2 = 0;
   }
   else {
@@ -3864,7 +3864,7 @@ export function show_messagebox_CF2D_004CCF2D() {
   __chdir(DAT_0064bb08);
   iVar1 = _strcmp(DAT_0064bb08,DAT_00655020);
   if ((iVar1 === 0) || (iVar1 = FUN_00415133(local_118), iVar1 === 0)) {
-    __chdir(DAT_00655020);
+    __chdir;
     local_220 = FUN_0041508c(local_118,DAT_0062e08c);
     iVar1 = _strcmp(DAT_0064bb08,DAT_00655020);
     if (iVar1 === 0) {
@@ -3876,7 +3876,7 @@ export function show_messagebox_CF2D_004CCF2D() {
       lpCaption = s_Warning_0062e0b8;
       pcVar2 = s_Saving_changes_in_file_RULES_BAK_0062e0c0;
       iVar1 = FUN_00414d10();
-      // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar1 + 4),pcVar2,lpCaption,uType);
+      MessageBoxA(*(iVar1 + 4),pcVar2,lpCaption,uType);
     }
     else {
       __chdir(DAT_0064bb08);
@@ -3973,7 +3973,7 @@ export function FUN_004cd3d7(param_1, param_2, param_3) {
     if (iVar1 === 0) {
       iVar1 = FUN_00415133(s_CITY_BAK_0062e128);
       if (iVar1 === 0) {
-        __chdir(DAT_00655020);
+        __chdir;
         local_21c = FUN_0041508c(local_14,DAT_0062e148);
         __chdir(DAT_0064bb08);
         local_220 = FUN_0041508c(local_14,DAT_0062e14c);
@@ -4594,12 +4594,12 @@ export function FUN_004ce71b(param_1) {
       iVar1 = FUN_004a23fc(1);
       if (iVar1 === 0) LAB_004ce7c5_helper(bVar4, iVar1, local_10, param_1); return;
       sVar2 = _strlen(param_1);
-      sVar3 = _strlen(DAT_00679640);
+      sVar3 = _strlen;
       if (sVar3 < sVar2) {
         local_c = _strlen(param_1);
       }
       else {
-        local_c = _strlen(DAT_00679640);
+        local_c = _strlen;
       }
       iVar1 = __strnicmp(param_1,DAT_00679640,local_c);
     } while (iVar1 !== 0);
@@ -4643,7 +4643,7 @@ export function FUN_004ce83d() {
     lParam = 0;
     wParam = 0;
     Msg = 0x14f;
-    hWnd = (HWND)FUN_00418770();
+    hWnd = FUN_00418770();
     SendMessageA(hWnd,Msg,wParam,lParam);
   }
   return;
@@ -5882,7 +5882,7 @@ LAB_004c8f6f:
     }
     DAT_006560fe[param_1 * 0x20] =
          DAT_006560fe[param_1 * 0x20] -
-         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0]))];
+         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0])]);
     cVar1 = DAT_006560fe[param_1 * 0x20];
     iVar3 = _rand();
     DAT_006560fe[param_1 * 0x20] = cVar1 + s8(iVar3 % 6);
@@ -6428,7 +6428,7 @@ function LAB_004c8f6f_helper(cVar1, iVar3, local_14, local_18, local_1c, local_2
     }
     DAT_006560fe[param_1 * 0x20] =
          DAT_006560fe[param_1 * 0x20] -
-         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0]))];
+         s8(local_3f0[u8(DAT_0064c6e0[local_80 * 0x594 + local_3b0])]);
     cVar1 = DAT_006560fe[param_1 * 0x20];
     iVar3 = _rand();
     DAT_006560fe[param_1 * 0x20] = cVar1 + s8(iVar3 % 6);

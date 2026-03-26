@@ -2169,7 +2169,7 @@ export function FUN_00488937(param_1) {
     uVar1 = FUN_00493b10(param_1);
     FUN_0040bbe0(uVar1);
     G.DAT_00679642 = 0;
-    FUN_004d007e(G.DAT_00679640);
+    FUN_004d007e;
     FUN_0040bbe0(G.DAT_0062c608);
     FUN_0040bc10(0x5c);
     FUN_005f22d0(local_54,G.DAT_00679640);
@@ -2512,7 +2512,7 @@ export function FUN_00489553(param_1) {
   if ((G.DAT_00655aea._1_1_ & 0x20) !== 0) {
     __chdir(G.DAT_0064bb08);
     FUN_00488937(param_1);
-    __chdir(G.DAT_00655020);
+    __chdir;
   }
   return;
 }
@@ -3320,7 +3320,7 @@ export function FUN_0048b340() {
       FUN_004fbbdd();
     }
     for (local_32c = 0; (G.DAT_00628044 !== 0 && (local_32c < 8)); local_32c = local_32c + 1) {
-      if ((((G.DAT_00628048) | 0) <= local_32c) &&
+      if ((( | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((G.DAT_00655b0a) >>> 0)) !== 0)) {
         G.DAT_00655b05 = u8(local_32c);
         if (G.DAT_00655b02 === 0x01) {
@@ -3982,7 +3982,7 @@ export function FUN_0048c9f3(param_1) {
       G.DAT_006c31a8 = 0;
       G.DAT_006d1da0 = G.DAT_006ad35c[G.DAT_006ad304 * 0x15];
       G.DAT_00655b03 = u8(G.DAT_006d1da0);
-      if ((((G.DAT_00628048) | 0) <= local_32c) &&
+      if ((( | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((G.DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((G.DAT_00628048 !== 0) && (G.DAT_00628048 !== local_32c)) || (G.DAT_00628048 === 0)) ||
            (param_1 !== 0)) {
@@ -4912,7 +4912,7 @@ LAB_0048d957:
       G.DAT_006c31a8 = 0;
       G.DAT_006d1da0 = G.DAT_006ad35c[G.DAT_006ad304 * 0x15];
       G.DAT_00655b03 = u8(G.DAT_006d1da0);
-      if ((((G.DAT_00628048) | 0) <= local_32c) &&
+      if ((( | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((G.DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((G.DAT_00628048 !== 0) && (G.DAT_00628048 !== local_32c)) || (G.DAT_00628048 === 0)) ||
            (param_1 !== 0)) {
@@ -5154,7 +5154,7 @@ function LAB_0048d957_helper(iVar4, local_14, local_1c, local_20, local_24, loca
       G.DAT_006c31a8 = 0;
       G.DAT_006d1da0 = G.DAT_006ad35c[G.DAT_006ad304 * 0x15];
       G.DAT_00655b03 = u8(G.DAT_006d1da0);
-      if ((((G.DAT_00628048) | 0) <= local_32c) &&
+      if ((( | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((G.DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((G.DAT_00628048 !== 0) && (G.DAT_00628048 !== local_32c)) || (G.DAT_00628048 === 0)) ||
            (param_1 !== 0)) {

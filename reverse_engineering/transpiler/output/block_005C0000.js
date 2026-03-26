@@ -45,7 +45,7 @@ export function FUN_005c0034(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SetRect((LPRECT)(in_ECX + 0x14),s32(in_ECX, 0x24),s32(in_ECX, 0x28),
+  SetRect((in_ECX + 0x14),s32(in_ECX, 0x24),s32(in_ECX, 0x28),
           s32(in_ECX, 0x2c),s32(in_ECX, 0x30));
   return;
 }
@@ -62,8 +62,8 @@ export function FUN_005c0073(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  SetRect((LPRECT)(in_ECX + 0x14),s32(param_1, 0),param_1[1],param_1[2],param_1[3]);
-  IntersectRect((LPRECT)(in_ECX + 0x14),(in_ECX + 0x14),(in_ECX + 0x24));
+  SetRect((in_ECX + 0x14),s32(param_1, 0),param_1[1],param_1[2],param_1[3]);
+  IntersectRect((in_ECX + 0x14),(in_ECX + 0x14),(in_ECX + 0x24));
   return;
 }
 
@@ -4588,8 +4588,8 @@ export function FUN_005c67a6(unaff_ESI, param_1, param_2, param_3) {
     FUN_005c68e0(unaff_ESI,unaff_EBX,uVar4);
     return;
   }
-  FUN_00421c60(&param_2,4);
-  FUN_00421c60(&param_3,4);
+  FUN_00421c60(param_2,4);
+  FUN_00421c60(param_3,4);
   FUN_00421c60(uVar2,param_3 * 3);
   FUN_00421c30();
   FUN_005dce29(uVar1);
@@ -5022,11 +5022,11 @@ export function FUN_005c701c(in_ECX, param_1) {
     // DEVIATION: C pointer — bVar3 = *(byte *)(in_ECX + 0x425);
     iVar6 = s32(in_ECX, 0x40c);
     cVar8 = s8(param_1);
-    cVar7 = s8(s32)(in_ECX, 0x40c) - cVar8;
+    cVar7 = s8(s32(in_ECX, 0x40c)) - cVar8;
     iVar9 = FUN_005dcdf9(s32(in_ECX, 0x430));
     for (local_20 = 0; local_20 < s32(in_ECX, 0x414) * 3; local_20 = local_20 + 3) {
       FUN_005deadb(in_ECX,s32(in_ECX, 0x410) + local_20 / 3,
-                   // DEVIATION: C pointer — s8(*(byte *)(local_20 + iVar9) /
+                   // DEVIATION: C pointer — (char)(*(byte *)(local_20 + iVar9) /
                          // DEVIATION(cont): (longlong)*(int *)(in_ECX + 0x40c)) * cVar8 +
                    // DEVIATION(cont): cVar7 * (char)((longlong)(ulonglong)bVar1 / (longlong)iVar4),
                    // DEVIATION(cont): (char)((longlong)(ulonglong)*(byte *)(local_20 + 1 + iVar9) /
@@ -5119,12 +5119,12 @@ export function FUN_005c738e(in_ECX, param_1) {
   }
   else {
     cVar2 = s8(param_1);
-    cVar1 = s8(s32)(in_ECX, 0x418) - cVar2;
+    cVar1 = s8(s32(in_ECX, 0x418)) - cVar2;
     iVar3 = FUN_005dcdf9(s32(in_ECX, 0x428));
     iVar4 = FUN_005dcdf9(s32(in_ECX, 0x42c));
     for (local_18 = 0; local_18 < s32(in_ECX, 0x420) * 3; local_18 = local_18 + 3) {
       FUN_005deadb(in_ECX,s32(in_ECX, 0x41c) + local_18 / 3,
-                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + iVar4) /
+                   // DEVIATION: C pointer — (char)(*(byte *)(local_18 + iVar4) /
                          // DEVIATION(cont): (longlong)*(int *)(in_ECX + 0x418)) * cVar1 +
                    // DEVIATION(cont): (char)((longlong)(ulonglong)*(byte *)(local_18 + iVar3) /
                          // DEVIATION(cont): (longlong)*(int *)(in_ECX + 0x418)) * cVar2,
@@ -5721,7 +5721,7 @@ export function create_font_8200_005C8200(param_1, param_2, param_3) {
   }
   local_10 = 0;
   local_c = CreateFontIndirectA(local_4c[0]);
-  if (local_c !== (HFONT)0x0) {
+  if (local_c !== 0x0) {
     local_10 = FUN_005dce4f(8);
     local_8 = FUN_005dcdf9(local_10);
     w32(local_8, 0, local_c);
@@ -5772,7 +5772,7 @@ export function FUN_005c841d(param_1) {
   puVar1 = FUN_005dcdf9(param_1);
   if (puVar1 !== 0x0) {
     if (puVar1[1] === 1) {
-      DeleteObject((HGDIOBJ)s32(puVar1, 0));
+      DeleteObject(s32(puVar1, 0));
     }
     FUN_005dce29(param_1);
     FUN_005dce96(param_1);
@@ -5802,11 +5802,11 @@ export function gdi_847F_005C847F(param_1) {
   }
   else {
     local_8 = FUN_005dcdf9(param_1);
-    hdc = GetDC((HWND)0x0);
-    h = SelectObject(hdc,(HGDIOBJ)s32(local_8, 0));
+    hdc = GetDC(0x0);
+    h = SelectObject(hdc,s32(local_8, 0));
     GetTextMetricsA(hdc,local_40[0]);
     SelectObject(hdc,h);
-    ReleaseDC((HWND)0x0,hdc);
+    ReleaseDC(0x0,hdc);
     FUN_005dce29(param_1);
   }
   return local_40[0].tmHeight;
@@ -5828,11 +5828,11 @@ export function gdi_8514_005C8514(param_1) {
   let local_8;
   
   local_8 = FUN_005dcdf9(param_1);
-  hdc = GetDC((HWND)0x0);
-  h = SelectObject(hdc,(HGDIOBJ)s32(local_8, 0));
+  hdc = GetDC(0x0);
+  h = SelectObject(hdc,s32(local_8, 0));
   GetTextMetricsA(hdc,local_40[0]);
   SelectObject(hdc,h);
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   FUN_005dce29(param_1);
   return local_40[0].tmExternalLeading + local_40[0].tmHeight;
 }
@@ -5855,13 +5855,13 @@ export function measure_text_858E_005C858E(param_1, param_2) {
   let local_8;
   
   local_8 = FUN_005dcdf9(param_1);
-  hdc = GetDC((HWND)0x0);
-  h = SelectObject(hdc,(HGDIOBJ)s32(local_8, 0));
+  hdc = GetDC(0x0);
+  h = SelectObject(hdc,s32(local_8, 0));
   lpsz = local_10[0];
   c = _strlen(param_2);
   GetTextExtentPointA(hdc,param_2,c,lpsz);
   SelectObject(hdc,h);
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   FUN_005dce29(param_1);
   return local_10[0].cx;
 }
@@ -5914,7 +5914,7 @@ export function create_font_86BC_005C86BC(param_1, param_2, param_3, param_4) {
   iVar1 = _strncmp(_Str1,_Str2,_MaxCount);
   if (iVar1 === 0) {
     pHVar2 = CreateFontIndirectA(param_1);
-    // DEVIATION: C pointer — *(HFONT *)(param_4 + 0x108 + s32(param_4, 0x100) * 4) = pHVar2;
+    *(param_4 + 0x108 + s32(param_4, 0x100) * 4) = pHVar2;
     w32(param_4, 0x100, s32(param_4, 0x100) + 1);
   }
   return 1;
@@ -5932,10 +5932,10 @@ export function gdi_8736_005C8736(param_1) {
 
   let hdc;
   
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   w32(param_1, 0x100, 0);
-  EnumFontFamiliesA(hdc,(LPCSTR)0x0,create_font_86BC,param_1);
-  ReleaseDC((HWND)0x0,hdc);
+  EnumFontFamiliesA(hdc,0x0,create_font_86BC,param_1);
+  ReleaseDC(0x0,hdc);
   return s32(param_1, 0x100);
 }
 
@@ -5953,10 +5953,10 @@ export function FUN_005c8791(param_1) {
   let lpFileName;
   let local_c;
   
-  lpFileName = (LPCSTR)FUN_005dcdf9(param_1);
+  lpFileName = FUN_005dcdf9(param_1);
   for (local_c = 0; local_c < s32(lpFileName, 0x100); local_c = local_c + 1) {
     if (s32(lpFileName, local_c * 4 + 0x108) !== 0) {
-      // DEVIATION: C pointer — DeleteObject(*(HGDIOBJ *)(lpFileName + local_c * 4 + 0x108));
+      DeleteObject(*(lpFileName + local_c * 4 + 0x108));
       pCVar1 = lpFileName + local_c * 4 + 0x108;
       pCVar1[0] = 0;
       pCVar1[1] = 0;
@@ -5990,10 +5990,10 @@ export function render_text_8834_005C8834(param_1, param_2, param_3, param_4) {
   let local_14 = [0];
   
   puVar1 = FUN_005dcdf9(param_2);
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   hdc_00 = CreateCompatibleDC(hdc);
-  ReleaseDC((HWND)0x0,hdc);
-  h = SelectObject(hdc_00,(HGDIOBJ)s32(puVar1, 0));
+  ReleaseDC(0x0,hdc);
+  h = SelectObject(hdc_00,s32(puVar1, 0));
   SetRect(local_14[0],0,0,param_4,0);
   format = 0x410;
   lprc = local_14[0];
@@ -6025,7 +6025,7 @@ export function create_font_8908_005C8908(param_1) {
   
   local_10 = 0;
   pHVar1 = CreateFontIndirectA(param_1);
-  if (pHVar1 !== (HFONT)0x0) {
+  if (pHVar1 !== 0x0) {
     local_10 = FUN_005dce4f(8);
     if (local_10 === 0) {
       local_10 = 0;
@@ -6058,7 +6058,7 @@ export function FUN_005c8984(param_1) {
   else {
     piVar2 = FUN_005dcdf9(param_1);
     if (s32(piVar2, 0) !== 0) {
-      DeleteObject((HGDIOBJ)s32(piVar2, 0));
+      DeleteObject(s32(piVar2, 0));
     }
     FUN_005dce29(param_1);
     uVar1 = FUN_005dce96(param_1);
@@ -6089,10 +6089,10 @@ export function send_msg_89ED_005C89ED(param_1) {
       local_8 = 0;
     }
     else {
-      lpString1 = (LPSTR)FUN_005dcdf9(local_8);
+      lpString1 = FUN_005dcdf9(local_8);
       lstrcpyA(lpString1,param_1);
       FUN_005dce29(local_8);
-      SendMessageA((HWND)0xffff,0x1d,0,0);
+      SendMessageA(0xffff,0x1d,0,0);
     }
   }
   return local_8;
@@ -6112,10 +6112,10 @@ export function send_msg_8A85_005C8A85(param_1) {
   let BVar1;
   
   if (param_1 !== 0) {
-    lpFileName = (LPCSTR)FUN_005dcdf9(param_1);
+    lpFileName = FUN_005dcdf9(param_1);
     BVar1 = RemoveFontResourceA(lpFileName);
     if (BVar1 !== 0) {
-      SendMessageA((HWND)0xffff,0x1d,0,0);
+      SendMessageA(0xffff,0x1d,0,0);
     }
     FUN_005dce29(param_1);
     FUN_005dce96(param_1);
@@ -6133,7 +6133,7 @@ export function send_msg_8A85_005C8A85(param_1) {
 export function invalidate_8B00_005C8B00(param_1) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     InvalidateRect(param_1,0x0,0);
   }
   return;
@@ -6149,7 +6149,7 @@ export function invalidate_8B00_005C8B00(param_1) {
 export function manage_window_8B2D_005C8B2D(param_1) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     ShowWindow(param_1,5);
   }
   return;
@@ -6165,7 +6165,7 @@ export function manage_window_8B2D_005C8B2D(param_1) {
 export function manage_window_8B58_005C8B58(param_1) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     ShowWindow(param_1,0);
   }
   return;
@@ -6186,7 +6186,7 @@ export function FUN_005c8b83(param_1, param_2, param_3) {
   let bRepaint;
   let local_14 = [0];
   
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     GetWindowRect(param_1,local_14[0]);
     bRepaint = 1;
     nHeight = FUN_00407fc0(local_14[0]);
@@ -6213,12 +6213,12 @@ export function create_window_8BE1_005C8BE1(param_1, param_2) {
   let hInstance;
   let lpParam;
   
-  lpParam = (LPVOID)0x0;
-  hMenu = (HMENU)0x0;
+  lpParam = 0x0;
+  hMenu = 0x0;
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar2 = *(HWND *)(iVar1 + 4);
+  pHVar2 = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
   pHVar2 = CreateWindowExA(4,s_MSControlClass_00637ca8,DAT_00637ca4,0x50000000,s32(param_1, 0),param_1[1],
@@ -6284,7 +6284,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
       local_14[0].right = piVar2[2];
       local_14[0].bottom = piVar2[3];
       OffsetRect(local_14[0],-local_14[0].left,-local_14[0].top);
-      BVar3 = PtInRect(local_14[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
+      BVar3 = PtInRect(local_14[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
       if (((BVar3 === 0) && (DAT_00637c9c = 0, DAT_00637ca0 === 0)) && (ReleaseCapture(), iVar1 !== 0))
       {
         uVar4 = FUN_0040f810();
@@ -6484,7 +6484,7 @@ export function update_palette_90CA_005C90CA(param_1, param_2) {
     GetWindowLongA(local_8,0);
     iVar2 = FUN_00414d10();
     if (s32(iVar2, 0x14) !== 0) {
-      // DEVIATION: C pointer — FillRect((HDC)s32(param_1, 0),(param_1 + 2),*(HBRUSH *)(iVar2 + 0x14));
+      FillRect(s32(param_1, 0),(param_1 + 2),*(iVar2 + 0x14));
     }
   }
   else {
@@ -6494,18 +6494,18 @@ export function update_palette_90CA_005C90CA(param_1, param_2) {
     // DEVIATION: MFC — local_c = CCheckListBox::GetCheckStyle(this);
     local_14[0].x = param_1[2];
     local_14[0].y = param_1[3];
-    // DEVIATION: C pointer — MapWindowPoints(param_2,*(HWND *)(iVar2 + 4),local_14[0],1);
+    MapWindowPoints(param_2,*(iVar2 + 4),local_14[0],1);
     if ((s32(iVar2, 0x18) !== 0) && (DAT_00638b48 === 1)) {
-      // DEVIATION: C pointer — SelectPalette((HDC)s32(param_1, 0),*(HPALETTE *)(iVar2 + 0x18),0);
-      RealizePalette((HDC)s32(param_1, 0));
+      SelectPalette(s32(param_1, 0),*(iVar2 + 0x18),0);
+      RealizePalette(s32(param_1, 0));
     }
     rop = 0xcc0020;
-    // DEVIATION: C pointer — hdcSrc = *(HDC *)(local_c + 4);
+    hdcSrc = *(local_c + 4);
     LVar1 = local_14[0].x;
     y1 = local_14[0].y;
     iVar2 = FUN_00407fc0(param_1 + 2);
     cx = FUN_00407f90(param_1 + 2);
-    BitBlt((HDC)s32(param_1, 0),param_1[2],param_1[3],cx,iVar2,hdcSrc,LVar1,y1,rop);
+    BitBlt(s32(param_1, 0),param_1[2],param_1[3],cx,iVar2,hdcSrc,LVar1,y1,rop);
   }
   return;
 }
@@ -6612,7 +6612,7 @@ export function manage_window_944B_005C944B() {
   
   iVar1 = FUN_005c5e60();
   if ((iVar1 !== 3) && (iVar1 = FUN_00418770(), iVar1 !== 0)) {
-    hWnd = (HWND)FUN_00418770();
+    hWnd = FUN_00418770();
     DestroyWindow(hWnd);
   }
   return;
@@ -6632,7 +6632,7 @@ export function FUN_005c9499(param_1, param_2) {
   let local_c;
   
   local_c = 0x0;
-  if (param_1 === (HWND)0x0) {
+  if (param_1 === 0x0) {
     debug_log(s_Error__Tried_to_initialize_NULL_c_00637cf4);
   }
   else {
@@ -6648,7 +6648,7 @@ export function FUN_005c9499(param_1, param_2) {
     local_c[7] = 0;
     local_c[8] = 0;
     local_c[0xb] = 0;
-    SetWindowLongA(param_1,0,(LONG)local_c);
+    SetWindowLongA(param_1,0,local_c);
   }
   return local_c;
 }
@@ -6665,7 +6665,7 @@ export function FUN_005c9563(param_1) {
 
   let LVar1;
   
-  if (param_1 === (HWND)0x0) {
+  if (param_1 === 0x0) {
     LVar1 = 0;
   }
   else {
@@ -6687,7 +6687,7 @@ export function FUN_005c9595(param_1) {
   let uVar1;
   let puVar2;
   
-  if (param_1 === (HWND)0x0) {
+  if (param_1 === 0x0) {
     debug_log(s_Error__Tried_to_dispose_NULL_con_00637d30);
   }
   else {
@@ -6695,15 +6695,15 @@ export function FUN_005c9595(param_1) {
     if (puVar2 !== 0x0) {
       if (puVar2[2] === 0) {
         if (puVar2[3] !== 0) {
-          DeleteObject((HGDIOBJ)puVar2[3]);
+          DeleteObject(puVar2[3]);
           puVar2[3] = 0;
         }
         if (puVar2[4] !== 0) {
-          DeleteObject((HGDIOBJ)puVar2[4]);
+          DeleteObject(puVar2[4]);
           puVar2[4] = 0;
         }
         if (puVar2[5] !== 0) {
-          DeleteObject((HGDIOBJ)puVar2[5]);
+          DeleteObject(puVar2[5]);
           puVar2[5] = 0;
         }
       }
@@ -6827,12 +6827,12 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
   if (param_4 !== 0) {
     local_2a0 = 0x50810000;
   }
-  lpParam = (LPVOID)0x0;
-  hMenu = (HMENU)0x0;
+  lpParam = 0x0;
+  hMenu = 0x0;
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar1 + 4);
+  hWndParent = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
   local_154 = CreateWindowExA(4,s_MSControlClass_00637d70,DAT_00637d6c,local_2a0,s32(param_1, 0),
@@ -6849,28 +6849,28 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
   iVar1 = FUN_00407fc0(local_150[0]);
   iVar2 = FUN_00407f90(local_150[0]);
   h = CreateCompatibleBitmap(hdc,iVar2,iVar1);
-  if (h === (HBITMAP)0x0) {
+  if (h === 0x0) {
     debug_log(s_Could_not_create_bitmap_in_MSIni_00637d80);
     DestroyWindow(local_154);
-    local_154 = (HWND)0x0;
+    local_154 = 0x0;
   }
   else {
     iVar1 = FUN_00407fc0(local_150[0]);
     iVar2 = FUN_00407f90(local_150[0]);
     h_00 = CreateCompatibleBitmap(hdc,iVar2,iVar1);
-    if (h_00 === (HBITMAP)0x0) {
+    if (h_00 === 0x0) {
       debug_log(s_Could_not_create_bitmap_in_MSIni_00637da8);
       DestroyWindow(local_154);
-      local_154 = (HWND)0x0;
+      local_154 = 0x0;
     }
     else {
       iVar1 = FUN_00407fc0(local_150[0]);
       iVar2 = FUN_00407f90(local_150[0]);
       local_168 = CreateCompatibleBitmap(hdc,iVar2,iVar1);
-      if (local_168 === (HBITMAP)0x0) {
+      if (local_168 === 0x0) {
         debug_log(s_Could_not_create_bitmap_in_MSIni_00637dd0);
         DestroyWindow(local_154);
-        local_154 = (HWND)0x0;
+        local_154 = 0x0;
       }
       else {
         local_164 = CreateCompatibleDC(hdc);
@@ -6884,7 +6884,7 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
             bForceBkgd = 0;
             FUN_0040f810();
             this = FUN_00511320();
-            // DEVIATION: MFC — hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
+            // DEVIATION: MFC — hPal = CSplitterWnd::IsTracking(this);
             SelectPalette(local_164,hPal,bForceBkgd);
             RealizePalette(local_164);
           }
@@ -6892,14 +6892,14 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           FUN_00511320();
           uVar3 = FUN_0046f440();
           FUN_005dea9e(uVar3);
-          local_18 = CreatePen(0,1,((CONCAT1) >>> 0)2(local_15c[0],CONCAT11(local_174[0],local_160[0])))
+          local_18 = CreatePen(0,1,( >>> 0)2(local_15c[0],CONCAT11(local_174[0],local_160[0])))
           ;
         }
         h_01 = CreatePen(0,1,0xffffff);
         h_02 = CreatePen(0,1,0x808080);
         uVar3 = FUN_004d8af0();
         puVar4 = FUN_005dcdf9(uVar3);
-        h_03 = SelectObject(local_164,(HGDIOBJ)s32(puVar4, 0));
+        h_03 = SelectObject(local_164,s32(puVar4, 0));
         uVar3 = FUN_004d8af0();
         FUN_005dce29(uVar3);
         h_04 = SelectObject(local_164,h);
@@ -6908,28 +6908,28 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
         local_c = local_150[0].right;
         local_8 = local_150[0].bottom;
         if (s32(local_170, 0x34) === -1) {
-          FillRect(local_164,local_150[0],(HBRUSH)local_18);
+          FillRect(local_164,local_150[0],local_18);
         }
         else {
           local_140 = SelectObject(local_164,local_18);
           for (local_178 = local_150[0].top; local_178 < local_150[0].bottom; local_178 = local_178 + 1) {
-            MoveToEx(local_164,local_150[0].left,local_178,(LPPOINT)0x0);
+            MoveToEx(local_164,local_150[0].left,local_178,0x0);
             LineTo(local_164,local_150[0].right,local_178);
           }
           SelectObject(local_164,local_140);
         }
         local_140 = SelectObject(local_164,h_01);
-        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,0x0);
         LineTo(local_164,local_150[0].left,local_150[0].top);
         LineTo(local_164,local_150[0].right,local_150[0].top);
-        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,0x0);
         LineTo(local_164,local_150[0].left + 1,local_150[0].top + 1);
         LineTo(local_164,local_150[0].right + -1,local_150[0].top + 1);
         SelectObject(local_164,h_02);
-        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,0x0);
         LineTo(local_164,local_150[0].right + -1,local_150[0].bottom + -1);
         LineTo(local_164,local_150[0].right + -1,local_150[0].top);
-        MoveToEx(local_164,local_150[0].left + 2,local_150[0].bottom + -2,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 2,local_150[0].bottom + -2,0x0);
         LineTo(local_164,local_150[0].right + -2,local_150[0].bottom + -2);
         LineTo(local_164,local_150[0].right + -2,local_150[0].top + 1);
         SelectObject(local_164,local_140);
@@ -6988,29 +6988,29 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           local_2c = local_2c + (local_16c >> 1) + -5;
           local_158 = local_2c + 10;
           SelectObject(local_164,h_02);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -2);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -1);
           SelectObject(local_164,local_140);
         }
         SelectObject(local_164,h_00);
         if (s32(local_170, 0x34) === -1) {
-          FillRect(local_164,local_150[0],(HBRUSH)local_18);
+          FillRect(local_164,local_150[0],local_18);
         }
         else {
           local_140 = SelectObject(local_164,local_18);
           for (local_178 = local_150[0].top; local_178 < local_150[0].bottom; local_178 = local_178 + 1) {
-            MoveToEx(local_164,local_150[0].left,local_178,(LPPOINT)0x0);
+            MoveToEx(local_164,local_150[0].left,local_178,0x0);
             LineTo(local_164,local_150[0].right,local_178);
           }
           SelectObject(local_164,local_140);
         }
         local_140 = SelectObject(local_164,h_02);
-        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,0x0);
         LineTo(local_164,local_150[0].left,local_150[0].top);
         LineTo(local_164,local_150[0].right,local_150[0].top);
-        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,0x0);
         LineTo(local_164,local_150[0].left + 1,local_150[0].top + 1);
         LineTo(local_164,local_150[0].right + -1,local_150[0].top + 1);
         SelectObject(local_164,local_140);
@@ -7071,9 +7071,9 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           local_2c = local_2c + (local_16c >> 1) + -5;
           local_158 = local_2c + 10;
           SelectObject(local_164,h_02);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -2);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -1);
           SelectObject(local_164,local_140);
         }
@@ -7083,28 +7083,28 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
         local_150[0].right = local_c;
         local_150[0].bottom = local_8;
         if (s32(local_170, 0x34) === -1) {
-          FillRect(local_164,local_150[0],(HBRUSH)local_18);
+          FillRect(local_164,local_150[0],local_18);
         }
         else {
           local_140 = SelectObject(local_164,local_18);
           for (local_178 = local_150[0].top; local_178 < local_150[0].bottom; local_178 = local_178 + 1) {
-            MoveToEx(local_164,local_150[0].left,local_178,(LPPOINT)0x0);
+            MoveToEx(local_164,local_150[0].left,local_178,0x0);
             LineTo(local_164,local_150[0].right,local_178);
           }
           SelectObject(local_164,local_140);
         }
         local_140 = SelectObject(local_164,h_01);
-        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left,local_150[0].bottom,0x0);
         LineTo(local_164,local_150[0].left,local_150[0].top);
         LineTo(local_164,local_150[0].right,local_150[0].top);
-        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,0x0);
         LineTo(local_164,local_150[0].left + 1,local_150[0].top + 1);
         LineTo(local_164,local_150[0].right + -1,local_150[0].top + 1);
         SelectObject(local_164,h_02);
-        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 1,local_150[0].bottom + -1,0x0);
         LineTo(local_164,local_150[0].right + -1,local_150[0].bottom + -1);
         LineTo(local_164,local_150[0].right + -1,local_150[0].top);
-        MoveToEx(local_164,local_150[0].left + 2,local_150[0].bottom + -2,(LPPOINT)0x0);
+        MoveToEx(local_164,local_150[0].left + 2,local_150[0].bottom + -2,0x0);
         LineTo(local_164,local_150[0].right + -2,local_150[0].bottom + -2);
         LineTo(local_164,local_150[0].right + -2,local_150[0].top + 1);
         SelectObject(local_164,local_140);
@@ -7171,9 +7171,9 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           local_2c = local_2c + (local_16c >> 1) + -5;
           local_158 = local_2c + 10;
           SelectObject(local_164,h_02);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -2,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -2);
-          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,(LPPOINT)0x0);
+          MoveToEx(local_164,local_2c,local_28[0].bottom + -1,0x0);
           LineTo(local_164,local_158,local_28[0].bottom + -1);
           SelectObject(local_164,local_140);
         }
@@ -7186,9 +7186,9 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
         DeleteObject(h_02);
         DeleteDC(local_164);
         iVar1 = FUN_005c9499(local_154,param_2);
-        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0xc) = h;
-        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0x10) = h_00;
-        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0x14) = local_168;
+        *(iVar1 + 0xc) = h;
+        *(iVar1 + 0x10) = h_00;
+        *(iVar1 + 0x14) = local_168;
         w32(iVar1, 0x2c, 6);
         SetWindowLongA(local_154,-4,0x5cacd4);
       }
@@ -7341,7 +7341,7 @@ export function blit_ACD4_005CACD4(param_1, param_2, param_3, param_4) {
           OffsetRect(local_38[0],-local_38[0].left,-local_38[0].top);
           InvalidateRect(param_1,local_38[0],0);
           w32(local_44, 0x18, 0);
-          BVar4 = PtInRect(local_38[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff)
+          BVar4 = PtInRect(local_38[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff)
                           );
           if (BVar4 === 0) {
             return 0;
@@ -7370,7 +7370,7 @@ export function blit_ACD4_005CACD4(param_1, param_2, param_3, param_4) {
       local_38[0].right = piVar3[2];
       local_38[0].bottom = piVar3[3];
       OffsetRect(local_38[0],-local_38[0].left,-local_38[0].top);
-      BVar4 = PtInRect(local_38[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
+      BVar4 = PtInRect(local_38[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
       local_20 = ((BVar4 !== 0) >>> 0);
       if (u32(local_44, 0x18) !== local_20) {
         w32(local_44, 0x18, local_20);
@@ -7398,20 +7398,20 @@ export function blit_ACD4_005CACD4(param_1, param_2, param_3, param_4) {
         if (cVar1 === 0) {
           FUN_0040f810();
           iVar8 = FUN_00414d10();
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar8 + 4));
+          SetFocus(*(iVar8 + 4));
         }
         else {
-          SetFocus((HWND)0x0);
+          SetFocus(0x0);
         }
       }
-      // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0x14);
+      local_3c = *(local_44 + 0x14);
     }
     else {
       if (s32(local_44, 0x18) === 0) {
-        // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0xc);
+        local_3c = *(local_44 + 0xc);
       }
       if (s32(local_44, 0x18) === 1) {
-        // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0x10);
+        local_3c = *(local_44 + 0x10);
       }
     }
     local_24 = CreateCompatibleDC(local_40);
@@ -7540,12 +7540,12 @@ export function create_window_B319_005CB319(param_1, param_2, param_3, param_4, 
   if (param_8 !== 0) {
     local_44 = 0x50810000;
   }
-  lpParam = (LPVOID)0x0;
-  hMenu = (HMENU)0x0;
+  lpParam = 0x0;
+  hMenu = 0x0;
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar4 = FUN_00414d10();
-  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar4 + 4);
+  hWndParent = *(iVar4 + 4);
   iVar4 = FUN_00407fc0(local_3c[0]);
   nWidth = FUN_00407f90(local_3c[0]);
   local_28 = CreateWindowExA(4,s_MSControlClass_00637e34,DAT_00637e30,local_44,param_1,param_2,
@@ -7583,12 +7583,12 @@ export function create_window_B601_005CB601(param_1, param_2, param_3, param_4, 
   }
   local_c = param_5;
   SetRect(local_1c[0],param_1,param_2,param_1 + param_3,param_2 + param_4);
-  lpParam = (LPVOID)0x0;
-  hMenu = (HMENU)0x0;
+  lpParam = 0x0;
+  hMenu = 0x0;
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar1 + 4);
+  hWndParent = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(local_1c[0]);
   nWidth = FUN_00407f90(local_1c[0]);
   local_8 = CreateWindowExA(4,s_MSControlClass_00637e48,DAT_00637e44,local_24,param_1,param_2,
@@ -7668,7 +7668,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         BVar12 = 0;
         FUN_0040f810();
         this = FUN_00511320();
-        // DEVIATION: MFC — hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
+        // DEVIATION: MFC — hPal = CSplitterWnd::IsTracking(this);
         SelectPalette(local_24,hPal,BVar12);
       }
       if (s32(iVar3, 0x18) === 0) {
@@ -7683,7 +7683,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         y1 = 0;
         iVar11 = 0;
         // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle((local_10 + 0x34));
-        // DEVIATION: C pointer — pHVar10 = *(HDC *)(uVar6 + 4);
+        pHVar10 = *(uVar6 + 4);
         // DEVIATION: MFC — pCVar7 = COleClientItem::GetActiveView((local_10 + 0x34));
         // DEVIATION: MFC — pCVar8 = COleClientItem::GetActiveView((local_10 + 0x34));
         BitBlt(local_24,0,0,pCVar8,pCVar7,pHVar10,iVar11,y1,DVar13);
@@ -7699,7 +7699,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         iVar11 = 0;
         iVar3 = 0;
         // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle((local_10 + 0x7c));
-        // DEVIATION: C pointer — pHVar10 = *(HDC *)(uVar6 + 4);
+        pHVar10 = *(uVar6 + 4);
         // DEVIATION: MFC — pCVar7 = COleClientItem::GetActiveView((local_10 + 0x7c));
         // DEVIATION: MFC — pCVar8 = COleClientItem::GetActiveView((local_10 + 0x7c));
         BitBlt(local_24,0,0,pCVar8,pCVar7,pHVar10,iVar3,iVar11,DVar13);
@@ -7776,7 +7776,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
       local_20[0].right = piVar4[2];
       local_20[0].bottom = piVar4[3];
       OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
-      BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
+      BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
       local_c = ((BVar12 !== 0) >>> 0);
       if (u32(iVar3, 0x18) !== local_c) {
         w32(iVar3, 0x18, local_c);
@@ -7803,7 +7803,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);
@@ -7833,7 +7833,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);
@@ -8039,12 +8039,12 @@ export function measure_text_BF40_005CBF40(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   hdc_00 = CreateCompatibleDC(hdc);
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   uVar1 = FUN_004d8af0();
   local_8 = FUN_005dcdf9(uVar1);
-  h = SelectObject(hdc_00,(HGDIOBJ)s32(local_8, 0));
+  h = SelectObject(hdc_00,s32(local_8, 0));
   uVar1 = FUN_004d8af0();
   FUN_005dce29(uVar1);
   GetTextMetricsA(hdc_00,local_44[0]);
@@ -8080,12 +8080,12 @@ export function gdi_C035_005CC035(param_1, param_2, param_3, param_4) {
   let local_40 = [0];
   let local_8;
   
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   hdc_00 = CreateCompatibleDC(hdc);
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   uVar1 = FUN_004d8af0();
   local_8 = FUN_005dcdf9(uVar1);
-  SelectObject(hdc_00,(HGDIOBJ)s32(local_8, 0));
+  SelectObject(hdc_00,s32(local_8, 0));
   uVar1 = FUN_004d8af0();
   FUN_005dce29(uVar1);
   GetTextMetricsA(hdc_00,local_40[0]);
@@ -8128,24 +8128,24 @@ export function create_window_C0F0_005CC0F0(param_1, param_2, param_3, param_4) 
   if (param_4 !== 0) {
     local_24 = 0x50010000;
   }
-  lpParam = (LPVOID)0x0;
-  hMenu = (HMENU)0x0;
+  lpParam = 0x0;
+  hMenu = 0x0;
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar3 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar4 = *(HWND *)(iVar3 + 4);
+  pHVar4 = *(iVar3 + 4);
   iVar3 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
   pHVar4 = CreateWindowExA(4,s_MSControlClass_00637f10,DAT_00637f0c,local_24,s32(param_1, 0),param_1[1],
                            nWidth,iVar3,pHVar4,hMenu,hInstance,lpParam);
   FUN_005c9222(param_2,pvVar2);
-  pHVar5 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x132);
-  pHVar6 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x131);
-  pHVar7 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x130);
+  pHVar5 = LoadBitmapA(DAT_006e4ff0,0x132);
+  pHVar6 = LoadBitmapA(DAT_006e4ff0,0x131);
+  pHVar7 = LoadBitmapA(DAT_006e4ff0,0x130);
   iVar3 = FUN_005c9499(pHVar4,param_2);
-  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0xc) = pHVar5;
-  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0x10) = pHVar6;
-  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0x14) = pHVar7;
+  *(iVar3 + 0xc) = pHVar5;
+  *(iVar3 + 0x10) = pHVar6;
+  *(iVar3 + 0x14) = pHVar7;
   w32(iVar3, 0x2c, 2);
   // DEVIATION: C pointer — *(void **)(iVar3 + 0x24) = pvVar2;
   SetWindowLongA(pHVar4,-4,0x5cc320);
@@ -8256,17 +8256,17 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
       if (iVar2 === 0) {
         pHVar6 = GetFocus();
         if (pHVar6 === param_1) {
-          SetFocus((HWND)0x0);
+          SetFocus(0x0);
         }
-        // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0xc);
+        local_1a0 = *(local_19c + 0xc);
       }
       else {
         // DEVIATION: MFC — iVar2 = ios::width(local_198);
         if (iVar2 === 0) {
-          // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0x10);
+          local_1a0 = *(local_19c + 0x10);
         }
         else {
-          // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0x14);
+          local_1a0 = *(local_19c + 0x14);
         }
       }
       GetBitmapDimensionEx(local_1a0,local_150[0]);
@@ -8290,7 +8290,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
       update_palette_90CA(local_194[0],param_1);
       uVar7 = FUN_004d8af0();
       local_118 = FUN_005dcdf9(uVar7);
-      local_154 = SelectObject(local_144,(HGDIOBJ)s32(local_118, 0));
+      local_154 = SelectObject(local_144,s32(local_118, 0));
       uVar7 = FUN_004d8af0();
       FUN_005dce29(uVar7);
       SetBkMode(local_144,1);
@@ -8306,7 +8306,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
         FUN_0040f810(uVar4,puVar8,puVar9,puVar11);
         FUN_00511320();
         FUN_00497c40(uVar4,puVar8,puVar9,puVar11);
-        SetTextColor(local_144,((CONCAT1) >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])));
+        SetTextColor(local_144,( >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])));
         UVar12 = 0x24;
         ptVar10 = local_1b0[0];
         sVar5 = _strlen(local_140);
@@ -8326,7 +8326,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
             FUN_00511320();
             uVar7 = FUN_0046f440();
             FUN_005dea9e(uVar7);
-            SetTextColor(local_144,((CONCAT1) >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])))
+            SetTextColor(local_144,( >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])))
             ;
           }
         }
@@ -8334,7 +8334,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
           SetTextColor(local_144,0);
         }
         else {
-          SetTextColor(local_144,((CONCAT1) >>> 0)2(DAT_00637f02,CONCAT11(DAT_00637f01,DAT_00637f00)));
+          SetTextColor(local_144,( >>> 0)2(DAT_00637f02,CONCAT11(DAT_00637f01,DAT_00637f00)));
         }
       }
       else {
@@ -8352,14 +8352,14 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
               uVar7 = FUN_0046f440();
               FUN_005dea9e(uVar7);
               SetTextColor(local_144,
-                           ((CONCAT1) >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])));
+                           ( >>> 0)2(local_120[0],CONCAT11(local_148[0],local_124[0])));
             }
           }
           else if (DAT_00637f07 === 0) {
             SetTextColor(local_144,0x404040);
           }
           else {
-            SetTextColor(local_144,((CONCAT1) >>> 0)2(DAT_00637f06,CONCAT11(DAT_00637f05,DAT_00637f04)))
+            SetTextColor(local_144,( >>> 0)2(DAT_00637f06,CONCAT11(DAT_00637f05,DAT_00637f04)))
             ;
           }
         }
@@ -8400,9 +8400,9 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
         local_13c = local_138 + 10;
         local_11c = GetStockObject(3);
         SelectObject(local_144,local_11c);
-        MoveToEx(local_144,local_138,local_1b0[0].bottom + -3,(LPPOINT)0x0);
+        MoveToEx(local_144,local_138,local_1b0[0].bottom + -3,0x0);
         LineTo(local_144,local_13c,local_1b0[0].bottom + -3);
-        MoveToEx(local_144,local_138,local_1b0[0].bottom + -2,(LPPOINT)0x0);
+        MoveToEx(local_144,local_138,local_1b0[0].bottom + -2,0x0);
         LineTo(local_144,local_13c,local_1b0[0].bottom + -2);
       }
       SelectObject(local_144,local_154);
@@ -8593,17 +8593,17 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
     param_3 = param_3 | 0x10000000;
   }
   if (DAT_00637f58 === 0) {
-    pvVar6 = (LPVOID)0x0;
-    pHVar4 = (HMENU)0x0;
+    pvVar6 = 0x0;
+    pHVar4 = 0x0;
     pHVar5 = DAT_006e4ff0;
     FUN_0040f810();
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
+    pHVar3 = *(iVar1 + 4);
     iVar1 = FUN_00407fc0(param_1);
     iVar2 = FUN_00407f90(param_1);
     local_8 = CreateWindowExA(4,s_SCROLLBAR_00637f60,DAT_00637f5c,param_3 | 0x40000000,s32(param_1, 0),
                               param_1[1],iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
-    DAT_006d46f8 = (WNDPROC)GetWindowLongA(local_8,-4);
+    DAT_006d46f8 = GetWindowLongA(local_8,-4);
     local_34 = GetWindowLongA(local_8,-0x10);
     local_30[0].style = 0x8b;
     local_30[0].lpfnWndProc = DAT_006d46f8;
@@ -8611,28 +8611,28 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
     DAT_006d46f4 = GetClassLongA(local_8,-0x12);
     local_30[0].cbWndExtra = DAT_006d46f4 + 8;
     local_30[0].hInstance = DAT_006e4ff0;
-    local_30[0].hIcon = (HICON)0x0;
-    local_30[0].hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+    local_30[0].hIcon = 0x0;
+    local_30[0].hCursor = LoadCursorA(0x0,0x7f00);
     local_30[0].hbrBackground = GetStockObject(1);
-    local_30[0].lpszMenuName = (LPCSTR)0x0;
+    local_30[0].lpszMenuName = 0x0;
     local_30[0].lpszClassName = s_MSScrollBarClass_00637f6c;
     RegisterClassA(local_30[0]);
     DAT_00637f58 = 1;
     DestroyWindow(local_8);
   }
-  pvVar6 = (LPVOID)0x0;
-  pHVar4 = (HMENU)0x0;
+  pvVar6 = 0x0;
+  pHVar4 = 0x0;
   pHVar5 = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
+  pHVar3 = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
   local_8 = CreateWindowExA(4,s_MSScrollBarClass_00637f84,DAT_00637f80,local_34,s32(param_1, 0),param_1[1]
                             ,iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
   SetWindowLongA(local_8,-4,0x5cce80);
   SetWindowLongA(local_8,DAT_006d46f4,param_2);
-  SetWindowLongA(local_8,DAT_006d46f4 + 4,(LONG)DAT_006d46f8);
+  SetWindowLongA(local_8,DAT_006d46f4 + 4,DAT_006d46f8);
   ShowScrollBar(local_8,2,1);
   FUN_005cd4c7(local_8,1,100);
   return local_8;
@@ -8687,7 +8687,7 @@ export function gdi_D149_005CD149(param_1, param_2, param_3, param_4) {
       iVar7 = FUN_005bd4cd();
       if (iVar7 === 0) {
         iVar4 = FUN_005c8f50();
-        // DEVIATION: C pointer — LVar8 = *(LPARAM *)(iVar4 + 4);
+        LVar8 = *(iVar4 + 4);
         pWVar6 = FUN_005c8f50();
         PostMessageA(param_1,0x202,s32(pWVar6, 0),LVar8);
       }
@@ -8704,7 +8704,7 @@ export function gdi_D149_005CD149(param_1, param_2, param_3, param_4) {
       iVar7 = FUN_005bd4cd();
       if (iVar7 === 0) {
         iVar4 = FUN_005c8f50();
-        // DEVIATION: C pointer — LVar8 = *(LPARAM *)(iVar4 + 4);
+        LVar8 = *(iVar4 + 4);
         pWVar6 = FUN_005c8f50();
         PostMessageA(param_1,0x202,s32(pWVar6, 0),LVar8);
       }
@@ -8761,7 +8761,7 @@ export function gdi_D149_005CD149(param_1, param_2, param_3, param_4) {
 export function FUN_005cd49f(param_1, param_2) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     EnableWindow(param_1,param_2);
   }
   return;
@@ -8835,7 +8835,7 @@ export function FUN_005cd559(param_1, param_2) {
 export function FUN_005cd580(param_1, param_2, param_3, param_4) {
 
 
-  // DEVIATION: C pointer — SetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3,1);
+  SetScrollRange(*(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3,1);
   FUN_005cd5f0(param_1,param_2,param_4);
   return;
 }
@@ -8850,7 +8850,7 @@ export function FUN_005cd580(param_1, param_2, param_3, param_4) {
 export function FUN_005cd5c3(param_1, param_2, param_3, param_4) {
 
 
-  // DEVIATION: C pointer — GetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3);
+  GetScrollRange(*(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3);
   return;
 }
 
@@ -8864,7 +8864,7 @@ export function FUN_005cd5c3(param_1, param_2, param_3, param_4) {
 export function FUN_005cd5f0(param_1, param_2, param_3) {
 
 
-  // DEVIATION: C pointer — SetScrollPos(*(HWND *)(param_1 + 4),((param_3 !== 0) >>> 0),param_2,1);
+  SetScrollPos(*(param_1 + 4),((param_3 !== 0) >>> 0),param_2,1);
   return;
 }
 
@@ -9246,7 +9246,7 @@ export function FUN_005cdea1(unaff_ESI, param_1, param_2, param_3) {
   FUN_005bd65c(param_1,param_2);
   FUN_005c041f(param_3);
   FUN_005cebec(local_58,0,0,param_1,param_2);
-  SetRect((LPRECT)(iVar1 + 0x10),0,0,0,0);
+  SetRect((iVar1 + 0x10),0,0,0,0);
   // DEVIATION: SEH
   FUN_005cdf2d();
   FUN_005cdf40(unaff_ESI,unaff_EBX,iVar1);
@@ -10763,10 +10763,10 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
           iVar3 = FUN_00407f90(local_64[0]);
           SetRect(in_ECX,0,0,iVar3,iVar2);
           if (param_2 === -2) {
-            // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
+            // DEVIATION: C pointer — *(undefined1 *)in_ECX[3].left = 0;
           }
           else {
-            // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_40;
+            // DEVIATION: C pointer — *(char *)in_ECX[3].left = local_40;
           }
           in_ECX[2].left = 0;
           in_ECX[2].top = 0;
@@ -10796,10 +10796,10 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
       iVar3 = FUN_00407f90(local_64[0]);
       SetRect(in_ECX,0,0,iVar3,iVar2);
       if (param_2 === -2) {
-        // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
+        // DEVIATION: C pointer — *(undefined1 *)in_ECX[3].left = 0;
       }
       else {
-        // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_40;
+        // DEVIATION: C pointer — *(char *)in_ECX[3].left = local_40;
       }
       in_ECX[2].left = 0;
       in_ECX[2].top = 0;
@@ -10979,10 +10979,10 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
             iVar2 = FUN_00407f90(local_68[0]);
             SetRect(in_ECX,0,0,iVar2,iVar1);
             if (param_2 === -2) {
-              // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
+              // DEVIATION: C pointer — *(undefined1 *)in_ECX[3].left = 0;
             }
             else {
-              // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_44;
+              // DEVIATION: C pointer — *(char *)in_ECX[3].left = local_44;
             }
             in_ECX[2].left = 0;
             in_ECX[2].top = 0;
@@ -11010,10 +11010,10 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
         iVar2 = FUN_00407f90(local_68[0]);
         SetRect(in_ECX,0,0,iVar2,iVar1);
         if (param_2 === -2) {
-          // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
+          // DEVIATION: C pointer — *(undefined1 *)in_ECX[3].left = 0;
         }
         else {
-          // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_44;
+          // DEVIATION: C pointer — *(char *)in_ECX[3].left = local_44;
         }
         in_ECX[2].left = 0;
         in_ECX[2].top = 0;
@@ -11110,7 +11110,7 @@ LAB_005cb749:
       local_20[0].right = piVar4[2];
       local_20[0].bottom = piVar4[3];
       OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
-      BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
+      BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
       local_c = ((BVar12 !== 0) >>> 0);
       if (u32(iVar3, 0x18) !== local_c) {
         w32(iVar3, 0x18, local_c);
@@ -11137,7 +11137,7 @@ LAB_005cb749:
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);
@@ -11167,7 +11167,7 @@ LAB_005cb749:
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);
@@ -11190,7 +11190,7 @@ function LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4
       local_20[0].right = piVar4[2];
       local_20[0].bottom = piVar4[3];
       OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
-      BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
+      BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff));
       local_c = ((BVar12 !== 0) >>> 0);
       if (u32(iVar3, 0x18) !== local_c) {
         w32(iVar3, 0x18, local_c);
@@ -11217,7 +11217,7 @@ function LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);
@@ -11247,7 +11247,7 @@ function LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4
         OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
         InvalidateRect(param_1,local_20[0],0);
         w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],(POINT)(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
+        BVar12 = PtInRect(local_20[0],(CONCAT44(param_4 >> 0x10,param_4) & 0xffffffff0000ffff))
         ;
         if (BVar12 !== 0) {
           blit_B6EB(param_1,0xf,0,0);

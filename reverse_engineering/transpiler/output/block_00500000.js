@@ -534,7 +534,7 @@ export function FUN_005013bc() {
     FUN_0040bbb0();
     FUN_0040bbe0(s_CITYMODAL_00630d78);
     FUN_0040ff30((DAT_006aa764 === 2) + 0x01);
-    FUN_00421ea0(DAT_00679640);
+    FUN_00421ea0;
     if (DAT_00631edc !== 0) {
       thunk_citywin_BC4F(0);
     }
@@ -3167,7 +3167,7 @@ export function FUN_00506a42(param_1) {
   case 7:
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
     w16(DAT_0064f35c, iVar2 * 0x58, 
-         (((s8(DAT_0064b1c8[u8(DAT_006560f6[iVar1 * 0x20]) << 16 >> 16)) * 0x14]
+         (((s8(DAT_0064b1c8[u8(DAT_006560f6[iVar1 * 0x20]) << 16 >> 16) * 0x14])
                       * ((DAT_0064bccc) >>> 0)) / 2) + s16(DAT_0064f35c, iVar2 * 0x58);
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
     FUN_004e7492(iVar2);
@@ -4195,7 +4195,7 @@ export function citywin_92AF_005092AF(in_ECX) {
                         // DEVIATION(cont): (char)(&DAT_0064f348)[*(int *)(in_ECX + 0x159c) * 0x58] * 0x594));
     FUN_0040fed0();
   }
-  FUN_0055324c(DAT_00679640);
+  FUN_0055324c;
   return;
 }
 
@@ -4262,7 +4262,7 @@ export function citywin_9545_00509545(in_ECX) {
   
   if ((s32(in_ECX, 0x15a4) === 0) && (s32(in_ECX, 0x15a0) === 0)) {
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — BringWindowToTop(*(HWND *)(iVar1 + 4));
+    BringWindowToTop(*(iVar1 + 4));
   }
   return;
 }
@@ -6400,7 +6400,7 @@ export function citywin_DB36_0050DB36(in_ECX) {
 export function citywin_DB92_0050DB92() {
 
 
-  FUN_004080f0(DAT_00655344);
+  FUN_004080f0;
   return;
 }
 
@@ -6414,7 +6414,7 @@ export function citywin_DB92_0050DB92() {
 export function citywin_DBB8_0050DBB8() {
 
 
-  FUN_004080f0(DAT_00655344);
+  FUN_004080f0;
   return;
 }
 
@@ -6435,13 +6435,13 @@ export function citywin_DBDE_0050DBDE(param_1) {
     if (1 < DAT_006aa78c) {
       DAT_006aa78c = DAT_006aa78c + -1;
       thunk_citywin_998F();
-      FUN_004bb570(DAT_00655344);
+      FUN_004bb570;
     }
   }
   else if ((param_1 === 3) && ((DAT_006aa78c < 2 || ((DAT_006aa78c < 3 && (999 < DAT_006ab198)))))) {
     DAT_006aa78c = DAT_006aa78c + 1;
     thunk_citywin_998F();
-    FUN_004bb570(DAT_00655344);
+    FUN_004bb570;
   }
   return;
 }

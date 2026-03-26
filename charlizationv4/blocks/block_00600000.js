@@ -50,16 +50,16 @@ export function __NMSG_WRITE_00600040(param_1) {
         local_1b8 = GetStdHandle(0xfffffff4);
       }
       else {
-        // DEVIATION: C pointer — local_1b8 = *(HANDLE *)(G.DAT_006e69f0 + 0x10);
+        local_1b8 = *(G.DAT_006e69f0 + 0x10);
       }
-      lpOverlapped = (LPOVERLAPPED)0x0;
+      lpOverlapped = 0x0;
       lpNumberOfBytesWritten = local_8[0];
       sVar3 = _strlen((PTR_s_R6002___floating_point_not_loade_0063b1bc)[local_c * 2]);
       WriteFile(local_1b8,(PTR_s_R6002___floating_point_not_loade_0063b1bc)[local_c * 2],sVar3,
                 lpNumberOfBytesWritten,lpOverlapped);
     }
     else if (param_1 !== 0xfc) {
-      DVar4 = GetModuleFileNameA((HMODULE)0x0,local_114,0x104);
+      DVar4 = GetModuleFileNameA(0x0,local_114,0x104);
       if (DVar4 === 0) {
         FUN_005f22d0(local_114,"<program name unknown>");
       }
@@ -413,11 +413,11 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
   let local_8;
   
   local_8 = 0;
-  if (G.DAT_0063b260 === (FARPROC)0x0) {
+  if (G.DAT_0063b260 === 0x0) {
     hModule = LoadLibraryA("user32.dll");
-    if (hModule !== (HMODULE)0x0) {
+    if (hModule !== 0x0) {
       G.DAT_0063b260 = GetProcAddress(hModule,"MessageBoxA");
-      if (G.DAT_0063b260 !== (FARPROC)0x0) {
+      if (G.DAT_0063b260 !== 0x0) {
         G.DAT_0063b264 = GetProcAddress(hModule,"GetActiveWindow");
         G.DAT_0063b268 = GetProcAddress(hModule,"GetLastActivePopup");
         LAB_006009b5_helper(iVar1, local_8); return;
@@ -427,10 +427,10 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
   }
   else {
 // LAB_006009b5: (code below also in LAB_006009b5_helper, kept for 1:1 audit)
-    if (G.DAT_0063b264 !== (FARPROC)0x0) {
+    if (G.DAT_0063b264 !== 0x0) {
       local_8 = (s32(G.DAT_0063b264, 0))();
     }
-    if ((local_8 !== 0) && (G.DAT_0063b268 !== (FARPROC)0x0)) {
+    if ((local_8 !== 0) && (G.DAT_0063b268 !== 0x0)) {
       local_8 = (s32(G.DAT_0063b268, 0))(local_8);
     }
     iVar1 = (s32(G.DAT_0063b260, 0))(local_8,_LpText,_LpCaption,_UType);
@@ -697,7 +697,7 @@ export function _fprintf_00600D40(_File, _Format) {
     }
   }
   iVar2 = __stbuf(_File);
-  iVar3 = __output(_File,_Format,&stack0x0000000c);
+  iVar3 = __output(_File,_Format,0 /* ADDR:stack0x0000000c */);
   __ftbuf(iVar2,_File);
   return iVar3;
 }
@@ -750,7 +750,7 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
     }
     else {
       _File->_flag = _File->_flag | 4;
-      _Buf = (char *)&_File->_charbuf;
+      _Buf = _File->_charbuf;
       _Size = 2;
     }
     _File->_bufsiz = _Size;
@@ -917,7 +917,7 @@ int __cdecl _ValidateExecute(_func_int *param_1)
   let BVar1;
   let local_8;
   
-  BVar1 = IsBadCodePtr((FARPROC)param_1);
+  BVar1 = IsBadCodePtr(param_1);
   local_8 = ((BVar1 === 0) >>> 0);
   return local_8;
 }
@@ -961,7 +961,7 @@ export function __snprintf_00601120(_Dest, _Count, _Format) {
   local_24[0]._base = _Dest;
   local_24[0]._ptr = _Dest;
   local_24[0]._cnt = _Count;
-  iVar2 = __output(local_24[0],_Format,&stack0x00000010);
+  iVar2 = __output(local_24[0],_Format,0 /* ADDR:stack0x00000010 */);
   local_24[0]._cnt = local_24[0]._cnt - 1;
   if (local_24[0]._cnt < 0) {
     __flsbuf(0,local_24[0]);
@@ -1220,7 +1220,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
   let local_8;
   
   local_28[0].nLength = 0xc;
-  local_28[0].lpSecurityDescriptor = (LPVOID)0x0;
+  local_28[0].lpSecurityDescriptor = 0x0;
   bVar5 = (_OpenFlag & 0x80) === 0;
   if (bVar5) {
     local_3c = 0;
@@ -1228,7 +1228,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
   else {
     local_3c = 0x10;
   }
-  local_28[0].bInheritHandle = (BOOL)bVar5;
+  local_28[0].bInheritHandle = bVar5;
   if ((_OpenFlag & 0x8000) === 0) {
     if ((_OpenFlag & 0x4000) === 0) {
       if (G.DAT_0063b3dc !== 0x8000) {
@@ -1351,8 +1351,8 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
     local_18 = 0xffffffff;
   }
   else {
-    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,(HANDLE)0x0);
-    if (local_8 === (HANDLE)0xffffffff) {
+    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
+    if (local_8 === 0xffffffff) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = 0xffffffff;
@@ -1489,10 +1489,10 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
         // DEVIATION(cont): SetStdHandle(0xfffffff6,(HANDLE)param_2);
       }
       else if (param_1 === 1) {
-        SetStdHandle(0xfffffff5,(HANDLE)param_2);
+        SetStdHandle(0xfffffff5,param_2);
       }
       else if (param_1 === 2) {
-        SetStdHandle(0xfffffff4,(HANDLE)param_2);
+        SetStdHandle(0xfffffff4,param_2);
       }
     }
     // DEVIATION: C pointer — *(intptr_t *)
@@ -1535,10 +1535,10 @@ export function __free_osfhnd_00601F40(param_1) {
         // DEVIATION(cont): SetStdHandle(0xfffffff6,(HANDLE)0x0);
       }
       else if (param_1 === 1) {
-        SetStdHandle(0xfffffff5,(HANDLE)0x0);
+        SetStdHandle(0xfffffff5,0x0);
       }
       else if (param_1 === 2) {
-        SetStdHandle(0xfffffff4,(HANDLE)0x0);
+        SetStdHandle(0xfffffff4,0x0);
       }
     }
     // DEVIATION: C pointer — *(undefined4 *)
@@ -1612,7 +1612,7 @@ export function __open_osfhandle_006020E0(_OSFileHandle, _Flags) {
   if ((_Flags & 0x4000) !== 0) {
     local_10 = local_10 | 0x80;
   }
-  DVar1 = GetFileType((HANDLE)_OSFileHandle);
+  DVar1 = GetFileType(_OSFileHandle);
   if (DVar1 === 0) {
     DVar1 = GetLastError();
     __dosmaperr(DVar1);
@@ -1742,7 +1742,7 @@ export function _wctomb_00602310(_MbCh, _WCh) {
   }
   else {
     local_c[0] = 0;
-    iVar1 = WideCharToMultiByte(G.DAT_0063a088,0x220,&_WCh,1,_MbCh,G.DAT_0063a29c,(LPCSTR)0x0,local_c);
+    iVar1 = WideCharToMultiByte(G.DAT_0063a088,0x220,_WCh,1,_MbCh,G.DAT_0063a29c,0x0,local_c);
     if ((iVar1 === 0) || (local_c[0] !== 0)) {
       G.DAT_00639f14 = 0x2a;
       iVar1 = -1;
@@ -2600,7 +2600,7 @@ export function __ld12told_00603170(_Ifp, _Ld) {
     local_14[0] = 0x80000000;
     local_8 = ((ushort) >>> 0)(((local_8) << 16 >> 16) + 1);
   }
-  local_18 = (INTRNCVT_STATUS)((local_8 & 0xffff) === 0x7fff);
+  local_18 = ((local_8 & 0xffff) === 0x7fff);
   w32(_Ld->ld + 4, 0, local_14);
   // DEVIATION: C pointer — *(undefined4 *)_Ld->ld = local_10;
   w16(_Ld->ld + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
@@ -2749,7 +2749,7 @@ export function __fltout_006033E0() {
   let local_c;
   let local_8;
   
-  ___dtold(local_10[0],&stack0x00000004);
+  ___dtold(local_10[0],0 /* ADDR:stack0x00000004 */);
   _DAT_006e55d8 = _I10_OUTPUT(local_10[0],local_c,local_8,0x11,0,G.DAT_006e55b0);
   _DAT_006e55d0 = G.DAT_006e55b2;
   _DAT_006e55d4 = G.DAT_006e55b0;
@@ -2892,7 +2892,7 @@ export function __tzset_00603650() {
   G.DAT_0063b350 = 0xffffffff;
   _Str1 = _getenv("TZ");
   if (_Str1 === 0x0) {
-    DVar2 = GetTimeZoneInformation((LPTIME_ZONE_INFORMATION)G.DAT_006e55e8);
+    DVar2 = GetTimeZoneInformation(G.DAT_006e55e8);
     if (DVar2 !== 0) {
       G.DAT_006e55e0 = 1;
       G.DAT_0063b2b0 = G.DAT_006e55e8 * 0x3c;
@@ -3180,7 +3180,7 @@ export function __chsize_00603F30(_FileHandle, _Size) {
           if (local_101c < 0) {
             pcStackY_20 = 0x604155;
             __lseek(_FileHandle,_Size,0);
-            hFile = (HANDLE)__get_osfhandle(_FileHandle);
+            hFile = __get_osfhandle(_FileHandle);
             BVar5 = SetEndOfFile(hFile);
             if (BVar5 === 0) {
               local_1020 = -1;
@@ -4130,7 +4130,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
         local_8 = _wcslen(_Source);
       }
       else {
-        iVar2 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,-1,(LPSTR)0x0,0,(LPCSTR)0x0,local_18[0]
+        iVar2 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,-1,0x0,0,0x0,local_18[0]
                                    );
         if ((iVar2 === 0) || (local_18[0] !== 0)) {
           G.DAT_00639f14 = 0x2a;
@@ -4158,7 +4158,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
       if (_MaxCount !== 0) {
         _MaxCount = wcsncnt(_Source,_MaxCount);
       }
-      local_8 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,_MaxCount,_Dest,_MaxCount,(LPCSTR)0x0
+      local_8 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,_MaxCount,_Dest,_MaxCount,0x0
                                     ,local_18[0]);
       if ((local_8 === 0) || (local_18[0] !== 0)) {
         G.DAT_00639f14 = 0x2a;
@@ -4169,13 +4169,13 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
       }
     }
     else {
-      local_8 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,-1,_Dest,_MaxCount,(LPCSTR)0x0,
+      local_8 = WideCharToMultiByte(G.DAT_0063a088,0x220,_Source,-1,_Dest,_MaxCount,0x0,
                                     local_18[0]);
       if ((local_8 === 0) || (local_18[0] !== 0)) {
         if ((local_18[0] === 0) && (DVar4 = GetLastError(), DVar4 === 0x7a)) {
           while (local_8 < _MaxCount) {
             local_14 = WideCharToMultiByte(G.DAT_0063a088,0,_Source,1,local_10,G.DAT_0063a29c,
-                                           (LPCSTR)0x0,local_18[0]);
+                                           0x0,local_18[0]);
             if ((local_14 === 0) || (local_18[0] !== 0)) {
               G.DAT_00639f14 = 0x2a;
               return 0xffffffff;
@@ -4386,13 +4386,13 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
       param_1[1] = 0;
       w32(param_1, 0, 0);
     }
-    else if ((((uVar3 & 0x7fff) === 0) && (local_38 = local_38 + 1, (param_1[2] & 0x7fffffff) === 0))
-            && ((param_1[1] === 0 && (s32(param_1, 0) === 0)))) {
-      w16(param_1 + 10, 0, 0);
+    // DEVIATION(C-syntax): else if ((((uVar3 & 0x7fff) === 0) && (local_38 = local_38 + 1, (param_1[2] & 0x7fffffff) === 0))
+            // DEVIATION(cont): && ((param_1[1] == 0 && (*param_1 == 0)))) {
+      // DEVIATION(cont): *(undefined2 *)((int)param_1 + 10) = 0;
     }
-    else if ((((uVar4 & 0x7fff) === 0) && (local_38 = local_38 + 1, (param_2[2] & 0x7fffffff) === 0))
-            && ((param_2[1] === 0 && (s32(param_2, 0) === 0)))) {
-      param_1[2] = 0;
+    // DEVIATION(C-syntax): else if ((((uVar4 & 0x7fff) === 0) && (local_38 = local_38 + 1, (param_2[2] & 0x7fffffff) === 0))
+            // DEVIATION(cont): && ((param_2[1] == 0 && (*param_2 == 0)))) {
+      // DEVIATION(cont): param_1[2] = 0;
       param_1[1] = 0;
       w32(param_1, 0, 0);
     }
@@ -4570,8 +4570,8 @@ export function __mbsnbicoll_006061F0(unaff_EDI, _Str1, _Str2, _MaxCount) {
   }
   else {
     iVar1 = ___crtCompareStringA
-                      (G.DAT_0063b0a8,(LPCWSTR)0x1,(DWORD)_Str1,(LPCSTR)_MaxCount,_Str2,
-                       (LPCSTR)_MaxCount,G.DAT_0063b0a4,unaff_EDI);
+                      (G.DAT_0063b0a8,0x1,_Str1,_MaxCount,_Str2,
+                       _MaxCount,G.DAT_0063b0a4,unaff_EDI);
     if (iVar1 === 0) {
       iVar1 = 0x7fffffff;
     }
@@ -4606,7 +4606,7 @@ export function ___wtomb_environ_00606260() {
     if (s32(local_8, 0) === 0) {
       return 0;
     }
-    iVar1 = WideCharToMultiByte(1,0,(LPCWSTR)s32(local_8, 0),-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+    iVar1 = WideCharToMultiByte(1,0,s32(local_8, 0),-1,0x0,0,0x0,0x0);
     if (iVar1 === 0) {
       return -1;
     }
@@ -4614,8 +4614,8 @@ export function ___wtomb_environ_00606260() {
     if (_POption === (char **)0x0) {
       return -1;
     }
-    iVar1 = WideCharToMultiByte(1,0,(LPCWSTR)s32(local_8, 0),-1,(LPSTR)_POption,iVar1,(LPCSTR)0x0,
-                                (LPBOOL)0x0);
+    iVar1 = WideCharToMultiByte(1,0,s32(local_8, 0),-1,_POption,iVar1,0x0,
+                                0x0);
     if (iVar1 === 0) break;
     ___crtsetenv(_POption,0);
     local_8 = local_8 + 1;
@@ -5030,13 +5030,13 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     pcVar7 = "setenv.c";
     uVar6 = 2;
     sVar4 = _strlen(_POption);
-    lpName = (LPCSTR)__malloc_dbg(sVar4 + 2,uVar6,pcVar7,uVar8);
-    if (lpName !== (LPCSTR)0x0) {
+    lpName = __malloc_dbg(sVar4 + 2,uVar6,pcVar7,uVar8);
+    if (lpName !== 0x0) {
       FUN_005f22d0(lpName,_POption);
       lpName[ppcVar1 - _POption] = 0;
       local_20 = lpName + (ppcVar1 - _POption) + 1;
       if (bVar5) {
-        local_20 = (LPCSTR)0x0;
+        local_20 = 0x0;
       }
       SetEnvironmentVariableA(lpName,local_20);
       __free_dbg(lpName,2);
@@ -5268,11 +5268,11 @@ export function __strupr_006076C0(unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = (LPSTR)___crtLCMapStringA(G.DAT_0063a078,(LPCWSTR)0x200,(DWORD)_String,
-                                           (LPCSTR)0xffffffff,0,(LPSTR)0x0,0,unaff_EDI,unaff_ESI);
-    if (((_LpDestStr !== (LPSTR)0x0) &&
+    _LpDestStr = ___crtLCMapStringA(G.DAT_0063a078,0x200,_String,
+                                           0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    if (((_LpDestStr !== 0x0) &&
         (local_c = __malloc_dbg(_LpDestStr,2,"strupr.c",0x61), local_c !== 0)) &&
-       (iVar1 = ___crtLCMapStringA(G.DAT_0063a078,(LPCWSTR)0x200,(DWORD)_String,(LPCSTR)0xffffffff,
+       (iVar1 = ___crtLCMapStringA(G.DAT_0063a078,0x200,_String,0xffffffff,
                                    local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
       FUN_005f22d0(_String,local_c);
     }
@@ -5312,11 +5312,11 @@ export function __strlwr_006077F0(unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = (LPSTR)___crtLCMapStringA(G.DAT_0063a078,(LPCWSTR)0x100,(DWORD)_String,
-                                           (LPCSTR)0xffffffff,0,(LPSTR)0x0,0,unaff_EDI,unaff_ESI);
-    if (((_LpDestStr !== (LPSTR)0x0) &&
+    _LpDestStr = ___crtLCMapStringA(G.DAT_0063a078,0x100,_String,
+                                           0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    if (((_LpDestStr !== 0x0) &&
         (local_c = __malloc_dbg(_LpDestStr,2,"strlwr.c",100), local_c !== 0)) &&
-       (iVar1 = ___crtLCMapStringA(G.DAT_0063a078,(LPCWSTR)0x100,(DWORD)_String,(LPCSTR)0xffffffff,
+       (iVar1 = ___crtLCMapStringA(G.DAT_0063a078,0x100,_String,0xffffffff,
                                    local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
       FUN_005f22d0(_String,local_c);
     }
@@ -5345,7 +5345,7 @@ export function FID_conflict___mkdir_00607920(_Path) {
   let iVar2;
   let local_8;
   
-  BVar1 = CreateDirectoryA(_Path,(LPSECURITY_ATTRIBUTES)0x0);
+  BVar1 = CreateDirectoryA(_Path,0x0);
   if (BVar1 === 0) {
     local_8 = GetLastError();
   }
@@ -5369,10 +5369,10 @@ export function FID_conflict___mkdir_00607920(_Path) {
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 
 function LAB_006009b5_helper(iVar1, local_8) {
-    if (G.DAT_0063b264 !== (FARPROC)0x0) {
+    if (G.DAT_0063b264 !== 0x0) {
       local_8 = (s32(G.DAT_0063b264, 0))();
     }
-    if ((local_8 !== 0) && (G.DAT_0063b268 !== (FARPROC)0x0)) {
+    if ((local_8 !== 0) && (G.DAT_0063b268 !== 0x0)) {
       local_8 = (s32(G.DAT_0063b268, 0))(local_8);
     }
     iVar1 = (s32(G.DAT_0063b260, 0))(local_8,_LpText,_LpCaption,_UType);
@@ -5411,8 +5411,8 @@ function LAB_006019fc_helper(iVar4, local_10, local_14, local_18, local_1c, loca
     local_18 = 0xffffffff;
   }
   else {
-    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,(HANDLE)0x0);
-    if (local_8 === (HANDLE)0xffffffff) {
+    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
+    if (local_8 === 0xffffffff) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = 0xffffffff;
@@ -5539,8 +5539,8 @@ LAB_006019fc:
     local_18 = 0xffffffff;
   }
   else {
-    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,(HANDLE)0x0);
-    if (local_8 === (HANDLE)0xffffffff) {
+    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
+    if (local_8 === 0xffffffff) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = 0xffffffff;
@@ -5653,8 +5653,8 @@ LAB_006019fc:
     local_18 = 0xffffffff;
   }
   else {
-    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,(HANDLE)0x0);
-    if (local_8 === (HANDLE)0xffffffff) {
+    local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
+    if (local_8 === 0xffffffff) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = 0xffffffff;

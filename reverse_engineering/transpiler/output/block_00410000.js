@@ -1730,7 +1730,7 @@ export function FUN_004132b7() {
   let local_c;
   
   iVar1 = FUN_004080c0();
-  iVar2 = FUN_00407f90(DAT_00655324);
+  iVar2 = FUN_00407f90;
   local_14 = FUN_00414bb0();
   local_14 = local_14 + 1;
   local_c = 0;
@@ -1844,7 +1844,7 @@ export function FUN_00413476(in_ECX) {
       uVar2 = FUN_00410070(DAT_006d1da0);
       FUN_00414d70(uVar2);
       if (DAT_00628064 === 2) {
-        FUN_0040bbe0(DAT_00625090);
+        FUN_0040bbe0;
       }
       FUN_0040fe10();
     }
@@ -1864,7 +1864,7 @@ export function FUN_00413476(in_ECX) {
     FUN_0040fe40();
     FUN_0040bc10(local_8 + 300);
   }
-  FUN_0055324c(DAT_00679640);
+  FUN_0055324c;
   return;
 }
 
@@ -2397,7 +2397,7 @@ export function FUN_0041508c(param_1, param_2) {
   FUN_00415040(local_8c,param_1);
   FUN_005f22d0(DAT_006347c0,local_8c);
   pFVar1 = _fopen(local_8c,param_2);
-  DAT_00634810 = ((pFVar1 === (FILE *) >>> 0)0x0);
+  DAT_00634810 = ((pFVar1 ===  >>> 0)0x0);
   return pFVar1;
 }
 
@@ -2704,7 +2704,7 @@ export function show_messagebox_5A40_00415A40() {
       lpCaption = s_File_I_O_Error_006251f4;
       lpText = local_24;
       iVar1 = FUN_00414d10();
-      // DEVIATION: C pointer — MessageBoxA(*(HWND *)(iVar1 + 4),lpText,lpCaption,uType);
+      MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
     }
     DAT_006a1d7c = 0;
     // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006a4f88 + 0x48));
@@ -2722,7 +2722,7 @@ export function show_messagebox_5A40_00415A40() {
     FUN_0059d3c9(local_28);
     FUN_004190d0(s_DEBUG_006359dc,s_NOTICE_006251c8);
     FUN_0059d3c9(0);
-    hWnd = (HWND)FUN_00418770();
+    hWnd = FUN_00418770();
     SetFocus(hWnd);
   }
   return;
@@ -2969,7 +2969,7 @@ export function FUN_0041623d(param_1) {
       FUN_0059d3c9(local_8);
       FUN_004190d0(s_DEBUG_006359dc,s_NOTICE_00625244);
       FUN_0059d3c9(0);
-      hWnd = (HWND)FUN_00418770();
+      hWnd = FUN_00418770();
       SetFocus(hWnd);
     }
   }
@@ -4678,7 +4678,7 @@ export function FUN_00419170() {
   }
   DAT_0066653c = ((iVar1) << 16 >> 16);
   if ((-1 < iVar1) && (iVar1 < 3)) {
-    __chdir(DAT_00655020);
+    __chdir;
     FUN_0041e864(1);
   }
   DAT_00627670 = 0;
@@ -5167,7 +5167,7 @@ export function FUN_0041a046(param_1) {
   }
   for (local_14 = 0; local_14 < 100; local_14 = local_14 + 1) {
     FUN_004a23fc(1);
-    sVar3 = _strlen(DAT_00679640);
+    sVar3 = _strlen;
     if ((sVar3 === 0) || (DAT_00679640 === 59)) break;
     if (param_1 === 0) {
       uVar4 = FUN_004a26bf(0x14);
@@ -5316,7 +5316,7 @@ export function FUN_0041a5c4(param_1) {
   FUN_004a2379(0,s_UNITS_00625300);
   for (local_8 = 0; local_8 < 0x3e; local_8 = local_8 + 1) {
     FUN_004a23fc(1);
-    sVar3 = _strlen(DAT_00679640);
+    sVar3 = _strlen;
     if ((sVar3 === 0) || (DAT_00679640 === 59)) break;
     if (param_1 === 0) {
       uVar5 = FUN_004a26bf(0xf);
@@ -5814,7 +5814,7 @@ export function FUN_0041b4c0() {
     DAT_00628064 = 0;
   }
   FUN_005f22d0(DAT_0062cd24,DAT_006253f8);
-  switch(DAT_00626960) {
+  switch {
   case 1:
     FUN_005f22d0(DAT_0062cd24,DAT_006253fc);
     break;
@@ -7168,10 +7168,10 @@ export function FUN_0041e864(param_1) {
   FUN_005f22e0(local_108,DAT_0062cd24);
   iVar1 = FUN_00415133(local_108);
   if (iVar1 === 0) {
-    __chdir(DAT_00655020);
+    __chdir;
   }
   FUN_0041b00e(param_1);
-  __chdir(DAT_00655020);
+  __chdir;
   FUN_00421bd0();
   return;
 }
@@ -7235,11 +7235,11 @@ export function FUN_0041e8fb(param_1) {
         FUN_0040ff30(s16(DAT_0064c708, local_440 * 0x594));
         FUN_0040fe10();
         FUN_0040bc10(0xc5);
-        FUN_0040bbe0(DAT_00625634);
+        FUN_0040bbe0;
         FUN_0040ff30(s16(DAT_0064c706, local_440 * 0x594));
         FUN_0040fe10();
         FUN_0040bc10(0xc4);
-        FUN_0040bbe0(DAT_00625638);
+        FUN_0040bbe0;
         iVar2 = local_334;
         local_334 = local_334 + 1;
         local_34 = FUN_0059edf0(DAT_00679640,iVar2,0);
@@ -7379,7 +7379,7 @@ export function FUN_0041eeeb() {
   local_8 = 0;
   FUN_005c64da();
   local_8 = CONCAT31(local_8._1_3_,1);
-  __chdir(DAT_00655020);
+  __chdir;
   FUN_005f22d0(DAT_0064bb08,DAT_00655020);
   FUN_004a733d();
   DAT_00655aea = DAT_0064bc1e;
@@ -7404,7 +7404,7 @@ export function FUN_0041eeeb() {
     if (DAT_006ad228 === -1) {
       FUN_0055a41d(1,6,1);
       FUN_0040ffa0(s_MAINMENU_0062565c,1);
-      FUN_0059ea99(DAT_00666538);
+      FUN_0059ea99;
       FUN_0059e783(-(((DAT_006ab198 + -0x280 + (DAT_006ab198 + -0x280 >> 0x1f & 7)) >> 3
                            ) + 1),-(((DAT_006ab19c + -0x1e0 +
                                           (DAT_006ab19c + -0x1e0 >> 0x1f & 7)) >> 3) + 1));
@@ -7424,7 +7424,7 @@ export function FUN_0041eeeb() {
     case 0:
     case 1:
     case 2:
-      __chdir(DAT_00655020);
+      __chdir;
       FUN_0041e864(1);
       if (local_754 === 1) {
         iVar1 = FUN_0041dd0e();
@@ -7501,7 +7501,7 @@ export function FUN_0041eeeb() {
       XD_GetXDaemonVersion(local_750,local_1c[0],local_14[0]);
       if (((DAT_00627664 === local_750[0]) && (DAT_00627668 === local_1c[0])) &&
          (DAT_0062766c === local_14[0])) {
-        __chdir(DAT_00655020);
+        __chdir;
         FUN_0041e864(1);
         local_18 = FUN_0051d9a0();
         if ((local_18 !== 0) && (DAT_006ad228 !== -1)) LAB_0041f5ea_helper(local_318, local_8); return;
@@ -8153,7 +8153,7 @@ function LAB_004191ff_helper(iVar1, local_14, local_18, local_310, local_744, lo
   }
   DAT_0066653c = ((iVar1) << 16 >> 16);
   if ((-1 < iVar1) && (iVar1 < 3)) {
-    __chdir(DAT_00655020);
+    __chdir;
     FUN_0041e864(1);
   }
   DAT_00627670 = 0;

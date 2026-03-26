@@ -1393,11 +1393,11 @@ export function FUN_005545d3() {
             if ((iVar2 === 0) ||
                (iVar2 = FUN_004bd9f0(iVar1,s8(DAT_0062768f[local_314 * 0x10])),
                iVar2 === 0)) {
-              FUN_0040bbe0(DAT_00633784);
+              FUN_0040bbe0;
             }
           }
           else {
-            FUN_0040bbe0(DAT_00633780);
+            FUN_0040bbe0;
           }
           FUN_0059edf0(DAT_00679640,local_314,0);
         }
@@ -1793,7 +1793,7 @@ export function FUN_005551b3() {
       }
     }
     if (-1 < DAT_00633684) {
-      FUN_0059ea99(DAT_00633684);
+      FUN_0059ea99;
     }
     iVar1 = FUN_0040bc80(0);
     DAT_00633684 = iVar1;
@@ -1802,7 +1802,7 @@ export function FUN_005551b3() {
     case 1:
       FUN_0040bc40(1);
       for (DAT_00633680 = 0; DAT_00633680 < 8; DAT_00633680 = DAT_00633680 + 1) {
-        if ((DAT_00633680 === 0) || ((1 << (u8(DAT_00633680) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
+        if ((DAT_00633680 === 0) || ((1 << (u8 & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
           uVar4 = 0;
           iVar3 = DAT_00633680;
           uVar2 = FUN_00493c7d(DAT_00633680,DAT_00633680,0);
@@ -4286,11 +4286,11 @@ export function FUN_0055add0(param_1, param_2) {
   let iVar2;
   let hWnd;
   
-  CreateMutexA((LPSECURITY_ATTRIBUTES)0x0,1,s_Civilization_II_Once_Only_00633a40);
+  CreateMutexA(0x0,1,s_Civilization_II_Once_Only_00633a40);
   DVar1 = GetLastError();
   if (DVar1 === 0xb7) {
-    hWnd = FindWindowA(s_MSWindowClass_00633a5c,(LPCSTR)0x0);
-    if (hWnd !== (HWND)0x0) {
+    hWnd = FindWindowA(s_MSWindowClass_00633a5c,0x0);
+    if (hWnd !== 0x0) {
       BringWindowToTop(hWnd);
     }
   }
@@ -4593,7 +4593,7 @@ export function FUN_0055b47e() {
     FUN_0046b14d(0x5d,0xff,0,0,0,0,0,0,0,0);
     XD_FlushSendBuffer(5000);
   }
-  DAT_006ab5b4 = SetWindowsHookExA(7,(HOOKPROC)0 /* ADDR:LAB_00402856 */,DAT_006e4ff0,0);
+  DAT_006ab5b4 = SetWindowsHookExA(7,0 /* ADDR:LAB_00402856 */,DAT_006e4ff0,0);
   return;
 }
 
@@ -4643,7 +4643,7 @@ export function FUN_0055b59e() {
       wParam = 0;
       Msg = 0x202;
       iVar1 = FUN_00414d10();
-      // DEVIATION: C pointer — PostMessageA(*(HWND *)(iVar1 + 4),Msg,wParam,lParam);
+      PostMessageA(*(iVar1 + 4),Msg,wParam,lParam);
       FUN_00414d40();
     }
     DAT_00633a84 = 0;
@@ -4806,7 +4806,7 @@ export function FUN_0055bbc0(param_1, param_2) {
           uVar4 = FUN_005b94d5(uVar1,iVar2);
           for (local_20 = FUN_005b2e69(uVar1,iVar2); -1 < local_20;
               local_20 = FUN_005b2c82(local_20)) {
-            if ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_20 * 0x20])) * 0x14] < 0x05
+            if ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_20 * 0x20]) * 0x14]) < 0x05
                 ) && ((u16(DAT_006560f4, local_20 * 0x20) & 4) === 0)) {
               if (local_18 !== DAT_006ab5e4) {
                 DAT_00633ac8 = DAT_00633ac8 + 1;
@@ -6037,7 +6037,7 @@ export function FUN_0055f7d1(param_1) {
           for (local_30 = 0; local_30 < DAT_00655b16; local_30 = local_30 + 1) {
             if (((s32(DAT_0065610a, local_30 * 0x20) !== 0) &&
                 (s8(DAT_006560f7[local_30 * 0x20]) === param_1)) &&
-               ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_30 * 0x20])) * 0x14] < 0x02
+               ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_30 * 0x20]) * 0x14]) < 0x02
                 && (DAT_0064b1c1[u8(DAT_006560f6[local_30 * 0x20]) * 0x14] === 0))))
             {
               iVar3 = s16(DAT_006560f0, local_30 * 0x20);
@@ -6171,7 +6171,7 @@ function LAB_0055bc9b_helper(iVar2, iVar3, local_18, local_1c, local_20, local_8
           uVar4 = FUN_005b94d5(uVar1,iVar2);
           for (local_20 = FUN_005b2e69(uVar1,iVar2); -1 < local_20;
               local_20 = FUN_005b2c82(local_20)) {
-            if ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_20 * 0x20])) * 0x14] < 0x05
+            if ((s8(DAT_0064b1ca[u8(DAT_006560f6[local_20 * 0x20]) * 0x14]) < 0x05
                 ) && ((u16(DAT_006560f4, local_20 * 0x20) & 4) === 0)) {
               if (local_18 !== DAT_006ab5e4) {
                 DAT_00633ac8 = DAT_00633ac8 + 1;

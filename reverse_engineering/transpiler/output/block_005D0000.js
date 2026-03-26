@@ -31,7 +31,7 @@ export function FUN_005d056c(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -119,7 +119,7 @@ export function FUN_005d080d(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -207,7 +207,7 @@ export function FUN_005d0aac(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -296,7 +296,7 @@ export function FUN_005d0dbf(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -386,7 +386,7 @@ export function FUN_005d10cd(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -477,7 +477,7 @@ export function FUN_005d1372(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   if (param_3 === -1) {
-    param_3._0_1_ = u8(in_ECX)[0xc];
+    param_3._0_1_ = u8(in_ECX[0xc]);
   }
   else {
   }
@@ -580,9 +580,9 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
       param_2[2].top = param_1[9] + param_5;
       param_2[2].right = param_1[10];
       param_2[2].bottom = param_1[0xb];
-      // DEVIATION: C pointer — *(char *)&param_2[3].left = s8(param_1[0xc]);
+      // DEVIATION: C pointer — *(char *)param_2[3].left = s8(param_1[0xc]);
       param_2[3].top = param_1[0xd];
-      FUN_005dcd70(&param_2[3].top);
+      FUN_005dcd70(param_2[3].top);
       FUN_005cf2ff();
     }
     else {
@@ -660,18 +660,18 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
           while (local_24 !== 0) {
             local_60 = 0;
             if ((iVar8 <= local_34) && (local_34 < iVar4)) {
-              // DEVIATION: C pointer — *(char *)local_20 = s8(s32)(local_5c, 0);
+              // DEVIATION: C pointer — *(char *)local_20 = s8(s32(local_5c, 0));
               local_5c = (local_5c + 1);
               local_60 = 1;
             }
             if ((iVar6 <= local_34) && (local_34 < iVar10)) {
-              // DEVIATION: C pointer — if ((uint)*(byte *)(param_1 + 0xc) === s8(s32)(local_54, 0)) {
+              // DEVIATION: C pointer — if ((uint)*(byte *)(param_1 + 0xc) === s8(s32(local_54, 0))) {
                 // DEVIATION(cont): if (local_60 == 0) {
                   // DEVIATION(cont): *(char *)local_20 = (char)param_2[3].left;
                 }
               }
               else {
-                // DEVIATION: C pointer — *(char *)local_20 = s8(s32)(local_54, 0);
+                // DEVIATION: C pointer — *(char *)local_20 = s8(s32(local_54, 0));
               }
               local_54 = (local_54 + 1);
               local_60 = local_60 + 1;
@@ -726,7 +726,7 @@ export function FUN_005d1b38() {
   in_ECX[2].top = 0;
   in_ECX[2].right = 1;
   in_ECX[2].bottom = 1;
-  // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
+  // DEVIATION: C pointer — *(undefined1 *)in_ECX[3].left = 0;
   in_ECX[3].top = 0;
   in_ECX[3].right = 0;
   return;
@@ -1550,38 +1550,38 @@ export function register_wndclass_2740_005D2740(param_1, param_2, param_3, param
   }
   w32(param_2, 0x3c, local_8);
   if (DAT_00638314 === 0) {
-    pvVar8 = (LPVOID)0x0;
-    pHVar6 = (HMENU)0x0;
+    pvVar8 = 0x0;
+    pHVar6 = 0x0;
     pHVar7 = DAT_006e4ff0;
     FUN_0040f810();
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — pHVar5 = *(HWND *)(iVar1 + 4);
+    pHVar5 = *(iVar1 + 4);
     iVar1 = FUN_00407fc0(param_1);
     iVar2 = FUN_00407f90(param_1);
     local_c = CreateWindowExA(4,DAT_0063831c,DAT_00638318,local_8,s32(param_1, 0),param_1[1],iVar2,iVar1,
                               pHVar5,pHVar6,pHVar7,pvVar8);
-    DAT_006e47dc = (WNDPROC)GetWindowLongA(local_c,-4);
+    DAT_006e47dc = GetWindowLongA(local_c,-4);
     local_34[0].style = 0x88;
     local_34[0].cbClsExtra = 0;
     local_34[0].lpfnWndProc = DAT_006e47dc;
     DAT_006e47d8 = GetClassLongA(local_c,-0x12);
     local_34[0].cbWndExtra = DAT_006e47d8 + 8;
     local_34[0].hInstance = DAT_006e4ff0;
-    local_34[0].hIcon = (HICON)0x0;
-    local_34[0].hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f01);
-    local_34[0].hbrBackground = (HBRUSH)0x0;
-    local_34[0].lpszMenuName = (LPCSTR)0x0;
+    local_34[0].hIcon = 0x0;
+    local_34[0].hCursor = LoadCursorA(0x0,0x7f01);
+    local_34[0].hbrBackground = 0x0;
+    local_34[0].lpszMenuName = 0x0;
     local_34[0].lpszClassName = s_MSEditBoxClass_00638324;
     RegisterClassA(local_34[0]);
     DAT_00638314 = 1;
     DestroyWindow(local_c);
   }
-  pvVar8 = (LPVOID)0x0;
-  pHVar6 = (HMENU)0x0;
+  pvVar8 = 0x0;
+  pHVar6 = 0x0;
   pHVar7 = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar5 = *(HWND *)(iVar1 + 4);
+  pHVar5 = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
   local_c = CreateWindowExA(4,s_MSEditBoxClass_00638338,DAT_00638334,local_8 | 0x40800000,s32(param_1, 0),
@@ -1592,7 +1592,7 @@ export function register_wndclass_2740_005D2740(param_1, param_2, param_3, param
   uVar3 = FUN_004d8af0();
   FUN_005dce29(uVar3);
   SetWindowLongA(local_c,-4,0x5d2a01);
-  SetWindowLongA(local_c,DAT_006e47d8,(LONG)DAT_006e47dc);
+  SetWindowLongA(local_c,DAT_006e47d8,DAT_006e47dc);
   SetWindowLongA(local_c,DAT_006e47d8 + 4,param_2);
   return local_c;
 }
@@ -1620,7 +1620,7 @@ export function send_msg_2A01_005D2A01(param_1, param_2, param_3, param_4) {
   
   this = GetWindowLongA(param_1,10);
   DVar1 = GetClassLongA(param_1,-0x12);
-  lpPrevWndFunc = (WNDPROC)GetWindowLongA(param_1,DVar1 - 8);
+  lpPrevWndFunc = GetWindowLongA(param_1,DVar1 - 8);
   uVar2 = local_20 & 0xff;
   if (uVar2 < 8) {
     if (uVar2 === 7) {
@@ -1705,7 +1705,7 @@ export function send_msg_2A01_005D2A01(param_1, param_2, param_3, param_4) {
 export function FUN_005d2d15(param_1, param_2) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     EnableWindow(param_1,param_2);
   }
   return;
@@ -1796,7 +1796,7 @@ export function send_msg_2DED_005D2DED(param_1, param_2, param_3, param_4) {
   let LVar1;
   
   w32(param_3, 0, param_4 + -1);
-  LVar1 = SendMessageA(param_1,0xc4,param_2,(LPARAM)param_3);
+  LVar1 = SendMessageA(param_1,0xc4,param_2,param_3);
   // DEVIATION: C pointer — *(undefined1 *)(LVar1 + param_3) = 0;
   return LVar1;
 }
@@ -2040,27 +2040,27 @@ export function register_wndclass_3130_005D3130(param_1, param_2, param_3) {
     local_34 = 0x50a10003;
   }
   if (DAT_00638348 === 0) {
-    pvVar6 = (LPVOID)0x0;
-    pHVar4 = (HMENU)0x0;
+    pvVar6 = 0x0;
+    pHVar4 = 0x0;
     pHVar5 = DAT_006e4ff0;
     FUN_0040f810();
     iVar1 = FUN_00414d10();
-    // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
+    pHVar3 = *(iVar1 + 4);
     iVar1 = FUN_00407fc0(param_1);
     iVar2 = FUN_00407f90(param_1);
     local_8 = CreateWindowExA(4,s_COMBOBOX_00638350,DAT_0063834c,local_34,s32(param_1, 0),param_1[1],iVar2
                               ,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
-    DAT_006e47ec = (WNDPROC)GetWindowLongA(local_8,-4);
+    DAT_006e47ec = GetWindowLongA(local_8,-4);
     local_30[0].style = 0x88;
     local_30[0].cbClsExtra = 0;
     local_30[0].lpfnWndProc = DAT_006e47ec;
     DAT_006e47e4 = GetClassLongA(local_8,-0x12);
     local_30[0].cbWndExtra = DAT_006e47e4 + 8;
     local_30[0].hInstance = DAT_006e4ff0;
-    local_30[0].hIcon = (HICON)0x0;
-    local_30[0].hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-    local_30[0].hbrBackground = (HBRUSH)0x0;
-    local_30[0].lpszMenuName = (LPCSTR)0x0;
+    local_30[0].hIcon = 0x0;
+    local_30[0].hCursor = LoadCursorA(0x0,0x7f00);
+    local_30[0].hbrBackground = 0x0;
+    local_30[0].lpszMenuName = 0x0;
     local_30[0].lpszClassName = s_MSComboBoxClass_0063835c;
     RegisterClassA(local_30[0]);
     DAT_00638348 = 1;
@@ -2070,18 +2070,18 @@ export function register_wndclass_3130_005D3130(param_1, param_2, param_3) {
   if (param_3 !== 0) {
     local_34 = 0x50a10203;
   }
-  pvVar6 = (LPVOID)0x0;
-  pHVar4 = (HMENU)0x0;
+  pvVar6 = 0x0;
+  pHVar4 = 0x0;
   pHVar5 = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
+  pHVar3 = *(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
   local_8 = CreateWindowExA(4,s_MSComboBoxClass_00638370,DAT_0063836c,local_34,s32(param_1, 0),param_1[1],
                             iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
   SetWindowLongA(local_8,-4,0x5d3310);
-  SetWindowLongA(local_8,DAT_006e47e4,(LONG)DAT_006e47ec);
+  SetWindowLongA(local_8,DAT_006e47e4,DAT_006e47ec);
   SetWindowLongA(local_8,DAT_006e47e4 + 4,param_2);
   return local_8;
 }
@@ -2105,7 +2105,7 @@ export function send_msg_3310_005D3310(param_1, param_2, param_3, param_4) {
   let iVar5;
   
   DVar1 = GetClassLongA(param_1,-0x12);
-  lpPrevWndFunc = (WNDPROC)GetWindowLongA(param_1,DVar1 - 8);
+  lpPrevWndFunc = GetWindowLongA(param_1,DVar1 - 8);
   this = GetWindowLongA(param_1,DVar1 - 4);
   if (this === 0x0) {
     return 1;
@@ -2375,27 +2375,27 @@ export function register_wndclass_37A0_005D37A0(param_1, param_2, param_3, param
   }
   local_38 = uVar1;
   if (DAT_00638384 === 0) {
-    pvVar9 = (LPVOID)0x0;
-    pHVar7 = (HMENU)0x0;
+    pvVar9 = 0x0;
+    pHVar7 = 0x0;
     pHVar8 = DAT_006e4ff0;
     FUN_0040f810();
     iVar2 = FUN_00414d10();
-    // DEVIATION: C pointer — pHVar6 = *(HWND *)(iVar2 + 4);
+    pHVar6 = *(iVar2 + 4);
     iVar2 = FUN_00407fc0(param_1);
     iVar3 = FUN_00407f90(param_1);
     local_8 = CreateWindowExA(4,s_LISTBOX_0063838c,DAT_00638388,local_38,s32(param_1, 0),param_1[1],iVar3,
                               iVar2,pHVar6,pHVar7,pHVar8,pvVar9);
-    DAT_006e47f0 = (WNDPROC)GetWindowLongA(local_8,-4);
+    DAT_006e47f0 = GetWindowLongA(local_8,-4);
     local_30[0].style = 0x88;
     local_30[0].cbClsExtra = 0;
     local_30[0].lpfnWndProc = DAT_006e47f0;
     DAT_006e47f4 = GetClassLongA(local_8,-0x12);
     local_30[0].cbWndExtra = DAT_006e47f4 + 8;
     local_30[0].hInstance = DAT_006e4ff0;
-    local_30[0].hIcon = (HICON)0x0;
-    local_30[0].hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-    local_30[0].hbrBackground = (HBRUSH)0x0;
-    local_30[0].lpszMenuName = (LPCSTR)0x0;
+    local_30[0].hIcon = 0x0;
+    local_30[0].hCursor = LoadCursorA(0x0,0x7f00);
+    local_30[0].hbrBackground = 0x0;
+    local_30[0].lpszMenuName = 0x0;
     local_30[0].lpszClassName = s_MSListBoxClass_00638394;
     RegisterClassA(local_30[0]);
     DAT_00638384 = 1;
@@ -2408,12 +2408,12 @@ export function register_wndclass_37A0_005D37A0(param_1, param_2, param_3, param
   if (param_4 === 1) {
     local_38 = local_38 | 0x800;
   }
-  pvVar9 = (LPVOID)0x0;
-  pHVar7 = (HMENU)0x0;
+  pvVar9 = 0x0;
+  pHVar7 = 0x0;
   pHVar8 = DAT_006e4ff0;
   FUN_0040f810();
   iVar2 = FUN_00414d10();
-  // DEVIATION: C pointer — pHVar6 = *(HWND *)(iVar2 + 4);
+  pHVar6 = *(iVar2 + 4);
   iVar2 = FUN_00407fc0(param_1);
   iVar3 = FUN_00407f90(param_1);
   local_8 = CreateWindowExA(4,s_MSListBoxClass_006383a8,DAT_006383a4,local_38,s32(param_1, 0),param_1[1],
@@ -2424,7 +2424,7 @@ export function register_wndclass_37A0_005D37A0(param_1, param_2, param_3, param
   uVar4 = FUN_004d8af0();
   FUN_005dce29(uVar4);
   SetWindowLongA(local_8,-4,0x5d39e2);
-  SetWindowLongA(local_8,DAT_006e47f4,(LONG)DAT_006e47f0);
+  SetWindowLongA(local_8,DAT_006e47f4,DAT_006e47f0);
   SetWindowLongA(local_8,DAT_006e47f4 + 4,param_2);
   return local_8;
 }
@@ -2448,7 +2448,7 @@ export function send_msg_39E2_005D39E2(param_1, param_2, param_3, param_4) {
   let iVar5;
   
   DVar1 = GetClassLongA(param_1,-0x12);
-  lpPrevWndFunc = (WNDPROC)GetWindowLongA(param_1,DVar1 - 8);
+  lpPrevWndFunc = GetWindowLongA(param_1,DVar1 - 8);
   this = GetWindowLongA(param_1,DVar1 - 4);
   if (this === 0x0) {
     return 1;
@@ -2990,13 +2990,13 @@ export function create_window_423C_005D423C(param_1) {
   let uTimerID;
   let local_8;
   
-  local_8 = (HWND)0x0;
+  local_8 = 0x0;
   DAT_006e4804 = LoadLibraryA(s_timerdll_dll_006383c0);
-  if (DAT_006e4804 === (HMODULE)0x0) {
+  if (DAT_006e4804 === 0x0) {
     local_8 = CreateWindowExA(0,s_MSMrTimerClass_006384a4,s_MrTimer_0063849c,0xcf0000,-0x80000000,
-                              -0x80000000,-0x80000000,-0x80000000,(HWND)0x0,(HMENU)0x0,DAT_006e4ff0,
-                              (LPVOID)0x0);
-    if (local_8 !== (HWND)0x0) {
+                              -0x80000000,-0x80000000,-0x80000000,0x0,0x0,DAT_006e4ff0,
+                              0x0);
+    if (local_8 !== 0x0) {
       SetWindowLongA(local_8,0,param_1);
       DAT_006383bc = 0;
     }
@@ -3007,24 +3007,24 @@ export function create_window_423C_005D423C(param_1) {
     DAT_006e47fc = GetProcAddress(DAT_006e4804,s_GetTimerID_006383ec);
     DAT_006e4800 = GetProcAddress(DAT_006e4804,s_GetTimerIndex_006383f8);
     DAT_006e480c = GetProcAddress(DAT_006e4804,s_ResetTimerNotified_00638408);
-    if ((((DAT_006e4808 === (FARPROC)0x0) || (DAT_006e4810 === (FARPROC)0x0)) ||
-        (DAT_006e47fc === (FARPROC)0x0)) ||
-       ((DAT_006e4800 === (FARPROC)0x0 || (DAT_006e480c === (FARPROC)0x0)))) {
+    if ((((DAT_006e4808 === 0x0) || (DAT_006e4810 === 0x0)) ||
+        (DAT_006e47fc === 0x0)) ||
+       ((DAT_006e4800 === 0x0 || (DAT_006e480c === 0x0)))) {
       FUN_005dae6b(9,s_ERR_DYNAMICLINKFAILED_00638438,s_D__Ss_Smeds32_Pctimer_cpp_0063841c,0x55);
       FreeLibrary(DAT_006e4804);
     }
     else {
       local_8 = CreateWindowExA(0,s_MSMrTimerClass_00638458,s_MrTimer_00638450,0xcf0000,-0x80000000,
-                                -0x80000000,-0x80000000,-0x80000000,(HWND)0x0,(HMENU)0x0,
-                                DAT_006e4ff0,(LPVOID)0x0);
-      if (local_8 === (HWND)0x0) {
+                                -0x80000000,-0x80000000,-0x80000000,0x0,0x0,
+                                DAT_006e4ff0,0x0);
+      if (local_8 === 0x0) {
         FUN_005dae6b(10,s_ERR_CANTCREATEWINDOW_00638484,s_D__Ss_Smeds32_Pctimer_cpp_00638468,0x71);
         FreeLibrary(DAT_006e4804);
       }
       else {
         timeBeginPeriod(5);
         SetWindowLongA(local_8,0,param_1);
-        uTimerID = timeSetEvent(100,5,DAT_006e4808,(DWORD_PTR)local_8,1);
+        uTimerID = timeSetEvent(100,5,DAT_006e4808,local_8,1);
         if (uTimerID === 0) {
           DAT_006383bc = 0;
         }
@@ -3047,7 +3047,7 @@ export function create_window_423C_005D423C(param_1) {
 export function manage_window_447C_005D447C(param_1) {
 
 
-  if (param_1 !== (HWND)0x0) {
+  if (param_1 !== 0x0) {
     timeEndPeriod(5);
     DestroyWindow(param_1);
     DAT_006e4808 = 0;
@@ -3072,7 +3072,7 @@ export function FUN_005d44be(param_1, param_2, param_3) {
   
   if (DAT_006383bc === 0) {
     if (DAT_00637ef8 === 0) {
-      UVar3 = SetTimer(param_1,param_3,param_2,(TIMERPROC)0x0);
+      UVar3 = SetTimer(param_1,param_3,param_2,0x0);
       if (UVar3 === 0) {
         FUN_005dae6b(0xb,s_ERR_TIMERSETFAILED_00638530,s_D__Ss_Smeds32_Pctimer_cpp_00638514,0xc3);
         uVar2 = 0;
@@ -3082,7 +3082,7 @@ export function FUN_005d44be(param_1, param_2, param_3) {
       }
     }
     else {
-      MVar1 = timeSetEvent(param_2,5,DAT_006e4808,(DWORD_PTR)param_1,1);
+      MVar1 = timeSetEvent(param_2,5,DAT_006e4808,param_1,1);
       if (MVar1 === 0) {
         FUN_005dae6b(0xb,s_ERR_TIMERSETFAILED_00638560,s_D__Ss_Smeds32_Pctimer_cpp_00638544,0xd7);
         uVar2 = 0;
@@ -3094,7 +3094,7 @@ export function FUN_005d44be(param_1, param_2, param_3) {
     }
   }
   else if (DAT_00637ef8 === 0) {
-    MVar1 = timeSetEvent(param_2,5,DAT_006e4808,(DWORD_PTR)param_1,1);
+    MVar1 = timeSetEvent(param_2,5,DAT_006e4808,param_1,1);
     if (MVar1 === 0) {
       FUN_005dae6b(0xb,s_ERR_TIMERSETFAILED_006384d0,s_D__Ss_Smeds32_Pctimer_cpp_006384b4,0xa8);
       uVar2 = 0;
@@ -3105,7 +3105,7 @@ export function FUN_005d44be(param_1, param_2, param_3) {
     }
   }
   else {
-    UVar3 = SetTimer(param_1,param_3,param_2,(TIMERPROC)0x0);
+    UVar3 = SetTimer(param_1,param_3,param_2,0x0);
     if (UVar3 === 0) {
       FUN_005dae6b(0xb,s_ERR_TIMERSETFAILED_00638500,s_D__Ss_Smeds32_Pctimer_cpp_006384e4,0xb4);
       uVar2 = 0;
@@ -3293,8 +3293,8 @@ export function FUN_005d4965() {
 
 
   if (DAT_00638578 !== 0) {
-    FUN_005d6b89(DAT_00638578);
-    FUN_005d4bcb(DAT_00638578);
+    FUN_005d6b89;
+    FUN_005d4bcb;
   }
   return;
 }
@@ -3310,10 +3310,10 @@ export function show_messagebox_49A3_005D49A3(param_1) {
 
 
   if (param_1 === 10) {
-    MessageBoxA((HWND)0x0,s_This_Sound_format_is_not_support_006385e4,s_Sound_Error_006385d8,0x40);
+    MessageBoxA(0x0,s_This_Sound_format_is_not_support_006385e4,s_Sound_Error_006385d8,0x40);
   }
   else if (param_1 !== 0xb) {
-    MessageBoxA((HWND)0x0,s_Undefined_Sound_Error_00638614,s_Sound_Error_00638608,0x40);
+    MessageBoxA(0x0,s_Undefined_Sound_Error_00638614,s_Sound_Error_00638608,0x40);
   }
   return;
 }
@@ -3344,7 +3344,7 @@ export function FUN_005d4a11(param_1, param_2, param_3) {
     }
     UVar2 = waveOutGetNumDevs();
     for (local_10 = 0; local_10 < UVar2; local_10 = local_10 + 1) {
-      waveOutGetDevCapsA(local_10,(LPWAVEOUTCAPSA)DAT_006e4818,0x34);
+      waveOutGetDevCapsA(local_10,DAT_006e4818,0x34);
       if ((DAT_006e4840 & 0x20) !== 0) {
         bVar1 = false;
         local_14 = local_10;
@@ -3361,11 +3361,11 @@ export function FUN_005d4a11(param_1, param_2, param_3) {
         DAT_006385a8 = 0x5622;
         DAT_006385ac = CONCAT22(DAT_006385ac._2_2_,1);
       }
-      local_8 = waveOutOpen((LPHWAVEOUT)DAT_00638578,local_14,(LPCWAVEFORMATEX)DAT_006385a0,
+      local_8 = waveOutOpen(DAT_00638578,local_14,DAT_006385a0,
                             param_1,0,0x10000);
       if (((local_8) << 16 >> 16) !== 0) {
-        sndPlaySoundA((LPCSTR)0x0,0);
-        local_8 = waveOutOpen((LPHWAVEOUT)DAT_00638578,local_14,(LPCWAVEFORMATEX)DAT_006385a0,
+        sndPlaySoundA(0x0,0);
+        local_8 = waveOutOpen(DAT_00638578,local_14,DAT_006385a0,
                               param_1,0,0x10000);
       }
       local_8 = local_8 & 0xffff;
@@ -3419,7 +3419,7 @@ export function show_messagebox_4C18_005D4C18(param_1) {
   let local_cc = new Array(200).fill(0);
   
   waveOutGetErrorTextA(param_1 & 0xffff,local_cc,200);
-  MessageBoxA((HWND)0x0,local_cc,s_Wave_Out_Error_0063862c,0x40);
+  MessageBoxA(0x0,local_cc,s_Wave_Out_Error_0063862c,0x40);
   return;
 }
 
@@ -3457,7 +3457,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
   _memset(local_84[0],0,0x48);
   local_84[0].cchBuffer = DAT_006385cc;
   local_8 = mmioOpenA(param_1,local_84[0],0x10000);
-  if (local_8 === (HMMIO)0x0) {
+  if (local_8 === 0x0) {
     uVar1 = 7;
   }
   else {
@@ -3468,7 +3468,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
       MVar2 = mmioDescend(local_8,local_98[0],local_1c[0],0x10);
       if (MVar2 === 0) {
         local_38 = local_98[0].cksize;
-        DVar3 = mmioRead(local_8,(HPSTR)local_2c[0],local_98[0].cksize);
+        DVar3 = mmioRead(local_8,local_2c[0],local_98[0].cksize);
         if (DVar3 === local_38) {
           if ((local_28 === 0x5622) && (local_20._2_2_ === 8)) {
             mmioAscend(local_8,local_98[0],0);
@@ -3478,7 +3478,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
               mmioGetInfo(local_8,local_84[0],0);
               mmioAdvance(local_8,local_84[0],0);
               local_30 = GlobalAlloc(0x2002,0xbc);
-              if (local_30 === (HGLOBAL)0x0) {
+              if (local_30 === 0x0) {
                 mmioClose(local_8,0);
                 uVar1 = 2;
               }
@@ -3491,20 +3491,20 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                 }
                 else {
                   _memset(local_34,0,0xbc);
-                  local_34[0x1b] = (FOURCC)local_30;
-                  w32(local_34, 0, (FOURCC)local_8);
+                  local_34[0x1b] = local_30;
+                  w32(local_34, 0, local_8);
                   p_Var5 = local_84[0];
                   pDVar7 = local_34 + 6;
                   for (iVar4 = 0x12; iVar4 !== 0; iVar4 = iVar4 + -1) {
                     w32(pDVar7, 0, p_Var5->dwFlags);
-                    p_Var5 = (_MMIOINFO *)&p_Var5->fccIOProc;
+                    p_Var5 = p_Var5->fccIOProc;
                     pDVar7 = pDVar7 + 1;
                   }
                   p_Var6 = local_98[0];
                   pFVar8 = local_34;
                   for (iVar4 = 5; pFVar8 = pFVar8 + 1, iVar4 !== 0; iVar4 = iVar4 + -1) {
                     w32(pFVar8, 0, p_Var6->ckid);
-                    p_Var6 = (_MMCKINFO *)&p_Var6->cksize;
+                    p_Var6 = p_Var6->cksize;
                   }
                   w16(local_34 + 0x8a, 0, param_3);
                   local_34[0x1d] = local_2c[0];
@@ -3520,7 +3520,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                     for (local_3c = DAT_006385d0; local_3c[0x2e] !== 0;
                         local_3c = local_3c[0x2e]) {
                     }
-                    local_3c[0x2e] = (FOURCC)local_34;
+                    local_3c[0x2e] = local_34;
                   }
                   uVar1 = 0;
                 }
@@ -3587,8 +3587,8 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
   let local_c;
   let local_8;
   
-  local_c = mmioOpenA(param_1,(LPMMIOINFO)0x0,0);
-  if (local_c === (HMMIO)0x0) {
+  local_c = mmioOpenA(param_1,0x0,0);
+  if (local_c === 0x0) {
     uVar1 = 7;
   }
   else {
@@ -3599,7 +3599,7 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
       MVar2 = mmioDescend(local_c,local_9c[0],local_20[0],0x10);
       if (MVar2 === 0) {
         local_3c = local_9c[0].cksize;
-        DVar3 = mmioRead(local_c,(HPSTR)local_30[0],local_9c[0].cksize);
+        DVar3 = mmioRead(local_c,local_30[0],local_9c[0].cksize);
         if (DVar3 === local_3c) {
           if ((local_2c === 0x5622) && (local_24._2_2_ === 8)) {
             mmioAscend(local_c,local_9c[0],0);
@@ -3610,14 +3610,14 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
               local_88[0].cchBuffer = DAT_006385cc;
               local_88[0].fccIOProc = 0x204d454d;
               local_88[0].adwInfo[0] = 0;
-              local_8 = mmioOpenA((LPSTR)0x0,local_88[0],0x11002);
-              if (local_8 === (HMMIO)0x0) {
+              local_8 = mmioOpenA(0x0,local_88[0],0x11002);
+              if (local_8 === 0x0) {
                 uVar1 = 7;
               }
               else {
                 mmioGetInfo(local_8,local_88[0],0);
                 local_34 = GlobalAlloc(0x2002,0xbc);
-                if (local_34 === (HGLOBAL)0x0) {
+                if (local_34 === 0x0) {
                   uVar1 = 2;
                 }
                 else {
@@ -3628,26 +3628,26 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                   }
                   else {
                     _memset(local_38,0,0xbc);
-                    local_38[0x1b] = (FOURCC)local_34;
+                    local_38[0x1b] = local_34;
                     w16(local_38, 0x22, 1);
                     local_38[0x1d] = local_30[0];
                     local_38[0x1e] = local_2c;
                     local_38[0x1f] = local_28;
                     local_38[0x20] = local_24;
-                    w32(local_38, 0, (FOURCC)local_8);
-                    local_38[0x18] = (FOURCC)local_c;
+                    w32(local_38, 0, local_8);
+                    local_38[0x18] = local_c;
                     p_Var5 = local_88[0];
                     pDVar7 = local_38 + 6;
                     for (iVar4 = 0x12; iVar4 !== 0; iVar4 = iVar4 + -1) {
                       w32(pDVar7, 0, p_Var5->dwFlags);
-                      p_Var5 = (_MMIOINFO *)&p_Var5->fccIOProc;
+                      p_Var5 = p_Var5->fccIOProc;
                       pDVar7 = pDVar7 + 1;
                     }
                     p_Var6 = local_9c[0];
                     pFVar8 = local_38;
                     for (iVar4 = 5; pFVar8 = pFVar8 + 1, iVar4 !== 0; iVar4 = iVar4 + -1) {
                       w32(pFVar8, 0, p_Var6->ckid);
-                      p_Var6 = (_MMCKINFO *)&p_Var6->cksize;
+                      p_Var6 = p_Var6->cksize;
                     }
                     local_38[0x1c] = local_38[0x1c] | 4;
                     w16(local_38 + 0x8a, 0, param_3);
@@ -3659,7 +3659,7 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                       for (local_40 = DAT_006385d0; local_40[0x2e] !== 0;
                           local_40 = local_40[0x2e]) {
                       }
-                      local_40[0x2e] = (FOURCC)local_38;
+                      local_40[0x2e] = local_38;
                     }
                     uVar1 = 0;
                   }
@@ -3767,14 +3767,14 @@ export function FUN_005d52a2(param_1) {
       local_a8 = ((local_10c[0]) >>> 0).cchBuffer / DAT_00638584;
       local_10c[0].fccIOProc = 0x204d454d;
       local_10c[0].adwInfo[0] = 0;
-      local_c = mmioOpenA((LPSTR)0x0,local_10c[0],0x11002);
-      if (local_c === (HMMIO)0x0) {
+      local_c = mmioOpenA(0x0,local_10c[0],0x11002);
+      if (local_c === 0x0) {
         uVar1 = 7;
       }
       else {
         mmioGetInfo(local_c,local_10c[0],0);
         local_b0 = GlobalAlloc(0x2002,0xbc);
-        if (local_b0 === (HGLOBAL)0x0) {
+        if (local_b0 === 0x0) {
           uVar1 = 2;
         }
         else {
@@ -3796,7 +3796,7 @@ export function FUN_005d52a2(param_1) {
             pDVar4 = local_b4 + 6;
             for (iVar2 = 0x12; iVar2 !== 0; iVar2 = iVar2 + -1) {
               w32(pDVar4, 0, p_Var3->dwFlags);
-              p_Var3 = (_MMIOINFO *)&p_Var3->fccIOProc;
+              p_Var3 = p_Var3->fccIOProc;
               pDVar4 = pDVar4 + 1;
             }
             local_b4[1] = local_98[0];
@@ -4073,7 +4073,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
   }
   else {
     if (DAT_00638588 !== DAT_00638584) {
-      FUN_005d687b(DAT_00638584);
+      FUN_005d687b;
     }
     iVar2 = AVIStreamTimeToSample(s32(DAT_006385d0, 0x84),param_1);
     local_10 = AVIStreamTimeToSample(s32(DAT_006385d0, 0x84),param_2);
@@ -4291,17 +4291,17 @@ export function FUN_005d6283(param_1) {
   while (local_14 === 0) {
     local_10 = s32(param_1, 8) - s32(param_1, 0x68);
     if (local_8 < local_10) {
-      // DEVIATION: C pointer — mmioRead(*(HMMIO *)(param_1 + 0x60),local_40,local_8);
+      mmioRead(*(param_1 + 0x60),local_40,local_8);
       w32(param_1, 0x68, s32(param_1, 0x68) + local_8);
-      // DEVIATION: C pointer — *(HPSTR *)(param_1 + 0x34) = local_44;
+      *(param_1 + 0x34) = local_44;
       local_14 = 1;
     }
     else {
-      // DEVIATION: C pointer — mmioRead(*(HMMIO *)(param_1 + 0x60),local_40,local_10);
+      mmioRead(*(param_1 + 0x60),local_40,local_10);
       w32(param_1, 0x68, 0);
       local_40 = local_40 + local_10;
       local_8 = local_38 - local_40;
-      // DEVIATION: C pointer — mmioSeek(*(HMMIO *)(param_1 + 0x60),*(LONG *)(param_1 + 0x10),0);
+      mmioSeek(*(param_1 + 0x60),*(param_1 + 0x10),0);
     }
   }
   return;
@@ -4323,12 +4323,12 @@ export function FUN_005d63c5(param_1, param_2) {
   pvVar1 = GlobalAlloc(0x2002,param_1);
   w32(param_2, 0, pvVar1);
   if (s32(param_2, 0) === 0) {
-    pvVar2 = (LPVOID)0x0;
+    pvVar2 = 0x0;
   }
   else {
-    pvVar2 = GlobalLock((HGLOBAL)s32(param_2, 0));
-    if (pvVar2 === (LPVOID)0x0) {
-      GlobalFree((HGLOBAL)s32(param_2, 0));
+    pvVar2 = GlobalLock(s32(param_2, 0));
+    if (pvVar2 === 0x0) {
+      GlobalFree(s32(param_2, 0));
       w32(param_2, 0, 0);
     }
   }
@@ -4345,7 +4345,7 @@ export function FUN_005d63c5(param_1, param_2) {
 export function FUN_005d6430(param_1) {
 
 
-  if (param_1 !== (HGLOBAL)0x0) {
+  if (param_1 !== 0x0) {
     GlobalUnlock(param_1);
     GlobalFree(param_1);
   }
@@ -4410,7 +4410,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       // DEVIATION: C pointer — *(int **)(s32(local_8, 0) + 0xc) = local_8;
       local_8[1] = local_1c[0];
       local_8[3] = local_8[3] & 0xffff807f | (local_14 & 0xff) << 7;
-      local_10 = waveOutPrepareHeader(param_2,(LPWAVEHDR)s32(local_8, 0),0x20);
+      local_10 = waveOutPrepareHeader(param_2,s32(local_8, 0),0x20);
       if (local_10 !== 0) {
         show_messagebox_4C18(local_10);
         FUN_005d6b89(param_2);
@@ -4557,7 +4557,7 @@ export function FUN_005d6947(param_1) {
       w32(local_c, 0, s32(local_c, 0) ^ 0x80);
       local_c = local_c + 1;
     }
-    MVar1 = waveOutWrite(DAT_00638578,(LPWAVEHDR)s32(param_1, 0),0x20);
+    MVar1 = waveOutWrite(DAT_00638578,s32(param_1, 0),0x20);
     local_10 = CONCAT22(local_10._2_2_,((MVar1) << 16 >> 16));
     if (((MVar1) << 16 >> 16) === 0) {
       param_1[3] = param_1[3] | 0x20;
@@ -4596,8 +4596,8 @@ export function FUN_005d6a2c() {
   local_c = 0;
   _DAT_006385b8 = 0;
   local_14 = DAT_006385d0;
-  if (DAT_00638578 !== (HWAVEOUT)0x0) {
-    waveOutReset(DAT_00638578);
+  if (DAT_00638578 !== 0x0) {
+    waveOutReset;
     while (BVar1 = PeekMessageA(local_30[0],DAT_0063857c,0x3bd,0x3bd,1), BVar1 !== 0) {
       _DAT_006385d4 = _DAT_006385d4 + 1;
     }
@@ -4664,13 +4664,13 @@ export function FUN_005d6b89(param_1) {
     waveOutReset(param_1);
   }
   if (DAT_00638588 !== DAT_00638584) {
-    FUN_005d687b(DAT_00638584);
+    FUN_005d687b;
   }
   if (piVar1 !== 0x0) {
     for (local_14 = 0; local_14 < DAT_00638584; local_14 = local_14 + 1) {
       piVar1 = local_8[7];
       if (s32(local_8, 0) !== 0) {
-        waveOutUnprepareHeader(param_1,(LPWAVEHDR)s32(local_8, 0),0x20);
+        waveOutUnprepareHeader(param_1,s32(local_8, 0),0x20);
         FUN_005d6430(local_8[1]);
       }
       FUN_005d6430(local_8[2]);
@@ -4769,7 +4769,7 @@ export function FUN_005d6c99(param_1, param_2) {
             w32(local_28, 0, s32(local_28, 0) ^ 0x80);
             local_28 = local_28 + 1;
           }
-          MVar4 = waveOutWrite(param_1,(LPWAVEHDR)s32(local_20, 0),0x20);
+          MVar4 = waveOutWrite(param_1,s32(local_20, 0),0x20);
           local_10 = MVar4 & 0xffff;
           if (((MVar4) << 16 >> 16) === 0) {
             local_20[3] = local_20[3] & 0xffffffbf;
@@ -4890,7 +4890,7 @@ export function FUN_005d717f(param_1) {
           }
           if (s16(local_20, 0x22) !== 4) {
             if ((((local_20) >>> 0)[0x1c] >> 2 & 1) === 0) {
-              mmioAdvance((HMMIO)s32(local_20, 0),(LPMMIOINFO)(local_20 + 6),0);
+              mmioAdvance(s32(local_20, 0),(local_20 + 6),0);
             }
             else {
               FUN_005d6283(local_20);
@@ -4944,12 +4944,12 @@ export function FUN_005d7494(param_1, param_2) {
       uVar1 = DAT_006385d0;
     }
     DAT_006385d0 = uVar1;
-    mmioClose((HMMIO)s32(param_2, 0),0);
+    mmioClose(s32(param_2, 0),0);
     if ((((param_2) >>> 0)[0x1c] >> 2 & 1) !== 0) {
-      mmioClose((HMMIO)param_2[0x18],0);
+      mmioClose(param_2[0x18],0);
     }
-    GlobalUnlock((HGLOBAL)param_2[0x1b]);
-    GlobalFree((HGLOBAL)param_2[0x1b]);
+    GlobalUnlock(param_2[0x1b]);
+    GlobalFree(param_2[0x1b]);
     DAT_0063858c = DAT_0063858c + -1;
   }
   return uVar2;
@@ -5462,16 +5462,16 @@ export function FUN_005d8270(param_1, param_2) {
   else {
     FUN_005f22d0(local_108,param_1);
   }
-  HVar2 = OpenFile(local_108,(LPOFSTRUCT)(param_2 + 2),0x4000);
+  HVar2 = OpenFile(local_108,(param_2 + 2),0x4000);
   if (HVar2 === -1) {
     uVar3 = 0;
   }
   else {
-    HVar2 = OpenFile(local_108,(LPOFSTRUCT)(param_2 + 2),2);
+    HVar2 = OpenFile(local_108,(param_2 + 2),2);
     param_2[1] = HVar2;
     if (param_2[1] === -1) {
       w32(param_2, 0, 0);
-      HVar2 = OpenFile(local_108,(LPOFSTRUCT)(param_2 + 2),0);
+      HVar2 = OpenFile(local_108,(param_2 + 2),0);
       param_2[1] = HVar2;
       param_2[0x25] = 0;
       param_2[0x24] = 0;
@@ -5515,7 +5515,7 @@ export function FUN_005d83d6(param_1, param_2) {
   let iVar1;
   let pvVar2;
   
-  pvVar2 = CreateFileA(param_1,0xc0000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,0x80,(HANDLE)0x0);
+  pvVar2 = CreateFileA(param_1,0xc0000000,0,0x0,2,0x80,0x0);
   param_2[1] = pvVar2;
   iVar1 = param_2[1];
   if (iVar1 !== -1) {
@@ -5552,7 +5552,7 @@ export function FUN_005d8476(param_1) {
     if ((s32(param_1, 0x94) !== 0) || (s32(param_1, 0x90) !== 0)) {
       FUN_005d8ab8(param_1);
     }
-    // DEVIATION: C pointer — BVar2 = CloseHandle(*(HANDLE *)(param_1 + 4));
+    BVar2 = CloseHandle(*(param_1 + 4));
     if (BVar2 === 0) {
       uVar1 = 0;
     }
@@ -5582,7 +5582,7 @@ export function FUN_005d84f6(param_1, param_2, param_3) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — BVar2 = ReadFile(*(HANDLE *)(param_1 + 4),param_2,param_3,local_8[0],(LPOVERLAPPED)0x0);
+    BVar2 = ReadFile(*(param_1 + 4),param_2,param_3,local_8[0],0x0);
     if (BVar2 === 0) {
       uVar1 = 0;
     }
@@ -5622,7 +5622,7 @@ export function FUN_005d8551(param_1, param_2) {
     else {
       do {
         while( true ) {
-          // DEVIATION: C pointer — lVar1 = _hread(*(HFILE *)(param_1 + 4),local_10,1);
+          lVar1 = _hread(*(param_1 + 4),local_10,1);
           if (lVar1 !== 1) {
             return local_c;
           }
@@ -5632,7 +5632,7 @@ export function FUN_005d8551(param_1, param_2) {
         local_14 = local_14 + 1;
       } while (param_2[local_14] !== 0);
       local_c = 1;
-      // DEVIATION: C pointer — _llseek(*(HFILE *)(param_1 + 4),-local_8,1);
+      _llseek(*(param_1 + 4),-local_8,1);
     }
   }
   return local_c;
@@ -5655,7 +5655,7 @@ export function FUN_005d8622(param_1, param_2) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — DVar2 = SetFilePointer(*(HANDLE *)(param_1 + 4),param_2,(PLONG)0x0,1);
+    DVar2 = SetFilePointer(*(param_1 + 4),param_2,0x0,1);
     if (DVar2 === 0xffffffff) {
       uVar1 = 0;
     }
@@ -5683,7 +5683,7 @@ export function FUN_005d8675(param_1, param_2) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — DVar2 = SetFilePointer(*(HANDLE *)(param_1 + 4),param_2,(PLONG)0x0,0);
+    DVar2 = SetFilePointer(*(param_1 + 4),param_2,0x0,0);
     if (DVar2 === 0xffffffff) {
       uVar1 = 0;
     }
@@ -5711,7 +5711,7 @@ export function FUN_005d86c8(param_1, param_2) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — DVar2 = SetFilePointer(*(HANDLE *)(param_1 + 4),0,(PLONG)0x0,0);
+    DVar2 = SetFilePointer(*(param_1 + 4),0,0x0,0);
     w32(param_2, 0, DVar2);
     if (s32(param_2, 0) === 0xffffffff) {
       uVar1 = 0;
@@ -5745,7 +5745,7 @@ export function FUN_005d8721(param_1, param_2, param_3) {
     uVar1 = 0;
   }
   else {
-    BVar2 = WriteFile((HANDLE)param_1[1],param_2,param_3,local_8[0],(LPOVERLAPPED)0x0);
+    BVar2 = WriteFile(param_1[1],param_2,param_3,local_8[0],0x0);
     if (BVar2 === 0) {
       uVar1 = 0;
     }
@@ -5809,7 +5809,7 @@ export function FUN_005d881c(param_1, param_2, param_3) {
     local_18 = 0;
   }
   else {
-    // DEVIATION: C pointer — local_18 = ReadFile(*(HANDLE *)(param_1 + 4),local_8,1,local_10[0],(LPOVERLAPPED)0x0);
+    local_18 = ReadFile(*(param_1 + 4),local_8,1,local_10[0],0x0);
     if (local_10[0] === 0) {
       local_18 = 0;
     }
@@ -5821,12 +5821,12 @@ export function FUN_005d881c(param_1, param_2, param_3) {
           local_c = local_c + 1;
           local_14 = local_14 + 1;
         }
-        // DEVIATION: C pointer — local_18 = ReadFile(*(HANDLE *)(param_1 + 4),local_8,1,local_10[0],(LPOVERLAPPED)0x0);
+        local_18 = ReadFile(*(param_1 + 4),local_8,1,local_10[0],0x0);
       }
       w32(local_c, 0, 0);
       while (((local_18 !== 0 && (local_10[0] !== 0)) && ((local_8[0] === 0xa || (local_8[0] === 0xd)))))
       {
-        // DEVIATION: C pointer — local_18 = ReadFile(*(HANDLE *)(param_1 + 4),local_8,1,local_10[0],(LPOVERLAPPED)0x0);
+        local_18 = ReadFile(*(param_1 + 4),local_8,1,local_10[0],0x0);
       }
       if (local_10[0] !== 0) {
         FUN_005d8622(param_1,0xffffffff);
@@ -5852,7 +5852,7 @@ export function FUN_005d898e(param_1) {
     DVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — DVar1 = GetFileSize(*(HANDLE *)(param_1 + 4),(LPDWORD)0x0);
+    DVar1 = GetFileSize(*(param_1 + 4),0x0);
     if (DVar1 === 0xffffffff) {
       debug_log(s_Bad_file_handle_in_MSFileSize_0063869c);
       DVar1 = 0;
@@ -5876,15 +5876,15 @@ export function FUN_005d89e8(param_1, param_2, param_3) {
   let pvVar3;
   
   if ((s32(param_1, 0x94) === 0) && (s32(param_1, 0x90) === 0)) {
-    // DEVIATION: C pointer — pvVar1 = CreateFileMappingA(*(HANDLE *)(param_1 + 4),(LPSECURITY_ATTRIBUTES)0x0,2,0,0,
-                                // DEVIATION(cont): (LPCSTR)0x0);
-    // DEVIATION: C pointer — *(HANDLE *)(param_1 + 0x94) = pvVar1;
+    pvVar1 = CreateFileMappingA(*(param_1 + 4),0x0,2,0,0,
+                                0x0);
+    *(param_1 + 0x94) = pvVar1;
     if (s32(param_1, 0x94) === 0) {
       uVar2 = 0;
     }
     else {
-      // DEVIATION: C pointer — pvVar3 = MapViewOfFile(*(HANDLE *)(param_1 + 0x94),4,0,param_2,param_3);
-      // DEVIATION: C pointer — *(LPVOID *)(param_1 + 0x90) = pvVar3;
+      pvVar3 = MapViewOfFile(*(param_1 + 0x94),4,0,param_2,param_3);
+      *(param_1 + 0x90) = pvVar3;
       if (s32(param_1, 0x90) === 0) {
         uVar2 = FUN_005d8ab8(param_1);
       }
@@ -5910,11 +5910,11 @@ export function FUN_005d8ab8(param_1) {
 
 
   if ((s32(param_1, 0x94) !== 0) && (s32(param_1, 0x90) !== 0)) {
-    // DEVIATION: C pointer — UnmapViewOfFile(*(LPCVOID *)(param_1 + 0x90));
+    UnmapViewOfFile(*(param_1 + 0x90));
     w32(param_1, 0x90, 0);
   }
   if (s32(param_1, 0x94) !== 0) {
-    // DEVIATION: C pointer — CloseHandle(*(HANDLE *)(param_1 + 0x94));
+    CloseHandle(*(param_1 + 0x94));
     w32(param_1, 0x94, 0);
   }
   return 0;
@@ -6138,12 +6138,12 @@ export function gdi_8DA1_005D8DA1() {
   let local_40 = [0];
   let local_8;
   
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   hdc_00 = CreateCompatibleDC(hdc);
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   uVar1 = FUN_004d8af0();
   local_8 = FUN_005dcdf9(uVar1);
-  SelectObject(hdc_00,(HGDIOBJ)s32(local_8, 0));
+  SelectObject(hdc_00,s32(local_8, 0));
   uVar1 = FUN_004d8af0();
   FUN_005dce29(uVar1);
   GetTextMetricsA(hdc_00,local_40[0]);
@@ -6470,7 +6470,7 @@ export function manage_window_99F4_005D99F4(param_1, param_2) {
     iVar1 = FUN_005dcdf9(param_2);
     for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
       if (s32(iVar1, local_8 * 0xa4) !== 0) {
-        // DEVIATION: C pointer — DestroyWindow(*(HWND *)(iVar1 + local_8 * 0xa4));
+        DestroyWindow(*(iVar1 + local_8 * 0xa4));
       }
     }
     FUN_005dce29(param_2);
@@ -6508,13 +6508,13 @@ export function invalidate_9A9A_005D9A9A(param_1) {
       pRVar5 = 0x0;
       // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(this);
       iVar3 = FUN_005c5ee0();
-      // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar3 + uVar2 * 0xa4),pRVar5,BVar6);
+      InvalidateRect(*(iVar3 + uVar2 * 0xa4),pRVar5,BVar6);
       FUN_004472f0(s32(iVar1, 0x14));
       BVar6 = 0;
       pRVar5 = 0x0;
       // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(this);
       iVar1 = FUN_005c5ee0();
-      // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar1 + uVar2 * 0xa4),pRVar5,BVar6);
+      InvalidateRect(*(iVar1 + uVar2 * 0xa4),pRVar5,BVar6);
     }
     DAT_00637ea4 = FUN_0040f810();
     // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(this);
@@ -6581,14 +6581,14 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
       if (s32(local_bc, 0x18) === 1) {
         // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
         if (uVar3 === u32(local_bc, 0x14)) {
-          // DEVIATION: C pointer — local_128 = *(HBITMAP *)(local_124 + 0x14);
+          local_128 = *(local_124 + 0x14);
         }
         else {
-          // DEVIATION: C pointer — local_128 = *(HBITMAP *)(local_124 + 0x10);
+          local_128 = *(local_124 + 0x10);
         }
       }
       else {
-        // DEVIATION: C pointer — local_128 = *(HBITMAP *)(local_124 + 0xc);
+        local_128 = *(local_124 + 0xc);
       }
       GetBitmapDimensionEx(local_128,local_dc[0]);
       local_138[0].left = s32(local_bc, 4);
@@ -6611,7 +6611,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
       update_palette_90CA(local_120[0],param_1);
       uVar7 = FUN_004d8af0();
       local_98 = FUN_005dcdf9(uVar7);
-      local_e0 = SelectObject(local_d0,(HGDIOBJ)s32(local_98, 0));
+      local_e0 = SelectObject(local_d0,s32(local_98, 0));
       uVar7 = FUN_004d8af0();
       FUN_005dce29(uVar7);
       SetBkMode(local_d0,1);
@@ -6626,11 +6626,11 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
         FUN_0040f810(uVar3,puVar8,puVar9,puVar12);
         FUN_00511320();
         FUN_00497c40(uVar3,puVar8,puVar9,puVar12);
-        SetTextColor(local_d0,((CONCAT1) >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
+        SetTextColor(local_d0,( >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
         UVar13 = 0x24;
         ptVar10 = local_138[0];
         sVar5 = _strlen((local_bc + 0x1c));
-        DrawTextA(local_d0,(LPCSTR)(local_bc + 0x1c),sVar5,ptVar10,UVar13);
+        DrawTextA(local_d0,(local_bc + 0x1c),sVar5,ptVar10,UVar13);
         OffsetRect(local_138[0],-((DAT_00637e84) >>> 0),-((DAT_00637e88) >>> 0));
       }
       if (s32(local_bc, 0x18) === 1) {
@@ -6645,14 +6645,14 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             FUN_00511320();
             uVar7 = FUN_0046f440();
             FUN_005dea9e(uVar7);
-            SetTextColor(local_d0,((CONCAT1) >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
+            SetTextColor(local_d0,( >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
           }
         }
         else if (DAT_006386f7 === 0) {
           SetTextColor(local_d0,0);
         }
         else {
-          SetTextColor(local_d0,((CONCAT1) >>> 0)2(DAT_006386f6,CONCAT11(DAT_006386f5,DAT_006386f4)));
+          SetTextColor(local_d0,( >>> 0)2(DAT_006386f6,CONCAT11(DAT_006386f5,DAT_006386f4)));
         }
       }
       else if (s32(local_bc, 0x18) === 0) {
@@ -6667,20 +6667,20 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             FUN_00511320();
             uVar7 = FUN_0046f440();
             FUN_005dea9e(uVar7);
-            SetTextColor(local_d0,((CONCAT1) >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
+            SetTextColor(local_d0,( >>> 0)2(local_a0[0],CONCAT11(local_c4[0],local_a4[0])));
           }
         }
         else if (DAT_006386fb === 0) {
           SetTextColor(local_d0,0x404040);
         }
         else {
-          SetTextColor(local_d0,((CONCAT1) >>> 0)2(DAT_006386fa,CONCAT11(DAT_006386f9,DAT_006386f8)));
+          SetTextColor(local_d0,( >>> 0)2(DAT_006386fa,CONCAT11(DAT_006386f9,DAT_006386f8)));
         }
       }
       UVar13 = 0x24;
       ptVar10 = local_138[0];
       sVar5 = _strlen((local_bc + 0x1c));
-      DrawTextA(local_d0,(LPCSTR)(local_bc + 0x1c),sVar5,ptVar10,UVar13);
+      DrawTextA(local_d0,(local_bc + 0x1c),sVar5,ptVar10,UVar13);
       if (s32(local_bc, 0xa0) !== -1) {
         FUN_005f22d0(local_84,local_bc + 0x1c);
         local_84[s32(local_bc, 0xa0)] = 0;
@@ -6713,9 +6713,9 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
         local_cc = local_c0 + 10;
         local_a8 = GetStockObject(3);
         SelectObject(local_d0,local_a8);
-        MoveToEx(local_d0,local_c0,local_138[0].bottom + -3,(LPPOINT)0x0);
+        MoveToEx(local_d0,local_c0,local_138[0].bottom + -3,0x0);
         LineTo(local_d0,local_cc,local_138[0].bottom + -3);
-        MoveToEx(local_d0,local_c0,local_138[0].bottom + -2,(LPPOINT)0x0);
+        MoveToEx(local_d0,local_c0,local_138[0].bottom + -2,0x0);
         LineTo(local_d0,local_cc,local_138[0].bottom + -2);
       }
       SelectObject(local_d0,local_e0);
@@ -6758,7 +6758,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             pRVar11 = 0x0;
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
           }
           FUN_004472f0(s32(local_bc, 0x14));
           SetFocus(param_1);
@@ -6812,17 +6812,17 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
               return 0;
             }
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar4 + local_c8 * 0xa4));
+            SetFocus(*(iVar4 + local_c8 * 0xa4));
             BVar14 = 0;
             pRVar11 = 0x0;
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
             FUN_004472f0(local_c8);
             BVar14 = 0;
             pRVar11 = 0x0;
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + local_c8 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + local_c8 * 0xa4),pRVar11,BVar14);
             uVar7 = FUN_0040f810();
             FUN_005c6303(uVar7);
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
@@ -6854,17 +6854,17 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
               return 0;
             }
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar4 + local_c8 * 0xa4));
+            SetFocus(*(iVar4 + local_c8 * 0xa4));
             BVar14 = 0;
             pRVar11 = 0x0;
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
             FUN_004472f0(local_c8);
             BVar14 = 0;
             pRVar11 = 0x0;
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + local_c8 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + local_c8 * 0xa4),pRVar11,BVar14);
             uVar7 = FUN_0040f810();
             FUN_005c6303(uVar7);
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
@@ -6896,7 +6896,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             pRVar11 = 0x0;
             // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
-            // DEVIATION: C pointer — InvalidateRect(*(HWND *)(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
+            InvalidateRect(*(iVar4 + uVar3 * 0xa4),pRVar11,BVar14);
           }
           FUN_004472f0(s32(local_bc, 0x14));
         }
@@ -7438,16 +7438,16 @@ export function FUN_005db140(param_1) {
   let pHVar1;
   let local_84 = new Array(128).fill(0);
   
-  pHVar1 = LoadLibraryExA(param_1,(HANDLE)0x0,2);
-  if (pHVar1 === (HMODULE)0x0) {
+  pHVar1 = LoadLibraryExA(param_1,0x0,2);
+  if (pHVar1 === 0x0) {
     FUN_005f22d0(local_84,s_Error__Resource_file_006387d0);
     FUN_005f22e0(local_84,param_1);
     FUN_005f22e0(local_84,s_not_found__006387e8);
     debug_log(local_84);
-    pHVar1 = (HMODULE)0x0;
+    pHVar1 = 0x0;
   }
   else {
-    // DEVIATION: C pointer — *(HMODULE *)(DAT_006e4f60 + DAT_006387cc * 4) = pHVar1;
+    *(DAT_006e4f60 + DAT_006387cc * 4) = pHVar1;
     DAT_006387cc = DAT_006387cc + 1;
   }
   return pHVar1;
@@ -7494,23 +7494,23 @@ export function FUN_005db1fa(param_1, param_2) {
   local_8 = 0;
   local_14 = 0xffffffff;
   local_10 = FindResourceA(DAT_006e4ff0,param_2,local_c[0]);
-  if (local_10 === (HRSRC)0x0) {
+  if (local_10 === 0x0) {
     local_14 = 0;
     while ((local_14 < DAT_006387cc &&
-           // DEVIATION: C pointer — (local_10 = FindResourceA(*(HMODULE *)(DAT_006e4f60 + local_14 * 4),param_2,local_c[0]),
-           // DEVIATION(cont): local_10 == (HRSRC)0x0))) {
-      // DEVIATION(cont): local_14 = local_14 + 1;
+           (local_10 = FindResourceA(*(DAT_006e4f60 + local_14 * 4),param_2,local_c[0]),
+           local_10 === 0x0))) {
+      local_14 = local_14 + 1;
     }
   }
-  if (local_10 === (HRSRC)0x0) {
-    pvVar1 = (HGLOBAL)0x0;
+  if (local_10 === 0x0) {
+    pvVar1 = 0x0;
   }
   else {
     if (local_14 === 0xffffffff) {
       local_1c = DAT_006e4ff0;
     }
     else {
-      // DEVIATION: C pointer — local_1c = *(HMODULE *)(DAT_006e4f60 + local_14 * 4);
+      local_1c = *(DAT_006e4f60 + local_14 * 4);
     }
     pvVar1 = LoadResource(local_1c,local_10);
   }
@@ -7533,24 +7533,24 @@ export function FUN_005db2f8(param_1) {
   let local_8;
   
   local_c = 0xffffffff;
-  local_8 = FindResourceA(DAT_006e4ff0,param_1,(LPCSTR)0x2);
-  if (local_8 === (HRSRC)0x0) {
+  local_8 = FindResourceA(DAT_006e4ff0,param_1,0x2);
+  if (local_8 === 0x0) {
     local_c = 0;
     while ((local_c < DAT_006387cc &&
-           // DEVIATION: C pointer — (local_8 = FindResourceA(*(HMODULE *)(DAT_006e4f60 + local_c * 4),param_1,(LPCSTR)0x2),
-           // DEVIATION(cont): local_8 == (HRSRC)0x0))) {
-      // DEVIATION(cont): local_c = local_c + 1;
+           (local_8 = FindResourceA(*(DAT_006e4f60 + local_c * 4),param_1,0x2),
+           local_8 === 0x0))) {
+      local_c = local_c + 1;
     }
   }
-  if (local_8 === (HRSRC)0x0) {
-    pvVar1 = (HGLOBAL)0x0;
+  if (local_8 === 0x0) {
+    pvVar1 = 0x0;
   }
   else {
     if (local_c === 0xffffffff) {
       local_14 = DAT_006e4ff0;
     }
     else {
-      // DEVIATION: C pointer — local_14 = *(HMODULE *)(DAT_006e4f60 + local_c * 4);
+      local_14 = *(DAT_006e4f60 + local_c * 4);
     }
     pvVar1 = LoadResource(local_14,local_8);
   }
@@ -7590,23 +7590,23 @@ export function FUN_005db3ca(param_1, param_2) {
   }
   local_14 = 0xffffffff;
   local_10 = FindResourceA(DAT_006e4ff0,param_2,local_c[0]);
-  if (local_10 === (HRSRC)0x0) {
+  if (local_10 === 0x0) {
     local_14 = 0;
     while ((local_14 < DAT_006387cc &&
-           // DEVIATION: C pointer — (local_10 = FindResourceA(*(HMODULE *)(DAT_006e4f60 + local_14 * 4),param_2,local_c[0]),
-           // DEVIATION(cont): local_10 == (HRSRC)0x0))) {
-      // DEVIATION(cont): local_14 = local_14 + 1;
+           (local_10 = FindResourceA(*(DAT_006e4f60 + local_14 * 4),param_2,local_c[0]),
+           local_10 === 0x0))) {
+      local_14 = local_14 + 1;
     }
   }
-  if (local_10 === (HRSRC)0x0) {
-    pvVar2 = (HGLOBAL)0x0;
+  if (local_10 === 0x0) {
+    pvVar2 = 0x0;
   }
   else {
     if (local_14 === 0xffffffff) {
       local_18 = DAT_006e4ff0;
     }
     else {
-      // DEVIATION: C pointer — local_18 = *(HMODULE *)(DAT_006e4f60 + local_14 * 4);
+      local_18 = *(DAT_006e4f60 + local_14 * 4);
     }
     pvVar2 = LoadResource(local_18,local_10);
   }
@@ -7653,7 +7653,7 @@ export function FUN_005db55b(param_1) {
   let local_8;
   
   for (local_8 = 0;
-      // DEVIATION: C pointer — (*(HMODULE *)(DAT_006e4f60 + local_8 * 4) !== param_1 && (local_8 < DAT_006387cc));
+      (*(DAT_006e4f60 + local_8 * 4) !== param_1 && (local_8 < DAT_006387cc));
       local_8 = local_8 + 1) {
   }
   if (local_8 < DAT_006387cc) {
@@ -8123,10 +8123,10 @@ export function register_wndclass_BC5A_005DBC5A() {
   local_2c[0].cbClsExtra = 0;
   local_2c[0].cbWndExtra = 0x14;
   local_2c[0].hInstance = DAT_006e4ff0;
-  local_2c[0].hIcon = (HICON)0x0;
-  local_2c[0].hCursor = (HCURSOR)0x0;
-  local_2c[0].hbrBackground = (HBRUSH)0x0;
-  local_2c[0].lpszMenuName = (LPCSTR)0x0;
+  local_2c[0].hIcon = 0x0;
+  local_2c[0].hCursor = 0x0;
+  local_2c[0].hbrBackground = 0x0;
+  local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSWindowClass_00638810;
   RegisterClassA(local_2c[0]);
   local_2c[0].style = 0x28;
@@ -8134,10 +8134,10 @@ export function register_wndclass_BC5A_005DBC5A() {
   local_2c[0].cbClsExtra = 0;
   local_2c[0].cbWndExtra = 0x14;
   local_2c[0].hInstance = DAT_006e4ff0;
-  local_2c[0].hIcon = (HICON)0x0;
-  local_2c[0].hCursor = (HCURSOR)0x0;
-  local_2c[0].hbrBackground = (HBRUSH)0x0;
-  local_2c[0].lpszMenuName = (LPCSTR)0x0;
+  local_2c[0].hIcon = 0x0;
+  local_2c[0].hCursor = 0x0;
+  local_2c[0].hbrBackground = 0x0;
+  local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSMovieClass_00638820;
   RegisterClassA(local_2c[0]);
   local_2c[0].style = 0x88;
@@ -8145,10 +8145,10 @@ export function register_wndclass_BC5A_005DBC5A() {
   local_2c[0].cbClsExtra = 0;
   local_2c[0].cbWndExtra = 0x10;
   local_2c[0].hInstance = DAT_006e4ff0;
-  local_2c[0].hIcon = (HICON)0x0;
-  local_2c[0].hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  local_2c[0].hbrBackground = (HBRUSH)0x0;
-  local_2c[0].lpszMenuName = (LPCSTR)0x0;
+  local_2c[0].hIcon = 0x0;
+  local_2c[0].hCursor = LoadCursorA(0x0,0x7f00);
+  local_2c[0].hbrBackground = 0x0;
+  local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSControlClass_00638830;
   RegisterClassA(local_2c[0]);
   local_2c[0].style = 0;
@@ -8156,10 +8156,10 @@ export function register_wndclass_BC5A_005DBC5A() {
   local_2c[0].cbClsExtra = 0;
   local_2c[0].cbWndExtra = 4;
   local_2c[0].hInstance = DAT_006e4ff0;
-  local_2c[0].hIcon = (HICON)0x0;
-  local_2c[0].hCursor = (HCURSOR)0x0;
-  local_2c[0].hbrBackground = (HBRUSH)0x0;
-  local_2c[0].lpszMenuName = (LPCSTR)0x0;
+  local_2c[0].hIcon = 0x0;
+  local_2c[0].hCursor = 0x0;
+  local_2c[0].hbrBackground = 0x0;
+  local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSMrTimerClass_00638840;
   RegisterClassA(local_2c[0]);
   return;
@@ -8245,17 +8245,17 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         GetWindowRect(param_1,local_14[0]);
         iVar6 = FUN_00414d10();
         if (s32(iVar6, 0x20) === 0) {
-          hIcon = LoadIconA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+          hIcon = LoadIconA(0x0,0x7f00);
           DrawIcon(local_50,0,0,hIcon);
         }
         else {
           iVar6 = FUN_00414d10();
           if ((s32(iVar6, 0x18) !== 0) && (DAT_00638b48 === 1)) {
             iVar6 = FUN_00414d10();
-            // DEVIATION: C pointer — RealizePalette(*(HDC *)(iVar6 + 8));
+            RealizePalette(*(iVar6 + 8));
           }
           iVar6 = FUN_00414d10();
-          // DEVIATION: C pointer — DrawIcon(local_50,0,0,*(HICON *)(iVar6 + 0x20));
+          DrawIcon(local_50,0,0,*(iVar6 + 0x20));
         }
         return 0;
       }
@@ -8264,7 +8264,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         iVar6 = FUN_00414d10();
         if (s32(iVar6, 0x14) !== 0) {
           iVar6 = FUN_00414d10();
-          // DEVIATION: C pointer — FillRect(local_50,local_98[0].rcPaint,*(HBRUSH *)(iVar6 + 0x14));
+          FillRect(local_50,local_98[0].rcPaint,*(iVar6 + 0x14));
         }
       }
       else {
@@ -8331,7 +8331,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
     }
     switch(param_2) {
     case 2:
-      SetMenu(param_1,(HMENU)0x0);
+      SetMenu(param_1,0x0);
       GetWindowLongA(param_1,0);
       iVar6 = FUN_00414d10();
       w32(iVar6, 0x44, 1);
@@ -8340,23 +8340,23 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         pHVar2 = GetParent(param_1);
         GetWindowLongA(pHVar2,iVar6);
         local_18 = FUN_00414d10();
-        // DEVIATION: C pointer — if (*(HWND *)(local_18 + 0xc) === param_1) {
+        if (*(local_18 + 0xc) === param_1) {
           w32(local_18, 0xc, 0);
-        // DEVIATION(cont): }
-      // DEVIATION(cont): }
-      // DEVIATION(cont): LVar5 = DefWindowProcA(param_1,param_2,param_3,param_4);
+        }
+      }
+      LVar5 = DefWindowProcA(param_1,param_2,param_3,param_4);
       return LVar5;
     case 3:
       local_54 = GetWindowLongA(param_1,0);
       if (local_54 !== 0) {
         iVar6 = FUN_00414d10();
-        // DEVIATION: C pointer — pHVar3 = *(HDC *)(iVar6 + 8);
+        pHVar3 = *(iVar6 + 8);
         iVar6 = FUN_00414d10();
-        // DEVIATION: C pointer — ReleaseDC(*(HWND *)(iVar6 + 4),pHVar3);
+        ReleaseDC(*(iVar6 + 4),pHVar3);
         iVar6 = FUN_00414d10();
         iVar7 = FUN_00414d10();
-        // DEVIATION: C pointer — pHVar3 = GetDC(*(HWND *)(iVar7 + 4));
-        // DEVIATION: C pointer — *(HDC *)(iVar6 + 8) = pHVar3;
+        pHVar3 = GetDC(*(iVar7 + 4));
+        *(iVar6 + 8) = pHVar3;
       }
       break;
     case 5:
@@ -8366,27 +8366,27 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
       }
       if (local_54 !== 0) {
         iVar6 = FUN_00414d10();
-        // DEVIATION: C pointer — pHVar3 = *(HDC *)(iVar6 + 8);
+        pHVar3 = *(iVar6 + 8);
         iVar6 = FUN_00414d10();
-        // DEVIATION: C pointer — ReleaseDC(*(HWND *)(iVar6 + 4),pHVar3);
+        ReleaseDC(*(iVar6 + 4),pHVar3);
         iVar6 = FUN_00414d10();
         iVar7 = FUN_00414d10();
-        // DEVIATION: C pointer — pHVar3 = GetDC(*(HWND *)(iVar7 + 4));
-        // DEVIATION: C pointer — *(HDC *)(iVar6 + 8) = pHVar3;
+        pHVar3 = GetDC(*(iVar7 + 4));
+        *(iVar6 + 8) = pHVar3;
       }
       break;
     case 7:
       GetWindowLongA(param_1,0);
       iVar6 = FUN_00414d10();
       if (s32(iVar6, 0xc) !== 0) {
-        // DEVIATION: C pointer — SendMessageA(*(HWND *)(iVar6 + 0xc),0x86,1,0);
+        SendMessageA(*(iVar6 + 0xc),0x86,1,0);
       }
       break;
     case 8:
       GetWindowLongA(param_1,0);
       iVar6 = FUN_00414d10();
       if (s32(iVar6, 0xc) !== 0) {
-        // DEVIATION: C pointer — SendMessageA(*(HWND *)(iVar6 + 0xc),0x86,0,0);
+        SendMessageA(*(iVar6 + 0xc),0x86,0,0);
       }
     }
   }
@@ -8401,15 +8401,15 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
           pHVar2 = GetParent(param_1);
           GetWindowLongA(pHVar2,iVar6);
           local_18 = FUN_00414d10();
-          // DEVIATION: C pointer — if (((s32(local_18, 0x10) !== 0) && (*(HWND *)(local_18 + 0x10) !== param_1)) &&
-             // DEVIATION(cont): (BVar4 = IsWindowVisible(*(HWND *)(local_18 + 0x10)), BVar4 != 0)) {
+          if (((s32(local_18, 0x10) !== 0) && (*(local_18 + 0x10) !== param_1)) &&
+             (BVar4 = IsWindowVisible(*(local_18 + 0x10)), BVar4 !== 0)) {
             w32(param_4, 4, s32(local_18, 0x10));
-          // DEVIATION(cont): }
-        // DEVIATION(cont): }
-      // DEVIATION(cont): }
-    // DEVIATION(cont): }
-    // DEVIATION(cont): else if (param_2 == 0x22) {
-      // DEVIATION(cont): GetWindowLongA(param_1,0);
+          }
+        }
+      }
+    }
+    else if (param_2 === 0x22) {
+      GetWindowLongA(param_1,0);
       iVar6 = FUN_00414d10();
       // DEVIATION: C pointer — if ((*(byte *)(iVar6 + 0x49) & 2) !== 0) {
         // DEVIATION(cont): iVar6 = 0;
@@ -8417,10 +8417,10 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         GetWindowLongA(pHVar2,iVar6);
         local_18 = FUN_00414d10();
         if (s32(local_18, 0xc) !== 0) {
-          // DEVIATION: C pointer — SendMessageA(*(HWND *)(local_18 + 0xc),0x86,0,0);
+          SendMessageA(*(local_18 + 0xc),0x86,0,0);
         }
         SendMessageA(param_1,0x86,1,0);
-        // DEVIATION: C pointer — *(HWND *)(local_18 + 0xc) = param_1;
+        *(local_18 + 0xc) = param_1;
       }
     }
   }
@@ -8575,7 +8575,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
       }
     }
     if (local_a0 === 1) {
-      // DEVIATION: C pointer — SetCursor(*(HCURSOR *)(iVar6 + 0x1c));
+      SetCursor(*(iVar6 + 0x1c));
     }
   }
   return local_a0;
@@ -8881,14 +8881,14 @@ export function FUN_005dcd70(param_1) {
   let _Dst;
   let _Src;
   
-  _Size = GlobalSize((HGLOBAL)s32(param_1, 0));
-  hMem = (HGLOBAL)FUN_005dce4f(_Size);
-  if (hMem !== (HGLOBAL)0x0) {
+  _Size = GlobalSize(s32(param_1, 0));
+  hMem = FUN_005dce4f(_Size);
+  if (hMem !== 0x0) {
     _Dst = GlobalLock(hMem);
-    _Src = GlobalLock((HGLOBAL)s32(param_1, 0));
+    _Src = GlobalLock(s32(param_1, 0));
     _memcpy(_Dst,_Src,_Size);
     GlobalUnlock(hMem);
-    GlobalUnlock((HGLOBAL)s32(param_1, 0));
+    GlobalUnlock(s32(param_1, 0));
     w32(param_1, 0, hMem);
   }
   return;
@@ -8906,8 +8906,8 @@ export function FUN_005dcdf9(param_1) {
 
   let pvVar1;
   
-  if (param_1 === (HGLOBAL)0x0) {
-    pvVar1 = (LPVOID)0x0;
+  if (param_1 === 0x0) {
+    pvVar1 = 0x0;
   }
   else {
     pvVar1 = GlobalLock(param_1);
@@ -8925,7 +8925,7 @@ export function FUN_005dcdf9(param_1) {
 export function FUN_005dce29(param_1) {
 
 
-  if (param_1 !== (HGLOBAL)0x0) {
+  if (param_1 !== 0x0) {
     GlobalUnlock(param_1);
   }
   return 0;
@@ -8944,7 +8944,7 @@ export function FUN_005dce4f(param_1) {
   let pvVar1;
   
   pvVar1 = GlobalAlloc(0x42,param_1);
-  if (pvVar1 === (HGLOBAL)0x0) {
+  if (pvVar1 === 0x0) {
     FUN_005dae6b(1,s_ERR_MEMALLOCFAILED_00638980,s_D__Ss_Smeds32_Pcmem_cpp_00638968,0x4c);
   }
   return pvVar1;
@@ -8962,9 +8962,9 @@ export function FUN_005dce96(param_1) {
 
   let pvVar1;
   
-  if (param_1 === (HGLOBAL)0x0) {
+  if (param_1 === 0x0) {
     debug_log(s_Error__Tried_to_dispose_of_NULL_H_00638994);
-    pvVar1 = (HGLOBAL)0x0;
+    pvVar1 = 0x0;
   }
   else {
     pvVar1 = GlobalFree(param_1);
@@ -9599,15 +9599,15 @@ export function register_wndclass_D8A0_005DD8A0() {
   local_2c[0].cbClsExtra = 0;
   local_2c[0].cbWndExtra = 0;
   local_2c[0].hInstance = DAT_006e4ff0;
-  local_2c[0].hIcon = (HICON)0x0;
-  local_2c[0].hCursor = (HCURSOR)0x0;
-  local_2c[0].hbrBackground = (HBRUSH)0x0;
-  local_2c[0].lpszMenuName = (LPCSTR)0x0;
+  local_2c[0].hIcon = 0x0;
+  local_2c[0].hCursor = 0x0;
+  local_2c[0].hbrBackground = 0x0;
+  local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSMMWindow_006389e4;
   RegisterClassA(local_2c[0]);
-  DAT_006e4ff8 = CreateWindowExA(0,s_MSMMWindow_006389f0,(LPCSTR)0x0,0,-0x80000000,-0x80000000,
-                                 -0x80000000,-0x80000000,(HWND)0x0,(HMENU)0x0,DAT_006e4ff0,
-                                 (LPVOID)0x0);
+  DAT_006e4ff8 = CreateWindowExA(0,s_MSMMWindow_006389f0,0x0,0,-0x80000000,-0x80000000,
+                                 -0x80000000,-0x80000000,0x0,0x0,DAT_006e4ff0,
+                                 0x0);
   FUN_005ddd4e();
   return;
 }
@@ -9679,7 +9679,7 @@ export function FUN_005dd9f5(param_1) {
 export function FUN_005dda11() {
 
 
-  sndPlaySoundA((LPCSTR)0x0,1);
+  sndPlaySoundA(0x0,1);
   return;
 }
 
@@ -9737,21 +9737,21 @@ export function show_messagebox_DA53_005DDA53(param_1) {
   }
   local_24 = s_sequencer_006389fc;
   local_20 = param_1;
-  MVar1 = mciSendCommandA(0,0x803,0x2200,(DWORD_PTR)local_2c);
+  MVar1 = mciSendCommandA(0,0x803,0x2200,local_2c);
   if (MVar1 === 0) {
     local_18 = local_28;
     DAT_006389d4 = local_28;
     local_c = 0x4003;
-    MVar1 = mciSendCommandA(local_28,0x814,0x100,(DWORD_PTR)local_14);
+    MVar1 = mciSendCommandA(local_28,0x814,0x100,local_14);
     if (MVar1 === 0) {
       if (((local_10 & 0xffff) !== 0xffffffff) &&
-         (iVar2 = MessageBoxA((HWND)0x0,s_The_MIDI_Mapper_is_not_available_00638a48,DAT_00638a44,4)
+         (iVar2 = MessageBoxA(0x0,s_The_MIDI_Mapper_is_not_available_00638a48,DAT_00638a44,4)
          , iVar2 === 7)) {
         mciSendCommandA(local_18,0x804,0,0);
         return 0;
       }
       local_38[0] = DAT_006e4ff8;
-      MVar1 = mciSendCommandA(local_18,0x806,1,(DWORD_PTR)local_38);
+      MVar1 = mciSendCommandA(local_18,0x806,1,local_38);
       if (MVar1 === 0) {
         MVar1 = 0;
       }
@@ -9804,7 +9804,7 @@ export function FUN_005ddbc7(param_1) {
   }
   local_10[0] = 0;
   local_c = ((param_1) >>> 0);
-  MVar1 = mciSendCommandA(local_8,0x807,8,(DWORD_PTR)local_10[0]);
+  MVar1 = mciSendCommandA(local_8,0x807,8,local_10[0]);
   if (MVar1 === 0) {
     if (param_1 === DAT_006389e0) {
       local_14 = 5;
@@ -9815,7 +9815,7 @@ export function FUN_005ddbc7(param_1) {
     local_1c = ((param_1) >>> 0);
     local_18 = u8(param_1 + 1);
     local_20[0] = DAT_006e4ff8;
-    MVar1 = mciSendCommandA(local_8,0x806,local_14,(DWORD_PTR)local_20[0]);
+    MVar1 = mciSendCommandA(local_8,0x806,local_14,local_20[0]);
     if (MVar1 === 0) {
       uVar2 = 1;
     }
@@ -9873,17 +9873,17 @@ export function FUN_005ddd4e() {
   
   if (DAT_006389d8 === 0) {
     local_2c = s_cdaudio_00638acc;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_34);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_34);
     if (MVar1 === 0) {
       DAT_006389d8 = local_30;
       local_1c = 10;
-      MVar1 = mciSendCommandA(local_30,0x80d,0x400,(DWORD_PTR)local_20);
+      MVar1 = mciSendCommandA(local_30,0x80d,0x400,local_20);
       if (MVar1 === 0) {
         local_14[0] = 0;
         local_10 = 0;
         local_8 = 0;
         local_c = 3;
-        mciSendCommandA(DAT_006389d8,0x814,0x100,(DWORD_PTR)local_14[0]);
+        mciSendCommandA(DAT_006389d8,0x814,0x100,local_14[0]);
         DAT_006389e0 = local_10;
       }
       else {
@@ -9974,14 +9974,14 @@ export function FUN_005ddeff() {
   
   if (DAT_006389d8 === 0) {
     local_34 = s_cdaudio_00638b18;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_3c);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_3c);
     if (MVar1 !== 0) {
       return 0xffffffff;
     }
     local_24 = local_38;
     DAT_006389d8 = local_38;
     local_1c = 10;
-    MVar1 = mciSendCommandA(local_38,0x80d,0x400,(DWORD_PTR)local_20);
+    MVar1 = mciSendCommandA(local_38,0x80d,0x400,local_20);
     if (MVar1 !== 0) {
       mciSendCommandA(local_24,0x804,0,0);
       DAT_006389d8 = 0;
@@ -9992,7 +9992,7 @@ export function FUN_005ddeff() {
     local_24 = DAT_006389d8;
   }
   local_c = 3;
-  MVar1 = mciSendCommandA(local_24,0x814,0x100,(DWORD_PTR)local_14);
+  MVar1 = mciSendCommandA(local_24,0x814,0x100,local_14);
   if (MVar1 === 0) {
     DAT_006389e0 = local_10;
   }
@@ -10023,19 +10023,19 @@ export function FUN_005de00d() {
   
   if (DAT_006389d8 === 0) {
     local_14 = s_cdaudio_00638b20;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_1c);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_1c);
     if (MVar1 !== 0) {
       return;
     }
     local_8 = local_18;
     local_20 = 0x100;
-    mciSendCommandA(local_18,0x80d,0x100,(DWORD_PTR)local_2c);
+    mciSendCommandA(local_18,0x80d,0x100,local_2c);
   }
   else {
     local_8 = DAT_006389d8;
     FUN_005dde9d();
     local_20 = 0x100;
-    mciSendCommandA(DAT_006389d8,0x80d,0x100,(DWORD_PTR)local_2c);
+    mciSendCommandA(DAT_006389d8,0x80d,0x100,local_2c);
   }
   DAT_006389dc = local_8;
   return;
@@ -10061,11 +10061,11 @@ export function FUN_005de0b5() {
   
   if ((DAT_006389d8 === 0) && (DAT_006389dc === 0)) {
     local_14 = s_cdaudio_00638b28;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_1c);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_1c);
     if (MVar1 === 0) {
       local_8 = local_18;
       local_20 = 0x100;
-      mciSendCommandA(local_18,0x80d,0x100,(DWORD_PTR)local_2c);
+      mciSendCommandA(local_18,0x80d,0x100,local_2c);
       mciSendCommandA(local_8,0x804,0,0);
     }
   }
@@ -10074,7 +10074,7 @@ export function FUN_005de0b5() {
     DAT_006389dc = 0;
     FUN_005dde9d();
     local_20 = 0x200;
-    mciSendCommandA(local_8,0x80d,0x200,(DWORD_PTR)local_2c);
+    mciSendCommandA(local_8,0x80d,0x200,local_2c);
     mciSendCommandA(local_8,0x804,0,0);
   }
   return;
@@ -10098,13 +10098,13 @@ export function FUN_005de19d() {
   let local_c;
   
   local_c = 4;
-  local_1c = mciSendCommandA(DAT_006389d8,0x814,0x100,(DWORD_PTR)local_14);
+  local_1c = mciSendCommandA(DAT_006389d8,0x814,0x100,local_14);
   if (local_1c === 0) {
     if (local_10 === 0x20d) {
-      mciSendCommandA(DAT_006389d8,0x806,0,(DWORD_PTR)local_28);
+      mciSendCommandA(DAT_006389d8,0x806,0,local_28);
     }
     else {
-      mciSendCommandA(DAT_006389d8,0x809,0,(DWORD_PTR)local_18);
+      mciSendCommandA(DAT_006389d8,0x809,0,local_18);
     }
   }
   return;
@@ -10128,13 +10128,13 @@ export function FUN_005de250() {
   let local_c;
   
   local_c = 4;
-  local_1c = mciSendCommandA(DAT_006389d8,0x814,0x100,(DWORD_PTR)local_14);
+  local_1c = mciSendCommandA(DAT_006389d8,0x814,0x100,local_14);
   if (local_1c === 0) {
     if (local_10 === 0x20d) {
-      mciSendCommandA(DAT_006389d8,0x806,0,(DWORD_PTR)local_28);
+      mciSendCommandA(DAT_006389d8,0x806,0,local_28);
     }
     else if (local_10 === 0x211) {
-      mciSendCommandA(DAT_006389d8,0x855,0,(DWORD_PTR)local_18);
+      mciSendCommandA(DAT_006389d8,0x855,0,local_18);
     }
   }
   return;
@@ -10163,7 +10163,7 @@ export function FUN_005de310() {
   
   if (DAT_006389d8 === 0) {
     local_2c = s_cdaudio_00638b30;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_34);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_34);
     if (MVar1 !== 0) {
       return;
     }
@@ -10175,11 +10175,11 @@ export function FUN_005de310() {
   }
   local_c = 8;
   DAT_006389d8 = local_18;
-  local_1c = mciSendCommandA(local_18,0x814,0x100,(DWORD_PTR)local_14);
+  local_1c = mciSendCommandA(local_18,0x814,0x100,local_14);
   if (local_1c === 0) {
     local_20 = local_10;
     local_c = 3;
-    local_1c = mciSendCommandA(local_18,0x814,0x100,(DWORD_PTR)local_14);
+    local_1c = mciSendCommandA(local_18,0x814,0x100,local_14);
     if (local_1c === 0) {
       if (local_10 < local_20 + 1) {
         FUN_005ddbc7(1);
@@ -10215,7 +10215,7 @@ export function FUN_005de41e() {
   
   if (DAT_006389d8 === 0) {
     local_2c = s_cdaudio_00638b38;
-    MVar1 = mciSendCommandA(0,0x803,0x2000,(DWORD_PTR)local_34);
+    MVar1 = mciSendCommandA(0,0x803,0x2000,local_34);
     if (MVar1 !== 0) {
       return;
     }
@@ -10227,11 +10227,11 @@ export function FUN_005de41e() {
   }
   local_c = 8;
   DAT_006389d8 = local_18;
-  local_1c = mciSendCommandA(local_18,0x814,0x100,(DWORD_PTR)local_14);
+  local_1c = mciSendCommandA(local_18,0x814,0x100,local_14);
   if (local_1c === 0) {
     local_20 = local_10;
     local_c = 3;
-    local_1c = mciSendCommandA(local_18,0x814,0x100,(DWORD_PTR)local_14);
+    local_1c = mciSendCommandA(local_18,0x814,0x100,local_14);
     if (local_1c === 0) {
       if (local_20 === 1) {
         FUN_005ddbc7(1);
@@ -10272,11 +10272,11 @@ export function FUN_005de529(param_1, param_2, param_3) {
     local_18 = DAT_006389d8;
     local_28 = 10;
     local_20 = 0x400;
-    local_1c = mciSendCommandA(DAT_006389d8,0x80d,0x400,(DWORD_PTR)local_2c);
+    local_1c = mciSendCommandA(DAT_006389d8,0x80d,0x400,local_2c);
     if (local_1c === 0) {
       local_20 = 0x100;
       local_c = 2;
-      MVar2 = mciSendCommandA(local_18,0x814,0x100,(DWORD_PTR)local_14);
+      MVar2 = mciSendCommandA(local_18,0x814,0x100,local_14);
       if (MVar2 === 0) {
         if (param_1 !== 0x0) {
           w32(param_1, 0, local_10 >> 8 & 0xff);
@@ -10504,7 +10504,7 @@ export function gdi_E780_005DE780(param_1) {
   
   w32(param_1, 0, 0x300);
   param_1[1] = 0x100;
-  hdc = GetDC((HWND)0x0);
+  hdc = GetDC(0x0);
   uVar1 = GetDeviceCaps(hdc,0x26);
   if ((uVar1 & 0x100) === 0) {
     DAT_006e500c = 0;
@@ -10513,7 +10513,7 @@ export function gdi_E780_005DE780(param_1) {
   else {
     iVar2 = GetDeviceCaps(hdc,0x18);
     DAT_006e500c = iVar2 / 2;
-    GetSystemPaletteEntries(hdc,0,0x100,(LPPALETTEENTRY)(param_1 + 2));
+    GetSystemPaletteEntries(hdc,0,0x100,(param_1 + 2));
   }
   for (local_c = 0; local_c < DAT_006e500c; local_c = local_c + 1) {
     // DEVIATION: C pointer — *(undefined1 *)(param_1 + local_c * 4 + 7) = 0;
@@ -10542,7 +10542,7 @@ export function gdi_E780_005DE780(param_1) {
       local_10 = local_10 + 3;
     }
   }
-  ReleaseDC((HWND)0x0,hdc);
+  ReleaseDC(0x0,hdc);
   return;
 }
 
@@ -10688,7 +10688,7 @@ export function FUN_005dec4e(param_1) {
     local_8 = CreatePalette(param_1);
   }
   else {
-    local_8 = (HPALETTE)0x0;
+    local_8 = 0x0;
   }
   return local_8;
 }
@@ -11685,7 +11685,7 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
       }
     }
     if (local_a0 === 1) {
-      // DEVIATION: C pointer — SetCursor(*(HCURSOR *)(iVar6 + 0x1c));
+      SetCursor(*(iVar6 + 0x1c));
     }
   }
   return local_a0;
