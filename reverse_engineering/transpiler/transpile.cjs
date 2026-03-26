@@ -698,6 +698,7 @@ function processFunction(headerLines, bodyLines, ctx) {
 
     // ── Continuation of multi-line DEVIATION ──
     if (ctx.deviationContinuation) {
+      openWriteCall = false; // cancel any pending write — DEVIATION consumed it
       const indent = line.match(/^(\s*)/)[1];
       // Check if preceding non-DEVIATION line has unclosed parens/calls
       let prevParenDepth = 0;
@@ -803,11 +804,11 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Post-transform: fix read helpers used as write targets ──
     // If s32/u32/s16/u16 appears on the LEFT side of = (assignment, NOT ===/!==)
     transformed = transformed.replace(
-      /\b(s32|u32)\(([^)]+),\s*([^)]+)\)\s*=(?!=)\s*/g,
+      /\b(s32|u32)\(([^,)]+),\s*([^)]+?)\)\s*=(?!=)\s*/g,
       (m, fn, base, off) => 'w32(' + base + ', ' + off + ', '
     );
     transformed = transformed.replace(
-      /\b(s16|u16)\(([^)]+),\s*([^)]+)\)\s*=(?!=)\s*/g,
+      /\b(s16|u16)\(([^,)]+),\s*([^)]+?)\)\s*=(?!=)\s*/g,
       (m, fn, base, off) => 'w16(' + base + ', ' + off + ', '
     );
     // Check if this line opened a w16/w32 call that continues on next line

@@ -3258,7 +3258,7 @@ export function FUN_00496ecf(param_1) {
    { // DEVIATION(cont)
     w32(local_8, 0x1e4, s32(local_8, 0x1e4) + 0x15);
   } // DEVIATION(cont)
-  // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((local_8 + 0x48)));
+  // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((local_8 + 0x48));
   return;
 }
 

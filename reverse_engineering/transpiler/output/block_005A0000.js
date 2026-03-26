@@ -1354,7 +1354,7 @@ export function FUN_005a407f(param_1) {
       if (s32(DAT_006cec84, 0x224) === 0) {
         w32(DAT_006cec84, 0x224, s32(DAT_006cec84, 0x234));
       }
-      FUN_005a577e());
+      FUN_005a577e();
       break;
     case 0xa8:
     case 0xc0:

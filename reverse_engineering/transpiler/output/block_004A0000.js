@@ -2814,7 +2814,7 @@ export function new_civ_004A7CE9(param_1) {
                // DEVIATION: C pointer — *(undefined2 *)
                 ) // DEVIATION(cont): (&DAT_00655508 + (uint)(byte)(&DAT_006554fc)[local_24 * 0x30] * 2 + local_24 * 0x30
           ; // DEVIATION(cont)
-          DAT_0064ca92[param_1 * 0x594] = u8(local_24));
+          DAT_0064ca92[param_1 * 0x594] = u8(local_24);
           w16(DAT_0064c6a0, param_1 * 0x594, 
                u16(DAT_0064c6a0, param_1 * 0x594) & 0xfdff);
           if (DAT_006554fc[local_24 * 0x30] !== 0) {
