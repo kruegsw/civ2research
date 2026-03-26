@@ -865,11 +865,7 @@ function transpileBlock(blockName) {
 
   const outputLines = [];
 
-  // File header
-  outputLines.push("import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';");
-  outputLines.push('');
-
-  // Preamble as comments
+  // Preamble as comments (no import line — wiring step handles imports)
   for (const line of preamble) {
     outputLines.push(line);
   }
@@ -886,10 +882,10 @@ function transpileBlock(blockName) {
   }
 
   // Append goto helpers at end of file (after all C-mapped lines)
+  // NOTE: everything above this point is 1:1 with C source (line N = line N)
+  // Helpers start on the line AFTER the last C line — no extra blank lines added
   if (gotoHelpers.length > 0) {
-    outputLines.push('');
     outputLines.push('// ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──');
-    outputLines.push('');
     for (const helper of gotoHelpers) {
       outputLines.push(helper);
     }
