@@ -11470,56 +11470,8 @@ export function FUN_005dfd8f(param_1, param_2) {
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4, uVar2, uVar5) {
-      iVar3 = 0;
-      pHVar4 = GetParent(param_1);
-      GetWindowLongA(pHVar4,iVar3);
-      iVar3 = FUN_00414d10();
-      if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar3 + 0x49) & 2) !== 0) {
-        pHVar4 = GetParent(param_1);
-        SetFocus(pHVar4);
-        pHVar4 = GetParent(param_1);
-        BringWindowToTop(pHVar4);
-      }
-      LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-      return LVar6;
-  // (outer block close)
-    if (uVar2 === 0x100) {
-      if (((param_3 !== 9) && (param_3 !== 0xd)) && (param_3 !== 0x1b)) {
-        LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-        return LVar6;
-      }
-      pHVar4 = GetParent(param_1);
-      SendMessageA(pHVar4,param_2,param_3,param_4);
-      return 1;
-    }
-    if (uVar2 === 0x101) {
-      uVar5 = FUN_0040f810();
-      FUN_005c6303(uVar5);
-      iVar3 = FUN_005eb3ed(param_3);
-      if ((0x2af < iVar3) && (iVar3 < 0x2b5)) {
-        FUN_005d30e0(iVar3);
-      }
-      LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-      return LVar6;
-    }
-    if (uVar2 === 0x102) {
-      uVar5 = FUN_0040f810();
-      FUN_005c6303(uVar5);
-      local_8 = 0;
-      if (param_3 !== 9) {
-        uVar5 = FUN_005eb3ed(param_3);
-        local_8 = FUN_005d30e0(uVar5);
-      }
-      if (local_8 === 0) {
-        return 1;
-      }
-      LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-      return LVar6;
-    }
-  // (outer block close)
-  if (true) // (orphan else)
-  // (orphan else-if cont): LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-  // (orphan else-if cont): return LVar6;
+  // HELPER_SYNTAX_ERROR: Unexpected token '}'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function switchD_005dab35_default_helper(param_1, param_2, param_3, param_4, uVar7) {

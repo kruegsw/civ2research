@@ -1084,6 +1084,20 @@ function processGotos(lines) {
     }
     while (fixBrace > 0) { helpers.push('}'); fixBrace--; }
     helpers.push('}');
+
+    // Validate helper syntax — if it fails, comment out the body
+    const helperCode = helpers.slice(helperStart - 1).join('\n'); // include function line
+    try {
+      new Function(helperCode.replace(/^function /, 'function _'));
+    } catch (e) {
+      // Helper has syntax error — replace body with comment
+      const funcLine = helpers[helperStart - 1];
+      helpers.length = helperStart - 1; // remove broken helper
+      helpers.push(funcLine);
+      helpers.push('  // HELPER_SYNTAX_ERROR: ' + e.message.substring(0, 60));
+      helpers.push('  // Original code had structural issues from DEVIATION lines');
+      helpers.push('}');
+    }
     helpers.push('');
   }
 

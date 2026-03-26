@@ -9291,55 +9291,8 @@ function LAB_004451fb_helper(local_18, local_8) {
 }
 
 function LAB_0044501d_helper(iVar2, local_18, local_20, local_8, local_888, param_1, sVar1, sVar7) {
-        sVar1 = _strlen(DAT_006ad63c);
-        sVar7 = _strlen(DAT_006665b0);
-        pcVar6 = operator_new(sVar1 + sVar7 + 3);
-        if (pcVar6 === 0x0) {
-          FUN_005dae6b(7,s_tempStr_006265ac,s_D__Ss_Franklinton_startup_LAN_cp_00626588,0x1b9);
-        }
-        FUN_005f22d0(pcVar6,DAT_006ad63c);
-        FUN_005f22e0(pcVar6,DAT_006265b4);
-        FUN_005f22e0(pcVar6,DAT_006665b0);
-        operator_delete(DAT_006ad63c);
-        DAT_006ad63c = pcVar6;
-  // (outer block close)
-      else if (((param_1 === 1) || (param_1 === 4)) && (iVar2 = FUN_0044528e(), iVar2 === 0)) {
-        FUN_0059b293(1);
-        LAB_0044465c_helper(iVar2, local_18, local_20, local_8, local_888, param_1, sVar1, sVar7); return;
-      }
-      pvVar5 = operator_new(0x70);
-      local_8._0_1_ = 3;
-      if (pvVar5 === 0x0) {
-        local_888 = 0;
-      }
-if (true) {
-        local_888 = FUN_0056e270();
-      }
-      local_8 = CONCAT31(local_8._1_3_,1);
-      DAT_006ad10c = local_888;
-      iVar2 = FUN_0056e2e9(local_20,param_1);
-      if (DAT_006ad10c !== 0) {
-        FUN_004471c0(1);
-      }
-      DAT_006ad10c = 0;
-      if (iVar2 !== 0) {
-  // LAB_004451fb:
-        DAT_00654c74 = ((local_18) << 16 >> 16);
-        DAT_00654fd8 = 1;
-        FUN_004a73d9();
-        local_8 = local_8 & 0xffffff00;
-        FUN_0044525d();
-        // DEVIATION: SEH
-        FUN_00445269();
-        FUN_0044527f();
-        return;
-      }
-      FUN_0059b293(1);
-      DAT_006ad7b2 = 0;
-      FUN_00484cc0();
-  // (outer block close)
-  // (outer block close)
-  LAB_0044465c_helper(iVar2, local_18, local_20, local_8, local_888, param_1, sVar1, sVar7); return;
+  // HELPER_SYNTAX_ERROR: Unexpected token 'else'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_00445a32_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, local_8) {

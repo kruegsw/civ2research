@@ -6074,95 +6074,13 @@ if (true) {
 }
 
 function joined_r0x004fb11d_helper(iVar2, iVar3, iVar4, local_14, local_18, local_8, local_c, param_1, uVar1) {
-            if (iVar2 === local_c) return; // (was break)
-  // (outer block close)
-  // (outer block close)
-if (true) {
-          iVar2 = FUN_005b89e4(iVar3,iVar4);
-          if (((iVar2 === 0) || (DAT_0064b1c1[s32(param_1, 0xe0) * 0x14] === 0x01)) &&
-             ((iVar2 = FUN_0043cf76(iVar3,iVar4), iVar2 === -1 ||
-              (iVar2 = FUN_005b8ca6(iVar3,iVar4), iVar2 === local_c)))) {
-            iVar2 = FUN_005b8d62(iVar3,iVar4);
-            if (iVar2 !== -1) {
-              iVar2 = FUN_005b8d62(iVar3,iVar4);
-              joined_r0x004fb11d_helper(iVar2, iVar3, iVar4, local_14, local_18, local_8, local_c, param_1, uVar1); return;
-            }
-            return; // (was break)
-          }
-        }
-  // (outer block close)
-  // (outer block close)
-    local_14 = iVar3;
-    local_18 = iVar4;
-    if ((local_14 === 10000) && (local_18 === 10000)) {
-      uVar1 = 0;
-    }
-if (true) {
-      iVar3 = FUN_005b3d06(s32(param_1, 0xe0),local_c,local_14,local_18);
-      if (iVar3 === -1) {
-        uVar1 = 0;
-      }
-if (true) {
-        if (s32(param_1, 0x138) !== 0) {
-          w16(DAT_006560f4, iVar3 * 0x20, 
-               u16(DAT_006560f4, iVar3 * 0x20) | 0x2000);
-        }
-        DAT_00656100[iVar3 * 0x20] = 0xff;
-        if (s32(param_1, 0x13c) !== 0) {
-          for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
-            if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) && 0
-               // DEVIATION: C pointer — (iVar4 = __strcmpi(DAT_0064f360 + local_8 * 0x58,*(char **)(param_1 + 0x13c)),
-                { // DEVIATION(cont): iVar4 == 0))
-               { // DEVIATION(cont): if ((char)(&DAT_0064f348)[local_8 * 0x58] == local_c)
-                 // DEVIATION(cont): (&DAT_00656100)[iVar3 * 0x20] = (undefined1)local_8;
-              }
-              break;
-            }
-          }
-        }
-        uVar1 = 1;
-      }
-    }
-  // (outer block close)
-  return uVar1;
+  // HELPER_SYNTAX_ERROR: Unexpected token '{'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
-        if (piVar1[0x60] === 0x1000) {
-          FUN_004fc3ae(piVar1);
-          return 0;
-        }
-        FUN_004fc3ae(piVar1);
-        return 1;
-  // (outer block close)
-      if ((2 < DAT_00655b02) &&
-         (((1 << (u8(param_1) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
-          ((1 << (u8(param_2) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0)))) {
-        if (((piVar1[6] === param_2) || (piVar1[6] === -2)) && 0
-           // DEVIATION: C pointer — ((((1 << (*(byte *)(piVar1 + 6) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
-              // DEVIATION(cont): ((piVar1[7] == 1 || (piVar1[7] == 4)))) ||
-             // DEVIATION(cont): (((1 << (*(byte *)(piVar1 + 6) & 0x1f) & (uint)DAT_00655b0b) == 0 &&
-              { // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4))))))))
-           // DEVIATION(cont): bVar2 = true;
-        }
-if (true) {
-          bVar2 = false;
-        }
-        if (((piVar1[9] === param_1) || (piVar1[9] === -2)) && 0
-           // DEVIATION: C pointer — ((((((DAT_00655b0b) >>> 0) & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) !== 0 &&
-              // DEVIATION(cont): ((piVar1[10] == 1 || (piVar1[10] == 4)))) ||
-             // DEVIATION(cont): ((((uint)DAT_00655b0b & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) == 0 &&
-              { // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4))))))))
-           // DEVIATION(cont): bVar3 = true;
-        }
-if (true) {
-          bVar3 = false;
-        }
-        if ((bVar2) && (bVar3)) LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2); return;
-      }
-  // (outer block close)
-    piVar1 = piVar1[0x6f];
-  // (outer block close)
+  // HELPER_SYNTAX_ERROR: Unexpected token '{'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_004ff6f7_helper(local_44) {

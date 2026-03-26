@@ -7147,34 +7147,6 @@ function LAB_004d5e33_helper() {
 }
 
 function LAB_004de76b_helper(cVar1, iVar2, iVar3, iVar4, iVar6, local_10, param_1, param_2, uVar5, uVar8) {
-  FUN_0047cf22(s16(DAT_0064f340, param_1 * 0x58),
-                     s16(DAT_0064f342, param_1 * 0x58));
-  FUN_004b0b53(0xff,2,0,0,0);
-  FUN_0046b14d(0x75,0xff,s16(DAT_0064f340, param_1 * 0x58),
-                     s16(DAT_0064f342, param_1 * 0x58),0,0,0,0,0,0);
-  iVar2 = FUN_005b8931(iVar3,iVar4);
-  if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar2 + 4)) === 0) {
-    FUN_005b976d(iVar3,iVar4,1 << (u8(param_2) & 0x1f),1,1);
-    FUN_0047cea6(iVar3,iVar4);
-  }
-  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
-    uVar5 = FUN_005ae052(s8(DAT_00628350[local_10]) + iVar3);
-    iVar2 = s8(DAT_00628360[local_10]) + iVar4;
-    iVar6 = FUN_004087c0(uVar5,iVar2);
-    if ((iVar6 !== 0) &&
-       (iVar6 = FUN_005b8931(uVar5,iVar2),
-       { // DEVIATION: C pointer — (1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar6 + 4)) === 0)) {
-      FUN_005b976d(uVar5,iVar2,1 << (u8(param_2) & 0x1f),1,1);
-      FUN_0047cea6(uVar5,iVar2);
-    }
-  }
-  FUN_005b9f1c();
-  FUN_0046b14d(0x75,0xff,iVar3,iVar4,0,0,0,0,0,0);
-  DAT_0064f34a[param_1 * 0x58] = cVar1;
-  DAT_0064f34b[param_1 * 0x58] = u8(DAT_00655af8);
-  uVar8 = FUN_00453e18(0xe);
-  if (uVar8 === param_1) {
-    FUN_004be6ba(param_2);
-  }
-  return;
+  // HELPER_SYNTAX_ERROR: Unexpected number
+  // Original code had structural issues from DEVIATION lines
 }
