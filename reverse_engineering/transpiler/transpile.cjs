@@ -652,27 +652,44 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Continuation of multi-line DEVIATION ──
     if (ctx.deviationContinuation) {
       const indent = line.match(/^(\s*)/)[1];
-      // Preserve structural tokens — extract leading/trailing { } ; break
+      // Check if preceding non-DEVIATION line has unclosed parens/calls
+      let prevParenDepth = 0;
+      for (let j = result.length - 1; j >= 0; j--) {
+        const prev = result[j].trim();
+        if (prev === '' || prev.endsWith(';') || prev === '}') break;
+        if (prev.startsWith('// DEVIATION')) continue;
+        for (const ch of prev) { if (ch === '(') prevParenDepth++; if (ch === ')') prevParenDepth--; }
+      }
+
       let prefix = '';
-      let suffix = '';
       let inner = trimmed;
 
-      // Leading } or } else {
+      // Leading } — always extract (closes a block)
       if (/^\}\s*else\s*\{/.test(inner)) { prefix = '} else {'; inner = ''; }
       else if (/^\}/.test(inner)) { prefix = '}'; inner = inner.substring(1).trim(); }
 
-      // Trailing { or ;
-      if (/\{\s*$/.test(inner) && !prefix.includes('{')) { suffix = '{'; inner = inner.replace(/\{\s*$/, '').trim(); }
-      if (/;\s*$/.test(inner)) { suffix = ';'; inner = inner.replace(/;\s*$/, '').trim(); }
-
-      // break;
+      // break; — always extract
       if (/^break\s*;?\s*$/.test(inner)) { prefix = 'break;'; inner = ''; }
 
-      const comment = inner ? ' // DEVIATION(cont): ' + inner : ' // DEVIATION(cont)';
-      // Structural tokens go BEFORE the comment (// consumes rest of line)
-      result.push(indent + prefix + (suffix ? suffix + ' ' : '') + comment);
+      // Trailing ) that closes an open paren from a non-DEVIATION line
+      if (prevParenDepth > 0 && /\)\s*[;{]?\s*$/.test(inner)) {
+        // Extract closing ) and any trailing ; or {
+        const closeMatch = inner.match(/(\)+\s*;?\s*)$/);
+        if (closeMatch) {
+          const closers = closeMatch[1].trim();
+          inner = inner.substring(0, inner.length - closeMatch[0].length).trim();
+          prefix = prefix + closers;
+        }
+      }
 
-      if (/;\s*$/.test(trimmed) || /^\s*\}/.test(line) || /break/.test(trimmed) || suffix === '{') {
+      // Trailing ; on its own
+      if (/^\s*;\s*$/.test(inner)) { prefix = prefix + ';'; inner = ''; }
+
+      const comment = inner ? ' // DEVIATION(cont): ' + inner : ' // DEVIATION(cont)';
+      result.push(indent + prefix + comment);
+
+      // Stop continuation when we hit ; or }
+      if (/;\s*$/.test(trimmed) || /^\s*\}/.test(line) || /break/.test(trimmed)) {
         ctx.deviationContinuation = false;
       }
       continue;
