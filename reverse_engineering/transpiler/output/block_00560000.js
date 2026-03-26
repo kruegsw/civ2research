@@ -344,7 +344,7 @@ export function FUN_00560d95(param_1, param_2) {
           if ((((s32(DAT_0065610a, local_30 * 0x20) !== 0) &&
                ((u16(DAT_006560f4, local_30 * 0x20) & 4) !== 0)) &&
               (w16(DAT_006560f4, local_30 * 0x20, 
-                    u16(DAT_006560f4, local_30 * 0x20) & 0xfffb,
+                    u16(DAT_006560f4, local_30 * 0x20) & 0xfffb),
               s8(DAT_006560f7[local_30 * 0x20]) === param_2)) &&
              (iVar6 = FUN_0043d07a(s16(DAT_006560f0, local_30 * 0x20),
                                          s16(DAT_006560f2, local_30 * 0x20),param_2,

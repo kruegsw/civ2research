@@ -2209,7 +2209,7 @@ export function FUN_00494e2a(in_ECX) {
   // DEVIATION: SEH
   FUN_0043c460(0,0xb);
   local_8 = 0;
-  _eh_vector_constructor_iterator_(local_604,0x3c,5,CString::CString,FUN_005cde4d);
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_(local_604,0x3c,5,CString::CString,FUN_005cde4d);
   local_8._0_1_ = 1;
   FUN_005c64da();
   local_8._0_1_ = 2;

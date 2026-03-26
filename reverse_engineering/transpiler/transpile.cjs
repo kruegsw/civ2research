@@ -265,7 +265,7 @@ function transformLine(line, ctx) {
     out = out.replace(/&(\w+)/g, '$1'); // catch-all: drop & for any remaining
 
     // ── C++ class method calls and destructor calls → DEVIATION ──
-    if (/\w+::~?\w+\s*[(\[]/.test(out) && !/\/\//.test(out.split('::')[0])) {
+    if (/\w+::~?\w+\s*[(\[,]/.test(out) && !/\/\//.test(out.split('::')[0])) {
       out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: MFC — $2');
       if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
     }
@@ -664,8 +664,13 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Continuation of multi-line w16/w32 call ──
     if (openWriteCall) {
       let transformed = transformLine(line, ctx);
-      // Close the function call: replace trailing ; with );
-      transformed = transformed.replace(/;\s*$/, ');');
+      // Close the function call: replace trailing ; with ); or trailing , with ),
+      if (/;\s*$/.test(transformed)) {
+        transformed = transformed.replace(/;\s*$/, ');');
+      } else if (/,\s*$/.test(transformed)) {
+        // Comma-operator: close w16/w32 before the comma
+        transformed = transformed.replace(/,\s*$/, '),');
+      }
       openWriteCall = false;
       result.push(transformed);
       continue;

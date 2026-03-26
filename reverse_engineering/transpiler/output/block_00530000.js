@@ -566,7 +566,7 @@ export function FUN_0053184d(param_1) {
     if (((s32(DAT_0065610a, local_354 * 0x20) !== 0) &&
         (s8(DAT_006560f7[local_354 * 0x20]) === param_1)) &&
        (w16(DAT_006560f4, local_354 * 0x20, 
-             u16(DAT_006560f4, local_354 * 0x20) & 0xfc7f,
+             u16(DAT_006560f4, local_354 * 0x20) & 0xfc7f),
        DAT_0064b1ca[u8(DAT_006560f6[local_354 * 0x20]) * 0x14] === 0x05)) {
       if ((1 << (u8(param_1) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
         w16(DAT_006560f4, local_354 * 0x20, 

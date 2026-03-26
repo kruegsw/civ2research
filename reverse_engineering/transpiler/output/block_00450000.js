@@ -2185,16 +2185,16 @@ export function FUN_00454354(in_ECX) {
   local_8._0_1_ = 5;
   FUN_004502b0();
   local_8._0_1_ = 6;
-  _eh_vector_constructor_iterator_((in_ECX + 0x6dc),0x3c,0x3c,CString::CString,FUN_005cde4d)
-  ;
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_((in_ECX + 0x6dc),0x3c,0x3c,CString::CString,FUN_005cde4d)
+  // DEVIATION(cont): ;
   local_8._0_1_ = 7;
-  _eh_vector_constructor_iterator_((in_ECX + 0x15dc),0x3c,4,CString::CString,FUN_005cde4d);
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_((in_ECX + 0x15dc),0x3c,4,CString::CString,FUN_005cde4d);
   local_8._0_1_ = 8;
-  _eh_vector_constructor_iterator_((in_ECX + 0x16cc),0x3c,4,CString::CString,FUN_005cde4d);
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_((in_ECX + 0x16cc),0x3c,4,CString::CString,FUN_005cde4d);
   local_8._0_1_ = 9;
-  _eh_vector_constructor_iterator_((in_ECX + 0x17bc),0x3c,4,CString::CString,FUN_005cde4d);
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_((in_ECX + 0x17bc),0x3c,4,CString::CString,FUN_005cde4d);
   local_8._0_1_ = 10;
-  _eh_vector_constructor_iterator_((in_ECX + 0x18ac),0x3c,4,CString::CString,FUN_005cde4d);
+  // DEVIATION: MFC — _eh_vector_constructor_iterator_((in_ECX + 0x18ac),0x3c,4,CString::CString,FUN_005cde4d);
   local_8._0_1_ = 0xb;
   FUN_005bd630();
   local_8._0_1_ = 0xc;
@@ -3658,7 +3658,7 @@ export function FUN_0045705e(param_1, param_2) {
   }
   if ((DAT_0064c7a5[param_2 * 0x594] !== 0) &&
      (w32(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4, 
-           u32(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4) | 0x100,
+           u32(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4) | 0x100),
      DAT_0064c7a5[param_1 * 0x594] === 0)) {
     DAT_0064b0f8 = 1;
     DAT_0064b118 = FUN_005adfa0(DAT_0064b118,100,9999);
