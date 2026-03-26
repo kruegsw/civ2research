@@ -704,13 +704,18 @@ function processFunction(headerLines, bodyLines, ctx) {
 
       // Trailing ) that closes an open paren from a non-DEVIATION line
       if (prevParenDepth > 0 && /\)\s*[;{]?\s*$/.test(inner)) {
-        // Extract closing ) and any trailing ; or {
         const closeMatch = inner.match(/(\)+\s*;?\s*)$/);
         if (closeMatch) {
           const closers = closeMatch[1].trim();
           inner = inner.substring(0, inner.length - closeMatch[0].length).trim();
           prefix = prefix + closers;
         }
+      }
+
+      // Trailing { — always extract (opens a block that needs to be valid)
+      if (/\{\s*$/.test(inner) && !prefix.includes('{')) {
+        inner = inner.replace(/\{\s*$/, '').trim();
+        prefix = prefix + ' {';
       }
 
       // Trailing ; on its own

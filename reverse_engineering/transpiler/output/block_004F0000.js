@@ -3004,12 +3004,12 @@ export function FUN_004f8af9(in_ECX) {
         // DEVIATION: C pointer — (((s32(in_ECX, 0x2b8 + s32(in_ECX, 0x128) * 4) !== s32(in_ECX, 0x11c) ||
            // DEVIATION(cont): (*(int *)(in_ECX + 0x2b8 + *(int *)(in_ECX + 0x128) * 4) != 0)) ||
           // DEVIATION(cont): (*(int *)(in_ECX + 0x448 + *(int *)(in_ECX + 0x128) * 4) == 8)))) ||
-        // DEVIATION(cont): (*(int *)(in_ECX + 0x118) == 8)) {
+        { // DEVIATION(cont): (*(int *)(in_ECX + 0x118) == 8))
        // DEVIATION(cont): if (((*(int *)(in_ECX + 0x128) == 0) ||
            // DEVIATION(cont): (*(int *)(in_ECX + 0x448 + *(int *)(in_ECX + 0x128) * 4) != *(int *)(in_ECX + 0x118))) ||
           // DEVIATION(cont): ((*(int *)(in_ECX + 0x2b8 + *(int *)(in_ECX + 0x128) * 4) != *(int *)(in_ECX + 0x11c) ||
-           // DEVIATION(cont): (*(int *)(in_ECX + 0x128 + DAT_006a6790 * 4) != *(int *)(in_ECX + 0x120))))) {
-         // DEVIATION(cont): if (-1 < DAT_0062f010) {
+           { // DEVIATION(cont): (*(int *)(in_ECX + 0x128 + DAT_006a6790 * 4) != *(int *)(in_ECX + 0x120)))))
+         { // DEVIATION(cont): if (-1 < DAT_0062f010)
            // DEVIATION(cont): *(int *)(in_ECX + 300 + *(int *)(in_ECX + 0x128) * 4) = DAT_0062f010;
           // DEVIATION: C pointer — s32(in_ECX, 700 + s32(in_ECX, 0x128) * 4) = DAT_006a85b0;
           // DEVIATION: C pointer — s32(in_ECX, 0x44c + s32(in_ECX, 0x128) * 4) = DAT_006a85ac;
@@ -3890,8 +3890,8 @@ export function FUN_004faed4(param_1) {
           for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
             if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) &&
                // DEVIATION: C pointer — (iVar4 = __strcmpi(DAT_0064f360 + local_8 * 0x58,*(char **)(param_1 + 0x13c)),
-                // DEVIATION(cont): iVar4 == 0)) {
-               // DEVIATION(cont): if ((char)(&DAT_0064f348)[local_8 * 0x58] == local_c) {
+                { // DEVIATION(cont): iVar4 == 0))
+               { // DEVIATION(cont): if ((char)(&DAT_0064f348)[local_8 * 0x58] == local_c)
                  // DEVIATION(cont): (&DAT_00656100)[iVar3 * 0x20] = (undefined1)local_8;
               }
               break;
@@ -4223,7 +4223,7 @@ export function FUN_004fbbdd(in_ECX) {
         }
         else if ((((0 < local_8[9]) || (local_8[9] < 8)) &&
                  // DEVIATION: C pointer — ((1 << (*(byte *)(local_8 + 9) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) &&
-                 // DEVIATION(cont): (iVar1 = thunk_FUN_004bd9f0(local_8[9],local_8[0xd]), iVar1 != 0)) {
+                 { // DEVIATION(cont): (iVar1 = thunk_FUN_004bd9f0(local_8[9],local_8[0xd]), iVar1 != 0))
            // DEVIATION(cont): local_c = 1;
           FUN_004fc3ae(local_8);
         }
@@ -4329,7 +4329,7 @@ export function FUN_004fbe84(in_ECX, param_1, param_2) {
          // DEVIATION: C pointer — ((((1 << (*(byte *)(piVar1 + 6) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
             // DEVIATION(cont): ((piVar1[7] == 1 || (piVar1[7] == 4)))) ||
            // DEVIATION(cont): (((1 << (*(byte *)(piVar1 + 6) & 0x1f) & (uint)DAT_00655b0b) == 0 &&
-            // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4)))))))) {
+            { // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4))))))))
          // DEVIATION(cont): bVar2 = true;
       }
       else {
@@ -4339,7 +4339,7 @@ export function FUN_004fbe84(in_ECX, param_1, param_2) {
          // DEVIATION: C pointer — ((((((DAT_00655b0b) >>> 0) & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) !== 0 &&
             // DEVIATION(cont): ((piVar1[10] == 1 || (piVar1[10] == 4)))) ||
            // DEVIATION(cont): ((((uint)DAT_00655b0b & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) == 0 &&
-            // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4)))))))) {
+            { // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4))))))))
          // DEVIATION(cont): bVar3 = true;
       }
       else {
@@ -4361,7 +4361,7 @@ export function FUN_004fbe84(in_ECX, param_1, param_2) {
            // DEVIATION: C pointer — ((((1 << (*(byte *)(piVar1 + 6) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
               // DEVIATION(cont): ((piVar1[7] == 1 || (piVar1[7] == 4)))) ||
              // DEVIATION(cont): (((1 << (*(byte *)(piVar1 + 6) & 0x1f) & (uint)DAT_00655b0b) == 0 &&
-              // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4)))))))) {
+              { // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4))))))))
            // DEVIATION(cont): bVar2 = true;
         }
         else {
@@ -4371,7 +4371,7 @@ export function FUN_004fbe84(in_ECX, param_1, param_2) {
            // DEVIATION: C pointer — ((((((DAT_00655b0b) >>> 0) & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) !== 0 &&
               // DEVIATION(cont): ((piVar1[10] == 1 || (piVar1[10] == 4)))) ||
              // DEVIATION(cont): ((((uint)DAT_00655b0b & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) == 0 &&
-              // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4)))))))) {
+              { // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4))))))))
            // DEVIATION(cont): bVar3 = true;
         }
         else {
@@ -6112,8 +6112,8 @@ if (true) {
           for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
             if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) &&
                // DEVIATION: C pointer — (iVar4 = __strcmpi(DAT_0064f360 + local_8 * 0x58,*(char **)(param_1 + 0x13c)),
-                // DEVIATION(cont): iVar4 == 0)) {
-               // DEVIATION(cont): if ((char)(&DAT_0064f348)[local_8 * 0x58] == local_c) {
+                { // DEVIATION(cont): iVar4 == 0))
+               { // DEVIATION(cont): if ((char)(&DAT_0064f348)[local_8 * 0x58] == local_c)
                  // DEVIATION(cont): (&DAT_00656100)[iVar3 * 0x20] = (undefined1)local_8;
               }
               break;
@@ -6121,8 +6121,8 @@ if (true) {
           }
         }
         uVar1 = 1;
-  // (outer block close)
-  // (outer block close)
+      }
+    }
   // (outer block close)
   return uVar1;
 }
@@ -6142,7 +6142,7 @@ function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
            // DEVIATION: C pointer — ((((1 << (*(byte *)(piVar1 + 6) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
               // DEVIATION(cont): ((piVar1[7] == 1 || (piVar1[7] == 4)))) ||
              // DEVIATION(cont): (((1 << (*(byte *)(piVar1 + 6) & 0x1f) & (uint)DAT_00655b0b) == 0 &&
-              // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4)))))))) {
+              { // DEVIATION(cont): ((piVar1[7] == 2 || (piVar1[7] == 4))))))))
            // DEVIATION(cont): bVar2 = true;
         }
 if (true) {
@@ -6152,14 +6152,14 @@ if (true) {
            // DEVIATION: C pointer — ((((((DAT_00655b0b) >>> 0) & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) !== 0 &&
               // DEVIATION(cont): ((piVar1[10] == 1 || (piVar1[10] == 4)))) ||
              // DEVIATION(cont): ((((uint)DAT_00655b0b & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) == 0 &&
-              // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4)))))))) {
+              { // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4))))))))
            // DEVIATION(cont): bVar3 = true;
-  // (outer block close)
+        }
 if (true) {
           bVar3 = false;
         }
         if ((bVar2) && (bVar3)) LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2); return;
-  // (outer block close)
+      }
   // (outer block close)
     piVar1 = piVar1[0x6f];
   // (outer block close)

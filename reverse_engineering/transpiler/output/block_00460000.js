@@ -2189,7 +2189,7 @@ export function FUN_00468bb9(param_1) {
           if (((DAT_0067a994 === 9) ||
               // DEVIATION: C pointer — (((DAT_0067a994 === 0xe && (param_1 === 0)) && (*(char *)(local_34 + 0x3bd) !== 0))))
              )) // DEVIATION(cont): || ((((DAT_0067a994 == 0xe && (param_1 == 1)) && (*(char *)(local_34 + 0x3bc) != '\0'
-                  // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0')))))) {
+                  { // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0'))))))
             ); // DEVIATION(cont): thunk_FUN_00414d70(&DAT_0062840c
             uVar3 = FUN_005b6898(local_5c);
             FUN_00414d70(uVar3);
@@ -6149,7 +6149,7 @@ if (true) {
           if (((DAT_0067a994 === 9) ||
               // DEVIATION: C pointer — (((DAT_0067a994 === 0xe && (param_1 === 0)) && (*(char *)(local_34 + 0x3bd) !== 0))))
              )) // DEVIATION(cont): || ((((DAT_0067a994 == 0xe && (param_1 == 1)) && (*(char *)(local_34 + 0x3bc) != '\0'
-                  // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0')))))) {
+                  { // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0'))))))
             ); // DEVIATION(cont): thunk_FUN_00414d70(&DAT_0062840c
             uVar3 = FUN_005b6898(local_5c);
             FUN_00414d70(uVar3);
@@ -6175,7 +6175,7 @@ if (true) {
       }
       FUN_005c19ad(local_38);
       FUN_005c0f57(local_8,DAT_00679640,local_40 + local_4c,local_60 + local_50,5);
-  // (outer block close)
+    }
     local_54 = local_54 + 1;
   // (outer block close)
   FUN_00469bdc(param_1,1);
@@ -6289,7 +6289,7 @@ if (true) {
           if (((DAT_0067a994 === 9) ||
               // DEVIATION: C pointer — (((DAT_0067a994 === 0xe && (param_1 === 0)) && (*(char *)(local_34 + 0x3bd) !== 0))))
              )) // DEVIATION(cont): || ((((DAT_0067a994 == 0xe && (param_1 == 1)) && (*(char *)(local_34 + 0x3bc) != '\0'
-                  // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0')))))) {
+                  { // DEVIATION(cont): || ((DAT_0067a994 == 0xf && (*(char *)(local_34 + 0x3bc) != '\0'))))))
             ); // DEVIATION(cont): thunk_FUN_00414d70(&DAT_0062840c
             uVar3 = FUN_005b6898(local_5c);
             FUN_00414d70(uVar3);
@@ -6317,7 +6317,7 @@ if (true) {
       FUN_005c0f57(local_8,DAT_00679640,local_40 + local_4c,local_60 + local_50,5);
     }
     local_54 = local_54 + 1;
-  // (outer block close)
+  } while( true );
   FUN_00469bdc(param_1,1);
   if (s32(local_34, 1000 + param_1 * 4) === 0) {
     w32(local_34, 0x10410 + param_1 * 4, 0xffffffff);

@@ -680,7 +680,7 @@ export function FUN_005b2590(param_1) {
       // DEVIATION: C pointer — if ((s16(DAT_006560f0, s16(DAT_00656106, local_24 * 0x20) * 0x20) !==
             // DEVIATION(cont): *(short *)(&DAT_006560f0 + local_24 * 0x20)) ||
           // DEVIATION(cont): (*(short *)(&DAT_006560f2 + *(short *)(&DAT_00656106 + local_24 * 0x20) * 0x20) !=
-           // DEVIATION(cont): *(short *)(&DAT_006560f2 + local_24 * 0x20))) {
+           { // DEVIATION(cont): *(short *)(&DAT_006560f2 + local_24 * 0x20)))
          // DEVIATION(cont): FUN_005d2279(s_Crossed_locations_in_unit_stack___00636128,local_24);
         local_8 = 0;
         w16(DAT_00656106, local_24 * 0x20, 0xffff);
@@ -696,7 +696,7 @@ export function FUN_005b2590(param_1) {
       // DEVIATION: C pointer — if ((s16(DAT_006560f0, s16(DAT_00656108, local_24 * 0x20) * 0x20) !==
             // DEVIATION(cont): *(short *)(&DAT_006560f0 + local_24 * 0x20)) ||
           // DEVIATION(cont): (*(short *)(&DAT_006560f2 + *(short *)(&DAT_00656108 + local_24 * 0x20) * 0x20) !=
-           // DEVIATION(cont): *(short *)(&DAT_006560f2 + local_24 * 0x20))) {
+           { // DEVIATION(cont): *(short *)(&DAT_006560f2 + local_24 * 0x20)))
          // DEVIATION(cont): FUN_005d2279(s_Crossed_locations_in_unit_stack___00636160,local_24);
         local_8 = 0;
         w16(DAT_00656108, local_24 * 0x20, 0xffff);
@@ -1517,8 +1517,8 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
         }
       }
       // DEVIATION: C-syntax — else if (((DAT_00655aea._1_1_ & 1) !== 0) && (s8(DAT_0064b1ca[param_1 * 0x14]) < 0x05))
-       // DEVIATION(cont): {
-         // DEVIATION(cont): if (*(short *)(&DAT_0064c706 + param_2 * 0x594) == 1) {
+       { // DEVIATION(cont)
+         { // DEVIATION(cont): if (*(short *)(&DAT_0064c706 + param_2 * 0x594) == 1)
            // DEVIATION(cont): thunk_FUN_00490530(PTR_s_TUTORIAL_00627678,s_FIRSTUNIT1_00636314,local_10);
         }
         if (s16(DAT_0064c706, param_2 * 0x594) === 2) {
@@ -4626,7 +4626,7 @@ export function FUN_005bb621(in_ECX, param_1, param_2) {
   
   // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
   // DEVIATION: MFC — if ((pCVar1 === param_1) && (pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX), pCVar1 === param_2))
-   // DEVIATION(cont): {
+   { // DEVIATION(cont)
      // DEVIATION(cont): return;
   }
   SetRect(local_14[0],0,0,param_1,param_2);

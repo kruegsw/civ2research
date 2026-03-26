@@ -5209,7 +5209,7 @@ export function FUN_0059e6ff(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   // DEVIATION: C pointer — if ((s32(in_ECX, 0x80) !== s32(in_ECX, 0x84)) && ((*(byte *)(in_ECX + 0x3e) & 8) === 0))
-   // DEVIATION(cont): {
+   { // DEVIATION(cont)
      // DEVIATION(cont): param_1 = (*(int *)(in_ECX + 0x80) * param_1) / *(int *)(in_ECX + 0x84);
   }
   w32(in_ECX, 0x11c, param_1);

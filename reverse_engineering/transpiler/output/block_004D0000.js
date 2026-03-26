@@ -680,7 +680,7 @@ export function FUN_004d0b58(in_ECX) {
     FUN_00596eec(s32(in_ECX, 0x1cc),1);
     FUN_004d4a7b();
     // DEVIATION: C pointer — if ((s16(DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594) !== 0) && (DAT_006ad0ec !== 0))
-     // DEVIATION(cont): {
+     { // DEVIATION(cont)
       w32(in_ECX, 0xae0, 1);
     } // DEVIATION(cont)
     iVar1 = FUN_004a7577(s32(in_ECX, 0x1cc));

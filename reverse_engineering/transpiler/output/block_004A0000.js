@@ -144,7 +144,7 @@ export function FUN_004a23fc(param_1) {
   
   local_8 = 0x0;
   // DEVIATION: C struct — if (((DAT_0062cd20->_flag & 0x10) === 0) &&
-      // DEVIATION(cont): (pcVar1 = _fgets(&DAT_00679640,0xff,DAT_0062cd20), pcVar1 != (char *)0x0)) {
+      { // DEVIATION(cont): (pcVar1 = _fgets(&DAT_00679640,0xff,DAT_0062cd20), pcVar1 != (char *)0x0))
      // DEVIATION(cont): thunk_FUN_0056b810(&DAT_00679640);
     if (param_1 === 1) {
       FUN_004d007e(DAT_00679640);
@@ -2911,9 +2911,9 @@ export function new_civ_004A7CE9(param_1) {
                                                          // DEVIATION(cont): * 2),
                                           // DEVIATION(cont): (int)*(short *)(&DAT_00628010 +
                                                         ) // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + param_1 * 0x594
-                                                         // DEVIATION(cont): * 2)), iVar4 != 0)) {
+                                                         { // DEVIATION(cont): * 2)), iVar4 != 0))
              // DEVIATION(cont): local_3c = (uint)*(short *)(&DAT_00627fe0 +
-                                       ); // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + param_1 * 0x594) * 2
+                                        // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + param_1 * 0x594) * 2);
             // DEVIATION: C pointer — local_140 = (uint)*(short *)(DAT_00628010 +
                                          // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + param_1 * 0x594) * 2);
             local_14c = 0;
@@ -2955,8 +2955,8 @@ export function new_civ_004A7CE9(param_1) {
                ((iVar4 = FUN_005b8931(local_3c,local_140),
                 // DEVIATION: C pointer — (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0 &&
                  // DEVIATION(cont): ((thunk_FUN_005b3d06(0,param_1,local_3c,local_140), 0x28 < DAT_00655af8 &&
-                  // DEVIATION(cont): (iVar4 = thunk_FUN_004bfe5a(param_1,0xffffffff,3), iVar4 != 0)))))) {
-              ); // DEVIATION(cont): thunk_FUN_005b3d06(3,param_1,local_3c,local_140
+                  { // DEVIATION(cont): (iVar4 = thunk_FUN_004bfe5a(param_1,0xffffffff,3), iVar4 != 0))))))
+               // DEVIATION(cont): thunk_FUN_005b3d06(3,param_1,local_3c,local_140);
             }
             FUN_005b9ec6();
             for (local_1c = 0; local_1c < 0x15; local_1c = local_1c + 1) {

@@ -7209,7 +7209,7 @@ export function FUN_005cac22(param_1) {
   
   iVar1 = FUN_005c9563(param_1);
   // DEVIATION: MFC — if ((iVar1 !== 0) && (pcVar2 = streambuf::egptr(*(streambuf **)(iVar1 + 4)), pcVar2 !== 0x0)
-      // DEVIATION(cont): ) {
+      { // DEVIATION(cont): )
      // DEVIATION(cont): SetFocus(param_1);
     w32(iVar1, 0x18, 1);
     invalidate_96CC(param_1);

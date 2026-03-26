@@ -2176,8 +2176,8 @@ export function FUN_0058843f(param_1, param_2, param_3) {
                               // DEVIATION(cont): *(int *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8) * 0x58,
                               // DEVIATION(cont): &DAT_0064f360 +
                               // DEVIATION(cont): *(int *)(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8) * 0x58),
-             // DEVIATION(cont): 0 < iVar2)))) {
-          ); // DEVIATION(cont): uVar1 = *(undefined4 *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8
+             { // DEVIATION(cont): 0 < iVar2))))
+           // DEVIATION(cont): uVar1 = *(undefined4 *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8);
           w32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, 
                s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
           w32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, uVar1);
@@ -2346,7 +2346,7 @@ export function FUN_0058878e(param_1) {
           FUN_0040fe10();
           // DEVIATION: C pointer — if (*(int *)(param_1 * 0x2004 +
                         // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) * 4 + 0xc408 +
-                       // DEVIATION(cont): local_38) < 2) {
+                       { // DEVIATION(cont): local_38) < 2)
              // DEVIATION(cont): uVar5 = thunk_FUN_00428b0c(*(undefined4 *)(DAT_00628420 + 0xb70));
             FUN_0040bbe0(uVar5);
           }
@@ -2767,10 +2767,10 @@ export function FUN_00589dc5(param_1) {
   if (_File !== 0x0) {
     local_8 = 1;
     // DEVIATION: C struct — while (((local_8 !== 0 && ((_File->_flag & 0x10) === 0)) &&
-            // DEVIATION(cont): (pcVar1 = _fgets(local_58,0x4f,_File), pcVar1 != (char *)0x0))) {
+            { // DEVIATION(cont): (pcVar1 = _fgets(local_58,0x4f,_File), pcVar1 != (char *)0x0)))
        // DEVIATION(cont): for (local_5c = 0; sVar2 = _strlen(local_58), local_5c < (int)sVar2; local_5c = local_5c + 1)
-       // DEVIATION(cont): {
-         // DEVIATION(cont): if (local_58[local_5c] < ' ') {
+       { // DEVIATION(cont)
+         { // DEVIATION(cont): if (local_58[local_5c] < ' ')
            // DEVIATION(cont): local_58[local_5c] = '\0';
         }
       }
@@ -3461,7 +3461,7 @@ export function FUN_0058afb6(param_1) {
         _DAT_006acd38 = 0x19;
       }
       // DEVIATION: C-syntax — else if ((((param_1 === 0xf) || (param_1 === 0x10)) || (param_1 === 0x13)) || (param_1 === 0x12))
-       // DEVIATION(cont): {
+       { // DEVIATION(cont)
          // DEVIATION(cont): _DAT_006acd38 = 0x4a;
       }
       else if ((param_1 === 0x14) || (param_1 === 0x15)) {
@@ -5924,7 +5924,7 @@ if (true) {
           FUN_0040fe10();
           // DEVIATION: C pointer — if (*(int *)(param_1 * 0x2004 +
                         // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) * 4 + 0xc408 +
-                       // DEVIATION(cont): local_38) < 2) {
+                       { // DEVIATION(cont): local_38) < 2)
              // DEVIATION(cont): uVar5 = thunk_FUN_00428b0c(*(undefined4 *)(DAT_00628420 + 0xb70));
             FUN_0040bbe0(uVar5);
           }
@@ -5949,7 +5949,7 @@ if (true) {
       }
       FUN_005c19ad(local_3c);
       FUN_005c0f57(local_8,DAT_00679640,xLeft + iVar4,iVar3 + iVar2,5);
-  // (outer block close)
+    }
     local_54 = local_54 + 1;
   // (outer block close)
   FUN_00588f36(param_1,1);
@@ -6070,7 +6070,7 @@ if (true) {
           FUN_0040fe10();
           // DEVIATION: C pointer — if (*(int *)(param_1 * 0x2004 +
                         // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) * 4 + 0xc408 +
-                       // DEVIATION(cont): local_38) < 2) {
+                       { // DEVIATION(cont): local_38) < 2)
              // DEVIATION(cont): uVar5 = thunk_FUN_00428b0c(*(undefined4 *)(DAT_00628420 + 0xb70));
             FUN_0040bbe0(uVar5);
           }
@@ -6097,7 +6097,7 @@ if (true) {
       FUN_005c0f57(local_8,DAT_00679640,xLeft + iVar4,iVar3 + iVar2,5);
     }
     local_54 = local_54 + 1;
-  // (outer block close)
+  } while( true );
   FUN_00588f36(param_1,1);
   if (s32(local_38, 1000 + param_1 * 4) === 0) {
     w32(local_38, 0x10410 + param_1 * 4, 0xffffffff);

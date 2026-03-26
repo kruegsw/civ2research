@@ -3363,7 +3363,7 @@ export function FUN_005582ad() {
       for (local_8 = 0; local_8 < DAT_006d1164; local_8 = local_8 + 1) {
         // DEVIATION: C pointer — *(undefined1 *)(local_34 + 4) = 0;
         // DEVIATION: C pointer — if (((*(byte *)(local_34 + 1) & 3) !== 0) &&
-            // DEVIATION(cont): (uVar3 = (int)(uint)*(byte *)(local_34 + 5) >> 4, uVar3 < 8)) {
+            { // DEVIATION(cont): (uVar3 = (int)(uint)*(byte *)(local_34 + 5) >> 4, uVar3 < 8))
            // DEVIATION(cont): local_140._0_1_ = (sbyte)uVar3;
           // DEVIATION: C pointer — *(char *)(local_34 + 4) = s8(1 << (sbyte)local_140);
         }

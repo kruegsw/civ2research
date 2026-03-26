@@ -3917,7 +3917,7 @@ export function FUN_005d57b1(param_1) {
   if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — else if ((*(byte *)(DAT_006385d0 + 0x70) & 1) === 0) {
     if (true) { // DEVIATION: C pointer — if ((u32(s32(DAT_006385d0, 0x98) + 0xc, 0) >> 3 & 1) === 0) {
       // DEVIATION: C pointer — if (((u32(s32(DAT_006385d0, 0x98) + 0xc, 0) >> 7) -
-            // DEVIATION(cont): (*(uint *)(DAT_006385c8 + 0xc) >> 7) & 7) == 0) {
+            { // DEVIATION(cont): (*(uint *)(DAT_006385c8 + 0xc) >> 7) & 7) == 0)
          // DEVIATION(cont): param_1 = (uint)(*(int *)(DAT_006385d0 + 0x9c) - *(int *)(DAT_006385d0 + 0x68)) /
                    // DEVIATION(cont): (uint)*(ushort *)(DAT_006385d0 + 0x80);
         _DAT_00638594 = _DAT_00638594 + 1;
@@ -10632,14 +10632,14 @@ export function FUN_005deb12(param_1, param_2, param_3, param_4, param_5) {
   for (local_8 = 0; local_8 < DAT_006e500c; local_8 = local_8 + 1) {
     // DEVIATION: C pointer — if (((*(char *)(param_1 + 4 + local_8 * 4) === param_3) &&
          // DEVIATION(cont): (*(char *)(param_1 + 5 + local_8 * 4) == param_4)) &&
-        // DEVIATION(cont): (*(char *)(param_1 + 6 + local_8 * 4) == param_5)) {
+        { // DEVIATION(cont): (*(char *)(param_1 + 6 + local_8 * 4) == param_5))
        // DEVIATION(cont): *(undefined1 *)(param_1 + 7 + param_2 * 4) = 1;
     }
   }
   for (local_8 = 0x100 - DAT_006e500c; local_8 < 0x100; local_8 = local_8 + 1) {
     // DEVIATION: C pointer — if (((*(char *)(param_1 + 4 + local_8 * 4) === param_3) &&
          // DEVIATION(cont): (*(char *)(param_1 + 5 + local_8 * 4) == param_4)) &&
-        // DEVIATION(cont): (*(char *)(param_1 + 6 + local_8 * 4) == param_5)) {
+        { // DEVIATION(cont): (*(char *)(param_1 + 6 + local_8 * 4) == param_5))
        // DEVIATION(cont): *(undefined1 *)(param_1 + 7 + param_2 * 4) = 1;
     }
   }

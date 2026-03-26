@@ -6089,7 +6089,7 @@ export function FUN_0045dd7f(param_1, param_2) {
           if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((uVar7 & *(byte *)(iVar4 + 4)) === 0) {
             // DEVIATION: C pointer — if ((((uVar9 & *(byte *)(iVar4 + 4)) !== 0) &&
                  // DEVIATION(cont): (thunk_FUN_005b976d(local_314,local_320,uVar7,1,1), param_2 != 0)) && (param_1 != 0)
-                // DEVIATION(cont): ) {
+                { // DEVIATION(cont): )
                // DEVIATION(cont): iVar4 = thunk_FUN_005b8931(local_314,local_320,param_2,1,1);
               // DEVIATION: C pointer — bVar2 = *(byte *)(iVar4 + 1);
               pbVar8 = FUN_005b898b(local_314,local_320,param_1);
@@ -7908,7 +7908,7 @@ if (true) {
           if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((uVar7 & *(byte *)(iVar4 + 4)) === 0) {
             // DEVIATION: C pointer — if ((((uVar9 & *(byte *)(iVar4 + 4)) !== 0) &&
                  // DEVIATION(cont): (thunk_FUN_005b976d(local_314,local_320,uVar7,1,1), param_2 != 0)) && (param_1 != 0)
-                // DEVIATION(cont): ) {
+                { // DEVIATION(cont): )
                // DEVIATION(cont): iVar4 = thunk_FUN_005b8931(local_314,local_320,param_2,1,1);
               // DEVIATION: C pointer — bVar2 = *(byte *)(iVar4 + 1);
               pbVar8 = FUN_005b898b(local_314,local_320,param_1);
@@ -7969,7 +7969,7 @@ if (true) {
       FUN_0045f0a3();
       return;
     }
-  // (outer block close)
+  } while( true );
 }
 
 function LAB_0045eb0a_helper(bVar2, iVar4, local_18, local_314, local_320, local_328, local_32c, local_330, local_33c, param_1, param_2, uVar6, uVar7, uVar9) {
@@ -8001,7 +8001,7 @@ function LAB_0045eb0a_helper(bVar2, iVar4, local_18, local_314, local_320, local
           if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((uVar7 & *(byte *)(iVar4 + 4)) === 0) {
             // DEVIATION: C pointer — if ((((uVar9 & *(byte *)(iVar4 + 4)) !== 0) &&
                  // DEVIATION(cont): (thunk_FUN_005b976d(local_314,local_320,uVar7,1,1), param_2 != 0)) && (param_1 != 0)
-                // DEVIATION(cont): ) {
+                { // DEVIATION(cont): )
                // DEVIATION(cont): iVar4 = thunk_FUN_005b8931(local_314,local_320,param_2,1,1);
               // DEVIATION: C pointer — bVar2 = *(byte *)(iVar4 + 1);
               pbVar8 = FUN_005b898b(local_314,local_320,param_1);
@@ -8056,7 +8056,7 @@ if (true) {
         }
         FUN_004b0b53(0xff,2,0,0,0);
         FUN_0047cf9e(DAT_006d1da0,1);
-  // (outer block close)
+      }
       // DEVIATION: SEH
       FUN_0045f08d();
       FUN_0045f0a3();

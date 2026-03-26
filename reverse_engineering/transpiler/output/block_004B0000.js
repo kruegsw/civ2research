@@ -1394,7 +1394,7 @@ export function FUN_004b32fe() {
                   if ((iVar5 !== 0) &&
                      // DEVIATION: C pointer — (uVar6 = (uint)*(ushort *)
                                       // DEVIATION(cont): (((int)DAT_006d1160 & 0xfffffffeU) * ((int)cVar2 + local_40) +
-                                       // DEVIATION(cont): (uVar7 & 0xfffffffe) + (int)_Dst_00), uVar6 != 0)) {
+                                       { // DEVIATION(cont): (uVar7 & 0xfffffffe) + (int)_Dst_00), uVar6 != 0))
                      // DEVIATION(cont): local_8 = uVar6;
                     if ((local_54 !== 0) && (uVar6 !== local_54)) {
                       if (local_54 <= uVar6) {

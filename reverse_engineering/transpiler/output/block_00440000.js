@@ -8730,7 +8730,7 @@ export function FUN_0044f4c9(param_1, param_2) {
           }
         }
         // DEVIATION: C pointer — if ((1 << (*(byte *)(local_8 + 0x192c) & 0x1f) & u8(DAT_0064ca9b[iVar1 * 0x594]))
-             // DEVIATION(cont): != 0) {
+             { // DEVIATION(cont): != 0)
            // DEVIATION(cont): thunk_FUN_0046e020(0x5e,1,0,0);
           return;
         }

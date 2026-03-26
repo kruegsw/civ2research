@@ -4640,7 +4640,7 @@ export function FUN_004ebbde(param_1) {
         iVar3 = iVar2 + 0x64f380;
         iVar2 = local_8;
         // DEVIATION: C pointer — if ((*(char *)(iVar3 + param_1 * 0x58) < 0) &&
-            // DEVIATION(cont): (*(short *)(&DAT_0064f384 + local_8 * 2 + param_1 * 0x58) == DAT_006a6570)) {
+            { // DEVIATION(cont): (*(short *)(&DAT_0064f384 + local_8 * 2 + param_1 * 0x58) == DAT_006a6570))
            // DEVIATION(cont): thunk_FUN_00440325(param_1,local_8);
           iVar2 = local_8;
         }

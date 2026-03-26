@@ -3706,7 +3706,7 @@ export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4
             // DEVIATION(cont): *(short *)(&DAT_006560f0 + local_38 * 0x20))) &&
            // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) ==
             // DEVIATION(cont): *(short *)(&DAT_006560f2 + local_38 * 0x20))) &&
-          // DEVIATION(cont): ((&DAT_0064b1c4)[(uint)(byte)(&DAT_006560f6)[local_38 * 0x20] * 0x14] != '\0')) {
+          { // DEVIATION(cont): ((&DAT_0064b1c4)[(uint)(byte)(&DAT_006560f6)[local_38 * 0x20] * 0x14] != '\0'))
          // DEVIATION(cont): local_28 = local_28 + 1;
         if (3 < local_28) {
           return;
@@ -4208,8 +4208,8 @@ export function citywin_9429_00509429(in_ECX) {
   
   if ((((-1 < s32(in_ECX, 0x159c)) && (s32(in_ECX, 0x159c) < DAT_00655b18)) &&
       // DEVIATION: C pointer — (s32(DAT_0064f394, s32(in_ECX, 0x159c) * 0x58) !== 0)) && (DAT_00628044 !== 0))
-   // DEVIATION(cont): {
-     // DEVIATION(cont): if ((*(int *)(in_ECX + 0x15a0) == 0) && (*(int *)(in_ECX + 0x15a4) == 0)) {
+   { // DEVIATION(cont)
+     { // DEVIATION(cont): if ((*(int *)(in_ECX + 0x15a0) == 0) && (*(int *)(in_ECX + 0x15a4) == 0))
       ); // DEVIATION(cont): thunk_FUN_004eb4ed(*(undefined4 *)(in_ECX + 0x159c),1
       thunk_citywin_9028();
       thunk_citywin_92AF();
@@ -4596,7 +4596,7 @@ export function city_button_buy_00509B48(param_1) {
   // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
   if ((-1 < s8(DAT_0064f379[iVar5 * 0x58])) &&
      // DEVIATION: MFC — (iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8),
-      // DEVIATION(cont): ((&DAT_0064f344)[iVar5 * 0x58] & 1) != 0)) {
+      { // DEVIATION(cont): ((&DAT_0064f344)[iVar5 * 0x58] & 1) != 0))
      // DEVIATION(cont): local_58 = 0x32;
     bVar1 = false;
   }
@@ -5316,8 +5316,8 @@ export function city_button_rename_0050B74E(param_1) {
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
   if ((iVar1 !== -1) &&
      // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
-      // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0)) {
-    ); // DEVIATION(cont): iVar1 = XD_InFlushSendBuffer(
+      { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0))
+     // DEVIATION(cont): iVar1 = XD_InFlushSendBuffer();
     if (((((iVar1 === 0) &&
           ((((DAT_006ad8bc === 0 && (DAT_006ad8c0 === 0)) && (DAT_006ad8c4 === 0)) &&
            ((DAT_006ad8c8 === 0 && (DAT_006ad8cc === 0)))))) &&
@@ -5542,9 +5542,9 @@ export function citywin_BD13_0050BD13() {
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
   if ((iVar1 !== -1) &&
      // DEVIATION: MFC — ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
-       // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0')))) {
-     // DEVIATION(cont): if (DAT_0062edf8 == 0) {
-      ); // DEVIATION(cont): local_c = CSplitterWnd::IsTracking((CSplitterWnd *)&DAT_006a91b8
+       { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0'))))
+     { // DEVIATION(cont): if (DAT_0062edf8 == 0)
+       // DEVIATION(cont): local_c = CSplitterWnd::IsTracking((CSplitterWnd *)&DAT_006a91b8);
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s__00631008);
@@ -5603,9 +5603,9 @@ export function citywin_BF72_0050BF72() {
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
   if ((iVar1 !== -1) &&
      // DEVIATION: MFC — ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
-       // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0')))) {
-     // DEVIATION(cont): if (DAT_0062edf8 == 0) {
-      ); // DEVIATION(cont): local_c = CSplitterWnd::IsTracking((CSplitterWnd *)&DAT_006a91b8
+       { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0'))))
+     { // DEVIATION(cont): if (DAT_0062edf8 == 0)
+       // DEVIATION(cont): local_c = CSplitterWnd::IsTracking((CSplitterWnd *)&DAT_006a91b8);
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024);
@@ -5765,7 +5765,7 @@ export function citywin_C494_0050C494(in_ECX, param_1, param_2, param_3) {
       (s32(in_ECX, 0x15a8) === 0)) && (-1 < s32(in_ECX, 0x159c))) {
     if (param_1 < 0) {
       // DEVIATION: C pointer — if ((s16(DAT_0064f340, s32(in_ECX, 0x159c) * 0x58) === param_2) &&
-          // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) == param_3)) {
+          { // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) == param_3))
          // DEVIATION(cont): thunk_FUN_004eb4ed(*(undefined4 *)(in_ECX + 0x159c),0);
         thunk_citywin_8ADC(1);
         FUN_0050503e(1);
@@ -5776,7 +5776,7 @@ export function citywin_C494_0050C494(in_ECX, param_1, param_2, param_3) {
               // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) ==
                // DEVIATION(cont): *(short *)(&DAT_006560f2 + param_1 * 0x20))) ||
              // DEVIATION(cont): ((*(short *)(&DAT_0064f340 + *(int *)(in_ECX + 0x159c) * 0x58) == param_2 &&
-              // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) == param_3)))) {
+              { // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) == param_3))))
        // DEVIATION(cont): thunk_FUN_004eb4ed(*(undefined4 *)(in_ECX + 0x159c),0);
       thunk_citywin_8ADC(1);
       FUN_0050503e(1);
@@ -5829,8 +5829,8 @@ export function citywin_C6EF_0050C6EF(in_ECX, param_1, param_2) {
       (iVar1 = FUN_005ae31d(param_1,param_2,
                                   // DEVIATION: C pointer — s16(DAT_0064f340, s32(in_ECX, 0x159c) * 0x58),
                                   )) // DEVIATION(cont): (int)*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58
-       // DEVIATION(cont): , iVar1 < 3)))) {
-    ); // DEVIATION(cont): thunk_FUN_00501780(0
+       { // DEVIATION(cont): , iVar1 < 3))))
+     // DEVIATION(cont): thunk_FUN_00501780(0);
   }
   return;
 }

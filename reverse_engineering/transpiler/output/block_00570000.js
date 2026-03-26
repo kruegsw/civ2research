@@ -3576,7 +3576,7 @@ export function FUN_005792e1(in_ECX, param_1, param_2) {
       w32(iVar2, 8, u32(iVar2, 8) & 0xfffffffe);
     }
     // DEVIATION: C pointer — if ((((*(byte *)(in_ECX + 0x19) & 0x80) !== 0) && ((*(byte *)(iVar2 + 8) & 2) === 0)) &&
-        // DEVIATION(cont): (((bVar1 & 1) != 0) != (param_2 != 0))) {
+        { // DEVIATION(cont): (((bVar1 & 1) != 0) != (param_2 != 0)))
        // DEVIATION(cont): thunk_FUN_00578e60(param_1);
     }
   }
@@ -3631,7 +3631,7 @@ export function FUN_0057940d(in_ECX, param_1, param_2) {
       w32(iVar2, 8, u32(iVar2, 8) & 0xfffffffb);
     }
     // DEVIATION: C pointer — if ((((*(byte *)(in_ECX + 0x19) & 0x80) !== 0) && ((*(byte *)(iVar2 + 8) & 2) === 0)) &&
-        // DEVIATION(cont): (((bVar1 & 4) != 0) != (param_2 != 0))) {
+        { // DEVIATION(cont): (((bVar1 & 4) != 0) != (param_2 != 0)))
        // DEVIATION(cont): thunk_FUN_00578ec7(param_1);
     }
   }
@@ -5462,7 +5462,7 @@ export function FUN_0057e6e2(param_1, param_2) {
             local_10 = local_10 / 2;
           }
           // DEVIATION: C-syntax — else if ((DAT_0064b1c1[u8(DAT_006560f6[param_2 * 0x20]) * 0x14] === 0x01)
-                   // DEVIATION(cont): && (iVar4 = thunk_FUN_0043d20a(DAT_006acb08,0x1b), iVar4 == 0)) {
+                   { // DEVIATION(cont): && (iVar4 = thunk_FUN_0043d20a(DAT_006acb08,0x1b), iVar4 == 0))
              // DEVIATION(cont): local_10 = local_10 << 1;
           }
           else {

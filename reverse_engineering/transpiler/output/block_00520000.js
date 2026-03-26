@@ -1001,7 +1001,7 @@ export function FUN_005233fc(param_1, param_2) {
                                                // DEVIATION(cont): * 0x30));
     FUN_005f22d0(DAT_0064bcfa + s8(DAT_00655b03) * 0xf2,uVar5);
     // DEVIATION: C pointer — if (0 < *(short *)(DAT_00655502 + s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
-                       // DEVIATION(cont): )) {
+                       { // DEVIATION(cont): ))
        // DEVIATION(cont): *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) =
             // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30
                        // DEVIATION(cont): );
@@ -1018,7 +1018,7 @@ export function FUN_005233fc(param_1, param_2) {
         // DEVIATION: C pointer — if (*(short *)(DAT_0065550c +
                        // DEVIATION(cont): local_c * 4 +
                        // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + iVar1 * 2) < 1
-            // DEVIATION(cont): ) {
+            { // DEVIATION(cont): )
            // DEVIATION(cont): local_28 = ~(int)*(short *)(&DAT_0065550c +
                                       // DEVIATION(cont): local_c * 4 +
                                       // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 +
@@ -1063,7 +1063,7 @@ export function FUN_005233fc(param_1, param_2) {
     DAT_006d1da0 = local_24;
     FUN_005f22d0(DAT_0064bcfa + s8u8(local_24) * 0xf2,param_1 + 0x20);
     // DEVIATION: C pointer — if (0 < *(short *)(DAT_00655502 + s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
-                       // DEVIATION(cont): )) {
+                       { // DEVIATION(cont): ))
        // DEVIATION(cont): *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) =
             // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30
                        // DEVIATION(cont): );
@@ -3113,8 +3113,8 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040f880(0 /* ADDR:LAB_00401f55 */ + ((param_2 === 0) - 1 & 0xfffff637));
     if ((DAT_0067a994 !== 9) &&
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
-         // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0')))))) {
-      ); // DEVIATION(cont): thunk_FUN_00453c40(
+         { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
+       // DEVIATION(cont): thunk_FUN_00453c40();
     }
     SetRect(local_17c[0],local_17c[0].right,local_164,local_17c[0].right + local_168 + DAT_0062d858 * -3,
             local_164 + local_160);
@@ -3139,8 +3139,8 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040f880(0 /* ADDR:LAB_004033d7 */ + ((param_2 === 0) - 1 & 0xfffff5a1));
     if ((DAT_0067a994 !== 9) &&
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
-         // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0')))))) {
-      ); // DEVIATION(cont): thunk_FUN_00453c40(
+         { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
+       // DEVIATION(cont): thunk_FUN_00453c40();
     }
     local_24[0].top = local_17c[0].bottom;
     local_24[0].bottom = s32(in_ECX, 0x1e0) + DAT_0062d85c * -2;
@@ -3828,7 +3828,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       iVar1 = s32(in_ECX, 0x234);
       local_4c = (iVar1 + 0x20);
       // DEVIATION: C pointer — if (((s32(s32(in_ECX, 0x234) + 0x10, 0) === 0xf) && (s32(local_4c, 0) === 8)) ||
-          // DEVIATION(cont): ((*(int *)(*(int *)(in_ECX + 0x234) + 0x10) == 0xe && (*local_4c == 8)))) {
+          { // DEVIATION(cont): ((*(int *)(*(int *)(in_ECX + 0x234) + 0x10) == 0xe && (*local_4c == 8))))
          // DEVIATION(cont): local_40 = *(int *)(iVar1 + 0x28);
         local_48 = (iVar1 + 0x2c);
         for (local_44 = 0; local_44 < local_40; local_44 = local_44 + 1) {
