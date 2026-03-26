@@ -313,8 +313,24 @@ JS:  s32(DAT_0064c6a2, u8(DAT_0064c6be[param_1 * 0x594]) * 0x594)
 
 ### Output flags
 Only two flags appear in the output:
-- `// DEVIATION: <reason>` — Win32/MFC/SEH code that has no JS equivalent
+- `DEVIATION` — C code with no JS equivalent (Win32/MFC/SEH, double pointers, struct access)
 - `/* UNKNOWN_RULE: <original C> */` — pattern the transpiler doesn't recognize
+
+**DEVIATION format (two styles):**
+1. **Block comment style** (default): `true /* DEVIATION: reason — original_C */`
+   - Preserves ALL structural tokens ({, }, ), ;) because `/* */` is a block comment
+   - `true` is a valid JS expression that replaces the C-only code
+   - Multi-line continuations: `true /* DEVIATION(cont): ... */` or `/* DEVIATION(cont): ... */`
+
+2. **Line comment style** (for write targets): `// DEVIATION: reason — original_C`
+   - Used when the deviated code is on the left side of `=` (write target)
+   - `true = value` would be invalid JS, so the whole line is commented out
+   - Multi-line continuations: `// DEVIATION(cont): ...`
+
+3. **Special cases**: `// DEVIATION: SEH`, `// DEVIATION: C runtime`
+   - Always use line comment style (standalone statements)
+
+**Inline DEVIATION**: When `*(type *)` appears inside a larger expression (e.g., as a function argument), only the `*(type *)(...)` part is replaced with `true /* DEVIATION: ... */`. The surrounding valid JS (function calls, operators) is preserved.
 
 ---
 

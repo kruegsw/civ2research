@@ -101,7 +101,10 @@ function auditBlock(blockName) {
     }
 
     // JS is DEVIATION → always pass (transpiler decided this is Win32/MFC)
-    if (js.startsWith('// DEVIATION')) { linesPassed++; continue; }
+    if (js.startsWith('// DEVIATION') || /DEVIATION/.test(js)) { linesPassed++; continue; }
+
+    // JS is /*JOINED*/ → pass (content is on the first line of the join)
+    if (js === '/*JOINED*/') { linesPassed++; continue; }
 
     // JS is blank/comment but C has real code → check what's in C
     if (!js || js.startsWith('//')) {
