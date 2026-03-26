@@ -809,7 +809,7 @@ export function _E1_00600F70() {
    // 
    // Library: Visual Studio 1998 Debug */
 
-long __CxxUnhandledExceptionFilter(_EXCEPTION_POINTERS *param_1)
+export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
 
 
   let lVar1;
@@ -858,7 +858,7 @@ export function FUN_00601040() {
    // 
    // Library: Visual Studio 1998 Debug */
 
-int __cdecl _ValidateRead(void *param_1,uint param_2)
+export function _ValidateRead_00601060(param_1, param_2) {
 
 
   let BVar1;
@@ -882,7 +882,7 @@ int __cdecl _ValidateRead(void *param_1,uint param_2)
    // 
    // Library: Visual Studio 1998 Debug */
 
-int __cdecl _ValidateWrite(void *param_1,uint param_2)
+export function _ValidateWrite_006010A0(param_1, param_2) {
 
 
   let BVar1;
@@ -905,7 +905,7 @@ int __cdecl _ValidateWrite(void *param_1,uint param_2)
    // 
    // Library: Visual Studio 1998 Debug */
 
-int __cdecl _ValidateExecute(_func_int *param_1)
+export function _ValidateExecute_006010E0(param_1) {
 
 
   let BVar1;

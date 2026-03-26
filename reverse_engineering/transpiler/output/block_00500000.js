@@ -570,21 +570,21 @@ export function FUN_00501440(in_ECX) {
 // Function: OnClose @ 0x005014BF
 // Size: 38 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CMiniDockFrameWnd::OnClose(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CMiniDockFrameWnd::OnClose(CMiniDockFrameWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): thunk_FUN_0046ac89(2);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CMiniDockFrameWnd::OnClose(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function OnClose_005014BF(this) {
+
+
+  FUN_0046ac89(2);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005014e5 @ 0x005014E5
 // Size: 70 bytes
@@ -1477,7 +1477,7 @@ export function FUN_005025d5(in_ECX, param_1) {
     FUN_005baee0(0x29,10,1,1);
     local_40 = ((s32(in_ECX, 0x15d4) >>> 0) === 3);
     local_f0 = s8(DAT_0064f349[s32(in_ECX, 0x159c) * 0x58]) * ((DAT_0064bcca) >>> 0) +
-               let DAT_006a6608;
+               DAT_006a65d8 * DAT_006a6608;
     local_48 = DAT_006a65c8;
     local_c = DAT_006a65c8 - local_f0;
     local_ec = local_f0;

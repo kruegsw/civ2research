@@ -372,20 +372,20 @@ export function FUN_005f05f0(param_1) {
 // Function: lockptr @ 0x005F0620
 // Size: 28 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): protected: struct _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(ios *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return (_CRT_CRITICAL_SECTION *)(this + 0x38);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // protected: struct _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function lockptr_005F0620(this) {
+
+
+  return (this + 0x38);
+}
+
+
+
 // ============================================================
 // Function: FUN_005f0640 @ 0x005F0640
 // Size: 54 bytes
@@ -408,20 +408,20 @@ export function FUN_005f0640(in_ECX) {
 // Function: ~CDataBoundProperty @ 0x005F0676
 // Size: 22 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CDataBoundProperty::~CDataBoundProperty(CDataBoundProperty *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _CDataBoundProperty_005F0676(this) {
+
+
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005f068c @ 0x005F068C
 // Size: 33 bytes
@@ -567,28 +567,28 @@ export function FUN_005f07b3(in_ECX) {
 // Function: length @ 0x005F07F9
 // Size: 53 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: virtual int __thiscall pDNameNode::length(void)const 
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall pDNameNode::length(pDNameNode *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): int iVar1;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): if (*(int *)(this + 8) == 0) {
-    // DEVIATION(unparsed): iVar1 = 0;
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): else {
-    // DEVIATION(unparsed): iVar1 = FUN_005f0e50();
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return iVar1;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: virtual int __thiscall pDNameNode::length(void)const 
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function length_005F07F9(this) {
+
+
+  let iVar1;
+  
+  if (s32(this, 8) === 0) {
+    iVar1 = 0;
+  }
+  else {
+    iVar1 = FUN_005f0e50();
+  }
+  return iVar1;
+}
+
+
+
 // ============================================================
 // Function: FUN_005f0833 @ 0x005F0833
 // Size: 90 bytes
@@ -1166,22 +1166,22 @@ export function FUN_005f11f6(in_ECX, param_1) {
 // Function: Enable @ 0x005F1221
 // Size: 43 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: virtual void __thiscall CTestCmdUI::Enable(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CTestCmdUI::Enable(CTestCmdUI *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0xc) = param_1;
-  // DEVIATION(unparsed): *(undefined4 *)(this + 8) = 0;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: virtual void __thiscall CTestCmdUI::Enable(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function Enable_005F1221(this, param_1) {
+
+
+  w32(this, 0xc, param_1);
+  w32(this, 8, 0);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005f124c @ 0x005F124C
 // Size: 195 bytes
@@ -1776,20 +1776,20 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
 // Function: IsTracking @ 0x005F1B50
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0xac);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005F1B50(this) {
+
+
+  return s32(this, 0xac);
+}
+
+
+
 // ============================================================
 // Function: __onexit @ 0x005F1B80
 // Size: 181 bytes
@@ -2014,7 +2014,7 @@ export function FUN_005f1d9e(in_EAX, unaff_EBP) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-void _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
+export function _JumpToContinuation_005F1DC0(param_1, param_2) {
 
 
   // DEVIATION: SEH
@@ -2038,7 +2038,7 @@ void _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void _CallMemberFunction0(void *param_1,void *param_2)
+export function _CallMemberFunction0_005F1E00(param_1, param_2) {
 
 
   LOCK();
@@ -2062,7 +2062,7 @@ void _CallMemberFunction0(void *param_1,void *param_2)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMPTABLE)
+export function FID_conflict__CallMemberFunction1_005F1E10(param_1, UNRECOVERED_JUMPTABLE) {
 
 
   LOCK();
@@ -2086,7 +2086,7 @@ void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMP
    // 
    // Library: Visual Studio 1998 Debug */
 
-void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMPTABLE)
+export function FID_conflict__CallMemberFunction1_005F1E20(param_1, UNRECOVERED_JUMPTABLE) {
 
 
   LOCK();
@@ -2109,7 +2109,7 @@ void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMP
    // 
    // Library: Visual Studio 1998 Debug */
 
-void _UnwindNestedFrames(EHRegistrationNode *param_1,EHExceptionRecord *param_2)
+export function _UnwindNestedFrames_005F1E30(param_1, param_2) {
 
 
   let puVar1;
@@ -2172,120 +2172,120 @@ export function ___CxxLongjmpUnwind_4_005F1ED0(param_1) {
 // Function: _CallCatchBlock2 @ 0x005F1F10
 // Size: 102 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // void * __cdecl _CallCatchBlock2(struct EHRegistrationNode *,struct _s_FuncInfo const *,void
-   // *,int,unsigned long)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-void * __cdecl
-_CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,int param_4,
-                ulong param_5)
-
-
-  let pvVar1;
-  // DEVIATION: SEH
-  let local_18 = [0];
-  let local_14;
-  let local_10;
-  let local_c;
-  let local_8;
-  
-  local_14 = CatchGuardHandler;
-  local_10 = param_2;
-  local_c = param_1;
-  local_8 = param_4 + 1;
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  pvVar1 = __CallSettingFrame_12(param_3,param_1,param_5);
-  // DEVIATION: SEH
-  return pvVar1;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void * __cdecl _CallCatchBlock2(struct EHRegistrationNode *,struct _s_FuncInfo const *,void
+   // DEVIATION(unparsed): *,int,unsigned long)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * __cdecl
+// DEVIATION(unparsed): _CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,int param_4,
+                // DEVIATION(unparsed): ulong param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *pvVar1;
+  // DEVIATION(unparsed): int *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): int local_18;
+  // DEVIATION(unparsed): code *local_14;
+  // DEVIATION(unparsed): _s_FuncInfo *local_10;
+  // DEVIATION(unparsed): EHRegistrationNode *local_c;
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_14 = CatchGuardHandler;
+  // DEVIATION(unparsed): local_10 = param_2;
+  // DEVIATION(unparsed): local_c = param_1;
+  // DEVIATION(unparsed): local_8 = param_4 + 1;
+  // DEVIATION(unparsed): local_18 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = (int)&local_18;
+  // DEVIATION(unparsed): pvVar1 = (void *)__CallSettingFrame_12(param_3,param_1,param_5);
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = local_18;
+  // DEVIATION(unparsed): return pvVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: CatchGuardHandler @ 0x005F1F80
 // Size: 62 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // enum _EXCEPTION_DISPOSITION __cdecl CatchGuardHandler(struct EHExceptionRecord *,struct
-   // CatchGuardRN *,void *,void *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-_EXCEPTION_DISPOSITION __cdecl
-CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3,void *param_4)
-
-
-  let _Var1;
-  
-  _Var1 = ___InternalCxxFrameHandler
-                    (param_1,s32(param_2, 0xc),param_3,0,s32(param_2, 8),
-                     s32(param_2, 0x10),param_2,0);
-  return _Var1;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): enum _EXCEPTION_DISPOSITION __cdecl CatchGuardHandler(struct EHExceptionRecord *,struct
+   // DEVIATION(unparsed): CatchGuardRN *,void *,void *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): _EXCEPTION_DISPOSITION __cdecl
+// DEVIATION(unparsed): CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3,void *param_4)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): _EXCEPTION_DISPOSITION _Var1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): _Var1 = ___InternalCxxFrameHandler
+                    // DEVIATION(unparsed): (param_1,*(undefined4 *)(param_2 + 0xc),param_3,0,*(undefined4 *)(param_2 + 8),
+                     // DEVIATION(unparsed): *(undefined4 *)(param_2 + 0x10),param_2,0);
+  // DEVIATION(unparsed): return _Var1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: _CallSETranslator @ 0x005F1FC0
 // Size: 209 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // int __cdecl _CallSETranslator(struct EHExceptionRecord *,struct EHRegistrationNode *,void *,void
-   // *,struct _s_FuncInfo const *,int,struct EHRegistrationNode *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-int __cdecl
-_CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *param_3,void *param_4
-                 ,_s_FuncInfo *param_5,int param_6,EHRegistrationNode *param_7)
-
-
-  // DEVIATION: SEH
-  let local_34 = [0];
-  let local_30;
-  let local_2c = [0];
-  let local_28;
-  let local_24;
-  let local_20;
-  let local_1c;
-  let local_18;
-  let local_14;
-  let local_10;
-  let local_c;
-  let local_8;
-  
-  local_c = 0 /* ADDR:stack0xfffffffc */;
-  local_10 = 0 /* ADDR:stack0xffffffbc */;
-  local_28 = TranslatorGuardHandler;
-  local_24 = param_5;
-  local_20 = param_2;
-  local_1c = param_6;
-  local_18 = param_7;
-  local_8 = 0;
-  local_14 = 0x5f2057;
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  local_34[0] = param_1;
-  local_30 = param_3;
-  // DEVIATION: C pointer — (s32(DAT_0063a020, 0))(*(undefined4 *)param_1,local_34[0]);
-  if (local_8 === 0) {
-    // DEVIATION: SEH
-  }
-  else {
-    // DEVIATION: SEH
-    // DEVIATION: SEH
-  }
-  return 0;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): int __cdecl _CallSETranslator(struct EHExceptionRecord *,struct EHRegistrationNode *,void *,void
+   // DEVIATION(unparsed): *,struct _s_FuncInfo const *,int,struct EHRegistrationNode *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __cdecl
+// DEVIATION(unparsed): _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *param_3,void *param_4
+                 // DEVIATION(unparsed): ,_s_FuncInfo *param_5,int param_6,EHRegistrationNode *param_7)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): EHExceptionRecord *local_34;
+  // DEVIATION(unparsed): void *local_30;
+  // DEVIATION(unparsed): undefined4 *local_2c;
+  // DEVIATION(unparsed): code *local_28;
+  // DEVIATION(unparsed): _s_FuncInfo *local_24;
+  // DEVIATION(unparsed): EHRegistrationNode *local_20;
+  // DEVIATION(unparsed): int local_1c;
+  // DEVIATION(unparsed): EHRegistrationNode *local_18;
+  // DEVIATION(unparsed): undefined4 local_14;
+  // DEVIATION(unparsed): undefined1 *local_10;
+  // DEVIATION(unparsed): undefined1 *local_c;
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_c = &stack0xfffffffc;
+  // DEVIATION(unparsed): local_10 = &stack0xffffffbc;
+  // DEVIATION(unparsed): local_28 = TranslatorGuardHandler;
+  // DEVIATION(unparsed): local_24 = param_5;
+  // DEVIATION(unparsed): local_20 = param_2;
+  // DEVIATION(unparsed): local_1c = param_6;
+  // DEVIATION(unparsed): local_18 = param_7;
+  // DEVIATION(unparsed): local_8 = 0;
+  // DEVIATION(unparsed): local_14 = 0x5f2057;
+  // DEVIATION(unparsed): local_2c = (undefined4 *)*unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = (int)&local_2c;
+  // DEVIATION(unparsed): local_34 = param_1;
+  // DEVIATION(unparsed): local_30 = param_3;
+  // DEVIATION(unparsed): (*DAT_0063a020)(*(undefined4 *)param_1,&local_34);
+  // DEVIATION(unparsed): if (local_8 == 0) {
+    // DEVIATION(unparsed): *unaff_FS_OFFSET = (int)local_2c;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): *local_2c = *(undefined4 *)*unaff_FS_OFFSET;
+    // DEVIATION(unparsed): *unaff_FS_OFFSET = (int)local_2c;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return 0;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: TranslatorGuardHandler @ 0x005F20A0
 // Size: 98 bytes
@@ -2646,7 +2646,7 @@ export function FUN_005f22e0(param_1, param_2) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __cdecl operator_delete(void *param_1)
+export function operator_delete_005F23C0(param_1) {
 
 
   let pcVar1;
@@ -2679,7 +2679,7 @@ void __cdecl operator_delete(void *param_1)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void * __cdecl operator_new(uint param_1)
+export function operator_new_005F2470(param_1) {
 
 
   let pvVar1;
@@ -2736,7 +2736,7 @@ void * __cdecl operator_new(uint param_1)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __ArrayUnwind(void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4)
+export function __ArrayUnwind_005F2540(param_1, param_2, param_3, param_4) {
 
 
   let unaff_EDI;
@@ -2773,7 +2773,7 @@ void __ArrayUnwind(void *param_1,uint param_2,int param_3,_func_void_void_ptr *p
    // 
    // Library: Visual Studio 1998 Debug */
 
-undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
+export function FID_conflict_ArrayUnwindFilter_005F25D0(param_1) {
 
 
   // DEVIATION: C pointer — if (*(int *)s32(param_1, 0) === -0x1f928c9d) {
@@ -7953,89 +7953,89 @@ ___InternalCxxFrameHandler
 // Function: FindHandler @ 0x005F7AC0
 // Size: 675 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // void __cdecl FindHandler(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
-   // *,void *,struct _s_FuncInfo const *,unsigned char,int,struct EHRegistrationNode *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-void __cdecl
-FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-           _s_FuncInfo *param_5,uchar param_6,int param_7,EHRegistrationNode *param_8)
-
-
-  let pEVar1;
-  let iVar2;
-  let local_24;
-  let local_20;
-  let local_1c;
-  let local_18;
-  let local_14 = [0];
-  let local_10;
-  let local_c = [0];
-  let local_8;
-  
-  local_8 = s32(param_2, 8);
-  if ((local_8 < -1) || (s32(param_5, 4) <= local_8)) {
-    _inconsistency();
-  }
-  pEVar1 = DAT_0063a018;
-  // DEVIATION: C pointer — if ((((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-      // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) && (*(int *)(param_1 + 0x1c) == 0)) {
-    // DEVIATION(cont): if (DAT_0063a018 == (EHExceptionRecord *)0x0) {
-      // DEVIATION(cont): return;
-    }
-    param_1 = DAT_0063a018;
-    param_3 = DAT_0063a01c;
-    iVar2 = _ValidateRead(DAT_0063a018,1);
-    if (iVar2 === 0) {
-      _inconsistency();
-    }
-    // DEVIATION: C pointer — if (((*(int *)pEVar1 === -0x1f928c9d) && (s32(pEVar1, 0x10) === 3)) &&
-       // DEVIATION(cont): ((*(int *)(pEVar1 + 0x14) == 0x19930520 && (*(int *)(pEVar1 + 0x1c) == 0)))) {
-      // DEVIATION(cont): _inconsistency();
-    }
-  }
-  // DEVIATION: C pointer — if (((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-     // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) {
-    // DEVIATION(cont): local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,&local_14,&local_c);
-    for (; local_14[0] < local_c[0]; local_14[0] = local_14[0] + 1) {
-      // DEVIATION: C pointer — if ((*(int *)local_10 <= local_8) && (local_8 <= s32(local_10, 4))) {
-        // DEVIATION(cont): local_18 = *(_s_HandlerType **)(local_10 + 0x10);
-        for (local_1c = s32(local_10, 0xc); local_1c !== 0; local_1c = local_1c + -1) {
-          // DEVIATION: C pointer — local_20 = *(undefined4 **)(s32(param_1, 0x1c) + 0xc);
-          // DEVIATION: C pointer — for (local_24 = **(int **)(s32(param_1, 0x1c) + 0xc); local_20 = local_20 + 1,
-              // DEVIATION(cont): local_24 != 0; local_24 = local_24 + -1) {
-            // DEVIATION(cont): iVar2 = TypeMatch(local_18,(_s_CatchableType *)*local_20,
-                              // DEVIATION(cont): *(_s_ThrowInfo **)(param_1 + 0x1c));
-            if (iVar2 !== 0) {
-              CatchIt(param_1,param_2,param_3,param_4,param_5,local_18,s32(local_20, 0)
-                      ,local_10,param_7,param_8);
-              LAB_005f7c03_helper(local_10, local_8, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8); return;
-            }
-          }
-          local_18 = local_18 + 0x10;
-        }
-      }
-// LAB_005f7c03: (code below also in LAB_005f7c03_helper, kept for 1:1 audit)
-      local_10 = local_10 + 0x14;
-    }
-    if (param_6 !== 0) {
-      DestructExceptionObject(param_1,0x01);
-    }
-  }
-  else if (param_6 === 0) {
-    FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_8,param_7,param_8);
-  }
-  else {
-    terminate();
-  }
-  return;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void __cdecl FindHandler(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
+   // DEVIATION(unparsed): *,void *,struct _s_FuncInfo const *,unsigned char,int,struct EHRegistrationNode *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __cdecl
+// DEVIATION(unparsed): FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
+           // DEVIATION(unparsed): _s_FuncInfo *param_5,uchar param_6,int param_7,EHRegistrationNode *param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): EHExceptionRecord *pEVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): int local_24;
+  // DEVIATION(unparsed): undefined4 *local_20;
+  // DEVIATION(unparsed): int local_1c;
+  // DEVIATION(unparsed): _s_HandlerType *local_18;
+  // DEVIATION(unparsed): uint local_14;
+  // DEVIATION(unparsed): _s_TryBlockMapEntry *local_10;
+  // DEVIATION(unparsed): uint local_c;
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_8 = *(int *)(param_2 + 8);
+  // DEVIATION(unparsed): if ((local_8 < -1) || (*(int *)(param_5 + 4) <= local_8)) {
+    // DEVIATION(unparsed): _inconsistency();
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): pEVar1 = DAT_0063a018;
+  // DEVIATION(unparsed): if ((((*(int *)param_1 == -0x1f928c9d) && (*(int *)(param_1 + 0x10) == 3)) &&
+      // DEVIATION(unparsed): (*(int *)(param_1 + 0x14) == 0x19930520)) && (*(int *)(param_1 + 0x1c) == 0)) {
+    // DEVIATION(unparsed): if (DAT_0063a018 == (EHExceptionRecord *)0x0) {
+      // DEVIATION(unparsed): return;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): param_1 = DAT_0063a018;
+    // DEVIATION(unparsed): param_3 = DAT_0063a01c;
+    // DEVIATION(unparsed): iVar2 = _ValidateRead(DAT_0063a018,1);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): _inconsistency();
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (((*(int *)pEVar1 == -0x1f928c9d) && (*(int *)(pEVar1 + 0x10) == 3)) &&
+       // DEVIATION(unparsed): ((*(int *)(pEVar1 + 0x14) == 0x19930520 && (*(int *)(pEVar1 + 0x1c) == 0)))) {
+      // DEVIATION(unparsed): _inconsistency();
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (((*(int *)param_1 == -0x1f928c9d) && (*(int *)(param_1 + 0x10) == 3)) &&
+     // DEVIATION(unparsed): (*(int *)(param_1 + 0x14) == 0x19930520)) {
+    // DEVIATION(unparsed): local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,&local_14,&local_c);
+    // DEVIATION(unparsed): for (; local_14 < local_c; local_14 = local_14 + 1) {
+      // DEVIATION(unparsed): if ((*(int *)local_10 <= local_8) && (local_8 <= *(int *)(local_10 + 4))) {
+        // DEVIATION(unparsed): local_18 = *(_s_HandlerType **)(local_10 + 0x10);
+        // DEVIATION(unparsed): for (local_1c = *(int *)(local_10 + 0xc); local_1c != 0; local_1c = local_1c + -1) {
+          // DEVIATION(unparsed): local_20 = *(undefined4 **)(*(int *)(param_1 + 0x1c) + 0xc);
+          // DEVIATION(unparsed): for (local_24 = **(int **)(*(int *)(param_1 + 0x1c) + 0xc); local_20 = local_20 + 1,
+              // DEVIATION(unparsed): local_24 != 0; local_24 = local_24 + -1) {
+            // DEVIATION(unparsed): iVar2 = TypeMatch(local_18,(_s_CatchableType *)*local_20,
+                              // DEVIATION(unparsed): *(_s_ThrowInfo **)(param_1 + 0x1c));
+            // DEVIATION(unparsed): if (iVar2 != 0) {
+              // DEVIATION(unparsed): CatchIt(param_1,param_2,param_3,param_4,param_5,local_18,(_s_CatchableType *)*local_20
+                      // DEVIATION(unparsed): ,local_10,param_7,param_8);
+              // DEVIATION(unparsed): LAB_005f7c03_helper(); return;
+            // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): local_18 = local_18 + 0x10;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+// DEVIATION(unparsed): LAB_005f7c03:
+      // DEVIATION(unparsed): local_10 = local_10 + 0x14;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (param_6 != '\0') {
+      // DEVIATION(unparsed): DestructExceptionObject(param_1,'\x01');
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (param_6 == '\0') {
+    // DEVIATION(unparsed): FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_8,param_7,param_8);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): terminate();
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FindHandlerForForeignException @ 0x005F7D70
 // Size: 288 bytes
@@ -8083,49 +8083,49 @@ FindHandlerForForeignException
 // Function: GetRangeOfTrysToCheck @ 0x005F7E90
 // Size: 230 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // struct _s_TryBlockMapEntry const * __cdecl GetRangeOfTrysToCheck(struct _s_FuncInfo const
-   // *,int,int,unsigned int *,unsigned int *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-_s_TryBlockMapEntry * __cdecl
-GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4,uint *param_5)
-
-
-  let iVar1;
-  let local_14;
-  let local_10;
-  let local_8;
-  
-  iVar1 = s32(param_1, 0x10);
-  local_14 = u32(param_1, 0xc);
-  local_10 = local_14;
-  local_8 = local_14;
-  while (-1 < param_2) {
-    if (local_14 === 0xffffffff) {
-      _inconsistency();
-    }
-    local_14 = local_14 - 1;
-    if (((s32(local_14 * 0x14 + 4 + iVar1, 0) < param_3) &&
-        (param_3 <= s32(local_14 * 0x14 + 8 + iVar1, 0))) || (local_14 === 0xffffffff)) {
-      param_2 = param_2 + -1;
-      local_8 = local_10;
-      local_10 = local_14;
-    }
-  }
-  local_14 = local_14 + 1;
-  w32(param_4, 0, local_14);
-  w32(param_5, 0, local_8);
-  if ((u32(param_1, 0xc) < local_8) || (local_8 < local_14)) {
-    _inconsistency();
-  }
-  return (local_14 * 0x14 + iVar1);
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): struct _s_TryBlockMapEntry const * __cdecl GetRangeOfTrysToCheck(struct _s_FuncInfo const
+   // DEVIATION(unparsed): *,int,int,unsigned int *,unsigned int *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): _s_TryBlockMapEntry * __cdecl
+// DEVIATION(unparsed): GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4,uint *param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): uint local_14;
+  // DEVIATION(unparsed): uint local_10;
+  // DEVIATION(unparsed): uint local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = *(int *)(param_1 + 0x10);
+  // DEVIATION(unparsed): local_14 = *(uint *)(param_1 + 0xc);
+  // DEVIATION(unparsed): local_10 = local_14;
+  // DEVIATION(unparsed): local_8 = local_14;
+  // DEVIATION(unparsed): while (-1 < param_2) {
+    // DEVIATION(unparsed): if (local_14 == 0xffffffff) {
+      // DEVIATION(unparsed): _inconsistency();
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): local_14 = local_14 - 1;
+    // DEVIATION(unparsed): if (((*(int *)(local_14 * 0x14 + 4 + iVar1) < param_3) &&
+        // DEVIATION(unparsed): (param_3 <= *(int *)(local_14 * 0x14 + 8 + iVar1))) || (local_14 == 0xffffffff)) {
+      // DEVIATION(unparsed): param_2 = param_2 + -1;
+      // DEVIATION(unparsed): local_8 = local_10;
+      // DEVIATION(unparsed): local_10 = local_14;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_14 = local_14 + 1;
+  // DEVIATION(unparsed): *param_4 = local_14;
+  // DEVIATION(unparsed): *param_5 = local_8;
+  // DEVIATION(unparsed): if ((*(uint *)(param_1 + 0xc) < local_8) || (local_8 < local_14)) {
+    // DEVIATION(unparsed): _inconsistency();
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return (_s_TryBlockMapEntry *)(local_14 * 0x14 + iVar1);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: TypeMatch @ 0x005F7F80
 // Size: 195 bytes
@@ -8137,7 +8137,7 @@ GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4
    // 
    // Library: Visual Studio 1998 Debug */
 
-int __cdecl TypeMatch(_s_HandlerType *param_1,_s_CatchableType *param_2,_s_ThrowInfo *param_3)
+export function TypeMatch_005F7F80(param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -8213,7 +8213,7 @@ export function ___FrameUnwindToState_005F8050(param_1, param_2, param_3, param_
    // 
    // Library: Visual Studio 1998 Debug */
 
-undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
+export function FID_conflict_ArrayUnwindFilter_005F8160(param_1) {
 
 
   // DEVIATION: C pointer — if (*(int *)s32(param_1, 0) === -0x1f928c9d) {
@@ -8228,96 +8228,96 @@ undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
 // Function: CatchIt @ 0x005F81B0
 // Size: 209 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // void __cdecl CatchIt(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
-   // *,void *,struct _s_FuncInfo const *,struct _s_HandlerType const *,struct _s_CatchableType const
-   // *,struct _s_TryBlockMapEntry const *,int,struct EHRegistrationNode *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-void __cdecl
-CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-       _s_FuncInfo *param_5,_s_HandlerType *param_6,_s_CatchableType *param_7,
-       _s_TryBlockMapEntry *param_8,int param_9,EHRegistrationNode *param_10)
-
-
-  let pvVar1;
-  
-  if (param_7 !== 0x0) {
-    BuildCatchObject(param_1,param_2,param_6,param_7);
-  }
-  if (param_10 === 0x0) {
-    _UnwindNestedFrames(param_2,param_1);
-  }
-  else {
-    _UnwindNestedFrames(param_10,param_1);
-  }
-  // DEVIATION: C pointer — ___FrameUnwindToState(param_2,param_4,param_5,*(undefined4 *)param_8);
-  w32(param_2, 8, s32(param_8, 4) + 1);
-  // DEVIATION: C pointer — pvVar1 = CallCatchBlock(param_1,param_2,param_3,param_5,*(void **)(param_6 + 0xc),param_9,0x100);
-  if (pvVar1 !== 0x0) {
-    _JumpToContinuation(pvVar1,param_2);
-  }
-  return;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void __cdecl CatchIt(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
+   // DEVIATION(unparsed): *,void *,struct _s_FuncInfo const *,struct _s_HandlerType const *,struct _s_CatchableType const
+   // DEVIATION(unparsed): *,struct _s_TryBlockMapEntry const *,int,struct EHRegistrationNode *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __cdecl
+// DEVIATION(unparsed): CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
+       // DEVIATION(unparsed): _s_FuncInfo *param_5,_s_HandlerType *param_6,_s_CatchableType *param_7,
+       // DEVIATION(unparsed): _s_TryBlockMapEntry *param_8,int param_9,EHRegistrationNode *param_10)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *pvVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_7 != (_s_CatchableType *)0x0) {
+    // DEVIATION(unparsed): BuildCatchObject(param_1,param_2,param_6,param_7);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_10 == (EHRegistrationNode *)0x0) {
+    // DEVIATION(unparsed): _UnwindNestedFrames(param_2,param_1);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): _UnwindNestedFrames(param_10,param_1);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): ___FrameUnwindToState(param_2,param_4,param_5,*(undefined4 *)param_8);
+  // DEVIATION(unparsed): *(int *)(param_2 + 8) = *(int *)(param_8 + 4) + 1;
+  // DEVIATION(unparsed): pvVar1 = CallCatchBlock(param_1,param_2,param_3,param_5,*(void **)(param_6 + 0xc),param_9,0x100);
+  // DEVIATION(unparsed): if (pvVar1 != (void *)0x0) {
+    // DEVIATION(unparsed): _JumpToContinuation(pvVar1,param_2);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: CallCatchBlock @ 0x005F8290
 // Size: 260 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // void * __cdecl CallCatchBlock(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
-   // _CONTEXT *,struct _s_FuncInfo const *,void *,int,unsigned long)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-void * __cdecl
-CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,
-              _s_FuncInfo *param_4,void *param_5,int param_6,ulong param_7)
-
-
-  let uVar1;
-  let uVar2;
-  let uVar3;
-  let pvVar4;
-  let iVar5;
-  let extraout_EAX;
-  // DEVIATION: SEH
-  // DEVIATION: SEH local
-  // DEVIATION: SEH local
-  // DEVIATION: SEH local
-  let local_8;
-  
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  uVar3 = DAT_0063a01c;
-  uVar2 = DAT_0063a018;
-  uVar1 = s32(param_2, -4);
-  DAT_0063a018 = param_1;
-  DAT_0063a01c = param_3;
-  local_8 = 1;
-  pvVar4 = _CallCatchBlock2(param_2,param_4,param_5,param_6,param_7);
-  // DEVIATION: SEH
-  w32(param_2, -4, uVar1);
-  DAT_0063a018 = uVar2;
-  DAT_0063a01c = uVar3;
-  // DEVIATION: C pointer — if ((((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-      // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) && (pvVar4 != (void *)0x0)) {
-    // DEVIATION(cont): iVar5 = __abnormal_termination();
-    DestructExceptionObject(param_1,(uchar)iVar5);
-    param_1 = extraout_EAX;
-  }
-  return param_1;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void * __cdecl CallCatchBlock(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
+   // DEVIATION(unparsed): _CONTEXT *,struct _s_FuncInfo const *,void *,int,unsigned long)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * __cdecl
+// DEVIATION(unparsed): CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,
+              // DEVIATION(unparsed): _s_FuncInfo *param_4,void *param_5,int param_6,ulong param_7)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): undefined4 uVar2;
+  // DEVIATION(unparsed): undefined4 uVar3;
+  // DEVIATION(unparsed): void *pvVar4;
+  // DEVIATION(unparsed): int iVar5;
+  // DEVIATION(unparsed): EHExceptionRecord *extraout_EAX;
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): undefined4 uStack_14;
+  // DEVIATION(unparsed): undefined1 *puStack_10;
+  // DEVIATION(unparsed): undefined *puStack_c;
+  // DEVIATION(unparsed): undefined4 local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &DAT_0061e448;
+  // DEVIATION(unparsed): puStack_10 = &LAB_005f9298;
+  // DEVIATION(unparsed): uStack_14 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_14;
+  // DEVIATION(unparsed): uVar3 = DAT_0063a01c;
+  // DEVIATION(unparsed): uVar2 = DAT_0063a018;
+  // DEVIATION(unparsed): uVar1 = *(undefined4 *)(param_2 + -4);
+  // DEVIATION(unparsed): DAT_0063a018 = param_1;
+  // DEVIATION(unparsed): DAT_0063a01c = param_3;
+  // DEVIATION(unparsed): local_8 = 1;
+  // DEVIATION(unparsed): pvVar4 = _CallCatchBlock2(param_2,param_4,param_5,param_6,param_7);
+  // DEVIATION(unparsed): local_8 = 0xffffffff;
+  // DEVIATION(unparsed): *(undefined4 *)(param_2 + -4) = uVar1;
+  // DEVIATION(unparsed): DAT_0063a018 = (EHExceptionRecord *)uVar2;
+  // DEVIATION(unparsed): DAT_0063a01c = (_CONTEXT *)uVar3;
+  // DEVIATION(unparsed): if ((((*(int *)param_1 == -0x1f928c9d) && (*(int *)(param_1 + 0x10) == 3)) &&
+      // DEVIATION(unparsed): (*(int *)(param_1 + 0x14) == 0x19930520)) && (pvVar4 != (void *)0x0)) {
+    // DEVIATION(unparsed): iVar5 = __abnormal_termination();
+    // DEVIATION(unparsed): DestructExceptionObject(param_1,(uchar)iVar5);
+    // DEVIATION(unparsed): param_1 = extraout_EAX;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: ExFilterRethrow @ 0x005F83F0
 // Size: 96 bytes
@@ -8328,7 +8328,7 @@ CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *
    // 
    // Library: Visual Studio 1998 Debug */
 
-int __cdecl ExFilterRethrow(_EXCEPTION_POINTERS *param_1)
+export function ExFilterRethrow_005F83F0(param_1) {
 
 
   let pEVar1;
@@ -8351,99 +8351,99 @@ int __cdecl ExFilterRethrow(_EXCEPTION_POINTERS *param_1)
 // Function: BuildCatchObject @ 0x005F8460
 // Size: 699 bytes
 // ============================================================
-
-// /* Library Function - Single Match
-    // void __cdecl BuildCatchObject(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
-   // _s_HandlerType const *,struct _s_CatchableType const *)
-   // 
-   // Library: Visual Studio 1998 Debug */
-
-void __cdecl
-BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_HandlerType *param_3,
-                _s_CatchableType *param_4)
-
-
-  let _Dst;
-  let iVar1;
-  let pvVar2;
-  // DEVIATION: SEH
-  let _Size;
-  let uVar3;
-  let local_14 = [0];
-  // DEVIATION: SEH local
-  // DEVIATION: SEH local
-  let local_8;
-  
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: C pointer — if (((s32(param_3, 4) !== 0) && (*(char *)(s32(param_3, 4) + 8) !== 0)) &&
-     // DEVIATION(cont): (*(int *)(param_3 + 8) != 0)) {
-    // DEVIATION(cont): _Dst = param_2 + *(int *)(param_3 + 8) + 0xc;
-    local_8 = 0;
-    if ((u8(s32(param_3, 0)) & 8) === 0) {
-      if ((u8(s32(param_4, 0)) & 1) === 0) {
-        if (s32(param_4, 0x18) === 0) {
-          // DEVIATION: C pointer — iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
-          if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
-            _inconsistency();
-          }
-          else {
-            // DEVIATION: C pointer — _Size = *(size_t *)(param_4 + 0x14);
-            // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(param_4 + 8));
-            _memcpy(_Dst,pvVar2,_Size);
-          }
-        }
-        else {
-          // DEVIATION: C pointer — iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
-          if (((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) ||
-             // DEVIATION: C pointer — (iVar1 = _ValidateExecute(*(_func_int **)(param_4 + 0x18)), iVar1 === 0)) {
-            // DEVIATION(cont): _inconsistency();
-          }
-          else if ((u8(s32(param_4, 0)) & 4) === 0) {
-            // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(param_4 + 8));
-            _CallMemberFunction1(_Dst,s32(param_4, 0x18),pvVar2);
-          }
-          else {
-            uVar3 = 1;
-            // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(param_4 + 8));
-            _CallMemberFunction1(_Dst,s32(param_4, 0x18),pvVar2,uVar3);
-          }
-        }
-      }
-      else {
-        // DEVIATION: C pointer — iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
-        if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
-          _inconsistency();
-        }
-        else {
-          // DEVIATION: C pointer — _memcpy(_Dst,*(void **)(param_1 + 0x18),*(size_t *)(param_4 + 0x14));
-          // DEVIATION: C pointer — if ((s32(param_4, 0x14) === 4) && (*(int *)_Dst !== 0)) {
-            // DEVIATION(cont): pvVar2 = AdjustPointer(*(void **)_Dst,(PMD *)(param_4 + 8));
-            // DEVIATION: C pointer — *(void **)_Dst = pvVar2;
-          }
-        }
-      }
-    }
-    else {
-      // DEVIATION: C pointer — iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
-      if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
-        _inconsistency();
-      }
-      else {
-        // DEVIATION: C pointer — *(int *)_Dst = s32(param_1, 0x18);
-        // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)_Dst,(param_4 + 8));
-        // DEVIATION: C pointer — *(void **)_Dst = pvVar2;
-      }
-    }
-  }
-  // DEVIATION: SEH
-  return;
-}
-
-
-
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void __cdecl BuildCatchObject(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
+   // DEVIATION(unparsed): _s_HandlerType const *,struct _s_CatchableType const *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __cdecl
+// DEVIATION(unparsed): BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_HandlerType *param_3,
+                // DEVIATION(unparsed): _s_CatchableType *param_4)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): EHRegistrationNode *_Dst;
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): void *pvVar2;
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): size_t _Size;
+  // DEVIATION(unparsed): undefined4 uVar3;
+  // DEVIATION(unparsed): undefined4 local_14;
+  // DEVIATION(unparsed): undefined1 *puStack_10;
+  // DEVIATION(unparsed): undefined *puStack_c;
+  // DEVIATION(unparsed): undefined4 local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &DAT_0061e460;
+  // DEVIATION(unparsed): puStack_10 = &LAB_005f9298;
+  // DEVIATION(unparsed): local_14 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &local_14;
+  // DEVIATION(unparsed): if (((*(int *)(param_3 + 4) != 0) && (*(char *)(*(int *)(param_3 + 4) + 8) != '\0')) &&
+     // DEVIATION(unparsed): (*(int *)(param_3 + 8) != 0)) {
+    // DEVIATION(unparsed): _Dst = param_2 + *(int *)(param_3 + 8) + 0xc;
+    // DEVIATION(unparsed): local_8 = 0;
+    // DEVIATION(unparsed): if (((byte)*param_3 & 8) == 0) {
+      // DEVIATION(unparsed): if (((byte)*param_4 & 1) == 0) {
+        // DEVIATION(unparsed): if (*(int *)(param_4 + 0x18) == 0) {
+          // DEVIATION(unparsed): iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
+          // DEVIATION(unparsed): if ((iVar1 == 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 == 0)) {
+            // DEVIATION(unparsed): _inconsistency();
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): _Size = *(size_t *)(param_4 + 0x14);
+            // DEVIATION(unparsed): pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(PMD *)(param_4 + 8));
+            // DEVIATION(unparsed): FID_conflict__memcpy(_Dst,pvVar2,_Size);
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
+          // DEVIATION(unparsed): if (((iVar1 == 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 == 0)) ||
+             // DEVIATION(unparsed): (iVar1 = _ValidateExecute(*(_func_int **)(param_4 + 0x18)), iVar1 == 0)) {
+            // DEVIATION(unparsed): _inconsistency();
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else if (((byte)*param_4 & 4) == 0) {
+            // DEVIATION(unparsed): pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(PMD *)(param_4 + 8));
+            // DEVIATION(unparsed): FID_conflict__CallMemberFunction1(_Dst,*(undefined4 *)(param_4 + 0x18),pvVar2);
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): uVar3 = 1;
+            // DEVIATION(unparsed): pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(PMD *)(param_4 + 8));
+            // DEVIATION(unparsed): FID_conflict__CallMemberFunction1(_Dst,*(undefined4 *)(param_4 + 0x18),pvVar2,uVar3);
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
+        // DEVIATION(unparsed): if ((iVar1 == 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 == 0)) {
+          // DEVIATION(unparsed): _inconsistency();
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): FID_conflict__memcpy(_Dst,*(void **)(param_1 + 0x18),*(size_t *)(param_4 + 0x14));
+          // DEVIATION(unparsed): if ((*(int *)(param_4 + 0x14) == 4) && (*(int *)_Dst != 0)) {
+            // DEVIATION(unparsed): pvVar2 = AdjustPointer(*(void **)_Dst,(PMD *)(param_4 + 8));
+            // DEVIATION(unparsed): *(void **)_Dst = pvVar2;
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
+      // DEVIATION(unparsed): if ((iVar1 == 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 == 0)) {
+        // DEVIATION(unparsed): _inconsistency();
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): *(int *)_Dst = *(int *)(param_1 + 0x18);
+        // DEVIATION(unparsed): pvVar2 = AdjustPointer(*(void **)_Dst,(PMD *)(param_4 + 8));
+        // DEVIATION(unparsed): *(void **)_Dst = pvVar2;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = local_14;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: DestructExceptionObject @ 0x005F8740
 // Size: 124 bytes
@@ -8454,7 +8454,7 @@ BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_Handl
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __cdecl DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
+export function DestructExceptionObject_005F8740(param_1, param_2) {
 
 
   // DEVIATION: SEH
@@ -8487,7 +8487,7 @@ void __cdecl DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void * __cdecl AdjustPointer(void *param_1,PMD *param_2)
+export function AdjustPointer_005F87E0(param_1, param_2) {
 
 
   let local_8;
@@ -8541,7 +8541,7 @@ export function __CallSettingFrame_12_005F8830(param_1, param_2, param_3) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __cdecl terminate(void)
+export function terminate_005F8880() {
 
 
   // DEVIATION: SEH
@@ -8575,7 +8575,7 @@ void __cdecl terminate(void)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __cdecl unexpected(void)
+export function unexpected_005F8920() {
 
 
   if (PTR_terminate_0063a028 !== 0x0) {
@@ -8597,7 +8597,7 @@ void __cdecl unexpected(void)
    // 
    // Library: Visual Studio 1998 Debug */
 
-void __cdecl _inconsistency(void)
+export function _inconsistency_005F8950() {
 
 
   // DEVIATION: SEH
@@ -15646,22 +15646,6 @@ LAB_005f756a:
     puVar6 = puVar6 + 1;
     uVar3 = uVar3 - 1;
   } while( true );
-}
-
-function LAB_005f7c03_helper(local_10, local_8, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-      local_10 = local_10 + 0x14;
-    }
-    if (param_6 !== 0) {
-      DestructExceptionObject(param_1,0x01);
-    }
-  }
-  else if (param_6 === 0) {
-    FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_8,param_7,param_8);
-  }
-  else {
-    terminate();
-  }
-  return;
 }
 
 function LAB_005f9fab_helper(local_8, local_c, uVar1) {

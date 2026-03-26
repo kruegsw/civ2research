@@ -56,20 +56,20 @@ export function FUN_00551cd0(param_1) {
 // Function: egptr @ 0x00551D20
 // Size: 28 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): protected: char * __thiscall streambuf::egptr(void)const 
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): char * __thiscall streambuf::egptr(streambuf *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(char **)(this + 0x2c);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // protected: char * __thiscall streambuf::egptr(void)const 
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function egptr_00551D20(this) {
+
+
+  // DEVIATION: C pointer — return *(char **)(this + 0x2c);
+}
+
+
+
 // ============================================================
 // Function: FUN_00551d50 @ 0x00551D50
 // Size: 37 bytes
@@ -867,35 +867,35 @@ export function FUN_0055339f(in_ECX) {
 // Function: ~COleCntrFrameWnd @ 0x00553444
 // Size: 87 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: virtual __thiscall COleCntrFrameWnd::~COleCntrFrameWnd(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall COleCntrFrameWnd::~COleCntrFrameWnd(COleCntrFrameWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): undefined4 uStack_10;
-  // DEVIATION(unparsed): undefined1 *puStack_c;
-  // DEVIATION(unparsed): undefined4 local_8;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): puStack_c = &LAB_005534a4;
-  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
-  // DEVIATION(unparsed): *(undefined ***)this = &PTR_FUN_0061d6dc;
-  // DEVIATION(unparsed): local_8 = 0;
-  // DEVIATION(unparsed): thunk_FUN_005532d7();
-  // DEVIATION(unparsed): thunk_FUN_004083b0();
-  // DEVIATION(unparsed): local_8 = 0xffffffff;
-  // DEVIATION(unparsed): FUN_0055349b();
-  // DEVIATION(unparsed): FUN_005534ae();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: virtual __thiscall COleCntrFrameWnd::~COleCntrFrameWnd(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _COleCntrFrameWnd_00553444(this) {
+
+
+  // DEVIATION: SEH
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  let local_8;
+  
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6dc;
+  local_8 = 0;
+  FUN_005532d7();
+  FUN_004083b0();
+  // DEVIATION: SEH
+  FUN_0055349b();
+  FUN_005534ae();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_0055349b @ 0x0055349B
 // Size: 9 bytes
@@ -3677,37 +3677,37 @@ export function FUN_00559e3c(in_ECX) {
 // Function: ~CMiniFrameWnd @ 0x00559ED4
 // Size: 92 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: virtual __thiscall CMiniFrameWnd::~CMiniFrameWnd(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CMiniFrameWnd::~CMiniFrameWnd(CMiniFrameWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): undefined4 uStack_10;
-  // DEVIATION(unparsed): undefined1 *puStack_c;
-  // DEVIATION(unparsed): int local_8;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): puStack_c = &LAB_00559f48;
-  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
-  // DEVIATION(unparsed): *(undefined ***)this = &PTR_FUN_0061d6e0;
-  // DEVIATION(unparsed): local_8._0_1_ = 1;
-  // DEVIATION(unparsed): local_8._1_3_ = 0;
-  // DEVIATION(unparsed): thunk_FUN_00559ded();
-  // DEVIATION(unparsed): local_8 = (uint)local_8._1_3_ << 8;
-  // DEVIATION(unparsed): FUN_00559f30();
-  // DEVIATION(unparsed): local_8 = 0xffffffff;
-  // DEVIATION(unparsed): FUN_00559f3f();
-  // DEVIATION(unparsed): FUN_00559f52();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: virtual __thiscall CMiniFrameWnd::~CMiniFrameWnd(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _CMiniFrameWnd_00559ED4(this) {
+
+
+  // DEVIATION: SEH
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  let local_8;
+  
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6e0;
+  local_8._0_1_ = 1;
+  local_8._1_3_ = 0;
+  FUN_00559ded();
+  local_8 = ((local_8) >>> 0)._1_3_ << 8;
+  FUN_00559f30();
+  // DEVIATION: SEH
+  FUN_00559f3f();
+  FUN_00559f52();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00559f30 @ 0x00559F30
 // Size: 15 bytes

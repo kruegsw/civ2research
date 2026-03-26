@@ -2151,7 +2151,7 @@ export function FUN_004f66c6(in_ECX) {
           iVar2 = FUN_004a6980();
           iVar3 = FUN_004a6980();
           local_6c = ((iVar1 + (iVar1 >> 0x1f & 3)) >> 2) + iVar2 / 6 + iVar3 +
-                     let 2;
+                     DAT_0062d858 * 2;
           local_38 = DAT_00644fb4;
           local_144 = local_6c;
           if ((s32(in_ECX, 0x1f3c) + local_60 + local_5c & 1) === 0) {
@@ -3072,59 +3072,59 @@ export function FUN_004f8d51() {
 // Function: FID_conflict:`scalar_deleting_destructor' @ 0x004FA0F0
 // Size: 57 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
-    // DEVIATION(unparsed): public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
-     // DEVIATION(unparsed): 9 names - too many to list
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): CControlBarInfo * FID_conflict__scalar_deleting_destructor_(byte param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): CControlBarInfo *in_ECX;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): CControlBarInfo::~CControlBarInfo(in_ECX);
-  // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
-    // DEVIATION(unparsed): operator_delete(in_ECX);
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return in_ECX;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Different Base Names
+    // public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
+    // public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
+    // public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
+    // public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
+     // 9 names - too many to list
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function FID_conflict__scalar_deleting_destructor__004FA0F0(param_1) {
+
+
+  let in_ECX;
+  
+  // DEVIATION: MFC — CControlBarInfo::~CControlBarInfo(in_ECX);
+  if ((param_1 & 1) !== 0) {
+    operator_delete(in_ECX);
+  }
+  return in_ECX;
+}
+
+
+
 // ============================================================
 // Function: ~CControlBarInfo @ 0x004FA140
 // Size: 62 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall CControlBarInfo::~CControlBarInfo(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CControlBarInfo::~CControlBarInfo(CControlBarInfo *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): undefined4 uStack_10;
-  // DEVIATION(unparsed): undefined1 *puStack_c;
-  // DEVIATION(unparsed): undefined4 local_8;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): puStack_c = &LAB_004fa18a;
-  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
-  // DEVIATION(unparsed): local_8 = 0xffffffff;
-  // DEVIATION(unparsed): FUN_004fa17e();
-  // DEVIATION(unparsed): FUN_004fa194();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall CControlBarInfo::~CControlBarInfo(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _CControlBarInfo_004FA140(this) {
+
+
+  // DEVIATION: SEH
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  let local_8;
+  
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  FUN_004fa17e();
+  FUN_004fa194();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_004fa17e @ 0x004FA17E
 // Size: 12 bytes
@@ -5987,7 +5987,7 @@ function LAB_004f6d04_helper(iVar1, iVar2, iVar3, in_ECX, local_10c, local_11c, 
           iVar2 = FUN_004a6980();
           iVar3 = FUN_004a6980();
           local_6c = ((iVar1 + (iVar1 >> 0x1f & 3)) >> 2) + iVar2 / 6 + iVar3 +
-                     let 2;
+                     DAT_0062d858 * 2;
           local_38 = DAT_00644fb4;
           local_144 = local_6c;
           if ((s32(in_ECX, 0x1f3c) + local_60 + local_5c & 1) === 0) {

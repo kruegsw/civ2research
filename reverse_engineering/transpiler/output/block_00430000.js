@@ -3720,44 +3720,44 @@ export function FUN_004386b8(param_1, param_2) {
 // Function: ~CDaoFieldInfo @ 0x0043C110
 // Size: 140 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CDaoFieldInfo::~CDaoFieldInfo(CDaoFieldInfo *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): undefined4 uStack_10;
-  // DEVIATION(unparsed): undefined1 *puStack_c;
-  // DEVIATION(unparsed): int local_8;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): puStack_c = &LAB_0043c1ff;
-  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
-  // DEVIATION(unparsed): local_8._1_3_ = 0;
-  // DEVIATION(unparsed): local_8._0_1_ = 5;
-  // DEVIATION(unparsed): FUN_0043c19c();
-  // DEVIATION(unparsed): local_8._0_1_ = 4;
-  // DEVIATION(unparsed): FUN_0043c1ab();
-  // DEVIATION(unparsed): local_8._0_1_ = 3;
-  // DEVIATION(unparsed): FUN_0043c1ba();
-  // DEVIATION(unparsed): local_8._0_1_ = 2;
-  // DEVIATION(unparsed): FUN_0043c1c9();
-  // DEVIATION(unparsed): local_8._0_1_ = 1;
-  // DEVIATION(unparsed): FUN_0043c1d8();
-  // DEVIATION(unparsed): local_8 = (uint)local_8._1_3_ << 8;
-  // DEVIATION(unparsed): FUN_0043c1e7();
-  // DEVIATION(unparsed): local_8 = 0xffffffff;
-  // DEVIATION(unparsed): FUN_0043c1f6();
-  // DEVIATION(unparsed): FUN_0043c209();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _CDaoFieldInfo_0043C110(this) {
+
+
+  // DEVIATION: SEH
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  let local_8;
+  
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  local_8._1_3_ = 0;
+  local_8._0_1_ = 5;
+  FUN_0043c19c();
+  local_8._0_1_ = 4;
+  FUN_0043c1ab();
+  local_8._0_1_ = 3;
+  FUN_0043c1ba();
+  local_8._0_1_ = 2;
+  FUN_0043c1c9();
+  local_8._0_1_ = 1;
+  FUN_0043c1d8();
+  local_8 = ((local_8) >>> 0)._1_3_ << 8;
+  FUN_0043c1e7();
+  // DEVIATION: SEH
+  FUN_0043c1f6();
+  FUN_0043c209();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_0043c19c @ 0x0043C19C
 // Size: 15 bytes
@@ -3935,21 +3935,21 @@ export function FUN_0043c3f0(in_ECX, param_1) {
 // Function: ~_Timevec @ 0x0043C430
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005db55b(*(undefined4 *)this);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall _Timevec::~_Timevec(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function __Timevec_0043C430(this) {
+
+
+  // DEVIATION: C pointer — FUN_005db55b(*(undefined4 *)this);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_0043c460 @ 0x0043C460
 // Size: 70 bytes
@@ -4012,38 +4012,38 @@ export function FUN_0043c520(in_ECX) {
 // Function: GetActiveView @ 0x0043C560
 // Size: 28 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(CView **)(this + 8);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function GetActiveView_0043C560(this) {
+
+
+  // DEVIATION: C pointer — return *(CView **)(this + 8);
+}
+
+
+
 // ============================================================
 // Function: GetActiveView @ 0x0043C590
 // Size: 28 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(CView **)(this + 4);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function GetActiveView_0043C590(this) {
+
+
+  // DEVIATION: C pointer — return *(CView **)(this + 4);
+}
+
+
+
 // ============================================================
 // Function: FUN_0043c5c0 @ 0x0043C5C0
 // Size: 37 bytes

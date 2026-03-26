@@ -2247,21 +2247,21 @@ export function FUN_00414d70(param_1) {
 // Function: EnableStackedTabs @ 0x00414DA0
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0x2a8) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function EnableStackedTabs_00414DA0(this, param_1) {
+
+
+  w32(this, 0x2a8, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00414dd0 @ 0x00414DD0
 // Size: 39 bytes
@@ -2280,20 +2280,20 @@ export function FUN_00414dd0(param_1, param_2) {
 // Function: IsTracking @ 0x00414E00
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x15a4);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_00414E00(this) {
+
+
+  return s32(this, 0x15a4);
+}
+
+
+
 // ============================================================
 // Function: FUN_00414e30 @ 0x00414E30
 // Size: 210 bytes

@@ -313,40 +313,40 @@ export function FUN_005117f0(in_ECX, param_1) {
 // Function: EnableStackedTabs @ 0x00511820
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0x2cc) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function EnableStackedTabs_00511820(this, param_1) {
+
+
+  w32(this, 0x2cc, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: EnableStackedTabs @ 0x00511850
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0x2d0) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function EnableStackedTabs_00511850(this, param_1) {
+
+
+  w32(this, 0x2d0, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00511880 @ 0x00511880
 // Size: 398 bytes

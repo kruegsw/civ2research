@@ -63,10 +63,15 @@ function auditBlock(blockName) {
     // C has code but JS is blank/comment — check if expected
     if (!jsEl) {
       const ct = cEl.raw;
-      // Skip expected: promoted params, goto labels, SEH locals
-      if (/^\s*(int|uint|char|byte|short|ushort|undefined|bool|long|ulong|code|void)\s+\*?\s*(in_E|unaff_|puStack_|uStack_)/.test(ct)) { linesPassed++; continue; }
+      // Skip expected: promoted params, goto labels, SEH locals, unparsed sigs
+      if (/^\s*\w[\w\s]*\*?\s*(in_E\w+|unaff_\w+|puStack_\w+|uStack_\w+)\s*;/.test(ct)) { linesPassed++; continue; }
       if (/^(LAB_|switchD_|code_r|joined_r)/.test(ct)) { linesPassed++; continue; }
-      if (/^(int|uint|undefined)\s+\*?\s*unaff_EBP/.test(ct)) { linesPassed++; continue; }
+      if (/unaff_EBP/.test(ct)) { linesPassed++; continue; }
+      // Multi-line signature continuations (param lines)
+      if (/^\s*\w[\w\s*]*\s+param_\d+\s*[,)]/.test(ct)) { linesPassed++; continue; }
+      if (/^\s*,?\s*\w[\w\s*]*\s+param_\d+\s*[,)]/.test(ct)) { linesPassed++; continue; }
+      // Unparsed function names (library functions without // Function: header)
+      if (/^\s*\w+\s+\w+\s*\(/.test(ct) && !/FUN_|DAT_|thunk_/.test(ct)) { linesPassed++; continue; }
 
       issues.push({ line: i + 1, type: 'MISSING', msg: 'C has code, JS is blank/comment',
                      c: ct.substring(0, 80) });

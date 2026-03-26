@@ -5921,24 +5921,24 @@ export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
 // Function: CReObject @ 0x005E82FB
 // Size: 64 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall CReObject::CReObject(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): CReObject * __thiscall CReObject::CReObject(CReObject *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(undefined4 *)this = 0;
-  // DEVIATION(unparsed): *(undefined4 *)(this + 0x20) = 0;
-  // DEVIATION(unparsed): *(undefined4 *)(this + 0x24) = 0;
-  // DEVIATION(unparsed): *(undefined4 *)(this + 0x28) = 0;
-  // DEVIATION(unparsed): return this;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall CReObject::CReObject(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function CReObject_005E82FB(this) {
+
+
+  // DEVIATION: C pointer — *(undefined4 *)this = 0;
+  w32(this, 0x20, 0);
+  w32(this, 0x24, 0);
+  w32(this, 0x28, 0);
+  return this;
+}
+
+
+
 // ============================================================
 // Function: FUN_005e833b @ 0x005E833B
 // Size: 141 bytes
@@ -9545,92 +9545,92 @@ export function FUN_005ed5f0(in_ECX, param_1) {
 // Function: IsTracking @ 0x005ED640
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0xb0);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005ED640(this) {
+
+
+  return s32(this, 0xb0);
+}
+
+
+
 // ============================================================
 // Function: IsTracking @ 0x005ED660
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0xb4);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005ED660(this) {
+
+
+  return s32(this, 0xb4);
+}
+
+
+
 // ============================================================
 // Function: IsTracking @ 0x005ED680
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x90);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005ED680(this) {
+
+
+  return s32(this, 0x90);
+}
+
+
+
 // ============================================================
 // Function: IsTracking @ 0x005ED6A0
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x94);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005ED6A0(this) {
+
+
+  return s32(this, 0x94);
+}
+
+
+
 // ============================================================
 // Function: IsTracking @ 0x005ED6C0
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0xb8);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005ED6C0(this) {
+
+
+  return s32(this, 0xb8);
+}
+
+
+
 // ============================================================
 // Function: FUN_005ed6e0 @ 0x005ED6E0
 // Size: 47 bytes
@@ -10894,20 +10894,20 @@ export function FUN_005eebd6(in_ECX) {
 // Function: IsTracking @ 0x005EEC80
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0xb0);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005EEC80(this) {
+
+
+  return s32(this, 0xb0);
+}
+
+
+
 // ============================================================
 // Function: FUN_005eeca0 @ 0x005EECA0
 // Size: 35 bytes

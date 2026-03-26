@@ -751,21 +751,21 @@ export function FUN_00451a60(in_ECX, param_1) {
 // Function: SetHelpID @ 0x00451A90
 // Size: 33 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CDialog::SetHelpID(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CDialog::SetHelpID(CDialog *this,uint param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(uint *)(this + 0x3c) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CDialog::SetHelpID(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function SetHelpID_00451A90(this, param_1) {
+
+
+  w32(this, 0x3c, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00451ac0 @ 0x00451AC0
 // Size: 33 bytes
@@ -1867,21 +1867,21 @@ export function FUN_00453d40(in_ECX, param_1) {
 // Function: SetHelpID @ 0x00453D70
 // Size: 33 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CDialog::SetHelpID(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CDialog::SetHelpID(CDialog *this,uint param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(uint *)(this + 0x3c) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CDialog::SetHelpID(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function SetHelpID_00453D70(this, param_1) {
+
+
+  w32(this, 0x3c, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00453da0 @ 0x00453DA0
 // Size: 120 bytes
@@ -3463,24 +3463,24 @@ export function FUN_00456e90(param_1) {
 // Function: tie @ 0x00456EE0
 // Size: 45 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: class ostream * __thiscall ios::tie(class ostream *)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): ostream * __thiscall ios::tie(ios *this,ostream *param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): ostream *poVar1;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): poVar1 = *(ostream **)(this + 0x20);
-  // DEVIATION(unparsed): *(ostream **)(this + 0x20) = param_1;
-  // DEVIATION(unparsed): return poVar1;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: class ostream * __thiscall ios::tie(class ostream *)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function tie_00456EE0(this, param_1) {
+
+
+  let poVar1;
+  
+  // DEVIATION: C pointer — poVar1 = *(ostream **)(this + 0x20);
+  // DEVIATION: C pointer — *(ostream **)(this + 0x20) = param_1;
+  return poVar1;
+}
+
+
+
 // ============================================================
 // Function: FUN_00456f20 @ 0x00456F20
 // Size: 107 bytes

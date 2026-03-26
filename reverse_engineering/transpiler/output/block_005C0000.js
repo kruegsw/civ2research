@@ -3399,20 +3399,20 @@ export function FUN_005c55d0(in_ECX) {
 // Function: GetCheckStyle @ 0x005C55F0
 // Size: 28 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(uint *)(this + 0x40);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function GetCheckStyle_005C55F0(this) {
+
+
+  return u32(this, 0x40);
+}
+
+
+
 // ============================================================
 // Function: FUN_005c5610 @ 0x005C5610
 // Size: 33 bytes
@@ -3492,39 +3492,39 @@ export function FUN_005c56a0(in_ECX) {
 // Function: ~_Timevec @ 0x005C56C0
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005e92c9(*(undefined4 *)this);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall _Timevec::~_Timevec(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function __Timevec_005C56C0(this) {
+
+
+  // DEVIATION: C pointer — FUN_005e92c9(*(undefined4 *)this);
+  return;
+}
+
+
+
 // ============================================================
 // Function: IsTracking @ 0x005C56F0
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x408);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005C56F0(this) {
+
+
+  return s32(this, 0x408);
+}
+
+
+
 // ============================================================
 // Function: FUN_005c5710 @ 0x005C5710
 // Size: 33 bytes
@@ -4230,21 +4230,21 @@ export function FUN_005c61b0(in_ECX) {
 // Function: InvalidateObjectCache @ 0x005C62CB
 // Size: 35 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(undefined4 *)(this + 0x8c) = 0;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function InvalidateObjectCache_005C62CB(this) {
+
+
+  w32(this, 0x8c, 0);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005c62ee @ 0x005C62EE
 // Size: 21 bytes
@@ -4768,23 +4768,23 @@ export function FUN_005c6b05() {
 // Function: Realloc @ 0x005C6B3B
 // Size: 40 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   // DEVIATION(unparsed): long)
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void Realloc(undefined4 param_1,undefined4 param_2)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005deced(param_1,param_2);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Same Base Name
+    // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // long)
+    // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function Realloc_005C6B3B(param_1, param_2) {
+
+
+  FUN_005deced(param_1,param_2);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005c6b63 @ 0x005C6B63
 // Size: 48 bytes
@@ -6728,21 +6728,21 @@ export function invalidate_96CC_005C96CC(param_1) {
 // Function: delbuf @ 0x005C9710
 // Size: 33 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall ios::delbuf(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall ios::delbuf(ios *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0x1c) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall ios::delbuf(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function delbuf_005C9710(this, param_1) {
+
+
+  w32(this, 0x1c, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: draw_text_9740 @ 0x005C9740
 // Size: 5302 bytes
@@ -7834,20 +7834,20 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
 // Function: IsTracking @ 0x005CBDB0
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x404);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005CBDB0(this) {
+
+
+  return s32(this, 0x404);
+}
+
+
+
 // ============================================================
 // Function: FUN_005cbdd0 @ 0x005CBDD0
 // Size: 31 bytes
@@ -9154,21 +9154,21 @@ export function FUN_005cdcdb(param_1, param_2, param_3) {
 // Function: CString @ 0x005CDE2C
 // Size: 33 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall CString::CString(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): CString * __thiscall CString::CString(CString *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005d1b38();
-  // DEVIATION(unparsed): return this;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall CString::CString(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function CString_005CDE2C(this) {
+
+
+  FUN_005d1b38();
+  return this;
+}
+
+
+
 // ============================================================
 // Function: FUN_005cde4d @ 0x005CDE4D
 // Size: 84 bytes

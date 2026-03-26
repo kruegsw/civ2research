@@ -324,11 +324,16 @@ function processFunction(headerLines, bodyLines, ctx) {
   }
 
   // Parse function signature (may span multiple lines)
+  // Must skip /* ... */ block comments first
   let sigLine = '';
   let sigStartIdx = -1;
   let sigEndIdx = -1;
+  let inSigComment = false;
   for (let i = 0; i < bodyLines.length; i++) {
     const t = bodyLines[i].trim();
+    // Skip block comments
+    if (inSigComment) { if (/\*\//.test(t)) inSigComment = false; continue; }
+    if (/^\/\*/.test(t)) { if (!/\*\//.test(t)) inSigComment = true; continue; }
     if (/^\w/.test(t) && /\(/.test(t) && !/^\/\//.test(t) && !/^\{/.test(t)) {
       sigStartIdx = i;
       sigLine = t;
@@ -503,10 +508,12 @@ function processFunction(headerLines, bodyLines, ctx) {
 
     // Match variable declarations: any type followed by a Ghidra-style variable name
     // Ghidra variable names: local_XX, iVarN, uVarN, cVarN, sVarN, bVarN, lVarN, param_N, etc.
-    // Match ANY C variable declaration: TYPE [*]name[N];
+    // Match C variable declaration: TYPE [*]name[N];
+    // Exclude: lines where "TYPE" is a DAT_/FUN_ reference (those are expressions, not declarations)
     const declMatch = trimmed.match(/^(\w[\w\s]*?)\s+(\*?\s*\w+(?:\s*\[\s*\d+\s*\])?)\s*;$/);
     const isKeyword = /^(if|else|for|while|do|switch|case|return|break|continue|let|var|const|export|import|function|goto)\b/.test(trimmed);
-    if (declMatch && !isKeyword) {
+    const isDatExpr = /^(DAT_|FUN_|s_|PTR_)/.test(trimmed); // expression, not declaration
+    if (declMatch && !isKeyword && !isDatExpr) {
       const varName = declMatch[2].replace(/^\*\s*/, '').replace(/\s*\[.*\]/, '');
 
       // Register params promoted to parameters — emit comment

@@ -7285,39 +7285,39 @@ export function FUN_005dafdf(in_ECX, param_1) {
 // Function: IsTracking @ 0x005DB016
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x704);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_005DB016(this) {
+
+
+  return s32(this, 0x704);
+}
+
+
+
 // ============================================================
 // Function: EnableStackedTabs @ 0x005DB035
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): *(int *)(this + 0x708) = param_1;
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function EnableStackedTabs_005DB035(this, param_1) {
+
+
+  w32(this, 0x708, param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005db059 @ 0x005DB059
 // Size: 48 bytes
@@ -7356,20 +7356,20 @@ export function FUN_005db089() {
 // Function: ~Iostream_init @ 0x005DB0B4
 // Size: 22 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall Iostream_init::~Iostream_init(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall Iostream_init::~Iostream_init(Iostream_init *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall Iostream_init::~Iostream_init(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _Iostream_init_005DB0B4(this) {
+
+
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005db0d0 @ 0x005DB0D0
 // Size: 64 bytes
@@ -8728,21 +8728,21 @@ export function FUN_005dcc10(in_ECX) {
 // Function: ~_Timevec @ 0x005DCC32
 // Size: 36 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005e10c7(*(undefined4 *)this);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: __thiscall _Timevec::~_Timevec(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function __Timevec_005DCC32(this) {
+
+
+  // DEVIATION: C pointer — FUN_005e10c7(*(undefined4 *)this);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005dcc56 @ 0x005DCC56
 // Size: 63 bytes
@@ -8778,23 +8778,23 @@ export function FUN_005dcc95(param_1, param_2, param_3) {
 // Function: Realloc @ 0x005DCCC1
 // Size: 40 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   // DEVIATION(unparsed): long)
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void Realloc(undefined4 param_1,undefined4 param_2)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005e17db(param_1,param_2);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Same Base Name
+    // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // long)
+    // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function Realloc_005DCCC1(param_1, param_2) {
+
+
+  FUN_005e17db(param_1,param_2);
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_005dcce9 @ 0x005DCCE9
 // Size: 51 bytes

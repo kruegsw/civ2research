@@ -2529,101 +2529,101 @@ export function FUN_005a6c45() {
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9320
 // Size: 110 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
-    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): void *in_ECX;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
-    // DEVIATION(unparsed): thunk_FUN_0040f930();
-    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
-      // DEVIATION(unparsed): operator_delete(in_ECX);
-    // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): else {
-    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f930);
-    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return in_ECX;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Different Base Names
+    // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function FID_conflict__vector_deleting_destructor__005A9320(param_1) {
+
+
+  let in_ECX;
+  
+  if ((param_1 & 2) === 0) {
+    FUN_0040f930();
+    if ((param_1 & 1) !== 0) {
+      operator_delete(in_ECX);
+    }
+  }
+  else {
+    _eh_vector_destructor_iterator_(in_ECX,0x3c,s32(in_ECX + -4, 0),FUN_0040f930);
+    operator_delete((in_ECX + -4));
+  }
+  return in_ECX;
+}
+
+
+
 // ============================================================
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A93B0
 // Size: 110 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
-    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): void *in_ECX;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
-    // DEVIATION(unparsed): thunk_FUN_00418870();
-    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
-      // DEVIATION(unparsed): operator_delete(in_ECX);
-    // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): else {
-    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x48,*(int *)((int)in_ECX + -4),thunk_FUN_00418870);
-    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return in_ECX;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Different Base Names
+    // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function FID_conflict__vector_deleting_destructor__005A93B0(param_1) {
+
+
+  let in_ECX;
+  
+  if ((param_1 & 2) === 0) {
+    FUN_00418870();
+    if ((param_1 & 1) !== 0) {
+      operator_delete(in_ECX);
+    }
+  }
+  else {
+    _eh_vector_destructor_iterator_(in_ECX,0x48,s32(in_ECX + -4, 0),FUN_00418870);
+    operator_delete((in_ECX + -4));
+  }
+  return in_ECX;
+}
+
+
+
 // ============================================================
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9440
 // Size: 110 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
-    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): void *in_ECX;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
-    // DEVIATION(unparsed): thunk_FUN_0040f570();
-    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
-      // DEVIATION(unparsed): operator_delete(in_ECX);
-    // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): else {
-    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f570);
-    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return in_ECX;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Different Base Names
+    // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function FID_conflict__vector_deleting_destructor__005A9440(param_1) {
+
+
+  let in_ECX;
+  
+  if ((param_1 & 2) === 0) {
+    FUN_0040f570();
+    if ((param_1 & 1) !== 0) {
+      operator_delete(in_ECX);
+    }
+  }
+  else {
+    _eh_vector_destructor_iterator_(in_ECX,0x3c,s32(in_ECX + -4, 0),FUN_0040f570);
+    operator_delete((in_ECX + -4));
+  }
+  return in_ECX;
+}
+
+
+
 // ============================================================
 // Function: FUN_005a94d0 @ 0x005A94D0
 // Size: 57 bytes
@@ -2647,35 +2647,35 @@ export function FUN_005a94d0(param_1) {
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9520
 // Size: 110 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
-    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): void *in_ECX;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
-    // DEVIATION(unparsed): thunk_FUN_00453ba0();
-    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
-      // DEVIATION(unparsed): operator_delete(in_ECX);
-    // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): else {
-    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x40,*(int *)((int)in_ECX + -4),thunk_FUN_00453ba0);
-    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
-  // DEVIATION(unparsed): }
-  // DEVIATION(unparsed): return in_ECX;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Different Base Names
+    // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function FID_conflict__vector_deleting_destructor__005A9520(param_1) {
+
+
+  let in_ECX;
+  
+  if ((param_1 & 2) === 0) {
+    FUN_00453ba0();
+    if ((param_1 & 1) !== 0) {
+      operator_delete(in_ECX);
+    }
+  }
+  else {
+    _eh_vector_destructor_iterator_(in_ECX,0x40,s32(in_ECX + -4, 0),FUN_00453ba0);
+    operator_delete((in_ECX + -4));
+  }
+  return in_ECX;
+}
+
+
+
 // ============================================================
 // Function: FUN_005a95b0 @ 0x005A95B0
 // Size: 57 bytes

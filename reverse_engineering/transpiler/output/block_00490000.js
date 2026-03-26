@@ -48,20 +48,20 @@ export function FUN_00490530(param_1, param_2, param_3) {
 // Function: IsTracking @ 0x00490560
 // Size: 31 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): return *(int *)(this + 0x159c);
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: int __thiscall CSplitterWnd::IsTracking(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function IsTracking_00490560(this) {
+
+
+  return s32(this, 0x159c);
+}
+
+
+
 // ============================================================
 // Function: FUN_00490590 @ 0x00490590
 // Size: 365 bytes
@@ -832,44 +832,44 @@ export function FUN_0049287e(unaff_EBP) {
 // Function: Realloc @ 0x004929C0
 // Size: 40 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   // DEVIATION(unparsed): long)
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void Realloc(undefined4 param_1)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005d8270(param_1);
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Same Base Name
+    // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // long)
+    // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function Realloc_004929C0(param_1) {
+
+
+  FUN_005d8270(param_1);
+  return;
+}
+
+
+
 // ============================================================
 // Function: Realloc @ 0x00492A00
 // Size: 40 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   // DEVIATION(unparsed): long)
-    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void Realloc(void)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): FUN_005d8622();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Multiple Matches With Same Base Name
+    // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // long)
+    // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function Realloc_00492A00() {
+
+
+  FUN_005d8622();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_00492a40 @ 0x00492A40
 // Size: 44 bytes
@@ -2832,41 +2832,41 @@ export function FUN_0049621d(in_ECX) {
 // Function: ~CCommandLineInfo @ 0x0049632A
 // Size: 123 bytes
 // ============================================================
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): /* Library Function - Single Match
-    // DEVIATION(unparsed): public: virtual __thiscall CCommandLineInfo::~CCommandLineInfo(void)
-   // DEVIATION(unparsed): 
-   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): void __thiscall CCommandLineInfo::~CCommandLineInfo(CCommandLineInfo *this)
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): {
-  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): undefined4 uStack_10;
-  // DEVIATION(unparsed): undefined1 *puStack_c;
-  // DEVIATION(unparsed): int local_8;
-  // DEVIATION(unparsed): 
-  // DEVIATION(unparsed): puStack_c = &LAB_004963ea;
-  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
-  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
-  // DEVIATION(unparsed): *(undefined ***)this = &PTR_FUN_0061d6c0;
-  // DEVIATION(unparsed): local_8._1_3_ = 0;
-  // DEVIATION(unparsed): local_8._0_1_ = 3;
-  // DEVIATION(unparsed): FUN_004963a5();
-  // DEVIATION(unparsed): local_8._0_1_ = 2;
-  // DEVIATION(unparsed): FUN_004963b4();
-  // DEVIATION(unparsed): local_8._0_1_ = 1;
-  // DEVIATION(unparsed): FUN_004963c3();
-  // DEVIATION(unparsed): local_8 = (uint)local_8._1_3_ << 8;
-  // DEVIATION(unparsed): FUN_004963d2();
-  // DEVIATION(unparsed): local_8 = 0xffffffff;
-  // DEVIATION(unparsed): FUN_004963e1();
-  // DEVIATION(unparsed): FUN_004963f4();
-  // DEVIATION(unparsed): return;
-// DEVIATION(unparsed): }
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
-// DEVIATION(unparsed): 
+
+// /* Library Function - Single Match
+    // public: virtual __thiscall CCommandLineInfo::~CCommandLineInfo(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
+
+export function _CCommandLineInfo_0049632A(this) {
+
+
+  // DEVIATION: SEH
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  let local_8;
+  
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6c0;
+  local_8._1_3_ = 0;
+  local_8._0_1_ = 3;
+  FUN_004963a5();
+  local_8._0_1_ = 2;
+  FUN_004963b4();
+  local_8._0_1_ = 1;
+  FUN_004963c3();
+  local_8 = ((local_8) >>> 0)._1_3_ << 8;
+  FUN_004963d2();
+  // DEVIATION: SEH
+  FUN_004963e1();
+  FUN_004963f4();
+  return;
+}
+
+
+
 // ============================================================
 // Function: FUN_004963a5 @ 0x004963A5
 // Size: 15 bytes
@@ -4158,7 +4158,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
     local_b0 = 1;
   }
   local_220 = (DAT_006a65c8 - s8(DAT_0064f349[param_1 * 0x58]) * ((DAT_0064bcca) >>> 0)) -
-              let DAT_006a6608;
+              DAT_006a65d8 * DAT_006a6608;
   local_60 = 0;
   local_48 = DAT_006a65cc * 2 - DAT_006a6568;
   local_98 = DAT_006a65d0 - DAT_006a6580;
