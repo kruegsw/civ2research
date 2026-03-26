@@ -2070,7 +2070,7 @@ export function FUN_00487371(param_1) {
         FUN_004503d0();
         FUN_004503d0();
         for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-          if (DAT_0066ca84[local_8] !== 0) {
+          if (DAT_0066ca84[(local_8) / 2] !== 0) {
             FUN_004503d0();
           }
         }
@@ -2080,7 +2080,7 @@ export function FUN_00487371(param_1) {
         FUN_004085f0();
         FUN_004085f0();
         for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-          if (DAT_0066ca84[local_8] !== 0) {
+          if (DAT_0066ca84[(local_8) / 2] !== 0) {
             FUN_004085f0();
           }
         }

@@ -594,7 +594,7 @@ export function FUN_00421d60(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00421da0(param_1, param_2) {
   // C: *(undefined4 *)(&DAT_0063cc30 + param_1 * 4) = param_2;
-  DAT_0063cc30[param_1] = param_2;
+  DAT_0063cc30[(param_1) / 4] = param_2;
 }
 
 // DAT_006ad7b2 referenced by FUN_00421fcd
@@ -1200,7 +1200,7 @@ export function FUN_00426ff0(param_1, param_2) {
         if (iVar2 === 0) {
           iVar2 = _atoi(pcVar1 + 7);
           let local_2c = [];
-          __ltoa(DAT_0063cc30[iVar2], local_2c, 10);
+          __ltoa(DAT_0063cc30[(iVar2) / 4], local_2c, 10);
           FUN_005f22e0(param_2, local_2c);
           param_1 = pcVar1 + 8;
         } else {
@@ -1208,7 +1208,7 @@ export function FUN_00426ff0(param_1, param_2) {
           if (iVar2 === 0) {
             iVar2 = _atoi(pcVar1 + 4);
             let local_2c = [];
-            __ltoa(DAT_0063cc30[iVar2], local_2c, 0x10);
+            __ltoa(DAT_0063cc30[(iVar2) / 4], local_2c, 0x10);
             for (let local_30 = 0; local_30 < 4 - _strlen(local_2c); local_30 = local_30 + 1) {
               FUN_005f22e0(param_2, DAT_00625e54);
             }
@@ -2478,7 +2478,7 @@ export function FUN_0042d635(param_1, param_2) {
     let iVar1 = (param_2 - _DAT_0063ef78) / DAT_0063ef80;
     let local_8 = 0;
     for (let local_c = 0; local_c < DAT_00655b18; local_c = local_c + 1) {
-      if (((s32(DAT_0064f394, local_c * 0x58) !== 0) &&
+      if (((DAT_0064f394[(local_c * 0x58) / 4] !== 0) &&
           (s8(DAT_0064f348[local_c * 0x58]) === DAT_0063ef6c))) {
         if (local_8 === iVar1 + DAT_0063ef70) {
           FUN_00509590(local_c);
@@ -2580,7 +2580,7 @@ export function FUN_0042e09c(param_1, param_2) {
     let iVar1 = (param_2 - _DAT_0063ef78) / DAT_0063ef80;
     let local_8 = 0;
     for (let local_c = 0; local_c < DAT_00655b18; local_c = local_c + 1) {
-      if (((s32(DAT_0064f394, local_c * 0x58) !== 0) &&
+      if (((DAT_0064f394[(local_c * 0x58) / 4] !== 0) &&
           (s8(DAT_0064f348[local_c * 0x58]) === DAT_0063ef6c))) {
         if (local_8 === iVar1 + DAT_0063ef70) {
           FUN_00509590(local_c);
