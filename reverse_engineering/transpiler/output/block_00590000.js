@@ -845,7 +845,7 @@ export function FUN_0059062c(param_1, param_2, param_3) {
        (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0)) &&
       ((iVar15 = FUN_005b8a81(local_ec,local_fc),
        s16(DAT_0064c832, iVar15 * 2 + uVar10 * 0x594) === 0 &&
-       (w16(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2, 
+       (w16r(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2, 
              s16(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2) + 1),
        (DAT_0064c6c0[local_44 * 4 + uVar10 * 0x594] & 6) === 0)))) &&
      ((iVar15 = FUN_0043d07a(local_bc,local_d0,0xffffffff,0xffffffff,0xffffffff), 0 < iVar15
@@ -7199,7 +7199,7 @@ function LAB_00592870_helper(bVar2, bVar4, bVar5, bVar6, bVar8, cVar1, cVar7, iV
        (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0)) &&
       ((iVar15 = FUN_005b8a81(local_ec,local_fc),
        s16(DAT_0064c832, iVar15 * 2 + uVar10 * 0x594) === 0 &&
-       (w16(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2, 
+       (w16r(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2, 
              s16(DAT_0064c832, uVar10 * 0x594 + iVar15 * 2) + 1),
        (DAT_0064c6c0[local_44 * 4 + uVar10 * 0x594] & 6) === 0)))) &&
      ((iVar15 = FUN_0043d07a(local_bc,local_d0,0xffffffff,0xffffffff,0xffffffff), 0 < iVar15

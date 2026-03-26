@@ -664,12 +664,19 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Continuation of multi-line w16/w32 call ──
     if (openWriteCall) {
       let transformed = transformLine(line, ctx);
-      // Close the function call: replace trailing ; with ); or trailing , with ),
-      if (/;\s*$/.test(transformed)) {
-        transformed = transformed.replace(/;\s*$/, ');');
-      } else if (/,\s*$/.test(transformed)) {
-        // Comma-operator: close w16/w32 before the comma
+      if (/,\s*$/.test(transformed)) {
+        // Comma-operator: close w16/w32 before the comma, and switch
+        // the opening w16/w32 on the previous line to w16r/w32r
         transformed = transformed.replace(/,\s*$/, '),');
+        // Find the previous line that opened the w16/w32 call and add 'r'
+        for (let j = result.length - 1; j >= 0; j--) {
+          if (/\bw(16|32)\(/.test(result[j])) {
+            result[j] = result[j].replace(/\bw(16|32)\(/, 'w$1r(');
+            break;
+          }
+        }
+      } else if (/;\s*$/.test(transformed)) {
+        transformed = transformed.replace(/;\s*$/, ');');
       }
       openWriteCall = false;
       result.push(transformed);

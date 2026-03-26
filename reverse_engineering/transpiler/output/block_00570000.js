@@ -5551,7 +5551,7 @@ export function FUN_0057ebfd(param_1) {
 
   if (((((u16(DAT_006560f4, param_1 * 0x20) & 0x2000) === 0) &&
        ((DAT_0064b1bd[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] & 0x10) === 0)) &&
-      (w16(DAT_006560f4, param_1 * 0x20, 
+      (w16r(DAT_006560f4, param_1 * 0x20, 
             u16(DAT_006560f4, param_1 * 0x20) | 0x2000),
       (((DAT_00655b0b) >>> 0) & 1 << (DAT_006560f7[param_1 * 0x20] & 0x1f)) !== 0)) &&
      (DAT_00654fa8 === 0)) {

@@ -397,6 +397,24 @@ JS:  if ((cond1) && (DAT_X = 0, cond2))
 JS supports the comma operator with identical semantics to C. Pass through
 unchanged. No 1:1 exception needed.
 
+### Comma operator with pointer write (w16r / w32r helpers)
+When a typed pointer write appears inside a comma-operator expression
+(the write is a side effect, followed by a condition), use the `r` variant
+of the write helper which returns the written value:
+
+```
+C:   (*(ushort *)(&DAT + off) = *(ushort *)(&DAT + off) & 0xf3ff,
+      condition)
+JS:  (w16r(DAT, off, u16(DAT, off) & 0xf3ff),
+      condition)
+```
+
+`w16r` / `w32r` write the value AND return it. This avoids ambiguity
+between the comma operator and function argument separators.
+
+The transpiler detects this case when a multi-line write continuation
+ends with `,` instead of `;`.
+
 ### bRam (direct memory byte)
 ```
 C:   bRam0064e854

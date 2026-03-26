@@ -3657,7 +3657,7 @@ export function FUN_0045705e(param_1, param_2) {
     DAT_0064b0f8 = 1;
   }
   if ((DAT_0064c7a5[param_2 * 0x594] !== 0) &&
-     (w32(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4, 
+     (w32r(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4, 
            u32(DAT_0064c6c0, param_2 * 0x594 + param_1 * 4) | 0x100),
      DAT_0064c7a5[param_1 * 0x594] === 0)) {
     DAT_0064b0f8 = 1;

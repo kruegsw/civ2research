@@ -2998,7 +2998,7 @@ export function FUN_004e80b1(param_1) {
     if ((((s32(DAT_0065610a, local_18 * 0x20) !== 0) &&
          (s8(DAT_006560f7[local_18 * 0x20]) === iVar3)) &&
         (u8(DAT_00656100[local_18 * 0x20]) === param_1)) &&
-       (w16(DAT_006560f4, local_18 * 0x20, 
+       (w16r(DAT_006560f4, local_18 * 0x20, 
              u16(DAT_006560f4, local_18 * 0x20) & 0xf3ff),
        s8(DAT_0064b1ca[u8(DAT_006560f6[local_18 * 0x20]) * 0x14]) < 0x06)) {
       iVar4 = FUN_004e7d7f(param_1,local_18,uVar1);

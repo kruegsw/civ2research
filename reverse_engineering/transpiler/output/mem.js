@@ -42,6 +42,9 @@ export function w32(arr, off, val) {
   arr[off + 2] = (val >> 16) & 0xFF;
   arr[off + 3] = (val >> 24) & 0xFF;
 }
+// Write-and-return variants for comma-operator expressions
+export function w16r(arr, off, val) { w16(arr, off, val); return val; }
+export function w32r(arr, off, val) { w32(arr, off, val); return val; }
 
 // ═══════════════════════════════════════════════════════════════════
 // MEMORY REGIONS
