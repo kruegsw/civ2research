@@ -2955,8 +2955,8 @@ export function new_civ_004A7CE9(param_1) {
                ((iVar4 = FUN_005b8931(local_3c,local_140), 0
                 // DEVIATION: C pointer — (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0 &&
                  // DEVIATION(cont): ((thunk_FUN_005b3d06(0,param_1,local_3c,local_140), 0x28 < DAT_00655af8 &&
-                  { // DEVIATION(cont): (iVar4 = thunk_FUN_004bfe5a(param_1,0xffffffff,3), iVar4 != 0))))))
-               // DEVIATION(cont): thunk_FUN_005b3d06(3,param_1,local_3c,local_140);
+                  // DEVIATION(cont): (iVar4 = thunk_FUN_004bfe5a(param_1,0xffffffff,3), iVar4 != 0)))))) {
+              ); // DEVIATION(cont): thunk_FUN_005b3d06(3,param_1,local_3c,local_140
             }
             FUN_005b9ec6();
             for (local_1c = 0; local_1c < 0x15; local_1c = local_1c + 1) {

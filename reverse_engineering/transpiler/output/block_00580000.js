@@ -2176,8 +2176,8 @@ export function FUN_0058843f(param_1, param_2, param_3) {
                               // DEVIATION(cont): *(int *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8) * 0x58,
                               // DEVIATION(cont): &DAT_0064f360 +
                               // DEVIATION(cont): *(int *)(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8) * 0x58),
-             { // DEVIATION(cont): 0 < iVar2))))
-           // DEVIATION(cont): uVar1 = *(undefined4 *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8);
+             // DEVIATION(cont): 0 < iVar2)))) {
+          ); // DEVIATION(cont): uVar1 = *(undefined4 *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8
           w32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, 
                s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
           w32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, uVar1);

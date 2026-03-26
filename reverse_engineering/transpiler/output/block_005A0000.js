@@ -149,9 +149,9 @@ export function FUN_005a120b(in_ECX, param_1, param_2) {
       if ((in_ECX[0x92] === 0) || 0
          // DEVIATION: C pointer — (iVar2 = (*(code *)in_ECX[0x92])
                              // DEVIATION(cont): (in_ECX,*in_ECX,param_1[1],iVar2,local_20,local_28,
-                              { // DEVIATION(cont): in_ECX[param_1[3] + 0x7c]), iVar2 == 0))
-         { // DEVIATION(cont): if (local_18 != 0)
-           // DEVIATION(cont): thunk_FUN_005a99fc(*in_ECX,&local_3c,in_ECX[0x1e],in_ECX[0x1f]);
+                              // DEVIATION(cont): in_ECX[param_1[3] + 0x7c]), iVar2 == 0)) {
+         // DEVIATION(cont): if (local_18 != 0) {
+          ); // DEVIATION(cont): thunk_FUN_005a99fc(*in_ECX,&local_3c,in_ECX[0x1e],in_ECX[0x1f]
           FUN_004bb800(local_3c[0],1,1);
         }
         FUN_0040fdb0(s32(in_ECX, 0),local_3c[0],local_1c);
@@ -455,7 +455,7 @@ export function FUN_005a1caf(in_ECX, param_1, param_2) {
     w32(in_ECX, 0x48, 0);
     if (((((param_2 < s32(in_ECX, 0x13c)) || (s32(in_ECX, 0x144) < param_2)) ||
          (param_1 < s32(in_ECX, 0x138))) || (s32(in_ECX, 0x140) < param_1)) &&
-       (((w32(in_ECX, 0x48, 1, param_2 < s32(in_ECX, 0x14c) ||
+       (((w32r(in_ECX, 0x48, 1), param_2 < s32(in_ECX, 0x14c) ||
          (s32(in_ECX, 0x154) < param_2)) ||
         ((param_1 < s32(in_ECX, 0x148) || (s32(in_ECX, 0x150) < param_1)))))) {
       w32(in_ECX, 0x48, uVar1);
@@ -1829,7 +1829,7 @@ export function FUN_005a53b8(param_1, param_2) {
        (FUN_005a1caf(param_1,param_2), (u32(DAT_006cec84, 0x3c) & 0x41000) === 0x1000))
       && (s32(DAT_006cec84, 0x28) !== 0)) && 0
      // DEVIATION: C pointer — (((*(byte *)(DAT_006cec84 + 0x3d) & 4) === 0 &&
-       { // DEVIATION(cont): (iVar1 = thunk_FUN_005a1a7d(param_1,param_2), -1 < iVar1))))
+       // DEVIATION(cont): (iVar1 = thunk_FUN_005a1a7d(param_1,param_2), -1 < iVar1)))) {
      // DEVIATION(cont): *(undefined4 *)(DAT_006cec84 + 0x218 + *(int *)(DAT_006cec84 + 0x48) * 4) = 1;
     FUN_005a535e(param_1,param_2);
     w32(DAT_006cec84, 0x3c, u32(DAT_006cec84, 0x3c) | 0x2000);

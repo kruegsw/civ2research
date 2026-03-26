@@ -732,10 +732,20 @@ function processFunction(headerLines, bodyLines, ctx) {
         }
       }
 
-      // Trailing { — always extract (opens a block that needs to be valid)
+      // Trailing { — extract only if preceding code line has a complete condition
+      // Don't extract when preceding line ends with && || , ( — that's mid-expression
       if (/\{\s*$/.test(inner) && !prefix.includes('{')) {
-        inner = inner.replace(/\{\s*$/, '').trim();
-        prefix = prefix + ' {';
+        let prevEndsWithOp = false;
+        for (let j = result.length - 1; j >= 0; j--) {
+          const prev = result[j].split('//')[0].trimEnd();
+          if (!prev) continue;
+          if (/[&|,(]\s*$/.test(prev)) prevEndsWithOp = true;
+          break;
+        }
+        if (!prevEndsWithOp) {
+          inner = inner.replace(/\{\s*$/, '').trim();
+          prefix = prefix + ' {';
+        }
       }
 
       // Trailing ; on its own
@@ -856,6 +866,33 @@ function processFunction(headerLines, bodyLines, ctx) {
     if (code && /[+\-*&|,]\s*$/.test(code) && nextTrimmed.startsWith('// DEVIATION')) {
       // Append 0 to complete the dangling expression
       result[i] = result[i].replace(/([+\-*&|,])\s*$/, '$1 0');
+    }
+  }
+
+  // ── Post-process: fix single-line w32/w16 comma-operator (4+ args) ──
+  // w32(a, b, c, expr) → w32r(a, b, c), expr)
+  for (let i = 0; i < result.length; i++) {
+    const code = result[i].split('//')[0];
+    const wm = code.match(/\b(w32|w16)\(/);
+    if (!wm) continue;
+    const wPos = code.indexOf(wm[0]);
+    // Count top-level commas inside the w32/w16 call
+    let depth = 0, commas = 0, thirdComma = -1;
+    for (let j = wPos + wm[0].length; j < code.length; j++) {
+      if (code[j] === '(' || code[j] === '[') depth++;
+      if (code[j] === ')' || code[j] === ']') depth--;
+      if (depth < 0) break; // hit closing of outer expression
+      if (code[j] === ',' && depth === 0) {
+        commas++;
+        if (commas === 3) { thirdComma = j; break; }
+      }
+    }
+    if (thirdComma > 0) {
+      // Has 4+ args — convert w32→w32r and close before 4th comma
+      const before = result[i].substring(0, wPos);
+      const wCall = result[i].substring(wPos, thirdComma);
+      const after = result[i].substring(thirdComma);
+      result[i] = before + wCall.replace(/\b(w32|w16)\(/, '$1r(') + ')' + after;
     }
   }
 

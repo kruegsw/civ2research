@@ -1538,7 +1538,7 @@ export function FUN_004941ee(param_1) {
      // DEVIATION: C pointer — ((s32(DAT_0061d2b0, (uint)*(byte *)(DAT_0062ca34 + 0x1084) * 0x28) <
         // DEVIATION(cont): *(int *)(DAT_0062ca34 + 0x1074) &&
        // DEVIATION(cont): (*(int *)(DAT_0062ca34 + 0x1074) <
-        { // DEVIATION(cont): *(int *)(&DAT_0061d2b4 + (uint)*(byte *)(DAT_0062ca34 + 0x1084) * 0x28)))))
+        // DEVIATION(cont): *(int *)(&DAT_0061d2b4 + (uint)*(byte *)(DAT_0062ca34 + 0x1084) * 0x28))))) {
      // DEVIATION(cont): *(undefined1 *)(DAT_0062ca34 + 0x1088) = (undefined1)param_1;
     FUN_00496125();
   }
@@ -3253,7 +3253,7 @@ export function FUN_00496ecf(param_1) {
     local_8 = local_8 + -0x48;
   }
   if (((param_1 !== 100) && (param_1 === 0x65)) &&
-     (w32(local_8, 0x1e4, s32(local_8, 0x1e0),
+     (w32r(local_8, 0x1e4, s32(local_8, 0x1e0)),
      0)) // DEVIATION: C pointer — DAT_006554fc[s16(DAT_0064c6a6, s32(local_8, 0x1dc) * 0x594) * 0x30] !== 0))
    { // DEVIATION(cont)
     w32(local_8, 0x1e4, s32(local_8, 0x1e4) + 0x15);

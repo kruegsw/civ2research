@@ -2134,7 +2134,7 @@ export function FUN_00487a41(param_1) {
     w16(DAT_0064ca7e, param_1 * 0x594, s16(DAT_0064ca7e, param_1 * 0x594) / 2);
   }
   if ((((DAT_00655ae8 & 0x80) !== 0) && (DAT_0064c6b3[param_1 * 0x594] === 0)) &&
-     (w16(DAT_0064ca80, param_1 * 0x594, 0,
+     (w16r(DAT_0064ca80, param_1 * 0x594, 0),
      -1 < s8(DAT_006554f8[s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]))) {
     w16(DAT_0064ca7e, param_1 * 0x594, 0);
   }
@@ -2968,8 +2968,8 @@ export function FUN_0048a416() {
        ((1 << (u8(DAT_006d1da0) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)) {
       if ((DAT_006aa75c === 0) && 0
          // DEVIATION: MFC — (iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8),
-          { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar2 * 0x58] != DAT_006d1da0))
-         // DEVIATION(cont): thunk_citywin_994F();
+          // DEVIATION(cont): (char)(&DAT_0064f348)[iVar2 * 0x58] != DAT_006d1da0)) {
+        ); // DEVIATION(cont): thunk_citywin_994F(
       }
       FUN_00421bd0();
       DAT_0064b9bc = 0;
@@ -4517,8 +4517,51 @@ if (true) {
 }
 
 function LAB_0048a77d_helper(iVar2, local_14, local_c, uVar3) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '{'
-  // Original code had structural issues from DEVIATION lines
+      DAT_0062804c = 1;
+      if (DAT_00655afe < 0) {
+        DAT_00655aee = DAT_00655aee & 0xfffd;
+        FUN_0048a374();
+      }
+if (true) {
+        DAT_00655aee = DAT_00655aee & 0xfffc;
+        uVar3 = FUN_0048a004();
+        local_c = local_c | uVar3;
+      }
+      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      if (iVar2 === -1) {
+        DAT_00655aee = DAT_00655aee & 0xfffd;
+      }
+      if (DAT_00628044 === 0) {
+        return;
+      }
+      if ((DAT_00655aee & 2) !== 0) {
+        local_c = 0;
+      }
+      if (DAT_00628054 !== 0) {
+        FUN_0041033a();
+      }
+      DAT_0062804c = 0;
+  // (outer block close)
+    if (((DAT_00628044 === 0) || (DAT_0064b9bc === 0)) ||
+       ((1 << (u8(DAT_006d1da0) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)) {
+      if ((DAT_006aa75c === 0) && 0
+         // DEVIATION: MFC — (iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8),
+          // DEVIATION(cont): (char)(&DAT_0064f348)[iVar2 * 0x58] != DAT_006d1da0)) {
+        ); // DEVIATION(cont): thunk_citywin_994F(
+      }
+      FUN_00421bd0();
+      DAT_0064b9bc = 0;
+      if (DAT_00655b02 !== 0) {
+        for (local_14 = 0; local_14 < DAT_00655b16; local_14 = local_14 + 1) {
+          if ((s32(DAT_0065610a, local_14 * 0x20) !== 0) &&
+             (DAT_006560f7[local_14 * 0x20] === DAT_00655b05)) {
+            FUN_005b6787(local_14);
+          }
+        }
+      }
+      return;
+  // (outer block close)
+  // (outer block close)
 }
 
 function LAB_0048bf12_helper() {

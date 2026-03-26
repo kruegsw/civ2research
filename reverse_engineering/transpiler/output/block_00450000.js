@@ -3160,7 +3160,7 @@ export function FUN_00455ebe(in_ECX, param_1) {
   
   iVar1 = FUN_0059a791(0,3);
   if ((s32(in_ECX, 0x1c8c) === 0) &&
-     (w32(in_ECX, 0x19f4, s32(in_ECX, 0x19f4) + -1, param_1 !== -1)) {
+     (w32r(in_ECX, 0x19f4, s32(in_ECX, 0x19f4) + -1), param_1 !== -1)) {
     w32(in_ECX, 0x14ec + param_1 * 4, iVar1 * 0x3c + in_ECX + 0x18ac);
   }
   return);
@@ -3181,7 +3181,7 @@ export function FUN_00455f2e(in_ECX, param_1) {
   
   iVar1 = FUN_0059a791(0,3);
   if ((s32(in_ECX, 0x1c8c) === 0) &&
-     (w32(in_ECX, 0x19f4, s32(in_ECX, 0x19f4) + -1, param_1 !== -1)) {
+     (w32r(in_ECX, 0x19f4, s32(in_ECX, 0x19f4) + -1), param_1 !== -1)) {
     w32(in_ECX, 0x14ec + param_1 * 4, iVar1 * 0x3c + in_ECX + 0x16cc);
   }
   return);

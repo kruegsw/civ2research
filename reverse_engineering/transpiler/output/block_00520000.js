@@ -3113,8 +3113,8 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040f880(0 /* ADDR:LAB_00401f55 */ + ((param_2 === 0) - 1 & 0xfffff637));
     if ((DAT_0067a994 !== 9) && 0
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
-         { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
-       // DEVIATION(cont): thunk_FUN_00453c40();
+         // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0')))))) {
+      ); // DEVIATION(cont): thunk_FUN_00453c40(
     }
     SetRect(local_17c[0],local_17c[0].right,local_164,local_17c[0].right + local_168 + DAT_0062d858 * -3,
             local_164 + local_160);
@@ -3139,8 +3139,8 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040f880(0 /* ADDR:LAB_004033d7 */ + ((param_2 === 0) - 1 & 0xfffff5a1));
     if ((DAT_0067a994 !== 9) && 0
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
-         { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
-       // DEVIATION(cont): thunk_FUN_00453c40();
+         // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0')))))) {
+      ); // DEVIATION(cont): thunk_FUN_00453c40(
     }
     local_24[0].top = local_17c[0].bottom;
     local_24[0].bottom = s32(in_ECX, 0x1e0) + DAT_0062d85c * -2;

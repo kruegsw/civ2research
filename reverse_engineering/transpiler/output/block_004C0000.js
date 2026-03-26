@@ -5108,7 +5108,7 @@ export function FUN_004cfff0(param_1) {
   if (sVar1 !== 0) {
     for (local_8 = param_1 + (sVar1 - 1);
         (param_1 <= local_8 &&
-        (((s32(local_8, 0) === 32 || (s32(local_8, 0) === 9)) && (w32(local_8, 0, 0, local_8 !== param_1))));
+        (((s32(local_8, 0) === 32 || (s32(local_8, 0) === 9)) && (w32r(local_8, 0, 0), local_8 !== param_1))));
         local_8 = local_8 + -1) {
     }
   }

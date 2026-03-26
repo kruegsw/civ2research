@@ -6197,7 +6197,7 @@ export function FUN_005bcf5a(param_1, param_2, param_3) {
 
 
   if (((param_1 !== 0) && (param_2 !== 0x0)) &&
-     (w32(param_1, 0x1c, param_2, param_3 !== 0)) {
+     (w32r(param_1, 0x1c, param_2), param_3 !== 0)) {
     SetCursor(param_2));
   }
   return;

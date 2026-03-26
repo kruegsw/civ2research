@@ -5682,15 +5682,15 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
                )) && (local_14 < 8)) && 0
              // DEVIATION: C pointer — ((iVar5 = FUN_005b8931(uVar6,iVar4), (DAT_00655b0b & *(byte *)(iVar5 + 4)) === 0
                // DEVIATION(cont): && (bVar2 = thunk_FUN_005b89bb(uVar6,iVar4), (&DAT_00627cce)[(uint)bVar2 * 0x18] == -2
-                  { // DEVIATION(cont): ))))
-             // DEVIATION(cont): thunk_FUN_005b94fc(uVar6,iVar4,4,1,1);
+                  // DEVIATION(cont): )))) {
+            ); // DEVIATION(cont): thunk_FUN_005b94fc(uVar6,iVar4,4,1,1
           }
         }
         FUN_005b9f1c();
         if ((0x28 < DAT_00655af8) && 0
            // DEVIATION: C pointer — (iVar4 = FUN_005b8931(param_1,param_2), (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0)
-            { // DEVIATION(cont): )
-           // DEVIATION(cont): uVar3 = thunk_FUN_005adfa0((DAT_00655af8 + -0x14) / 0x14,2,10);
+            // DEVIATION(cont): ) {
+          ); // DEVIATION(cont): uVar3 = thunk_FUN_005adfa0((DAT_00655af8 + -0x14) / 0x14,2,10
           DAT_0064f349[local_28 * 0x58] = uVar3;
           FUN_0043d289(local_28,4,1);
           FUN_0043d289(local_28,5,1);

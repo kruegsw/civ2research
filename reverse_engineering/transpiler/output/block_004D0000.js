@@ -4415,13 +4415,13 @@ export function FUN_004d6a30(param_1, param_2) {
       }
     }
     if (((s32(local_c, 0x1dac) !== 0) &&
-        (w32(local_c, 0x1dac, 0, s32(local_c, 0xae0) === 1)) &&
+        (w32r(local_c, 0x1dac, 0), s32(local_c, 0xae0) === 1)) &&
        (s32(local_c, 0x630) === 0)) {
       uVar2 = FUN_005d1f50(0 /* ADDR:LAB_00403a53 */,500,0xffffffff));
       w32(local_c, 0x630, uVar2);
     }
     if (((s32(local_c, 0x1db0) !== 0) &&
-        (w32(local_c, 0x1db0, 0, s32(local_c, 0xae0) === 1)) &&
+        (w32r(local_c, 0x1db0, 0), s32(local_c, 0xae0) === 1)) &&
        (s32(local_c, 0x630) === 0)) {
       uVar2 = FUN_005d1f50(0 /* ADDR:LAB_00403a53 */,500,0xffffffff));
       w32(local_c, 0x630, uVar2);
