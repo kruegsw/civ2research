@@ -3,11 +3,44 @@
 Source: `reverse_engineering/decompiled/block_XXXXXXXX.c` (Ghidra output)
 Output: `reverse_engineering/transpiler/output/block_XXXXXXXX.js`
 
-## Core Principle
+---
 
-Every C line produces exactly one JS line at the same line number.
+## Principles
+
+**1. The transpiler is the only thing that writes JS output.**
+No human, no agent, no Claude instance ever hand-edits `transpiler/output/`.
+If the output is wrong, fix the rule in `transpile.cjs` and re-run.
+
+**2. Re-run and diff is the only definition of "done."**
+No claiming "fully audited" or "verified." Run the transpiler, diff against
+previous output. Zero diff = nothing changed. Non-zero diff = review the
+changed lines. The diff IS the audit.
+
+**3. One rule, one place.**
+Every conversion rule lives in `transpile.cjs`. If a pattern is handled
+wrong, the fix is exactly one code change in the transpiler. Never patch
+the output.
+
+**4. When a rule is missing or wrong: flag it.**
+If the transpiler encounters a C pattern it doesn't recognize, it emits:
+`/* UNKNOWN_RULE: <original C expression> */`
+The original C is preserved in the comment. `grep -r UNKNOWN_RULE output/`
+shows all unhandled patterns. Design the rule, add to RULES.md, implement
+in `transpile.cjs`, re-run. UNKNOWN_RULE count hitting zero = transpilation
+complete.
+
+**5. Test on known block first.**
+Every rule change gets tested on block_004E0000 (city yields, well-understood)
+before running on all 34 blocks.
+
+**6. The C source is read-only.**
+`reverse_engineering/decompiled/` is never modified.
+
+**7. Every C line produces exactly one JS line at the same line number.**
 Helper functions (goto, etc.) are appended at the end of the file.
 Verification is a side-by-side diff.
+
+---
 
 ---
 
@@ -114,19 +147,44 @@ C:   (&DAT_0064c6be)[param_1 * 0x594] = val;
 JS:  DAT_0064c6be[param_1 * 0x594] = val;
 ```
 
+### Byte write with cast on lvalue
+```
+C:   (char)(&DAT_XXX)[offset] = val;
+JS:  DAT_XXX[offset] = val;
+```
+Cast on the target is dropped — writing to a byte array truncates automatically.
+
 ### Equality operators
 ```
 C:   ==    !=
 JS:  ===   !==
 ```
 
-### Type casts (drop most)
+### Standard control flow
+`if`, `else`, `for`, `while`, `do { } while`, `switch`, `case`, `default`,
+`break`, `continue` — all pass through unchanged. Only conversion within
+these is `==` → `===` and `!=` → `!==`.
+
+### Type casts
 ```
-C:   (int)expr          →  expr            (no-op in JS)
-C:   (uint)expr         →  (expr) >>> 0    (only when unsigned matters)
+C:   (int)expr          →  expr            (no-op — drop, preserve parens)
+C:   (uint)expr         →  (expr) >>> 0    (see below for when)
+C:   (char)expr         →  s8(expr)        (sign-extend to signed byte)
+C:   (byte)expr         →  u8(expr)        (mask to unsigned byte)
 C:   (short)expr        →  ((expr) << 16 >> 16)   (sign-extend 16-bit)
+C:   (ushort)expr       →  (expr) & 0xFFFF (mask to unsigned 16-bit)
 C:   (bool)expr         →  (expr) ? 1 : 0
 ```
+
+**When `(uint)` needs `>>> 0`:** Only when the value is used in a comparison
+(`>`, `>=`, `<`, `<=`) against another unsigned value. In all other cases
+(bitwise ops, assignment, arithmetic), drop the cast — JS bitwise operators
+already produce 32-bit results.
+
+**Operator precedence after cast removal:** When dropping `(int)` or `(uint)`,
+preserve parentheses around the operand if it's part of a binary expression.
+`(int)a * b` → `(a) * b`. Ghidra output is already heavily parenthesized,
+so this rarely matters in practice.
 
 ### String constants
 ```
@@ -146,12 +204,37 @@ C:   *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 JS:  // DEVIATION: SEH epilog
 ```
 
+### DEVIATION stub bodies
+Functions that are entirely Win32/MFC/framework get empty bodies:
+```js
+export function FUN_XXXXXXXX(param_1, param_2) {
+  // DEVIATION: Win32 API — <brief description from C>
+}
+```
+If the C function returns a value, add `return 0;`.
+
 ### Return
 ```
 C:   return;
 JS:  return;
 ```
 For void functions, can also just close with `}`.
+
+### Composability (inside-out rule)
+When a line contains multiple patterns, resolve from innermost to outermost.
+The output of an inner rule becomes input to the outer rule.
+```
+C:   *(int *)(&DAT_0064c6a2 + (byte)(&DAT_0064c6be)[param_1 * 0x594] * 0x594)
+     1. innermost: (&DAT_0064c6be)[param_1 * 0x594]  →  DAT_0064c6be[param_1 * 0x594]
+     2. cast:      (byte)(...)                         →  u8(...)
+     3. outermost: *(int *)(&DAT + offset)             →  s32(DAT, offset)
+JS:  s32(DAT_0064c6a2, u8(DAT_0064c6be[param_1 * 0x594]) * 0x594)
+```
+
+### Output flags
+Only two flags appear in the output:
+- `// DEVIATION: <reason>` — Win32/MFC/SEH code that has no JS equivalent
+- `/* UNKNOWN_RULE: <original C> */` — pattern the transpiler doesn't recognize
 
 ---
 
@@ -212,7 +295,13 @@ JS:  DAT_0064e854
 A named byte at a fixed address. Same as a DAT_ global.
 
 ### Switch with goto labels (switchD_ / caseD_)
-Handled by the goto helper approach (see below).
+Ghidra generates labels like `switchD_004197af_caseD_4` inside switch statements.
+These follow the same goto helper pattern:
+```
+C:   goto switchD_004197af_caseD_4;
+JS:  switchD_004197af_caseD_4_helper(params); return;
+```
+The switch statement itself passes through as a normal `switch/case`.
 
 ---
 
@@ -319,6 +408,15 @@ JS:  export function FUN_XXX(param_3, param_4) {
      }
 ```
 `*param_N` → `param_N[0]`. `param_N[i]` is unchanged.
+
+### Critical: ALL access uses `[0]` after declaration
+Once a local is declared as `[0]`, every read and write for the rest of the
+function uses `[0]`. No exceptions.
+```
+C:   local_14 = 5;                   JS:  local_14[0] = 5;
+C:   x = local_14 + 1;              JS:  x = local_14[0] + 1;
+C:   if (local_14 < 10)             JS:  if (local_14[0] < 10)
+```
 
 ### Why this works
 - Arrays are pass-by-reference in JS — callee modifications are visible to caller
