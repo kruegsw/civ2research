@@ -7969,7 +7969,7 @@ if (true) {
       FUN_0045f0a3();
       return;
     }
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0045eb0a_helper(bVar2, iVar4, local_18, local_314, local_320, local_328, local_32c, local_330, local_33c, param_1, param_2, uVar6, uVar7, uVar9) {
@@ -8056,11 +8056,11 @@ if (true) {
         }
         FUN_004b0b53(0xff,2,0,0,0);
         FUN_0047cf9e(DAT_006d1da0,1);
-      }
+  // (outer block close)
       // DEVIATION: SEH
       FUN_0045f08d();
       FUN_0045f0a3();
       return;
-    }
-  } while( true );
+  // (outer block close)
+  // (outer block close)
 }

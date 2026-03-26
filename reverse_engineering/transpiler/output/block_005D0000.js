@@ -11482,7 +11482,7 @@ function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4,
       }
       LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
       return LVar6;
-    }
+  // (outer block close)
     if (uVar2 === 0x100) {
       if (((param_3 !== 9) && (param_3 !== 0xd)) && (param_3 !== 0x1b)) {
         LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
@@ -11516,7 +11516,7 @@ function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4,
       LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
       return LVar6;
     }
-  }
+  // (outer block close)
   // (orphan else)
   LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
   return LVar6;

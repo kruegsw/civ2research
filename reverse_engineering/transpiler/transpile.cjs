@@ -931,7 +931,8 @@ function processGotos(lines) {
     helpers.push('function ' + helperName + '(' + varList + ') {');
     // Track structural context — skip/fix lines referencing blocks opened before label
     let helperBraceDepth = 0;
-    let helperLoopDepth = 0;  // for/while/do-while
+    let helperParenDepth = 0;
+    let helperLoopDepth = 0;
     let helperSwitchDepth = 0;
     // Helper body: transform gotos to this same label into recursive calls
     for (const bodyLine of helperBody) {
@@ -941,19 +942,41 @@ function processGotos(lines) {
       if (/^\s*(for|while|do)\b/.test(bt)) helperLoopDepth++;
       if (/^\s*switch\s*\(/.test(bt)) helperSwitchDepth++;
 
-      // Check brace depth
-      let lineDepthChange = 0;
-      for (const ch of bodyLine) { if (ch === '{') lineDepthChange++; if (ch === '}') lineDepthChange--; }
+      // Check brace and paren depth changes (only count CODE, not comments)
+      const codePart = bodyLine.split('//')[0];
+      let braceChange = 0, parenChange = 0;
+      for (const ch of codePart) {
+        if (ch === '{') braceChange++;
+        if (ch === '}') braceChange--;
+        if (ch === '(') parenChange++;
+        if (ch === ')') parenChange--;
+      }
 
-      if (helperBraceDepth + lineDepthChange < 0) {
-        // Excess closing brace — belongs to outer block
+      // Excess closing brace — belongs to outer block
+      if (helperBraceDepth + braceChange < 0) {
         helpers.push('  // (outer block close)');
         helperBraceDepth = 0;
         if (helperLoopDepth > 0) helperLoopDepth--;
         if (helperSwitchDepth > 0) helperSwitchDepth--;
         continue;
       }
-      helperBraceDepth += lineDepthChange;
+
+      // Excess closing paren — belongs to outer expression
+      if (helperParenDepth + parenChange < 0) {
+        // Remove excess closing parens from the line
+        let fixed = bodyLine;
+        let excess = -(helperParenDepth + parenChange);
+        for (let x = 0; x < excess; x++) {
+          fixed = fixed.replace(/\)/, ''); // remove first )
+        }
+        helpers.push(fixed + ' // (excess ) removed)');
+        helperBraceDepth += braceChange;
+        helperParenDepth = 0;
+        continue;
+      }
+
+      helperBraceDepth += braceChange;
+      helperParenDepth += parenChange;
 
       // Orphan else — convert to if(true) to preserve block structure
       if (/^\s*\}\s*else\b/.test(bt) || /^\s*else\b/.test(bt)) {

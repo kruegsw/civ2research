@@ -15672,7 +15672,7 @@ function LAB_005f9fab_helper(local_8, local_c, uVar1) {
       LAB_005f9fab_helper(local_8, local_c, uVar1); return;
     }
     local_8 = local_8 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_005fa099_helper(iVar4, local_8) {
@@ -16076,8 +16076,8 @@ if (true) {
           write_multi_char(0x20,local_280,param_1,local_230[0]);
         }
       }
-    }
-  } while( true );
+  // (outer block close)
+  // (outer block close)
 }
 
 function LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8) {
@@ -16150,7 +16150,7 @@ if (true) {
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }
-      }
+  // (outer block close)
       local_24 = pwVar2;
       if (local_240 === 0) {
         if ((local_8 & 0x40) !== 0) {
@@ -16197,7 +16197,7 @@ if (true) {
           write_multi_char(0x20,local_280,param_1,local_230[0]);
         }
       }
-    }
+  // (outer block close)
   // (outer block close)
 }
 
@@ -16278,7 +16278,7 @@ if (true) {
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }
-      }
+  // (outer block close)
       local_24 = pwVar2;
       if (local_240 === 0) {
         if ((local_8 & 0x40) !== 0) {
@@ -16325,6 +16325,6 @@ if (true) {
           write_multi_char(0x20,local_280,param_1,local_230[0]);
         }
       }
-    }
+  // (outer block close)
   // (outer block close)
 }

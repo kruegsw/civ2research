@@ -6121,8 +6121,8 @@ if (true) {
           }
         }
         uVar1 = 1;
-      }
-    }
+  // (outer block close)
+  // (outer block close)
   // (outer block close)
   return uVar1;
 }
@@ -6154,12 +6154,12 @@ if (true) {
              // DEVIATION(cont): ((((uint)DAT_00655b0b & 1 << (*(byte *)(piVar1 + 9) & 0x1f)) == 0 &&
               // DEVIATION(cont): ((piVar1[10] == 2 || (piVar1[10] == 4)))))))) {
            // DEVIATION(cont): bVar3 = true;
-        }
+  // (outer block close)
 if (true) {
           bVar3 = false;
         }
         if ((bVar2) && (bVar3)) LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2); return;
-      }
+  // (outer block close)
   // (outer block close)
     piVar1 = piVar1[0x6f];
   // (outer block close)

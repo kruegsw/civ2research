@@ -11976,7 +11976,7 @@ if (true) {
         }
         local_c = param_4;
         gdi_D149(param_4,param_2,param_3,param_4);
-      }
+  // (outer block close)
       return 0;
   // (outer block close)
     if (param_2 === 0x216) {
@@ -12076,7 +12076,7 @@ if (true) {
         switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
       }
     }
-  }
+  // (outer block close)
   return 0;
 }
 
@@ -12196,7 +12196,7 @@ if (true) {
         switchD_005ec033_caseD_4_helper(iVar5, local_10, local_14, local_18, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
       }
     }
-  }
+  // (outer block close)
   return 0;
 }
 
@@ -12435,7 +12435,7 @@ switchD_005ecda6_caseD_6:
     }
     mciSendCommandA(s32(local_10, 8),0x840,s32(local_10, 0x10),
                     local_34);
-  }
+  // (outer block close)
   return 0;
 }
 

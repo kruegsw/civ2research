@@ -4686,7 +4686,7 @@ if (true) {
         }
       }
       return;
-    }
+  // (outer block close)
   // (outer block close)
 }
 

@@ -5867,7 +5867,7 @@ function LAB_004355c2_helper(iVar2, local_10, local_14, local_18, local_1c, loca
             if (0x122 < local_38) break;
           }
         }
-      }
+  // (outer block close)
       if (local_14 === 0) {
         local_38 = local_38 + 0x16;
       }

@@ -4061,7 +4061,7 @@ LAB_005499f7:
     if (local_5c === 0x8000) {
       return;
     }
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0054a7eb_helper(local_21c, local_220, local_224, local_228) {

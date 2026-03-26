@@ -7109,7 +7109,7 @@ function LAB_00482295_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14
       w32(in_ECX, 0x580, s32(in_ECX, 0x580) + -1);
       FUN_00482327(unaff_ESI,unaff_EBX);
       return;
-    }
+  // (outer block close)
     if (((s32(in_ECX, 0x810) === 0) && (s32(in_ECX, 0x800) === 0)) &&
        (0 < s32(in_ECX, 0x804))) {
       w32(in_ECX, 0x810, 1);
@@ -8208,12 +8208,12 @@ if (true) {
             FUN_00468bb9(1);
           }
         }
-      }
+  // (outer block close)
       operator_delete(local_20[0]);
       LAB_0047efdc_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_380, local_3c, local_40, local_48, local_4c, local_50, local_54, local_58, local_5c, local_678, local_67c, local_680, local_684, local_688, local_68c, local_690, local_694, local_698, local_69c, local_6a0, local_6a4, local_6a8, local_6ac, local_6b0, local_6b8, local_6bc, local_6c, local_6c0, local_6c4, local_6c8, local_6cc, local_6d0, local_6d4, local_6d8, local_6dc, local_6e0, local_6fc, local_70, local_714, local_718, local_74, local_740, local_748, local_78, local_7c, local_8, local_80, local_84, local_88, param_1, param_2, uVar5, unaff_EBX, unaff_ESI); return;
-    }
+  // (outer block close)
     FUN_005d22b7(s_Poll__Retrieved_non_Civ_message__0062be5c,local_20[1],local_20[2]);
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0047efdc_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_380, local_3c, local_40, local_48, local_4c, local_50, local_54, local_58, local_5c, local_678, local_67c, local_680, local_684, local_688, local_68c, local_690, local_694, local_698, local_69c, local_6a0, local_6a4, local_6a8, local_6ac, local_6b0, local_6b8, local_6bc, local_6c, local_6c0, local_6c4, local_6c8, local_6cc, local_6d0, local_6d4, local_6d8, local_6dc, local_6e0, local_6fc, local_70, local_714, local_718, local_74, local_740, local_748, local_78, local_7c, local_8, local_80, local_84, local_88, param_1, param_2, uVar5, unaff_EBX, unaff_ESI) {
@@ -9331,7 +9331,7 @@ if (true) {
       }
       operator_delete(local_20[0]);
       LAB_0047efdc_helper(bVar7, cVar3, iVar2, iVar4, iVar6, in_ECX, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_380, local_3c, local_40, local_48, local_4c, local_50, local_54, local_58, local_5c, local_678, local_67c, local_680, local_684, local_688, local_68c, local_690, local_694, local_698, local_69c, local_6a0, local_6a4, local_6a8, local_6ac, local_6b0, local_6b8, local_6bc, local_6c, local_6c0, local_6c4, local_6c8, local_6cc, local_6d0, local_6d4, local_6d8, local_6dc, local_6e0, local_6fc, local_70, local_714, local_718, local_74, local_740, local_748, local_78, local_7c, local_8, local_80, local_84, local_88, param_1, param_2, uVar5, unaff_EBX, unaff_ESI); return;
-    }
+  // (outer block close)
     FUN_005d22b7(s_Poll__Retrieved_non_Civ_message__0062be5c,local_20[1],local_20[2]);
-  } while( true );
+  // (outer block close)
 }
