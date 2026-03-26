@@ -4554,11 +4554,11 @@ export function FUN_004d8b20(param_1) {
 // Size: 54 bytes
 // ============================================================
 
-void FUN_004d8b70(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5)
+export function FUN_004d8b70(param_1, param_2, param_3, param_4, param_5) {
 
-{
-  thunk_FUN_0046ace7(param_1,0,param_2,param_3,param_4,param_5);
+
+
+  FUN_0046ace7(param_1,0,param_2,param_3,param_4,param_5);
   return;
 }
 

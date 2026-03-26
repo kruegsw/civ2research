@@ -155,9 +155,9 @@ export function FUN_004b07d1(param_1) {
    
    Library: Visual Studio 1998 Debug */
 
-void __cdecl _E2(void)
+export function _E2() {
 
-{
+
   _E1();
   return;
 }
@@ -174,9 +174,9 @@ void __cdecl _E2(void)
    
    Library: Visual Studio 1998 Debug */
 
-void __cdecl _E1(void)
+export function _E1() {
 
-{
+
   return;
 }
 
@@ -960,39 +960,39 @@ export function FUN_004b1de3(param_1, param_2) {
 // Size: 275 bytes
 // ============================================================
 
-void parse_save_block(int *param_1,char param_2)
+export function parse_save_block(param_1, param_2) {
 
-{
-  undefined4 uVar1;
-  undefined2 uVar2;
-  int iVar3;
-  int local_8;
+
+  let uVar1;
+  let uVar2;
+  let iVar3;
+  let local_8 = [0];
   
-  if ((param_1 == (int *)0x0) || (*param_1 == 0)) {
+  if ((param_1 === null) || (param_1[0] === 0)) {
     FUN_005dae6b(7,s_phData_____phData_0062d5b0,s_D__Ss_Franklinton_Difference_Eng_0062d588,0x34b);
   }
   uVar2 = DAT_00655af2;
   uVar1 = DAT_00655aea;
-  if (param_2 != '\0') {
+  if (param_2 !== 0) {
     FUN_005dfb61(param_1);
   }
-  local_8 = *param_1;
-  thunk_FUN_005b8416();
-  iVar3 = thunk_FUN_004b2123(&local_8);
-  if (iVar3 != 1) {
+  local_8[0] = param_1[0];
+  FUN_005b8416();
+  iVar3 = FUN_004b2123(local_8[0]);
+  if (iVar3 !== 1) {
     FUN_005dae6b(7,s_blockType____btGame_0062d5ec,s_D__Ss_Franklinton_Difference_Eng_0062d5c4,0x35a)
     ;
   }
-  iVar3 = thunk_FUN_004b2123(&local_8);
-  if (iVar3 != 0xc) {
+  iVar3 = FUN_004b2123(local_8[0]);
+  if (iVar3 !== 0xc) {
     FUN_005dae6b(7,s_blockType____btMapStruct_0062d628,s_D__Ss_Franklinton_Difference_Eng_0062d600,
                  0x35d);
   }
   DAT_00655aea = uVar1;
   DAT_00655af2 = uVar2;
-  thunk_FUN_005b7fe0();
-  thunk_FUN_004b21d7();
-  thunk_FUN_004b0905();
+  FUN_005b7fe0();
+  FUN_004b21d7();
+  FUN_004b0905();
   return;
 }
 
@@ -1602,9 +1602,9 @@ export function FUN_004b3cf7() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3d2b();
   FUN_004b3d49();
   return;
@@ -1668,9 +1668,9 @@ export function FUN_004b3d66() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3d9a();
   FUN_004b3db8();
   return;
@@ -1734,9 +1734,9 @@ export function FUN_004b3dd5() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3e09();
   FUN_004b3e27();
   return;
@@ -1857,9 +1857,9 @@ export function FUN_004b3eb5() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3ee9();
   FUN_004b3f07();
   return;
@@ -1923,9 +1923,9 @@ export function FUN_004b3f24() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3f58();
   FUN_004b3f76();
   return;
@@ -1989,9 +1989,9 @@ export function FUN_004b3f93() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_004b3fc7();
   FUN_004b3fe5();
   return;
@@ -4781,21 +4781,21 @@ export function FUN_004bb5e0(in_ECX) {
 // Size: 134 bytes
 // ============================================================
 
-void FUN_004bb620(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6)
+export function FUN_004bb620(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  undefined4 uVar1;
-  int in_ECX;
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
   
-  if (*(int *)(in_ECX + 0x1c) != 0) {
-    thunk_FUN_0040f610();
+  if (s32(in_ECX, 0x1c) !== 0) {
+    FUN_0040f610();
   }
   *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
-  thunk_FUN_0040f730(param_1,4,param_2,param_3);
-  uVar1 = register_wndclass_2740(param_3,in_ECX,param_5,param_6,*(undefined4 *)(in_ECX + 0x40));
-  *(undefined4 *)(in_ECX + 0x1c) = uVar1;
-  send_msg_2D7F(*(undefined4 *)(in_ECX + 0x1c),param_4);
+  FUN_0040f730(param_1,4,param_2,param_3);
+  uVar1 = register_wndclass_2740(param_3,in_ECX,param_5,param_6,s32(in_ECX, 0x40));
+  w32(in_ECX, 0x1c, uVar1);
+  send_msg_2D7F(s32(in_ECX, 0x1c),param_4);
   return;
 }
 
@@ -5156,37 +5156,37 @@ export function FUN_004bbb31(unaff_EBP) {
 // Size: 638 bytes
 // ============================================================
 
-void load_civ2_art_004bbb3f(int param_1)
+export function load_civ2_art_004bbb3f(in_ECX, unaff_ESI, param_1) {
 
-{
-  int iVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  int in_ECX;
-  undefined4 unaff_ESI;
-  undefined4 *unaff_FS_OFFSET;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined1 local_134 [20];
-  undefined1 local_120 [72];
-  undefined4 local_d8;
+
+  let iVar1;
+  let uVar2;
+  let uVar3;
+  // in_ECX → promoted to parameter
+  // unaff_ESI → promoted to parameter
+  // DEVIATION: SEH
+  let uVar4;
+  let uVar5;
+  let uVar6;
+  let uVar7;
+  let uVar8;
+  let uVar9;
+  let uVar10;
+  let local_134 [20];
+  let local_120 [72];
+  let local_d8;
   SIZE_T local_d4;
   CString local_d0 [60];
-  undefined1 local_94 [128];
-  undefined4 local_14;
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  int local_8;
+  let local_94 [128];
+  let local_14;
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
   
-  local_8 = 0xffffffff;
-  puStack_c = &LAB_004bbde1;
-  uStack_10 = *unaff_FS_OFFSET;
-  *unaff_FS_OFFSET = &uStack_10;
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
   local_14 = 0x140;
   local_d8 = 0xf0;
   CString::CString(local_d0);
@@ -5194,18 +5194,18 @@ void load_civ2_art_004bbb3f(int param_1)
   FUN_005bd630();
   local_8._0_1_ = 1;
   local_d4 = GlobalCompact(0x100000);
-  thunk_FUN_004aef20(local_94);
-  thunk_FUN_0043c840(local_94,s_civ2_wonder_dll_0062da84);
-  iVar1 = thunk_FUN_00564713(local_94);
-  if (iVar1 == 0) {
+  FUN_004aef20(local_94);
+  FUN_0043c840(local_94,s_civ2_wonder_dll_0062da84);
+  iVar1 = FUN_00564713(local_94);
+  if (iVar1 === 0) {
     FUN_005bd65c(0x40,0x20);
     FUN_005c041f(0x21);
   }
   else {
-    thunk_FUN_0043c3f0(local_94);
+    FUN_0043c3f0(local_94);
     local_8 = CONCAT31(local_8._1_3_,2);
     iVar1 = FUN_005bf5e1(param_1 + 20000,10,0xec,in_ECX + 0xd4c);
-    if (iVar1 == 0) {
+    if (iVar1 === 0) {
       MessageBoxA((HWND)0x0,s_Failed_to_load_civ2art_gif_0062da9c,s_NOTICE_0062da94,0x40);
     }
     else {
@@ -5213,13 +5213,13 @@ void load_civ2_art_004bbb3f(int param_1)
       FUN_005bd65c(0x40,0x20);
       FUN_005cef31(local_134,in_ECX + 0xd04,0,0);
       FUN_005cdf50();
-      thunk_FUN_004083f0();
+      FUN_004083f0();
     }
-    thunk_FUN_00450340();
+    FUN_00450340();
     local_8._0_1_ = 1;
     FUN_004bbdbd();
   }
-  *(int *)(in_ECX + 0xd00) = param_1;
+  w32(in_ECX, 0xd00, param_1);
   uVar9 = 0;
   uVar8 = 0;
   uVar7 = 0;
@@ -5228,20 +5228,20 @@ void load_civ2_art_004bbb3f(int param_1)
   uVar4 = 0xc;
   uVar3 = local_14;
   uVar10 = local_d8;
-  uVar2 = thunk_FUN_00428b0c((&DAT_0064c5c0)[*(int *)(in_ECX + 0xd00) * 2],0xc,0,0,local_14,local_d8
+  uVar2 = FUN_00428b0c(DAT_0064c5c0[s32(in_ECX, 0xd00) * 2],0xc,0,0,local_14,local_d8
                              ,0,0,0);
-  thunk_FUN_005534bc(uVar2,uVar4,uVar5,uVar6,uVar3,uVar10,uVar7,uVar8,uVar9);
-  thunk_FUN_00450390(in_ECX + 0xd4c);
+  FUN_005534bc(uVar2,uVar4,uVar5,uVar6,uVar3,uVar10,uVar7,uVar8,uVar9);
+  FUN_00450390(in_ECX + 0xd4c);
   uVar10 = 0;
-  uVar3 = thunk_FUN_00497c90(0);
+  uVar3 = FUN_00497c90(0);
   FUN_005c0333(uVar3,uVar10);
-  thunk_FUN_004bc0d3();
+  FUN_004bc0d3();
   FUN_005bb574();
-  thunk_FUN_00450400();
-  thunk_FUN_00408130(&LAB_004025bd);
-  local_8 = (uint)local_8._1_3_ << 8;
+  FUN_00450400();
+  FUN_00408130(&LAB_004025bd);
+  local_8 = ((local_8) >>> 0)._1_3_ << 8;
   FUN_004bbdc9();
-  local_8 = 0xffffffff;
+  // DEVIATION: SEH
   FUN_004bbdd5();
   FUN_004bbdeb(unaff_ESI);
   return;

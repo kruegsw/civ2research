@@ -17,9 +17,9 @@ import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00406a9a();
   FUN_00406ab4();
   return;
@@ -858,8 +858,8 @@ int __thiscall COleControlSite::SetDlgCtrlID(COleControlSite *this,int param_1)
 {
   int iVar1;
   
-  iVar1 = *(int *)(this + 0x28);
-  *(int *)(this + 0x28) = param_1;
+  iVar1 = s32(this, 0x28);
+  s32(this, 0x28) = param_1;
   return iVar1;
 }
 
@@ -885,8 +885,8 @@ undefined4 tie(undefined4 param_1)
   undefined4 uVar1;
   int in_ECX;
   
-  uVar1 = *(undefined4 *)(in_ECX + 0x2c);
-  *(undefined4 *)(in_ECX + 0x2c) = param_1;
+  uVar1 = s32(in_ECX, 0x2c);
+  s32(in_ECX, 0x2c) = param_1;
   return uVar1;
 }
 
@@ -1126,7 +1126,7 @@ export function FUN_00408580(in_ECX, param_1) {
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x110) = param_1;
+  s32(this, 0x110) = param_1;
   return;
 }
 
@@ -1238,11 +1238,11 @@ export function FUN_00408750(param_1) {
 // Size: 50 bytes
 // ============================================================
 
-void FUN_00408780(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5)
+export function FUN_00408780(param_1, param_2, param_3, param_4, param_5) {
 
-{
-  thunk_FUN_005a9abf(DAT_00635c64,param_1,param_2,param_3,param_4,param_5);
+
+
+  FUN_005a9abf(DAT_00635c64,param_1,param_2,param_3,param_4,param_5);
   return;
 }
 
@@ -4023,7 +4023,7 @@ export function FUN_0040f2c6(unaff_EBP) {
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0xa4) = param_1;
+  s32(this, 0xa4) = param_1;
   return;
 }
 
@@ -4424,25 +4424,25 @@ export function FUN_0040f99d(unaff_EBP) {
 // Size: 167 bytes
 // ============================================================
 
-void FUN_0040f9d0(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5)
+export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
-{
-  undefined4 uVar1;
-  int in_ECX;
-  undefined1 local_14 [16];
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
+  let local_14 [16];
   
   *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
-  measure_text_BF40(param_5,param_3,param_4,local_14,*(undefined4 *)(in_ECX + 0x38));
-  if (*(int *)(in_ECX + 0x1c) != 0) {
-    thunk_FUN_0040f610();
+  measure_text_BF40(param_5,param_3,param_4,local_14,s32(in_ECX, 0x38));
+  if (s32(in_ECX, 0x1c) !== 0) {
+    FUN_0040f610();
   }
-  thunk_FUN_0040f730(param_1,2,param_2,local_14);
-  *(undefined4 *)(in_ECX + 0x2c) = 0;
-  *(undefined4 *)(in_ECX + 0x34) = 1;
-  *(undefined4 *)(in_ECX + 0x30) = 0;
+  FUN_0040f730(param_1,2,param_2,local_14);
+  w32(in_ECX, 0x2c, 0);
+  w32(in_ECX, 0x34, 1);
+  w32(in_ECX, 0x30, 0);
   uVar1 = create_window_C0F0(local_14,in_ECX,param_5,1);
-  *(undefined4 *)(in_ECX + 0x1c) = uVar1;
+  w32(in_ECX, 0x1c, uVar1);
   return;
 }
 

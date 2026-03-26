@@ -2857,9 +2857,9 @@ export function FUN_0059a791(param_1, param_2) {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0059a86a();
   FUN_0059a884();
   return;
@@ -4041,9 +4041,9 @@ export function FUN_0059d1e7() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_0059d21b();
   FUN_0059d239();
   return;
@@ -4107,9 +4107,9 @@ export function FUN_0059d256() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_0059d28a();
   FUN_0059d2a8();
   return;
@@ -4173,9 +4173,9 @@ export function FUN_0059d2c5() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_0059d2f9();
   FUN_0059d317();
   return;
@@ -4360,11 +4360,11 @@ export function FUN_0059d401() {
 // Size: 88 bytes
 // ============================================================
 
-void FUN_0059d487(undefined1 param_1,undefined1 param_2,undefined1 param_3,undefined1 param_4,
-                 undefined1 param_5,undefined1 param_6,undefined1 param_7,undefined1 param_8,
-                 undefined1 param_9)
+export function FUN_0059d487(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
 
-{
+
+
+
   DAT_006359fc = param_1;
   DAT_006359f8 = param_2;
   DAT_006359f4 = param_3;
@@ -4384,10 +4384,10 @@ void FUN_0059d487(undefined1 param_1,undefined1 param_2,undefined1 param_3,undef
 // Size: 72 bytes
 // ============================================================
 
-void FUN_0059d4df(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7)
+export function FUN_0059d4df(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
+
+
   DAT_00635a18 = param_1;
   DAT_00635a1c = param_2;
   DAT_00635a20 = param_3;
@@ -5018,7 +5018,7 @@ export function FUN_0059e472(in_ECX, param_1) {
 void __thiscall CArchive::SetObjectSchema(CArchive *this,uint param_1)
 
 {
-  *(uint *)(this + 0xc) = param_1;
+  u32(this, 0xc) = param_1;
   return;
 }
 
@@ -5137,7 +5137,7 @@ export function FUN_0059e5c9(in_ECX, param_1, param_2, param_3) {
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 200) = param_1;
+  s32(this, 200) = param_1;
   return;
 }
 
@@ -5233,7 +5233,7 @@ export function FUN_0059e6ff(in_ECX, param_1) {
 void __thiscall ios::delbuf(ios *this,int param_1)
 
 {
-  *(int *)(this + 0x1c) = param_1;
+  s32(this, 0x1c) = param_1;
   return;
 }
 
@@ -5536,7 +5536,7 @@ export function FUN_0059eb42(param_1) {
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0xd8) = param_1;
+  s32(this, 0xd8) = param_1;
   return;
 }
 
@@ -5555,7 +5555,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x23c) = param_1;
+  s32(this, 0x23c) = param_1;
   return;
 }
 
@@ -5574,7 +5574,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x240) = param_1;
+  s32(this, 0x240) = param_1;
   return;
 }
 
@@ -5593,7 +5593,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x244) = param_1;
+  s32(this, 0x244) = param_1;
   return;
 }
 
@@ -5612,7 +5612,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x248) = param_1;
+  s32(this, 0x248) = param_1;
   return;
 }
 
@@ -5631,7 +5631,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x24c) = param_1;
+  s32(this, 0x24c) = param_1;
   return;
 }
 
@@ -5650,7 +5650,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x250) = param_1;
+  s32(this, 0x250) = param_1;
   return;
 }
 
@@ -5669,7 +5669,7 @@ void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param
 void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
 
 {
-  *(int *)(this + 0x130) = param_1;
+  s32(this, 0x130) = param_1;
   return;
 }
 

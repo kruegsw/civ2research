@@ -2393,41 +2393,41 @@ export function FUN_0058878e(param_1) {
 // Size: 239 bytes
 // ============================================================
 
-void FUN_00588e47(undefined4 param_1,byte param_2,int param_3,int param_4,int param_5,
-                 undefined4 param_6)
+export function FUN_00588e47(param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  int iVar1;
-  undefined4 local_20;
-  int local_18;
-  int local_10;
-  int local_c;
+
+
+  let iVar1;
+  let local_20;
+  let local_18;
+  let local_10;
+  let local_c;
   
   local_c = FUN_005c62ee();
-  if (local_c == 0) {
+  if (local_c === 0) {
     local_c = 0;
   }
   else {
     local_c = local_c + -0x48;
   }
-  if (*(int *)(local_c + 0x154) == 0) {
+  if (s32(local_c, 0x154) === 0) {
     local_20 = 0xfffffffc;
   }
   else {
     local_20 = 0xfffffffe;
   }
   local_18 = param_3;
-  if (*(int *)(local_c + 0x154) == 0) {
+  if (s32(local_c, 0x154) === 0) {
     local_10 = 0x18;
   }
   else {
     local_10 = 0x24;
   }
-  if ((param_2 & 1) != 0) {
+  if ((param_2 & 1) !== 0) {
     local_18 = param_3 + local_10 + 2;
   }
-  iVar1 = thunk_FUN_00472cf0(0x30,local_20);
-  thunk_FUN_0056d289(&DAT_0067a7a8,param_1,param_6,local_18,param_4 - (iVar1 - param_5) / 2,local_20
+  iVar1 = FUN_00472cf0(0x30,local_20);
+  FUN_0056d289(&DAT_0067a7a8,param_1,param_6,local_18,param_4 - (iVar1 - param_5) / 2,local_20
                     );
   return;
 }
@@ -2548,9 +2548,9 @@ export function FUN_00588f36(in_ECX, param_1, param_2) {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00589a0a();
   FUN_00589a24();
   return;
@@ -2943,9 +2943,9 @@ export function FUN_0058a0ee(param_1, param_2, param_3, param_4) {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0058a5ca();
   FUN_0058a5e4();
   return;
@@ -3002,14 +3002,14 @@ export function FUN_0058a601() {
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void FUN_0058a61b(int param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,
-                 int param_7,int param_8,int param_9)
+export function FUN_0058a61b(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
 
-{
-  int local_c;
-  uint local_8;
+
+
+  let local_c;
+  let local_8;
   
-  if (param_1 == 0) {
+  if (param_1 === 0) {
     FUN_005f22d0(&DAT_006ace8c,&DAT_00634948);
   }
   else {
@@ -3024,44 +3024,44 @@ void FUN_0058a61b(int param_1,uint param_2,int param_3,int param_4,int param_5,i
   DAT_006ace78 = param_7;
   _DAT_006acf54 = 0;
   _DAT_006ad000 = 0;
-  if ((param_2 & 4) != 0) {
+  if ((param_2 & 4) !== 0) {
     DAT_006ace70 = DAT_00633598;
     DAT_006ace74 = DAT_0063359c;
   }
-  if ((param_2 & 8) == 0) {
+  if ((param_2 & 8) === 0) {
     local_8 = 0x202;
   }
   else {
     local_8 = 0x802;
   }
-  if (DAT_006ace70 != 0) {
+  if (DAT_006ace70 !== 0) {
     local_8 = local_8 | 0x400;
   }
-  if (param_7 != 0) {
+  if (param_7 !== 0) {
     local_8 = local_8 | 0x1000;
   }
-  if ((param_2 & 2) == 0) {
+  if ((param_2 & 2) === 0) {
     param_5 = param_5 + DAT_006ace74 * 2;
     param_6 = param_6 + DAT_006ace70 + DAT_006ace74;
   }
-  if ((param_2 & 1) != 0) {
+  if ((param_2 & 1) !== 0) {
     param_3 = (DAT_006ab198 >> 1) - (param_5 >> 1);
     param_4 = (DAT_006ab19c >> 1) - (param_6 >> 1);
   }
-  if (DAT_006a4f88 == 0) {
+  if (DAT_006a4f88 === 0) {
     local_c = 0;
   }
   else {
     local_c = DAT_006a4f88 + 0x48;
   }
   FUN_005bb4ae(0,local_8,param_3,param_4,param_5,param_6,&DAT_006a8c00,local_c);
-  if (DAT_006ace70 != 0) {
-    thunk_FUN_00497d00(DAT_006ace70);
+  if (DAT_006ace70 !== 0) {
+    FUN_00497d00(DAT_006ace70);
   }
-  if (DAT_006ace78 != 0) {
-    thunk_FUN_004cff70(DAT_006ace78);
+  if (DAT_006ace78 !== 0) {
+    FUN_004cff70(DAT_006ace78);
   }
-  thunk_FUN_00552ed2();
+  FUN_00552ed2();
   return;
 }
 

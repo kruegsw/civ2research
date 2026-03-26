@@ -134,6 +134,9 @@ function transformLine(line, ctx) {
     // ── bRam → DAT_ ──
     out = out.replace(/\bbRam([0-9a-fA-F]{8})/g, 'DAT_$1');
 
+    // ── &local_XX → local_XX (drop &) ──
+    out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
+
     // ── Equality operators ──
     out = out.replace(/([^=!<>])={2}(?!=)/g, '$1===');
     out = out.replace(/!={1}(?!=)/g, '!==');
@@ -178,21 +181,44 @@ function processFunction(headerLines, bodyLines, ctx) {
     result.push(line);
   }
 
-  // Parse function signature
-  const sigLine = bodyLines.find(l => /^\w/.test(l.trim()) && /\(/.test(l) && !/^\/\//.test(l.trim()));
+  // Parse function signature (may span multiple lines)
+  let sigLine = '';
+  let sigStartIdx = -1;
+  let sigEndIdx = -1;
+  for (let i = 0; i < bodyLines.length; i++) {
+    const t = bodyLines[i].trim();
+    if (/^\w/.test(t) && /\(/.test(t) && !/^\/\//.test(t) && !/^\{/.test(t)) {
+      sigStartIdx = i;
+      sigLine = t;
+      // Check if signature continues on next line(s)
+      while (!/\)/.test(sigLine) && i + 1 < bodyLines.length) {
+        i++;
+        sigLine += ' ' + bodyLines[i].trim();
+        sigEndIdx = i;
+      }
+      if (sigEndIdx < 0) sigEndIdx = sigStartIdx;
+      break;
+    }
+  }
   if (!sigLine) {
-    // No signature found, output as-is
-    for (const line of bodyLines) result.push(line);
+    // No signature found — still apply transforms to all body lines
+    for (const line of bodyLines) result.push(transformLine(line, ctx));
     return result;
   }
 
-  const sigMatch = sigLine.match(/^\w[\w\s*]*\s+(FUN_[0-9a-fA-F]+|handle_\w+|show_\w+)\s*\(([^)]*)\)/);
+  // Match any function name from the header comment (more reliable than parsing C signature)
+  const headerText = headerLines.join('\n');
+  const headerNameMatch = headerText.match(/Function:\s+(\S+)\s/);
+
+  const sigMatch = sigLine.match(/^\w[\w\s*]*\s+(\S+)\s*\(([^)]*)\)/);
   if (!sigMatch) {
-    for (const line of bodyLines) result.push(line);
+    // Signature parse failed — still apply transforms to all body lines
+    for (const line of bodyLines) result.push(transformLine(line, ctx));
     return result;
   }
 
-  const funcName = sigMatch[1];
+  // Prefer header name (handles special chars), fall back to sig parse
+  const funcName = headerNameMatch ? headerNameMatch[1].replace(/[^a-zA-Z0-9_]/g, '_') : sigMatch[1];
   const rawParams = sigMatch[2].trim();
 
   // Parse declared params from signature
@@ -248,15 +274,19 @@ function processFunction(headerLines, bodyLines, ctx) {
     const line = bodyLines[i];
     const trimmed = line.trim();
 
-    // Find signature line — replace with JS signature
-    if (!inBody && sigMatch && line.includes(funcName + '(')) {
-      result.push(jsSig);
+    // Find signature line(s) — replace with JS signature
+    if (!inBody && i >= sigStartIdx && i <= sigEndIdx) {
+      if (i === sigStartIdx) {
+        result.push(jsSig);
+      } else {
+        result.push(''); // continuation lines become blank (params already in signature)
+      }
       sigLineIdx = i;
       continue;
     }
 
     // Skip blank line after signature (C has blank between sig and {)
-    if (sigLineIdx >= 0 && i === sigLineIdx + 1 && trimmed === '') {
+    if (sigLineIdx >= 0 && i === sigEndIdx + 1 && trimmed === '') {
       result.push('');
       continue;
     }

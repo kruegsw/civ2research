@@ -1087,42 +1087,42 @@ export function FUN_005b3136(param_1, param_2) {
 // Size: 705 bytes
 // ============================================================
 
-void pick_up_unit_005b319e(int param_1,int param_2)
+export function pick_up_unit_005b319e(param_1, param_2) {
 
-{
-  short sVar1;
-  short sVar2;
-  char cVar3;
-  int iVar4;
-  int iVar5;
+
+  let sVar1;
+  let sVar2;
+  let cVar3;
+  let iVar4;
+  let iVar5;
   
   DAT_006ad8d8 = 1;
-  if ((DAT_00655b02 < 3) || (cVar3 = thunk_FUN_00421f40(), cVar3 != '\0')) {
-    sVar1 = *(short *)(&DAT_00656106 + param_1 * 0x20);
+  if ((DAT_00655b02 < 3) || (cVar3 = FUN_00421f40(), cVar3 !== 0)) {
+    sVar1 = s16(DAT_00656106, param_1 * 0x20);
     if (-1 < sVar1) {
-      *(undefined2 *)(&DAT_00656108 + *(short *)(&DAT_00656106 + param_1 * 0x20) * 0x20) =
-           *(undefined2 *)(&DAT_00656108 + param_1 * 0x20);
+      s16(DAT_00656108, s16(DAT_00656106, param_1 * 0x20) * 0x20) =
+           s16(DAT_00656108, param_1 * 0x20);
     }
-    sVar2 = *(short *)(&DAT_00656108 + param_1 * 0x20);
+    sVar2 = s16(DAT_00656108, param_1 * 0x20);
     if (-1 < sVar2) {
-      *(undefined2 *)(&DAT_00656106 + *(short *)(&DAT_00656108 + param_1 * 0x20) * 0x20) =
-           *(undefined2 *)(&DAT_00656106 + param_1 * 0x20);
+      s16(DAT_00656106, s16(DAT_00656108, param_1 * 0x20) * 0x20) =
+           s16(DAT_00656106, param_1 * 0x20);
     }
-    *(undefined2 *)(&DAT_00656106 + param_1 * 0x20) = 0xffff;
-    *(undefined2 *)(&DAT_00656108 + param_1 * 0x20) = 0xffff;
+    w16(DAT_00656106, param_1 * 0x20, 0xffff);
+    w16(DAT_00656108, param_1 * 0x20, 0xffff);
     if ((-1 >= sVar2 && -1 >= sVar1) &&
-       (iVar4 = thunk_FUN_004087c0((int)*(short *)(&DAT_006560f0 + param_1 * 0x20),
-                                   (int)*(short *)(&DAT_006560f2 + param_1 * 0x20)), iVar4 != 0)) {
-      iVar4 = thunk_FUN_005b8931((int)*(short *)(&DAT_006560f0 + param_1 * 0x20),
-                                 (int)*(short *)(&DAT_006560f2 + param_1 * 0x20));
+       (iVar4 = FUN_004087c0(s16(DAT_006560f0, param_1 * 0x20),
+                                   s16(DAT_006560f2, param_1 * 0x20)), iVar4 !== 0)) {
+      iVar4 = FUN_005b8931(s16(DAT_006560f0, param_1 * 0x20),
+                                 s16(DAT_006560f2, param_1 * 0x20));
       *(byte *)(iVar4 + 1) = *(byte *)(iVar4 + 1) & 0xfe;
     }
-    *(short *)(&DAT_006560f0 + param_1 * 0x20) =
-         ((char)(&DAT_006560f7)[param_1 * 0x20] * 4 + 4) * -0x19;
-    *(short *)(&DAT_006560f2 + param_1 * 0x20) =
-         ((char)(&DAT_006560f7)[param_1 * 0x20] * 4 + 4) * -0x19;
-    if ((2 < DAT_00655b02) && (param_2 != 0)) {
-      thunk_FUN_004b0b53(0xff,2,0,0,0);
+    w16(DAT_006560f0, param_1 * 0x20, 
+         (s8(DAT_006560f7[param_1 * 0x20]) * 4 + 4) * -0x19);
+    w16(DAT_006560f2, param_1 * 0x20, 
+         (s8(DAT_006560f7[param_1 * 0x20]) * 4 + 4) * -0x19);
+    if ((2 < DAT_00655b02) && (param_2 !== 0)) {
+      FUN_004b0b53(0xff,2,0,0,0);
       XD_FlushSendBuffer(5000);
     }
     DAT_006ad8d8 = 0;
@@ -1130,18 +1130,18 @@ void pick_up_unit_005b319e(int param_1,int param_2)
   else {
     DAT_006ad8d8 = 0;
     DAT_006c90e0 = -2;
-    thunk_FUN_0046b14d(0x3f,0,param_1,0,0,0,0,0,0,0);
-    iVar4 = thunk_FUN_00421bb0();
-    while ((DAT_006c90e0 == -2 && (iVar5 = thunk_FUN_00421bb0(), iVar5 - iVar4 < 0xe10))) {
-      thunk_FUN_0047e94e(1,1);
+    FUN_0046b14d(0x3f,0,param_1,0,0,0,0,0,0,0);
+    iVar4 = FUN_00421bb0();
+    while ((DAT_006c90e0 === -2 && (iVar5 = FUN_00421bb0(), iVar5 - iVar4 < 0xe10))) {
+      FUN_0047e94e(1,1);
     }
-    if (DAT_006c90e0 == -2) {
+    if (DAT_006c90e0 === -2) {
       debug_log(s_Pick_Up_Unit__Connection_to_serv_00636198);
-      thunk_FUN_00410030(s_SERVERCONNECTTIME_006361c8,&DAT_0063fc58,0);
+      FUN_00410030(s_SERVERCONNECTTIME_006361c8,&DAT_0063fc58,0);
       DAT_00628044 = 0;
     }
-    while ((DAT_006c8fac != 0 || (DAT_006c8fa0 != 0))) {
-      thunk_FUN_0047e94e(1,0);
+    while ((DAT_006c8fac !== 0 || (DAT_006c8fa0 !== 0))) {
+      FUN_0047e94e(1,0);
     }
   }
   return;
@@ -2790,11 +2790,11 @@ export function FUN_005b6aa0() {
 // Size: 53 bytes
 // ============================================================
 
-void FUN_005b6ab5(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 int param_5,undefined4 param_6)
+export function FUN_005b6ab5(param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  thunk_FUN_0056baff(param_2,param_3,4,param_5 + 2,param_6,DAT_0063605c,0);
+
+
+  FUN_0056baff(param_2,param_3,4,param_5 + 2,param_6,DAT_0063605c,0);
   return;
 }
 
@@ -4075,31 +4075,31 @@ export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
 // Size: 325 bytes
 // ============================================================
 
-void FUN_005b9d81(undefined4 param_1,undefined4 param_2,byte param_3,undefined4 param_4,int param_5,
-                 int param_6)
+export function FUN_005b9d81(param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  byte bVar1;
-  byte *pbVar2;
+
+
+  let bVar1;
+  let pbVar2;
   
-  pbVar2 = (byte *)thunk_FUN_005b898b(param_1,param_2,param_4);
+  pbVar2 = (byte *)FUN_005b898b(param_1,param_2,param_4);
   bVar1 = *pbVar2;
-  if (param_5 == 0) {
+  if (param_5 === 0) {
     *pbVar2 = param_3;
   }
   else {
     *pbVar2 = *pbVar2 | param_3;
   }
-  if (((param_6 != 0) && (*pbVar2 != bVar1)) && (2 < DAT_00655b02)) {
-    if ((DAT_006ad2f7 == '\0') && (DAT_006ad69a != '\0')) {
-      thunk_FUN_005b9fde(7,param_1,param_2,param_3,param_4,param_5);
+  if (((param_6 !== 0) && (*pbVar2 !== bVar1)) && (2 < DAT_00655b02)) {
+    if ((DAT_006ad2f7 === 0) && (DAT_006ad69a !== 0)) {
+      FUN_005b9fde(7,param_1,param_2,param_3,param_4,param_5);
     }
-    else if (DAT_006ad699 != '\0') {
-      if (DAT_006ad2f7 == '\0') {
-        thunk_FUN_0046b14d(0x97,0,param_1,param_2,param_3,param_4,param_5,1,0,0);
+    else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x97,0,param_1,param_2,param_3,param_4,param_5,1,0,0);
       }
       else {
-        thunk_FUN_0046b14d(0x97,0xff,param_1,param_2,param_3,param_4,param_5,0,0,0);
+        FUN_0046b14d(0x97,0xff,param_1,param_2,param_3,param_4,param_5,0,0,0);
       }
     }
   }
@@ -4169,33 +4169,33 @@ export function FUN_005b9f1c() {
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void FUN_005b9fde(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6)
+export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  if (DAT_006ad2f7 != '\0') {
+
+
+  if (DAT_006ad2f7 !== 0) {
     FUN_005dae6b(7,s__gNetMgr_bServer_00636634,s_D__Ss_Franklinton_Map_cpp_00636618,0x3de);
   }
-  if (0x100 - DAT_006365f4 < *(int *)(&DAT_006365f8 + param_1 * 4) + 1) {
-    thunk_FUN_0046b14d(0x59,0,0,0,0,0,0,0,0,0);
+  if (0x100 - DAT_006365f4 < s32(DAT_006365f8, param_1 * 4) + 1) {
+    FUN_0046b14d(0x59,0,0,0,0,0,0,0,0,0);
     XD_FlushSendBuffer(5000);
     _memset(&DAT_006d1190,0,0x400);
     _DAT_006d1190 = 0;
     DAT_006365f4 = 1;
   }
   _DAT_006d1190 = _DAT_006d1190 + 1;
-  *(int *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_1;
+  w32(DAT_006d1190, DAT_006365f4 * 4, param_1);
   DAT_006365f4 = DAT_006365f4 + 1;
   switch(param_1) {
   case 0:
   case 2:
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_2;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_2);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_3;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_3);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_4;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_4);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_5;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_5);
     DAT_006365f4 = DAT_006365f4 + 1;
     break;
   case 1:
@@ -4203,23 +4203,23 @@ void FUN_005b9fde(int param_1,undefined4 param_2,undefined4 param_3,undefined4 p
   case 4:
   case 5:
   case 6:
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_2;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_2);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_3;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_3);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_4;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_4);
     DAT_006365f4 = DAT_006365f4 + 1;
     break;
   case 7:
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_2;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_2);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_3;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_3);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_4;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_4);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_5;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_5);
     DAT_006365f4 = DAT_006365f4 + 1;
-    *(undefined4 *)(&DAT_006d1190 + DAT_006365f4 * 4) = param_6;
+    w32(DAT_006d1190, DAT_006365f4 * 4, param_6);
     DAT_006365f4 = DAT_006365f4 + 1;
   }
   return;
@@ -4495,17 +4495,17 @@ export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) {
 // Size: 115 bytes
 // ============================================================
 
-void FUN_005bb3f0(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7)
+export function FUN_005bb3f0(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
-  undefined4 uVar1;
-  undefined4 in_ECX;
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
   
   FUN_005c5760(param_1,param_2,param_3,param_4,param_5,param_6,param_7);
   FUN_005bd65c(param_5,param_6);
   FUN_005c0cc5(param_7);
-  uVar1 = thunk_FUN_00414d10();
+  uVar1 = FUN_00414d10();
   FUN_005e1880(in_ECX,uVar1);
   return;
 }
@@ -4517,12 +4517,12 @@ void FUN_005bb3f0(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 75 bytes
 // ============================================================
 
-void FUN_005bb463(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8)
+export function FUN_005bb463(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
-{
+
+
   FUN_005bb3f0(param_1,param_2,param_3,param_4,param_5,param_6,param_7);
-  thunk_FUN_00579b40(param_8);
+  FUN_00579b40(param_8);
   return;
 }
 
@@ -4533,17 +4533,17 @@ void FUN_005bb463(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 119 bytes
 // ============================================================
 
-void FUN_005bb4ae(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8)
+export function FUN_005bb4ae(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
-{
-  undefined4 uVar1;
-  undefined4 in_ECX;
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
   
   FUN_005c57f9(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
   FUN_005bd65c(param_5,param_6);
   FUN_005c0cc5(param_7);
-  uVar1 = thunk_FUN_00414d10();
+  uVar1 = FUN_00414d10();
   FUN_005e1880(in_ECX,uVar1);
   return;
 }
@@ -4555,13 +4555,13 @@ void FUN_005bb4ae(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 79 bytes
 // ============================================================
 
-void FUN_005bb525(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8,
-                 undefined4 param_9)
+export function FUN_005bb525(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
 
-{
+
+
+
   FUN_005bb4ae(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
-  thunk_FUN_00579b40(param_9);
+  FUN_00579b40(param_9);
   return;
 }
 
@@ -4686,16 +4686,16 @@ export function FUN_005bb6c7(param_1, param_2) {
 // Size: 99 bytes
 // ============================================================
 
-void FUN_005bb760(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6)
+export function FUN_005bb760(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
-{
-  undefined4 uVar1;
-  undefined4 in_ECX;
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
   
   FUN_005c589a(param_1,param_2,param_3,param_4,param_5,param_6);
   FUN_005c1b0d(param_5,param_6);
-  uVar1 = thunk_FUN_00414d10();
+  uVar1 = FUN_00414d10();
   FUN_005e1880(in_ECX,uVar1);
   return;
 }
@@ -4707,12 +4707,12 @@ void FUN_005bb760(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 71 bytes
 // ============================================================
 
-void FUN_005bb7c3(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7)
+export function FUN_005bb7c3(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
+
+
   FUN_005bb760(param_1,param_2,param_3,param_4,param_5,param_6);
-  thunk_FUN_00579b40(param_7);
+  FUN_00579b40(param_7);
   return;
 }
 
@@ -4723,16 +4723,16 @@ void FUN_005bb7c3(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 103 bytes
 // ============================================================
 
-void FUN_005bb80a(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7)
+export function FUN_005bb80a(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
-  undefined4 uVar1;
-  undefined4 in_ECX;
+
+
+  let uVar1;
+  // in_ECX → promoted to parameter
   
   FUN_005c592b(param_1,param_2,param_3,param_4,param_5,param_6,param_7);
   FUN_005c1b0d(param_5,param_6);
-  uVar1 = thunk_FUN_00414d10();
+  uVar1 = FUN_00414d10();
   FUN_005e1880(in_ECX,uVar1);
   return;
 }
@@ -4744,12 +4744,12 @@ void FUN_005bb80a(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 // Size: 75 bytes
 // ============================================================
 
-void FUN_005bb871(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8)
+export function FUN_005bb871(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
-{
+
+
   FUN_005bb80a(param_1,param_2,param_3,param_4,param_5,param_6,param_7);
-  thunk_FUN_00579b40(param_8);
+  FUN_00579b40(param_8);
   return;
 }
 
@@ -4884,24 +4884,24 @@ export function FUN_005bba1d() {
 // Size: 100 bytes
 // ============================================================
 
-undefined4 gdi_BA4F(void)
+export function gdi_BA4F() {
 
-{
+
   BOOL BVar1;
-  undefined4 uVar2;
-  tagMSG local_20;
+  let uVar2;
+  tagMSG local_20[0];
   
-  BVar1 = PeekMessageA(&local_20,(HWND)0x0,0,0,1);
-  if (BVar1 == 0) {
-    thunk_FUN_00407ff0();
-    if (DAT_00637efc != 0) {
+  BVar1 = PeekMessageA(local_20[0],(HWND)0x0,0,0,1);
+  if (BVar1 === 0) {
+    FUN_00407ff0();
+    if (DAT_00637efc !== 0) {
       FUN_005e1c70();
     }
     uVar2 = 0;
   }
   else {
-    TranslateMessage(&local_20);
-    DispatchMessageA(&local_20);
+    TranslateMessage(local_20[0]);
+    DispatchMessageA(local_20[0]);
     uVar2 = 1;
   }
   return uVar2;
@@ -4914,18 +4914,18 @@ undefined4 gdi_BA4F(void)
 // Size: 77 bytes
 // ============================================================
 
-bool gdi_BAB8(void)
+export function gdi_BAB8() {
 
-{
+
   BOOL BVar1;
-  tagMSG local_20;
+  tagMSG local_20[0];
   
-  BVar1 = PeekMessageA(&local_20,(HWND)0x0,0xf,0xf,1);
-  if (BVar1 != 0) {
-    TranslateMessage(&local_20);
-    DispatchMessageA(&local_20);
+  BVar1 = PeekMessageA(local_20[0],(HWND)0x0,0xf,0xf,1);
+  if (BVar1 !== 0) {
+    TranslateMessage(local_20[0]);
+    DispatchMessageA(local_20[0]);
   }
-  return BVar1 != 0;
+  return BVar1 !== 0;
 }
 
 
@@ -4987,18 +4987,18 @@ export function FUN_005bbb5a(param_1) {
 // Size: 83 bytes
 // ============================================================
 
-bool gdi_BB76(void)
+export function gdi_BB76() {
 
-{
+
   BOOL BVar1;
-  tagMSG local_20;
+  tagMSG local_20[0];
   
-  BVar1 = PeekMessageA(&local_20,(HWND)0x0,0x3bd,0x3bd,1);
-  if (BVar1 != 0) {
-    TranslateMessage(&local_20);
-    DispatchMessageA(&local_20);
+  BVar1 = PeekMessageA(local_20[0],(HWND)0x0,0x3bd,0x3bd,1);
+  if (BVar1 !== 0) {
+    TranslateMessage(local_20[0]);
+    DispatchMessageA(local_20[0]);
   }
-  return BVar1 != 0;
+  return BVar1 !== 0;
 }
 
 
@@ -5059,10 +5059,10 @@ create_window_BC10(LPCSTR param_1,uint param_2,int param_3,int param_4,int param
   local_10 = 0;
   local_14 = GetSystemMetrics(4);
   local_18 = 0x2000000;
-  if ((param_2 & 4) == 0) {
-    if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
-      if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
-        if ((param_2 & 1) != 0) {
+  if ((param_2 & 4) === 0) {
+    if (((param_2 & 2) === 0) || ((param_2 & 0x40) !== 0)) {
+      if (((param_2 & 2) === 0) || ((param_2 & 0x40) === 0)) {
+        if ((param_2 & 1) !== 0) {
           local_18 = 0x2800000;
           local_c = GetSystemMetrics(7);
           local_c = local_c * 2;
@@ -5094,78 +5094,78 @@ create_window_BC10(LPCSTR param_1,uint param_2,int param_3,int param_4,int param
     local_10 = GetSystemMetrics(0x21);
     local_10 = local_10 * 2;
   }
-  if ((param_2 & 8) != 0) {
+  if ((param_2 & 8) !== 0) {
     local_18 = local_18 | 0x20000;
     param_2 = param_2 | 0x40;
   }
-  if ((param_2 & 0x10) != 0) {
+  if ((param_2 & 0x10) !== 0) {
     local_18 = local_18 | 0x10000;
     param_2 = param_2 | 0x40;
   }
-  if ((param_2 & 0x20) != 0) {
+  if ((param_2 & 0x20) !== 0) {
     local_18 = local_18 | 0x80000;
     param_2 = param_2 | 0x40;
   }
-  if ((param_2 & 0x40) == 0) {
+  if ((param_2 & 0x40) === 0) {
     local_14 = 0;
   }
   else {
     local_18 = local_18 | 0xc00000;
   }
-  if ((param_2 & 0x80) != 0) {
+  if ((param_2 & 0x80) !== 0) {
     local_18 = local_18 | 0x200000;
     iVar3 = GetSystemMetrics(2);
     local_c = local_c + iVar3 + -1;
   }
-  if ((param_2 & 0x100) != 0) {
+  if ((param_2 & 0x100) !== 0) {
     local_18 = local_18 | 0x100000;
     iVar3 = GetSystemMetrics(3);
     local_10 = local_10 + iVar3 + -1;
   }
-  if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
+  if (((param_2 & 0x200) !== 0) && (param_7 !== 0)) {
     local_18 = local_18 | 0x44000000;
     local_20 = 4;
   }
-  if ((param_2 & 0x800) != 0) {
+  if ((param_2 & 0x800) !== 0) {
     local_18 = local_18 & 0xbfffffff | 0x80000000;
   }
-  if ((param_2 & 0x400) == 0) {
+  if ((param_2 & 0x400) === 0) {
     puVar2[0xc] = 0;
   }
   else {
     puVar2[0xc] = 1;
   }
-  if ((param_2 & 0x1000) == 0) {
+  if ((param_2 & 0x1000) === 0) {
     puVar2[0xd] = 0;
   }
   else {
     puVar2[0xd] = 1;
   }
-  if (param_7 == 0) {
+  if (param_7 === 0) {
     local_24 = (HWND)0x0;
   }
   else {
     local_24 = *(HWND *)(param_7 + 4);
   }
-  if (param_6 == -1) {
+  if (param_6 === -1) {
     local_28 = -0x80000000;
   }
   else {
     local_28 = local_10 + local_14 + param_6 + -1;
   }
-  if (param_5 == -1) {
+  if (param_5 === -1) {
     local_2c = -0x80000000;
   }
   else {
     local_2c = local_c + param_5;
   }
-  if (param_4 == -1) {
+  if (param_4 === -1) {
     local_30 = -0x80000000;
   }
   else {
     local_30 = param_4;
   }
-  if (param_3 == -1) {
+  if (param_3 === -1) {
     local_34 = -0x80000000;
   }
   else {
@@ -5260,10 +5260,10 @@ export function FUN_005bc032(param_1) {
 // Size: 45 bytes
 // ============================================================
 
-void send_msg_C07E(int param_1)
+export function send_msg_C07E(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     SendMessageA(*(HWND *)(param_1 + 4),0x10,0,0);
   }
   return;
@@ -5276,15 +5276,15 @@ void send_msg_C07E(int param_1)
 // Size: 200 bytes
 // ============================================================
 
-undefined4 manage_window_C0AB(undefined4 *param_1)
+export function manage_window_C0AB(param_1) {
 
-{
-  undefined4 uVar1;
+
+  let uVar1;
   
-  if (param_1 != (undefined4 *)0x0) {
+  if (param_1 !== null) {
     FUN_005bc1db(param_1[1]);
-    if (param_1[0x11] == 0) {
-      if (param_1[1] != 0) {
+    if (param_1[0x11] === 0) {
+      if (param_1[1] !== 0) {
         SetWindowLongA((HWND)param_1[1],4,0);
         ShowWindow((HWND)param_1[1],0);
         SetMenu((HWND)param_1[1],(HMENU)0x0);
@@ -5292,10 +5292,10 @@ undefined4 manage_window_C0AB(undefined4 *param_1)
       }
       param_1[1] = 0;
     }
-    if (param_1[5] != 0) {
+    if (param_1[5] !== 0) {
       DeleteObject((HGDIOBJ)param_1[5]);
     }
-    uVar1 = *param_1;
+    uVar1 = param_1[0];
     FUN_005dce29(uVar1);
     FUN_005dce96(uVar1);
   }
@@ -5370,33 +5370,33 @@ export function FUN_005bc1db(param_1) {
 // Size: 222 bytes
 // ============================================================
 
-void update_palette_C280(int param_1,byte param_2)
+export function update_palette_C280(param_1, param_2) {
 
-{
+
   HBRUSH pHVar1;
-  undefined1 local_14 [4];
+  let local_14 [4];
   LONG local_10;
-  undefined1 local_c [4];
-  undefined1 local_8 [4];
+  let local_c [4];
+  let local_8 [4];
   
-  if (*(int *)(param_1 + 0x14) != 0) {
+  if (s32(param_1, 0x14) !== 0) {
     DeleteObject(*(HGDIOBJ *)(param_1 + 0x14));
   }
-  if (DAT_00638b48 == 0) {
+  if (DAT_00638b48 === 0) {
     local_10 = GetWindowLongA(*(HWND *)(param_1 + 4),0);
-    thunk_FUN_00511320();
-    thunk_FUN_00497c40(param_2,local_c,local_14,local_8);
-    pHVar1 = CreateSolidBrush((uint)CONCAT12(local_8[0],CONCAT11(local_14[0],local_c[0])));
+    FUN_00511320();
+    FUN_00497c40(param_2,local_c,local_14,local_8);
+    pHVar1 = CreateSolidBrush(((CONCAT1) >>> 0)2(local_8[0],CONCAT11(local_14[0],local_c[0])));
     *(HBRUSH *)(param_1 + 0x14) = pHVar1;
   }
   else {
-    if (*(int *)(param_1 + 0x18) != 0) {
+    if (s32(param_1, 0x18) !== 0) {
       RealizePalette(*(HDC *)(param_1 + 8));
     }
     pHVar1 = CreateSolidBrush(param_2 | 0x1000000);
     *(HBRUSH *)(param_1 + 0x14) = pHVar1;
   }
-  InvalidateRect(*(HWND *)(param_1 + 4),(RECT *)0x0,0);
+  InvalidateRect(*(HWND *)(param_1 + 4),null,0);
   return;
 }
 
@@ -5407,17 +5407,17 @@ void update_palette_C280(int param_1,byte param_2)
 // Size: 97 bytes
 // ============================================================
 
-void invalidate_C35E(int param_1,undefined1 param_2,undefined1 param_3,undefined1 param_4)
+export function invalidate_C35E(param_1, param_2, param_3, param_4) {
 
-{
+
   HBRUSH pHVar1;
   
-  if (*(int *)(param_1 + 0x14) != 0) {
+  if (s32(param_1, 0x14) !== 0) {
     DeleteObject(*(HGDIOBJ *)(param_1 + 0x14));
   }
-  pHVar1 = CreateSolidBrush((uint)CONCAT12(param_4,CONCAT11(param_3,param_2)));
+  pHVar1 = CreateSolidBrush(((CONCAT1) >>> 0)2(param_4,CONCAT11(param_3,param_2)));
   *(HBRUSH *)(param_1 + 0x14) = pHVar1;
-  InvalidateRect(*(HWND *)(param_1 + 4),(RECT *)0x0,0);
+  InvalidateRect(*(HWND *)(param_1 + 4),null,0);
   return;
 }
 
@@ -5470,12 +5470,12 @@ export function FUN_005bc3f1(param_1, param_2) {
 // Size: 67 bytes
 // ============================================================
 
-void manage_window_C40A(int param_1)
+export function manage_window_C40A(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     ShowWindow(*(HWND *)(param_1 + 4),5);
-    if ((*(byte *)(param_1 + 0x49) & 2) != 0) {
+    if ((*(byte *)(param_1 + 0x49) & 2) !== 0) {
       BringWindowToTop(*(HWND *)(param_1 + 4));
     }
   }
@@ -5489,10 +5489,10 @@ void manage_window_C40A(int param_1)
 // Size: 41 bytes
 // ============================================================
 
-void manage_window_C44D(int param_1)
+export function manage_window_C44D(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     ShowWindow(*(HWND *)(param_1 + 4),0);
   }
   return;
@@ -5579,10 +5579,10 @@ export function FUN_005bc505(param_1, param_2, param_3) {
 // Size: 41 bytes
 // ============================================================
 
-void manage_window_C5DA(int param_1)
+export function manage_window_C5DA(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     ShowWindow(*(HWND *)(param_1 + 4),3);
   }
   return;
@@ -5616,10 +5616,10 @@ export function FUN_005bc603(param_1) {
 // Size: 41 bytes
 // ============================================================
 
-void manage_window_C636(int param_1)
+export function manage_window_C636(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     ShowWindow(*(HWND *)(param_1 + 4),6);
   }
   return;
@@ -5653,10 +5653,10 @@ export function FUN_005bc65f(param_1) {
 // Size: 41 bytes
 // ============================================================
 
-void manage_window_C692(int param_1)
+export function manage_window_C692(param_1) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     ShowWindow(*(HWND *)(param_1 + 4),9);
   }
   return;
@@ -5685,10 +5685,10 @@ export function FUN_005bc6bb(param_1, param_2) {
 // Size: 45 bytes
 // ============================================================
 
-void invalidate_C6E6(int param_1,RECT *param_2)
+export function invalidate_C6E6(param_1, param_2) {
 
-{
-  if (param_1 != 0) {
+
+  if (param_1 !== 0) {
     InvalidateRect(*(HWND *)(param_1 + 4),param_2,0);
   }
   return;
@@ -5724,60 +5724,60 @@ export function FUN_005bc713(param_1, param_2) {
 // Size: 464 bytes
 // ============================================================
 
-void gdi_C763(int param_1,int param_2,int param_3)
+export function gdi_C763(param_1, param_2, param_3) {
 
-{
+
   HWND hWnd;
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  let iVar1;
+  let iVar2;
+  let iVar3;
   BOOL bRepaint;
-  tagRECT local_34;
-  int local_24;
-  int local_20;
-  tagPOINT local_1c;
-  tagRECT local_14;
+  tagRECT local_34[0];
+  let local_24;
+  let local_20;
+  tagPOINT local_1c[0];
+  tagRECT local_14[0];
   
-  if (param_1 != 0) {
-    GetWindowRect(*(HWND *)(param_1 + 4),&local_34);
+  if (param_1 !== 0) {
+    GetWindowRect(*(HWND *)(param_1 + 4),local_34[0]);
     hWnd = GetParent(*(HWND *)(param_1 + 4));
-    if (hWnd == (HWND)0x0) {
+    if (hWnd === (HWND)0x0) {
       iVar1 = GetSystemMetrics(0);
       iVar2 = GetSystemMetrics(1);
-      iVar3 = thunk_FUN_00407f90(&local_34);
+      iVar3 = FUN_00407f90(local_34[0]);
       local_20 = iVar1 - iVar3 >> 1;
-      iVar1 = thunk_FUN_00407fc0(&local_34);
+      iVar1 = FUN_00407fc0(local_34[0]);
       local_24 = iVar2 - iVar1 >> 1;
     }
-    else if ((*(byte *)(param_1 + 0x49) & 2) == 0) {
-      GetWindowRect(hWnd,&local_14);
-      iVar1 = thunk_FUN_00407f90(&local_14);
-      iVar2 = thunk_FUN_00407fc0(&local_14);
-      iVar3 = thunk_FUN_00407f90(&local_34);
+    else if ((*(byte *)(param_1 + 0x49) & 2) === 0) {
+      GetWindowRect(hWnd,local_14[0]);
+      iVar1 = FUN_00407f90(local_14[0]);
+      iVar2 = FUN_00407fc0(local_14[0]);
+      iVar3 = FUN_00407f90(local_34[0]);
       local_20 = iVar1 - iVar3 >> 1;
-      iVar1 = thunk_FUN_00407fc0(&local_34);
+      iVar1 = FUN_00407fc0(local_34[0]);
       local_24 = iVar2 - iVar1 >> 1;
-      local_1c.x = 0;
-      local_1c.y = 0;
-      MapWindowPoints(hWnd,(HWND)0x0,&local_1c,1);
-      local_20 = local_20 + local_14.left;
-      local_24 = local_24 + local_14.top;
+      local_1c[0].x = 0;
+      local_1c[0].y = 0;
+      MapWindowPoints(hWnd,(HWND)0x0,local_1c[0],1);
+      local_20 = local_20 + local_14[0].left;
+      local_24 = local_24 + local_14[0].top;
     }
     else {
-      GetClientRect(hWnd,&local_14);
-      iVar1 = thunk_FUN_00407f90(&local_14);
-      iVar2 = thunk_FUN_00407fc0(&local_14);
-      iVar3 = thunk_FUN_00407f90(&local_34);
+      GetClientRect(hWnd,local_14[0]);
+      iVar1 = FUN_00407f90(local_14[0]);
+      iVar2 = FUN_00407fc0(local_14[0]);
+      iVar3 = FUN_00407f90(local_34[0]);
       local_20 = iVar1 - iVar3 >> 1;
-      iVar1 = thunk_FUN_00407fc0(&local_34);
+      iVar1 = FUN_00407fc0(local_34[0]);
       local_24 = iVar2 - iVar1 >> 1;
       if (local_24 < 0) {
         local_24 = 0;
       }
     }
     bRepaint = 1;
-    iVar1 = thunk_FUN_00407fc0(&local_34);
-    iVar2 = thunk_FUN_00407f90(&local_34);
+    iVar1 = FUN_00407fc0(local_34[0]);
+    iVar2 = FUN_00407f90(local_34[0]);
     MoveWindow(*(HWND *)(param_1 + 4),local_20 + param_2,local_24 + param_3,iVar2,iVar1,bRepaint);
   }
   return;
@@ -6003,12 +6003,12 @@ export function FUN_005bcb85(param_1, param_2) {
 // Size: 124 bytes
 // ============================================================
 
-void update_palette_CC11(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
-                 int param_7,int param_8)
+export function update_palette_CC11(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
-{
-  if ((param_1 != 0) && (param_6 != 0)) {
-    if ((*(int *)(param_6 + 0x18) != 0) && (DAT_00638b48 == 1)) {
+
+
+  if ((param_1 !== 0) && (param_6 !== 0)) {
+    if ((s32(param_6, 0x18) !== 0) && (DAT_00638b48 === 1)) {
       RealizePalette(*(HDC *)(param_6 + 8));
     }
     BitBlt(*(HDC *)(param_6 + 8),param_7,param_8,param_4,param_5,*(HDC *)(param_1 + 4),param_2,
@@ -6024,11 +6024,11 @@ void update_palette_CC11(int param_1,int param_2,int param_3,int param_4,int par
 // Size: 85 bytes
 // ============================================================
 
-void blit_CC8D(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
-                 int param_7,int param_8)
+export function blit_CC8D(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
-{
-  if ((param_1 != 0) && (param_6 != 0)) {
+
+
+  if ((param_1 !== 0) && (param_6 !== 0)) {
     BitBlt(*(HDC *)(param_6 + 4),param_7,param_8,param_4,param_5,*(HDC *)(param_1 + 4),param_2,
            param_3,0xcc0020);
   }
@@ -6042,12 +6042,12 @@ void blit_CC8D(int param_1,int param_2,int param_3,int param_4,int param_5,int p
 // Size: 132 bytes
 // ============================================================
 
-void update_palette_CCE2(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
-                 int param_7,int param_8,int param_9,int param_10)
+export function update_palette_CCE2(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
 
-{
-  if ((param_1 != 0) && (param_6 != 0)) {
-    if ((*(int *)(param_6 + 0x18) != 0) && (DAT_00638b48 == 1)) {
+
+
+  if ((param_1 !== 0) && (param_6 !== 0)) {
+    if ((s32(param_6, 0x18) !== 0) && (DAT_00638b48 === 1)) {
       RealizePalette(*(HDC *)(param_6 + 8));
     }
     StretchBlt(*(HDC *)(param_6 + 8),param_7,param_8,param_9,param_10,*(HDC *)(param_1 + 4),param_2,
@@ -6063,11 +6063,11 @@ void update_palette_CCE2(int param_1,int param_2,int param_3,int param_4,int par
 // Size: 93 bytes
 // ============================================================
 
-void stretch_blit_CD66(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
-                 int param_7,int param_8,int param_9,int param_10)
+export function stretch_blit_CD66(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
 
-{
-  if ((param_1 != 0) && (param_6 != 0)) {
+
+
+  if ((param_1 !== 0) && (param_6 !== 0)) {
     StretchBlt(*(HDC *)(param_6 + 4),param_7,param_8,param_9,param_10,*(HDC *)(param_1 + 4),param_2,
                param_3,param_4,param_5,0xcc0020);
   }
@@ -6122,21 +6122,21 @@ export function FUN_005bcdfc(param_1, param_2) {
 // Size: 143 bytes
 // ============================================================
 
-void invalidate_CE5F(int param_1,uint param_2)
+export function invalidate_CE5F(param_1, param_2) {
 
-{
+
   HICON pHVar1;
   BOOL BVar2;
   
-  if (param_1 != 0) {
-    if (*(int *)(param_1 + 0x20) != 0) {
+  if (param_1 !== 0) {
+    if (s32(param_1, 0x20) !== 0) {
       DestroyIcon(*(HICON *)(param_1 + 0x20));
     }
     pHVar1 = LoadIconA(DAT_006e4ff0,(LPCSTR)(param_2 & 0xffff));
     *(HICON *)(param_1 + 0x20) = pHVar1;
     BVar2 = IsWindow(*(HWND *)(param_1 + 4));
-    if ((BVar2 != 0) && (BVar2 = IsIconic(*(HWND *)(param_1 + 4)), BVar2 != 0)) {
-      InvalidateRect(*(HWND *)(param_1 + 4),(RECT *)0x0,0);
+    if ((BVar2 !== 0) && (BVar2 = IsIconic(*(HWND *)(param_1 + 4)), BVar2 !== 0)) {
+      InvalidateRect(*(HWND *)(param_1 + 4),null,0);
     }
   }
   return;
@@ -6472,36 +6472,36 @@ export function FUN_005bd298(param_1, param_2, param_3, param_4) {
 // Size: 241 bytes
 // ============================================================
 
-int gdi_D39E(int param_1)
+export function gdi_D39E(param_1) {
 
-{
+
   SHORT SVar1;
   BOOL BVar2;
-  tagMSG local_24;
-  char local_8;
+  tagMSG local_24[0];
+  let local_8;
   
-  local_8 = '\0';
-  if (param_1 == 0x200) {
+  local_8 = 0;
+  if (param_1 === 0x200) {
     SVar1 = GetKeyState(0x11);
-    local_8 = ((int)SVar1 & 0x8000U) != 0;
+    local_8 = (SVar1 & 0x8000) !== 0;
   }
-  else if (param_1 == 0x100) {
+  else if (param_1 === 0x100) {
     SVar1 = GetKeyState(0x10);
-    local_8 = ((int)SVar1 & 0x8000U) != 0;
+    local_8 = (SVar1 & 0x8000) !== 0;
   }
-  else if (param_1 == 0x400) {
-    while (BVar2 = PeekMessageA(&local_24,(HWND)0x0,0,0,1), BVar2 != 0) {
-      if (((local_24.message == 0x106) || (local_24.message == 0x104)) ||
-         (local_24.message == 0x105)) {
-        local_8 = '\x01';
+  else if (param_1 === 0x400) {
+    while (BVar2 = PeekMessageA(local_24[0],(HWND)0x0,0,0,1), BVar2 !== 0) {
+      if (((local_24[0].message === 0x106) || (local_24[0].message === 0x104)) ||
+         (local_24[0].message === 0x105)) {
+        local_8 = 0x01;
       }
       else {
-        TranslateMessage(&local_24);
-        DispatchMessageA(&local_24);
+        TranslateMessage(local_24[0]);
+        DispatchMessageA(local_24[0]);
       }
     }
   }
-  return (int)local_8;
+  return local_8;
 }
 
 

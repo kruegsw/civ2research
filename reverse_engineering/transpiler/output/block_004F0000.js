@@ -661,9 +661,9 @@ export function FUN_004f3f60(param_1) {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_004f3f9a();
   FUN_004f3fb4();
   return;
@@ -3084,13 +3084,13 @@ export function FUN_004f8d51() {
    
    Library: Visual Studio 1998 Debug */
 
-CControlBarInfo * FID_conflict__scalar_deleting_destructor_(byte param_1)
+CControlBarInfo * _scalar_deleting_destructor_(byte param_1)
 
 {
   CControlBarInfo *in_ECX;
   
   CControlBarInfo::~CControlBarInfo(in_ECX);
-  if ((param_1 & 1) != 0) {
+  if ((param_1 & 1) !== 0) {
     operator_delete(in_ECX);
   }
   return in_ECX;
@@ -3171,9 +3171,9 @@ export function FUN_004fa194(unaff_EBP) {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_004fa1da();
   FUN_004fa1f4();
   return;

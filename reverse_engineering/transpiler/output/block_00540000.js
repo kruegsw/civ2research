@@ -171,21 +171,21 @@ export function FUN_00548b70(param_1, param_2, param_3, param_4, param_5) {
 // Size: 246 bytes
 // ============================================================
 
-void FUN_00548c78(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,int param_5,
-                 int param_6,int param_7,undefined4 param_8,int param_9)
+export function FUN_00548c78(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
 
-{
-  int iVar1;
-  undefined1 local_24 [16];
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+
+
+  let iVar1;
+  let local_24 [16];
+  let local_14 = [0];
+  let local_10;
+  let local_c;
+  let local_8;
   
   local_10 = 0;
   local_8 = param_6;
-  param_7 = thunk_FUN_00548b70(param_6,param_7,param_8,&param_6,&local_14);
-  if (((local_8 != 0) && (param_6 != local_8)) && (param_5 != local_8)) {
+  param_7 = FUN_00548b70(param_6,param_7,param_8,&param_6,local_14[0]);
+  if (((local_8 !== 0) && (param_6 !== local_8)) && (param_5 !== local_8)) {
     param_5 = (param_6 * param_5) / local_8;
   }
   local_c = 0;
@@ -197,8 +197,8 @@ void FUN_00548c78(undefined4 param_1,undefined4 param_2,int param_3,undefined4 p
     if (iVar1 <= local_c) break;
     FUN_005cef31(local_24,param_1,param_3,param_4);
     param_3 = param_3 + param_7;
-    if ((param_9 != 0) && (1 < param_6)) {
-      for (local_10 = local_10 + local_14; param_6 + -1 <= local_10;
+    if ((param_9 !== 0) && (1 < param_6)) {
+      for (local_10 = local_10 + local_14[0]; param_6 + -1 <= local_10;
           local_10 = local_10 - (param_6 + -1)) {
         param_3 = param_3 + 1;
       }

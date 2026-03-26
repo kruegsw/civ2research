@@ -230,7 +230,7 @@ int __thiscall CSocket::Create(CSocket *this,uint param_1,int param_2,char *para
 {
   int iVar1;
   
-  iVar1 = thunk_FUN_0040ffe0(param_1,param_2,0,param_3);
+  iVar1 = FUN_0040ffe0(param_1,param_2,0,param_3);
   return iVar1;
 }
 
@@ -3609,9 +3609,9 @@ export function FUN_0042a3d7() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_0042a40b();
   FUN_0042a429();
   return;
@@ -3846,9 +3846,9 @@ export function FUN_0042a599() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E51(void)
+export function FID_conflict___E51() {
 
-{
+
   FUN_0042a5cd();
   FUN_0042a5eb();
   return;
@@ -3911,9 +3911,9 @@ export function FUN_0042a608() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0042a63c();
   FUN_0042a656();
   return;
@@ -3976,9 +3976,9 @@ export function FUN_0042a673() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0042a6a7();
   FUN_0042a6c1();
   return;
@@ -4111,62 +4111,62 @@ export function FUN_0042a768(in_ECX) {
 // Size: 986 bytes
 // ============================================================
 
-void show_credits(uint param_1,undefined4 param_2,undefined4 param_3,int param_4,int param_5,
-                 undefined4 param_6,undefined4 param_7)
+export function show_credits(unaff_ESI, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
-  int iVar1;
+
+
+  let iVar1;
   CView *pCVar2;
-  int iVar3;
-  undefined4 unaff_EBX;
-  int iVar4;
-  undefined4 unaff_ESI;
-  undefined4 *unaff_FS_OFFSET;
-  int extraout_var;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  undefined1 local_444 [1076];
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  undefined4 local_8;
+  let iVar3;
+  let unaff_EBX;
+  let iVar4;
+  // unaff_ESI → promoted to parameter
+  // DEVIATION: SEH
+  let extraout_var;
+  let iVar5;
+  let iVar6;
+  let iVar7;
+  let local_444 [1076];
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
+  // DEVIATION: SEH local
   
-  local_8 = 0xffffffff;
-  puStack_c = &LAB_0042aba7;
-  uStack_10 = *unaff_FS_OFFSET;
-  *unaff_FS_OFFSET = &uStack_10;
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
+  // DEVIATION: SEH
   FUN_005c64da();
   local_8 = 0;
   iVar5 = extraout_var;
-  thunk_FUN_0042a768();
+  FUN_0042a768();
   FUN_005d8236(&DAT_0063eaa0);
-  *(undefined4 *)(iVar5 + 0x498) = 0;
-  *(undefined4 *)(iVar5 + 0x454) = 0;
-  *(undefined4 *)(iVar5 + 0x458) = 1;
-  *(undefined4 *)(iVar5 + 0x460) = 0;
-  *(undefined4 *)(iVar5 + 0x45c) = 1;
-  *(undefined4 *)(iVar5 + 0x49c) = 0;
-  *(undefined4 *)(iVar5 + 0x450) = param_2;
-  *(undefined4 *)(iVar5 + 0x4a0) = param_3;
+  w32(iVar5, 0x498, 0);
+  w32(iVar5, 0x454, 0);
+  w32(iVar5, 0x458, 1);
+  w32(iVar5, 0x460, 0);
+  w32(iVar5, 0x45c, 1);
+  w32(iVar5, 0x49c, 0);
+  w32(iVar5, 0x450, param_2);
+  w32(iVar5, 0x4a0, param_3);
   iVar1 = GetSystemMetrics(2);
-  *(int *)(iVar5 + 0x494) = iVar1;
+  w32(iVar5, 0x494, iVar1);
   iVar1 = DAT_0063359c;
-  if ((int)param_1 < 0) {
+  if (param_1 < 0) {
     param_1 = ~param_1 + 1;
   }
-  else if (param_1 != 10000) {
+  else if (param_1 !== 10000) {
     param_1 = param_1 + 0x31;
   }
-  *(int *)(iVar5 + 0x48c) = param_4;
-  *(int *)(iVar5 + 0x474) = param_5;
-  thunk_FUN_00407ff0();
-  if (param_1 == 10000) {
+  w32(iVar5, 0x48c, param_4);
+  w32(iVar5, 0x474, param_5);
+  FUN_00407ff0();
+  if (param_1 === 10000) {
     FUN_005bf071(s_scredits_gif_00625ee0,10,0xc0,local_444);
   }
   else {
     FUN_005bf5e1(param_1,10,0xc0,local_444);
   }
-  thunk_FUN_00407ff0();
+  FUN_00407ff0();
   if (param_4 < 1) {
     pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(iVar5 + 0x2d8));
     *(CView **)(iVar5 + 0x48c) = pCVar2;
@@ -4175,30 +4175,30 @@ void show_credits(uint param_1,undefined4 param_2,undefined4 param_3,int param_4
     pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(iVar5 + 0x2d8));
     *(CView **)(iVar5 + 0x474) = pCVar2;
   }
-  *(undefined4 *)(iVar5 + 0x490) = param_6;
-  *(undefined4 *)(iVar5 + 0x478) = param_7;
-  if (*(int *)(iVar5 + 0x490) == 0) {
-    *(undefined4 *)(iVar5 + 0x490) = *(undefined4 *)(iVar5 + 0x48c);
+  w32(iVar5, 0x490, param_6);
+  w32(iVar5, 0x478, param_7);
+  if (s32(iVar5, 0x490) === 0) {
+    w32(iVar5, 0x490, s32(iVar5, 0x48c));
   }
-  if (*(int *)(iVar5 + 0x490) < 0) {
-    *(int *)(iVar5 + 0x490) = *(int *)(iVar5 + 0x48c) - *(int *)(iVar5 + 0x490);
+  if (s32(iVar5, 0x490) < 0) {
+    w32(iVar5, 0x490, s32(iVar5, 0x48c) - s32(iVar5, 0x490));
   }
-  if (*(int *)(iVar5 + 0x478) == 0) {
-    *(undefined4 *)(iVar5 + 0x478) = *(undefined4 *)(iVar5 + 0x474);
+  if (s32(iVar5, 0x478) === 0) {
+    w32(iVar5, 0x478, s32(iVar5, 0x474));
   }
-  if (*(int *)(iVar5 + 0x478) < 0) {
-    *(int *)(iVar5 + 0x478) = *(int *)(iVar5 + 0x474) - *(int *)(iVar5 + 0x478);
+  if (s32(iVar5, 0x478) < 0) {
+    w32(iVar5, 0x478, s32(iVar5, 0x474) - s32(iVar5, 0x478));
   }
   iVar4 = DAT_006ab19c;
-  iVar7 = *(int *)(iVar5 + 0x490) + iVar1 * 2;
-  iVar6 = *(int *)(iVar5 + 0x478) + iVar1 * 2;
-  iVar3 = thunk_FUN_0043c5c0();
+  iVar7 = s32(iVar5, 0x490) + iVar1 * 2;
+  iVar6 = s32(iVar5, 0x478) + iVar1 * 2;
+  iVar3 = FUN_0043c5c0();
   iVar4 = iVar4 - iVar3;
   iVar3 = (iVar4 >> 1) - (iVar6 >> 1);
-  thunk_FUN_005534bc(0,(*(int *)(iVar5 + 0x4a0) == 0) - 1U & 8,(DAT_006ab198 >> 1) - (iVar7 >> 1),
-                     iVar3,*(undefined4 *)(iVar5 + 0x48c),*(undefined4 *)(iVar5 + 0x474),0,iVar1,
+  FUN_005534bc(0,(s32(iVar5, 0x4a0) === 0) - 1 & 8,(DAT_006ab198 >> 1) - (iVar7 >> 1),
+                     iVar3,s32(iVar5, 0x48c),s32(iVar5, 0x474),0,iVar1,
                      iVar1);
-  local_8 = 0xffffffff;
+  // DEVIATION: SEH
   FUN_0042ab9b();
   FUN_0042abb1(unaff_ESI,unaff_EBX,iVar5,iVar6,iVar7,iVar3,iVar4);
   return;
@@ -5477,45 +5477,45 @@ export function FUN_0042d71e(param_1) {
 // Size: 668 bytes
 // ============================================================
 
-int FUN_0042d781(int param_1,int param_2,undefined4 param_3,undefined4 param_4,int param_5,
-                int param_6,int param_7)
+export function FUN_0042d781(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
-{
-  undefined1 *puVar1;
-  undefined *puVar2;
-  int iVar3;
-  undefined4 uVar4;
-  undefined1 local_54 [16];
-  undefined1 local_44 [16];
-  undefined1 local_34 [16];
-  undefined1 local_24 [16];
-  undefined4 local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+
+
+  let puVar1;
+  let puVar2;
+  let iVar3;
+  let uVar4;
+  let local_54 [16];
+  let local_44 [16];
+  let local_34 [16];
+  let local_24 [16];
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
   
-  local_10 = thunk_FUN_00548b70((int)(char)(&DAT_0064f349)[param_1 * 0x58],0x1c,param_4,0,0);
+  local_10 = FUN_00548b70(s8(DAT_0064f349[param_1 * 0x58]),0x1c,param_4,0,0);
   local_8 = 0;
-  DAT_006a6604 = *(uint *)(&DAT_0064f370 + param_1 * 0x58) >> 0x1a;
+  DAT_006a6604 = u32(DAT_0064f370, param_1 * 0x58) >> 0x1a;
   for (local_c = 0; local_c < param_5; local_c = local_c + 1) {
     puVar2 = &DAT_0063eb10;
     puVar1 = local_24;
     iVar3 = param_2;
     uVar4 = param_3;
-    thunk_FUN_00448f92((int)(char)(&DAT_0064f348)[param_1 * 0x58],puVar1,&DAT_0063eb10,param_2,
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]),puVar1,&DAT_0063eb10,param_2,
                        param_3);
     FUN_005cef31(puVar1,puVar2,iVar3,uVar4);
     param_2 = param_2 + local_10;
     local_8 = local_8 + 1;
   }
   for (local_c = 0;
-      local_c < (int)((int)(char)(&DAT_0064f349)[param_1 * 0x58] -
+      local_c < (s8(DAT_0064f349[param_1 * 0x58]) -
                      (param_6 + DAT_006a6604 + param_5)); local_c = local_c + 1) {
     puVar2 = &DAT_0063eb10;
     puVar1 = local_34;
     iVar3 = param_2;
     uVar4 = param_3;
-    thunk_FUN_00448f92((int)(char)(&DAT_0064f348)[param_1 * 0x58],puVar1,&DAT_0063eb10,param_2,
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]),puVar1,&DAT_0063eb10,param_2,
                        param_3);
     FUN_005cef31(puVar1,puVar2,iVar3,uVar4);
     param_2 = param_2 + local_10;
@@ -5532,20 +5532,20 @@ int FUN_0042d781(int param_1,int param_2,undefined4 param_3,undefined4 param_4,i
     puVar1 = local_44;
     iVar3 = param_2;
     uVar4 = param_3;
-    thunk_FUN_00448f92((int)(char)(&DAT_0064f348)[param_1 * 0x58],puVar1,&DAT_0063eb10,param_2,
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]),puVar1,&DAT_0063eb10,param_2,
                        param_3);
     FUN_005cef31(puVar1,puVar2,iVar3,uVar4);
     param_2 = param_2 + local_10;
     local_8 = local_8 + 1;
   }
-  for (local_c = 0; local_c < (int)DAT_006a6604; local_c = local_c + 1) {
+  for (local_c = 0; local_c < DAT_006a6604; local_c = local_c + 1) {
     puVar2 = &DAT_0063eb10;
     puVar1 = local_54;
     iVar3 = param_2;
     uVar4 = param_3;
-    thunk_FUN_00448f92((int)(char)(&DAT_0064f348)[param_1 * 0x58],puVar1,&DAT_0063eb10,param_2,
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]),puVar1,&DAT_0063eb10,param_2,
                        param_3);
-    thunk_FUN_004e75a6(param_1,local_c);
+    FUN_004e75a6(param_1,local_c);
     FUN_005cef31(puVar1,puVar2,iVar3,uVar4);
     param_2 = param_2 + local_10;
   }

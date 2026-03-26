@@ -409,144 +409,144 @@ export function FUN_00440750(param_1, param_2) {
 // Size: 1704 bytes
 // ============================================================
 
-void delete_city(uint param_1,char param_2)
+export function delete_city(param_1, param_2) {
 
-{
-  char cVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  undefined4 uVar8;
-  int iVar9;
-  int local_30;
-  uint local_28;
-  int local_24;
-  byte local_14;
-  int local_10;
-  undefined1 local_c;
+
+  let cVar1;
+  let iVar2;
+  let iVar3;
+  let iVar4;
+  let iVar5;
+  let uVar6;
+  let iVar7;
+  let uVar8;
+  let iVar9;
+  let local_30;
+  let local_28;
+  let local_24;
+  let local_14;
+  let local_10;
+  let local_c;
   
-  if ((-1 < (int)param_1) && (*(int *)(&DAT_0064f394 + param_1 * 0x58) != 0)) {
+  if ((-1 < param_1) && (s32(DAT_0064f394, param_1 * 0x58) !== 0)) {
     DAT_006ad8c8 = 1;
-    if ((DAT_00655b02 < 3) || (cVar1 = thunk_FUN_00421f40(), cVar1 != '\0')) {
+    if ((DAT_00655b02 < 3) || (cVar1 = FUN_00421f40(), cVar1 !== 0)) {
       iVar2 = DAT_006aa760;
       DAT_006aa760 = 1;
-      iVar3 = (int)*(short *)(&DAT_0064f340 + param_1 * 0x58);
-      iVar4 = (int)*(short *)(&DAT_0064f342 + param_1 * 0x58);
-      iVar5 = (int)(char)(&DAT_0064f348)[param_1 * 0x58];
-      *(short *)(&DAT_0064c708 + iVar5 * 0x594) = *(short *)(&DAT_0064c708 + iVar5 * 0x594) + -1;
+      iVar3 = s16(DAT_0064f340, param_1 * 0x58);
+      iVar4 = s16(DAT_0064f342, param_1 * 0x58);
+      iVar5 = s8(DAT_0064f348[param_1 * 0x58]);
+      w16(DAT_0064c708, iVar5 * 0x594, s16(DAT_0064c708, iVar5 * 0x594) + -1);
       do {
-        local_30 = (int)DAT_00655b16;
+        local_30 = DAT_00655b16;
         while( true ) {
           while( true ) {
             do {
               local_30 = local_30 + -1;
               if (local_30 < 0) {
-                *(undefined4 *)(&DAT_0064f394 + param_1 * 0x58) = 0;
-                if ((int)DAT_00655b18 - 1U == param_1) {
+                w32(DAT_0064f394, param_1 * 0x58, 0);
+                if (DAT_00655b18 - 1 === param_1) {
                   DAT_00655b18 = DAT_00655b18 + -1;
                 }
                 for (local_10 = 0; local_10 < DAT_00655b18; local_10 = local_10 + 1) {
-                  if (*(int *)(&DAT_0064f394 + local_10 * 0x58) != 0) {
-                    local_30 = (int)(char)(&DAT_0064f37a)[local_10 * 0x58];
+                  if (s32(DAT_0064f394, local_10 * 0x58) !== 0) {
+                    local_30 = s8(DAT_0064f37a[local_10 * 0x58]);
                     while (local_30 = local_30 + -1, -1 < local_30) {
-                      if ((int)*(short *)(&DAT_0064f384 + local_10 * 0x58 + local_30 * 2) == param_1
+                      if (s16(DAT_0064f384, local_10 * 0x58 + local_30 * 2) === param_1
                          ) {
-                        thunk_FUN_00440325(local_10,local_30);
+                        FUN_00440325(local_10,local_30);
                       }
                     }
                   }
                 }
                 for (local_10 = 0; local_10 < 0x1c; local_10 = local_10 + 1) {
-                  if ((int)*(short *)(&DAT_00655be6 + local_10 * 2) == param_1) {
-                    *(undefined2 *)(&DAT_00655be6 + local_10 * 2) = 0xfffe;
+                  if (s16(DAT_00655be6, local_10 * 2) === param_1) {
+                    w16(DAT_00655be6, local_10 * 2, 0xfffe);
                   }
                 }
                 local_28 = 0;
-                thunk_FUN_005b9ec6();
-                thunk_FUN_005b94fc(iVar3,iVar4,2,0,1);
+                FUN_005b9ec6();
+                FUN_005b94fc(iVar3,iVar4,2,0,1);
                 for (local_10 = 0; local_10 < 0x2d; local_10 = local_10 + 1) {
-                  uVar8 = thunk_FUN_005ae052((char)(&DAT_00628370)[local_10] + iVar3);
-                  iVar7 = (char)(&DAT_006283a0)[local_10] + iVar4;
-                  iVar9 = thunk_FUN_004087c0(uVar8,iVar7);
-                  if ((iVar9 != 0) && (iVar9 = thunk_FUN_005b89e4(uVar8,iVar7), iVar9 == 0)) {
-                    uVar6 = thunk_FUN_005b8c18(uVar8,iVar7,1);
-                    thunk_FUN_005b98b7(uVar8,iVar7,uVar6 | 8);
+                  uVar8 = FUN_005ae052(s8(DAT_00628370[local_10]) + iVar3);
+                  iVar7 = s8(DAT_006283a0[local_10]) + iVar4;
+                  iVar9 = FUN_004087c0(uVar8,iVar7);
+                  if ((iVar9 !== 0) && (iVar9 = FUN_005b89e4(uVar8,iVar7), iVar9 === 0)) {
+                    uVar6 = FUN_005b8c18(uVar8,iVar7,1);
+                    FUN_005b98b7(uVar8,iVar7,uVar6 | 8);
                     if (local_10 < 0x15) {
-                      iVar9 = thunk_FUN_005b8af0(uVar8,iVar7);
-                      if (iVar9 == iVar5) {
-                        thunk_FUN_005b9c49(uVar8,iVar7,0,1);
+                      iVar9 = FUN_005b8af0(uVar8,iVar7);
+                      if (iVar9 === iVar5) {
+                        FUN_005b9c49(uVar8,iVar7,0,1);
                       }
-                      iVar7 = thunk_FUN_005b8da4(uVar8,iVar7);
-                      if ((0 < iVar7) && (iVar7 != iVar5)) {
-                        local_14 = (byte)iVar7;
+                      iVar7 = FUN_005b8da4(uVar8,iVar7);
+                      if ((0 < iVar7) && (iVar7 !== iVar5)) {
+                        local_14 = u8(iVar7);
                         local_28 = local_28 | 1 << (local_14 & 0x1f);
                       }
                     }
                   }
                 }
-                thunk_FUN_005b9f1c();
-                if (local_28 != 0) {
-                  for (local_30 = thunk_FUN_005b2e69(iVar3,iVar4); -1 < local_30;
-                      local_30 = thunk_FUN_005b2c82(local_30)) {
-                    (&DAT_006560f9)[local_30 * 0x20] =
-                         (&DAT_006560f9)[local_30 * 0x20] | (byte)local_28;
+                FUN_005b9f1c();
+                if (local_28 !== 0) {
+                  for (local_30 = FUN_005b2e69(iVar3,iVar4); -1 < local_30;
+                      local_30 = FUN_005b2c82(local_30)) {
+                    DAT_006560f9[local_30 * 0x20] =
+                         DAT_006560f9[local_30 * 0x20] | u8(local_28);
                   }
                 }
                 for (local_24 = 0; local_24 < DAT_00655b18; local_24 = local_24 + 1) {
-                  if (*(int *)(&DAT_0064f394 + local_24 * 0x58) != 0) {
-                    thunk_FUN_0043f7a7(local_24);
+                  if (s32(DAT_0064f394, local_24 * 0x58) !== 0) {
+                    FUN_0043f7a7(local_24);
                   }
                 }
                 thunk_citywin_C449(param_1);
                 DAT_006aa760 = iVar2;
-                if (iVar2 == 0) {
+                if (iVar2 === 0) {
                   thunk_citywin_9429();
                 }
-                if ((param_2 == '\0') && (2 < DAT_00655b02)) {
-                  thunk_FUN_004b0b53(0xff,2,0,0,0);
-                  thunk_FUN_0046b14d(0x89,0xff,param_1,0,0,0,0,0,0,0);
-                  thunk_FUN_0046b14d(0x8a,0xff,0,0,0,0,0,0,0,0);
+                if ((param_2 === 0) && (2 < DAT_00655b02)) {
+                  FUN_004b0b53(0xff,2,0,0,0);
+                  FUN_0046b14d(0x89,0xff,param_1,0,0,0,0,0,0,0);
+                  FUN_0046b14d(0x8a,0xff,0,0,0,0,0,0,0,0);
                   XD_FlushSendBuffer(5000);
                 }
                 DAT_006ad8c8 = 0;
                 return;
               }
-            } while ((*(int *)(&DAT_0065610a + local_30 * 0x20) == 0) ||
-                    ((byte)(&DAT_00656100)[local_30 * 0x20] != param_1));
-            if ((&DAT_006560f6)[local_30 * 0x20] != '\t') break;
-            (&DAT_00656100)[local_30 * 0x20] = 0xff;
+            } while ((s32(DAT_0065610a, local_30 * 0x20) === 0) ||
+                    (u8(DAT_00656100[local_30 * 0x20]) !== param_1));
+            if (DAT_006560f6[local_30 * 0x20] !== 9) break;
+            DAT_00656100[local_30 * 0x20] = 0xff;
           }
-          if (((((uint)DAT_00655b0b & 1 << ((&DAT_006560f7)[local_30 * 0x20] & 0x1f)) != 0) ||
-              (uVar6 = thunk_FUN_0043cf76((int)*(short *)(&DAT_006560f0 + local_30 * 0x20),
-                                          (int)*(short *)(&DAT_006560f2 + local_30 * 0x20)),
-              (int)uVar6 < 0)) || (param_1 == uVar6)) LAB_004416ab_helper(iVar2, iVar3, local_30, param_1); return;
-          if (((&DAT_0064b1ca)[(uint)(byte)(&DAT_006560f6)[local_30 * 0x20] * 0x14] != '\x01') ||
-             (iVar7 = thunk_FUN_005b53b6(local_30,1), iVar7 != 1)) break;
-          local_c = (undefined1)uVar6;
-          (&DAT_00656100)[local_30 * 0x20] = local_c;
+          if ((((((DAT_00655b0b) >>> 0) & 1 << (DAT_006560f7[local_30 * 0x20] & 0x1f)) !== 0) ||
+              (uVar6 = FUN_0043cf76(s16(DAT_006560f0, local_30 * 0x20),
+                                          s16(DAT_006560f2, local_30 * 0x20)),
+              uVar6 < 0)) || (param_1 === uVar6)) LAB_004416ab_helper(iVar2, iVar3, local_30, param_1); return;
+          if ((DAT_0064b1ca[u8(DAT_006560f6[local_30 * 0x20]) * 0x14] !== 0x01) ||
+             (iVar7 = FUN_005b53b6(local_30,1), iVar7 !== 1)) break;
+          local_c = u8(uVar6);
+          DAT_00656100[local_30 * 0x20] = local_c;
         }
-        *(uint *)(&DAT_0064f344 + uVar6 * 0x58) = *(uint *)(&DAT_0064f344 + uVar6 * 0x58) | 0x20;
+        w32(DAT_0064f344, uVar6 * 0x58, u32(DAT_0064f344, uVar6 * 0x58) | 0x20);
 // LAB_004416ab: (code below also in LAB_004416ab_helper, kept for 1:1 audit)
-        thunk_FUN_005b6042(local_30,1);
+        FUN_005b6042(local_30,1);
       } while( true );
     }
     DAT_006ad8c8 = 0;
     DAT_006c90c8 = -2;
-    thunk_FUN_0046b14d(0x39,0,param_1,0,0,0,0,0,0,0);
-    iVar2 = thunk_FUN_00421bb0();
-    while ((DAT_006c90c8 == -2 && (iVar3 = thunk_FUN_00421bb0(), iVar3 - iVar2 < 0xe10))) {
-      thunk_FUN_0047e94e(1,1);
+    FUN_0046b14d(0x39,0,param_1,0,0,0,0,0,0,0);
+    iVar2 = FUN_00421bb0();
+    while ((DAT_006c90c8 === -2 && (iVar3 = FUN_00421bb0(), iVar3 - iVar2 < 0xe10))) {
+      FUN_0047e94e(1,1);
     }
-    if (DAT_006c90c8 == -2) {
+    if (DAT_006c90c8 === -2) {
       debug_log(s_Delete_City__Connection_to_serve_00626330);
-      thunk_FUN_00410030(s_SERVERCONNECTTIME_00626360,&DAT_0063fc58,0);
+      FUN_00410030(s_SERVERCONNECTTIME_00626360,&DAT_0063fc58,0);
       DAT_00628044 = 0;
     }
-    while ((DAT_006c8fac != 0 || (DAT_006c8fa0 != 0))) {
-      thunk_FUN_0047e94e(1,0);
+    while ((DAT_006c8fac !== 0 || (DAT_006c8fa0 !== 0))) {
+      FUN_0047e94e(1,0);
     }
   }
   return;
@@ -2300,7 +2300,7 @@ export function FUN_00447210(in_ECX, param_1) {
 uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
 
 {
-  return *(uint *)(this + 0x40);
+  return u32(this, 0x40);
 }
 
 
@@ -2676,9 +2676,9 @@ export function FUN_00447609() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447646();
   FUN_00447660();
   return;
@@ -2798,9 +2798,9 @@ export function FUN_004476f6() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447733();
   FUN_0044774d();
   return;
@@ -2863,9 +2863,9 @@ export function FUN_0044776a() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0044779e();
   FUN_004477b8();
   return;
@@ -2928,9 +2928,9 @@ export function FUN_004477d5() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447809();
   FUN_00447823();
   return;
@@ -3221,9 +3221,9 @@ export function FUN_00447a3f() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447a7c();
   FUN_00447a96();
   return;
@@ -3286,9 +3286,9 @@ export function FUN_00447ab3() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447ae7();
   FUN_00447b01();
   return;
@@ -3465,9 +3465,9 @@ export function FUN_00447c19() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447c56();
   FUN_00447c70();
   return;
@@ -3530,9 +3530,9 @@ export function FUN_00447c8d() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447cc1();
   FUN_00447cdb();
   return;
@@ -3595,9 +3595,9 @@ export function FUN_00447cf8() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447d2c();
   FUN_00447d46();
   return;
@@ -3660,9 +3660,9 @@ export function FUN_00447d63() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447d97();
   FUN_00447db1();
   return;
@@ -3725,9 +3725,9 @@ export function FUN_00447dce() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447e02();
   FUN_00447e1c();
   return;
@@ -3790,9 +3790,9 @@ export function FUN_00447e39() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447e6d();
   FUN_00447e87();
   return;
@@ -3969,9 +3969,9 @@ export function FUN_00447f9f() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00447fdc();
   FUN_00447ff6();
   return;
@@ -4034,9 +4034,9 @@ export function FUN_00448013() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448047();
   FUN_00448061();
   return;
@@ -4099,9 +4099,9 @@ export function FUN_0044807e() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_004480b2();
   FUN_004480cc();
   return;
@@ -4164,9 +4164,9 @@ export function FUN_004480e9() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0044811d();
   FUN_00448137();
   return;
@@ -4799,9 +4799,9 @@ export function FUN_0044865f() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_0044869c();
   FUN_004486b6();
   return;
@@ -4864,9 +4864,9 @@ export function FUN_004486d3() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448707();
   FUN_00448721();
   return;
@@ -5100,9 +5100,9 @@ export function FUN_004488bb() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_004488f8();
   FUN_00448912();
   return;
@@ -5336,9 +5336,9 @@ export function FUN_00448aac() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448ae9();
   FUN_00448b03();
   return;
@@ -5637,9 +5637,9 @@ export function FUN_00448d39() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448d95();
   FUN_00448daf();
   return;
@@ -5702,9 +5702,9 @@ export function FUN_00448dcc() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448e00();
   FUN_00448e1a();
   return;
@@ -5767,9 +5767,9 @@ export function FUN_00448e37() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448e6b();
   FUN_00448e85();
   return;
@@ -5832,9 +5832,9 @@ export function FUN_00448ea2() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448ed6();
   FUN_00448ef0();
   return;
@@ -5897,9 +5897,9 @@ export function FUN_00448f0d() {
    
    Library: Visual Studio 1998 Debug */
 
-void FID_conflict___E31(void)
+export function FID_conflict___E31() {
 
-{
+
   FUN_00448f41();
   FUN_00448f5b();
   return;
@@ -6235,10 +6235,10 @@ export function FUN_0044999c(param_1, param_2, param_3) {
 // Size: 59 bytes
 // ============================================================
 
-void FUN_004499d3(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5)
+export function FUN_004499d3(param_1, param_2, param_3, param_4, param_5) {
 
-{
+
+
   FUN_005cedad(&DAT_0063fe08,7,param_2,param_3,param_4,param_5);
   FUN_005cf467(9,7);
   return;
@@ -7052,7 +7052,7 @@ export function FUN_0044c730(in_ECX) {
 CString * __thiscall CString::CString(CString *this)
 
 {
-  thunk_FUN_0044c8e0();
+  FUN_0044c8e0();
   return this;
 }
 
@@ -8787,23 +8787,23 @@ export function FUN_0044f799() {
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 
 function LAB_004416ab_helper(iVar2, iVar3, local_30, param_1) {
-        thunk_FUN_005b6042(local_30,1);
+        FUN_005b6042(local_30,1);
       } while( true );
     }
     DAT_006ad8c8 = 0;
     DAT_006c90c8 = -2;
-    thunk_FUN_0046b14d(0x39,0,param_1,0,0,0,0,0,0,0);
-    iVar2 = thunk_FUN_00421bb0();
-    while ((DAT_006c90c8 == -2 && (iVar3 = thunk_FUN_00421bb0(), iVar3 - iVar2 < 0xe10))) {
-      thunk_FUN_0047e94e(1,1);
+    FUN_0046b14d(0x39,0,param_1,0,0,0,0,0,0,0);
+    iVar2 = FUN_00421bb0();
+    while ((DAT_006c90c8 === -2 && (iVar3 = FUN_00421bb0(), iVar3 - iVar2 < 0xe10))) {
+      FUN_0047e94e(1,1);
     }
-    if (DAT_006c90c8 == -2) {
+    if (DAT_006c90c8 === -2) {
       debug_log(s_Delete_City__Connection_to_serve_00626330);
-      thunk_FUN_00410030(s_SERVERCONNECTTIME_00626360,&DAT_0063fc58,0);
+      FUN_00410030(s_SERVERCONNECTTIME_00626360,&DAT_0063fc58,0);
       DAT_00628044 = 0;
     }
-    while ((DAT_006c8fac != 0 || (DAT_006c8fa0 != 0))) {
-      thunk_FUN_0047e94e(1,0);
+    while ((DAT_006c8fac !== 0 || (DAT_006c8fa0 !== 0))) {
+      FUN_0047e94e(1,0);
     }
   }
   return;
