@@ -677,12 +677,15 @@ function processFunction(headerLines, bodyLines, ctx) {
       let val = writeMatch[3].trim();
       const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
       const parts = splitBaseOffset(inner);
-      // Transform the value expression
+      // Transform all expressions (base, offset, value)
       val = transformLine('  ' + val, ctx).trim();
       if (parts) {
-        result.push(line.replace(trimmed, wHelper + '(' + parts.base + ', ' + parts.offset + ', ' + val + ');'));
+        const base = transformLine('  ' + parts.base, ctx).trim();
+        const offset = transformLine('  ' + parts.offset, ctx).trim();
+        result.push(line.replace(trimmed, wHelper + '(' + base + ', ' + offset + ', ' + val + ');'));
       } else {
-        result.push(line.replace(trimmed, wHelper + '(' + inner + ', 0, ' + val + ');'));
+        const base = transformLine('  ' + inner, ctx).trim();
+        result.push(line.replace(trimmed, wHelper + '(' + base + ', 0, ' + val + ');'));
       }
       continue;
     }

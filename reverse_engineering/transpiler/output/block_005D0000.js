@@ -4402,7 +4402,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       _memset(s32(local_8, 0),0,0x20);
       // DEVIATION: C pointer — *(int *)w32(local_8, 0, s32(local_8, 0) + 0x20);
       // DEVIATION: C pointer — local_8[4] = *(int *)s32(local_8, 0);
-      w32(*local_8 + 4, 0, local_c);
+      w32(s32(local_8, 0) + 4, 0, local_c);
       local_8[6] = s32(s32(local_8, 0) + 4, 0);
       // DEVIATION: C pointer — local_8[5] = *(int *)s32(local_8, 0) + local_8[6];
       // DEVIATION: C pointer — *(int **)(s32(local_8, 0) + 0xc) = local_8;
@@ -4414,7 +4414,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
         FUN_005d6b89(param_2);
         return 5;
       }
-      w32(*local_8 + 0x10, 0, u32(s32(local_8, 0) + 0x10, 0) | 1);
+      w32(s32(local_8, 0) + 0x10, 0, u32(s32(local_8, 0) + 0x10, 0) | 1);
       if (local_18 !== 0x0) {
         local_18[7] = local_8;
       }
@@ -4761,7 +4761,7 @@ export function FUN_005d6c99(param_1, param_2) {
               }
             }
             local_20[3] = local_20[3] | 0x40;
-            w32(*local_20 + 0x10, 0, u32(s32(local_20, 0) + 0x10, 0) & 0xfffffffe);
+            w32(s32(local_20, 0) + 0x10, 0, u32(s32(local_20, 0) + 0x10, 0) & 0xfffffffe);
           }
           for (local_2c = 0; local_2c < ((puVar2[1]) >>> 0); local_2c = local_2c + 1) {
             w32(local_28, 0, s32(local_28, 0) ^ 0x80);

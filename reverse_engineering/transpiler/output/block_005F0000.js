@@ -5738,7 +5738,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
             // DEVIATION: C pointer — DAT_006e5470 = *(int **)(param_1 + -0x1c);
           }
           else {
-            w32(*_Dst + 4, 0, s32(param_1 + -0x1c, 0));
+            w32(s32(_Dst, 0) + 4, 0, s32(param_1 + -0x1c, 0));
           }
           if (s32(param_1 + -0x1c, 0) === 0) {
             if ((_Dst !== DAT_006e5478) &&

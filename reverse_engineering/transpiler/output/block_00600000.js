@@ -2589,10 +2589,10 @@ export function __ld12told_00603170(_Ifp, _Ld) {
     local_8 = ((ushort) >>> 0)(((local_8) << 16 >> 16) + 1);
   }
   local_18 = ((local_8 & 0xffff) === 0x7fff);
-  w32(_Ld->ld + 4, 0, local_14);
-  // DEVIATION: C struct — *(undefined4 *)_Ld->ld = local_10;
-  w16(_Ld->ld + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
-  return local_18;
+  w32(// DEVIATION: C struct — _Ld->ld + 4, 0, local_14);
+   // DEVIATION(cont): *(undefined4 *)_Ld->ld = local_10;
+  w16(// DEVIATION: C struct — _Ld->ld + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
+   // DEVIATION(cont): return local_18;
 }
 
 
