@@ -446,8 +446,8 @@ export function FUN_00421fcd(param_1) {
       local_11c8 = FUN_0059db08();
     }
     local_8._0_1_ = 1;
-    *extraout_ECX = local_11c8;
-    if (*extraout_ECX === 0) {
+    w32(extraout_ECX, 0, local_11c8);
+    if (s32(extraout_ECX, 0) === 0) {
       pcStackY_2c = 0x7;
       puStackY_30 = 0x42271c;
       FUN_005dae6b();
@@ -458,14 +458,14 @@ export function FUN_00421fcd(param_1) {
     PTR_DAT_00635a48 = (extraout_ECX + 0x54);
     FUN_0040bc40();
     FUN_0059e6ff();
-    // DEVIATION: MFC — ios::delbuf((ios *)*extraout_ECX,0x153);
+    // DEVIATION: MFC — ios::delbuf(s32(extraout_ECX, 0),0x153);
     FUN_0040bbb0();
     FUN_0040bc10();
     FUN_0059e6a9();
     FUN_0059e585();
     pcStackY_2c = "h\x0f\x15@";
     FUN_0059e5c9();
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(*extraout_ECX,0x40150f);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(s32(extraout_ECX, 0),0x40150f);
     FUN_0042486f();
     FUN_0040bbb0();
     FUN_0040bc10();
@@ -473,7 +473,7 @@ export function FUN_00421fcd(param_1) {
     FUN_0059ea99();
     FUN_0042472a();
     FUN_005a577e();
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((*(int *)*extraout_ECX + 0x48),0x401bb8);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((*(int *)s32(extraout_ECX, 0) + 0x48),0x401bb8);
     while( true ) {
       while( true ) {
         while( true ) {
@@ -487,10 +487,10 @@ export function FUN_00421fcd(param_1) {
             if (iVar5 < 0) {
               PTR_DAT_00635a48 = extraout_ECX[0x5c];
               FUN_004253ef();
-              if (*extraout_ECX !== 0) {
+              if (s32(extraout_ECX, 0) !== 0) {
                 FUN_00426f30();
               }
-              *extraout_ECX = 0;
+              w32(extraout_ECX, 0, 0);
               // DEVIATION: C pointer — *(undefined1 *)(extraout_ECX + 0x22) = 0;
               local_8 = ((local_8) >>> 0)._1_3_ << 8;
               FUN_00424129();
@@ -568,10 +568,10 @@ export function FUN_00421fcd(param_1) {
     FUN_0059db65();
     PTR_DAT_00635a48 = extraout_ECX[0x5c];
     FUN_004253ef();
-    if (*extraout_ECX !== 0) {
+    if (s32(extraout_ECX, 0) !== 0) {
       FUN_00426f30();
     }
-    *extraout_ECX = 0;
+    w32(extraout_ECX, 0, 0);
     FUN_00419b80();
   }
 // LAB_00422d3d: (code below also in LAB_00422d3d_helper, kept for 1:1 audit)
@@ -7495,8 +7495,8 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
       local_11c8 = FUN_0059db08();
     }
     local_8._0_1_ = 1;
-    *extraout_ECX = local_11c8;
-    if (*extraout_ECX === 0) {
+    w32(extraout_ECX, 0, local_11c8);
+    if (s32(extraout_ECX, 0) === 0) {
       pcStackY_2c = 0x7;
       puStackY_30 = 0x42271c;
       FUN_005dae6b();
@@ -7507,14 +7507,14 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
     PTR_DAT_00635a48 = (extraout_ECX + 0x54);
     FUN_0040bc40();
     FUN_0059e6ff();
-    // DEVIATION: MFC — ios::delbuf((ios *)*extraout_ECX,0x153);
+    // DEVIATION: MFC — ios::delbuf(s32(extraout_ECX, 0),0x153);
     FUN_0040bbb0();
     FUN_0040bc10();
     FUN_0059e6a9();
     FUN_0059e585();
     pcStackY_2c = "h\x0f\x15@";
     FUN_0059e5c9();
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(*extraout_ECX,0x40150f);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(s32(extraout_ECX, 0),0x40150f);
     FUN_0042486f();
     FUN_0040bbb0();
     FUN_0040bc10();
@@ -7522,7 +7522,7 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
     FUN_0059ea99();
     FUN_0042472a();
     FUN_005a577e();
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((*(int *)*extraout_ECX + 0x48),0x401bb8);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((*(int *)s32(extraout_ECX, 0) + 0x48),0x401bb8);
     while( true ) {
       while( true ) {
         while( true ) {
@@ -7536,10 +7536,10 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
             if (iVar5 < 0) {
               PTR_DAT_00635a48 = extraout_ECX[0x5c];
               FUN_004253ef();
-              if (*extraout_ECX !== 0) {
+              if (s32(extraout_ECX, 0) !== 0) {
                 FUN_00426f30();
               }
-              *extraout_ECX = 0;
+              w32(extraout_ECX, 0, 0);
               // DEVIATION: C pointer — *(undefined1 *)(extraout_ECX + 0x22) = 0;
               local_8 = ((local_8) >>> 0)._1_3_ << 8;
               FUN_00424129();
@@ -7617,10 +7617,10 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
     FUN_0059db65();
     PTR_DAT_00635a48 = extraout_ECX[0x5c];
     FUN_004253ef();
-    if (*extraout_ECX !== 0) {
+    if (s32(extraout_ECX, 0) !== 0) {
       FUN_00426f30();
     }
-    *extraout_ECX = 0;
+    w32(extraout_ECX, 0, 0);
     FUN_00419b80();
   }
 LAB_00422d3d:

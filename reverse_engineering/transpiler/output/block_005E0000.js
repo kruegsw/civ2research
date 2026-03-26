@@ -718,7 +718,7 @@ export function FUN_005e0ce0(param_1, param_2) {
   uBytes = _strlen(param_2);
   hMem = LocalAlloc(2,uBytes);
   _Dest = LocalLock(hMem);
-  *_Dest = 0;
+  w32(_Dest, 0, 0);
   for (; s32(param_2, 0) === 32; param_2 = param_2 + 1) {
   }
   while (!bVar1) {
@@ -806,7 +806,7 @@ export function FUN_005e0f2a(param_1) {
   uBytes = _strlen(param_1);
   hMem = LocalAlloc(2,uBytes);
   _Dest = LocalLock(hMem);
-  *_Dest = 0;
+  w32(_Dest, 0, 0);
   while (s32(local_14, 0) !== 0) {
     for (; s32(local_14, 0) === 32; local_14 = local_14 + 1) {
     }
@@ -831,7 +831,7 @@ export function FUN_005e0f2a(param_1) {
     else {
       AppendMenuA(hMenu,0x13,uIDNewItem,_Dest);
     }
-    *_Dest = 0;
+    w32(_Dest, 0, 0);
   }
   DAT_00638d9c = iVar2 + 100;
   LocalUnlock(hMem);

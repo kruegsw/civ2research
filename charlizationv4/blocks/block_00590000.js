@@ -2701,12 +2701,12 @@ export function FUN_0059a15d() {
     while( true ) {
       pcStackY_18 = 0x59a1c8;
       _Str = FUN_004a23fc();
-      if (*_Str === 64) break;
-      if (*_Str !== 59) {
+      if (s32(_Str, 0) === 64) break;
+      if (s32(_Str, 0) !== 59) {
         pcStackY_18 = 0x59a210;
         sVar2 = _strlen(_Str);
         if (sVar2 !== 0) {
-          while ((*_Str === 94 || (*_Str === 42))) {
+          while ((s32(_Str, 0) === 94 || (s32(_Str, 0) === 42))) {
             pcStackY_18 = local_124;
             uStackY_1c = 0x59a253;
             FUN_005f22d0();

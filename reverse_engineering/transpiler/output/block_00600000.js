@@ -1720,7 +1720,7 @@ export function _wctomb_00602310(_MbCh, _WCh) {
   }
   else if (DAT_0063a078 === 0) {
     if (((_WCh) & 0xFFFF) < 0x100) {
-      *_MbCh = s8(_WCh);
+      w32(_MbCh, 0, s8(_WCh));
       iVar1 = 1;
     }
     else {
@@ -2689,7 +2689,7 @@ export function __fptostr_00603300(_Buf, _SizeInBytes, _Digits, _PtFlt) {
   let local_8;
   
   // DEVIATION: C pointer — local_c = *(char **)(_Digits + 0xc);
-  *_Buf = 48;
+  w32(_Buf, 0, 48);
   pcVar1 = _Buf;
   for (; local_8 = pcVar1 + 1, 0 < _SizeInBytes; _SizeInBytes = _SizeInBytes - 1) {
     if (s32(local_c, 0) === 0) {
@@ -2708,7 +2708,7 @@ export function __fptostr_00603300(_Buf, _SizeInBytes, _Digits, _PtFlt) {
     }
     w32(local_8, 0, s32(local_8, 0) + 0x01);
   }
-  if (*_Buf === 49) {
+  if (s32(_Buf, 0) === 49) {
     w32(_Digits, 4, s32(_Digits, 4) + 1);
   }
   else {
@@ -2901,7 +2901,7 @@ export function __tzset_00603650() {
       PTR_DAT_0063b340[0x3f] = PTR_DAT_0063b344[0x3f];
     }
   }
-  else if ((*_Str1 !== 0) &&
+  else if ((s32(_Str1, 0) !== 0) &&
           ((DAT_0063b348 === 0x0 || (iVar3 = _strcmp(_Str1,DAT_0063b348), iVar3 !== 0)))) {
     __free_dbg(DAT_0063b348,2);
     uVar8 = 0xec;
@@ -2941,7 +2941,7 @@ export function __tzset_00603650() {
       }
       DAT_0063b2b4 = s32(local_c, 0);
       if (DAT_0063b2b4 === 0) {
-        w32(PTR_DAT_0063b344, 0, 0);
+        *PTR_DAT_0063b344 = 0;
       }
       else {
         _strncpy(PTR_DAT_0063b344,local_c,3);
@@ -4122,12 +4122,12 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
     }
     else if (DAT_0063a078 === 0) {
       for (; local_8 < _MaxCount; local_8 = local_8 + 1) {
-        if (0xff < (ushort)*_Source) {
+        if (0xff < ((s32(_Source, 0)) & 0xFFFF)) {
           DAT_00639f14 = 0x2a;
           return 0xffffffff;
         }
-        _Dest[local_8] = (char)*_Source;
-        if (*_Source === L0) {
+        _Dest[local_8] = s8(s32(_Source, 0));
+        if (s32(_Source, 0) === L0) {
           return local_8;
         }
         _Source = _Source + 1;
@@ -4577,7 +4577,7 @@ export function ___wtomb_environ_00606260() {
 
 
   let iVar1;
-  char **_POption;
+  char *s32(_POption, 0);
   let local_8;
   
   local_8 = DAT_00639f44;
@@ -5131,7 +5131,7 @@ export function __mbschr_00607070(_Str, _Ch) {
   }
   else {
     while( true ) {
-      bVar2 = *_Str;
+      bVar2 = s32(_Str, 0);
       uVar3 = ((bVar2) & 0xFFFF);
       if (uVar3 === 0) break;
       if ((DAT_0063afa1[bVar2] & 4) === 0) {

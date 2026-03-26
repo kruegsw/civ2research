@@ -1254,7 +1254,7 @@ export function FUN_00564e6d(in_ECX) {
         local_154 = FUN_00407f90(in_ECX + 0x5f8);
         local_154 = local_154 / 2;
       }
-      local_8 = (uint)!bVar4;
+      local_8 = ((!bVar4) >>> 0);
     }
   }
   local_154 = local_20;

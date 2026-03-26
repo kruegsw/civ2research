@@ -1124,7 +1124,7 @@ export function FUN_004b251a(param_1) {
       _Src = local_10 + 1;
       if (uVar1 < 0x7fff) {
         local_10 = (local_10 + 3);
-        _memset(local_c,short((byte) & 0xFFFF)*_Src,((uVar1) >>> 0));
+        _memset(local_c,short((byte) & 0xFFFF)s32(_Src, 0),((uVar1) >>> 0));
       }
       else {
         uVar1 = uVar1 + 0x8000;

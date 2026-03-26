@@ -2572,7 +2572,7 @@ export function FUN_004c6bf5(param_1, param_2) {
       else {
         local_18 = 1;
       }
-      local_18 = (uint)!bVar6;
+      local_18 = ((!bVar6) >>> 0);
       if ((1 << (u8(local_3b0) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
 // LAB_004c8f6f: (code below also in LAB_004c8f6f_helper, kept for 1:1 audit)
         if ((DAT_00654fa8 === 0) && ((1 << (u8(local_3b0) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0)) {
@@ -5775,7 +5775,7 @@ function LAB_004c72a8_helper(bVar6, cVar1, iVar3, local_14, local_18, local_1c, 
       else {
         local_18 = 1;
       }
-      local_18 = (uint)!bVar6;
+      local_18 = ((!bVar6) >>> 0);
       if ((1 << (u8(local_3b0) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
 LAB_004c8f6f:
         if ((DAT_00654fa8 === 0) && ((1 << (u8(local_3b0) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0)) {

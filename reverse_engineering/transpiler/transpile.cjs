@@ -43,7 +43,10 @@ function extractExpression(str, start) {
   while (i < str.length && str[i] === ' ') i++;
   const exprStart = i;
 
-  // Must start with a word character
+  // Handle leading unary operators: !, ~, -
+  while (i < str.length && /[!~\-]/.test(str[i])) i++;
+
+  // Must have a word character after any unary ops
   if (i >= str.length || !/[a-zA-Z_0-9]/.test(str[i])) return null;
 
   // Consume word
@@ -263,10 +266,14 @@ function transformLine(line, ctx) {
     }
 
     // ── Bare pointer dereference: *variable → s32(variable, 0) ──
-    // Handles *in_ECX, *DAT_XXX, *param_N, *local_N, *piVarN, *ppVarN, etc.
-    // Match * followed by a Ghidra variable name, not preceded by a word char (to avoid multiplication)
-    out = out.replace(/(?<![a-zA-Z0-9_])\*([a-zA-Z_]\w*Var\d+|in_E\w+|DAT_[0-9a-fA-F]+|param_\d+|local_\w+|unaff_\w+|[A-Z]\w+)(?!\s*\()/g,
+    // Only match specific Ghidra variable patterns to avoid catching multiplication
+    out = out.replace(/(?<![a-zA-Z0-9_])\*([a-zA-Z_]\w*Var\d+|in_E\w+|DAT_[0-9a-fA-F]+|param_\d+|local_\w+|unaff_\w+|extraout_\w+|p[A-Z]\w*Var\d+|_\w+)(?!\s*\()/g,
       (m, name) => 's32(' + name + ', 0)');
+    // ── Bare pointer deref with parens: *(expr + off) → s32(expr, off) ──
+    // Uses balanced paren extraction, only when preceded by = ( , ; or start
+    out = out.replace(/(?<=[=(,;\s])\*\(/g, (m, offset) => {
+      return m; // leave for now — handled by DEVIATION catch-all if needed
+    });
 
     // ── C-style pointer casts without dereference: (TYPE *)expr → expr ──
     out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\()/g, '');
