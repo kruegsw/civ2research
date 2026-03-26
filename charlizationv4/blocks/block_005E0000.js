@@ -17,11 +17,11 @@ export function FUN_005e00bb(param_1) {
 
 
   if (param_1 === 0x65) {
-    // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((CRichEditDoc *)(G.DAT_006e5020 + 0x48));
+    // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006e5020 + 0x48));
   }
   else if (param_1 === 0x66) {
     G.DAT_006e5018 = 0xffffffff;
-    // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((CRichEditDoc *)(G.DAT_006e5020 + 0x48));
+    // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006e5020 + 0x48));
   }
   return;
 }
@@ -51,7 +51,7 @@ export function FUN_005e0122(param_1, param_2) {
 
 
   G.DAT_006e5018 = param_2;
-  // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((CRichEditDoc *)(G.DAT_006e5020 + 0x48));
+  // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006e5020 + 0x48));
   return;
 }
 
@@ -76,8 +76,8 @@ export function FUN_005e0148(param_1, param_2) {
   local_98 = 1;
   local_c = 0;
   local_8 = 0;
-  for (local_94 = param_1; *local_94 !== 0; local_94 = local_94 + 1) {
-    if (*local_94 === 95) {
+  for (local_94 = param_1; s32(local_94, 0) !== 0; local_94 = local_94 + 1) {
+    if (s32(local_94, 0) === 95) {
       local_90[local_c] = 0;
       uVar1 = FUN_004d8af0(local_90);
       local_10 = measure_text_858E(uVar1);
@@ -87,10 +87,10 @@ export function FUN_005e0148(param_1, param_2) {
       local_c = 0;
       local_98 = local_98 + 1;
     }
-    local_90[local_c] = *local_94;
+    local_90[local_c] = s32(local_94, 0);
     local_c = local_c + 1;
   }
-  param_2[0] = local_8;
+  w32(param_2, 0, local_8);
   return local_98;
 }
 
@@ -180,10 +180,10 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   local_8._0_1_ = 4;
   FUN_00531010();
   local_8 = CONCAT31(local_8._1_3_,5);
-  sVar1 = _strlen((char *)(param_1 + 1));
+  sVar1 = _strlen((param_1 + 1));
   local_5ac = operator_new(sVar1);
   FUN_005f22d0(local_5ac,param_1);
-  sVar1 = _strlen((char *)(param_2 + 1));
+  sVar1 = _strlen((param_2 + 1));
   local_174 = operator_new(sVar1);
   FUN_005f22d0(local_174,param_2);
   FUN_00417ef0(0,0x11);
@@ -580,7 +580,7 @@ export function FUN_005e0af7(param_1, param_2, param_3) {
 
   let uVar1;
   
-  if ((((param_2 < param_1[0]) || (param_1[2] < param_2)) || (param_3 < param_1[1])) ||
+  if ((((param_2 < s32(param_1, 0)) || (param_1[2] < param_2)) || (param_3 < param_1[1])) ||
      (param_1[3] < param_3)) {
     uVar1 = 0;
   }
@@ -695,7 +695,7 @@ export function FUN_005e0cc0(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  return *in_ECX;
+  return s32(in_ECX, 0);
 }
 
 
@@ -725,35 +725,35 @@ export function FUN_005e0ce0(param_1, param_2) {
   hMem = LocalAlloc(2,uBytes);
   _Dest = LocalLock(hMem);
   *_Dest = 0;
-  for (; param_2[0] === 32; param_2 = param_2 + 1) {
+  for (; s32(param_2, 0) === 32; param_2 = param_2 + 1) {
   }
   while (!bVar1) {
-    if (param_2[0] === 33) {
+    if (s32(param_2, 0) === 33) {
       local_10 = 3;
       param_2 = param_2 + 1;
     }
     else {
       local_10 = 0;
     }
-    if (param_2[0] === 42) {
+    if (s32(param_2, 0) === 42) {
       local_10 = local_10 | 8;
       param_2 = param_2 + 1;
     }
     _Source = param_2;
     local_c = 0;
-    for (; ((param_2[0] !== 125 && (param_2[0] !== 95)) && (param_2[0] !== 123)); param_2 = param_2 + 1) {
+    for (; ((s32(param_2, 0) !== 125 && (s32(param_2, 0) !== 95)) && (s32(param_2, 0) !== 123)); param_2 = param_2 + 1) {
       local_c = local_c + 1;
     }
     _strncat(_Dest,_Source,local_c);
-    if ((param_2[0] === 95) || (param_2[0] === 125)) {
-      if (param_2[0] === 125) {
+    if ((s32(param_2, 0) === 95) || (s32(param_2, 0) === 125)) {
+      if (s32(param_2, 0) === 125) {
         bVar1 = true;
       }
       local_14 = G.DAT_00638d9c;
       G.DAT_00638d9c = (HMENU)(G.DAT_00638d9c->unused + 1);
       do {
         param_2 = param_2 + 1;
-      } while (param_2[0] === 32);
+      } while (s32(param_2, 0) === 32);
 }
     else if (*param_2 == '{') {
       local_14 = CreateMenu();
@@ -813,24 +813,24 @@ export function FUN_005e0f2a(param_1) {
   hMem = LocalAlloc(2,uBytes);
   _Dest = LocalLock(hMem);
   *_Dest = 0;
-  while (*local_14 !== 0) {
-    for (; *local_14 === 32; local_14 = local_14 + 1) {
+  while (s32(local_14, 0) !== 0) {
+    for (; s32(local_14, 0) === 32; local_14 = local_14 + 1) {
     }
-    cVar1 = *local_14;
+    cVar1 = s32(local_14, 0);
     if (cVar1 === 33) {
       local_14 = local_14 + 1;
     }
     _Source = local_14;
     local_28 = 0;
-    for (; *local_14 !== 123; local_14 = local_14 + 1) {
+    for (; s32(local_14, 0) !== 123; local_14 = local_14 + 1) {
       local_28 = local_28 + 1;
     }
     _strncat(_Dest,_Source,local_28);
     do {
       local_14 = local_14 + 1;
-    } while (*local_14 === 32);
+    } while (s32(local_14, 0) === 32);
     uIDNewItem = CreateMenu();
-    local_14 = (char *)FUN_005e0ce0(uIDNewItem,local_14);
+    local_14 = FUN_005e0ce0(uIDNewItem,local_14);
     if (cVar1 !== 33) {
       AppendMenuA(hMenu,0x10,(UINT_PTR)uIDNewItem,_Dest);
     }
@@ -1110,7 +1110,7 @@ export function show_popup_menu_154A_005E154A(param_1, param_2, param_3, param_4
   local_c[0].x = param_3;
   local_c[0].y = param_4;
   // DEVIATION: C pointer — ClientToScreen(*(HWND *)(param_2 + 4),local_c[0]);
-  // DEVIATION: C pointer — TrackPopupMenu(param_1,2,local_c[0].x,local_c[0].y,0,*(HWND *)(param_2 + 4),null);
+  // DEVIATION: C pointer — TrackPopupMenu(param_1,2,local_c[0].x,local_c[0].y,0,*(HWND *)(param_2 + 4),0x0);
   return;
 }
 
@@ -1407,8 +1407,8 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  local_74 = (CRichEditCntrItem *)GetWindowLongA(param_1,0xc);
-  if (local_74 === null) {
+  local_74 = GetWindowLongA(param_1,0xc);
+  if (local_74 === 0x0) {
     uVar1 = FUN_005eacc0(param_1,param_2,param_3,param_4);
   }
   else if (param_2 === 2) {
@@ -1417,8 +1417,8 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
     uVar1 = FUN_005eacc0(param_1,2,param_3,param_4);
   }
   else if (param_2 === 5) {
-    if (local_74 === null) {
-      G.DAT_00637ea4 = null;
+    if (local_74 === 0x0) {
+      G.DAT_00637ea4 = 0x0;
     }
     else {
       G.DAT_00637ea4 = local_74 + 0x48;
@@ -1439,8 +1439,8 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
         local_10 = local_68[0].rcPaint.top;
         local_c = local_68[0].rcPaint.right;
         local_8 = local_68[0].rcPaint.bottom;
-        if (local_74 === null) {
-          local_74 = null;
+        if (local_74 === 0x0) {
+          local_74 = 0x0;
         }
         else {
           local_74 = local_74 + 0x48;
@@ -1477,7 +1477,7 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
         // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
         local_24[0].bottom = (pCVar4 * iVar3) / pCVar5;
       }
-      // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle((CCheckListBox *)local_74);
+      // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle(local_74);
       // DEVIATION: C pointer — hdcSrc = *(HDC *)(uVar6 + 4);
       rop = 0xcc0020;
       // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
@@ -2204,7 +2204,7 @@ export function FUN_005e2cd1(param_1) {
         local_1c[0].top = G.DAT_006e50cc;
         local_1c[0].right = G.DAT_006e50c8 + _DAT_006e50d0;
         local_1c[0].bottom = G.DAT_006e50cc + _DAT_006e50d4;
-        UnionRect(local_1c[0],local_1c[0],(RECT *)G.DAT_00638dd8);
+        UnionRect(local_1c[0],local_1c[0],G.DAT_00638dd8);
         FUN_00408490(local_1c[0]);
         G.DAT_00638dd8 = local_1c[0].left;
         G.DAT_00638ddc = local_1c[0].top;
@@ -2312,7 +2312,7 @@ export function FUN_005e32b2(param_1, param_2) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== null) && (G.DAT_00638dcc !== 0)) {
+  if ((param_1 !== 0x0) && (G.DAT_00638dcc !== 0)) {
     ICSendMessage(G.DAT_00638db0,0x403f,0,0);
     if (param_2 === 0) {
       _DAT_006e50ac = 0;
@@ -2421,11 +2421,11 @@ export function create_dib_35B0_005E35B0(param_1) {
   let local_c;
   let local_8 = [0];
   
-  local_444 = null;
-  iVar1 = param_1[2] - param_1[0];
+  local_444 = 0x0;
+  iVar1 = param_1[2] - s32(param_1, 0);
   local_c = param_1[3] - param_1[1];
   if ((iVar1 < 1) || (local_c < 1)) {
-    local_444 = null;
+    local_444 = 0x0;
   }
   else {
     hdc = CreateCompatibleDC((HDC)0x0);
@@ -2463,7 +2463,7 @@ export function create_dib_35B0_005E35B0(param_1) {
       else {
         hMem = (HGLOBAL)FUN_005dce4f(0x28);
         local_444 = GlobalLock(hMem);
-        *local_444 = hMem;
+        w32(local_444, 0, hMem);
         local_444[1] = hdc;
         local_444[2] = 0;
         local_444[3] = h;
@@ -2512,7 +2512,7 @@ export function FUN_005e388f(param_1) {
 
   let uVar1;
   
-  if (param_1 !== null) {
+  if (param_1 !== 0x0) {
     if (param_1[1] !== 0) {
       SelectObject((HDC)param_1[1],(HGDIOBJ)param_1[4]);
       DeleteObject((HGDIOBJ)param_1[3]);
@@ -2521,7 +2521,7 @@ export function FUN_005e388f(param_1) {
     if (param_1[2] !== 0) {
       DeleteObject((HGDIOBJ)param_1[2]);
     }
-    uVar1 = param_1[0];
+    uVar1 = s32(param_1, 0);
     FUN_005dce29(uVar1);
     FUN_005dce96(uVar1);
   }
@@ -2578,16 +2578,16 @@ export function FUN_005e3988(param_1) {
   let local_14;
   let local_c;
   
-  local_c = (void *)FUN_005e3a81(param_1);
+  local_c = FUN_005e3a81(param_1);
   uVar1 = FUN_005dce4f(s32(param_1, 0x20));
-  _Dst = (void *)FUN_005dcdf9(uVar1);
-  local_14 = (void *)((s32(param_1, 0x1c) + -1) * s32(param_1, 0x20) + local_c);
+  _Dst = FUN_005dcdf9(uVar1);
+  local_14 = ((s32(param_1, 0x1c) + -1) * s32(param_1, 0x20) + local_c);
   for (local_18 = 0; local_18 < s32(param_1, 0x1c) / 2; local_18 = local_18 + 1) {
     // DEVIATION: C pointer — _memcpy(_Dst,local_14,*(size_t *)(param_1 + 0x20));
     // DEVIATION: C pointer — _memcpy(local_14,local_c,*(size_t *)(param_1 + 0x20));
     // DEVIATION: C pointer — _memcpy(local_c,_Dst,*(size_t *)(param_1 + 0x20));
-    local_c = (void *)(local_c + s32(param_1, 0x20));
-    local_14 = (void *)(local_14 - s32(param_1, 0x20));
+    local_c = (local_c + s32(param_1, 0x20));
+    local_14 = (local_14 - s32(param_1, 0x20));
   }
   FUN_005dce29(uVar1);
   FUN_005dce96(uVar1);
@@ -2642,7 +2642,7 @@ export function handle_colortable_3ACB_005E3ACB(param_1, param_2, param_3, param
   let auStack_406 = new Array(255).fill(0);
   let local_8;
   
-  // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),param_3,param_4,(RGBQUAD *)local_408);
+  // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),param_3,param_4,local_408);
   for (local_8 = param_3; local_8 < (param_4 + param_3); local_8 = local_8 + 1) {
     FUN_005c6b93(local_8,s32(local_408, local_8 * 4 + 2),
                  s32(local_408, local_8 * 4 + 1),
@@ -2738,12 +2738,12 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
     debug_log(s_Error__NULL_font_in_MSDrawString_00638ea0);
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    local_8 = FUN_005dcdf9(param_2);
     iVar1 = gdi_847F(param_2);
     iVar1 = param_5 + iVar1;
     iVar2 = measure_text_858E(param_2,param_3);
     SetRect(local_18[0],param_4,param_5,param_4 + iVar2,iVar1);
-    // DEVIATION: C pointer — local_20 = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
+    // DEVIATION: C pointer — local_20 = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(local_8, 0));
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((G.DAT_00637e78) >>> 0),1,local_24[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
                  // DEVIATION(cont): (uint)CONCAT12(local_24.rgbBlue,CONCAT11(local_24.rgbGreen,local_24.rgbRed)));
@@ -2799,8 +2799,8 @@ export function handle_colortable_3ECA_005E3ECA(param_1, param_2, param_3, param
     debug_log(s_Error__NULL_font_in_MSDrawString_00638ec4);
   }
   else if (param_1 !== 0) {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(local_8, 0));
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((G.DAT_00637e78) >>> 0),1,local_10[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
                  // DEVIATION(cont): (uint)CONCAT12(local_10.rgbBlue,CONCAT11(local_10.rgbGreen,local_10.rgbRed)));
@@ -2844,8 +2844,8 @@ export function handle_colortable_3FEB_005E3FEB(param_1, param_2, param_3, param
     debug_log(s_Error__NULL_font_in_MSDrawText_00638ee8);
   }
   else if (param_1 !== 0) {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(local_8, 0));
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((G.DAT_00637e78) >>> 0),1,local_10[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
                  // DEVIATION(cont): (uint)CONCAT12(local_10.rgbBlue,CONCAT11(local_10.rgbGreen,local_10.rgbRed)));
@@ -2914,11 +2914,11 @@ export function create_dib_41BA_005E41BA(param_1) {
   let local_c;
   let local_8 = [0];
   
-  local_50 = null;
-  iVar2 = param_1[2] - param_1[0];
+  local_50 = 0x0;
+  iVar2 = param_1[2] - s32(param_1, 0);
   iVar3 = param_1[3] - param_1[1];
   if ((iVar2 < 1) || (iVar3 < 1)) {
-    local_50 = null;
+    local_50 = 0x0;
   }
   else {
     hdc = CreateCompatibleDC((HDC)0x0);
@@ -2957,7 +2957,7 @@ export function create_dib_41BA_005E41BA(param_1) {
       else {
         hMem = (HGLOBAL)FUN_005dce4f(0x28);
         local_50 = GlobalLock(hMem);
-        *local_50 = hMem;
+        w32(local_50, 0, hMem);
         local_50[1] = hdc;
         local_50[2] = 0;
         local_50[3] = h;
@@ -3001,11 +3001,11 @@ export function create_dib_43C5_005E43C5(param_1) {
   let local_34 = [0];
   let local_8 = [0];
   
-  local_48 = null;
-  iVar2 = param_1[2] - param_1[0];
+  local_48 = 0x0;
+  iVar2 = param_1[2] - s32(param_1, 0);
   iVar3 = param_1[3] - param_1[1];
   if ((iVar2 < 1) || (iVar3 < 1)) {
-    local_48 = null;
+    local_48 = 0x0;
   }
   else {
     hdc = CreateCompatibleDC((HDC)0x0);
@@ -3037,7 +3037,7 @@ export function create_dib_43C5_005E43C5(param_1) {
       else {
         hMem = (HGLOBAL)FUN_005dce4f(0x28);
         local_48 = GlobalLock(hMem);
-        *local_48 = hMem;
+        w32(local_48, 0, hMem);
         local_48[1] = hdc;
         local_48[2] = 0;
         local_48[3] = h;
@@ -3081,11 +3081,11 @@ export function create_dib_45B5_005E45B5(param_1) {
   let local_34 = [0];
   let local_8 = [0];
   
-  local_48 = null;
-  iVar2 = param_1[2] - param_1[0];
+  local_48 = 0x0;
+  iVar2 = param_1[2] - s32(param_1, 0);
   iVar3 = param_1[3] - param_1[1];
   if ((iVar2 < 1) || (iVar3 < 1)) {
-    local_48 = null;
+    local_48 = 0x0;
   }
   else {
     hdc = CreateCompatibleDC((HDC)0x0);
@@ -3117,7 +3117,7 @@ export function create_dib_45B5_005E45B5(param_1) {
       else {
         hMem = (HGLOBAL)FUN_005dce4f(0x28);
         local_48 = GlobalLock(hMem);
-        *local_48 = hMem;
+        w32(local_48, 0, hMem);
         local_48[1] = hdc;
         local_48[2] = 0;
         local_48[3] = h;
@@ -3165,12 +3165,12 @@ export function FUN_005e47a5(param_1, param_2, param_3, param_4, param_5, param_
     debug_log(s_Error__NULL_font_in_MSDrawString_0063901c);
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    local_8 = FUN_005dcdf9(param_2);
     iVar1 = gdi_847F(param_2);
     iVar1 = param_5 + iVar1;
     iVar2 = measure_text_858E(param_2,param_3);
     SetRect(local_18[0],param_4,param_5,param_4 + iVar2,iVar1);
-    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
+    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(local_8, 0));
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),((CONCAT1) >>> 0)2(param_10,CONCAT11(param_9,param_8)));
     iVar1 = FUN_00407fc0(local_18[0]);
     iVar1 = iVar1 / 2;
@@ -3224,8 +3224,8 @@ export function FUN_005e49a0(param_1, param_2, param_3, param_4, param_5, param_
     debug_log(s_Error__NULL_font_in_MSDrawString_00639040);
   }
   else if (param_1 !== 0) {
-    puVar1 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*puVar1);
+    puVar1 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(puVar1, 0));
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
     local_10 = 0;
     if (param_5 === 0) {
@@ -3267,8 +3267,8 @@ export function FUN_005e4aa6(param_1, param_2, param_3, param_4, param_5, param_
     debug_log(s_Error__NULL_font_in_MSDrawText_00639064);
   }
   else if (param_1 !== 0) {
-    puVar1 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*puVar1);
+    puVar1 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — h = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)s32(puVar1, 0));
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
     local_10 = 0x10;
     if (param_5 === 0) {
@@ -3350,7 +3350,7 @@ export function FUN_005e4cc8(param_1, param_2, param_3, param_4, param_5, param_
   
   // DEVIATION: C pointer — color = GetPixel(*(HDC *)(param_1 + 4),0,0);
   // DEVIATION: C pointer — SetPixel(*(HDC *)(param_1 + 4),0,0,((CONCAT1) >>> 0)2(param_6,CONCAT11(param_5,param_4)));
-  uVar1 = param_2[0];
+  uVar1 = s32(param_2, 0);
   // DEVIATION: C pointer — SetPixel(*(HDC *)(param_1 + 4),0,0,color);
   return uVar1 & (1 << (param_3 & 0x1f)) - 1;
 }
@@ -3413,25 +3413,25 @@ export function FUN_005e4e60(param_1, param_2, param_3, param_4, param_5, param_
     param_4 = (param_8 + -1) - param_4;
     iVar3 = -param_7;
   }
-  puVar4 = (uint *)(param_1 + param_4 * iVar3 + param_3);
+  puVar4 = (param_1 + param_4 * iVar3 + param_3);
   uVar1 = param_2 | param_2 << 8;
   do {
     uVar2 = param_5 >> 2;
     if (uVar2 !== 0) {
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        *puVar4 = uVar1 | param_2 << 0x10 | param_2 << 0x18;
+        w32(puVar4, 0, uVar1 | param_2 << 0x10 | param_2 << 0x18);
         puVar4 = puVar4 + 1;
       }
     }
     if ((param_5 & 2) !== 0) {
       // DEVIATION: C pointer — *(short *)puVar4 = ((uVar1) << 16 >> 16);
-      puVar4 = (uint *)(puVar4 + 2);
+      puVar4 = (puVar4 + 2);
     }
     if ((param_5 & 1) !== 0) {
       // DEVIATION: C pointer — *(char *)puVar4 = s8(param_2);
-      puVar4 = (uint *)(puVar4 + 1);
+      puVar4 = (puVar4 + 1);
     }
-    puVar4 = (uint *)(puVar4 + (param_7 - param_5));
+    puVar4 = (puVar4 + (param_7 - param_5));
     param_6 = param_6 + -1;
   } while (param_6 !== 0);
   return;
@@ -3458,7 +3458,7 @@ export function FUN_005e4ef8(param_1, param_2, param_3, param_4, param_5, param_
     param_6 = (param_10 + -1) - param_6;
     iVar3 = -param_9;
   }
-  psVar4 = (short *)(param_1 + param_6 * iVar3 + param_5 * 2);
+  psVar4 = (param_1 + param_6 * iVar3 + param_5 * 2);
   sVar2 = CONCAT11((param_2 & 0xf8) >> 1,param_4 >> 3) + (param_3 & 0xf8) * 4;
   do {
     uVar1 = ((param_7 * 2) >>> 0) >> 2;
@@ -3469,10 +3469,10 @@ export function FUN_005e4ef8(param_1, param_2, param_3, param_4, param_5, param_
       }
     }
     if ((param_7 * 2 & 2) !== 0) {
-      *psVar4 = sVar2;
+      w32(psVar4, 0, sVar2);
       psVar4 = psVar4 + 1;
     }
-    psVar4 = (short *)(psVar4 + param_9 + param_7 * -2);
+    psVar4 = (psVar4 + param_9 + param_7 * -2);
     param_8 = param_8 + -1;
   } while (param_8 !== 0);
   return;
@@ -3501,31 +3501,31 @@ export function FUN_005e4f9b(param_1, param_2, param_3, param_4, param_5, param_
     param_4 = (param_9 + -1) - param_4;
     iVar3 = -param_11;
   }
-  puVar4 = (undefined4 *)(param_1 + param_4 * iVar3 + param_3);
+  puVar4 = (param_1 + param_4 * iVar3 + param_3);
   iVar3 = param_12;
   if (param_12 < 1) {
     param_6 = (param_10 + -1) - param_6;
     iVar3 = -param_12;
   }
-  puVar5 = (undefined4 *)(param_2 + param_6 * iVar3 + param_5);
+  puVar5 = (param_2 + param_6 * iVar3 + param_5);
   local_8 = param_8;
   do {
     uVar2 = param_7 >> 2;
     if (uVar2 !== 0) {
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        *puVar5 = *puVar4;
+        w32(puVar5, 0, s32(puVar4, 0));
         puVar4 = puVar4 + 1;
         puVar5 = puVar5 + 1;
       }
     }
     for (uVar2 = param_7 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
       // DEVIATION: C pointer — uVar1 = *(undefined1 *)puVar4;
-      puVar4 = (undefined4 *)(puVar4 + 1);
+      puVar4 = (puVar4 + 1);
       // DEVIATION: C pointer — *(undefined1 *)puVar5 = uVar1;
-      puVar5 = (undefined4 *)(puVar5 + 1);
+      puVar5 = (puVar5 + 1);
     }
-    puVar4 = (undefined4 *)(puVar4 + (param_11 - param_7));
-    puVar5 = (undefined4 *)(puVar5 + (param_12 - param_7));
+    puVar4 = (puVar4 + (param_11 - param_7));
+    puVar5 = (puVar5 + (param_12 - param_7));
     local_8 = local_8 + -1;
   } while (local_8 !== 0);
   return;
@@ -3555,32 +3555,32 @@ export function FUN_005e5056(param_1, param_2, param_3, param_4, param_5, param_
     param_4 = (param_9 + -1) - param_4;
     iVar3 = -param_11;
   }
-  puVar5 = (undefined4 *)(param_1 + param_4 * iVar3 + param_3 * 2);
+  puVar5 = (param_1 + param_4 * iVar3 + param_3 * 2);
   iVar3 = param_12;
   if (param_12 < 1) {
     param_6 = (param_10 + -1) - param_6;
     iVar3 = -param_12;
   }
-  puVar6 = (undefined4 *)(param_2 + param_6 * iVar3 + param_5 * 2);
+  puVar6 = (param_2 + param_6 * iVar3 + param_5 * 2);
   uVar4 = param_11 + param_7 * -2;
   local_8 = param_8;
   do {
     uVar2 = ((param_7 * 2) >>> 0) >> 2;
     if (uVar2 !== 0) {
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        *puVar6 = *puVar5;
+        w32(puVar6, 0, s32(puVar5, 0));
         puVar5 = puVar5 + 1;
         puVar6 = puVar6 + 1;
       }
     }
     if ((uVar4 & 2) !== 0) {
       // DEVIATION: C pointer — uVar1 = *(undefined2 *)puVar5;
-      puVar5 = (undefined4 *)(puVar5 + 2);
+      puVar5 = (puVar5 + 2);
       // DEVIATION: C pointer — *(undefined2 *)puVar6 = uVar1;
-      puVar6 = (undefined4 *)(puVar6 + 2);
+      puVar6 = (puVar6 + 2);
     }
-    puVar5 = (undefined4 *)(puVar5 + uVar4);
-    puVar6 = (undefined4 *)(puVar6 + param_12 + param_7 * -2);
+    puVar5 = (puVar5 + uVar4);
+    puVar6 = (puVar6 + param_12 + param_7 * -2);
     local_8 = local_8 + -1;
   } while (local_8 !== 0);
   return;
@@ -3606,17 +3606,17 @@ export function FUN_005e511c(param_1, param_2, param_3, param_4, param_5, param_
   let puVar6;
   let local_8;
   
-  puVar3 = (undefined1 *)(param_1 + param_4 * param_11 + param_3);
-  puVar5 = (undefined1 *)(param_2 + param_6 * param_12 + param_5);
+  puVar3 = (param_1 + param_4 * param_11 + param_3);
+  puVar5 = (param_2 + param_6 * param_12 + param_5);
   local_8 = param_7;
   iVar2 = param_8;
   puVar6 = puVar5;
   puVar4 = puVar3;
   do {
     do {
-      uVar1 = *puVar3;
+      uVar1 = s32(puVar3, 0);
       puVar3 = puVar3 + param_11;
-      *puVar5 = uVar1;
+      w32(puVar5, 0, uVar1);
       puVar5 = puVar5 + param_12;
       iVar2 = iVar2 + -1;
     } while (iVar2 !== 0);
@@ -3657,11 +3657,11 @@ export function FUN_005e518e(param_1, param_2, param_3, param_4, param_5, param_
     param_6 = (param_8 + -1) - param_6;
     iVar5 = -param_7;
   }
-  pcVar7 = (char *)(param_2 + param_6 * iVar5 + param_5);
-  local_20 = (int *)((param_12 + param_16) * 4 + param_3);
+  pcVar7 = (param_2 + param_6 * iVar5 + param_5);
+  local_20 = ((param_12 + param_16) * 4 + param_3);
   param_1 = param_1 + 8;
   do {
-    for (; param_14 < *local_20; param_14 = param_14 + 1) {
+    for (; param_14 < s32(local_20, 0); param_14 = param_14 + 1) {
       param_1 = param_1 + s32(param_1, -4) + 8;
     }
     iVar5 = s32(param_1, -8);
@@ -3669,18 +3669,18 @@ export function FUN_005e518e(param_1, param_2, param_3, param_4, param_5, param_
     if (iVar2 !== 0) {
       iVar4 = param_9;
       pcVar8 = pcVar7;
-      for (piVar3 = (int *)((param_11 + param_15) * 4 + param_3); *piVar3 < iVar5;
+      for (piVar3 = ((param_11 + param_15) * 4 + param_3); s32(piVar3, 0) < iVar5;
           piVar3 = piVar3 + 1) {
         pcVar8 = pcVar8 + 1;
         iVar4 = iVar4 + -1;
       }
       if (0 < iVar4) {
         do {
-          iVar6 = *piVar3 - iVar5;
+          iVar6 = s32(piVar3, 0) - iVar5;
           if (iVar2 <= iVar6) break;
           // DEVIATION: C pointer — cVar1 = *(char *)(iVar6 + param_1);
           if (cVar1 !== param_4) {
-            *pcVar8 = cVar1;
+            w32(pcVar8, 0, cVar1);
           }
           piVar3 = piVar3 + 1;
           pcVar8 = pcVar8 + 1;
@@ -3723,11 +3723,11 @@ export function FUN_005e52bf(param_1, param_2, param_3, param_4, param_5, param_
     param_6 = (param_8 + -1) - param_6;
     iVar4 = -param_7;
   }
-  puVar6 = (undefined1 *)(param_2 + param_6 * iVar4 + param_5);
-  local_20 = (int *)((param_12 + param_16) * 4 + param_3);
+  puVar6 = (param_2 + param_6 * iVar4 + param_5);
+  local_20 = ((param_12 + param_16) * 4 + param_3);
   param_1 = param_1 + 8;
   do {
-    for (; param_14 < *local_20; param_14 = param_14 + 1) {
+    for (; param_14 < s32(local_20, 0); param_14 = param_14 + 1) {
       param_1 = param_1 + s32(param_1, -4) + 8;
     }
     iVar4 = s32(param_1, -8);
@@ -3735,14 +3735,14 @@ export function FUN_005e52bf(param_1, param_2, param_3, param_4, param_5, param_
     if (iVar1 !== 0) {
       iVar3 = param_9;
       puVar7 = puVar6;
-      for (piVar2 = (int *)((param_11 + param_15) * 4 + param_3); *piVar2 < iVar4;
+      for (piVar2 = ((param_11 + param_15) * 4 + param_3); s32(piVar2, 0) < iVar4;
           piVar2 = piVar2 + 1) {
         puVar7 = puVar7 + 1;
         iVar3 = iVar3 + -1;
       }
       if (0 < iVar3) {
         do {
-          iVar5 = *piVar2 - iVar4;
+          iVar5 = s32(piVar2, 0) - iVar4;
           if (iVar1 <= iVar5) break;
           // DEVIATION: C pointer — if (*(char *)(iVar5 + param_1) !== param_4) {
             // DEVIATION(cont): *puVar7 = param_17;
@@ -3826,17 +3826,17 @@ export function FUN_005e53f3(param_1, param_2, param_3, param_4, param_5, param_
         for (uVar7 = ((local_40) >>> 0); local_24 = puVar12, uVar7 !== 0; uVar7 = uVar7 - 1) {
           puVar11 = puVar11 + -1;
           puVar13 = puVar13 + -1;
-          *puVar13 = *puVar11;
+          w32(puVar13, 0, s32(puVar11, 0));
         }
       }
       pbVar1 = local_5c;
       for (; local_5c = pbVar1, local_14 < local_50; local_14 = local_14 + 8) {
         if (local_8 === pbVar1) {
           local_5c = pbVar1 + 1;
-          local_8 = pbVar1 + *pbVar1 + 1;
+          local_8 = pbVar1 + s32(pbVar1, 0) + 1;
         }
         pbVar1 = local_5c + 1;
-        local_44 = (uint)*local_5c << (u8(local_14) & 0x1f) | local_44;
+        local_44 = (s32(local_5c, 0) >>> 0) << (u8(local_14) & 0x1f) | local_44;
       }
       uVar6 = ((local_44) << 16 >> 16) << 1 & local_20;
       if (local_54 < uVar6) {
@@ -3868,11 +3868,11 @@ export function FUN_005e53f3(param_1, param_2, param_3, param_4, param_5, param_
         }
         do {
           puVar13 = local_58 + -1;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((local_4c) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((local_4c) >>> 0)));
           uVar2 = u16(param_3, ((local_4c) >>> 0));
           if (uVar2 === 0xffff) break;
           puVar13 = local_58 + -2;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((uVar2) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((uVar2) >>> 0)));
           local_4c = u16(param_3, ((uVar2) >>> 0));
           local_58 = puVar13;
         } while (local_4c !== 0xffff);
@@ -3887,17 +3887,17 @@ export function FUN_005e53f3(param_1, param_2, param_3, param_4, param_5, param_
         }
         do {
           puVar13 = local_58 + -1;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((local_c) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((local_c) >>> 0)));
           uVar2 = u16(param_3, ((local_c) >>> 0));
           if (uVar2 === 0xffff) break;
           puVar13 = local_58 + -2;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((uVar2) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((uVar2) >>> 0)));
           local_c = u16(param_3, ((uVar2) >>> 0));
           local_58 = puVar13;
         } while (local_c !== 0xffff);
-        local_24[-1] = *puVar13;
+        local_24[-1] = s32(puVar13, 0);
       }
-      // DEVIATION: C pointer — *(undefined1 *)(iVar9 + ((local_54) >>> 0)) = *puVar13;
+      // DEVIATION: C pointer — *(undefined1 *)(iVar9 + ((local_54) >>> 0)) = s32(puVar13, 0);
       local_54 = local_54 + 2;
       local_c = uVar6;
       if ((local_20 < local_54) && (local_50 !== 0xc)) {
@@ -3943,18 +3943,18 @@ export function FUN_005e5869(param_1, param_2, param_3, param_4, param_5, param_
     param_7 = -param_7;
     param_5 = (param_6 + -1) - param_5;
   }
-  puVar3 = (undefined4 *)(param_1 + param_5 * param_7 + param_4);
+  puVar3 = (param_1 + param_5 * param_7 + param_4);
   uVar1 = ((param_3) & 0xFFFF) >> 2;
   iVar2 = CONCAT22(((param_3 >> 0x10) << 16 >> 16),uVar1);
   if (uVar1 !== 0) {
     for (; iVar2 !== 0; iVar2 = iVar2 + -1) {
-      *puVar3 = CONCAT22(CONCAT11(param_2,param_2),CONCAT11(param_2,param_2));
+      w32(puVar3, 0, CONCAT22(CONCAT11(param_2,param_2),CONCAT11(param_2,param_2)));
       puVar3 = puVar3 + 1;
     }
   }
   if ((param_3 & 2) !== 0) {
     // DEVIATION: C pointer — *(ushort *)puVar3 = CONCAT11(param_2,param_2);
-    puVar3 = (undefined4 *)(puVar3 + 2);
+    puVar3 = (puVar3 + 2);
   }
   if ((param_3 & 1) !== 0) {
     // DEVIATION: C pointer — *(undefined1 *)puVar3 = param_2;
@@ -3981,9 +3981,9 @@ export function FUN_005e58e7(param_1, param_2, param_3, param_4, param_5, param_
     param_5 = (param_6 + -1) - param_5;
     iVar1 = -param_7;
   }
-  puVar2 = (undefined1 *)(param_1 + param_5 * iVar1 + param_4);
+  puVar2 = (param_1 + param_5 * iVar1 + param_4);
   do {
-    *puVar2 = param_2;
+    w32(puVar2, 0, param_2);
     puVar2 = puVar2 + param_7;
     param_3 = param_3 + -1;
   } while (param_3 !== 0);
@@ -4005,18 +4005,18 @@ export function FUN_005e593a(param_1, param_2, param_3, param_4, param_5, param_
   
   do {
     for (uVar2 = param_3 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      iVar1 = param_1[0];
+      iVar1 = s32(param_1, 0);
       param_1 = param_1 + 1;
-      param_2[0] = iVar1 + CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
+      w32(param_2, 0, iVar1 + CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6)));
       param_2 = param_2 + 1;
     }
     for (uVar2 = param_3 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      iVar1 = param_1[0];
-      param_1 = (int *)(param_1 + 1);
+      iVar1 = s32(param_1, 0);
+      param_1 = (param_1 + 1);
       // DEVIATION: C pointer — *(char *)param_2 = s8(iVar1) + param_6;
-      param_2 = (int *)(param_2 + 1);
+      param_2 = (param_2 + 1);
     }
-    param_2 = (int *)(param_2 + (param_5 - param_3));
+    param_2 = (param_2 + (param_5 - param_3));
     param_4 = param_4 + -1;
   } while (param_4 !== 0);
   return;
@@ -4036,21 +4036,21 @@ export function FUN_005e59b3(param_1, param_2, param_3, param_4, param_5, param_
   let uVar2;
   let piVar3;
   
-  piVar3 = (int *)(param_2 + (param_4 + -1) * -param_5);
+  piVar3 = (param_2 + (param_4 + -1) * -param_5);
   do {
     for (uVar2 = param_3 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      iVar1 = param_1[0];
+      iVar1 = s32(param_1, 0);
       param_1 = param_1 + 1;
-      *piVar3 = iVar1 + CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
+      w32(piVar3, 0, iVar1 + CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6)));
       piVar3 = piVar3 + 1;
     }
     for (uVar2 = param_3 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      iVar1 = param_1[0];
-      param_1 = (int *)(param_1 + 1);
+      iVar1 = s32(param_1, 0);
+      param_1 = (param_1 + 1);
       // DEVIATION: C pointer — *(char *)piVar3 = s8(iVar1) + param_6;
-      piVar3 = (int *)(piVar3 + 1);
+      piVar3 = (piVar3 + 1);
     }
-    piVar3 = (int *)(piVar3 + (param_5 - param_3));
+    piVar3 = (piVar3 + (param_5 - param_3));
     param_4 = param_4 + -1;
   } while (param_4 !== 0);
   return;
@@ -4075,28 +4075,28 @@ export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_
   
   iVar4 = CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
   while (param_4 = param_4 + -1, -1 < param_4) {
-    param_1 = (int *)(param_1 + 1);
+    param_1 = (param_1 + 1);
     iVar5 = param_3;
     while (0 < iVar5) {
-      uVar1 = ((char) & 0xFFFF)param_1[0];
-      piVar6 = (int *)(param_1 + 1);
+      uVar1 = ((char) & 0xFFFF)s32(param_1, 0);
+      piVar6 = (param_1 + 1);
       if (((uVar1) << 16 >> 16) < 0) {
         uVar1 = -uVar1;
         iVar5 = iVar5 - ((uVar1) >>> 0);
         param_1 = piVar6;
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-          iVar2 = param_1[0];
+          iVar2 = s32(param_1, 0);
           param_1 = param_1 + 1;
-          param_2[0] = iVar2 + iVar4;
+          w32(param_2, 0, iVar2 + iVar4);
           param_2 = param_2 + 1;
         }
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
-            iVar2 = param_1[0];
-            param_1 = (int *)(param_1 + 1);
+            iVar2 = s32(param_1, 0);
+            param_1 = (param_1 + 1);
             // DEVIATION: C pointer — *(char *)param_2 = s8(iVar2) + param_6;
-            param_2 = (int *)(param_2 + 1);
+            param_2 = (param_2 + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
         }
@@ -4105,22 +4105,22 @@ export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_
         // DEVIATION: C pointer — iVar2 = CONCAT22(CONCAT11(*(char *)piVar6,*(char *)piVar6),
                          // DEVIATION(cont): CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
         iVar5 = iVar5 - ((uVar1) >>> 0);
-        param_1 = (int *)(param_1 + 2);
+        param_1 = (param_1 + 2);
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-          param_2[0] = iVar2;
+          w32(param_2, 0, iVar2);
           param_2 = param_2 + 1;
         }
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
             // DEVIATION: C pointer — *(char *)param_2 = s8(iVar2);
-            param_2 = (int *)(param_2 + 1);
+            param_2 = (param_2 + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
         }
       }
     }
-    param_2 = (int *)(param_2 + (param_5 - param_3));
+    param_2 = (param_2 + (param_5 - param_3));
   }
   return;
 }
@@ -4143,31 +4143,31 @@ export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_
   let piVar6;
   let piVar7;
   
-  piVar7 = (int *)(param_2 + (param_4 + -1) * -param_5);
+  piVar7 = (param_2 + (param_4 + -1) * -param_5);
   iVar4 = CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
   while (param_4 = param_4 + -1, -1 < param_4) {
-    param_1 = (int *)(param_1 + 1);
+    param_1 = (param_1 + 1);
     iVar5 = param_3;
     while (0 < iVar5) {
-      uVar1 = ((char) & 0xFFFF)param_1[0];
-      piVar6 = (int *)(param_1 + 1);
+      uVar1 = ((char) & 0xFFFF)s32(param_1, 0);
+      piVar6 = (param_1 + 1);
       if (((uVar1) << 16 >> 16) < 0) {
         uVar1 = -uVar1;
         iVar5 = iVar5 - ((uVar1) >>> 0);
         param_1 = piVar6;
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-          iVar2 = param_1[0];
+          iVar2 = s32(param_1, 0);
           param_1 = param_1 + 1;
-          *piVar7 = iVar2 + iVar4;
+          w32(piVar7, 0, iVar2 + iVar4);
           piVar7 = piVar7 + 1;
         }
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
-            iVar2 = param_1[0];
-            param_1 = (int *)(param_1 + 1);
+            iVar2 = s32(param_1, 0);
+            param_1 = (param_1 + 1);
             // DEVIATION: C pointer — *(char *)piVar7 = s8(iVar2) + param_6;
-            piVar7 = (int *)(piVar7 + 1);
+            piVar7 = (piVar7 + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
         }
@@ -4176,22 +4176,22 @@ export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_
         // DEVIATION: C pointer — iVar2 = CONCAT22(CONCAT11(*(char *)piVar6,*(char *)piVar6),
                          // DEVIATION(cont): CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
         iVar5 = iVar5 - ((uVar1) >>> 0);
-        param_1 = (int *)(param_1 + 2);
+        param_1 = (param_1 + 2);
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-          *piVar7 = iVar2;
+          w32(piVar7, 0, iVar2);
           piVar7 = piVar7 + 1;
         }
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
             // DEVIATION: C pointer — *(char *)piVar7 = s8(iVar2);
-            piVar7 = (int *)(piVar7 + 1);
+            piVar7 = (piVar7 + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
         }
       }
     }
-    piVar7 = (int *)(piVar7 + (param_5 - param_3));
+    piVar7 = (piVar7 + (param_5 - param_3));
   }
   return;
 }
@@ -4216,12 +4216,12 @@ export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_
   let local_c;
   let local_8;
   
-  local_c = (uint)param_1[0];
+  local_c = (s32(param_1, 0) >>> 0);
   param_1 = param_1 + 1;
   iVar4 = CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
   do {
     while( true ) {
-      uVar5 = param_1[0];
+      uVar5 = s32(param_1, 0);
       param_1 = param_1 + 1;
       if (-1 < ((uVar5) << 16 >> 16)) break;
       if (uVar5 === 0x4000) {
@@ -4231,15 +4231,15 @@ export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_
         }
       }
       else {
-        param_2 = (int *)(param_2 + param_5 * ((ushort) >>> 0)-uVar5);
+        param_2 = (param_2 + param_5 * ((ushort) >>> 0)-uVar5);
       }
     }
     local_8 = 0;
     do {
       while( true ) {
         if (((uVar5) << 16 >> 16) < 0) LAB_005e5d32_helper(local_8, local_c, param_2, param_5); return;
-        param_2 = (int *)(param_2 + ((byte) >>> 0)param_1[0]);
-        local_8 = local_8 + ((byte) >>> 0)param_1[0];
+        param_2 = (param_2 + ((byte) >>> 0)s32(param_1, 0));
+        local_8 = local_8 + ((byte) >>> 0)s32(param_1, 0);
         puVar6 = param_1 + 1;
         // DEVIATION: C pointer — uVar1 = ((char) & 0xFFFF)*(byte *)(param_1 + 1);
         if (((uVar1) << 16 >> 16) < 0) break;
@@ -4248,34 +4248,34 @@ export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_
         for (uVar3 = ((uVar1 >> 1) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
           // DEVIATION: C pointer — iVar2 = *(int *)param_1;
           param_1 = param_1 + 2;
-          param_2[0] = iVar2 + iVar4;
+          w32(param_2, 0, iVar2 + iVar4);
           param_2 = param_2 + 1;
         }
         if ((uVar1 & 1) !== 0) {
-          uVar1 = param_1[0];
+          uVar1 = s32(param_1, 0);
           param_1 = param_1 + 1;
           // DEVIATION: C pointer — *(ushort *)param_2 = uVar1 + CONCAT11(param_6,param_6);
-          param_2 = (int *)(param_2 + 2);
+          param_2 = (param_2 + 2);
         }
         uVar5 = uVar5 - 1;
         if (uVar5 === 0) LAB_005e5d32_helper(local_8, local_c, param_2, param_5); return;
       }
       uVar1 = -uVar1;
       local_8 = local_8 + ((uVar1) >>> 0) * 2;
-      iVar2 = CONCAT22(*puVar6,*puVar6) + iVar4;
+      iVar2 = CONCAT22(s32(puVar6, 0),s32(puVar6, 0)) + iVar4;
       param_1 = param_1 + 2;
       for (uVar3 = ((uVar1 >> 1) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-        param_2[0] = iVar2;
+        w32(param_2, 0, iVar2);
         param_2 = param_2 + 1;
       }
       if ((uVar1 & 1) !== 0) {
         // DEVIATION: C pointer — *(short *)param_2 = ((iVar2) << 16 >> 16);
-        param_2 = (int *)(param_2 + 2);
+        param_2 = (param_2 + 2);
       }
       uVar5 = uVar5 - 1;
     } while (uVar5 !== 0);
 // LAB_005e5d32: (code below also in LAB_005e5d32_helper, kept for 1:1 audit)
-    param_2 = (int *)(param_2 + (param_5 - local_8));
+    param_2 = (param_2 + (param_5 - local_8));
     local_c = local_c - 1;
     if (local_c === 0) {
       return;
@@ -4304,13 +4304,13 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
   let local_c;
   let local_8;
   
-  piVar7 = (int *)(param_2 + (param_4 + -1) * -param_5);
-  local_c = (uint)param_1[0];
+  piVar7 = (param_2 + (param_4 + -1) * -param_5);
+  local_c = (s32(param_1, 0) >>> 0);
   param_1 = param_1 + 1;
   iVar4 = CONCAT22(CONCAT11(param_6,param_6),CONCAT11(param_6,param_6));
   do {
     while( true ) {
-      uVar5 = param_1[0];
+      uVar5 = s32(param_1, 0);
       param_1 = param_1 + 1;
       if (-1 < ((uVar5) << 16 >> 16)) break;
       if (uVar5 === 0x4000) {
@@ -4320,15 +4320,15 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
         }
       }
       else {
-        piVar7 = (int *)(piVar7 + param_5 * ((ushort) >>> 0)-uVar5);
+        piVar7 = (piVar7 + param_5 * ((ushort) >>> 0)-uVar5);
       }
     }
     local_8 = 0;
     do {
       while( true ) {
         if (((uVar5) << 16 >> 16) < 0) LAB_005e5e7e_helper(local_8, local_c, param_5); return;
-        piVar7 = (int *)(piVar7 + ((byte) >>> 0)param_1[0]);
-        local_8 = local_8 + ((byte) >>> 0)param_1[0];
+        piVar7 = (piVar7 + ((byte) >>> 0)s32(param_1, 0));
+        local_8 = local_8 + ((byte) >>> 0)s32(param_1, 0);
         puVar6 = param_1 + 1;
         // DEVIATION: C pointer — uVar1 = ((char) & 0xFFFF)*(byte *)(param_1 + 1);
         if (((uVar1) << 16 >> 16) < 0) break;
@@ -4337,34 +4337,34 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
         for (uVar3 = ((uVar1 >> 1) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
           // DEVIATION: C pointer — iVar2 = *(int *)param_1;
           param_1 = param_1 + 2;
-          *piVar7 = iVar2 + iVar4;
+          w32(piVar7, 0, iVar2 + iVar4);
           piVar7 = piVar7 + 1;
         }
         if ((uVar1 & 1) !== 0) {
-          uVar1 = param_1[0];
+          uVar1 = s32(param_1, 0);
           param_1 = param_1 + 1;
           // DEVIATION: C pointer — *(ushort *)piVar7 = uVar1 + CONCAT11(param_6,param_6);
-          piVar7 = (int *)(piVar7 + 2);
+          piVar7 = (piVar7 + 2);
         }
         uVar5 = uVar5 - 1;
         if (uVar5 === 0) LAB_005e5e7e_helper(local_8, local_c, param_5); return;
       }
       uVar1 = -uVar1;
       local_8 = local_8 + ((uVar1) >>> 0) * 2;
-      iVar2 = CONCAT22(*puVar6,*puVar6) + iVar4;
+      iVar2 = CONCAT22(s32(puVar6, 0),s32(puVar6, 0)) + iVar4;
       param_1 = param_1 + 2;
       for (uVar3 = ((uVar1 >> 1) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
-        *piVar7 = iVar2;
+        w32(piVar7, 0, iVar2);
         piVar7 = piVar7 + 1;
       }
       if ((uVar1 & 1) !== 0) {
         // DEVIATION: C pointer — *(short *)piVar7 = ((iVar2) << 16 >> 16);
-        piVar7 = (int *)(piVar7 + 2);
+        piVar7 = (piVar7 + 2);
       }
       uVar5 = uVar5 - 1;
     } while (uVar5 !== 0);
 // LAB_005e5e7e: (code below also in LAB_005e5e7e_helper, kept for 1:1 audit)
-    piVar7 = (int *)(piVar7 + (param_5 - local_8));
+    piVar7 = (piVar7 + (param_5 - local_8));
     local_c = local_c - 1;
     if (local_c === 0) {
       return;
@@ -4384,7 +4384,7 @@ export function FUN_005e5ea0(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  *in_ECX = 0;
+  w32(in_ECX, 0, 0);
   in_ECX[0x10] = 0;
   in_ECX[0xf] = 0;
   FUN_005e6450(0);
@@ -4416,14 +4416,14 @@ export function FUN_005e5ef6(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     if (in_ECX[0xc] === 0) {
-      FUN_005e906b(*in_ECX);
+      FUN_005e906b(s32(in_ECX, 0));
     }
-    *in_ECX = 0;
+    w32(in_ECX, 0, 0);
     FUN_005e6450(0);
     if (in_ECX[0xf] !== 0) {
-      operator_delete((void *)in_ECX[0xf]);
+      operator_delete(in_ECX[0xf]);
       in_ECX[0xf] = 0;
     }
   }
@@ -4495,7 +4495,7 @@ export function FUN_005e6018(in_ECX, param_1, param_2) {
   let local_8;
   
   local_8 = 1;
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005e5ef6();
   }
   if (((param_1 === 0) || (iVar1 = FUN_00407f90(param_1), iVar1 === 0)) ||
@@ -4505,16 +4505,16 @@ export function FUN_005e6018(in_ECX, param_1, param_2) {
   else {
     FUN_005e6450(param_1);
     iVar1 = FUN_005e8fb7(param_1,param_2);
-    *in_ECX = iVar1;
-    if (*in_ECX === 0) {
+    w32(in_ECX, 0, iVar1);
+    if (s32(in_ECX, 0) === 0) {
       FUN_005dae6b(2,s_ERR_PORTALLOCFAILED_006390dc,s_D__Ss_Smeds32_dd_cpp_006390c4,0x76);
       local_8 = 0;
     }
     else {
-      iVar1 = FUN_005e910b(*in_ECX);
+      iVar1 = FUN_005e910b(s32(in_ECX, 0));
       in_ECX[3] = iVar1;
-      FUN_005e9783(*in_ECX,param_1,G.DAT_00638b40);
-      iVar1 = FUN_005e9150(*in_ECX);
+      FUN_005e9783(s32(in_ECX, 0),param_1,G.DAT_00638b40);
+      iVar1 = FUN_005e9150(s32(in_ECX, 0));
       in_ECX[0xe] = iVar1;
       pvVar2 = operator_new(in_ECX[1] << 2);
       in_ECX[0xf] = pvVar2;
@@ -4541,9 +4541,9 @@ export function FUN_005e6188(in_ECX) {
   let iVar2;
   // in_ECX → promoted to parameter
   
-  iVar2 = FUN_005e924e(*in_ECX);
+  iVar2 = FUN_005e924e(s32(in_ECX, 0));
   if (iVar2 === 0) {
-    cVar1 = FUN_005ea5c5(*in_ECX);
+    cVar1 = FUN_005ea5c5(s32(in_ECX, 0));
     if (cVar1 !== 0) {
       FUN_005e61e9();
     }
@@ -4566,7 +4566,7 @@ export function FUN_005e61e9(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (in_ECX[0xc] === 0) {
-    iVar1 = FUN_005e9091(*in_ECX);
+    iVar1 = FUN_005e9091(s32(in_ECX, 0));
     if ((iVar1 !== 0) && (in_ECX[0x10] !== 0)) {
       // DEVIATION: C pointer — (*(code *)in_ECX[0x10])();
     }
@@ -4617,22 +4617,22 @@ export function FUN_005e6297(in_ECX, param_1, param_2) {
   let iVar2;
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005e5ef6();
   }
   FUN_005e6450(param_1);
   iVar1 = FUN_005e8eb0(param_2);
-  *in_ECX = iVar1;
-  iVar1 = *in_ECX;
+  w32(in_ECX, 0, iVar1);
+  iVar1 = s32(in_ECX, 0);
   if (iVar1 === 0) {
     FUN_005dae6b(2,s_ERR_PORTALLOCFAILED_00639108,s_D__Ss_Smeds32_dd_cpp_006390f0,0xd5);
   }
   else {
-    iVar2 = FUN_005e910b(*in_ECX);
+    iVar2 = FUN_005e910b(s32(in_ECX, 0));
     in_ECX[3] = iVar2;
-    iVar2 = FUN_005e9150(*in_ECX);
+    iVar2 = FUN_005e9150(s32(in_ECX, 0));
     in_ECX[0xe] = iVar2;
-    FUN_005e9783(*in_ECX,param_1,G.DAT_00638b40);
+    FUN_005e9783(s32(in_ECX, 0),param_1,G.DAT_00638b40);
   }
   return iVar1 !== 0;
 }
@@ -4654,13 +4654,13 @@ export function FUN_005e635f(in_ECX, param_1, param_2, param_3) {
   
   if (param_1 !== 0) {
     FUN_005e6450(param_2);
-    *in_ECX = param_1;
+    w32(in_ECX, 0, param_1);
     in_ECX[0xd] = param_3;
-    iVar1 = FUN_005e910b(*in_ECX);
+    iVar1 = FUN_005e910b(s32(in_ECX, 0));
     in_ECX[3] = iVar1;
-    iVar1 = FUN_005e9150(*in_ECX);
+    iVar1 = FUN_005e9150(s32(in_ECX, 0));
     in_ECX[0xe] = iVar1;
-    FUN_005e9783(*in_ECX,param_2,G.DAT_00638b40);
+    FUN_005e9783(s32(in_ECX, 0),param_2,G.DAT_00638b40);
     in_ECX[0xc] = 1;
     pvVar2 = operator_new(in_ECX[1] << 2);
     in_ECX[0xf] = pvVar2;
@@ -4686,7 +4686,7 @@ export function FUN_005e6450(in_ECX, param_1) {
   
   w32(in_ECX, 0xc, 0);
   w32(in_ECX, 0x34, 0);
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     w32(in_ECX, 4, 0);
     w32(in_ECX, 8, 0);
     SetRect((LPRECT)(in_ECX + 0x20),0,0,0,0);
@@ -4694,7 +4694,7 @@ export function FUN_005e6450(in_ECX, param_1) {
   }
   else {
     w32(in_ECX, 4, param_1[3] - param_1[1]);
-    w32(in_ECX, 8, param_1[2] - *param_1);
+    w32(in_ECX, 8, param_1[2] - s32(param_1, 0));
     SetRect((LPRECT)(in_ECX + 0x20),0,0,s32(in_ECX, 8),s32(in_ECX, 4));
     SetRect((LPRECT)(in_ECX + 0x10),0,0,s32(in_ECX, 8),s32(in_ECX, 4));
   }
@@ -4736,11 +4736,11 @@ export function FUN_005e658a(in_ECX, param_1, param_2) {
   let local_8;
   
   local_8 = 0;
-  iVar1 = FUN_005e924e(*in_ECX);
+  iVar1 = FUN_005e924e(s32(in_ECX, 0));
   if (iVar1 !== 0) {
-    puVar2 = (undefined1 *)FUN_005e7028(param_1,param_2,iVar1);
-    local_8 = *puVar2;
-    FUN_005e92c9(*in_ECX);
+    puVar2 = FUN_005e7028(param_1,param_2,iVar1);
+    local_8 = s32(puVar2, 0);
+    FUN_005e92c9(s32(in_ECX, 0));
   }
   return local_8;
 }
@@ -4759,11 +4759,11 @@ export function FUN_005e65f1(in_ECX, param_1, param_2, param_3) {
   let puVar2;
   // in_ECX → promoted to parameter
   
-  iVar1 = FUN_005e924e(*in_ECX);
+  iVar1 = FUN_005e924e(s32(in_ECX, 0));
   if (iVar1 !== 0) {
-    puVar2 = (undefined1 *)FUN_005e7028(param_1,param_2,iVar1);
-    *puVar2 = param_3;
-    FUN_005e92c9(*in_ECX);
+    puVar2 = FUN_005e7028(param_1,param_2,iVar1);
+    w32(puVar2, 0, param_3);
+    FUN_005e92c9(s32(in_ECX, 0));
   }
   return;
 }
@@ -4811,7 +4811,7 @@ export function FUN_005e6651(param_1, param_2, param_3, param_4) {
     }
     else if (s16(local_c, 0xe) === 8) {
       if (s32(local_c, 0x10) === 0) {
-        local_10 = (undefined1 *)(local_c + 0x28);
+        local_10 = (local_c + 0x28);
         if (param_4 !== 0) {
           local_28 = 0;
           for (local_20 = param_2; local_20 < param_3 + param_2; local_20 = local_20 + 1) {
@@ -4821,19 +4821,19 @@ export function FUN_005e6651(param_1, param_2, param_3, param_4) {
             local_338[iVar2] = local_10[1];
             iVar2 = local_28 + 1;
             local_28 = local_28 + 1;
-            local_338[iVar2] = *local_10;
+            local_338[iVar2] = s32(local_10, 0);
             local_28 = local_28 + 1;
             local_10 = local_10 + 4;
           }
           FUN_005e8990(param_2,param_3,local_338);
         }
-        local_8 = (void *)(local_c + 0x428);
-        local_10 = (undefined1 *)FUN_005e6188();
-        local_14 = (void *)((s32(in_ECX, 4) + -1) * s32(in_ECX, 0xc) + local_10);
+        local_8 = (local_c + 0x428);
+        local_10 = FUN_005e6188();
+        local_14 = ((s32(in_ECX, 4) + -1) * s32(in_ECX, 0xc) + local_10);
         for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {
           _memcpy(local_14,local_8,local_18);
-          local_14 = (void *)(local_14 - s32(in_ECX, 0xc));
-          local_8 = (void *)(local_8 + local_18);
+          local_14 = (local_14 - s32(in_ECX, 0xc));
+          local_8 = (local_8 + local_18);
         }
         // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
         FUN_005c5520(local_24);
@@ -4891,7 +4891,7 @@ export function FUN_005e6893(param_1, param_2, param_3, param_4) {
     uVar1 = 0;
   }
   else {
-    local_14 = (char *)FUN_005c5560(local_28);
+    local_14 = FUN_005c5560(local_28);
     iVar2 = _strcmp(local_14,G.DAT_00639218);
     if (iVar2 === 0) {
       FUN_005d2279(s_Error__Resource_is_not_a_GIF___0063921c,param_1);
@@ -4919,9 +4919,9 @@ export function FUN_005e6893(param_1, param_2, param_3, param_4) {
         }
         FUN_005e8990(param_2,param_3,local_10);
       }
-      for (local_10 = local_14 + uVar3 * 3 + 0xd; *local_10 === 0; local_10 = local_10 + 1) {
+      for (local_10 = local_14 + uVar3 * 3 + 0xd; s32(local_10, 0) === 0; local_10 = local_10 + 1) {
       }
-      if ((*local_10 === 44) || (*local_10 === 33)) {
+      if ((s32(local_10, 0) === 44) || (s32(local_10, 0) === 33)) {
         local_c = local_10 + 1;
         local_1c = FUN_005c54d0(s16(local_10, 5));
         w16(local_c, 4, ((local_1c) << 16 >> 16));
@@ -4992,8 +4992,8 @@ export function FUN_005e6bc5(param_1, param_2, param_3, param_4) {
     uVar2 = 0;
   }
   else {
-    local_c = (short *)FUN_005c5560(local_20);
-    local_14 = FUN_005c5410((int)*local_c);
+    local_c = FUN_005c5560(local_20);
+    local_14 = FUN_005c5410(s32(local_c, 0));
     local_18 = FUN_005c5410(local_c[1]);
     SetRect(local_30[0],0,0,local_14,local_18);
     iVar3 = FUN_005e6566(local_30[0]);
@@ -5066,21 +5066,21 @@ export function FUN_005e6d4c(param_1) {
     }
     else {
       local_10 = FUN_005e6188();
-      local_14 = (undefined2 *)((s32(in_ECX, 4) + -1) * s32(in_ECX, 0xc) + local_10);
+      local_14 = ((s32(in_ECX, 4) + -1) * s32(in_ECX, 0xc) + local_10);
       sVar1 = s16(local_c, 0xe);
       if (((sVar1 !== 8) && (sVar1 !== 0x10)) && (sVar1 === 0x18)) {
-        local_8 = (undefined1 *)(local_c + 0x28);
+        local_8 = (local_c + 0x28);
         for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {
           local_3c = local_14;
           for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
             uVar5 = (undefined3)(((local_8) >>> 0) >> 8);
             uVar2 = FUN_005e626c(CONCAT31(uVar5,local_8[2]),CONCAT31(uVar5,local_8[1]),
-                                 CONCAT31(uVar5,*local_8));
-            *local_3c = uVar2;
+                                 CONCAT31(uVar5,s32(local_8, 0)));
+            w32(local_3c, 0, uVar2);
             local_3c = local_3c + 1;
             local_8 = local_8 + 3;
           }
-          local_14 = (undefined2 *)(local_14 - s32(in_ECX, 0xc));
+          local_14 = (local_14 - s32(in_ECX, 0xc));
         }
       }
       // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
@@ -5104,7 +5104,7 @@ export function FUN_005e6f25(in_ECX, param_1, param_2, param_3) {
 
   // in_ECX → promoted to parameter
   
-  FUN_005e9331(*in_ECX,param_1,param_2,param_3);
+  FUN_005e9331(s32(in_ECX, 0),param_1,param_2,param_3);
   return;
 }
 
@@ -5137,8 +5137,8 @@ export function FUN_005e6f96(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  SetRect((LPRECT)(in_ECX + 0x10),param_1[0],param_1[1],param_1[2],param_1[3]);
-  IntersectRect((LPRECT)(in_ECX + 0x10),(RECT *)(in_ECX + 0x10),(RECT *)(in_ECX + 0x20));
+  SetRect((LPRECT)(in_ECX + 0x10),s32(param_1, 0),param_1[1],param_1[2],param_1[3]);
+  IntersectRect((LPRECT)(in_ECX + 0x10),(in_ECX + 0x10),(in_ECX + 0x20));
   return;
 }
 
@@ -5154,7 +5154,7 @@ export function FUN_005e6ff1(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  param_1[0] = s32(in_ECX, 0x10);
+  w32(param_1, 0, s32(in_ECX, 0x10));
   param_1[1] = s32(in_ECX, 0x14);
   param_1[2] = s32(in_ECX, 0x18);
   param_1[3] = s32(in_ECX, 0x1c);
@@ -5173,7 +5173,7 @@ export function FUN_005e7028(in_ECX, param_1, param_2, param_3) {
 
   // in_ECX → promoted to parameter
   
-  return s32(*(int *, 0)(in_ECX + 0x3c) + param_2 * 4) + param_1 + param_3;
+  // DEVIATION: C pointer — return s32(s32(in_ECX, 0x3c) + param_2 * 4, 0) + param_1 + param_3;
 }
 
 
@@ -5191,10 +5191,10 @@ export function FUN_005e7052(in_ECX, param_1, param_2) {
   let local_18 = [0];
   let local_8;
   
-  IntersectRect(local_18[0],param_1,(RECT *)(in_ECX + 4));
+  IntersectRect(local_18[0],param_1,(in_ECX + 4));
   iVar1 = FUN_00407f90(local_18[0]);
   if (((iVar1 !== 0) && (iVar1 = FUN_00407fc0(local_18[0]), iVar1 !== 0)) &&
-     (local_8 = FUN_005e9783(*in_ECX,local_18[0],param_2), local_8 === -1)) {
+     (local_8 = FUN_005e9783(s32(in_ECX, 0),local_18[0],param_2), local_8 === -1)) {
     FUN_005e61e9();
   }
   return;
@@ -5232,12 +5232,12 @@ export function FUN_005e7102(in_ECX, param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  IntersectRect(local_1c[0],param_1,(RECT *)(in_ECX + 4));
+  IntersectRect(local_1c[0],param_1,(in_ECX + 4));
   iVar1 = FUN_00407f90(local_1c[0]);
   if ((iVar1 !== 0) && (iVar1 = FUN_00407fc0(local_1c[0]), iVar1 !== 0)) {
     switch(in_ECX[0xe]) {
     case 1:
-      local_c = FUN_005e9331(*in_ECX,param_2,param_3,param_4);
+      local_c = FUN_005e9331(s32(in_ECX, 0),param_2,param_3,param_4);
       break;
     case 2:
       local_c = FUN_005e6245(param_2,param_3,param_4);
@@ -5248,9 +5248,9 @@ export function FUN_005e7102(in_ECX, param_1, param_2, param_3, param_4) {
       local_c = local_c & 0xffff;
       break;
     case 8:
-      local_c = FUN_005e9331(*in_ECX,param_2,param_3,param_4);
+      local_c = FUN_005e9331(s32(in_ECX, 0),param_2,param_3,param_4);
     }
-    local_8 = FUN_005e9783(*in_ECX,local_1c[0],local_c);
+    local_8 = FUN_005e9783(s32(in_ECX, 0),local_1c[0],local_c);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5292,8 +5292,8 @@ export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
   let local_c;
   let local_8;
   
-  IntersectRect(local_20[0],param_2,(RECT *)(in_ECX + 4));
-  IntersectRect(local_30[0],param_3,(RECT *)(param_1 + 0x10));
+  IntersectRect(local_20[0],param_2,(in_ECX + 4));
+  IntersectRect(local_30[0],param_3,(param_1 + 0x10));
   local_c = local_20[0].right - local_20[0].left;
   if (local_30[0].right - local_30[0].left <= local_20[0].right - local_20[0].left) {
     local_c = local_30[0].right - local_30[0].left;
@@ -5304,7 +5304,7 @@ export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
   }
   if ((local_c !== 0) && (local_10 !== 0)) {
     uVar1 = FUN_005c5740(local_30[0]);
-    local_8 = FUN_005e95a4(*in_ECX,local_20[0],uVar1);
+    local_8 = FUN_005e95a4(s32(in_ECX, 0),local_20[0],uVar1);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5334,8 +5334,8 @@ export function FUN_005e7355(param_1, param_2, param_3) {
   let local_c;
   let local_8;
   
-  IntersectRect(local_20[0],param_2,(RECT *)(in_ECX + 0x10));
-  IntersectRect(local_30[0],param_3,(RECT *)(param_1 + 0x14));
+  IntersectRect(local_20[0],param_2,(in_ECX + 0x10));
+  IntersectRect(local_30[0],param_3,(param_1 + 0x14));
   local_8 = FUN_005e6188();
   if (local_8 !== 0) {
     local_c = local_30[0].right - local_30[0].left;
@@ -5351,7 +5351,7 @@ export function FUN_005e7355(param_1, param_2, param_3) {
       iVar2 = FUN_005e395a(uVar1);
       iVar3 = FUN_005c55d0();
       uVar4 = FUN_005c56a0(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3);
-      // DEVIATION: MFC — pCVar5 = COleClientItem::GetActiveView((COleClientItem *)param_1);
+      // DEVIATION: MFC — pCVar5 = COleClientItem::GetActiveView(param_1);
       uVar4 = FUN_005c5660(pCVar5,uVar4);
       uVar4 = FUN_005c5640(local_20[0].left,local_20[0].top,local_30[0].left,local_30[0].top,local_c,local_10,
                            uVar4);
@@ -5377,7 +5377,7 @@ export function FUN_005e747c(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   uVar1 = FUN_005c5740(param_3);
-  iVar2 = FUN_005e9455(*in_ECX,param_2,uVar1);
+  iVar2 = FUN_005e9455(s32(in_ECX, 0),param_2,uVar1);
   if (iVar2 === -1) {
     FUN_005e61e9();
   }
@@ -5402,8 +5402,8 @@ export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
   let local_c;
   let local_8;
   
-  IntersectRect(local_20[0],param_2,(RECT *)(in_ECX + 4));
-  IntersectRect(local_30[0],param_3,(RECT *)(param_1 + 0x10));
+  IntersectRect(local_20[0],param_2,(in_ECX + 4));
+  IntersectRect(local_30[0],param_3,(param_1 + 0x10));
   local_c = local_30[0].right - local_30[0].left;
   if (local_20[0].right - local_20[0].left <= local_30[0].right - local_30[0].left) {
     local_c = local_20[0].right - local_20[0].left;
@@ -5414,7 +5414,7 @@ export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
   }
   if ((local_c !== 0) && (local_10 !== 0)) {
     uVar1 = FUN_005c5740(local_30[0]);
-    local_8 = FUN_005e965c(*in_ECX,local_20[0],uVar1);
+    local_8 = FUN_005e965c(s32(in_ECX, 0),local_20[0],uVar1);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5437,7 +5437,7 @@ export function FUN_005e7593(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   uVar1 = FUN_005c5740(param_3);
-  iVar2 = FUN_005e9506(*in_ECX,param_2,uVar1);
+  iVar2 = FUN_005e9506(s32(in_ECX, 0),param_2,uVar1);
   if (iVar2 === -1) {
     FUN_005e61e9();
   }
@@ -5457,20 +5457,20 @@ export function FUN_005e75df(in_ECX, param_1, param_2, param_3, param_4) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_006393e0);
   }
-  else if (*in_ECX !== 0) {
+  else if (s32(in_ECX, 0) !== 0) {
     if ((param_4 & 0x10) !== 0) {
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
+      // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
                            // DEVIATION(cont): param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
-    // DEVIATION: C pointer — iVar1 = FUN_005e997c(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
+    // DEVIATION: C pointer — iVar1 = FUN_005e997c(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
                          // DEVIATION(cont): param_4);
     if (iVar1 === -1) {
       FUN_005e61e9();
@@ -5494,25 +5494,25 @@ export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
   let local_18 = [0];
   let local_8;
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639400);
   }
-  else if (*in_ECX !== 0) {
+  else if (s32(in_ECX, 0) !== 0) {
     if ((param_3 & 0x10) !== 0) {
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = param_2[0];
+      local_18[0].left = s32(param_2, 0);
       local_18[0].top = param_2[1];
       local_18[0].right = param_2[2];
       local_18[0].bottom = param_2[3];
       OffsetRect(local_18[0],iVar1,iVar1);
-      // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
+      // DEVIATION: C pointer — local_8 = FUN_005ea1dd(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
                             // DEVIATION(cont): );
       if (local_8 === -1) {
         FUN_005e61e9();
       }
     }
-    // DEVIATION: C pointer — local_8 = FUN_005e9bd7(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3);
+    // DEVIATION: C pointer — local_8 = FUN_005e9bd7(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5533,17 +5533,17 @@ export function FUN_005e77ed(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     if ((param_5 & 0x10) !== 0) {
-      iVar1 = gdi_847F(param_1[0]);
+      iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      iVar1 = FUN_005e9f8a(*in_ECX,param_1[0],param_2,iVar1 + param_3,iVar1 + param_4,in_ECX + 4,
+      iVar1 = FUN_005e9f8a(s32(in_ECX, 0),s32(param_1, 0),param_2,iVar1 + param_3,iVar1 + param_4,in_ECX + 4,
                            param_5,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
-    iVar1 = FUN_005e997c(*in_ECX,param_1[0],param_2,param_3,param_4,in_ECX + 4,param_5);
+    iVar1 = FUN_005e997c(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4,in_ECX + 4,param_5);
     if (iVar1 === -1) {
       FUN_005e61e9();
     }
@@ -5566,21 +5566,21 @@ export function FUN_005e78c6(in_ECX, param_1, param_2, param_3, param_4) {
   let local_18 = [0];
   let local_8;
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar1 = gdi_847F(param_1[0]);
+      iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = param_3[0];
+      local_18[0].left = s32(param_3, 0);
       local_18[0].top = param_3[1];
       local_18[0].right = param_3[2];
       local_18[0].bottom = param_3[3];
       OffsetRect(local_18[0],iVar1,iVar1);
-      local_8 = FUN_005ea1dd(*in_ECX,param_1[0],param_2,local_18[0],param_4,0,0,0);
+      local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(param_1, 0),param_2,local_18[0],param_4,0,0,0);
       if (local_8 === -1) {
         FUN_005e61e9();
       }
     }
-    local_8 = FUN_005e9bd7(*in_ECX,param_1[0],param_2,param_3,param_4);
+    local_8 = FUN_005e9bd7(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5601,11 +5601,11 @@ export function FUN_005e79b1(in_ECX, param_1, param_2, param_3) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639420);
   }
-  else if ((*in_ECX !== 0) &&
-          // DEVIATION: C pointer — (iVar1 = FUN_005e9d31(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3),
+  else if ((s32(in_ECX, 0) !== 0) &&
+          // DEVIATION: C pointer — (iVar1 = FUN_005e9d31(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3),
           // DEVIATION(cont): iVar1 == -1)) {
     // DEVIATION(cont): FUN_005e61e9();
   }
@@ -5625,8 +5625,8 @@ export function FUN_005e7a30(in_ECX, param_1, param_2, param_3, param_4) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if ((*in_ECX !== 0) &&
-     (iVar1 = FUN_005e9d31(*in_ECX,param_1[0],param_2,param_3,param_4), iVar1 === -1)) {
+  if ((s32(in_ECX, 0) !== 0) &&
+     (iVar1 = FUN_005e9d31(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4), iVar1 === -1)) {
     FUN_005e61e9();
   }
   return;
@@ -5646,20 +5646,20 @@ export function FUN_005e7a8e(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639440);
   }
-  else if (*in_ECX !== 0) {
+  else if (s32(in_ECX, 0) !== 0) {
     if ((param_4 & 0x10) !== 0) {
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
+      // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
                            // DEVIATION(cont): param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
-    // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
+    // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
                          // DEVIATION(cont): param_4,param_5,param_6,param_7);
     if (iVar1 === -1) {
       FUN_005e61e9();
@@ -5684,25 +5684,25 @@ export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_18 = [0];
   let local_8;
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639460);
   }
-  else if (*in_ECX !== 0) {
+  else if (s32(in_ECX, 0) !== 0) {
     if ((param_3 & 0x10) !== 0) {
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = param_2[0];
+      local_18[0].left = s32(param_2, 0);
       local_18[0].top = param_2[1];
       local_18[0].right = param_2[2];
       local_18[0].bottom = param_2[3];
       OffsetRect(local_18[0],iVar1,iVar1);
-      // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
+      // DEVIATION: C pointer — local_8 = FUN_005ea1dd(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
                             // DEVIATION(cont): );
       if (local_8 === -1) {
         FUN_005e61e9();
       }
     }
-    // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,param_4,
+    // DEVIATION: C pointer — local_8 = FUN_005ea1dd(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,param_4,
                            // DEVIATION(cont): param_5,param_6);
     if (local_8 === -1) {
       FUN_005e61e9();
@@ -5725,17 +5725,17 @@ export function FUN_005e7cb4(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     if ((param_5 & 0x10) !== 0) {
-      iVar1 = gdi_847F(param_1[0]);
+      iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      iVar1 = FUN_005e9f8a(*in_ECX,param_1[0],param_2,param_3 + iVar1,param_4 + iVar1,in_ECX + 4,
+      iVar1 = FUN_005e9f8a(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3 + iVar1,param_4 + iVar1,in_ECX + 4,
                            param_5,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
-    iVar1 = FUN_005e9f8a(*in_ECX,param_1[0],param_2,param_3,param_4,in_ECX + 4,param_5,param_6,param_7
+    iVar1 = FUN_005e9f8a(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4,in_ECX + 4,param_5,param_6,param_7
                          ,param_8);
     if (iVar1 === -1) {
       FUN_005e61e9();
@@ -5760,21 +5760,21 @@ export function FUN_005e7d99(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_18 = [0];
   let local_8;
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar1 = gdi_847F(param_1[0]);
+      iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = param_3[0];
+      local_18[0].left = s32(param_3, 0);
       local_18[0].top = param_3[1];
       local_18[0].right = param_3[2];
       local_18[0].bottom = param_3[3];
       OffsetRect(local_18[0],iVar1,iVar1);
-      local_8 = FUN_005ea1dd(*in_ECX,param_1[0],param_2,local_18[0],param_4,0,0,0);
+      local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(param_1, 0),param_2,local_18[0],param_4,0,0,0);
       if (local_8 === -1) {
         FUN_005e61e9();
       }
     }
-    local_8 = FUN_005ea1dd(*in_ECX,param_1[0],param_2,param_3,param_4,param_5,param_6,param_7);
+    local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4,param_5,param_6,param_7);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5796,11 +5796,11 @@ export function FUN_005e7e90(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === null) {
+  if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639480);
   }
-  else if ((*in_ECX !== 0) &&
-          // DEVIATION: C pointer — (iVar1 = FUN_005ea32f(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,
+  else if ((s32(in_ECX, 0) !== 0) &&
+          // DEVIATION: C pointer — (iVar1 = FUN_005ea32f(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,
                                 // DEVIATION(cont): param_4,param_5,param_6), iVar1 == -1)) {
     // DEVIATION(cont): FUN_005e61e9();
   }
@@ -5821,8 +5821,8 @@ export function FUN_005e7f1b(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if ((*in_ECX !== 0) &&
-     (iVar1 = FUN_005ea32f(*in_ECX,param_1[0],param_2,param_3,param_4,param_5,param_6,param_7),
+  if ((s32(in_ECX, 0) !== 0) &&
+     (iVar1 = FUN_005ea32f(s32(in_ECX, 0),s32(param_1, 0),param_2,param_3,param_4,param_5,param_6,param_7),
      iVar1 === -1)) {
     FUN_005e61e9();
   }
@@ -5846,7 +5846,7 @@ export function FUN_005e7f85(in_ECX, param_1, param_2, param_3, param_4) {
         ((param_3 < in_ECX[6] || (param_1 < in_ECX[6])))) &&
        ((in_ECX[5] <= param_2 || (in_ECX[5] <= param_4)))) &&
       ((param_2 < in_ECX[7] || (param_4 < in_ECX[7])))) &&
-     ((*in_ECX !== 0 && (iVar1 = FUN_005e9e87(*in_ECX,param_1,param_2,param_3,param_4), iVar1 === -1))
+     ((s32(in_ECX, 0) !== 0 && (iVar1 = FUN_005e9e87(s32(in_ECX, 0),param_1,param_2,param_3,param_4), iVar1 === -1))
      )) {
     FUN_005e61e9();
   }
@@ -5865,11 +5865,11 @@ export function FUN_005e806d(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
-    FUN_005e7f85(param_1[0],param_1[1],param_1[2],param_1[1]);
+  if (s32(in_ECX, 0) !== 0) {
+    FUN_005e7f85(s32(param_1, 0),param_1[1],param_1[2],param_1[1]);
     FUN_005e7f85(param_1[2],param_1[1],param_1[2],param_1[3]);
-    FUN_005e7f85(param_1[2],param_1[3],param_1[0],param_1[3]);
-    FUN_005e7f85(param_1[0],param_1[3],param_1[0],param_1[1]);
+    FUN_005e7f85(param_1[2],param_1[3],s32(param_1, 0),param_1[3]);
+    FUN_005e7f85(s32(param_1, 0),param_1[3],s32(param_1, 0),param_1[1]);
   }
   return;
 }
@@ -5892,8 +5892,8 @@ export function FUN_005e8122(in_ECX, param_1, param_2, param_3, param_4, param_5
         ((param_3 < in_ECX[6] || (param_1 < in_ECX[6])))) &&
        ((in_ECX[5] <= param_2 || (in_ECX[5] <= param_4)))) &&
       ((param_2 < in_ECX[7] || (param_4 < in_ECX[7])))) &&
-     ((*in_ECX !== 0 &&
-      (iVar1 = FUN_005ea47d(*in_ECX,param_1,param_2,param_3,param_4,param_5,param_6,param_7),
+     ((s32(in_ECX, 0) !== 0 &&
+      (iVar1 = FUN_005ea47d(s32(in_ECX, 0),param_1,param_2,param_3,param_4,param_5,param_6,param_7),
       iVar1 === -1)))) {
     FUN_005e61e9();
   }
@@ -5912,11 +5912,11 @@ export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
-    FUN_005e8122(param_1[0],param_1[1],param_1[2],param_1[1],param_2,param_3,param_4);
+  if (s32(in_ECX, 0) !== 0) {
+    FUN_005e8122(s32(param_1, 0),param_1[1],param_1[2],param_1[1],param_2,param_3,param_4);
     FUN_005e8122(param_1[2],param_1[1],param_1[2],param_1[3],param_2,param_3,param_4);
-    FUN_005e8122(param_1[2],param_1[3],param_1[0],param_1[3],param_2,param_3,param_4);
-    FUN_005e8122(param_1[0],param_1[3],param_1[0],param_1[1],param_2,param_3,param_4);
+    FUN_005e8122(param_1[2],param_1[3],s32(param_1, 0),param_1[3],param_2,param_3,param_4);
+    FUN_005e8122(s32(param_1, 0),param_1[3],s32(param_1, 0),param_1[1],param_2,param_3,param_4);
   }
   return;
 }
@@ -5955,9 +5955,9 @@ export function FUN_005e833b(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
-    FUN_005e8c29(*in_ECX);
-    *in_ECX = 0;
+  if (s32(in_ECX, 0) !== 0) {
+    FUN_005e8c29(s32(in_ECX, 0));
+    w32(in_ECX, 0, 0);
   }
   if (in_ECX[8] !== 0) {
     FUN_005dce96(in_ECX[8]);
@@ -5983,9 +5983,9 @@ export function FUN_005e83c8(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
-    FUN_005e8c29(*in_ECX);
-    *in_ECX = 0;
+  if (s32(in_ECX, 0) !== 0) {
+    FUN_005e8c29(s32(in_ECX, 0));
+    w32(in_ECX, 0, 0);
   }
   return;
 }
@@ -6010,26 +6010,26 @@ export function FUN_005e8401(in_ECX, param_1, param_2, param_3) {
   if (0x100 < param_2 + param_1) {
     param_2 = 0x100 - param_1;
   }
-  FUN_005e8d58(*in_ECX,param_1,param_2,local_30c);
+  FUN_005e8d58(s32(in_ECX, 0),param_1,param_2,local_30c);
   if (param_3 < 1) {
     local_c = local_60c;
     local_610 = local_30c + param_3 * -3;
     for (local_8 = 0; local_8 < param_3 + param_2; local_8 = local_8 + 1) {
-      *local_c = *local_610;
+      w32(local_c, 0, s32(local_610, 0));
       local_c = local_c + 1;
-      *local_c = local_610[1];
+      w32(local_c, 0, local_610[1]);
       local_c = local_c + 1;
-      *local_c = local_610[2];
+      w32(local_c, 0, local_610[2]);
       local_610 = local_610 + 3;
       local_c = local_c + 1;
     }
     local_610 = local_30c;
     for (local_8 = 0; -local_8 !== param_3 && local_8 <= -param_3; local_8 = local_8 + 1) {
-      *local_c = *local_610;
+      w32(local_c, 0, s32(local_610, 0));
       local_c = local_c + 1;
-      *local_c = local_610[1];
+      w32(local_c, 0, local_610[1]);
       local_c = local_c + 1;
-      *local_c = local_610[2];
+      w32(local_c, 0, local_610[2]);
       local_610 = local_610 + 3;
       local_c = local_c + 1;
     }
@@ -6038,26 +6038,26 @@ export function FUN_005e8401(in_ECX, param_1, param_2, param_3) {
     local_610 = local_30c + param_3 * 3;
     local_c = local_60c;
     for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      *local_c = *local_610;
+      w32(local_c, 0, s32(local_610, 0));
       local_c = local_c + 1;
-      *local_c = local_610[1];
+      w32(local_c, 0, local_610[1]);
       local_c = local_c + 1;
-      *local_c = local_610[2];
+      w32(local_c, 0, local_610[2]);
       local_610 = local_610 + 3;
       local_c = local_c + 1;
     }
     local_610 = local_30c;
     for (local_8 = 0; local_8 < param_2 - param_3; local_8 = local_8 + 1) {
-      *local_c = *local_610;
+      w32(local_c, 0, s32(local_610, 0));
       local_c = local_c + 1;
-      *local_c = local_610[1];
+      w32(local_c, 0, local_610[1]);
       local_c = local_c + 1;
-      *local_c = local_610[2];
+      w32(local_c, 0, local_610[2]);
       local_610 = local_610 + 3;
       local_c = local_c + 1;
     }
   }
-  FUN_005e8c54(*in_ECX,param_1,param_2,local_60c);
+  FUN_005e8c54(s32(in_ECX, 0),param_1,param_2,local_60c);
   return;
 }
 
@@ -6080,7 +6080,7 @@ export function FUN_005e866c(in_ECX, param_1, param_2, param_3) {
   uVar1 = FUN_005dce4f(param_2 * 3);
   in_ECX[10] = uVar1;
   uVar1 = FUN_005dcdf9(in_ECX[10]);
-  FUN_005e8d58(*in_ECX,param_1,param_2,uVar1);
+  FUN_005e8d58(s32(in_ECX, 0),param_1,param_2,uVar1);
   FUN_005dce29(in_ECX[10]);
   return;
 }
@@ -6178,7 +6178,7 @@ export function FUN_005e87a2(in_ECX, param_1) {
            // DEVIATION(cont): cVar1 + (char)local_8;
       local_18 = local_18 + 1;
     }
-    FUN_005e8c54(*in_ECX,in_ECX[2],in_ECX[3],local_31c);
+    FUN_005e8c54(s32(in_ECX, 0),in_ECX[2],in_ECX[3],local_31c);
     FUN_005dce29(in_ECX[10]);
   }
   return;
@@ -6196,7 +6196,7 @@ export function FUN_005e8990(in_ECX, param_1, param_2, param_3) {
 
   // in_ECX → promoted to parameter
   
-  FUN_005e8c54(*in_ECX,param_1,param_2,param_3);
+  FUN_005e8c54(s32(in_ECX, 0),param_1,param_2,param_3);
   return;
 }
 
@@ -6231,7 +6231,7 @@ export function register_wndclass_89D0_005E89D0() {
   if (iVar1 === 0) {
     _DAT_006e50e8 = 0x13c;
     _DAT_006e5228 = 0x13c;
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 0x2c))(G.DAT_006394c0,G.DAT_006e50e8,G.DAT_006e5228);
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 0x2c))(G.DAT_006394c0,G.DAT_006e50e8,G.DAT_006e5228);
     if ((G.DAT_006e50ec & 0x40) === 0) {
       debug_log(s_Direct_Draw>_Doesn_t_Supports_Ha_006394f8);
     }
@@ -6263,9 +6263,9 @@ export function register_wndclass_89D0_005E89D0() {
 export function FUN_005e8b04() {
 
 
-  if (G.DAT_006394c0 !== null) {
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 8))(G.DAT_006394c0);
-    G.DAT_006394c0 = null;
+  if (G.DAT_006394c0 !== 0x0) {
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 8))(G.DAT_006394c0);
+    G.DAT_006394c0 = 0x0;
     UnregisterClassA(s_MSDirectWindow_006395a0,G.DAT_006e4ff0);
   }
   return;
@@ -6286,17 +6286,17 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
   let local_c;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
     for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-      local_410[(param_1 + local_c) * 4] = param_3[0];
+      local_410[(param_1 + local_c) * 4] = s32(param_3, 0);
       local_410[(param_1 + local_c) * 4 + 1] = param_3[1];
       local_410[(param_1 + local_c) * 4 + 2] = param_3[2];
       param_3 = param_3 + 3;
     }
-    // DEVIATION: C pointer — local_10 = (**(code **)(*G.DAT_006394c0 + 0x14))(G.DAT_006394c0,0x44,local_410,local_8[0],0);
+    // DEVIATION: C pointer — local_10 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x14))(G.DAT_006394c0,0x44,local_410,local_8[0],0);
     if (local_10 !== 0) {
       FUN_005d2279(s_DD_>CreatePalette_error_006395b0,local_10 & 0xffff);
       local_8[0] = 0;
@@ -6315,8 +6315,8 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
 export function FUN_005e8c29(param_1) {
 
 
-  if (param_1 !== null) {
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 8))(param_1);
+  if (param_1 !== 0x0) {
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 8))(param_1);
   }
   return;
 }
@@ -6335,18 +6335,18 @@ export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== null) && (G.DAT_006394c0 !== null)) {
+  if ((param_1 !== 0x0) && (G.DAT_006394c0 !== 0x0)) {
     for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      local_40c[local_8 * 4] = param_4[0];
+      local_40c[local_8 * 4] = s32(param_4, 0);
       local_40c[local_8 * 4 + 1] = param_4[1];
       local_40c[local_8 * 4 + 2] = param_4[2];
       param_4 = param_4 + 3;
     }
-    // DEVIATION: C pointer — local_c = (**(code **)(*G.DAT_006394c0 + 0x58))(G.DAT_006394c0,1,0);
+    // DEVIATION: C pointer — local_c = (**(code **)(s32(G.DAT_006394c0, 0) + 0x58))(G.DAT_006394c0,1,0);
     if (local_c !== 0) {
       FUN_005d2279(s_DD_>SetPalette_WaitForBlank_erro_006395c8,local_c & 0xffff);
     }
-    // DEVIATION: C pointer — local_c = (**(code **)(param_1[0] + 0x18))(param_1,0,param_2,param_3,local_40c);
+    // DEVIATION: C pointer — local_c = (**(code **)(s32(param_1, 0) + 0x18))(param_1,0,param_2,param_3,local_40c);
     if (local_c !== 0) {
       FUN_005d2279(s_DDPal_>SetEntrieserror_006395ec,local_c & 0xffff);
     }
@@ -6368,8 +6368,8 @@ export function FUN_005e8d58(param_1, param_2, param_3, param_4) {
   let local_408 = new Array(1024).fill(0);
   let local_8;
   
-  if ((param_1 !== null) &&
-     // DEVIATION: C pointer — (iVar1 = (**(code **)(param_1[0] + 0x10))(param_1,0,param_2,param_3,local_408), iVar1 === 0)) {
+  if ((param_1 !== 0x0) &&
+     // DEVIATION: C pointer — (iVar1 = (**(code **)(s32(param_1, 0) + 0x10))(param_1,0,param_2,param_3,local_408), iVar1 === 0)) {
     // DEVIATION(cont): for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
       // DEVIATION(cont): *param_4 = local_408[(param_2 + local_8) * 4];
       param_4[1] = local_408[(param_2 + local_8) * 4 + 1];
@@ -6390,8 +6390,8 @@ export function FUN_005e8d58(param_1, param_2, param_3, param_4) {
 export function FUN_005e8e06(param_1, param_2) {
 
 
-  if ((param_1 !== null) && (param_2 !== 0)) {
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x7c))(param_1,param_2);
+  if ((param_1 !== 0x0) && (param_2 !== 0)) {
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x7c))(param_1,param_2);
   }
   return;
 }
@@ -6410,11 +6410,11 @@ export function FUN_005e8e4f(param_1) {
   let local_8 = [0];
   
   local_8[0] = 0;
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     local_8[0] = 0;
   }
   else {
-    // DEVIATION: C pointer — uVar1 = (**(code **)(param_1[0] + 0x50))(param_1,local_8[0]);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_1, 0) + 0x50))(param_1,local_8[0]);
     if (uVar1 !== 0) {
       FUN_005d2279(s_GetPalette_Failed_00639604,uVar1 & 0xffff);
     }
@@ -6439,7 +6439,7 @@ export function FUN_005e8eb0(param_1) {
   let local_5c;
   let local_8;
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6451,7 +6451,7 @@ export function FUN_005e8eb0(param_1) {
       local_8 = 0x218;
     }
     local_5c = param_1;
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x18))(G.DAT_006394c0,local_70[0],local_74[0],0);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x18))(G.DAT_006394c0,local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD_>CreatePrimarySurface_failed_00639618,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -6474,12 +6474,12 @@ export function FUN_005e8f4b(param_1) {
   let local_c;
   let local_8 = [0];
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     local_10[0] = 0;
   }
   else {
     local_8[0] = 4;
-    // DEVIATION: C pointer — local_c = (**(code **)(param_1[0] + 0x30))(param_1,local_8[0],local_10[0]);
+    // DEVIATION: C pointer — local_c = (**(code **)(s32(param_1, 0) + 0x30))(param_1,local_8[0],local_10[0]);
     if (local_c !== 0) {
       FUN_005d2279(s_DD_>GetAttachedSurface_failed_00639638,local_c & 0xffff);
       local_10[0] = 0;
@@ -6506,7 +6506,7 @@ export function FUN_005e8fb7(param_1, param_2) {
   let local_64;
   let local_8;
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6518,7 +6518,7 @@ export function FUN_005e8fb7(param_1, param_2) {
     }
     local_64 = FUN_00407f90(param_1);
     local_68 = FUN_00407fc0(param_1);
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x18))(G.DAT_006394c0,local_70[0],local_74[0],0);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x18))(G.DAT_006394c0,local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD_>CreateOffscreenSurface_faile_00639658,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -6537,8 +6537,8 @@ export function FUN_005e8fb7(param_1, param_2) {
 export function FUN_005e906b(param_1) {
 
 
-  if (param_1 !== null) {
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 8))(param_1);
+  if (param_1 !== 0x0) {
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 8))(param_1);
   }
   return;
 }
@@ -6557,16 +6557,16 @@ export function FUN_005e9091(param_1) {
   let iVar2;
   let uVar3;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — iVar2 = (**(code **)(param_1[0] + 0x60))(param_1);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x60))(param_1);
     if (iVar2 === 0) {
       uVar1 = 0;
     }
     else {
-      // DEVIATION: C pointer — uVar3 = (**(code **)(param_1[0] + 0x6c))(param_1);
+      // DEVIATION: C pointer — uVar3 = (**(code **)(s32(param_1, 0) + 0x6c))(param_1);
       if (uVar3 === 0) {
         uVar1 = 1;
       }
@@ -6593,13 +6593,13 @@ export function FUN_005e910b(param_1) {
   let local_6c;
   let local_60;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     local_60 = 0;
   }
   else {
     local_70[0] = 0x6c;
     local_6c = 8;
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x58))(param_1,local_70[0]);
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x58))(param_1,local_70[0]);
   }
   return local_60;
 }
@@ -6623,7 +6623,7 @@ export function FUN_005e9150(param_1) {
   let local_c;
   
   local_24[0] = 0x20;
-  // DEVIATION: C pointer — iVar1 = (**(code **)(param_1[0] + 0x54))(param_1,local_24);
+  // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_1, 0) + 0x54))(param_1,local_24);
   if (iVar1 === 0) {
     if (local_18 === 8) {
       local_28 = 1;
@@ -6665,12 +6665,12 @@ export function FUN_005e924e(param_1) {
   let local_70 = new Array(9).fill(0);
   let local_4c;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     local_4c = 0;
   }
   else {
     local_70[0] = 0x6c;
-    // DEVIATION: C pointer — uVar1 = (**(code **)(param_1[0] + 100))(param_1,0,local_70,1,0);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_1, 0) + 100))(param_1,0,local_70,1,0);
     if (uVar1 !== 0) {
       if (uVar1 !== 0x887601c2) {
         FUN_005d2279(s_DD>Lock_Surface_failed_006396c8,uVar1 & 0xffff);
@@ -6691,8 +6691,8 @@ export function FUN_005e924e(param_1) {
 export function FUN_005e92c9(param_1) {
 
 
-  if (param_1 !== null) {
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x80))(param_1,0);
+  if (param_1 !== 0x0) {
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x80))(param_1,0);
   }
   return 0;
 }
@@ -6712,7 +6712,7 @@ export function FUN_005e92fd(param_1, param_2, param_3) {
   
   local_c[0] = param_2;
   local_8 = param_2 + param_3;
-  // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x74))(param_1,8,local_c[0]);
+  // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x74))(param_1,8,local_c[0]);
   return;
 }
 
@@ -6736,26 +6736,26 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
   let local_1c;
   
   local_7c = 0;
-  // DEVIATION: C pointer — iVar1 = (**(code **)(param_1[0] + 0x44))(param_1,local_78[0]);
+  // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_78[0]);
   if (iVar1 === 0) {
     local_84 = GetPixel(local_78[0],0,0);
     SetPixel(local_78[0],0,0,((CONCAT1) >>> 0)2(param_4,CONCAT11(param_3,param_2)));
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x68))(param_1,local_78[0]);
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_78[0]);
   }
   local_70[0] = 0x6c;
   while( true ) {
-    // DEVIATION: C pointer — local_74 = (**(code **)(param_1[0] + 100))(param_1,0,local_70,0,0);
+    // DEVIATION: C pointer — local_74 = (**(code **)(s32(param_1, 0) + 100))(param_1,0,local_70,0,0);
     if (local_74 !== -0x7789fde4) break;
     local_74 = 0x8876021c;
   }
   if (local_74 === 0) {
-    local_7c = *local_4c & (1 << (local_1c & 0x1f)) - 1;
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x80))(param_1,0);
+    local_7c = s32(local_4c, 0) & (1 << (local_1c & 0x1f)) - 1;
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x80))(param_1,0);
   }
-  // DEVIATION: C pointer — iVar1 = (**(code **)(param_1[0] + 0x44))(param_1,local_78[0]);
+  // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_78[0]);
   if (iVar1 === 0) {
     SetPixel(local_78[0],0,0,local_84);
-    // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x68))(param_1,local_78[0]);
+    // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_78[0]);
   }
   return local_7c;
 }
@@ -6772,9 +6772,9 @@ export function FUN_005e9455(param_1, param_2, param_3, param_4) {
 
   let uVar1;
   
-  if ((param_1 !== 0) && (param_3 !== null)) {
+  if ((param_1 !== 0) && (param_3 !== 0x0)) {
     do {
-      // DEVIATION: C pointer — uVar1 = (**(code **)(param_3[0] + 0x14))(param_3,param_4,param_1,param_2,0,0);
+      // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_3, 0) + 0x14))(param_3,param_4,param_1,param_2,0,0);
       if (uVar1 === 0) {
         return 1;
       }
@@ -6799,9 +6799,9 @@ export function FUN_005e9506(param_1, param_2, param_3, param_4) {
 
   let iVar1;
   
-  if ((param_1 !== 0) && (param_3 !== null)) {
+  if ((param_1 !== 0) && (param_3 !== 0x0)) {
     do {
-      // DEVIATION: C pointer — iVar1 = (**(code **)(param_3[0] + 0x14))(param_3,param_4,param_1,param_2,0x8000,0);
+      // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_3, 0) + 0x14))(param_3,param_4,param_1,param_2,0x8000,0);
       if (iVar1 === 0) {
         return 1;
       }
@@ -6825,9 +6825,9 @@ export function FUN_005e95a4(param_1, param_2, param_3, param_4) {
 
   let uVar1;
   
-  if ((param_1 !== 0) && (param_3 !== null)) {
+  if ((param_1 !== 0) && (param_3 !== 0x0)) {
     do {
-      // DEVIATION: C pointer — uVar1 = (**(code **)(param_3[0] + 0x1c))(param_3,param_4[0],param_4[1],param_1,param_2,0);
+      // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_3, 0) + 0x1c))(param_3,s32(param_4, 0),param_4[1],param_1,param_2,0);
       if (uVar1 === 0) {
         return 1;
       }
@@ -6852,9 +6852,9 @@ export function FUN_005e965c(param_1, param_2, param_3, param_4) {
 
   let iVar1;
   
-  if ((param_1 !== 0) && (param_3 !== null)) {
+  if ((param_1 !== 0) && (param_3 !== 0x0)) {
     do {
-      // DEVIATION: C pointer — iVar1 = (**(code **)(param_3[0] + 0x1c))(param_3,param_4[0],param_4[1],param_1,param_2,1);
+      // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_3, 0) + 0x1c))(param_3,s32(param_4, 0),param_4[1],param_1,param_2,1);
       if (iVar1 === 0) {
         return 1;
       }
@@ -6878,9 +6878,9 @@ export function FUN_005e96fe(param_1) {
 
   let iVar1;
   
-  if (param_1 !== null) {
+  if (param_1 !== 0x0) {
     do {
-      // DEVIATION: C pointer — iVar1 = (**(code **)(param_1[0] + 0x2c))(param_1,0,0);
+      // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_1, 0) + 0x2c))(param_1,0,0);
       if (iVar1 === 0) {
         return 1;
       }
@@ -6906,11 +6906,11 @@ export function FUN_005e9783(param_1, param_2, param_3) {
   let local_68 = new Array(20).fill(0);
   let local_18;
   
-  if (param_1 !== null) {
+  if (param_1 !== 0x0) {
     local_68[0] = 100;
     local_18 = param_3;
     do {
-      // DEVIATION: C pointer — uVar1 = (**(code **)(param_1[0] + 0x14))(param_1,param_2,0,0,0x400,local_68);
+      // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_1, 0) + 0x14))(param_1,param_2,0,0,0x400,local_68);
       if (uVar1 === 0) {
         return 1;
       }
@@ -6937,12 +6937,12 @@ export function blit_9838_005E9838(param_1, param_2, param_3, param_4, param_5, 
   let iVar1;
   let local_8 = [0];
   
-  if ((param_1 !== 0) && (param_6 !== null)) {
-    // DEVIATION: C pointer — iVar1 = (**(code **)(param_6[0] + 0x44))(param_6,local_8[0]);
+  if ((param_1 !== 0) && (param_6 !== 0x0)) {
+    // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_6, 0) + 0x44))(param_6,local_8[0]);
     if (iVar1 === 0) {
       // DEVIATION: C pointer — BitBlt(local_8[0],param_7,param_8,param_4,param_5,*(HDC *)(param_1 + 4),param_2,param_3,0xcc0020)
       // DEVIATION(cont): ;
-      // DEVIATION: C pointer — (**(code **)(param_6[0] + 0x68))(param_6,local_8[0]);
+      // DEVIATION: C pointer — (**(code **)(s32(param_6, 0) + 0x68))(param_6,local_8[0]);
     }
   }
   return;
@@ -6962,12 +6962,12 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
   let iVar1;
   let local_8 = [0];
   
-  if ((param_1 !== 0) && (param_6 !== null)) {
-    // DEVIATION: C pointer — iVar1 = (**(code **)(param_6[0] + 0x44))(param_6,local_8[0]);
+  if ((param_1 !== 0) && (param_6 !== 0x0)) {
+    // DEVIATION: C pointer — iVar1 = (**(code **)(s32(param_6, 0) + 0x44))(param_6,local_8[0]);
     if (iVar1 === 0) {
       // DEVIATION: C pointer — StretchBlt(local_8[0],param_7,param_8,param_9,param_10,*(HDC *)(param_1 + 4),param_2,param_3,
                  // DEVIATION(cont): param_4,param_5,0xcc0020);
-      // DEVIATION: C pointer — (**(code **)(param_6[0] + 0x68))(param_6,local_8[0]);
+      // DEVIATION: C pointer — (**(code **)(s32(param_6, 0) + 0x68))(param_6,local_8[0]);
     }
   }
   return;
@@ -6983,7 +6983,7 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
 export function FUN_005e9944(param_1, param_2) {
 
 
-  // DEVIATION: C pointer — (**(code **)(param_2[0] + 0x10))(param_2,0,param_1,1,G.DAT_006e5224);
+  // DEVIATION: C pointer — (**(code **)(s32(param_2, 0) + 0x10))(param_2,0,param_1,1,G.DAT_006e5224);
   return;
 }
 
@@ -6995,7 +6995,7 @@ export function FUN_005e9944(param_1, param_2) {
 // ============================================================
 
 undefined4
-FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+FUN_005e997c(int s32(param_1, 0),int param_2,char s32(param_3, 0),int param_4,int param_5,RECT s32(param_6, 0),
             byte param_7)
 
 {
@@ -7009,21 +7009,21 @@ FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT
   HDC local_20;
   UINT local_1c;
   tagRECT local_18;
-  undefined4 *local_8;
+  undefined4 s32(local_8, 0);
   
   if (param_2 === 0) {
     debug_log(s_Error__NULL_font_in_MSDrawString_00639708);
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    local_8 = FUN_005dcdf9(param_2);
     iVar2 = gdi_847F(param_2);
     iVar2 = param_5 + iVar2;
     iVar3 = measure_text_858E(param_2,param_3);
     SetRect(local_18,param_4,param_5,param_4 + iVar3,iVar2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(*param_1 + 0x44))(param_1,local_20);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_20);
     if (iVar2 === 0) {
-      h = SelectObject(local_20,(HGDIOBJ)*local_8);
+      h = SelectObject(local_20,(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_20,1);
       SetTextColor(local_20,((CONCAT1) >>> 0)2(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
       iVar2 = FUN_00407fc0(local_18);
@@ -7054,7 +7054,7 @@ FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT
       SetTextAlign(local_20,local_1c);
       SelectObject(local_20,h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(*param_1 + 0x68))(param_1,local_20);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_20);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7089,14 +7089,14 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
   if (param_2 === 0) {
     uVar1 = 0;
   }
-  else if (param_1 === null) {
+  else if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(param_1[0] + 0x44))(param_1,local_c[0]);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c[0]);
     if (iVar2 === 0) {
-      h = SelectObject(local_c[0],(HGDIOBJ)*local_8);
+      h = SelectObject(local_c[0],(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_c[0],1);
       SetTextColor(local_c[0],((CONCAT1) >>> 0)2(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
       local_18 = 0;
@@ -7115,7 +7115,7 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x68))(param_1,local_c[0]);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c[0]);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7150,14 +7150,14 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
     debug_log(s_Error__NULL_font_in_MSDrawText_00639748);
     uVar1 = 0;
   }
-  else if (param_1 === null) {
+  else if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(param_1[0] + 0x44))(param_1,local_c[0]);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c[0]);
     if (iVar2 === 0) {
-      h = SelectObject(local_c[0],(HGDIOBJ)*local_8);
+      h = SelectObject(local_c[0],(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_c[0],1);
       SetTextColor(local_c[0],((CONCAT1) >>> 0)2(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
       local_18 = 0x10;
@@ -7171,7 +7171,7 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x68))(param_1,local_c[0]);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c[0]);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7200,11 +7200,11 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
   let local_c;
   let local_8;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — iVar2 = (**(code **)(param_1[0] + 0x44))(param_1,local_10[0]);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_10[0]);
     if (iVar2 === 0) {
       SetBkMode(local_10[0],1);
       local_c = CreatePen(0,1,((CONCAT1) >>> 0)2(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
@@ -7213,7 +7213,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
       LineTo(local_10[0],param_4,param_5);
       SelectObject(local_10[0],local_8);
       DeleteObject(local_c);
-      // DEVIATION: C pointer — (**(code **)(param_1[0] + 0x68))(param_1,local_10[0]);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_10[0]);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7234,7 +7234,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 undefined4
-FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+FUN_005e9f8a(int s32(param_1, 0),int param_2,char s32(param_3, 0),int param_4,int param_5,RECT s32(param_6, 0),
             byte param_7,undefined1 param_8,undefined1 param_9,undefined1 param_10)
 
 {
@@ -7248,21 +7248,21 @@ FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT
   HDC local_20;
   UINT local_1c;
   tagRECT local_18;
-  undefined4 *local_8;
+  undefined4 s32(local_8, 0);
   
   if (param_2 === 0) {
     debug_log(s_Error__NULL_font_in_MSDrawString_00639768);
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    local_8 = FUN_005dcdf9(param_2);
     iVar2 = gdi_847F(param_2);
     iVar2 = param_5 + iVar2;
     iVar3 = measure_text_858E(param_2,param_3);
     SetRect(local_18,param_4,param_5,param_4 + iVar3,iVar2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(*param_1 + 0x44))(param_1,local_20);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_20);
     if (iVar2 === 0) {
-      h = SelectObject(local_20,(HGDIOBJ)*local_8);
+      h = SelectObject(local_20,(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_20,1);
       SetTextColor(local_20,((CONCAT1) >>> 0)2(param_10,CONCAT11(param_9,param_8)));
       iVar2 = FUN_00407fc0(local_18);
@@ -7293,7 +7293,7 @@ FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT
       SetTextAlign(local_20,local_1c);
       SelectObject(local_20,h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(*param_1 + 0x68))(param_1,local_20);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_20);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7315,7 +7315,7 @@ FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT
 // ============================================================
 
 undefined4
-FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+FUN_005ea1dd(int s32(param_1, 0),int param_2,char s32(param_3, 0),LPRECT param_4,uint param_5,undefined1 param_6,
             undefined1 param_7,undefined1 param_8)
 
 {
@@ -7325,19 +7325,19 @@ FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
   size_t cchText;
   uint local_18;
   HDC local_c;
-  undefined4 *local_8;
+  undefined4 s32(local_8, 0);
   
   if (param_2 === 0) {
     uVar1 = 0;
   }
-  else if (param_1 === null) {
+  else if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(*param_1 + 0x44))(param_1,local_c);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c);
     if (iVar2 === 0) {
-      h = SelectObject(local_c,(HGDIOBJ)*local_8);
+      h = SelectObject(local_c,(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_c,1);
       SetTextColor(local_c,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
       local_18 = 0;
@@ -7356,7 +7356,7 @@ FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
       DrawTextA(local_c,param_3,cchText,param_4,local_18);
       SelectObject(local_c,h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(*param_1 + 0x68))(param_1,local_c);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7377,7 +7377,7 @@ FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
 // ============================================================
 
 undefined4
-FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+FUN_005ea32f(int s32(param_1, 0),int param_2,char s32(param_3, 0),LPRECT param_4,uint param_5,undefined1 param_6,
             undefined1 param_7,undefined1 param_8)
 
 {
@@ -7387,20 +7387,20 @@ FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
   size_t cchText;
   UINT local_18;
   HDC local_c;
-  undefined4 *local_8;
+  undefined4 s32(local_8, 0);
   
   if (param_2 === 0) {
     debug_log(s_Error__NULL_font_in_MSDrawText_006397a8);
     uVar1 = 0;
   }
-  else if (param_1 === null) {
+  else if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(*param_1 + 0x44))(param_1,local_c);
+    local_8 = FUN_005dcdf9(param_2);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c);
     if (iVar2 === 0) {
-      h = SelectObject(local_c,(HGDIOBJ)*local_8);
+      h = SelectObject(local_c,(HGDIOBJ)s32(local_8, 0));
       SetBkMode(local_c,1);
       SetTextColor(local_c,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
       local_18 = 0x10;
@@ -7414,7 +7414,7 @@ FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
       DrawTextA(local_c,param_3,cchText,param_4,local_18);
       SelectObject(local_c,h);
       FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(*param_1 + 0x68))(param_1,local_c);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7435,7 +7435,7 @@ FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,
 // ============================================================
 
 undefined4
-FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
+FUN_005ea47d(int s32(param_1, 0),int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
             undefined1 param_7,undefined1 param_8)
 
 {
@@ -7445,11 +7445,11 @@ FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefi
   HPEN local_c;
   HGDIOBJ local_8;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — iVar2 = (**(code **)(*param_1 + 0x44))(param_1,local_10);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_10);
     if (iVar2 === 0) {
       SetBkMode(local_10,1);
       local_c = CreatePen(0,1,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
@@ -7458,7 +7458,7 @@ FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefi
       LineTo(local_10,param_4,param_5);
       SelectObject(local_10,local_8);
       DeleteObject(local_c);
-      // DEVIATION: C pointer — (**(code **)(*param_1 + 0x68))(param_1,local_10);
+      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_10);
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe52) {
@@ -7484,11 +7484,11 @@ export function FUN_005ea578(in_EAX, param_1) {
   // in_EAX → promoted to parameter
   let uVar1;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    // DEVIATION: C pointer — uVar1 = (**(code **)(param_1[0] + 0x48))(param_1,1);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_1, 0) + 0x48))(param_1,1);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -7512,11 +7512,11 @@ export function FUN_005ea5c5(param_1) {
   let uVar1;
   let iVar2;
   
-  if (param_1 === null) {
+  if (param_1 === 0x0) {
     uVar1 = 0;
   }
   else {
-    // DEVIATION: C pointer — iVar2 = (**(code **)(param_1[0] + 0x60))(param_1);
+    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x60))(param_1);
     if (iVar2 === 0) {
       uVar1 = 0;
     }
@@ -7539,14 +7539,14 @@ export function FUN_005ea610(param_1) {
 
   let local_8;
   
-  if (G.DAT_006394c0 !== null) {
+  if (G.DAT_006394c0 !== 0x0) {
     if (param_1 === 0) {
       local_8 = 4;
     }
     else {
       local_8 = 1;
     }
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 0x58))(G.DAT_006394c0,local_8,0);
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 0x58))(G.DAT_006394c0,local_8,0);
   }
   return;
 }
@@ -7565,11 +7565,11 @@ export function FUN_005ea677(in_EAX) {
   let uVar1;
   let local_8 = new Array(4).fill(0);
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x44))(G.DAT_006394c0,local_8);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x44))(G.DAT_006394c0,local_8);
     if (uVar1 === 0) {
       uVar1 = ((local_8) >>> 0)[0];
     }
@@ -7593,11 +7593,11 @@ export function FUN_005ea6c4() {
   let iVar1;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
-    // DEVIATION: C pointer — iVar1 = (**(code **)(*G.DAT_006394c0 + 0x40))(G.DAT_006394c0,local_8[0]);
+    // DEVIATION: C pointer — iVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x40))(G.DAT_006394c0,local_8[0]);
     if (iVar1 !== 0) {
       local_8[0] = 0;
     }
@@ -7618,11 +7618,11 @@ export function FUN_005ea711() {
   let uVar1;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x3c))(G.DAT_006394c0,local_8[0]);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x3c))(G.DAT_006394c0,local_8[0]);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD_>GetMonitorFrequency_failed_006397c8,uVar1 & 0xffff);
       local_8[0] = 0;
@@ -7832,10 +7832,10 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
         FUN_005ea8d3(param_1,local_10,param_3);
         return;
       }
-      this = (streambuf *)FUN_005ea7d7(param_2,s32(param_1, 0xb8));
-      if ((this !== null) &&
+      this = FUN_005ea7d7(param_2,s32(param_1, 0xb8));
+      if ((this !== 0x0) &&
          ((((iVar1 = FUN_005c5e60(), iVar1 === 6 &&
-            // DEVIATION: MFC — (pcVar4 = streambuf::egptr(this), pcVar4 !== null)) ||
+            // DEVIATION: MFC — (pcVar4 = streambuf::egptr(this), pcVar4 !== 0x0)) ||
            // DEVIATION(cont): ((iVar1 = FUN_005c5e60(), iVar1 == 2 && (iVar1 = FUN_005c5ec0(), iVar1 != 0)))) ||
           // DEVIATION(cont): (((iVar1 = FUN_005c5e60(), iVar1 == 4 || (iVar1 = FUN_005c5e60(), iVar1 == 7)) ||
            // DEVIATION(cont): (iVar1 = FUN_005c5e60(), iVar1 == 10)))))) {
@@ -7874,8 +7874,8 @@ export function FUN_005eabcc(param_1) {
   if (cVar1 !== 0) {
     iVar2 = FUN_005c5e60();
     if (iVar2 === 3) {
-      puVar3 = (undefined4 *)FUN_005c5ee0();
-      uVar4 = FUN_005ea87c(*puVar3);
+      puVar3 = FUN_005c5ee0();
+      uVar4 = FUN_005ea87c(s32(puVar3, 0));
       FUN_005ea8d3(param_1,uVar4,2);
     }
     else {
@@ -8244,8 +8244,8 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
   let local_c = [0];
   let local_8 = [0];
   
-  local_14 = (CSplitterWnd *)GetWindowLongA(param_1,4);
-  if (local_14 === null) {
+  local_14 = GetWindowLongA(param_1,4);
+  if (local_14 === 0x0) {
     uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
     return uVar2;
   }
@@ -8470,7 +8470,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
             iVar5 = FUN_00414d10();
             // DEVIATION: C pointer — SelectPalette(local_18,*(HPALETTE *)(iVar5 + 0x18),BVar6);
             local_10 = RealizePalette(local_18);
-            InvalidateRect(param_1,null,1);
+            InvalidateRect(param_1,0x0,1);
           }
           ReleaseDC(param_1,local_18);
           return ((local_10 !== 0) >>> 0);
@@ -8675,8 +8675,8 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
   let local_c = [0];
   let local_8 = [0];
   
-  local_14 = (CSplitterWnd *)GetWindowLongA(param_1,4);
-  if (local_14 === null) {
+  local_14 = GetWindowLongA(param_1,4);
+  if (local_14 === 0x0) {
     uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
     return uVar2;
   }
@@ -9032,8 +9032,8 @@ export function FUN_005ecf50(in_ECX, param_1, param_2) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
-    // DEVIATION: C pointer — (*(code *)*in_ECX)(param_1,param_2);
+  if (s32(in_ECX, 0) !== 0) {
+    // DEVIATION: C pointer — (*(code *)s32(in_ECX, 0))(param_1,param_2);
   }
   return;
 }
@@ -9679,7 +9679,7 @@ export function FUN_005ed710(param_1, param_2, param_3, param_4, param_5, param_
   hdc_01 = CreateCompatibleDC(param_1);
   h_00 = CreateCompatibleBitmap(param_1,param_5,param_6);
   h_01 = SelectObject(hdc_01,h_00);
-  h_02 = CreateBitmap(param_5,param_6,1,1,null);
+  h_02 = CreateBitmap(param_5,param_6,1,1,0x0);
   h_03 = SelectObject(hdc_00,h_02);
   SetBkColor(hdc_01,0xffffff);
   SetTextColor(hdc_01,0);
@@ -9850,7 +9850,7 @@ export function FUN_005edc6c(param_1, param_2, param_3, param_4, param_5) {
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(iVar3, uVar2); return;
   }
   else {
-    bVar1 = param_2[0];
+    bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
@@ -9859,7 +9859,7 @@ export function FUN_005edc6c(param_1, param_2, param_3, param_4, param_5) {
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
   if (cVar6 !== 0) {
-    param_1[0] = in_AL;
+    w32(param_1, 0, in_AL);
     param_1 = param_1 + 1;
     uVar5 = ((CONCAT1) >>> 0)1(cVar6 + -1,s8(uVar4));
   }
@@ -9902,7 +9902,7 @@ export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) {
     if (s8(uVar7 >> 8) === 0) LAB_005edcf2_helper(iVar4, uVar3); return;
   }
   else if (cVar5 !== 0) {
-    bVar2 = param_2[0];
+    bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
     uVar6 = ((CONCAT31) & 0xFFFF)((int3)(uVar7 >> 8),cVar5 + -1);
@@ -9911,14 +9911,14 @@ export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) {
   uVar7 = ((uVar6) >>> 0);
   cVar5 = s8(uVar6 >> 8);
   if (cVar5 !== 0) {
-    cVar1 = param_1[0];
-    param_1[0] = param_1[0] + in_AL;
+    cVar1 = s32(param_1, 0);
+    w32(param_1, 0, s32(param_1, 0) + in_AL);
     if (SCARRY1(cVar1,in_AL)) {
-      if (param_1[0] < 0) {
-        param_1[0] = 0x7f;
+      if (s32(param_1, 0) < 0) {
+        w32(param_1, 0, 0x7f);
       }
       else {
-        param_1[0] = -0x80;
+        w32(param_1, 0, -0x80);
       }
     }
     param_1 = param_1 + 1;
@@ -9964,17 +9964,17 @@ export function FUN_005edd2b(param_1, param_2) {
   
   local_8 = param_1;
   local_c = param_2;
-  while ((*local_c !== 0xa && (*local_c !== 0xd))) {
-    *local_8 = *local_c;
+  while ((s32(local_c, 0) !== 0xa && (s32(local_c, 0) !== 0xd))) {
+    w32(local_8, 0, s32(local_c, 0));
     local_c = local_c + 1;
     local_8 = local_8 + 1;
     BVar1 = IsBadHugeReadPtr(local_c,1);
     if (BVar1 !== 0) {
-      *local_8 = 0;
-      return null;
+      w32(local_8, 0, 0);
+      return 0x0;
     }
   }
-  *local_8 = 0;
+  w32(local_8, 0, 0);
   return local_c + 1;
 }
 
@@ -10089,7 +10089,7 @@ export function FUN_005edebf(param_1, param_2) {
   let local_c;
   let local_8;
   
-  local_1c = null;
+  local_1c = 0x0;
   local_50[0] = 0;
   local_4c = 0;
   local_48 = 0;
@@ -10100,8 +10100,8 @@ export function FUN_005edebf(param_1, param_2) {
   MVar1 = mciSendCommandA(0,0x803,0x30200,(DWORD_PTR)local_50[0]);
   if (MVar1 === 0) {
     local_8 = FUN_005dce4f(0x14);
-    local_1c = (undefined4 *)FUN_005dcdf9(local_8);
-    *local_1c = local_8;
+    local_1c = FUN_005dcdf9(local_8);
+    w32(local_1c, 0, local_8);
     MVar2 = mciGetDeviceIDA(s_avivideo_00639d28);
     local_1c[2] = MVar2;
     local_18[0] = 0;
@@ -10198,7 +10198,7 @@ FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int
 
 {
   undefined4 uVar1;
-  undefined4 *puVar2;
+  undefined4 s32(puVar2, 0);
   int iVar3;
   HWND pHVar4;
   HDC pHVar5;
@@ -10214,8 +10214,8 @@ FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int
   int local_c;
   
   uVar1 = FUN_005dce4f(0x4c);
-  puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
-  *puVar2 = uVar1;
+  puVar2 = FUN_005dcdf9(uVar1);
+  s32(puVar2, 0) = uVar1;
   local_14 = GetSystemMetrics(4);
   local_18 = 0x2000000;
   if ((param_2 & 4) === 0) {
@@ -10361,7 +10361,7 @@ export function FUN_005ee450(param_1) {
 
   let iVar1;
   
-  if ((param_1 !== null) && (iVar1 = param_1[0], iVar1 !== 0)) {
+  if ((param_1 !== 0x0) && (iVar1 = s32(param_1, 0), iVar1 !== 0)) {
     FUN_005dce29(iVar1);
     FUN_005dce96(iVar1);
   }
@@ -10495,7 +10495,7 @@ export function FUN_005ee6b1(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
@@ -10515,14 +10515,14 @@ export function FUN_005ee6e3(in_ECX, param_1, param_2) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
   iVar1 = FUN_00414d10(G.DAT_006e4ff0,0x4000010a,param_2);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
-  *in_ECX = iVar1;
-  SendMessageA((HWND)*in_ECX,0x477,0,0x639d44);
+  w32(in_ECX, 0, iVar1);
+  SendMessageA((HWND)s32(in_ECX, 0),0x477,0,0x639d44);
   return;
 }
 
@@ -10539,13 +10539,13 @@ export function FUN_005ee757(in_ECX) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
   iVar1 = FUN_00414d10(G.DAT_006e4ff0,0x4000010a,0);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
-  *in_ECX = iVar1;
+  w32(in_ECX, 0, iVar1);
   return;
 }
 
@@ -10564,7 +10564,7 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
   let uVar2;
   let uVar3;
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
@@ -10572,8 +10572,8 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
   uVar2 = G.DAT_006e4ff0;
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,param_2);
-  *in_ECX = iVar1;
-  SendMessageA((HWND)*in_ECX,0x477,0,0x639d4c);
+  w32(in_ECX, 0, iVar1);
+  SendMessageA((HWND)s32(in_ECX, 0),0x477,0,0x639d4c);
   return;
 }
 
@@ -10593,7 +10593,7 @@ export function FUN_005ee825(in_ECX, param_1) {
   let uVar3;
   let uVar4;
   
-  if (*in_ECX !== 0) {
+  if (s32(in_ECX, 0) !== 0) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
@@ -10602,7 +10602,7 @@ export function FUN_005ee825(in_ECX, param_1) {
   uVar2 = G.DAT_006e4ff0;
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,uVar4);
-  *in_ECX = iVar1;
+  w32(in_ECX, 0, iVar1);
   return;
 }
 
@@ -10618,8 +10618,8 @@ export function FUN_005ee87f(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x499,0,param_1);
-  SendMessageA((HWND)*in_ECX,0x477,0,0x639d54);
+  SendMessageA((HWND)s32(in_ECX, 0),0x499,0,param_1);
+  SendMessageA((HWND)s32(in_ECX, 0),0x477,0,0x639d54);
   return;
 }
 
@@ -10635,7 +10635,7 @@ export function FUN_005ee8c6(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x806,0,0);
+  SendMessageA((HWND)s32(in_ECX, 0),0x806,0,0);
   return;
 }
 
@@ -10651,7 +10651,7 @@ export function FUN_005ee8f1(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x808,0,0);
+  SendMessageA((HWND)s32(in_ECX, 0),0x808,0,0);
   return;
 }
 
@@ -10667,7 +10667,7 @@ export function FUN_005ee91c(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x807,0,param_1);
+  SendMessageA((HWND)s32(in_ECX, 0),0x807,0,param_1);
   return;
 }
 
@@ -10683,9 +10683,9 @@ export function FUN_005ee94b(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x804,0,0);
-  SendMessageA((HWND)*in_ECX,0x10,0,0);
-  *in_ECX = 0;
+  SendMessageA((HWND)s32(in_ECX, 0),0x804,0,0);
+  SendMessageA((HWND)s32(in_ECX, 0),0x10,0,0);
+  w32(in_ECX, 0, 0);
   return;
 }
 
@@ -10701,7 +10701,7 @@ export function FUN_005ee991(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x807,0,-1);
+  SendMessageA((HWND)s32(in_ECX, 0),0x807,0,-1);
   return;
 }
 
@@ -10717,7 +10717,7 @@ export function FUN_005ee9bc(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x466,0,0);
+  SendMessageA((HWND)s32(in_ECX, 0),0x466,0,0);
   return;
 }
 
@@ -10733,7 +10733,7 @@ export function FUN_005ee9e7(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  SendMessageA((HWND)*in_ECX,0x809,0,0);
+  SendMessageA((HWND)s32(in_ECX, 0),0x809,0,0);
   return;
 }
 
@@ -10749,7 +10749,7 @@ export function FUN_005eea12(in_ECX, param_1) {
 
   // in_ECX → promoted to parameter
   
-  GetClientRect((HWND)*in_ECX,param_1);
+  GetClientRect((HWND)s32(in_ECX, 0),param_1);
   return;
 }
 
@@ -10772,14 +10772,14 @@ export function FUN_005eea3a(in_ECX) {
   let local_18;
   let local_14 = [0];
   
-  GetWindowRect((HWND)*in_ECX,local_28[0]);
-  local_18 = GetParent((HWND)*in_ECX);
+  GetWindowRect((HWND)s32(in_ECX, 0),local_28[0]);
+  local_18 = GetParent((HWND)s32(in_ECX, 0));
   GetClientRect(local_18,local_14[0]);
   iVar1 = FUN_00407f90(local_14[0]);
   iVar2 = FUN_00407f90(local_28[0]);
   iVar3 = FUN_00407fc0(local_14[0]);
   iVar4 = FUN_00407fc0(local_28[0]);
-  SetWindowPos((HWND)*in_ECX,(HWND)0x0,iVar1 - iVar2 >> 1,iVar3 - iVar4 >> 1,0,0,5);
+  SetWindowPos((HWND)s32(in_ECX, 0),(HWND)0x0,iVar1 - iVar2 >> 1,iVar3 - iVar4 >> 1,0,0,5);
   return;
 }
 
@@ -10795,7 +10795,7 @@ export function FUN_005eeadd(in_ECX, param_1, param_2) {
 
   // in_ECX → promoted to parameter
   
-  SetWindowPos((HWND)*in_ECX,(HWND)0x0,0,0,param_1,param_2,6);
+  SetWindowPos((HWND)s32(in_ECX, 0),(HWND)0x0,0,0,param_1,param_2,6);
   return;
 }
 
@@ -10811,7 +10811,7 @@ export function FUN_005eeb11(in_ECX, param_1, param_2) {
 
   // in_ECX → promoted to parameter
   
-  SetWindowPos((HWND)*in_ECX,(HWND)0x0,param_1,param_2,0,0,5);
+  SetWindowPos((HWND)s32(in_ECX, 0),(HWND)0x0,param_1,param_2,0,0,5);
   return;
 }
 
@@ -10827,8 +10827,8 @@ export function FUN_005eeb45(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  ShowWindow((HWND)*in_ECX,5);
-  SendMessageA((HWND)*in_ECX,0x476,0,0);
+  ShowWindow((HWND)s32(in_ECX, 0),5);
+  SendMessageA((HWND)s32(in_ECX, 0),0x476,0,0);
   return;
 }
 
@@ -10844,7 +10844,7 @@ export function FUN_005eeb7e(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  ShowWindow((HWND)*in_ECX,0);
+  ShowWindow((HWND)s32(in_ECX, 0),0);
   return;
 }
 
@@ -10864,7 +10864,7 @@ export function FUN_005eeba2(in_ECX, param_1) {
   
   lParam = 0;
   // DEVIATION: MFC — wParam = CSplitterWnd::IsTracking(param_1);
-  SendMessageA((HWND)*in_ECX,0x47f,wParam,lParam);
+  SendMessageA((HWND)s32(in_ECX, 0),0x47f,wParam,lParam);
   return;
 }
 
@@ -10884,7 +10884,7 @@ export function FUN_005eebd6(in_ECX) {
   let local_c;
   let local_8;
   
-  local_8 = (HPALETTE)SendMessageA((HWND)*in_ECX,0x47e,0,0);
+  local_8 = (HPALETTE)SendMessageA((HWND)s32(in_ECX, 0),0x47e,0,0);
   GetPaletteEntries(local_8,0,0x100,(LPPALETTEENTRY)local_40c);
   for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
     FUN_005c6b93(local_c,s32(local_40c, local_c * 4),
@@ -10944,7 +10944,7 @@ export function FUN_005eecc3(param_1) {
   iVar1 = FUN_005d52a2(param_1);
   if (iVar1 === 0) {
     w32(in_ECX, 2, param_1);
-    *in_ECX = *in_ECX | 1;
+    w32(in_ECX, 0, s32(in_ECX, 0) | 1);
   }
   else {
     in_ECX[2] = 0;
@@ -10983,7 +10983,7 @@ export function FUN_005eed43() {
 
   let in_ECX;
   
-  return (*in_ECX & 4) !== 0;
+  return (s32(in_ECX, 0) & 4) !== 0;
 }
 
 
@@ -11002,10 +11002,10 @@ export function FUN_005eed76(param_1) {
   iVar1 = FUN_005d52a2(param_1);
   if (iVar1 === 0) {
     w32(in_ECX, 2, param_1);
-    *in_ECX = *in_ECX | 1;
+    w32(in_ECX, 0, s32(in_ECX, 0) | 1);
   }
   else {
-    *in_ECX = 0;
+    w32(in_ECX, 0, 0);
   }
   return iVar1;
 }
@@ -11039,10 +11039,10 @@ export function FUN_005eedec(param_1, param_2) {
   
   iVar1 = FUN_005d5d11(param_1,param_2);
   if (iVar1 === 0) {
-    *in_ECX = *in_ECX | 2;
+    w32(in_ECX, 0, s32(in_ECX, 0) | 2);
   }
   else {
-    *in_ECX = *in_ECX & 0xfffd;
+    w32(in_ECX, 0, s32(in_ECX, 0) & 0xfffd);
   }
   return iVar1;
 }
@@ -11263,8 +11263,8 @@ export function FUN_005ef356(param_1, param_2, param_3, param_4) {
   let local_10;
   
   uVar1 = FUN_005dce4f(0x1c);
-  puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
-  *puVar2 = uVar1;
+  puVar2 = FUN_005dcdf9(uVar1);
+  w32(puVar2, 0, uVar1);
   puVar2[3] = param_3;
   puVar2[2] = param_4;
   puVar2[5] = 0;
@@ -11300,7 +11300,7 @@ export function FUN_005ef41e(in_EAX, param_1, param_2) {
   let uVar1;
   let local_c;
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11313,7 +11313,7 @@ export function FUN_005ef41e(in_EAX, param_1, param_2) {
     else if (param_2 === 2) {
       local_c = 0x51;
     }
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x50))(G.DAT_006394c0,s32(param_1, 4),local_c);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x50))(G.DAT_006394c0,s32(param_1, 4),local_c);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -11338,14 +11338,14 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
   let uVar1;
   let uVar2;
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     uVar1 = 0;
   }
   else {
     w32(param_1, 0xc, param_2);
     w32(param_1, 8, param_3);
     w32(param_1, 0x10, param_4);
-    // DEVIATION: C pointer — uVar2 = (**(code **)(*G.DAT_006394c0 + 0x54))(G.DAT_006394c0,param_2,param_3,param_4);
+    // DEVIATION: C pointer — uVar2 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x54))(G.DAT_006394c0,param_2,param_3,param_4);
     if (uVar2 === 0) {
       // DEVIATION: C pointer — MoveWindow(*(HWND *)(param_1 + 4),0,0,s32(param_1, 0xc),s32(param_1, 8),1);
       uVar1 = 1;
@@ -11371,11 +11371,11 @@ export function FUN_005ef58e(in_EAX) {
   // in_EAX → promoted to parameter
   let uVar1;
   
-  if (G.DAT_006394c0 === null) {
+  if (G.DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    // DEVIATION: C pointer — uVar1 = (**(code **)(*G.DAT_006394c0 + 0x4c))(G.DAT_006394c0);
+    // DEVIATION: C pointer — uVar1 = (**(code **)(s32(G.DAT_006394c0, 0) + 0x4c))(G.DAT_006394c0);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -11398,7 +11398,7 @@ export function FUN_005ef5db(param_1) {
 
   let uVar1;
   
-  if (param_1 !== null) {
+  if (param_1 !== 0x0) {
     if (param_1[5] === 0) {
       if (param_1[1] !== 0) {
         ShowWindow((HWND)param_1[1],0);
@@ -11406,7 +11406,7 @@ export function FUN_005ef5db(param_1) {
       }
       param_1[1] = 0;
     }
-    uVar1 = param_1[0];
+    uVar1 = s32(param_1, 0);
     FUN_005dce29(uVar1);
     FUN_005dce96(uVar1);
   }
@@ -11602,7 +11602,7 @@ export function FUN_005ef6cb(param_1, param_2, param_3, param_4) {
 export function FUN_005efca3(param_1, param_2) {
 
 
-  (param_2[0])(s32(param_1, 0xc),s32(param_1, 8),
+  (s32(param_2, 0))(s32(param_1, 0xc),s32(param_1, 8),
              s32(param_1, 0x54));
   return 1;
 }
@@ -11617,10 +11617,10 @@ export function FUN_005efca3(param_1, param_2) {
 export function FUN_005efcde(param_1, param_2) {
 
 
-  if (((G.DAT_006394c0 !== null) && (param_1 !== 0)) && (param_2 !== 0)) {
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 0x50))(G.DAT_006394c0,s32(param_1, 4),0x55);
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 0x20))(G.DAT_006394c0,0,0,param_2,FUN_005efca3);
-    // DEVIATION: C pointer — (**(code **)(*G.DAT_006394c0 + 0x50))(G.DAT_006394c0,s32(param_1, 4),8);
+  if (((G.DAT_006394c0 !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 0x50))(G.DAT_006394c0,s32(param_1, 4),0x55);
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 0x20))(G.DAT_006394c0,0,0,param_2,FUN_005efca3);
+    // DEVIATION: C pointer — (**(code **)(s32(G.DAT_006394c0, 0) + 0x50))(G.DAT_006394c0,s32(param_1, 4),8);
   }
   return;
 }
@@ -11665,7 +11665,7 @@ export function FUN_005efdc0(in_ECX) {
   // DEVIATION: SEH
   FUN_005e5ea0();
   local_8 = 0;
-  // DEVIATION: MFC — CString::CString((CString *)(in_ECX + 0x44));
+  // DEVIATION: MFC — CString::CString((in_ECX + 0x44));
   local_8 = CONCAT31(local_8._1_3_,1);
   FUN_005f0520();
   w32(in_ECX, 0xb0, 0);
@@ -11843,17 +11843,17 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
         for (uVar7 = ((local_40) >>> 0); local_24 = puVar12, uVar7 !== 0; uVar7 = uVar7 - 1) {
           puVar11 = puVar11 + -1;
           puVar13 = puVar13 + -1;
-          *puVar13 = *puVar11;
+          w32(puVar13, 0, s32(puVar11, 0));
         }
       }
       pbVar1 = local_5c;
       for (; local_5c = pbVar1, local_14 < local_50; local_14 = local_14 + 8) {
         if (local_8 === pbVar1) {
           local_5c = pbVar1 + 1;
-          local_8 = pbVar1 + *pbVar1 + 1;
+          local_8 = pbVar1 + s32(pbVar1, 0) + 1;
         }
         pbVar1 = local_5c + 1;
-        local_44 = (uint)*local_5c << (u8(local_14) & 0x1f) | local_44;
+        local_44 = (s32(local_5c, 0) >>> 0) << (u8(local_14) & 0x1f) | local_44;
       }
       uVar6 = ((local_44) << 16 >> 16) << 1 & local_20;
       if (local_54 < uVar6) {
@@ -11885,11 +11885,11 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
         }
         do {
           puVar13 = local_58 + -1;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((local_4c) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((local_4c) >>> 0)));
           uVar2 = u16(param_3, ((local_4c) >>> 0));
           if (uVar2 === 0xffff) break;
           puVar13 = local_58 + -2;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((uVar2) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((uVar2) >>> 0)));
           local_4c = u16(param_3, ((uVar2) >>> 0));
           local_58 = puVar13;
         } while (local_4c !== 0xffff);
@@ -11904,17 +11904,17 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
         }
         do {
           puVar13 = local_58 + -1;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((local_c) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((local_c) >>> 0)));
           uVar2 = u16(param_3, ((local_c) >>> 0));
           if (uVar2 === 0xffff) break;
           puVar13 = local_58 + -2;
-          // DEVIATION: C pointer — *puVar13 = *(undefined1 *)(iVar9 + ((uVar2) >>> 0));
+          // DEVIATION: C pointer — w32(puVar13, 0, *(undefined1 *)(iVar9 + ((uVar2) >>> 0)));
           local_c = u16(param_3, ((uVar2) >>> 0));
           local_58 = puVar13;
         } while (local_c !== 0xffff);
-        local_24[-1] = *puVar13;
+        local_24[-1] = s32(puVar13, 0);
       }
-      // DEVIATION: C pointer — *(undefined1 *)(iVar9 + ((local_54) >>> 0)) = *puVar13;
+      // DEVIATION: C pointer — *(undefined1 *)(iVar9 + ((local_54) >>> 0)) = s32(puVar13, 0);
       local_54 = local_54 + 2;
       local_c = uVar6;
       if ((local_20 < local_54) && (local_50 !== 0xc)) {
@@ -11942,7 +11942,7 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
 }
 
 function LAB_005e5d32_helper(local_8, local_c, param_2, param_5) {
-    param_2 = (int *)(param_2 + (param_5 - local_8));
+    param_2 = (param_2 + (param_5 - local_8));
     local_c = local_c - 1;
     if (local_c === 0) {
       return;
@@ -11951,7 +11951,7 @@ function LAB_005e5d32_helper(local_8, local_c, param_2, param_5) {
 }
 
 function LAB_005e5e7e_helper(local_8, local_c, param_5) {
-    piVar7 = (int *)(piVar7 + (param_5 - local_8));
+    piVar7 = (piVar7 + (param_5 - local_8));
     local_c = local_c - 1;
     if (local_c === 0) {
       return;
@@ -12096,7 +12096,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
             iVar5 = FUN_00414d10();
             // DEVIATION: C pointer — SelectPalette(local_18,*(HPALETTE *)(iVar5 + 0x18),BVar6);
             local_10 = RealizePalette(local_18);
-            InvalidateRect(param_1,null,1);
+            InvalidateRect(param_1,0x0,1);
           }
           ReleaseDC(param_1,local_18);
           return ((local_10 !== 0) >>> 0);
@@ -12757,7 +12757,7 @@ function LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4, uVar5); return;
   }
   else {
-    bVar1 = param_2[0];
+    bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
@@ -12766,7 +12766,7 @@ function LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
   if (cVar6 !== 0) {
-    param_1[0] = in_AL;
+    w32(param_1, 0, in_AL);
     param_1 = param_1 + 1;
     uVar5 = ((CONCAT1) >>> 0)1(cVar6 + -1,s8(uVar4));
   }
@@ -12787,7 +12787,7 @@ LAB_005edc85:
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, param_4, param_5, uVar2, uVar4, uVar5); return;
   }
   else {
-    bVar1 = param_2[0];
+    bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
@@ -12796,7 +12796,7 @@ LAB_005edc85:
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
   if (cVar6 !== 0) {
-    param_1[0] = in_AL;
+    w32(param_1, 0, in_AL);
     param_1 = param_1 + 1;
     uVar5 = ((CONCAT1) >>> 0)1(cVar6 + -1,s8(uVar4));
   }
@@ -12824,7 +12824,7 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3
     if (s8(uVar7 >> 8) === 0) LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3, uVar6, uVar7); return;
   }
   else if (cVar5 !== 0) {
-    bVar2 = param_2[0];
+    bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
     uVar6 = ((CONCAT31) & 0xFFFF)((int3)(uVar7 >> 8),cVar5 + -1);
@@ -12833,14 +12833,14 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3
   uVar7 = ((uVar6) >>> 0);
   cVar5 = s8(uVar6 >> 8);
   if (cVar5 !== 0) {
-    cVar1 = param_1[0];
-    param_1[0] = param_1[0] + in_AL;
+    cVar1 = s32(param_1, 0);
+    w32(param_1, 0, s32(param_1, 0) + in_AL);
     if (SCARRY1(cVar1,in_AL)) {
-      if (param_1[0] < 0) {
-        param_1[0] = 0x7f;
+      if (s32(param_1, 0) < 0) {
+        w32(param_1, 0, 0x7f);
       }
       else {
-        param_1[0] = -0x80;
+        w32(param_1, 0, -0x80);
       }
     }
     param_1 = param_1 + 1;
@@ -12864,7 +12864,7 @@ LAB_005edcc5:
     if (s8(uVar7 >> 8) === 0) LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_4, param_5, uVar3, uVar6, uVar7); return;
   }
   else if (cVar5 !== 0) {
-    bVar2 = param_2[0];
+    bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
     uVar6 = ((CONCAT31) & 0xFFFF)((int3)(uVar7 >> 8),cVar5 + -1);
@@ -12873,14 +12873,14 @@ LAB_005edcc5:
   uVar7 = ((uVar6) >>> 0);
   cVar5 = s8(uVar6 >> 8);
   if (cVar5 !== 0) {
-    cVar1 = param_1[0];
-    param_1[0] = param_1[0] + in_AL;
+    cVar1 = s32(param_1, 0);
+    w32(param_1, 0, s32(param_1, 0) + in_AL);
     if (SCARRY1(cVar1,in_AL)) {
-      if (param_1[0] < 0) {
-        param_1[0] = 0x7f;
+      if (s32(param_1, 0) < 0) {
+        w32(param_1, 0, 0x7f);
       }
       else {
-        param_1[0] = -0x80;
+        w32(param_1, 0, -0x80);
       }
     }
     param_1 = param_1 + 1;

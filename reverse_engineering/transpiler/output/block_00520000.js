@@ -141,7 +141,7 @@ export function FUN_005218cb(param_1) {
       FUN_00419c8b();
     }
     FUN_00421dd0();
-    // DEVIATION: MFC — iVar1 = CSocket::Create(local_410,((local_118) >>> 0),0x63226c,(char *)0x4008001);
+    // DEVIATION: MFC — iVar1 = CSocket::Create(local_410,((local_118) >>> 0),0x63226c,0x4008001);
     if (iVar1 !== 0) LAB_00521beb_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, local_8, param_1); return;
     iVar1 = DAT_00655afe;
     if ((((-1 < iVar1) && (iVar1 < DAT_00655b16)) && (s32(DAT_0065610a, iVar1 * 0x20) !== 0))
@@ -1002,7 +1002,7 @@ export function FUN_005233fc(param_1, param_2) {
                                               // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594)
                                               // DEVIATION(cont): * 0x30));
     FUN_005f22d0(DAT_0064bcfa + s8(DAT_00655b03) * 0xf2,uVar5);
-    // DEVIATION: C pointer — if (0 < s16(DAT_00655502, s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
+    // DEVIATION: C pointer — if (0 < *(short *)(DAT_00655502 + s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
                       // DEVIATION(cont): )) {
       // DEVIATION(cont): *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) =
            // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30
@@ -1064,7 +1064,7 @@ export function FUN_005233fc(param_1, param_2) {
     DAT_00655b05 = u8(local_24);
     DAT_006d1da0 = local_24;
     FUN_005f22d0(DAT_0064bcfa + s8u8(local_24) * 0xf2,param_1 + 0x20);
-    // DEVIATION: C pointer — if (0 < s16(DAT_00655502, s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
+    // DEVIATION: C pointer — if (0 < *(short *)(DAT_00655502 + s16(DAT_0064c6a6, s8(DAT_00655b03) * 0x594) * 0x30
                       // DEVIATION(cont): )) {
       // DEVIATION(cont): *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) =
            // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30
@@ -1205,15 +1205,15 @@ export function FUN_00523f02(param_1) {
         FUN_0040bbe0(DAT_00632334);
         iVar2 = local_33c;
         local_33c = local_33c + 1;
-        local_38 = (byte *)FUN_0059edf0(DAT_00679640,iVar2,0);
+        local_38 = FUN_0059edf0(DAT_00679640,iVar2,0);
         aiStack_30[s32(local_38, 4)] = local_44c;
       }
     }
     local_334 = local_33c;
     local_338 = 0;
     for (local_33c = 0; local_33c < local_334; local_33c = local_33c + 1) {
-      local_38 = (byte *)FUN_0059e7ad(local_33c);
-      if (local_38 !== null) {
+      local_38 = FUN_0059e7ad(local_33c);
+      if (local_38 !== 0x0) {
         local_44c._0_1_ = u8(aiStack_30[s32(local_38, 4)]);
         if ((1 << (u8(local_44c) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0) {
           local_338 = local_338 + 1;
@@ -1232,8 +1232,8 @@ export function FUN_00523f02(param_1) {
     }
     local_330 = 0;
     for (local_33c = 0; local_33c < local_334; local_33c = local_33c + 1) {
-      local_38 = (byte *)FUN_0059e7ad(local_330);
-      if ((local_38 !== null) && ((*local_38 & 1) === 0)) {
+      local_38 = FUN_0059e7ad(local_330);
+      if ((local_38 !== 0x0) && ((s32(local_38, 0) & 1) === 0)) {
         FUN_0059ea99(s32(local_38, 4));
         if (local_c4 !== 0) {
           FUN_004472f0(s32(local_38, 4));
@@ -1427,7 +1427,7 @@ export function FUN_0052630d(in_ECX) {
   FUN_005c0073(in_ECX + 0x5f8);
   FUN_00451bf0();
   FUN_004f6564(in_ECX + 0x5f8,2);
-  local_8 = (_Timevec *)DAT_0067a798;
+  local_8 = DAT_0067a798;
   local_40 = s32(in_ECX, 0x5f8) + 10;
   local_3c = FUN_00407f90(in_ECX + 0x5f8);
   local_1c = FUN_0040ef70();
@@ -1552,9 +1552,9 @@ export function FUN_00526913(in_ECX, param_1) {
       FUN_0052630d();
       FUN_00408460();
       FUN_004518d0();
-      // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((CPropertySheet *)DAT_006a66b0,0x401843);
+      // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0x401843);
       FUN_005c61b0();
-      // DEVIATION: MFC — CPropertySheet::EnableStackedTabs((CPropertySheet *)DAT_006a66b0,0);
+      // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0);
     }
   }
   return;
@@ -1944,7 +1944,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d25a8(local_220);
     pvVar2 = operator_new(0x3c);
     local_8 = 3;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_228 = 0;
     }
     else {
@@ -1965,7 +1965,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040faa0(0 /* ADDR:LAB_00403d28 */);
     pvVar2 = operator_new(0x3c);
     local_8 = 4;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_230 = 0;
     }
     else {
@@ -1986,7 +1986,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040faa0(0 /* ADDR:LAB_00403d28 */);
     pvVar2 = operator_new(0x3c);
     local_8 = 5;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_238 = 0;
     }
     else {
@@ -2051,7 +2051,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       else {
         pvVar2 = operator_new(0x3c);
         local_8 = 6;
-        if (pvVar2 === null) {
+        if (pvVar2 === 0x0) {
           local_248 = 0;
         }
         else {
@@ -2072,7 +2072,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
         FUN_0040faa0(0 /* ADDR:LAB_00403657 */);
         pvVar2 = operator_new(0x3c);
         local_8 = 7;
-        if (pvVar2 === null) {
+        if (pvVar2 === 0x0) {
           local_250 = 0;
         }
         else {
@@ -2181,7 +2181,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_214);
     pvVar2 = operator_new(0x50);
     local_8 = 2;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_21c = 0;
     }
     else {
@@ -2248,7 +2248,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_258);
     pvVar2 = operator_new(0x50);
     local_8 = 8;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_260 = 0;
     }
     else {
@@ -2316,7 +2316,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_268);
     pvVar2 = operator_new(0x50);
     local_8 = 9;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_270 = 0;
     }
     else {
@@ -2429,7 +2429,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_27c);
     pvVar2 = operator_new(0x50);
     local_8 = 10;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_284 = 0;
     }
     else {
@@ -2640,7 +2640,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_294);
     pvVar2 = operator_new(0x50);
     local_8 = 0xb;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_29c = 0;
     }
     else {
@@ -2876,7 +2876,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005c0f57(local_2b0,DAT_00679640,local_38,local_3c,1);
     pvVar2 = operator_new(0x48);
     local_8 = 0xc;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_2b8 = 0;
     }
     else {
@@ -2992,11 +2992,11 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       local_164 = local_24[0].top + local_488;
       local_168 = local_34 / 2;
       if (s32(in_ECX, 0x154) === 0) {
-        // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0068abd8);
+        // DEVIATION: MFC — _Timevec::~_Timevec(DAT_0068abd8);
         local_48c = extraout_EAX_01;
       }
       else {
-        // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0068abe0);
+        // DEVIATION: MFC — _Timevec::~_Timevec(DAT_0068abe0);
         local_48c = extraout_EAX_02;
       }
       local_160 = DAT_0062d868 * 2 + local_48c;
@@ -3012,11 +3012,11 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
         local_470 = FUN_0040ef70();
       }
       if (s32(in_ECX, 0x154) === 0) {
-        // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0068abd8);
+        // DEVIATION: MFC — _Timevec::~_Timevec(DAT_0068abd8);
         local_474 = extraout_EAX;
       }
       else {
-        // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0068abe0);
+        // DEVIATION: MFC — _Timevec::~_Timevec(DAT_0068abe0);
         local_474 = extraout_EAX_00;
       }
       local_16c = local_24[0].top + DAT_0062d868 * 2 + local_470 + local_474;
@@ -3026,7 +3026,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
               local_164 + local_160);
       pvVar2 = operator_new(0x3c);
       local_8 = 0xd;
-      if (pvVar2 === null) {
+      if (pvVar2 === 0x0) {
         local_2cc = 0;
       }
       else {
@@ -3050,7 +3050,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       FUN_0040f880(0 /* ADDR:LAB_00402496 */ + ((param_2 === 0) - 1 & 0xffffef93));
       pvVar2 = operator_new(0x3c);
       local_8 = 0xe;
-      if (pvVar2 === null) {
+      if (pvVar2 === 0x0) {
         local_2d4 = 0;
       }
       else {
@@ -3096,7 +3096,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     }
     pvVar2 = operator_new(0x3c);
     local_8 = 0xf;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_2dc = 0;
     }
     else {
@@ -3122,7 +3122,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
             local_164 + local_160);
     pvVar2 = operator_new(0x3c);
     local_8 = 0x10;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_2e4 = 0;
     }
     else {
@@ -3191,7 +3191,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_2ec);
     pvVar2 = operator_new(0x50);
     local_8 = 0x11;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_2f4 = 0;
     }
     else {
@@ -3432,7 +3432,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_300);
     pvVar2 = operator_new(0x50);
     local_8 = 0x12;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_308 = 0;
     }
     else {
@@ -3516,7 +3516,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_005d4167(local_31c);
     pvVar2 = operator_new(0x50);
     local_8 = 0x13;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_324 = 0;
     }
     else {
@@ -3621,7 +3621,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
               local_1d4 + local_1dc);
       pvVar2 = operator_new(0x3c);
       local_8 = 0x14;
-      if (pvVar2 === null) {
+      if (pvVar2 === 0x0) {
         local_330 = 0;
       }
       else {
@@ -3645,7 +3645,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       FUN_0040f880(0 /* ADDR:LAB_004038d7 */ + ((param_2 === 0) - 1 & 0xffffdd6e));
       pvVar2 = operator_new(0x3c);
       local_8 = 0x15;
-      if (pvVar2 === null) {
+      if (pvVar2 === 0x0) {
         local_338 = 0;
       }
       else {
@@ -3757,7 +3757,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_004dbee6(s32(in_ECX, 0x234),0);
     pvVar2 = operator_new(0x48);
     local_8 = 0;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_1f8 = 0;
     }
     else {
@@ -3794,7 +3794,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_004dbee6(s32(in_ECX, 0x234),1);
     pvVar2 = operator_new(0x48);
     local_8 = 1;
-    if (pvVar2 === null) {
+    if (pvVar2 === 0x0) {
       local_204 = 0;
     }
     else {
@@ -3828,13 +3828,13 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     _DAT_0067a9e0 = 1;
     if (s32(in_ECX, 0x234) !== 0) {
       iVar1 = s32(in_ECX, 0x234);
-      local_4c = (int *)(iVar1 + 0x20);
-      if (((s32(*(int *, 0)(in_ECX + 0x234) + 0x10) === 0xf) && (*local_4c === 8)) ||
-         ((s32(*(int *, 0)(in_ECX + 0x234) + 0x10) === 0xe && (*local_4c === 8)))) {
-        local_40 = s32(iVar1, 0x28);
-        local_48 = (undefined4 *)(iVar1 + 0x2c);
+      local_4c = (iVar1 + 0x20);
+      // DEVIATION: C pointer — if (((s32(s32(in_ECX, 0x234) + 0x10, 0) === 0xf) && (s32(local_4c, 0) === 8)) ||
+         // DEVIATION(cont): ((*(int *)(*(int *)(in_ECX + 0x234) + 0x10) == 0xe && (*local_4c == 8)))) {
+        // DEVIATION(cont): local_40 = *(int *)(iVar1 + 0x28);
+        local_48 = (iVar1 + 0x2c);
         for (local_44 = 0; local_44 < local_40; local_44 = local_44 + 1) {
-          uVar3 = *local_48;
+          uVar3 = s32(local_48, 0);
           local_48 = local_48 + 1;
           iVar1 = FUN_004bd9f0(DAT_006d1da0,uVar3);
           if (iVar1 === 0) {
@@ -4081,8 +4081,8 @@ export function FUN_0052d9a1(param_1) {
     local_8 = local_8 + -0x48;
   }
   // DEVIATION: MFC — pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x348));
-  if ((pcVar1 !== null) ||
-     // DEVIATION: MFC — (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== null)) {
+  if ((pcVar1 !== 0x0) ||
+     // DEVIATION: MFC — (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== 0x0)) {
     // DEVIATION(cont): thunk_FUN_004518d0();
     FUN_0052dd73(param_1);
   }
@@ -4921,7 +4921,7 @@ function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
       FUN_00419c8b();
     }
     FUN_00421dd0();
-    // DEVIATION: MFC — iVar1 = CSocket::Create(local_410,((local_118) >>> 0),0x63226c,(char *)0x4008001);
+    // DEVIATION: MFC — iVar1 = CSocket::Create(local_410,((local_118) >>> 0),0x63226c,0x4008001);
     if (iVar1 !== 0) LAB_00521beb_helper(iVar1, local_118, local_11c, local_14, local_3d4, local_3e8, local_410, local_8, local_844, param_1, uVar2); return;
     iVar1 = DAT_00655afe;
     if ((((-1 < iVar1) && (iVar1 < DAT_00655b16)) && (s32(DAT_0065610a, iVar1 * 0x20) !== 0))

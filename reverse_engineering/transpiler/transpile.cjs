@@ -21,6 +21,51 @@ const OUT_DIR = path.join(__dirname, 'output');
 // Ensure output dir exists
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
+// ── Balanced paren extraction ──────────────────────────────────────
+// Extract the contents of a balanced (...) starting at position `start`
+function extractBalancedParens(str, start) {
+  if (str[start] !== '(') return null;
+  let depth = 0;
+  for (let i = start; i < str.length; i++) {
+    if (str[i] === '(') depth++;
+    if (str[i] === ')') depth--;
+    if (depth === 0) return { content: str.substring(start + 1, i), end: i };
+  }
+  return null;
+}
+
+// Replace *(TYPE *)(expr) with helper(base, offset) using balanced parens
+function replaceTypedPtrDeref(line) {
+  const typeMap = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
+                    'undefined4': 's32', 'undefined2': 's16' };
+  const typePattern = /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*\s*\)\s*\(/g;
+  let result = '';
+  let lastIdx = 0;
+  let match;
+
+  while ((match = typePattern.exec(line)) !== null) {
+    const type = match[1];
+    const helper = typeMap[type];
+    // Find the opening ( after the type cast
+    const parenStart = line.indexOf('(', match.index + match[0].length - 1);
+    const balanced = extractBalancedParens(line, parenStart);
+    if (!balanced) { continue; }
+
+    result += line.substring(lastIdx, match.index);
+    const inner = balanced.content.trim();
+    const parts = splitBaseOffset(inner);
+    if (parts) {
+      result += helper + '(' + parts.base + ', ' + parts.offset + ')';
+    } else {
+      result += helper + '(' + inner + ', 0)';
+    }
+    lastIdx = balanced.end + 1;
+    typePattern.lastIndex = lastIdx;
+  }
+  result += line.substring(lastIdx);
+  return result;
+}
+
 // ── Line-level transformations ─────────────────────────────────────
 // Applied iteratively (inside-out) until no more changes
 
@@ -61,19 +106,8 @@ function transformLine(line, ctx) {
     out = out.replace(/\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[/g, '$1[');
 
     // ── Typed pointer READ: *(TYPE *)(base + off) → helper(base, off) ──
-    // Match: *(int/uint/short/ushort/undefined4/undefined2 *)( expr )
-    out = out.replace(
-      /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*\s*\)\s*\(([^)]+)\)/g,
-      (m, type, inner) => {
-        const helper = ({ 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
-                          'undefined4': 's32', 'undefined2': 's16' })[type];
-        // Split inner into base + offset: "&DAT_XXX + expr" or "base + expr"
-        const parts = splitBaseOffset(inner.trim());
-        if (parts) return helper + '(' + parts.base + ', ' + parts.offset + ')';
-        // Single expression (no +), treat as base with offset 0
-        return helper + '(' + inner.trim() + ', 0)';
-      }
-    );
+    // Uses balanced paren matching for nested expressions
+    out = replaceTypedPtrDeref(out);
 
     // ── Typed pointer WRITE: handled at statement level below ──
 
@@ -152,6 +186,17 @@ function transformLine(line, ctx) {
       out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: MFC — $2');
       if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
     }
+
+    // ── Bare pointer dereference: *variable → s32(variable, 0) ──
+    // Handles *in_ECX, *DAT_XXX, *param_N, *local_N, *piVarN, *ppVarN, etc.
+    // Match * followed by a Ghidra variable name, not preceded by a word char (to avoid multiplication)
+    out = out.replace(/(?<![a-zA-Z0-9_])\*([a-zA-Z_]\w*Var\d+|in_E\w+|DAT_[0-9a-fA-F]+|param_\d+|local_\w+|unaff_\w+|[A-Z]\w+)(?!\s*\()/g,
+      (m, name) => 's32(' + name + ', 0)');
+
+    // ── C-style pointer casts without dereference: (TYPE *)expr → expr ──
+    // Only strip when NOT preceded by * (dereference handled separately)
+    out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\()/g, '');
+    out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\w)/g, '');
 
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
     // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
