@@ -185,12 +185,16 @@ C:   (ushort)expr       →  (expr) & 0xFFFF (mask to unsigned 16-bit)
 C:   (bool)expr         →  (expr) ? 1 : 0
 ```
 
-**`(uint)` always emits `>>> 0`.** This is slightly verbose but always correct
-and always mechanical. No context-checking needed.
+**`(uint)` always emits `>>> 0`** — EXCEPT after an unsigned helper (`u8()`,
+`u16()`, `u32()`), where it's a no-op (already unsigned). So:
+- `(uint)(byte)expr` → `u8(expr)` (no `>>> 0`)
+- `(uint)expr` (no unsigned helper) → `(expr) >>> 0`
 
-**`(int)` is always a no-op.** JS bitwise operators already produce signed
-32-bit values, so `(int)` never changes behavior. The only exception is
-`(int)(longlong_expr)` which uses `| 0` — covered by the longlong rule.
+**`(int)` is a no-op** — EXCEPT after `>>> 0`. If the expression contains
+`>>> 0` (from a `(uint)` cast), `(int)` restores signed interpretation:
+- `(int)(uint)expr` → `(expr) | 0` (not `(expr) >>> 0`)
+- `(int)expr` (no `>>> 0` involved) → `expr` (drop)
+- `(int)(longlong_expr)` → `| 0` (covered by longlong rule)
 
 **`(char)` and `(byte)` work on any expression** — whether from a memory
 read or a computed value. `s8()` and `u8()` are value-based helpers that
@@ -302,6 +306,13 @@ JS:  export function FUN_XXX(in_ECX, param_1) { ... }
 ```
 Treat as additional parameters. Canonical ordering when multiple are present:
 `in_EAX, in_ECX, in_EDX, unaff_ESI, unaff_EDI, param_1, param_2, ...`
+
+The original `int in_ECX;` declaration line in the C body becomes a comment
+to preserve line numbering:
+```
+C:   int in_ECX;
+JS:  // in_ECX → promoted to parameter
+```
 
 ### Sub-field read (._N_M_)
 ```
@@ -432,7 +443,10 @@ retry patterns (the decompiler already converted tight loops to `do-while`).
 Maximum recursion depth is bounded by user interaction count.
 
 ### Variable passing
-Pass all variables used by the labeled block as arguments to the helper.
+Pass all variables that are **read or written** in the labeled block as
+arguments to the helper. This includes variables set *before* the goto but
+used *in* the labeled block.
+
 Since the caller always does `helper(); return;` immediately, write-back
 of modified locals is not needed — the caller returns right after the call.
 
@@ -492,11 +506,12 @@ JS:  export function FUN_XXX(param_3, param_4) {
 
 ### Critical: ALL access uses `[0]` after declaration
 Once a local is declared as `[0]`, every read and write for the rest of the
-function uses `[0]`. No exceptions.
+function uses `[0]`. No exceptions — including return statements.
 ```
 C:   local_14 = 5;                   JS:  local_14[0] = 5;
 C:   x = local_14 + 1;              JS:  x = local_14[0] + 1;
 C:   if (local_14 < 10)             JS:  if (local_14[0] < 10)
+C:   return local_14;               JS:  return local_14[0];
 ```
 
 ### Why this works
@@ -562,7 +577,7 @@ All 5 solved mechanically. Zero manual work.
 | Double pointer deref | 163 | All DEVIATION (solved) |
 | `longlong` 64-bit | 69 | `(expr) \| 0` — JS floats sufficient (solved) |
 | Nested casts | 42 | Simplify to innermost (solved) |
-| Comma in condition | 14 | Split to separate statement (solved) |
+| Comma in condition | 14 | JS supports comma operator — pass through (solved) |
 | `va_list` | 11 | Framework only — stub (solved) |
 | Function pointer calls | 5 | 3 DEVIATION + 2 global callback rule (solved) |
 | `bRam` | 3 | `DAT_XXX` direct (solved) |
@@ -589,3 +604,27 @@ No typed arrays with element size > 1 — this eliminates the stride bug class e
 the array), not an array+offset. This is because byte reads are direct array
 access (`arr[offset]`), so the value is already extracted. Multi-byte reads
 (`s16`, `s32`, etc.) need the array+offset to read consecutive bytes.
+
+**`(short)` cast vs `s16()` helper:** If Ghidra emits `(short)(*(ushort *)(&DAT + off))`,
+the composability rule produces `((u16(DAT, off)) << 16 >> 16)`. This is
+equivalent to `s16(DAT, off)`. The transpiler MAY optimize to `s16()` but
+the verbose form is also correct.
+
+---
+
+## Imports, Exports, and Cross-Block Wiring
+
+The transpiler outputs each block as a standalone file with `export function`
+declarations. It does NOT resolve cross-block references.
+
+**What the transpiler handles:**
+- Function signatures → `export function FUN_XXXXXXXX(...) {`
+- `import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';` (prelude)
+
+**What a separate wiring step handles (not part of the transpiler):**
+- Cross-block function calls (`FUN_XXXXXXXX` defined in another block)
+- Global `DAT_XXXXXXXX` declarations and sharing across blocks
+- Stub declarations for undefined references
+
+This matches the existing v4 pipeline architecture (`transform.cjs` → `wire.cjs`
+→ `fix-blocks.cjs`). The transpiler replaces `transform.cjs` only.
