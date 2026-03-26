@@ -1410,7 +1410,7 @@ export function FUN_004241f8() {
   FUN_0047e94e(1,0);
   if ((DAT_006c9004 === 0) && (DAT_006c900c === 0)) {
     if (2 < iVar1) {
-      pcVar4 = s32(char **, 0)(s32(DAT_006ad678[0x8c] + 0x1c, 0) + 8);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — pcVar4 = *(char **)(s32(DAT_006ad678[0x8c] + 0x1c, 0) + 8);
       sVar2 = _strlen(pcVar4);
       pcVar3 = _strchr(pcVar4,0x3e);
       if (pcVar4 + (sVar2 - 1) === pcVar3) {
@@ -1680,38 +1680,38 @@ export function FUN_0042486f(in_ECX) {
   iVar1 = s32(s32(in_ECX, 0) + 0xd0, 0) + s32(s32(in_ECX, 0) + 0xb8, 0) + 2;
   piVar2 = FUN_0059e18b(DAT_00625d14,0xe6,iVar1,0x80,0);
   in_ECX[0x4a] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX;
   piVar2 = FUN_0059e18b(DAT_00625d18,0xe6,iVar1,0x80,0);
   in_ECX[0x4b] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_00;
   piVar2 = FUN_0059e18b(DAT_00625d1c,0xe6,iVar1,0x80,0);
   in_ECX[0x4c] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_01;
   piVar2 = FUN_0059e18b(DAT_00625d20,0xe6,iVar1,0x80,0);
   in_ECX[0x4d] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_02;
   piVar2 = FUN_0059e18b(DAT_00625d24,0xe6,iVar1,0x80,0);
   in_ECX[0x4e] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_03;
   piVar2 = FUN_0059e18b(DAT_00625d28,0xe6,iVar1,0x80,0);
   in_ECX[0x4f] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_04;
   piVar2 = FUN_0059e18b(DAT_00625d2c,0xe6,iVar1,0x80,0);
   in_ECX[0x50] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   iVar1 = iVar1 + extraout_EAX_05;
   piVar2 = FUN_0059e18b(DAT_00625d30,0xe6,iVar1,0x80,0);
   in_ECX[0x51] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   piVar2 = FUN_0059e18b(DAT_00625d34,0xe6,iVar1 + extraout_EAX_06,0x80,0);
   in_ECX[0x52] = s32(piVar2, 0);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(s32(in_ECX, 0) + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8));
   return;
 }
 
@@ -1893,8 +1893,8 @@ export function FUN_004253ef(in_ECX) {
   local_c = in_ECX[0x53];
   FUN_0042472a();
   while (local_c !== 0x0) {
-    pvVar1 = s32(void **, 0)(local_c + 0x10);
-    operator_delete(s32(void **, 0)(local_c + 8));
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — pvVar1 = *(void **)(local_c + 0x10);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(local_c + 8));
     operator_delete(local_c);
     local_c = pvVar1;
   }
@@ -1933,10 +1933,10 @@ export function FUN_004254a8(in_ECX, param_1, param_2) {
   puVar1[5] = local_10;
   if (local_10 === 0) {
     in_ECX[0x53] = puVar1;
-    s32(uint **, 0)(s32(in_ECX, 0) + 0x228) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(s32(in_ECX, 0) + 0x228) = puVar1;
   }
   else {
-    s32(uint **, 0)(local_10 + 0x10) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(local_10 + 0x10) = puVar1;
   }
   w32(puVar1, 0, 0);
   sVar2 = _strlen(param_1);
@@ -2043,7 +2043,7 @@ export function FUN_0042570c() {
   while (local_c !== 0x0) {
     if (DAT_006ad8b8 * 0x3c < iVar3 - s32(local_c + 0x28, 0)) {
       if (DAT_006c31d4 === local_c) {
-        DAT_006c31d4 = s32(void **, 0)(local_c + 0x20);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — DAT_006c31d4 = *(void **)(local_c + 0x20);
       }
       if (s32(local_c + 0x24, 0) !== 0) {
         true // DEVIATION: C pointer — s32(s32(local_c, 0x24) + 0x20, 0) = s32(local_c + 0x20, 0)
@@ -2053,13 +2053,13 @@ export function FUN_0042570c() {
         true // DEVIATION: C pointer — s32(s32(local_c, 0x20) + 0x24, 0) = s32(local_c + 0x24, 0)
         // DEVIATION(cont): ;
       }
-      pvVar1 = s32(void **, 0)(local_c + 0x20);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — pvVar1 = *(void **)(local_c + 0x20);
       operator_delete(local_c);
       bVar2 = true;
       local_c = pvVar1;
     }
     else {
-      local_c = s32(void **, 0)(local_c + 0x20);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(void **)(local_c + 0x20);
     }
   }
   if (bVar2) {
@@ -4167,11 +4167,11 @@ export function show_credits_0042A7BC(unaff_EBX, unaff_ESI, param_1, param_2, pa
   FUN_00407ff0();
   if (param_4 < 1) {
     // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((iVar5 + 0x2d8));
-    s32(CView **, 0)(iVar5 + 0x48c) = pCVar2;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(CView **)(iVar5 + 0x48c) = pCVar2;
   }
   if (param_5 < 1) {
     // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((iVar5 + 0x2d8));
-    s32(CView **, 0)(iVar5 + 0x474) = pCVar2;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(CView **)(iVar5 + 0x474) = pCVar2;
   }
   w32(iVar5, 0x490, param_6);
   w32(iVar5, 0x478, param_7);

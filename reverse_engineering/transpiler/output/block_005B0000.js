@@ -2980,7 +2980,7 @@ export function FUN_005b7fe0() {
     if (s32(DAT_006365c0, local_18 * 4) === 0) {
       FUN_00589ef8(0xfffffff6,5,0,0xea,local_18);
     }
-    _memset(s32(void **, 0)(DAT_006365c0 + local_18 * 4),0,DAT_006d1164);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — _memset(*(void **)(DAT_006365c0 + local_18 * 4),0,DAT_006d1164);
   }
   local_8 = DAT_006d116a * DAT_006d116c;
   if ((local_8 & 3) !== 0) {
@@ -3120,7 +3120,7 @@ export function FUN_005b8635(param_1, param_2) {
   if (sVar1 !== 0) {
     if (param_2 === 0) {
       for (local_10 = 1; local_10 < 8; local_10 = local_10 + 1) {
-        sVar1 = _fwrite(s32(void **, 0)(DAT_006365c0 + local_10 * 4),DAT_006d1164,1,param_1);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — sVar1 = _fwrite(*(void **)(DAT_006365c0 + local_10 * 4),DAT_006d1164,1,param_1);
         if (sVar1 === 0) {
           return 1;
         }
@@ -3183,7 +3183,7 @@ export function FUN_005b8783(param_1, param_2) {
     FUN_005b7fe0();
     if (param_2 === 0) {
       for (local_34 = 1; local_34 < 8; local_34 = local_34 + 1) {
-        sVar1 = _fread(s32(void **, 0)(DAT_006365c0 + local_34 * 4),DAT_006d1164,1,param_1);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — sVar1 = _fread(*(void **)(DAT_006365c0 + local_34 * 4),DAT_006d1164,1,param_1);
         if (sVar1 === 0) {
           return 1;
         }
@@ -3249,7 +3249,7 @@ export function FUN_005b89bb(param_1, param_2) {
   let puVar1;
   
   puVar1 = FUN_005b8931(param_1,param_2);
-  return CONCAT31((int3)(((puVar1) >>> 0) >> 8),s32(puVar1, 0)) & 0xffffff0f;
+  return CONCAT31(((((puVar1) >>> 0) >> 8) & 0xFFFFFF),s32(puVar1, 0)) & 0xffffff0f;
 }
 
 

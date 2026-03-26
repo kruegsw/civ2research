@@ -2785,7 +2785,7 @@ export function FUN_0057843e(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -3006,7 +3006,7 @@ export function FUN_005787bd(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -3226,14 +3226,14 @@ export function FUN_00578b06(in_ECX, param_1, param_2) {
   
   puVar1 = FUN_00498159(in_ECX + 4,0x1c);
   if (s32(in_ECX, 0x1c) === 0) {
-    s32(undefined4 **, 0)(in_ECX + 0x1c) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x1c) = puVar1;
     puVar1[5] = 0;
   }
   else {
     for (local_c = s32(in_ECX, 0x1c); s32(local_c, 0x10) !== 0;
         local_c = s32(local_c, 0x10)) {
     }
-    s32(undefined4 **, 0)(local_c + 0x10) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(local_c + 0x10) = puVar1;
     puVar1[5] = local_c;
   }
   puVar1[4] = 0;
@@ -3273,14 +3273,14 @@ export function FUN_00578c12(in_ECX, param_1, param_2, param_3, param_4) {
   if (iVar1 !== 0) {
     local_c = FUN_00498159(in_ECX + 4,0x1c);
     if (s32(iVar1, 0x18) === 0) {
-      s32(undefined4 **, 0)(iVar1 + 0x18) = local_c;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(iVar1 + 0x18) = local_c;
       local_c[5] = 0;
     }
     else {
       for (local_8 = s32(iVar1, 0x18); s32(local_8, 0x10) !== 0;
           local_8 = s32(local_8, 0x10)) {
       }
-      s32(undefined4 **, 0)(local_8 + 0x10) = local_c;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(local_8 + 0x10) = local_c;
       local_c[5] = local_8;
     }
     local_c[6] = iVar1;
@@ -3438,7 +3438,7 @@ export function FUN_00578f2c(in_ECX, param_1) {
   
   // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(in_ECX + 0x19) & 0x80) === 0) {
     // DEVIATION(cont): local_104[0] = 0;
-    local_118 = s32(undefined4 **, 0)(in_ECX + 0x1c);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_118 = *(undefined4 **)(in_ECX + 0x1c);
     local_114 = 1;
     for (; local_118 !== 0x0; local_118 = local_118[4]) {
       // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_118 + 2) & 2) === 0) {
@@ -3456,14 +3456,14 @@ export function FUN_00578f2c(in_ECX, param_1) {
     if (param_1 !== 0) {
       FUN_005799c0(local_104);
     }
-    local_118 = s32(undefined4 **, 0)(in_ECX + 0x1c);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_118 = *(undefined4 **)(in_ECX + 0x1c);
     local_114 = 1;
-    for (; local_118 !== 0x0; local_118 = s32(undefined4 **, 0)(local_118 + 0x10)) {
-      // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_118 + 8) & 2) === 0) {
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (; local_118 !== 0x0; local_118 = *(undefined4 **)(local_118 + 0x10)) {
+      // DEVIATION(cont): if ((*(byte *)((int)local_118 + 8) & 2) == 0) {
         // DEVIATION(cont): if (param_1 != 0) {
           // DEVIATION(cont): thunk_FUN_00579a40(local_114,1);
         }
-        local_10c = s32(undefined4 **, 0)(local_118 + 0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_10c = *(undefined4 **)(local_118 + 0x18);
         local_110 = 1;
         for (; local_10c !== 0x0; local_10c = local_10c[4]) {
           // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_10c + 2) & 2) === 0) {

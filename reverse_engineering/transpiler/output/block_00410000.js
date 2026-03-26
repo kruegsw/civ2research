@@ -3936,7 +3936,7 @@ export function FUN_0041866c(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -4094,7 +4094,7 @@ export function FUN_00418910(in_ECX, param_1, param_2, param_3, param_4) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,1,1,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -4494,7 +4494,7 @@ export function FUN_00418f40(in_ECX, param_1, param_2, param_3) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x38) = PTR_DAT_00637e70;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e70;
   FUN_0040f730(param_1,7,param_2,param_3);
   uVar1 = register_wndclass_37A0(param_3,in_ECX,1,0,s32(in_ECX, 0x38));
   w32(in_ECX, 0x1c, uVar1);
@@ -6841,7 +6841,7 @@ export function FUN_0041dd0e() {
           local_10 = local_10 + 6;
         }
         for (local_120 = 1; local_120 < 8; local_120 = local_120 + 1) {
-          _memset(s32(void **, 0)(DAT_006365c0 + local_120 * 4),0,DAT_006d1164);
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — _memset(*(void **)(DAT_006365c0 + local_120 * 4),0,DAT_006d1164);
         }
         if (DAT_006d1168 < 2) {
           FUN_005b85fe();
@@ -7711,7 +7711,7 @@ export function FUN_0041f8d9() {
     _memset(DAT_006ad22c,0,0xc4);
     pLVar5 = DAT_006ad22c;
     iVar2 = FUN_00414d10();
-    iVar2 = XD_LaunchedByLobby(s32(void **, 0)(iVar2 + 4),pLVar5);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar2 = XD_LaunchedByLobby(*(void **)(iVar2 + 4),pLVar5);
     if ((iVar2 === 2) || (iVar2 === 1)) {
       DAT_006ad228 = iVar2;
       debug_log(s_LobbyLaunchInfo__gNetMgr_IGZInfo_00625698);

@@ -270,7 +270,7 @@ export function FUN_00548e23(param_1, param_2) {
         }
         for (local_58 = 0; (local_58 < 0x14 && (s32(param_2, 0x38 + local_58 * 4) !== 0));
             local_58 = local_58 + 1) {
-          iVar1 = _fputs(s32(char **, 0)(param_2 + 0x38 + local_58 * 4),param_1);
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _fputs(*(char **)(param_2 + 0x38 + local_58 * 4),param_1);
           if (iVar1 === -1) {
             return;
           }
@@ -1319,7 +1319,7 @@ export function FUN_0054ae93() {
     FUN_00453c80();
     local_14 = DAT_0064b99c;
     while ((local_14 !== 0x0 && (local_8 !== 0))) {
-      local_14 = s32(byte **, 0)(local_14 + 0x1bc);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_14 = *(byte **)(local_14 + 0x1bc);
       local_8 = local_8 + -1;
     }
     if ((s32(local_14, 0) & 0x20) === 0) {

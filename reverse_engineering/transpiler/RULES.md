@@ -196,6 +196,12 @@ C:   (undefined2)expr    →  (expr) & 0xFFFF  (same as ushort)
 C:   (undefined4)expr    →  expr           (no-op, like int)
 ```
 
+**Ghidra partial-width casts:**
+```
+C:   (int3)expr          →  expr & 0xFFFFFF  (mask to 3 bytes)
+```
+`int3` is a Ghidra decompiler artifact for 3-byte values. Mask to 24 bits.
+
 **Operator precedence after cast removal:** When dropping `(int)`,
 preserve parentheses around the operand if it's part of a binary expression.
 `(int)a * b` → `(a) * b`. Ghidra output is already heavily parenthesized,
@@ -544,7 +550,19 @@ C:   return local_14;               JS:  return local_14[0];
 
 All 163 instances are MFC/framework patterns: C++ vtable chains, linked list
 prev/next updates, MFC object member traversal. None access game state.
-Handled as DEVIATION stubs — no special transpiler rule needed.
+
+The typed pointer deref handler must REJECT double-pointer types (`**`) and
+let them fall through to the DEVIATION catch-all. If the handler tries to
+parse `*(char **)(expr)`, it produces invalid JS like `s32(char **, 0)`.
+Instead, the line should become `// DEVIATION: C pointer — ...`.
+
+```
+C:   *(char **)(expr + off) = value;
+JS:  // DEVIATION: C pointer — *(char **)(expr + off) = value;
+
+C:   *(int **)(in_ECX + 0x48)
+JS:  // DEVIATION: C pointer — *(int **)(in_ECX + 0x48)
+```
 
 ## 64-bit Arithmetic (longlong) — 69 instances
 

@@ -3048,7 +3048,7 @@ export function FUN_0059ad40(in_ECX) {
   // DEVIATION: SEH
   local_8 = 0;
   if (s32(in_ECX, 0x534) !== 0) {
-    operator_delete(s32(void **, 0)(in_ECX + 0x534));
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x534));
     w32(in_ECX, 0x534, 0);
   }
   FUN_0059b293(1);
@@ -3347,14 +3347,14 @@ export function FUN_0059b571(in_ECX, param_1) {
   // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (*(char *)(in_ECX + 0x1ee) !== 0) {
     // DEVIATION(cont): local_c = *(char **)(in_ECX + 0x160cc);
     local_8 = 0;
-    for (; local_c !== 0x0; local_c = s32(char **, 0)(local_c + 0x20)) {
-      iVar1 = _strncmp(local_c,(param_1 + 0x74),0x20);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (; local_c !== 0x0; local_c = *(char **)(local_c + 0x20)) {
+      // DEVIATION(cont): iVar1 = _strncmp(local_c,(char *)(param_1 + 0x74),0x20);
       if (iVar1 === 0) {
-        if (s32(char **, 0)(in_ECX + 0x160cc) === local_c) {
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (*(char **)(in_ECX + 0x160cc) === local_c) {
           w32(in_ECX, 0x160cc, s32(local_c, 0x20));
-        }
-        if (s32(local_c, 0x24) !== 0) {
-          true // DEVIATION: C pointer — s32(s32(local_c, 0x24) + 0x20, 0) = s32(local_c, 0x20);
+        // DEVIATION(cont): }
+        // DEVIATION(cont): if (*(int *)(local_c + 0x24) != 0) {
+          // DEVIATION(cont): *(undefined4 *)(*(int *)(local_c + 0x24) + 0x20) = *(undefined4 *)(local_c + 0x20);
         }
         if (s32(local_c, 0x20) !== 0) {
           true // DEVIATION: C pointer — s32(s32(local_c, 0x20) + 0x24, 0) = s32(local_c, 0x24);
@@ -3364,18 +3364,18 @@ export function FUN_0059b571(in_ECX, param_1) {
         break;
       }
     }
-    local_c = s32(char **, 0)(in_ECX + 0x160cc);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(char **)(in_ECX + 0x160cc);
     local_10 = 0x0;
     while ((local_c !== 0x0 &&
            (iVar1 = __strcmpi((param_1 + 0xe4),local_c + 0x70), 0 < iVar1))) {
       local_10 = local_c;
-      local_c = s32(char **, 0)(local_c + 0x20);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(char **)(local_c + 0x20);
     }
     while (((local_c !== 0x0 &&
             (iVar1 = __strcmpi((param_1 + 0xe4),local_c + 0x70), iVar1 === 0)) &&
            (iVar1 = __strcmpi((param_1 + 0x74),local_c), 0 < iVar1))) {
       local_10 = local_c;
-      local_c = s32(char **, 0)(local_c + 0x20);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(char **)(local_c + 0x20);
     }
     _Dst = operator_new(0x124);
     if (_Dst === 0x0) {
@@ -3386,16 +3386,16 @@ export function FUN_0059b571(in_ECX, param_1) {
       w32(_Dst + 0x20, 0, s32(in_ECX, 0x160cc));
       w32(_Dst + 0x24, 0, 0);
       if (s32(in_ECX, 0x160cc) !== 0) {
-        s32(void **, 0)(s32(in_ECX, 0x160cc) + 0x24) = _Dst;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(s32(in_ECX, 0x160cc) + 0x24) = _Dst;
       }
-      s32(void **, 0)(in_ECX + 0x160cc) = _Dst;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(in_ECX + 0x160cc) = _Dst;
     }
     else {
       w32(_Dst + 0x20, 0, s32(local_10, 0x20));
-      s32(char **, 0)(_Dst + 0x24) = local_10;
-      s32(void **, 0)(local_10 + 0x20) = _Dst;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(_Dst + 0x24) = local_10;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(local_10 + 0x20) = _Dst;
       if (s32(_Dst + 0x20, 0) !== 0) {
-        s32(void **, 0)(s32(_Dst + 0x20, 0) + 0x24) = _Dst;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(s32(_Dst + 0x20, 0) + 0x24) = _Dst;
       }
     }
     uVar2 = FUN_00421bb0();
@@ -3488,7 +3488,7 @@ export function FUN_0059baf0(in_ECX) {
   
   while (s32(in_ECX, 0x160cc) !== 0) {
     true // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x160cc) + 0x20, 0);
-    operator_delete(s32(void **, 0)(in_ECX + 0x160cc));
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x160cc));
     w32(in_ECX, 0x160cc, uVar1);
   }
   return;
@@ -4803,7 +4803,7 @@ export function FUN_0059e0eb(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = s32(int **, 0)(in_ECX + 0x230); (s32(local_8, 0) !== param_1 && (local_8 !== 0x0));
+  // DEVIATION(C-syntax): true) // DEVIATION: C pointer — for (local_8 = *(int **)(in_ECX + 0x230); (s32(local_8, 0) !== param_1 && (local_8 !== 0x0));
       local_8 = local_8[7]) {
   }
   if (((local_8 !== 0x0) && (-1 < local_8[3])) &&
@@ -4832,12 +4832,12 @@ export function FUN_0059e18b(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   local_c = 0x0;
-  for (local_8 = s32(int **, 0)(in_ECX + 0x230); local_8 !== 0x0; local_8 = local_8[7]) {
-    local_c = local_8;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (local_8 = *(int **)(in_ECX + 0x230); local_8 !== 0x0; local_8 = local_8[7]) {
+    // DEVIATION(cont): local_c = local_8;
   }
   piVar1 = FUN_00498159(in_ECX + 0x254,0x20);
   if (local_c === 0x0) {
-    s32(int **, 0)(in_ECX + 0x230) = piVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(int **)(in_ECX + 0x230) = piVar1;
     w32(piVar1, 0, 1);
   }
   else {
@@ -4926,17 +4926,17 @@ export function FUN_0059e376(in_ECX) {
   let local_8;
   
   local_8 = FUN_0059e356();
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
   if (extraout_EAX * 5 >> 2 <= local_8) {
-    // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+    // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
     local_8 = extraout_EAX_00 * 5 >> 2;
   }
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
   if (extraout_EAX_01 < local_8) {
     local_c = local_8;
   }
   else {
-    // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+    // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
     local_c = extraout_EAX_02;
   }
   return local_c;
@@ -4978,7 +4978,7 @@ export function FUN_0059e448(in_ECX) {
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
   return extraout_EAX + 10;
 }
 
@@ -5152,7 +5152,7 @@ export function FUN_0059e648(in_ECX) {
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
   return extraout_EAX + 4 + s32(in_ECX, 0xb8) * 2;
 }
 
@@ -5317,7 +5317,7 @@ export function FUN_0059e877(in_ECX, param_1) {
   let local_8;
   
   local_8 = 0x0;
-  local_c = s32(int **, 0)(in_ECX + 0x234);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(int **)(in_ECX + 0x234);
   while ((local_c !== 0x0 && (local_8 === 0x0))) {
     if (s32(local_c, 0) === param_1) {
       local_8 = local_c;
@@ -5388,8 +5388,8 @@ export function FUN_0059e973(in_ECX) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = s32(uint **, 0)(in_ECX + 0x228); local_8 !== 0x0; local_8 = local_8[4]) {
-    w32(local_8, 0, s32(local_8, 0) & 0xfffffffe);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (local_8 = *(uint **)(in_ECX + 0x228); local_8 !== 0x0; local_8 = local_8[4]) {
+    // DEVIATION(cont): *local_8 = *local_8 & 0xfffffffe;
   }
   return;
 }
@@ -5407,8 +5407,8 @@ export function FUN_0059e9b3(in_ECX) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = s32(uint **, 0)(in_ECX + 0x228); local_8 !== 0x0; local_8 = local_8[4]) {
-    w32(local_8, 0, s32(local_8, 0) & 0xfffffffd);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (local_8 = *(uint **)(in_ECX + 0x228); local_8 !== 0x0; local_8 = local_8[4]) {
+    // DEVIATION(cont): *local_8 = *local_8 & 0xfffffffd;
   }
   return;
 }
@@ -5696,13 +5696,13 @@ export function FUN_0059ec88(in_ECX, param_1, param_2, param_3) {
   }
   puVar1 = FUN_00498159(in_ECX + 0x254,0x14);
   if (local_10 === 0) {
-    s32(undefined4 **, 0)(in_ECX + 0x234) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x234) = puVar1;
     if (s32(in_ECX, 0x224) === 0) {
-      s32(undefined4 **, 0)(in_ECX + 0x224) = puVar1;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x224) = puVar1;
     }
   }
   else {
-    s32(undefined4 **, 0)(local_10 + 0x10) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(local_10 + 0x10) = puVar1;
   }
   puVar1[4] = 0;
   puVar1[1] = 0;
@@ -5758,8 +5758,8 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
     }
   }
   else {
-    while ((local_c !== 0 && (iVar1 = __strcmpi(param_1,s32(char **, 0)(local_c + 8)), 0 < iVar1))) {
-      local_10 = local_c;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — while ((local_c !== 0 && (iVar1 = __strcmpi(param_1,*(char **)(local_c + 8)), 0 < iVar1))) {
+      // DEVIATION(cont): local_10 = local_c;
       local_c = u32(local_c, 0x10);
     }
   }
@@ -5768,24 +5768,24 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
     puVar2[4] = u32(in_ECX, 0x228);
     puVar2[5] = 0;
     if (s32(in_ECX, 0x228) === 0) {
-      s32(uint **, 0)(in_ECX + 0x22c) = puVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(in_ECX + 0x22c) = puVar2;
     }
     else {
-      s32(uint **, 0)(s32(in_ECX, 0x228) + 0x14) = puVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(s32(in_ECX, 0x228) + 0x14) = puVar2;
     }
-    s32(uint **, 0)(in_ECX + 0x228) = puVar2;
-    s32(uint **, 0)(in_ECX + 0x220) = puVar2;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(in_ECX + 0x228) = puVar2;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(in_ECX + 0x220) = puVar2;
   }
   else {
     puVar2[4] = u32(local_10, 0x10);
     puVar2[5] = local_10;
     if (puVar2[4] === 0) {
-      s32(uint **, 0)(in_ECX + 0x22c) = puVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(in_ECX + 0x22c) = puVar2;
     }
     else {
-      s32(uint **, 0)(puVar2[4] + 0x14) = puVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(puVar2[4] + 0x14) = puVar2;
     }
-    s32(uint **, 0)(local_10 + 0x10) = puVar2;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(uint **)(local_10 + 0x10) = puVar2;
   }
   w32(puVar2, 0, 0);
   sVar3 = _strlen(param_1);
@@ -5856,10 +5856,10 @@ export function FUN_0059f06d(in_ECX, param_1, param_2, param_3) {
   }
   puVar1 = FUN_00498159(in_ECX + 0x254,0x1c);
   if (local_14 === 0) {
-    s32(undefined4 **, 0)(in_ECX + 0x238) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x238) = puVar1;
   }
   else {
-    s32(undefined4 **, 0)(local_14 + 0x18) = puVar1;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined4 **)(local_14 + 0x18) = puVar1;
   }
   puVar1[6] = 0;
   w32(puVar1, 0, 0);
@@ -6083,13 +6083,13 @@ export function FUN_0059f64a(in_ECX, param_1) {
   iVar5 = s32(in_ECX, 0x11c);
   local_17c = 0;
   local_174 = s32(in_ECX, 0xfc);
-  // DEVIATION: MFC — _Timevec::~_Timevec(s32(_Timevec **, 0)(in_ECX + 8));
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8));
   local_160[0] = 0;
   local_10 = 0;
   local_8 = extraout_EAX;
   for (; iVar6 = iVar5 >> 1, local_c !== 0; local_c = s32(local_c, 0x1c)) {
     if (s32(local_c, 0x10) < 1) {
-      local_180 = s32(char **, 0)(local_c + 8);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_180 = *(char **)(local_c + 8);
       // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_c + 4) & 3) !== 0) {
         // DEVIATION(cont): if (local_160[0] != '\0') {
           // DEVIATION(cont): if (param_1 != 0) {

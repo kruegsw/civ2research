@@ -65,7 +65,7 @@ export function FUN_00551cd0(in_ECX, param_1) {
 export function egptr_00551D20(_this) {
 
 
-  return s32(char **, 0)(this + 0x2c);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — return *(char **)(this + 0x2c);
 }
 
 
@@ -884,7 +884,7 @@ export function _COleCntrFrameWnd_00553444(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  s32(undefined ***, 0)this = PTR_FUN_0061d6dc;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6dc;
   local_8 = 0;
   FUN_005532d7();
   FUN_004083b0();
@@ -945,9 +945,9 @@ export function FUN_005534bc(in_ECX, param_1, param_2, param_3, param_4, param_5
   else {
     FUN_005f22d0(in_ECX + 0x134,param_1);
   }
-  s32(undefined **, 0)(in_ECX + 0x2d4) = DAT_006ab1a0;
-  s32(undefined **, 0)(in_ECX + 0x2cc) = DAT_006ab190;
-  s32(undefined **, 0)(in_ECX + 0x2d0) = DAT_006ab178;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x2d4) = DAT_006ab1a0;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x2cc) = DAT_006ab190;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x2d0) = DAT_006ab178;
   w32(in_ECX, 0x1e0, 0);
   w32(in_ECX, 0x1e4, 0);
   w32(in_ECX, 0x114, param_2);
@@ -3694,7 +3694,7 @@ export function _CMiniFrameWnd_00559ED4(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  s32(undefined ***, 0)this = PTR_FUN_0061d6e0;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6e0;
   local_8._0_1_ = 1;
   local_8._1_3_ = 0;
   FUN_00559ded();
@@ -3734,7 +3734,7 @@ export function FUN_00559f3f(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 

@@ -273,7 +273,7 @@ export function FUN_00450480(in_ECX, param_1, param_2, param_3) {
   }
   FUN_004519b0(local_44,param_2 + 0x413,param_2 * 0x10 + in_ECX + 0x3c0);
   FUN_00451a60(0 /* ADDR:LAB_004017da */);
-  // DEVIATION: MFC — CDialog::SetHelpID(s32(CDialog **, 0)(in_ECX + 900 + param_2 * 4),0x4017da);
+  // DEVIATION: MFC — CDialog::SetHelpID(*(CDialog **)(in_ECX + 900 + param_2 * 4),0x4017da);
   FUN_00450f0b(param_2);
   // DEVIATION: SEH
   return;
@@ -910,7 +910,7 @@ export function FUN_00451bf0(in_ECX) {
         }
         FUN_004519b0(local_3c,0xfa9,local_20[0]);
         FUN_00451a60(0 /* ADDR:LAB_00402270 */);
-        // DEVIATION: MFC — CDialog::SetHelpID(s32(CDialog **, 0)(in_ECX + 0x1b20),0x40196f);
+        // DEVIATION: MFC — CDialog::SetHelpID(*(CDialog **)(in_ECX + 0x1b20),0x40196f);
         FUN_0040f380();
       }
     }
@@ -943,7 +943,7 @@ export function FUN_00451bf0(in_ECX) {
         }
         FUN_004519b0(local_40,0xfa9,local_20[0]);
         FUN_00451a60(0 /* ADDR:LAB_00402270 */);
-        // DEVIATION: MFC — CDialog::SetHelpID(s32(CDialog **, 0)(in_ECX + 0x1b20),0x40196f);
+        // DEVIATION: MFC — CDialog::SetHelpID(*(CDialog **)(in_ECX + 0x1b20),0x40196f);
         FUN_0040f380();
       }
     }
@@ -1489,7 +1489,7 @@ export function FUN_00452c14(in_ECX, param_1, param_2, param_3, param_4) {
   local_2c[0x11] = 0;
   local_1c = 0;
   if (s32(in_ECX, 8000) === 0) {
-    s32(int **, 0)(in_ECX + 8000) = local_2c;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(int **)(in_ECX + 8000) = local_2c;
   }
   else {
     local_1c = 1;
@@ -1497,7 +1497,7 @@ export function FUN_00452c14(in_ECX, param_1, param_2, param_3, param_4) {
         local_18 = s32(local_18, 0x44)) {
       local_1c = local_1c + 1;
     }
-    s32(int **, 0)(local_18 + 0x44) = local_2c;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(int **)(local_18 + 0x44) = local_2c;
   }
   if (in_ECX === 0) {
     local_34 = 0;
@@ -3474,8 +3474,8 @@ export function tie_00456EE0(_this, param_1) {
 
   let poVar1;
   
-  poVar1 = s32(ostream **, 0)(this + 0x20);
-  s32(ostream **, 0)(this + 0x20) = param_1;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — poVar1 = *(ostream **)(this + 0x20);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(ostream **)(this + 0x20) = param_1;
   return poVar1;
 }
 

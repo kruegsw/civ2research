@@ -1865,7 +1865,7 @@ export function FUN_004683f0(in_ECX, param_1, param_2, param_3) {
   }
   FUN_004519b0(local_40,param_2 + 0x3fc,param_2 * 0x10 + in_ECX + 0x3c0);
   FUN_00451a60(0 /* ADDR:LAB_00401dac */);
-  // DEVIATION: MFC — CDialog::SetHelpID(s32(CDialog **, 0)(in_ECX + 900 + param_2 * 4),0x401dac);
+  // DEVIATION: MFC — CDialog::SetHelpID(*(CDialog **)(in_ECX + 900 + param_2 * 4),0x401dac);
   FUN_00468bb9(param_2);
   // DEVIATION: SEH
   return;
@@ -2450,9 +2450,9 @@ export function FUN_0046968b(param_1, param_2, param_3) {
     DAT_0066be78 = 0;
     for (local_10 = param_1; local_14 = local_10, local_10 < param_2; local_10 = local_10 + 1) {
       while (local_14 = local_14 + 1, local_14 <= param_2) {
-        iVar2 = _strcmp(s32(char **, 0)(DAT_0066be90 +
-                                  u8(DAT_006560f6)
-                                              // DEVIATION(C-syntax): true) // DEVIATION: C pointer — [*(int *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 +
+        // DEVIATION(C-syntax): true)) // DEVIATION: C pointer — iVar2 = _strcmp(*(char **)(DAT_0066be90 +
+                                  // DEVIATION(cont): (uint)(byte)(&DAT_006560f6)
+                                              // DEVIATION(cont): [*(int *)(local_10 * 4 + param_3 * 0x2004 + 0x3f0 +
                                                        // DEVIATION(cont): local_8) * 0x20] * 4),
                         // DEVIATION(cont): *(char **)(&DAT_0066be90 +
                                   // DEVIATION(cont): (uint)(byte)(&DAT_006560f6)
@@ -4625,7 +4625,7 @@ export function handle_palette_0046EA3B() {
                                                            // DEVIATION(cont): *(undefined1 *)(local_24 + iVar4))));
               // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char *)(iVar5 + local_24 / 3) = s8(UVar6) + 0xa;
               FUN_005c6b93(local_24 / 3 + 10,
-                           // DEVIATION(C-syntax): true // DEVIATION: C pointer — CONCAT31((int3)(UVar6 * 3 >> 8),*(undefined1 *)(UVar6 * 3 + iVar2)),
+                           // DEVIATION(C-syntax): true // DEVIATION: C pointer — CONCAT31(((UVar6 * 3 >> 8) & 0xFFFFFF),*(undefined1 *)(UVar6 * 3 + iVar2)),
                            // DEVIATION(cont): CONCAT31((int3)(UVar6 * 3 >> 8),*(undefined1 *)(UVar6 * 3 + 1 + iVar2)),
                            // DEVIATION(cont): CONCAT31((int3)(UVar6 * 3 >> 8),*(undefined1 *)(UVar6 * 3 + 2 + iVar2)));
             }

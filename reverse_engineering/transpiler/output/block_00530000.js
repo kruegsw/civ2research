@@ -15,7 +15,7 @@
 export function egptr_00530E80(_this) {
 
 
-  return s32(char **, 0)(this + 0x2c);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — return *(char **)(this + 0x2c);
 }
 
 
@@ -49,7 +49,7 @@ export function FUN_00530ee0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = new Array(16).fill(0);
   
-  s32(undefined **, 0)(in_ECX + 0x38) = PTR_DAT_00637e68;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
   gdi_C035(param_3,param_4,param_5,local_14,s32(in_ECX, 0x38));
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
@@ -140,7 +140,7 @@ export function FUN_005310a0(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x44) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x4c) = PTR_DAT_00637e64;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x4c) = PTR_DAT_00637e64;
   FUN_0040f730(param_1,3,param_2,param_3);
   w32(in_ECX, 0x2c, 0);
   w32(in_ECX, 0x30, 0);

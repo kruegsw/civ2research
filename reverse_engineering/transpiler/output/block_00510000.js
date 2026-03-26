@@ -1187,7 +1187,7 @@ export function FUN_00514272(in_ECX) {
   
   for (local_8 = 0; local_8 < 2000; local_8 = local_8 + 1) {
     if (s32(in_ECX, 4 + local_8 * 0xc) !== 0) {
-      operator_delete(s32(void **, 0)(in_ECX + 4 + local_8 * 0xc));
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 4 + local_8 * 0xc));
       w32(in_ECX, 4 + local_8 * 0xc, 0);
     }
     w32(in_ECX, 8 + local_8 * 0xc, 0);
@@ -1278,7 +1278,7 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
                      s_D__Ss_Franklinton_NetMessageQueu_00631930,0x131);
       }
       pvVar2 = operator_new(param_3);
-      s32(void **, 0)(in_ECX + 4 + s32(in_ECX, 0x5dc4) * 0xc) = pvVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(in_ECX + 4 + s32(in_ECX, 0x5dc4) * 0xc) = pvVar2;
       true // DEVIATION: C pointer — if (s32(in_ECX, 4 + s32(in_ECX, 0x5dc4) * 0xc) === 0) {
         FUN_005d22b7(s_EnqueueMessage_Primary___Failed_t_006319c0,s32(param_2 + 4, 0),
                      s32(param_2 + 8, 0));
@@ -1288,8 +1288,8 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
         FUN_005dae6b(7,s_msgQueue_tail__pData_006319a8,s_D__Ss_Franklinton_NetMessageQueu_00631980,
                      0x136);
       }
-      _memcpy(s32(void **, 0)(in_ECX + 4 + s32(in_ECX, 0x5dc4) * 0xc),param_2,param_3)
-      ;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — _memcpy(*(void **)(in_ECX + 4 + s32(in_ECX, 0x5dc4) * 0xc),param_2,param_3)
+      // DEVIATION(cont): ;
       true // DEVIATION: C pointer — s32(in_ECX, s32(in_ECX, 0x5dc4) * 0xc) = param_1;
       true // DEVIATION: C pointer — u32(in_ECX, 8 + s32(in_ECX, 0x5dc4) * 0xc) = param_3;
       w32(in_ECX, 0x5dc4, (s32(in_ECX, 0x5dc4) + 1) % 2000);
@@ -1319,7 +1319,7 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
                      s_D__Ss_Franklinton_NetMessageQueu_006317d0,0x10d);
       }
       pvVar2 = operator_new(param_3);
-      s32(void **, 0)(in_ECX + 4 + s32(in_ECX, 0x5dd0) * 0xc) = pvVar2;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(void **)(in_ECX + 4 + s32(in_ECX, 0x5dd0) * 0xc) = pvVar2;
       true // DEVIATION: C pointer — if (s32(in_ECX, 4 + s32(in_ECX, 0x5dd0) * 0xc) === 0) {
         local_108 = param_2;
         FUN_005d22b7(s_EnqueueMessage_Alpha___Failed_to_00631860,s32(param_2 + 4, 0),
@@ -1330,8 +1330,8 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
         FUN_005dae6b(7,s_msgQueue_alphaTail__pData_00631844,
                      s_D__Ss_Franklinton_NetMessageQueu_0063181c,0x112);
       }
-      _memcpy(s32(void **, 0)(in_ECX + 4 + s32(in_ECX, 0x5dd0) * 0xc),param_2,param_3)
-      ;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — _memcpy(*(void **)(in_ECX + 4 + s32(in_ECX, 0x5dd0) * 0xc),param_2,param_3)
+      // DEVIATION(cont): ;
       true // DEVIATION: C pointer — s32(in_ECX, s32(in_ECX, 0x5dd0) * 0xc) = param_1;
       true // DEVIATION: C pointer — u32(in_ECX, 8 + s32(in_ECX, 0x5dd0) * 0xc) = param_3;
       w32(in_ECX, 0x5dd0, (s32(in_ECX, 0x5dd0) + 1) % 400);
@@ -5331,7 +5331,7 @@ export function FUN_0051d950(param_1) {
     iVar1 = param_1 - 0x20;
     param_1 = u8(iVar1);
   }
-  return CONCAT31((int3)(((iVar1) >>> 0) >> 8),param_1);
+  return CONCAT31(((((iVar1) >>> 0) >> 8) & 0xFFFFFF),param_1);
 }
 
 

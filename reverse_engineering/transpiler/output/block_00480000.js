@@ -504,16 +504,16 @@ export function FUN_0048308f() {
       local_10[0x1c2] = 0;
       local_10[0x1c3] = 0;
       if (0 < local_c) {
-        s32(char **, 0)(local_10 + 0x1c0) = local_10;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x1c0) = local_10;
         w32(local_10, 0x1c0, s32(local_10, 0x1c0) + -0x1c4);
-        s32(char **, 0)(s32(local_10, 0x1c0) + 0x1bc) = local_10;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(s32(local_10, 0x1c0) + 0x1bc) = local_10;
       }
       local_10 = local_10 + 0x1c4;
     }
-    for (local_10 = DAT_0064b99c; local_10 !== 0x0; local_10 = s32(char **, 0)(local_10 + 0x1bc))
-    {
-      if (s32(local_10, 8) !== 0) {
-        s32(char **, 0)(local_10 + 8) = local_14;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — for (local_10 = DAT_0064b99c; local_10 !== 0x0; local_10 = *(char **)(local_10 + 0x1bc))
+    // DEVIATION(cont): {
+      // DEVIATION(cont): if (*(int *)(local_10 + 8) != 0) {
+        // DEVIATION(cont): *(char **)(local_10 + 8) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x10) {
           local_18 = 0xf;
@@ -525,7 +525,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_18;
       }
       if (s32(local_10, 0x10) !== 0) {
-        s32(char **, 0)(local_10 + 0x10) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x10) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_1c = 0x18;
@@ -537,7 +537,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_1c;
       }
       if (s32(local_10, 0x14) !== 0) {
-        s32(char **, 0)(local_10 + 0x14) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x14) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_20 = 0x18;
@@ -549,7 +549,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_20;
       }
       if (s32(local_10, 0x20) !== 0) {
-        s32(char **, 0)(local_10 + 0x20) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x20) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_24 = 0x18;
@@ -562,7 +562,7 @@ export function FUN_0048308f() {
       }
       for (local_c = 0; local_c < 0x14; local_c = local_c + 1) {
         if (s32(local_10, local_c * 4 + 0x38) !== 0) {
-          s32(char **, 0)(local_10 + local_c * 4 + 0x38) = local_14;
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + local_c * 4 + 0x38) = local_14;
           sVar2 = _strlen(local_14);
           if (sVar2 + 1 < 2) {
             local_28 = 1;
@@ -575,7 +575,7 @@ export function FUN_0048308f() {
         }
       }
       if (s32(local_10, 0x88) !== 0) {
-        s32(char **, 0)(local_10 + 0x88) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x88) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_2c = 0x18;
@@ -587,7 +587,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_2c;
       }
       if (s32(local_10, 0x90) !== 0) {
-        s32(char **, 0)(local_10 + 0x90) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x90) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x10) {
           local_30 = 0xf;
@@ -599,7 +599,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_30;
       }
       if (s32(local_10, 0xc4) !== 0) {
-        s32(char **, 0)(local_10 + 0xc4) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0xc4) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_34 = 0x18;
@@ -611,7 +611,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_34;
       }
       if (s32(local_10, 0xcc) !== 0) {
-        s32(char **, 0)(local_10 + 0xcc) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0xcc) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_38 = 0x18;
@@ -623,7 +623,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_38;
       }
       if (s32(local_10, 0xd4) !== 0) {
-        s32(char **, 0)(local_10 + 0xd4) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0xd4) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_3c = 0x18;
@@ -635,7 +635,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_3c;
       }
       if (s32(local_10, 0xdc) !== 0) {
-        s32(char **, 0)(local_10 + 0xdc) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0xdc) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x10) {
           local_40 = 0xf;
@@ -647,7 +647,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_40;
       }
       if (s32(local_10, 0x13c) !== 0) {
-        s32(char **, 0)(local_10 + 0x13c) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x13c) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_44 = 0x18;
@@ -659,7 +659,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_44;
       }
       if (s32(local_10, 0x140) !== 0) {
-        s32(char **, 0)(local_10 + 0x140) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x140) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_48 = 0x18;
@@ -671,7 +671,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_48;
       }
       if (s32(local_10, 0x148) !== 0) {
-        s32(char **, 0)(local_10 + 0x148) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x148) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x10) {
           local_4c = 0xf;
@@ -683,7 +683,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_4c;
       }
       if (s32(local_10, 0x174) !== 0) {
-        s32(char **, 0)(local_10 + 0x174) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x174) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 0x19) {
           local_50 = 0x18;
@@ -695,7 +695,7 @@ export function FUN_0048308f() {
         local_14 = local_14 + local_50;
       }
       if (s32(local_10, 0x184) !== 0) {
-        s32(char **, 0)(local_10 + 0x184) = local_14;
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(char **)(local_10 + 0x184) = local_14;
         sVar2 = _strlen(local_14);
         if (sVar2 + 1 < 2) {
           local_54 = 1;

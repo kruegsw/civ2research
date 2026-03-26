@@ -211,7 +211,7 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   FUN_005c041f(7);
   FUN_005dfa4d(local_124,local_134[0],0xfffffffd,0xff,0);
   DAT_006e5020 = local_124;
-  FUN_005c19ad(CONCAT31((int3)(((DAT_006e5020) >>> 0) >> 8),DAT_00638b40));
+  FUN_005c19ad(CONCAT31(((((DAT_006e5020) >>> 0) >> 8) & 0xFFFFFF),DAT_00638b40));
   iVar2 = local_628 * local_63c + 10;
   // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124);
   SetRect(local_638[0],10,10,pCVar5 + -10,iVar2);
@@ -645,7 +645,7 @@ export function FUN_005e0bc0(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x44) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x4c) = PTR_DAT_00637e64;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x4c) = PTR_DAT_00637e64;
   FUN_0040f730(param_1,3,param_2,param_3);
   w32(in_ECX, 0x2c, 0);
   w32(in_ECX, 0x30, 0);
@@ -4694,7 +4694,7 @@ export function FUN_005e6450(in_ECX, param_1) {
   }
   w32(in_ECX, 0x30, 0);
   if (s32(in_ECX, 0x3c) !== 0) {
-    operator_delete(s32(void **, 0)(in_ECX + 0x3c));
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x3c));
     w32(in_ECX, 0x3c, 0);
   }
   return;
@@ -9848,7 +9848,7 @@ export function FUN_005edc6c(param_1, param_2, param_3, param_4, param_5) {
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
-    uVar4 = ((CONCAT31((int3)(uVar5 >> 8),s8(uVar5) + -1)) & 0xFFFF);
+    uVar4 = ((CONCAT31(((uVar5 >> 8) & 0xFFFFFF),s8(uVar5) + -1)) & 0xFFFF);
   }
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
@@ -9899,7 +9899,7 @@ export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) {
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
-    uVar6 = ((CONCAT31((int3)(uVar7 >> 8),cVar5 + -1)) & 0xFFFF);
+    uVar6 = ((CONCAT31(((uVar7 >> 8) & 0xFFFFFF),cVar5 + -1)) & 0xFFFF);
     iVar4 = iVar4 + 1;
   }
   uVar7 = ((uVar6) >>> 0);
@@ -12753,7 +12753,7 @@ function LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
-    uVar4 = ((CONCAT31((int3)(uVar5 >> 8),s8(uVar5) + -1)) & 0xFFFF);
+    uVar4 = ((CONCAT31(((uVar5 >> 8) & 0xFFFFFF),s8(uVar5) + -1)) & 0xFFFF);
   }
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
@@ -12783,7 +12783,7 @@ LAB_005edc85:
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
     iVar3 = iVar3 + 1;
-    uVar4 = ((CONCAT31((int3)(uVar5 >> 8),s8(uVar5) + -1)) & 0xFFFF);
+    uVar4 = ((CONCAT31(((uVar5 >> 8) & 0xFFFFFF),s8(uVar5) + -1)) & 0xFFFF);
   }
   uVar5 = ((uVar4) >>> 0);
   cVar6 = s8(uVar4 >> 8);
@@ -12819,7 +12819,7 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
-    uVar6 = ((CONCAT31((int3)(uVar7 >> 8),cVar5 + -1)) & 0xFFFF);
+    uVar6 = ((CONCAT31(((uVar7 >> 8) & 0xFFFFFF),cVar5 + -1)) & 0xFFFF);
     iVar4 = iVar4 + 1;
   }
   uVar7 = ((uVar6) >>> 0);
@@ -12859,7 +12859,7 @@ LAB_005edcc5:
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
-    uVar6 = ((CONCAT31((int3)(uVar7 >> 8),cVar5 + -1)) & 0xFFFF);
+    uVar6 = ((CONCAT31(((uVar7 >> 8) & 0xFFFFFF),cVar5 + -1)) & 0xFFFF);
     iVar4 = iVar4 + 1;
   }
   uVar7 = ((uVar6) >>> 0);

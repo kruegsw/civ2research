@@ -4028,7 +4028,7 @@ export function FUN_0052d7dc(param_1, param_2) {
   local_8 = ((param_1 === 0x3f4) >>> 0);
   switch(param_2) {
   case 0:
-    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(local_10 + 0x36c + local_8 * 4));
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(local_10 + 0x36c + local_8 * 4));
     FUN_00447210(0);
     FUN_00421ca0(6);
     FUN_00421ca0(6);
@@ -4047,7 +4047,7 @@ export function FUN_0052d7dc(param_1, param_2) {
     FUN_00421ca0(6);
     break;
   case 6:
-    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(local_10 + 0x36c + local_8 * 4));
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(local_10 + 0x36c + local_8 * 4));
     FUN_00421ca0(0);
     FUN_00421ca0(0);
     FUN_00447210(6);
@@ -4078,9 +4078,9 @@ export function FUN_0052d9a1(param_1) {
   else {
     local_8 = local_8 + -0x48;
   }
-  // DEVIATION: MFC — pcVar1 = streambuf::egptr(s32(streambuf **, 0)(local_8 + 0x348));
+  // DEVIATION: MFC — pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x348));
   if ((pcVar1 !== 0x0) ||
-     // DEVIATION: MFC — (pcVar1 = streambuf::egptr(s32(streambuf **, 0)(local_8 + 0x34c)), pcVar1 !== 0x0)) {
+     // DEVIATION: MFC — (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== 0x0)) {
     // DEVIATION(cont): thunk_FUN_004518d0();
     FUN_0052dd73(param_1);
   }
@@ -4225,7 +4225,7 @@ export function FUN_0052dd73() {
   FUN_004518d0();
   switch(s32(local_8, 0x1ec)) {
   case 3:
-    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(local_8 + 0x370));
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(local_8 + 0x370));
     w32(local_8, 0x208, uVar1);
     if (s32(local_8, 0x208) === 0) {
       w32(local_8, 0x1ec, 6);
@@ -4272,9 +4272,9 @@ export function FUN_0052dd73() {
     FUN_00526ca0(s32(local_8, 500),1);
     break;
   case 5:
-    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(local_8 + 0x36c));
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(local_8 + 0x36c));
     w32(local_8, 0x20c, uVar1);
-    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(local_8 + 0x370));
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(local_8 + 0x370));
     w32(local_8, 0x210, uVar1);
     w32(local_8, 0x1ec, 0xe);
     w32(local_8, 0x1f8, DAT_0062d7d0[s32(local_8, 0x1ec) * 2]);
@@ -4295,7 +4295,7 @@ export function FUN_0052dd73() {
   case 0xe:
   case 0xf:
     if (s32(local_8, 0x234) !== 0) {
-      operator_delete(s32(void **, 0)(local_8 + 0x234));
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(local_8 + 0x234));
       w32(local_8, 0x234, 0);
     }
     uVar2 = FUN_004db690(s32(local_8, 0x1ec));
@@ -4491,7 +4491,7 @@ export function FUN_0052e71a(param_1) {
   FUN_005c62ee();
   FUN_004518d0();
   if ((0x428 < param_1) && (param_1 < 0x430)) {
-    // DEVIATION: MFC — iVar1 = ios::width(s32(ios **, 0)(DAT_0068aeb0 + (param_1 + -0x428) * 4));
+    // DEVIATION: MFC — iVar1 = ios::width(*(ios **)(DAT_0068aeb0 + (param_1 + -0x428) * 4));
     s32(DAT_0068af08, (param_1 + -0x428) * 4) = iVar1;
   }
   return;
@@ -4536,7 +4536,7 @@ export function FUN_0052e7b7(param_1) {
   case 0x41c:
   case 0x41d:
     param_1 = param_1 + -0x416;
-    // DEVIATION: MFC — iVar1 = ios::width(s32(ios **, 0)(DAT_0068ae90 + param_1 * 4));
+    // DEVIATION: MFC — iVar1 = ios::width(*(ios **)(DAT_0068ae90 + param_1 * 4));
     w32(DAT_0068aee8, param_1 * 4, iVar1);
     if ((s32(DAT_0068aee8, param_1 * 4) === 0) && (DAT_0068aee4 !== 0)) {
       FUN_0040fad0(0);

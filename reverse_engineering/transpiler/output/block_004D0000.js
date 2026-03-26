@@ -3931,7 +3931,7 @@ export function FUN_004d5b21(in_ECX) {
     FUN_005c041f(0);
     FUN_00408130(0 /* ADDR:LAB_0040308f */);
     // DEVIATION: MFC — COleControlSite::SetDlgCtrlID((s32(in_ECX, 0x1da8) + 0x58),0x403a35);
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(s32(CPropertySheet **, 0)(in_ECX + 0x1da8),0x402d2e);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(*(CPropertySheet **)(in_ECX + 0x1da8),0x402d2e);
     FUN_00450400();
     FUN_00408460();
     FUN_004085f0();

@@ -1876,7 +1876,7 @@ export function FUN_00587a90(in_ECX, param_1, param_2, param_3) {
   }
   FUN_004519b0(local_38,param_2 + 0x422,param_2 * 0x10 + in_ECX + 0x3c0);
   FUN_00451a60(0 /* ADDR:LAB_00402234 */);
-  // DEVIATION: MFC — CDialog::SetHelpID(s32(CDialog **, 0)(in_ECX + 900 + param_2 * 4),0x402234);
+  // DEVIATION: MFC — CDialog::SetHelpID(*(CDialog **)(in_ECX + 900 + param_2 * 4),0x402234);
   FUN_0058878e(param_2);
   // DEVIATION: SEH
   return;

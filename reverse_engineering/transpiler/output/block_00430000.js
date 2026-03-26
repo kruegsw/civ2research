@@ -3852,7 +3852,7 @@ export function FUN_0043c1f6(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -4021,7 +4021,7 @@ export function FUN_0043c520(in_ECX) {
 export function GetActiveView_0043C560(_this) {
 
 
-  return s32(CView **, 0)(this + 8);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — return *(CView **)(this + 8);
 }
 
 
@@ -4039,7 +4039,7 @@ export function GetActiveView_0043C560(_this) {
 export function GetActiveView_0043C590(_this) {
 
 
-  return s32(CView **, 0)(this + 4);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — return *(CView **)(this + 4);
 }
 
 

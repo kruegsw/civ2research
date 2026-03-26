@@ -2636,9 +2636,9 @@ export function FUN_004b4e8a(in_ECX) {
   let local_8;
   
   // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  s32(CRichEditView **, 0)(in_ECX + 0x124) = pCVar1;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(CRichEditView **)(in_ECX + 0x124) = pCVar1;
   // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  s32(CRichEditView **, 0)(in_ECX + 0x128) = pCVar1;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(CRichEditView **)(in_ECX + 0x128) = pCVar1;
   if (s32(in_ECX, 0x154) === 0) {
     local_8 = FUN_0040ef70();
   }
@@ -2703,7 +2703,7 @@ export function FUN_004b50cf(in_ECX) {
   let local_8;
   
   if (s32(in_ECX, 0x234) !== 0) {
-    operator_delete(s32(void **, 0)(in_ECX + 0x234));
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x234));
     w32(in_ECX, 0x234, 0);
   }
   for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
@@ -2983,13 +2983,13 @@ export function FUN_004b5c93(in_ECX) {
   local_34 = DAT_0062d860;
   for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
     if (local_2c === 0) {
-      s32(undefined **, 0)(in_ECX + 0x250) = DAT_00645120;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x250) = DAT_00645120;
     }
     else if (local_2c === 1) {
-      s32(undefined **, 0)(in_ECX + 0x26c) = DAT_00648820;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x26c) = DAT_00648820;
     }
     else {
-      s32(undefined **, 0)(in_ECX + 0x250 + local_2c * 0x1c) = DAT_00647788;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x250 + local_2c * 0x1c) = DAT_00647788;
     }
     w32(in_ECX, 0x23c + local_2c * 0x1c, local_2c + 1);
     uVar3 = FUN_004a6980();
@@ -4789,7 +4789,7 @@ export function FUN_004bb620(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,param_5,param_6,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -5126,7 +5126,7 @@ export function FUN_004bbb1e(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 

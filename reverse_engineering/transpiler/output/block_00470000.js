@@ -2321,30 +2321,30 @@ export function FUN_004741be(param_1, param_2) {
                   if (iVar3 === -1) LAB_0047530a_helper(local_114, local_118, local_11c); return;
                   local_130[0] = 0;
                   for (local_120 = DAT_0064b99c; local_120 !== 0x0;
-                      local_120 = s32(void **, 0)(local_120 + 0x1bc)) {
-                    local_130[0] = local_130[0] + 1;
+                      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_120 = *(void **)(local_120 + 0x1bc)) {
+                    // DEVIATION(cont): local_130 = local_130 + 1;
                   }
                   sVar2 = _fwrite(local_130[0],4,1,local_11c);
                   if (sVar2 === 0) LAB_0047530a_helper(local_114, local_118, local_11c); return;
                   for (local_120 = DAT_0064b99c; local_120 !== 0x0;
-                      local_120 = s32(void **, 0)(local_120 + 0x1bc)) {
-                    sVar2 = _fwrite(local_120,0x1bc,1,local_11c);
+                      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_120 = *(void **)(local_120 + 0x1bc)) {
+                    // DEVIATION(cont): sVar2 = _fwrite(local_120,0x1bc,1,local_11c);
                     if (sVar2 === 0) LAB_0047530a_helper(local_114, local_118, local_11c); return;
                   }
                   for (local_120 = DAT_0064b99c; local_120 !== 0x0;
-                      local_120 = s32(void **, 0)(local_120 + 0x1bc)) {
-                    if (((((s32(local_120 + 8, 0) !== 0) &&
-                          (iVar3 = FUN_00473c12(s32(local_120 + 8, 0),local_11c)
-                          , iVar3 === -1)) ||
-                         ((s32(local_120 + 0x10, 0) !== 0 &&
-                          (iVar3 = FUN_00473c12(s32(local_120 + 0x10, 0),
-                                                      local_11c), iVar3 === -1)))) ||
-                        ((s32(local_120 + 0x14, 0) !== 0 &&
-                         (iVar3 = FUN_00473c12(s32(local_120 + 0x14, 0),
-                                                     local_11c), iVar3 === -1)))) ||
-                       ((s32(local_120 + 0x20, 0) !== 0 &&
-                        (iVar3 = FUN_00473c12(s32(local_120 + 0x20, 0),local_11c
-                                                   ), iVar3 === -1)))) LAB_0047530a_helper(local_114, local_118, local_11c); return;
+                      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_120 = *(void **)(local_120 + 0x1bc)) {
+                    // DEVIATION(cont): if (((((*(int *)((int)local_120 + 8) != 0) &&
+                          // DEVIATION(cont): (iVar3 = thunk_FUN_00473c12(*(undefined4 *)((int)local_120 + 8),local_11c)
+                          // DEVIATION(cont): , iVar3 == -1)) ||
+                         // DEVIATION(cont): ((*(int *)((int)local_120 + 0x10) != 0 &&
+                          // DEVIATION(cont): (iVar3 = thunk_FUN_00473c12(*(undefined4 *)((int)local_120 + 0x10),
+                                                      // DEVIATION(cont): local_11c), iVar3 == -1)))) ||
+                        // DEVIATION(cont): ((*(int *)((int)local_120 + 0x14) != 0 &&
+                         // DEVIATION(cont): (iVar3 = thunk_FUN_00473c12(*(undefined4 *)((int)local_120 + 0x14),
+                                                     // DEVIATION(cont): local_11c), iVar3 == -1)))) ||
+                       // DEVIATION(cont): ((*(int *)((int)local_120 + 0x20) != 0 &&
+                        // DEVIATION(cont): (iVar3 = thunk_FUN_00473c12(*(undefined4 *)((int)local_120 + 0x20),local_11c
+                                                   // DEVIATION(cont): ), iVar3 == -1)))) LAB_0047530a_helper(local_114, local_118, local_11c); return;
                     local_130[0] = 0;
                     while ((local_130[0] < 0x14 &&
                            (s32(local_120 + local_130[0] * 4 + 0x38, 0) !== 0))) {
@@ -5264,7 +5264,7 @@ export function FUN_0047debe(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 

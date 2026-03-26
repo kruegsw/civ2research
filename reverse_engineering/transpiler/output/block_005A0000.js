@@ -1189,7 +1189,7 @@ export function FUN_005a3cca(param_1) {
   let local_8;
   
   bVar1 = false;
-  local_c = s32(undefined4 **, 0)(DAT_006cec84 + 0x234);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(undefined4 **)(DAT_006cec84 + 0x234);
   if (local_c !== 0x0) {
     for (local_8 = 0; local_8 < param_1 + -300; local_8 = local_8 + 1) {
       local_c = local_c[4];
@@ -1198,8 +1198,8 @@ export function FUN_005a3cca(param_1) {
       }
     }
     w32(DAT_006cec84, 0xd8, s32(local_c, 0));
-    if ((s32(undefined4 **, 0)(DAT_006cec84 + 0x224) !== local_c) &&
-       // DEVIATION(C-syntax): true // DEVIATION: C pointer — (s32(undefined4 **, 0)(DAT_006cec84 + 0x224) = local_c, (*(byte *)(DAT_006cec84 + 0x3e) & 2) !== 0)
+    // DEVIATION(C-syntax): true) // DEVIATION: C pointer — if ((*(undefined4 **)(DAT_006cec84 + 0x224) !== local_c) &&
+       // DEVIATION(cont): (*(undefined4 **)(DAT_006cec84 + 0x224) = local_c, (*(byte *)(DAT_006cec84 + 0x3e) & 2) != 0)
        // DEVIATION(cont): ) {
       // DEVIATION(cont): bVar1 = true;
     }
@@ -1302,7 +1302,7 @@ export function FUN_005a3e56(param_1) {
         local_14 = 0;
         local_1c = 0;
         local_c = s32(DAT_006cec84, 0x228);
-        // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(CCheckListBox **, 0)(DAT_006cec84 + 0x268));
+        // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(*(CCheckListBox **)(DAT_006cec84 + 0x268));
         for (; local_c !== 0; local_c = s32(local_c, 0x10)) {
           if (uVar1 === local_14) {
             local_1c = local_c;

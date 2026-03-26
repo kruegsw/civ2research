@@ -2849,7 +2849,7 @@ export function _CCommandLineInfo_0049632A(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  s32(undefined ***, 0)this = PTR_FUN_0061d6c0;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6c0;
   local_8._1_3_ = 0;
   local_8._0_1_ = 3;
   FUN_004963a5();
@@ -3356,7 +3356,7 @@ export function FUN_00497d40(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   
   w32(in_ECX, 0x34, param_4);
-  s32(undefined **, 0)(in_ECX + 0x38) = PTR_DAT_00637e60;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e60;
   FUN_0040f680(param_1,param_2,param_3,param_5);
   return;
 }

@@ -3408,8 +3408,8 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
      (u8(DAT_0064c6b3[param_1 * 0x594]) !== u32(in_ECX, 0x2e8))) {
     local_464[0] = 1;
   }
-  w32(DAT_0064c6b4, param_1 * 0x594, in_ECX[0x2e0]);
-  w32(DAT_0064c6b3, param_1 * 0x594, in_ECX[0x2e8]);
+  *(DAT_0064c6b4 + param_1 * 0x594) = in_ECX[0x2e0];
+  *(DAT_0064c6b3 + param_1 * 0x594) = in_ECX[0x2e8];
   if ((DAT_00655af8 < 0xb) && (u8(DAT_0064c6b5[param_1 * 0x594]) < 2)) {
     _DAT_0064bc1a = ((u8(DAT_0064c6b3[param_1 * 0x594])) & 0xFFFF);
     _DAT_0064bc1c = ((u8(DAT_0064c6b4[param_1 * 0x594])) & 0xFFFF);
@@ -3985,7 +3985,7 @@ export function FUN_0040f2b3(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(COleCntrFrameWnd **, 0)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -4228,7 +4228,7 @@ export function FUN_0040f680(in_ECX, param_1, param_2, param_3, param_4) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  s32(undefined **, 0)(in_ECX + 0x38) = PTR_DAT_00637e60;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e60;
   FUN_0040f730(param_1,6,param_2,param_3);
   w32(in_ECX, 0x30, 0);
   uVar1 = draw_text_9740(param_3,in_ECX,param_4,1,s32(in_ECX, 0x38));
@@ -4430,7 +4430,7 @@ export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = new Array(16).fill(0);
   
-  s32(undefined **, 0)(in_ECX + 0x38) = PTR_DAT_00637e68;
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
   measure_text_BF40(param_5,param_3,param_4,local_14,s32(in_ECX, 0x38));
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();

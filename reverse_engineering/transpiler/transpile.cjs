@@ -70,10 +70,12 @@ function extractExpression(str, start) {
 }
 
 // Replace *(TYPE *)(expr) with helper(base, offset) using balanced parens
+// REJECTS double-pointer types (char **, int **) — those go to DEVIATION
 function replaceTypedPtrDeref(line) {
   const typeMap = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
                     'undefined4': 's32', 'undefined2': 's16' };
-  const typePattern = /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*\s*\)\s*\(/g;
+  // Match *(TYPE *) but NOT *(TYPE **) — negative lookahead for second *
+  const typePattern = /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*(?!\s*\*)\s*\)\s*\(/g;
   let result = '';
   let lastIdx = 0;
   let match;
@@ -231,6 +233,9 @@ function transformLine(line, ctx) {
     // (undefined2) → mask 16-bit
     out = replaceCast(out, 'undefined2', null, expr => '((' + expr + ') & 0xFFFF)');
 
+    // (int3) → mask 24-bit (Ghidra partial-width cast)
+    out = replaceCast(out, 'int3', null, expr => '((' + expr + ') & 0xFFFFFF)');
+
     // ── Cast: (longlong) division → | 0 ──
     out = out.replace(/\(\s*(?:u?longlong)\s*\)/g, '');
 
@@ -280,8 +285,8 @@ function transformLine(line, ctx) {
         const parenStart = dm.index + dm[0].length - 1; // position of (
         const balanced = extractBalancedParens(out, parenStart);
         if (!balanced) continue;
-        // Check the content isn't a type cast (would have * inside)
-        if (/\w\s*\*\s*$/.test(balanced.content)) continue;
+        // Check the content isn't a type cast (would have * or ** inside)
+        if (/\*/.test(balanced.content)) continue;
         newOut += out.substring(lastIdx, dm.index);
         const inner = balanced.content.trim();
         const parts = splitBaseOffset(inner);

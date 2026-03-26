@@ -2688,7 +2688,7 @@ export function __fptostr_00603300(_Buf, _SizeInBytes, _Digits, _PtFlt) {
   let local_c;
   let local_8;
   
-  local_c = s32(char **, 0)(_Digits + 0xc);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(char **)(_Digits + 0xc);
   w32(_Buf, 0, 48);
   pcVar1 = _Buf;
   for (; local_8 = pcVar1 + 1, 0 < _SizeInBytes; _SizeInBytes = _SizeInBytes - 1) {

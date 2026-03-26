@@ -3246,7 +3246,7 @@ export function FUN_004ca39e(param_1, param_2, param_3) {
   uVar4 = ((s8(bVar1)) >>> 0);
   sVar2 = s16(DAT_006560f0, param_1 * 0x20);
   sVar3 = s16(DAT_006560f2, param_1 * 0x20);
-  FUN_004c4210(0,CONCAT31((int3)s8(((sVar3) & 0xFFFF) >> 8),DAT_0064bcdb));
+  FUN_004c4210(0,CONCAT31(((s8(((sVar3) & 0xFFFF) >> 8)) & 0xFFFFFF),DAT_0064bcdb));
   iVar5 = FUN_005b89e4(param_2,param_3);
   if (iVar5 === 0) {
     local_20 = FUN_005b8d62(param_2,param_3);
@@ -4706,15 +4706,15 @@ export function FUN_004ce98e(param_1, param_2) {
   let local_c;
   let local_8;
   
-  for (local_c = s32(void **, 0)(param_2 + 0x30c); local_c !== 0x0;
-      local_c = s32(void **, 0)(local_c + 0x1bc)) {
-    _Dst = FUN_004fa617();
+  // DEVIATION(C-syntax): true) // DEVIATION: C pointer — for (local_c = *(void **)(param_2 + 0x30c); local_c !== 0x0;
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(void **)(local_c + 0x1bc)) {
+    // DEVIATION(cont): _Dst = (void *)thunk_FUN_004fa617();
     if (_Dst === 0x0) {
       FUN_00589ef8(0xfffffff7,3,0,0,0);
     }
     _memcpy(_Dst,local_c,0x1bc);
   }
-  local_c = s32(void **, 0)(param_2 + 0x30c);
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(void **)(param_2 + 0x30c);
   local_10 = s32(param_1, 0x30c);
   do {
     if (local_c === 0x0) {
@@ -4833,7 +4833,7 @@ export function FUN_004ce98e(param_1, param_2) {
         return;
       }
     }
-    local_c = s32(void **, 0)(local_c + 0x1bc);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_c = *(void **)(local_c + 0x1bc);
     local_10 = s32(local_10, 0x1bc);
   } while( true );
 }
@@ -4918,30 +4918,30 @@ export function FUN_004cefe9(param_1, param_2) {
   local_8 = 0;
   for (local_c = DAT_0064b99c; local_c !== 0; local_c = s32(local_c, 0x1bc)) {
     if (s32(local_c, 8) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 8),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 8),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 8),param_2,0xf);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 8),param_2,0xf);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x90) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x90),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x90),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x90),param_2,0xf);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x90),param_2,0xf);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0xdc) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0xdc),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0xdc),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0xdc),param_2,0xf);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0xdc),param_2,0xf);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x148) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x148),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x148),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x148),param_2,0xf);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x148),param_2,0xf);
         local_8 = local_8 + 1;
       }
     }
@@ -4966,58 +4966,58 @@ export function FUN_004cf144(param_1, param_2) {
   local_8 = 0;
   for (local_c = DAT_0064b99c; local_c !== 0; local_c = s32(local_c, 0x1bc)) {
     if (s32(local_c, 0x14) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x14),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x14),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x14),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x14),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x20) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x20),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x20),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x20),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x20),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x88) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x88),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x88),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x88),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x88),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0xc4) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0xc4),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0xc4),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0xc4),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0xc4),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0xcc) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0xcc),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0xcc),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0xcc),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0xcc),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0xd4) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0xd4),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0xd4),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0xd4),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0xd4),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x140) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x140),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x140),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x140),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x140),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x174) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x174),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x174),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x174),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x174),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
@@ -5042,16 +5042,16 @@ export function FUN_004cf3ba(param_1, param_2) {
   local_8 = 0;
   for (local_c = DAT_0064b99c; local_c !== 0; local_c = s32(local_c, 0x1bc)) {
     if (s32(local_c, 0x10) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x10),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x10),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x10),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x10),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
     if (s32(local_c, 0x13c) !== 0) {
-      iVar1 = _strcmp(s32(char **, 0)(local_c + 0x13c),param_1);
+      // DEVIATION(C-syntax): true // DEVIATION: C pointer — iVar1 = _strcmp(*(char **)(local_c + 0x13c),param_1);
       if (iVar1 === 0) {
-        _strncpy(s32(char **, 0)(local_c + 0x13c),param_2,0x18);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — _strncpy(*(char **)(local_c + 0x13c),param_2,0x18);
         local_8 = local_8 + 1;
       }
     }
