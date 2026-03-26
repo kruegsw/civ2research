@@ -319,13 +319,8 @@ function transformLine(line, ctx) {
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
     // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
     if (/\*\s*\(\s*\w[\w\s]*\*+\s*\)/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      // Count open parens before this point to close them if needed
-      let openParens = 0;
-      for (const ch of out) { if (ch === '(') openParens++; if (ch === ')') openParens--; }
-      const closers = openParens > 0 ? ')'.repeat(openParens) : '';
-      // Replace the offending part with a safe expression that closes parens
-      out = out.replace(/^(\s*)(.*)$/, '$1true' + closers + ' // DEVIATION: C pointer — $2');
-      if (!/;\s*$/.test(out.trim()) && !/\{/.test(out)) ctx.deviationContinuation = true;
+      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C pointer — $2');
+      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
     }
 
     // ── Equality operators ──
@@ -665,20 +660,22 @@ function processFunction(headerLines, bodyLines, ctx) {
     if (openWriteCall) {
       let transformed = transformLine(line, ctx);
       if (/,\s*$/.test(transformed)) {
-        // Comma-operator: close w16/w32 before the comma, and switch
-        // the opening w16/w32 on the previous line to w16r/w32r
+        // Comma-operator: close w16/w32 before the comma, and switch to w16r/w32r
         transformed = transformed.replace(/,\s*$/, '),');
-        // Find the previous line that opened the w16/w32 call and add 'r'
         for (let j = result.length - 1; j >= 0; j--) {
-          if (/\bw(16|32)\(/.test(result[j])) {
+          if (/\bw(16|32)r?\(/.test(result[j])) {
             result[j] = result[j].replace(/\bw(16|32)\(/, 'w$1r(');
             break;
           }
         }
+        openWriteCall = false;
       } else if (/;\s*$/.test(transformed)) {
         transformed = transformed.replace(/;\s*$/, ');');
+        openWriteCall = false;
+      } else {
+        // Value expression continues to next line — keep write call open
+        // (3+ line write)
       }
-      openWriteCall = false;
       result.push(transformed);
       continue;
     }
