@@ -6122,7 +6122,7 @@ if (true) {
   // (outer block close)
   FUN_0057624d();
   FUN_00574239();
-LAB_00576783:
+  // LAB_00576783:
   FUN_004083f0();
   local_8 = local_8 & 0xffffff00;
   FUN_005767a7();
@@ -6300,7 +6300,7 @@ if (true) {
   }
   if (param_1 < 0) LAB_0057da76_helper(bVar3, iVar4, iVar5, iVar6, iVar7, local_14, local_18, local_1c, local_390, local_394, local_3b0, local_3b4, local_3cc, local_3d8, local_3e0, local_3e4, local_3e8, local_3ec, local_6c, local_70, local_74, local_7c, local_80, local_84, local_90, local_98, param_1, param_2, param_3, uVar8, uVar9); return;
   local_3cc = DAT_00655b16;
-LAB_0057d48e:
+  // LAB_0057d48e:
   local_3cc = local_3cc + -1;
   if (-1 < local_3cc) {
     if (((s32(DAT_0065610a, local_3cc * 0x20) !== 0) &&
@@ -6363,7 +6363,7 @@ if (true) {
     }
   }
 if (true) {
-LAB_0057d7a9:
+  // LAB_0057d7a9:
     DAT_0064f379[param_1 * 0x58] = 0;
     local_18 = 0;
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
@@ -6400,7 +6400,7 @@ LAB_0057d7a9:
   thunk_handle_city_disorder_00509590(param_1);
   thunk_citywin_DB36();
   DAT_0062edf8 = 0;
-LAB_0057da76:
+  // LAB_0057da76:
   iVar6 = thunk_kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < param_1)) && (local_7c === 0)) &&
      (((DAT_0064c6b5[local_84 * 0x594] === 0x03 || (DAT_0064c6b5[local_84 * 0x594] === 0x06)
@@ -6783,7 +6783,7 @@ if (true) {
     }
   }
 if (true) {
-LAB_0057d7a9:
+  // LAB_0057d7a9:
     DAT_0064f379[param_1 * 0x58] = 0;
     local_18 = 0;
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
@@ -6820,7 +6820,7 @@ LAB_0057d7a9:
   thunk_handle_city_disorder_00509590(param_1);
   thunk_citywin_DB36();
   DAT_0062edf8 = 0;
-LAB_0057da76:
+  // LAB_0057da76:
   iVar6 = thunk_kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < param_1)) && (local_7c === 0)) &&
      (((DAT_0064c6b5[local_84 * 0x594] === 0x03 || (DAT_0064c6b5[local_84 * 0x594] === 0x06)
@@ -7017,7 +7017,7 @@ function LAB_0057d7a9_helper(bVar3, iVar4, iVar5, iVar6, iVar7, local_14, local_
   thunk_handle_city_disorder_00509590(param_1);
   thunk_citywin_DB36();
   DAT_0062edf8 = 0;
-LAB_0057da76:
+  // LAB_0057da76:
   iVar6 = thunk_kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < param_1)) && (local_7c === 0)) &&
      (((DAT_0064c6b5[local_84 * 0x594] === 0x03 || (DAT_0064c6b5[local_84 * 0x594] === 0x06)

@@ -4880,7 +4880,7 @@ function LAB_0048ccea_helper(iVar4, local_14, local_1c, local_20, local_24, loca
     iVar4 = FUN_0048aedc();
     if ((iVar4 !== 0) || (DAT_0064b1ac !== 0)) {
       DAT_00628044 = 0;
-LAB_0048d957:
+  // LAB_0048d957:
       FUN_0055ae80(0);
       FUN_004824e3();
       if (DAT_0064b1ac !== 0) {

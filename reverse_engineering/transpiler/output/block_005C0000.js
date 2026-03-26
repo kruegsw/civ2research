@@ -11050,7 +11050,7 @@ function switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, loca
       }
       switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
     }
-LAB_005cb749:
+  // LAB_005cb749:
     if (s32(iVar3, 0x1c) !== 0) {
       piVar4 = FUN_005c8f50();
       local_20[0].left = s32(piVar4, 0);
@@ -11308,7 +11308,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
     if (0xf < local_14) {
       FUN_005cdcdb(local_c,DAT_00637fa8,DAT_00637fac);
       local_14 = local_c;
-LAB_005cdcd6:
+  // LAB_005cdcd6:
       DAT_006e47c4 = DAT_006d470c + local_14 * 0x100c;
       return;
     }

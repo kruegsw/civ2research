@@ -5807,7 +5807,7 @@ if (true) {
       local_38 = 0;
     }
   }
-LAB_00583d2b:
+  // LAB_00583d2b:
   if (2 < DAT_00655b02) {
     FUN_004b0b53(0xff,2,0,0,0);
     for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
@@ -5987,7 +5987,7 @@ if (true) {
   local_54 = 0;
   do {
     if (s32(local_38, 0x10420 + param_1 * 4) <= local_54) {
-LAB_00588e17:
+  // LAB_00588e17:
       FUN_005c0073(local_18);
       FUN_0052e971();
       FUN_0040f380();
@@ -6173,7 +6173,7 @@ function LAB_0058daa2_helper(bVar5, cVar1, cVar3, iVar12, iVar6, iVar7, local_18
           local_32c = local_32c + 1;
         }
   // (outer block close)
-LAB_0058d80c:
+  // LAB_0058d80c:
   // (outer block close)
     if (local_32c === 0) {
       if (bVar5) {
@@ -6414,7 +6414,7 @@ if (true) {
       bVar1 = false;
       if (DAT_00655b09 < 3) {
         if (DAT_00655af8 < 0x1e) {
-LAB_0058f87c:
+  // LAB_0058f87c:
           FUN_0043d07a(iVar4,uVar5,uVar3,0xffffffff,0xffffffff);
           iVar6 = FUN_005b8a81(iVar4,uVar5);
           if ((DAT_0064c932[uVar3 * 0x594 + iVar6] !== 0) && (DAT_0063f660 < 0x18)) {
@@ -6438,7 +6438,7 @@ if (true) {
         if (((uVar7 ^ uVar10) - uVar10 & 1 ^ uVar10) !== uVar10) LAB_0058f939_helper(bVar1, bVar2, iVar4, iVar6, iVar9, local_10, local_14, local_20, local_28, local_38, local_3c, local_40, local_48, local_4c, local_50, local_60, local_8, local_c, param_1, uVar10, uVar3, uVar5, uVar7, uVar8); return;
       }
       bVar1 = true;
-LAB_0058f939:
+  // LAB_0058f939:
       uVar7 = 0;
       if (DAT_006ad0d0 !== 0) {
         uVar7 = FUN_00410030(s_SURPRISEBARB_00634cf4,DAT_0063fc58,0);
@@ -6586,7 +6586,7 @@ if (true) {
         if (((uVar7 ^ uVar10) - uVar10 & 1 ^ uVar10) !== uVar10) LAB_0058f939_helper(bVar1, bVar2, iVar4, iVar6, iVar9, local_10, local_28, local_38, local_3c, local_40, local_48, local_4c, local_50, param_1, uVar10, uVar3, uVar5, uVar7, uVar8); return;
       }
       bVar1 = true;
-LAB_0058f939:
+  // LAB_0058f939:
       uVar7 = 0;
       if (DAT_006ad0d0 !== 0) {
         uVar7 = FUN_00410030(s_SURPRISEBARB_00634cf4,DAT_0063fc58,0);

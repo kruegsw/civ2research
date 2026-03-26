@@ -4056,7 +4056,7 @@ if (true) {
         joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3); return;
       }
     }
-LAB_005499f7:
+  // LAB_005499f7:
     local_5c = local_5c << 1;
     if (local_5c === 0x8000) {
       return;
@@ -4096,7 +4096,7 @@ if (true) {
       }
   // (outer block close)
   // (outer block close)
-LAB_0054a7eb:
+  // LAB_0054a7eb:
   if (local_224 !== 0x0) {
     _fclose(local_224);
   }

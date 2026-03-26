@@ -6205,7 +6205,7 @@ if (true) {
     DAT_006ab5e8 = 0;
   }
   return DAT_006ab5e8;
-LAB_0055bc98:
+  // LAB_0055bc98:
   local_8 = local_8 + 1;
   LAB_0055bc9b_helper(iVar2, iVar3, local_18, local_1c, local_20, local_8, param_2, uVar1, uVar4); return;
 }

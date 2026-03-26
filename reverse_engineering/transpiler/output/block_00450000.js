@@ -6721,7 +6721,7 @@ if (true) {
       FUN_0040bc10();
       FUN_005f22d0();
     }
-LAB_00452724:
+  // LAB_00452724:
     FUN_00418a30();
     FUN_0040f380();
   // (outer block close)
@@ -6828,7 +6828,7 @@ if (true) {
       break;
     default:
       local_c = FUN_00455b8e();
-joined_r0x004557ba:
+  // joined_r0x004557ba:
       if (local_c !== -1) break;
       LAB_00455711_helper(iVar1, in_ECX, local_8, local_c); return;
     case 6:
@@ -6839,7 +6839,7 @@ joined_r0x004557ba:
       w32(in_ECX, 0x1c8c, 1);
       local_c = 0x38;
     }
-LAB_004559fe:
+  // LAB_004559fe:
     if (s16(DAT_00655be6, local_8 * 2) === s32(in_ECX, 0x1c90)) {
       FUN_00455dfd(local_c,local_8);
       FUN_0059a791(0,0);
@@ -6850,7 +6850,7 @@ LAB_004559fe:
 if (true) {
       FUN_00455ebe(local_c);
     }
-LAB_00455711:
+  // LAB_00455711:
     local_8 = local_8 + 1;
   } while( true );
 }
@@ -6873,7 +6873,7 @@ function joined_r0x00455451_helper(iVar1, in_ECX, local_8, local_c) {
         w32(in_ECX, 0x1c8c, 1);
         local_c = 0x37;
   // (outer block close)
-LAB_00455628:
+  // LAB_00455628:
       iVar1 = FUN_0043d20a(s32(in_ECX, 0x1c90),local_8);
       if (iVar1 === 0) {
         if (s32(in_ECX, 0x19f4) === 0) {
@@ -6923,7 +6923,7 @@ if (true) {
       case 0x22:
       }
     }
-LAB_0045539c:
+  // LAB_0045539c:
   // (outer block close)
   while (iVar1 = FUN_00455c5d(), iVar1 !== -1) {
     if (s32(in_ECX, 0x19f4) === 0) {
@@ -7011,7 +7011,7 @@ if (true) {
       break;
     default:
       local_c = FUN_00455b8e();
-joined_r0x004557ba:
+  // joined_r0x004557ba:
       if (local_c !== -1) break;
       LAB_00455711_helper(iVar1, in_ECX, local_8, local_c); return;
     case 6:
@@ -7022,7 +7022,7 @@ joined_r0x004557ba:
       w32(in_ECX, 0x1c8c, 1);
       local_c = 0x38;
     }
-LAB_004559fe:
+  // LAB_004559fe:
     if (s16(DAT_00655be6, local_8 * 2) === s32(in_ECX, 0x1c90)) {
       FUN_00455dfd(local_c,local_8);
       FUN_0059a791(0,0);
@@ -7033,7 +7033,7 @@ LAB_004559fe:
 if (true) {
       FUN_00455ebe(local_c);
     }
-LAB_00455711:
+  // LAB_00455711:
     local_8 = local_8 + 1;
   } while( true );
 }
@@ -7088,7 +7088,7 @@ if (true) {
       case 0x22:
       }
     }
-LAB_0045539c:
+  // LAB_0045539c:
   // (outer block close)
   while (iVar1 = FUN_00455c5d(), iVar1 !== -1) {
     if (s32(in_ECX, 0x19f4) === 0) {
@@ -7176,7 +7176,7 @@ if (true) {
       break;
     default:
       local_c = FUN_00455b8e();
-joined_r0x004557ba:
+  // joined_r0x004557ba:
       if (local_c !== -1) break;
       LAB_00455711_helper(iVar1, in_ECX, local_8, local_c); return;
     case 6:
@@ -7187,7 +7187,7 @@ joined_r0x004557ba:
       w32(in_ECX, 0x1c8c, 1);
       local_c = 0x38;
     }
-LAB_004559fe:
+  // LAB_004559fe:
     if (s16(DAT_00655be6, local_8 * 2) === s32(in_ECX, 0x1c90)) {
       FUN_00455dfd(local_c,local_8);
       FUN_0059a791(0,0);
@@ -7198,7 +7198,7 @@ LAB_004559fe:
 if (true) {
       FUN_00455ebe(local_c);
     }
-LAB_00455711:
+  // LAB_00455711:
     local_8 = local_8 + 1;
   } while( true );
 }
@@ -7214,7 +7214,7 @@ function joined_r0x004557ba_helper(in_ECX, local_8, local_c) {
       w32(in_ECX, 0x1c8c, 1);
       local_c = 0x38;
   // (outer block close)
-LAB_004559fe:
+  // LAB_004559fe:
     if (s16(DAT_00655be6, local_8 * 2) === s32(in_ECX, 0x1c90)) {
       FUN_00455dfd(local_c,local_8);
       FUN_0059a791(0,0);
@@ -7225,7 +7225,7 @@ LAB_004559fe:
 if (true) {
       FUN_00455ebe(local_c);
     }
-LAB_00455711:
+  // LAB_00455711:
     local_8 = local_8 + 1;
   // (outer block close)
 }
@@ -7246,7 +7246,7 @@ function LAB_004559fe_helper(in_ECX, local_8, local_c) {
 if (true) {
       FUN_00455ebe(local_c);
     }
-LAB_00455711:
+  // LAB_00455711:
     local_8 = local_8 + 1;
   // (outer block close)
 }
@@ -7879,7 +7879,7 @@ if (true) {
         }
       }
       FUN_004b0b53(0xff,2,0,0,0);
-LAB_0045eb0a:
+  // LAB_0045eb0a:
       if (iVar4 === 3) {
         if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) &&
              (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) &&

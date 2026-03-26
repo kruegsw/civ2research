@@ -6559,7 +6559,7 @@ function LAB_0050b5dc_helper(iVar2, local_8, uVar6) {
   FUN_004eb4ed(iVar2,uVar6);
   FUN_0050503e(1);
   FUN_005025d5(1);
-LAB_0050b609:
+  // LAB_0050b609:
   thunk_citywin_CCB3(1);
   local_8._0_1_ = 1;
   citywin_B638();

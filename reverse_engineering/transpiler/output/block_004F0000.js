@@ -6772,7 +6772,7 @@ if (true) {
   // (outer block close)
     local_44 = 0;
   // (outer block close)
-LAB_004ff6f7:
+  // LAB_004ff6f7:
   if (local_44 !== 0) {
     __chdir(DAT_00655020);
     FUN_00421ea0(s_BADEVENTSFILE_00630868);

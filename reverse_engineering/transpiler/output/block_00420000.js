@@ -6518,7 +6518,7 @@ function code_r0x00422119_helper(iVar1, iVar5, local_8, local_858, sVar2, sVar4)
   if (sVar4 !== 0) {
     FUN_005f22d0();
     FUN_005f22d0();
-LAB_00422228:
+  // LAB_00422228:
     iVar1 = XD_OpenConnection(extraout_ECX + 0x22,DAT_006ad8b8 * 1000);
     if (iVar1 < 0) {
       FUN_005d2279();
@@ -7329,7 +7329,7 @@ if (true) {
   FUN_00424135();
   FUN_0042414b();
   return;
-code_r0x00422119:
+  // code_r0x00422119:
   pcStackY_2c = 0x0;
   puStackY_30 = DAT_00625a04;
   uStackY_34 = 0x1f;
@@ -7351,7 +7351,7 @@ code_r0x00422119:
   if (sVar4 !== 0) {
     FUN_005f22d0();
     FUN_005f22d0();
-LAB_00422228:
+  // LAB_00422228:
     iVar1 = XD_OpenConnection(extraout_ECX + 0x22,DAT_006ad8b8 * 1000);
     if (iVar1 < 0) {
       FUN_005d2279();
@@ -7618,7 +7618,7 @@ if (true) {
     w32(extraout_ECX, 0, 0);
     FUN_00419b80();
   // (outer block close)
-LAB_00422d3d:
+  // LAB_00422d3d:
   DAT_00635a3c = 0 /* ADDR:LAB_00402b58 */;
   _DAT_006ad674 = FUN_00421bb0();
   if (param_1 !== 0) {
@@ -8183,7 +8183,7 @@ if (true) {
   FUN_00424135();
   FUN_0042414b();
   return;
-code_r0x00422119:
+  // code_r0x00422119:
   pcStackY_2c = 0x0;
   puStackY_30 = DAT_00625a04;
   uStackY_34 = 0x1f;
@@ -8205,7 +8205,7 @@ code_r0x00422119:
   if (sVar4 !== 0) {
     FUN_005f22d0();
     FUN_005f22d0();
-LAB_00422228:
+  // LAB_00422228:
     iVar1 = XD_OpenConnection(extraout_ECX + 0x22,DAT_006ad8b8 * 1000);
     if (iVar1 < 0) {
       FUN_005d2279();

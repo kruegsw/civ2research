@@ -12005,7 +12005,7 @@ if (true) {
       return LVar3;
     }
   // (outer block close)
-LAB_005eb241:
+  // LAB_005eb241:
   LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
   return LVar3;
 }
@@ -12130,7 +12130,7 @@ if (true) {
           return 0;
         }
       }
-switchD_005ec033_caseD_4:
+  // switchD_005ec033_caseD_4:
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
   // (outer block close)
@@ -12427,7 +12427,7 @@ if (true) {
       }
       switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_24, local_34, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
     }
-switchD_005ecda6_caseD_6:
+  // switchD_005ecda6_caseD_6:
     // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
@@ -12496,7 +12496,7 @@ if (true) {
         w32(local_2c, 0x1c, local_30 + local_20);
         return 0;
       }
-switchD_005ecda6_caseD_4:
+  // switchD_005ecda6_caseD_4:
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
     }
@@ -12723,7 +12723,7 @@ if (true) {
       }
       switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
     }
-switchD_005ecda6_caseD_6:
+  // switchD_005ecda6_caseD_6:
     // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
@@ -12763,7 +12763,7 @@ if (true) {
     uVar5 = ((CONCAT11(cVar6 + -1,s8(uVar4))) >>> 0);
   }
   LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4, uVar5); return;
-LAB_005edca2:
+  // LAB_005edca2:
   uVar2 = uVar2 - 1;
   if (uVar2 === 0) {
     return iVar3;
@@ -12773,7 +12773,7 @@ LAB_005edca2:
 
 function LAB_005edc7f_helper(bVar1, cVar6, iVar3, param_1, param_2, param_4, param_5, uVar2, uVar4, uVar5) {
   uVar5 = ((CONCAT11(param_5,param_4)) >>> 0);
-LAB_005edc85:
+  // LAB_005edc85:
   if (s8(uVar5) === 0) {
     uVar4 = ((uVar5) & 0xFFFF);
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, param_4, param_5, uVar2, uVar4, uVar5); return;
@@ -12793,7 +12793,7 @@ if (true) {
     uVar5 = ((CONCAT11(cVar6 + -1,s8(uVar4))) >>> 0);
   }
   LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, param_4, param_5, uVar2, uVar4, uVar5); return;
-LAB_005edca2:
+  // LAB_005edca2:
   uVar2 = uVar2 - 1;
   if (uVar2 === 0) {
     return iVar3;
@@ -12839,7 +12839,7 @@ if (true) {
     uVar7 = ((CONCAT11(cVar5 + -1,s8(uVar6))) >>> 0);
   }
   LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3, uVar6, uVar7); return;
-LAB_005edcf2:
+  // LAB_005edcf2:
   uVar3 = uVar3 - 1;
   if (uVar3 === 0) {
     return iVar4;
@@ -12849,7 +12849,7 @@ LAB_005edcf2:
 
 function LAB_005edcbf_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_4, param_5, uVar3, uVar6, uVar7) {
   uVar7 = ((CONCAT11(param_5,param_4)) >>> 0);
-LAB_005edcc5:
+  // LAB_005edcc5:
   cVar5 = s8(uVar7);
   uVar6 = ((uVar7) & 0xFFFF);
   if (cVar5 === 0) {
@@ -12879,7 +12879,7 @@ if (true) {
     uVar7 = ((CONCAT11(cVar5 + -1,s8(uVar6))) >>> 0);
   }
   LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_4, param_5, uVar3, uVar6, uVar7); return;
-LAB_005edcf2:
+  // LAB_005edcf2:
   uVar3 = uVar3 - 1;
   if (uVar3 === 0) {
     return iVar4;

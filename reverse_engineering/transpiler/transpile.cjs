@@ -1000,6 +1000,12 @@ function processGotos(lines) {
         helpers.push('  // (orphan case) ' + bt);
         continue;
       }
+
+      // Labels inside helpers — comment them (already handled by goto system)
+      if (/^(LAB_|switchD_|code_r|joined_r)\w+:\s*$/.test(bt)) {
+        helpers.push('  // ' + bt);
+        continue;
+      }
       let hl = bodyLine;
       // Replace goto to THIS label with recursive call
       if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {

@@ -8232,7 +8232,7 @@ if (true) {
         bVar9 = true;
       }
     }
-LAB_005b5a3a:
+  // LAB_005b5a3a:
     if ((param_2 === 0) && ((u16(DAT_006560f4, local_38 * 0x20) & 0x1000) !== 0)) {
       bVar9 = false;
     }
@@ -8335,7 +8335,7 @@ if (true) {
     }
   }
   return local_28;
-code_r0x005b584c:
+  // code_r0x005b584c:
   if ((!bVar1) ||
      ((DAT_0064b1bd[u8(DAT_006560f6[local_38 * 0x20]) * 0x14] & 0x10) !== 0)) {
     if (local_18 === 0) {
@@ -8372,7 +8372,7 @@ if (true) {
         bVar9 = true;
       }
     }
-LAB_005b5a3a:
+  // LAB_005b5a3a:
     if ((param_2 === 0) && ((u16(DAT_006560f4, local_38 * 0x20) & 0x1000) !== 0)) {
       bVar9 = false;
     }

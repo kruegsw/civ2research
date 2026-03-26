@@ -5535,7 +5535,7 @@ function LAB_004ac32b_helper(bVar2, bVar21, bVar3, bVar4, bVar7, cVar1, iVar13, 
       DAT_00673fc0 = iVar14;
   // (outer block close)
   // (outer block close)
-LAB_004ac850:
+  // LAB_004ac850:
   local_50 = -1;
   if (DAT_00673fc0 < param_3) {
     local_10 = 19999;
@@ -5631,7 +5631,7 @@ if (true) {
 if (true) {
                 local_58 = 4;
               }
-LAB_004acce1:
+  // LAB_004acce1:
               if (((DAT_0064b1bc[DAT_0062d03c * 0x14] & 0x20) !== 0) &&
                  (pbVar12 = FUN_005b8931(iVar15,iVar14), (s32(pbVar12, 0) & 0x40) !== 0)) {
                 local_58 = local_58 + ((DAT_0064bcc8) >>> 0) * 4;
@@ -5668,7 +5668,7 @@ if (true) {
           }
         }
       }
-LAB_004ac936:
+  // LAB_004ac936:
     }
   }
   if (local_50 < 0) {
@@ -5728,13 +5728,13 @@ function LAB_004ac755_helper(bVar2, bVar21, bVar3, bVar4, bVar7, cVar1, iVar13, 
               }
   // (outer block close)
   // (outer block close)
-LAB_004ac32b:
+  // LAB_004ac32b:
   // (outer block close)
   // (outer block close)
       DAT_00673fc0 = iVar14;
   // (outer block close)
   // (outer block close)
-LAB_004ac850:
+  // LAB_004ac850:
   local_50 = -1;
   if (DAT_00673fc0 < param_3) {
     local_10 = 19999;
@@ -5830,7 +5830,7 @@ if (true) {
 if (true) {
                 local_58 = 4;
               }
-LAB_004acce1:
+  // LAB_004acce1:
               if (((DAT_0064b1bc[DAT_0062d03c * 0x14] & 0x20) !== 0) &&
                  (pbVar12 = FUN_005b8931(iVar15,iVar14), (s32(pbVar12, 0) & 0x40) !== 0)) {
                 local_58 = local_58 + ((DAT_0064bcc8) >>> 0) * 4;
@@ -5867,7 +5867,7 @@ if (true) {
           }
         }
       }
-LAB_004ac936:
+  // LAB_004ac936:
     }
   }
   if (local_50 < 0) {
@@ -6005,7 +6005,7 @@ if (true) {
 if (true) {
                 local_58 = 4;
               }
-LAB_004acce1:
+  // LAB_004acce1:
               if (((DAT_0064b1bc[DAT_0062d03c * 0x14] & 0x20) !== 0) &&
                  (pbVar12 = FUN_005b8931(iVar15,iVar14), (s32(pbVar12, 0) & 0x40) !== 0)) {
                 local_58 = local_58 + ((DAT_0064bcc8) >>> 0) * 4;
@@ -6042,7 +6042,7 @@ if (true) {
           }
         }
       }
-LAB_004ac936:
+  // LAB_004ac936:
     }
   }
   if (local_50 < 0) {
@@ -6163,7 +6163,7 @@ if (true) {
   // (outer block close)
   // (outer block close)
   // (outer block close)
-LAB_004ac936:
+  // LAB_004ac936:
   // (outer block close)
   // (outer block close)
   if (local_50 < 0) {

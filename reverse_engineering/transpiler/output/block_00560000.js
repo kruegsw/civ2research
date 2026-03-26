@@ -6038,7 +6038,7 @@ if (true) {
            u16(DAT_006560f4, local_30 * 0x20) & 0xfffb);
     }
   }
-LAB_00561668:
+  // LAB_00561668:
   local_c = 0;
   local_1c = 0;
   local_8 = 0;
@@ -6321,7 +6321,7 @@ if (true) {
       (bVar1 & 0x42) === 0x40)) && (param_7 === 0)) {
     FUN_005cef31(local_158,param_1,param_4,param_5);
   }
-LAB_0056c5e8:
+  // LAB_0056c5e8:
   FUN_0047df50();
   return;
 }

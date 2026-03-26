@@ -7113,7 +7113,7 @@ function LAB_004b496e_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
   // (outer block close)
   // DEVIATION: SEH
   FUN_004b4be3();
-LAB_004b4982:
+  // LAB_004b4982:
   if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
     FUN_004b4c81();
   }

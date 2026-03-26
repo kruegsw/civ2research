@@ -6485,7 +6485,7 @@ if (true) {
       }
   // (outer block close)
   // (outer block close)
-LAB_004ee539:
+  // LAB_004ee539:
   if (((((1 << (u8(local_84) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) &&
        ((DAT_0064f344[param_1 * 0x58] & 0x10) !== 0)) &&
       ((s16(DAT_0064f35c, param_1 * 0x58) === 0 ||
@@ -6733,7 +6733,7 @@ function LAB_004eef5f_helper(bVar1, bVar2, bVar3, bVar4, bVar5, iVar6, iVar7, iV
             local_14 = iVar7;
           }
         }
-LAB_004ef0c3:
+  // LAB_004ef0c3:
       }
       if (DAT_006a65cc < DAT_006a6568) {
         if (-1 < local_14) break;

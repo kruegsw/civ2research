@@ -13966,11 +13966,11 @@ function switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2) {
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 3) = *(undefined1 *)(puVar3 + 3);
         return _Dst;
   // (orphan case) case 2:
-switchD_005f21d9_caseD_2:
+  // switchD_005f21d9_caseD_2:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         return _Dst;
   // (orphan case) case 3:
-switchD_005f21d9_caseD_3:
+  // switchD_005f21d9_caseD_3:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 1) = *(undefined1 *)(puVar3 + 1);
         return _Dst;
@@ -14021,15 +14021,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f2140_caseD_1:
+  // switchD_005f2140_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f2140_caseD_2:
+  // switchD_005f2140_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f2140_caseD_3:
+  // switchD_005f2140_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14073,7 +14073,7 @@ function switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2) {
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         return _Dst;
   // (orphan case) case 3:
-switchD_005f21d9_caseD_3:
+  // switchD_005f21d9_caseD_3:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 1) = *(undefined1 *)(puVar3 + 1);
         return _Dst;
@@ -14124,15 +14124,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f2140_caseD_1:
+  // switchD_005f2140_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f2140_caseD_2:
+  // switchD_005f2140_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f2140_caseD_3:
+  // switchD_005f2140_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14223,15 +14223,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f2140_caseD_1:
+  // switchD_005f2140_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f2140_caseD_2:
+  // switchD_005f2140_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f2140_caseD_3:
+  // switchD_005f2140_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14275,11 +14275,11 @@ function switchD_005f2140_caseD_1_helper(uVar1, uVar2) {
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
   // (orphan case) case 2:
-switchD_005f2140_caseD_2:
+  // switchD_005f2140_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
-switchD_005f2140_caseD_3:
+  // switchD_005f2140_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14323,7 +14323,7 @@ function switchD_005f2140_caseD_2_helper(uVar1, uVar2) {
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
-switchD_005f2140_caseD_3:
+  // switchD_005f2140_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14438,9 +14438,9 @@ function LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4) {
       joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
     }
   // (outer block close)
-LAB_005f232f:
+  // LAB_005f232f:
   puVar5 = (puVar3 + -1);
-joined_r0x005f234b:
+  // joined_r0x005f234b:
   do {
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
@@ -14449,7 +14449,7 @@ joined_r0x005f234b:
         param_2 = param_2 + 1;
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
           if (s8(uVar4) === 0) {
-LAB_005f23b8:
+  // LAB_005f23b8:
             // DEVIATION: C pointer — *(byte *)puVar5 = u8(uVar4);
             return param_1;
           }
@@ -14482,7 +14482,7 @@ LAB_005f23b8:
 
 function LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4) {
   puVar5 = (puVar3 + -1);
-joined_r0x005f234b:
+  // joined_r0x005f234b:
   do {
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
@@ -14491,7 +14491,7 @@ joined_r0x005f234b:
         param_2 = param_2 + 1;
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
           if (s8(uVar4) === 0) {
-LAB_005f23b8:
+  // LAB_005f23b8:
             // DEVIATION: C pointer — *(byte *)puVar5 = u8(uVar4);
             return param_1;
           }
@@ -14531,7 +14531,7 @@ function joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4) {
         param_2 = param_2 + 1;
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
           if (s8(uVar4) === 0) {
-LAB_005f23b8:
+  // LAB_005f23b8:
             // DEVIATION: C pointer — *(byte *)puVar5 = u8(uVar4);
             return param_1;
           }
@@ -14607,7 +14607,7 @@ function joined_r0x005f2f6e_helper(cVar3, uVar4) {
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
-LAB_005f2fab:
+  // LAB_005f2fab:
         // DEVIATION: C pointer — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
       }
@@ -14653,7 +14653,7 @@ function LAB_005f3019_helper(cVar3, uVar2, uVar4) {
       w32(puVar5, 0, uVar2);
       puVar5 = puVar5 + 1;
       uVar4 = uVar4 - 1;
-joined_r0x005f2f6e:
+  // joined_r0x005f2f6e:
   // (outer block close)
     _Count = _Count & 3;
     if (_Count === 0) {
@@ -14667,7 +14667,7 @@ joined_r0x005f2f6e:
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
-LAB_005f2fab:
+  // LAB_005f2fab:
         // DEVIATION: C pointer — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
       }
@@ -14683,7 +14683,7 @@ function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
             uVar4 = uVar4 - 1;
             puVar5 = puVar5 + 1;
             if (uVar4 === 0) break;
-LAB_005f3019:
+  // LAB_005f3019:
             w32(puVar5, 0, 0);
           }
           cVar3 = 0;
@@ -14707,7 +14707,7 @@ LAB_005f3019:
       w32(puVar5, 0, uVar2);
       puVar5 = puVar5 + 1;
       uVar4 = uVar4 - 1;
-joined_r0x005f2f6e:
+  // joined_r0x005f2f6e:
   // (outer block close)
     _Count = _Count & 3;
     if (_Count === 0) {
@@ -14721,7 +14721,7 @@ joined_r0x005f2f6e:
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
-LAB_005f2fab:
+  // LAB_005f2fab:
         // DEVIATION: C pointer — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
       }
@@ -14754,7 +14754,7 @@ function LAB_005f34a0_helper(uVar1) {
 
 function LAB_005f34d3_helper(uVar1) {
   return (size_t)(puVar2 + (-1 - _Str));
-LAB_005f34a0:
+  // LAB_005f34a0:
   do {
     do {
       puVar3 = puVar2;
@@ -14808,7 +14808,7 @@ function LAB_005f3570_helper(bVar3, bVar4, bVar5, uVar2) {
       return 0;
     }
   }
-LAB_005f35a4:
+  // LAB_005f35a4:
   return ((bVar5) >>> 0) * -2 + 1;
 }
 
@@ -14837,7 +14837,7 @@ if (true) {
       iVar4 = 0;
       bVar6 = _C < uVar5;
       if (_C !== uVar5) {
-LAB_005f414d:
+  // LAB_005f414d:
         iVar4 = -1;
         if (!bVar6) {
           iVar4 = 1;
@@ -14876,11 +14876,11 @@ function switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2) {
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 3) = *(undefined1 *)(puVar3 + 3);
         return _Dst;
   // (orphan case) case 2:
-switchD_005f65c9_caseD_2:
+  // switchD_005f65c9_caseD_2:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         return _Dst;
   // (orphan case) case 3:
-switchD_005f65c9_caseD_3:
+  // switchD_005f65c9_caseD_3:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 1) = *(undefined1 *)(puVar3 + 1);
         return _Dst;
@@ -14931,15 +14931,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f6530_caseD_1:
+  // switchD_005f6530_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f6530_caseD_2:
+  // switchD_005f6530_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f6530_caseD_3:
+  // switchD_005f6530_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -14983,7 +14983,7 @@ function switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2) {
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         return _Dst;
   // (orphan case) case 3:
-switchD_005f65c9_caseD_3:
+  // switchD_005f65c9_caseD_3:
         w16(puVar5 + 2, 0, s16(puVar3 + 2, 0));
         // DEVIATION: C pointer — *(undefined1 *)(puVar5 + 1) = *(undefined1 *)(puVar3 + 1);
         return _Dst;
@@ -15034,15 +15034,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f6530_caseD_1:
+  // switchD_005f6530_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f6530_caseD_2:
+  // switchD_005f6530_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f6530_caseD_3:
+  // switchD_005f6530_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -15133,15 +15133,15 @@ if (true) {
     }
     switch(_Size & 3) {
     case 1:
-switchD_005f6530_caseD_1:
+  // switchD_005f6530_caseD_1:
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
     case 2:
-switchD_005f6530_caseD_2:
+  // switchD_005f6530_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
     case 3:
-switchD_005f6530_caseD_3:
+  // switchD_005f6530_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -15185,11 +15185,11 @@ function switchD_005f6530_caseD_1_helper(uVar1, uVar2) {
       // DEVIATION: C pointer — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
   // (orphan case) case 2:
-switchD_005f6530_caseD_2:
+  // switchD_005f6530_caseD_2:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
-switchD_005f6530_caseD_3:
+  // switchD_005f6530_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -15233,7 +15233,7 @@ function switchD_005f6530_caseD_2_helper(uVar1, uVar2) {
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
-switchD_005f6530_caseD_3:
+  // switchD_005f6530_caseD_3:
       // DEVIATION: C pointer — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer — *(undefined1 *)(puVar3 + 2) = *(undefined1 *)(_Src + 2);
       return _Dst;
@@ -15339,7 +15339,7 @@ if (true) {
       _Buf1 = (_Buf1 + 1);
       _Buf2 = (_Buf2 + 1);
       for (_Size = _Size - 1; _Size !== 0; _Size = _Size - 2) {
-LAB_005f6d7d:
+  // LAB_005f6d7d:
         // DEVIATION: C pointer — bVar9 = *(byte *)_Buf1 < *(byte *)_Buf2;
         // DEVIATION: C pointer — if ((*(byte *)_Buf1 !== *(byte *)_Buf2) ||
             // DEVIATION(cont): (bVar9 = *(byte *)((int)_Buf1 + 1) < *(byte *)((int)_Buf2 + 1),
@@ -15404,9 +15404,9 @@ function LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4) {
       LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
     }
   // (outer block close)
-LAB_005f750b:
+  // LAB_005f750b:
   puVar6 = (puVar5 + -1);
-LAB_005f751b:
+  // LAB_005f751b:
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
@@ -15434,7 +15434,7 @@ if (true) {
           return _Dest;
         }
       }
-LAB_005f7560:
+  // LAB_005f7560:
       // DEVIATION: C pointer — *(byte *)puVar6 = 0;
       return _Dest;
     }
@@ -15443,7 +15443,7 @@ LAB_005f7560:
     _Source = (_Source + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
       if (s8(uVar4) === 0) {
-LAB_005f756a:
+  // LAB_005f756a:
         // DEVIATION: C pointer — *(byte *)puVar6 = u8(uVar4);
         return _Dest;
       }
@@ -15469,7 +15469,7 @@ LAB_005f756a:
 
 function LAB_005f750b_helper(bVar1, uVar2, uVar3, uVar4) {
   puVar6 = (puVar5 + -1);
-LAB_005f751b:
+  // LAB_005f751b:
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
@@ -15497,7 +15497,7 @@ if (true) {
           return _Dest;
         }
       }
-LAB_005f7560:
+  // LAB_005f7560:
       // DEVIATION: C pointer — *(byte *)puVar6 = 0;
       return _Dest;
     }
@@ -15506,7 +15506,7 @@ LAB_005f7560:
     _Source = (_Source + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
       if (s8(uVar4) === 0) {
-LAB_005f756a:
+  // LAB_005f756a:
         // DEVIATION: C pointer — *(byte *)puVar6 = u8(uVar4);
         return _Dest;
       }
@@ -15558,7 +15558,7 @@ if (true) {
           return _Dest;
         }
       }
-LAB_005f7560:
+  // LAB_005f7560:
       // DEVIATION: C pointer — *(byte *)puVar6 = 0;
       return _Dest;
     }
@@ -15567,7 +15567,7 @@ LAB_005f7560:
     _Source = (_Source + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
       if (s8(uVar4) === 0) {
-LAB_005f756a:
+  // LAB_005f756a:
         // DEVIATION: C pointer — *(byte *)puVar6 = u8(uVar4);
         return _Dest;
       }
@@ -15624,7 +15624,7 @@ function LAB_005f7560_helper(uVar2, uVar3, uVar4) {
     _Source = (_Source + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) !== 0) {
       if (s8(uVar4) === 0) {
-LAB_005f756a:
+  // LAB_005f756a:
         // DEVIATION: C pointer — *(byte *)puVar6 = u8(uVar4);
         return _Dest;
       }
@@ -15684,7 +15684,7 @@ function LAB_005fa099_helper(iVar4, local_8) {
     }
   // (outer block close)
   local_8 = 0;
-LAB_005fa0c9:
+  // LAB_005fa0c9:
   __free_osfhnd(_FileHandle);
   if (local_8 === 0) {
     // DEVIATION: C pointer — *(undefined1 *)
@@ -15952,14 +15952,14 @@ if (true) {
         LAB_005faecc_helper(bVar10, iVar9, local_14, local_1c, local_20, local_22c, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_24c, local_250, local_254, local_258, local_25c, local_260, local_264, local_268, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, local_c, param_1, param_2, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
       case 0x78:
         local_234 = 0x27;
-LAB_005fae7b:
+  // LAB_005fae7b:
         local_23c = 0x10;
         if ((local_8 & 0x80) !== 0) {
           local_244[0] = 0x30;
           local_243 = s8(local_234) + 81;
           local_14 = 2;
         }
-LAB_005faecc:
+  // LAB_005faecc:
         if ((local_8 & 0x8000) === 0) {
           if ((local_8 & 0x20) === 0) {
             if ((local_8 & 0x40) === 0) {
@@ -16208,7 +16208,7 @@ function LAB_005fae7b_helper(bVar10, iVar9, local_14, local_20, local_230, local
           local_243 = s8(local_234) + 81;
           local_14 = 2;
         }
-LAB_005faecc:
+  // LAB_005faecc:
         if ((local_8 & 0x8000) === 0) {
           if ((local_8 & 0x20) === 0) {
             if ((local_8 & 0x40) === 0) {

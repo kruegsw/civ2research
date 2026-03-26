@@ -4712,7 +4712,7 @@ export function FUN_0052ed95(param_1) {
 function LAB_00521beb_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, local_8, param_1) {
   iVar1 = FUN_00421e70(s_SCENARIOLOADED_00632278,1);
   if (-1 < iVar1) {
-LAB_00521c07:
+  // LAB_00521c07:
     while( true ) {
       FUN_0040ffa0(s_DIFFICULTY_00632288,1);
       FUN_0059ea99(DAT_00655b08);
@@ -4927,10 +4927,10 @@ if (true) {
     iVar1 = FUN_0040bc80(0);
   } while (iVar1 < 0);
   LAB_00521c07_helper(iVar1, local_118, local_11c, local_14, local_3d4, local_3e8, local_410, local_8, local_844, param_1, uVar2); return;
-LAB_00521beb:
+  // LAB_00521beb:
   iVar1 = FUN_00421e70(s_SCENARIOLOADED_00632278,1);
   if (-1 < iVar1) {
-LAB_00521c07:
+  // LAB_00521c07:
     while( true ) {
       FUN_0040ffa0(s_DIFFICULTY_00632288,1);
       FUN_0059ea99(DAT_00655b08);
