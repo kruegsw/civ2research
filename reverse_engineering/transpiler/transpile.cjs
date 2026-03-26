@@ -242,6 +242,7 @@ function processFunction(headerLines, bodyLines, ctx) {
   let inBody = false;
   let braceDepth = 0;
   let sigLineIdx = -1;
+  let openWriteCall = false; // tracks if a w16/w32 call is open across lines
 
   for (let i = 0; i < bodyLines.length; i++) {
     const line = bodyLines[i];
@@ -379,6 +380,16 @@ function processFunction(headerLines, bodyLines, ctx) {
       continue;
     }
 
+    // ── Continuation of multi-line w16/w32 call ──
+    if (openWriteCall) {
+      let transformed = transformLine(line, ctx);
+      // Close the function call: replace trailing ; with );
+      transformed = transformed.replace(/;\s*$/, ');');
+      openWriteCall = false;
+      result.push(transformed);
+      continue;
+    }
+
     // ── Apply line-level transformations ──
     let transformed = transformLine(line, ctx);
 
@@ -409,22 +420,30 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
 
     // ── Post-transform: fix read helpers used as write targets ──
-    // If s32/u32/s16/u16 appears on the LEFT side of =, convert to w32/w16
+    // If s32/u32/s16/u16 appears on the LEFT side of = (assignment, NOT ===/!==)
     transformed = transformed.replace(
-      /\b(s32|u32)\(([^)]+),\s*([^)]+)\)\s*=\s*/g,
+      /\b(s32|u32)\(([^)]+),\s*([^)]+)\)\s*=(?!=)\s*/g,
       (m, fn, base, off) => 'w32(' + base + ', ' + off + ', '
     );
     transformed = transformed.replace(
-      /\b(s16|u16)\(([^)]+),\s*([^)]+)\)\s*=\s*/g,
+      /\b(s16|u16)\(([^)]+),\s*([^)]+)\)\s*=(?!=)\s*/g,
       (m, fn, base, off) => 'w16(' + base + ', ' + off + ', '
     );
-    // Fix trailing: the value and semicolon are already there, just need closing paren
+    // Check if this line opened a w16/w32 call that continues on next line
+    // (value expression is on the continuation line)
+    if (/\bw(?:32|16)\([^;]*$/.test(transformed.trim()) && !/;\s*$/.test(transformed.trim())) {
+      openWriteCall = true;
+    }
+    // Single-line w32/w16: close with ) before ;
     // w32(base, off, val | 0x10;  →  w32(base, off, val | 0x10);
-    // Actually we need to wrap the rest of the line in the function call
-    // Check if line has w32/w16 without closing paren
-    if (/\bw(?:32|16)\([^)]+,[^)]+,\s*$/.test(transformed.trim())) {
-      // Assignment value continues on next line — leave as-is, will be fixed
-      // when the continuation line adds the closing );
+    if (/\bw(?:32|16)\(/.test(transformed) && /;\s*$/.test(transformed) && !openWriteCall) {
+      // Count parens to see if we need a closing )
+      const t = transformed;
+      let depth = 0;
+      for (const ch of t) { if (ch === '(') depth++; if (ch === ')') depth--; }
+      if (depth > 0) {
+        transformed = transformed.replace(/;\s*$/, ');');
+      }
     }
 
     result.push(transformed);
@@ -484,6 +503,123 @@ function parseFile(content) {
   return { preamble, functions };
 }
 
+// ── Goto processing (post-transform) ───────────────────────────────
+
+function processGotos(lines) {
+  const helpers = [];
+
+  // Find all goto targets and label positions
+  // Label prefixes: LAB_, switchD_, code_r, joined_r
+  const labelPattern = /\b(LAB_[0-9a-fA-F]+|switchD_\w+|code_r0x[0-9a-fA-F]+|joined_r0x[0-9a-fA-F]+)\b/;
+  const gotoTargets = new Set();
+  const labelPositions = {}; // label → line index
+  for (let i = 0; i < lines.length; i++) {
+    const gm = lines[i].match(/\bgoto\s+(LAB_[0-9a-fA-F]+|switchD_\w+|code_r0x[0-9a-fA-F]+|joined_r0x[0-9a-fA-F]+)/);
+    if (gm) gotoTargets.add(gm[1]);
+    const lm = lines[i].match(/^(LAB_[0-9a-fA-F]+|switchD_\w+|code_r0x[0-9a-fA-F]+|joined_r0x[0-9a-fA-F]+):/);
+    if (lm) labelPositions[lm[1]] = i;
+  }
+
+  if (gotoTargets.size === 0) return { lines, helpers };
+
+  // Find the enclosing function's closing brace (last } at depth 0)
+  let funcEnd = lines.length - 1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trim() === '}') { funcEnd = i; break; }
+  }
+
+  // For each label that is a goto target, extract helper
+  for (const label of gotoTargets) {
+    const labelIdx = labelPositions[label];
+    if (labelIdx === undefined) continue; // label not in this function
+
+    // Collect lines from label to function end (exclusive of closing })
+    const helperBody = [];
+    for (let i = labelIdx + 1; i < funcEnd; i++) {
+      helperBody.push(lines[i]);
+    }
+
+    // Collect variables referenced in the helper body
+    const vars = new Set();
+    const helperText = helperBody.join('\n');
+    for (const m of helperText.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2})\b/g)) {
+      vars.add(m[1]);
+    }
+    // Also check for variables used in the label line itself
+    const labelLine = lines[labelIdx];
+    for (const m of labelLine.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+)\b/g)) {
+      vars.add(m[1]);
+    }
+
+    const varList = [...vars].sort().join(', ');
+    const helperName = label + '_helper';
+
+    // Build helper function
+    helpers.push('function ' + helperName + '(' + varList + ') {');
+    // Helper body: transform gotos to this same label into recursive calls
+    for (const bodyLine of helperBody) {
+      let hl = bodyLine;
+      // Replace goto to THIS label with recursive call
+      if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {
+        hl = hl.replace(
+          new RegExp('\\bgoto\\s+' + label + '\\s*;'),
+          helperName + '(' + varList + '); return;'
+        );
+      }
+      // Replace goto to OTHER labels with their helper calls
+      for (const otherLabel of gotoTargets) {
+        if (otherLabel === label) continue;
+        if (new RegExp('\\bgoto\\s+' + otherLabel + '\\b').test(hl)) {
+          const otherVars = [...vars].sort().join(', '); // approximate — use same vars
+          hl = hl.replace(
+            new RegExp('\\bgoto\\s+' + otherLabel + '\\s*;'),
+            otherLabel + '_helper(' + otherVars + '); return;'
+          );
+        }
+      }
+      helpers.push(hl);
+    }
+    helpers.push('}');
+    helpers.push('');
+  }
+
+  // Now modify the main lines:
+  const result = [];
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Replace goto statements with helper calls
+    const gotoRe = /\bgoto\s+(LAB_[0-9a-fA-F]+|switchD_\w+|code_r0x[0-9a-fA-F]+|joined_r0x[0-9a-fA-F]+)\s*;/;
+    const gm = line.match(gotoRe);
+    if (gm && gotoTargets.has(gm[1])) {
+      const label = gm[1];
+      // Collect vars for this helper (same as above)
+      const labelIdx = labelPositions[label];
+      const helperBody = [];
+      if (labelIdx !== undefined) {
+        for (let j = labelIdx + 1; j < funcEnd; j++) helperBody.push(lines[j]);
+      }
+      const vars = new Set();
+      const ht = helperBody.join('\n');
+      for (const m of ht.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2})\b/g)) {
+        vars.add(m[1]);
+      }
+      const varList = [...vars].sort().join(', ');
+      line = line.replace(gotoRe, label + '_helper(' + varList + '); return;');
+    }
+
+    // Mark label sites with comment (code stays in place for audit)
+    const lm = line.match(/^(LAB_[0-9a-fA-F]+|switchD_\w+|code_r0x[0-9a-fA-F]+|joined_r0x[0-9a-fA-F]+):/);
+    if (lm && gotoTargets.has(lm[1])) {
+      line = '// ' + lm[1] + ': (code below also in ' + lm[1] + '_helper, kept for 1:1 audit)';
+    }
+
+    result.push(line);
+  }
+
+  return { lines: result, helpers };
+}
+
 // ── Transpile one block ────────────────────────────────────────────
 
 function transpileBlock(blockName) {
@@ -509,10 +645,23 @@ function transpileBlock(blockName) {
   }
 
   // Process each function
+  const gotoHelpers = []; // collected across all functions, appended at end
   for (const func of functions) {
     const result = processFunction(func.headerLines, func.bodyLines, ctx);
-    for (const line of result) {
+    const { lines: processedLines, helpers } = processGotos(result);
+    for (const line of processedLines) {
       outputLines.push(line);
+    }
+    gotoHelpers.push(...helpers);
+  }
+
+  // Append goto helpers at end of file (after all C-mapped lines)
+  if (gotoHelpers.length > 0) {
+    outputLines.push('');
+    outputLines.push('// ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──');
+    outputLines.push('');
+    for (const helper of gotoHelpers) {
+      outputLines.push(helper);
     }
   }
 

@@ -533,7 +533,7 @@ export function FUN_00407658(param_1, param_2) {
       if (iVar3 !== 0) {
         local_10 = -1;
         for (local_c = 1; local_c < 8; local_c = local_c + 1) {
-          if (w16(DAT_0066ca84, local_c * 0x3f0, == 0) {
+          if (s16(DAT_0066ca84, local_c * 0x3f0) === 0) {
             local_10 = local_c;
             break;
           }
@@ -1446,7 +1446,7 @@ export function FUN_0040897f() {
         local_28 = FUN_005b8a81(local_20,local_24);
         if (-1 < local_28) {
           w16(DAT_00666132, local_28 * 0x10, 
-               s16(DAT_00666132, local_28 * 0x10) + 1;
+               s16(DAT_00666132, local_28 * 0x10) + 1);
         }
         iVar3 = FUN_005b8931(local_20,local_24);
         *(char *)(iVar3 + 5) = s8(local_8) + -0x10;
@@ -3011,9 +3011,9 @@ export function FUN_0040c480(in_ECX) {
       }
       if ((DAT_0064f344[local_b0 * 0x58] & 1) === 0) {
         w32(in_ECX, 0x308, 
-             s32(in_ECX, 0x308) + s16(DAT_0064f38c, local_b0 * 0x58);
+             s32(in_ECX, 0x308) + s16(DAT_0064f38c, local_b0 * 0x58));
         w32(in_ECX, 0x30c, 
-             s32(in_ECX, 0x30c) + s16(DAT_0064f38a, local_b0 * 0x58);
+             s32(in_ECX, 0x30c) + s16(DAT_0064f38a, local_b0 * 0x58));
       }
     }
   }
@@ -3051,7 +3051,7 @@ export function FUN_0040c7d0(in_ECX) {
   }
   FUN_005baeb0(in_ECX);
   FUN_005baec8(&DAT_006ab1a0);
-  if (w32(in_ECX, 0x348, == 0) {
+  if (s32(in_ECX, 0x348) === 0) {
     FUN_005baee0(0x25,0x12,1,1);
   }
   else {
@@ -3373,7 +3373,7 @@ export function FUN_0040cd64(unaff_ESI, param_1) {
   }
   for (local_468 = 0; local_468 < 3; local_468 = local_468 + 1) {
     w32(in_ECX, local_468 * 4 + 0x34c, s32(DAT_00624f10, local_468 * 4)
-    ;
+    );
     if (in_ECX === null) {
       local_4a0 = null;
     }
@@ -3404,7 +3404,7 @@ export function FUN_0040cd64(unaff_ESI, param_1) {
   DAT_00624f1c = 0;
   for (local_468 = 0; local_468 < 3; local_468 = local_468 + 1) {
     w32(DAT_00624f10, local_468 * 4, s32(in_ECX, local_468 * 4 + 0x34c)
-    ;
+    );
   }
   if ((u8(DAT_0064c6b4[param_1 * 0x594]) !== u32(in_ECX, 0x2e0)) ||
      (u8(DAT_0064c6b3[param_1 * 0x594]) !== u32(in_ECX, 0x2e8))) {

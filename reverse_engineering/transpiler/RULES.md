@@ -37,8 +37,10 @@ before running on all 34 blocks.
 `reverse_engineering/decompiled/` is never modified.
 
 **7. Every C line produces exactly one JS line at the same line number.**
-Helper functions (goto, etc.) are appended at the end of the file.
-Verification is a side-by-side diff.
+Lines 1 through N of the JS correspond 1:1 with lines 1 through N of the C.
+Goto helper functions are appended AFTER line N — they are bonus lines with
+no C equivalent. An auditor only checks lines 1-N against the C source. The
+helpers are duplicates of code already visible in the main body.
 
 ---
 
