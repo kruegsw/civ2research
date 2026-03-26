@@ -281,8 +281,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if ((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
           // DEVIATION: C pointer — FUN_00511880(0x10,*(undefined4 *)
-                                   (DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54),3,1,
-                             param_1,bVar12);
+                                   // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
+                             // DEVIATION(cont): param_1,bVar12);
         }
         if (iVar4 !== iVar5) {
           if (DAT_006d1da0 === iVar5) {
@@ -290,8 +290,8 @@ export function FUN_00440750(param_1, param_2) {
           }
           else if ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
             // DEVIATION: C pointer — FUN_00511880(0x10,*(undefined4 *)
-                                     (DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54),3,
-                               1,param_1,bVar12);
+                                     // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,
+                               // DEVIATION(cont): 1,param_1,bVar12);
           }
         }
       }
@@ -305,8 +305,8 @@ export function FUN_00440750(param_1, param_2) {
       }
       else if ((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
         // DEVIATION: C pointer — FUN_00511880(0xf,*(undefined4 *)
-                                (DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54),3,1,
-                           param_1,bVar12);
+                                // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
+                           // DEVIATION(cont): param_1,bVar12);
       }
       if (iVar4 !== iVar5) {
         if (DAT_006d1da0 === iVar5) {
@@ -314,8 +314,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
           // DEVIATION: C pointer — FUN_00511880(0xf,*(undefined4 *)
-                                  (DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54),3,1,
-                             param_1,bVar12);
+                                  // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,1,
+                             // DEVIATION(cont): param_1,bVar12);
         }
       }
     }
@@ -384,8 +384,8 @@ export function FUN_00440750(param_1, param_2) {
       }
       else if ((2 < DAT_00655b02) && (DAT_006d1da0 !== iVar5)) {
         // DEVIATION: C pointer — FUN_00511880(0x11,*(undefined4 *)
-                                 (DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54),5,0,
-                           uVar3,(DAT_00633584 === 0) - 1 & 8);
+                                 // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),5,0,
+                           // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8);
       }
       if ((2 < DAT_00655b02) && (iVar4 !== iVar5)) {
         if (DAT_006d1da0 === iVar4) {
@@ -393,8 +393,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) && (DAT_006d1da0 !== iVar4)) {
           // DEVIATION: C pointer — FUN_00511880(0x11,*(undefined4 *)
-                                   (DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54),5,0,
-                             uVar3,(DAT_00633584 === 0) - 1 & 8);
+                                   // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),5,0,
+                             // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8);
         }
       }
     }
@@ -409,7 +409,7 @@ export function FUN_00440750(param_1, param_2) {
 // Size: 1704 bytes
 // ============================================================
 
-export function delete_city(param_1, param_2) {
+export function delete_city_004413D1(param_1, param_2) {
 
 
   let cVar1;
@@ -596,7 +596,7 @@ export function FUN_00441b11(param_1, param_2) {
   let local_330;
   let local_328;
   let local_324;
-  CPropertySheet local_320 [756];
+  let local_320 = new Array(756).fill(0);
   let local_2c;
   let local_28;
   let local_24;
@@ -606,7 +606,7 @@ export function FUN_00441b11(param_1, param_2) {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1059,7 +1059,7 @@ export function FUN_00444310(param_1) {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1506,7 +1506,7 @@ export function FUN_0044528e() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1591,7 +1591,7 @@ export function FUN_0044542c() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1671,7 +1671,7 @@ export function FUN_00445592() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1750,7 +1750,7 @@ export function FUN_00445712() {
   let uVar2;
   // DEVIATION: SEH
   let local_844 = new Array(1076).fill(0);
-  CSocket local_410 [40];
+  let local_410 = new Array(40).fill(0);
   let local_3e8;
   let local_3d4;
   let local_11c;
@@ -1758,7 +1758,7 @@ export function FUN_00445712() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1965,7 +1965,7 @@ export function FUN_00445e37(unaff_EBP) {
 // Size: 2469 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00445e46(param_1) {
 
@@ -1990,13 +1990,13 @@ export function FUN_00445e46(param_1) {
   let local_2f0;
   let local_254;
   let local_250;
-  CCheckListBox *local_c4;
+  let local_c4;
   let local_38;
   let aiStack_34 = new Array(8).fill(0);
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -2668,15 +2668,15 @@ export function FUN_00447609() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0044762C() {
 
 
   FUN_00447646();
@@ -2790,15 +2790,15 @@ export function FUN_004476f6() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447719() {
 
 
   FUN_00447733();
@@ -2855,15 +2855,15 @@ export function FUN_0044776a() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447784() {
 
 
   FUN_0044779e();
@@ -2920,15 +2920,15 @@ export function FUN_004477d5() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_004477EF() {
 
 
   FUN_00447809();
@@ -3213,15 +3213,15 @@ export function FUN_00447a3f() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447A62() {
 
 
   FUN_00447a7c();
@@ -3278,15 +3278,15 @@ export function FUN_00447ab3() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447ACD() {
 
 
   FUN_00447ae7();
@@ -3457,15 +3457,15 @@ export function FUN_00447c19() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447C3C() {
 
 
   FUN_00447c56();
@@ -3522,15 +3522,15 @@ export function FUN_00447c8d() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447CA7() {
 
 
   FUN_00447cc1();
@@ -3587,15 +3587,15 @@ export function FUN_00447cf8() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447D12() {
 
 
   FUN_00447d2c();
@@ -3652,15 +3652,15 @@ export function FUN_00447d63() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447D7D() {
 
 
   FUN_00447d97();
@@ -3717,15 +3717,15 @@ export function FUN_00447dce() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447DE8() {
 
 
   FUN_00447e02();
@@ -3782,15 +3782,15 @@ export function FUN_00447e39() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447E53() {
 
 
   FUN_00447e6d();
@@ -3961,15 +3961,15 @@ export function FUN_00447f9f() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00447FC2() {
 
 
   FUN_00447fdc();
@@ -4026,15 +4026,15 @@ export function FUN_00448013() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0044802D() {
 
 
   FUN_00448047();
@@ -4091,15 +4091,15 @@ export function FUN_0044807e() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448098() {
 
 
   FUN_004480b2();
@@ -4156,15 +4156,15 @@ export function FUN_004480e9() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448103() {
 
 
   FUN_0044811d();
@@ -4791,15 +4791,15 @@ export function FUN_0044865f() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448682() {
 
 
   FUN_0044869c();
@@ -4856,15 +4856,15 @@ export function FUN_004486d3() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_004486ED() {
 
 
   FUN_00448707();
@@ -5092,15 +5092,15 @@ export function FUN_004488bb() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_004488DE() {
 
 
   FUN_004488f8();
@@ -5328,15 +5328,15 @@ export function FUN_00448aac() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448ACF() {
 
 
   FUN_00448ae9();
@@ -5629,15 +5629,15 @@ export function FUN_00448d39() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448D7B() {
 
 
   FUN_00448d95();
@@ -5694,15 +5694,15 @@ export function FUN_00448dcc() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448DE6() {
 
 
   FUN_00448e00();
@@ -5759,15 +5759,15 @@ export function FUN_00448e37() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448E51() {
 
 
   FUN_00448e6b();
@@ -5824,15 +5824,15 @@ export function FUN_00448ea2() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448EBC() {
 
 
   FUN_00448ed6();
@@ -5889,15 +5889,15 @@ export function FUN_00448f0d() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00448F27() {
 
 
   FUN_00448f41();
@@ -5995,7 +5995,7 @@ export function FUN_00449030() {
   let local_d0 = new Array(16).fill(0);
   let local_c0 = new Array(16).fill(0);
   let local_b0;
-  CString local_ac [60];
+  let local_ac = new Array(60).fill(0);
   let local_70;
   let local_6c;
   let local_68;
@@ -6005,10 +6005,10 @@ export function FUN_00449030() {
   let local_58;
   let local_54;
   let local_50;
-  CString local_4c [60];
+  let local_4c = new Array(60).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -6268,7 +6268,7 @@ export function FUN_00449a0e() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -6888,7 +6888,7 @@ export function FUN_0044b49e() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -6951,7 +6951,7 @@ export function FUN_0044c5a0(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -6981,7 +6981,7 @@ export function FUN_0044c670(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7010,7 +7010,7 @@ export function FUN_0044c730(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7123,7 +7123,7 @@ export function FUN_0044ca60() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7202,7 +7202,7 @@ export function FUN_0044cb20() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7258,7 +7258,7 @@ export function FUN_0044cba0(in_ECX) {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7341,7 +7341,7 @@ export function FUN_0044cc80(param_1) {
   let local_1c50;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7412,7 +7412,7 @@ export function FUN_0044cd9b(param_1) {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7474,7 +7474,7 @@ export function FUN_0044ce16(in_ECX, param_1) {
   let local_14;
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7524,7 +7524,7 @@ export function FUN_0044d027() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7635,7 +7635,7 @@ export function FUN_0044d123(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  _Timevec::~_Timevec((_Timevec *)(s32(unaff_EBP, -0x10) + 0x4fc));
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)(s32(unaff_EBP, -0x10) + 0x4fc));
   return;
 }
 
@@ -7730,10 +7730,10 @@ export function FUN_0044d296(in_ECX) {
   // DEVIATION: SEH
   let local_428 = new Array(8).fill(0);
   let local_420 = new Array(1024).fill(0);
-  tagRECT local_20[0];
+  let local_20 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7992,10 +7992,10 @@ export function FUN_0044db92(in_ECX) {
   let local_9c = new Array(72).fill(0);
   let local_54;
   let local_50;
-  CString local_4c [60];
+  let local_4c = new Array(60).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8311,12 +8311,12 @@ export function FUN_0044e790(in_ECX) {
   let local_27c;
   let local_278;
   let local_274;
-  CString local_270 [60];
+  let local_270 = new Array(60).fill(0);
   let local_234 = new Array(136).fill(0);
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8732,8 +8732,8 @@ export function FUN_0044f4c9(param_1, param_2) {
           }
         }
         // DEVIATION: C pointer — if ((1 << (*(byte *)(local_8 + 0x192c) & 0x1f) & u8(DAT_0064ca9b[iVar1 * 0x594]))
-            !== 0) {
-          FUN_0046e020(0x5e,1,0,0);
+            // DEVIATION(cont): != 0) {
+          // DEVIATION(cont): thunk_FUN_0046e020(0x5e,1,0,0);
           return;
         }
       }

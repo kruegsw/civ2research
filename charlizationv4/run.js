@@ -206,9 +206,32 @@ if (turns > 0) {
   console.log(`\nAfter ${turns} turns:`);
   console.log(`  Turn: ${before.turn} → ${after.turn}`);
   console.log(`  Alive units: ${before.units.length} → ${after.units.length}`);
+  console.log(`  Total cities: ${before.cities.length} → ${after.cities.length}`);
 
-  // Show city changes
-  console.log(`\n  City changes:`);
+  // Per-civ stats
+  const civUnitsB = {}, civUnitsA = {}, civCitiesB = {}, civCitiesA = {};
+  for (const u of before.units) civUnitsB[u.owner] = (civUnitsB[u.owner] || 0) + 1;
+  for (const u of after.units) civUnitsA[u.owner] = (civUnitsA[u.owner] || 0) + 1;
+  for (const c of before.cities) civCitiesB[c.owner] = (civCitiesB[c.owner] || 0) + 1;
+  for (const c of after.cities) civCitiesA[c.owner] = (civCitiesA[c.owner] || 0) + 1;
+  console.log(`\n  Per-civ breakdown:`);
+  for (let civ = 0; civ < 8; civ++) {
+    const ub = civUnitsB[civ] || 0, ua = civUnitsA[civ] || 0;
+    const cb = civCitiesB[civ] || 0, ca = civCitiesA[civ] || 0;
+    if (ub || ua || cb || ca) {
+      console.log(`    Civ ${civ}: units ${ub}→${ua}, cities ${cb}→${ca}`);
+    }
+  }
+
+  // Treasury changes
+  console.log(`\n  Treasury:`);
+  for (let civ = 1; civ < 8; civ++) {
+    const treasB = s16(G.DAT_0064c600, civ * 0x594 + 0x50);
+    console.log(`    Civ ${civ}: ${treasB}g`);
+  }
+
+  // Show city changes (first 10)
+  console.log(`\n  City changes (first 10):`);
   for (let i = 0; i < Math.min(after.cities.length, 10); i++) {
     const b = before.cities[i];
     const a = after.cities[i];

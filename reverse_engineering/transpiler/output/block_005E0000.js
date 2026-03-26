@@ -136,16 +136,16 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   let iVar2;
   let uVar3;
   let iVar4;
-  CRichEditView *pCVar5;
-  CRichEditView *pCVar6;
+  let pCVar5;
+  let pCVar6;
   let iVar7;
   // DEVIATION: SEH
   let local_684 = [0];
   let local_680 = new Array(68).fill(0);
   let local_63c;
-  tagRECT local_638[0];
+  let local_638 = [0];
   let local_628;
-  tagRECT local_624 [6];
+  let local_624 = new Array(6).fill(0);
   let local_5c4;
   let local_5c0;
   let local_5bc = [0];
@@ -153,12 +153,12 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   let local_5ac;
   let local_5a8 = new Array(1076).fill(0);
   let local_174;
-  tagRECT local_134[0];
-  CRichEditCntrItem local_124 [72];
+  let local_134 = [0];
+  let local_124 = new Array(72).fill(0);
   let local_dc = new Array(204).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -365,16 +365,16 @@ export function FUN_005e0854(unaff_EBP) {
 export function FUN_005e0863() {
 
 
-  CRichEditView *pCVar1;
-  CRichEditView *pCVar2;
+  let pCVar1;
+  let pCVar2;
   // DEVIATION: SEH
   let local_5f4 = new Array(1084).fill(0);
-  CRichEditCntrItem local_1b8 [72];
+  let local_1b8 = new Array(72).fill(0);
   let local_170 = new Array(336).fill(0);
-  tagRECT local_20[0];
+  let local_20 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -707,7 +707,7 @@ export function FUN_005e0ce0(param_1, param_2) {
   let bVar1;
   let _Source;
   let uBytes;
-  HLOCAL hMem;
+  let hMem;
   let _Dest;
   let iVar2;
   let local_1c;
@@ -796,7 +796,7 @@ export function FUN_005e0f2a(param_1) {
   let _Source;
   let hMenu;
   let uBytes;
-  HLOCAL hMem;
+  let hMem;
   let _Dest;
   let uIDNewItem;
   let local_28;
@@ -985,10 +985,10 @@ export function FUN_005e1226(param_1, param_2, param_3) {
 // Size: 293 bytes
 // ============================================================
 
-export function build_menu_128C(param_1, param_2, param_3, param_4) {
+export function build_menu_128C_005E128C(param_1, param_2, param_3, param_4) {
 
 
-  UINT_PTR uIDNewItem;
+  let uIDNewItem;
   let pHVar1;
   let local_c;
   let local_8;
@@ -1030,7 +1030,7 @@ export function build_menu_128C(param_1, param_2, param_3, param_4) {
 // Size: 279 bytes
 // ============================================================
 
-export function build_menu_13B1(param_1, param_2, param_3, param_4, param_5) {
+export function build_menu_13B1_005E13B1(param_1, param_2, param_3, param_4, param_5) {
 
 
   let pHVar1;
@@ -1076,7 +1076,7 @@ export function FUN_005e14c8(param_1, param_2, param_3, param_4) {
 
 
   let hMenu;
-  UINT uIDNewItem;
+  let uIDNewItem;
   
   if (param_1 !== (HMENU)0x0) {
     hMenu = GetSubMenu(param_1,param_2 + -1);
@@ -1098,10 +1098,10 @@ export function FUN_005e14c8(param_1, param_2, param_3, param_4) {
 // Size: 79 bytes
 // ============================================================
 
-export function show_popup_menu_154A(param_1, param_2, param_3, param_4) {
+export function show_popup_menu_154A_005E154A(param_1, param_2, param_3, param_4) {
 
 
-  tagPOINT local_c[0];
+  let local_c = [0];
   
   local_c[0].x = param_3;
   local_c[0].y = param_4;
@@ -1238,7 +1238,7 @@ export function FUN_005e16d0() {
 // Size: 136 bytes
 // ============================================================
 
-export function build_menu_16E0(param_1, param_2, param_3, param_4) {
+export function build_menu_16E0_005E16E0(param_1, param_2, param_3, param_4) {
 
 
   let hMenu;
@@ -1266,7 +1266,7 @@ export function build_menu_16E0(param_1, param_2, param_3, param_4) {
 // Size: 115 bytes
 // ============================================================
 
-export function build_menu_1768(param_1, param_2, param_3) {
+export function build_menu_1768_005E1768(param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -1308,7 +1308,7 @@ export function FUN_005e17db(param_1, param_2) {
 // Size: 111 bytes
 // ============================================================
 
-export function build_menu_1805(param_1) {
+export function build_menu_1805_005E1805(param_1) {
 
 
   let iVar1;
@@ -1383,25 +1383,25 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
   let uVar1;
   let BVar2;
   let iVar3;
-  CRichEditView *pCVar4;
-  CRichEditView *pCVar5;
+  let pCVar4;
+  let pCVar5;
   let uVar6;
   let iVar7;
   let yDest;
-  LONG wDest;
-  LONG hDest;
+  let wDest;
+  let hDest;
   let hdcSrc;
   let xSrc;
   let ySrc;
   let rop;
-  CRichEditCntrItem *local_74;
-  tagPAINTSTRUCT local_68[0];
+  let local_74;
+  let local_68 = [0];
   let local_28;
-  tagRECT local_24[0];
-  LONG local_14[0];
-  LONG local_10;
-  LONG local_c;
-  LONG local_8;
+  let local_24 = [0];
+  let local_14 = [0];
+  let local_10;
+  let local_c;
+  let local_8;
   
   local_74 = (CRichEditCntrItem *)GetWindowLongA(param_1,0xc);
   if (local_74 === null) {
@@ -1520,7 +1520,7 @@ export function FUN_005e1c70() {
 // Size: 1631 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_005e1c8e(param_1, param_2) {
 
@@ -1530,12 +1530,12 @@ export function FUN_005e1c8e(param_1, param_2) {
   let iVar3;
   let uVar4;
   let pvVar5;
-  CCheckListBox local_360 [708];
+  let local_360 = new Array(708).fill(0);
   let local_9c = new Array(4).fill(0);
   let local_98;
   let local_88;
   let local_84;
-  SIZE_T local_74;
+  let local_74;
   let local_10;
   let local_c = [0];
   let local_8;
@@ -1696,7 +1696,7 @@ export function FUN_005e1c8e(param_1, param_2) {
 // Size: 543 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_005e22ed(param_1) {
 
@@ -2003,7 +2003,7 @@ export function FUN_005e28cd(param_1, param_2, param_3) {
 // Size: 702 bytes
 // ============================================================
 
-export function show_messagebox_2997(param_1, param_2) {
+export function show_messagebox_2997_005E2997(param_1, param_2) {
 
 
   let uVar1;
@@ -2011,7 +2011,7 @@ export function show_messagebox_2997(param_1, param_2) {
   let uVar3;
   let iVar4;
   let iVar5;
-  CHAR local_5c [80];
+  let local_5c = new Array(80).fill(0);
   let local_c = [0];
   let local_8;
   
@@ -2133,7 +2133,7 @@ export function FUN_005e2c5a(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 976 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_005e2cd1(param_1) {
 
@@ -2296,15 +2296,15 @@ export function FUN_005e30a1(param_1) {
 // Size: 666 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_005e32b2(param_1, param_2) {
 
 
-  CRichEditView *yBottom;
-  CRichEditView *xRight;
-  tagRECT local_2c[0];
-  tagRECT local_1c[0];
+  let yBottom;
+  let xRight;
+  let local_2c = [0];
+  let local_1c = [0];
   let local_c;
   let local_8;
   
@@ -2404,16 +2404,16 @@ export function FUN_005e3580(in_ECX) {
 // Size: 706 bytes
 // ============================================================
 
-export function create_dib_35B0(param_1) {
+export function create_dib_35B0_005E35B0(param_1) {
 
 
   let iVar1;
   let hdc;
   let h;
   let hMem;
-  HGDIOBJ pvVar2;
+  let pvVar2;
   let local_444;
-  BITMAPINFO local_434 [24];
+  let local_434 = new Array(24).fill(0);
   let local_c;
   let local_8 = [0];
   
@@ -2631,12 +2631,12 @@ export function FUN_005e3aa8() {
 // Size: 129 bytes
 // ============================================================
 
-export function handle_colortable_3ACB(param_1, param_2, param_3, param_4) {
+export function handle_colortable_3ACB_005E3ACB(param_1, param_2, param_3, param_4) {
 
 
   let local_408 = new Array(2).fill(0);
   let auStack_406 = new Array(255).fill(0);
-  UINT local_8;
+  let local_8;
   
   // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),param_3,param_4,(RGBQUAD *)local_408);
   for (local_8 = param_3; local_8 < (param_4 + param_3); local_8 = local_8 + 1) {
@@ -2654,11 +2654,11 @@ export function handle_colortable_3ACB(param_1, param_2, param_3, param_4) {
 // Size: 144 bytes
 // ============================================================
 
-export function handle_colortable_3B4C(param_1, param_2, param_3, param_4) {
+export function handle_colortable_3B4C_005E3B4C(param_1, param_2, param_3, param_4) {
 
 
-  RGBQUAD local_408 [256];
-  UINT local_8;
+  let local_408 = new Array(256).fill(0);
+  let local_8;
   
   for (local_8 = param_3; local_8 < (param_4 + param_3); local_8 = local_8 + 1) {
     FUN_00497c40(local_8,local_408[local_8].rgbRed,local_408[local_8].rgbGreen,
@@ -2690,11 +2690,11 @@ export function FUN_005e3bdc(param_1, param_2) {
 // Size: 177 bytes
 // ============================================================
 
-export function handle_colortable_3C03(param_1, param_2) {
+export function handle_colortable_3C03_005E3C03(param_1, param_2) {
 
 
-  RGBQUAD local_808 [256];
-  tagPALETTEENTRY local_408 [256];
+  let local_808 = new Array(256).fill(0);
+  let local_408 = new Array(256).fill(0);
   let local_8;
   
   GetPaletteEntries(param_2,0,0x100,(LPPALETTEENTRY)(local_808 + 0x100));
@@ -2722,12 +2722,12 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
   let iVar1;
   let iVar2;
   let cchText;
-  tagRECT *lprc;
-  UINT format;
-  RGBQUAD local_24[0];
-  HGDIOBJ local_20;
-  UINT local_1c;
-  tagRECT local_18[0];
+  let lprc;
+  let format;
+  let local_24 = [0];
+  let local_20;
+  let local_1c;
+  let local_18 = [0];
   let local_8;
   
   if (param_2 === 0) {
@@ -2742,7 +2742,7 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
     // DEVIATION: C pointer — local_20 = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((DAT_00637e78) >>> 0),1,local_24[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
-                 ((CONCAT1) >>> 0)2(local_24[0].rgbBlue,CONCAT11(local_24[0].rgbGreen,local_24[0].rgbRed)));
+                 // DEVIATION(cont): (uint)CONCAT12(local_24.rgbBlue,CONCAT11(local_24.rgbGreen,local_24.rgbRed)));
     iVar1 = FUN_00407fc0(local_18[0]);
     iVar1 = iVar1 / 2;
     iVar2 = FUN_00407f90(local_18[0]);
@@ -2782,13 +2782,13 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 289 bytes
 // ============================================================
 
-export function handle_colortable_3ECA(param_1, param_2, param_3, param_4, param_5) {
+export function handle_colortable_3ECA_005E3ECA(param_1, param_2, param_3, param_4, param_5) {
 
 
   let cchText;
   let local_14;
-  RGBQUAD local_10[0];
-  HGDIOBJ local_c;
+  let local_10 = [0];
+  let local_c;
   let local_8;
   
   if (param_2 === 0) {
@@ -2799,7 +2799,7 @@ export function handle_colortable_3ECA(param_1, param_2, param_3, param_4, param
     // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((DAT_00637e78) >>> 0),1,local_10[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
-                 ((CONCAT1) >>> 0)2(local_10[0].rgbBlue,CONCAT11(local_10[0].rgbGreen,local_10[0].rgbRed)));
+                 // DEVIATION(cont): (uint)CONCAT12(local_10.rgbBlue,CONCAT11(local_10.rgbGreen,local_10.rgbRed)));
     local_14 = 0;
     if (param_5 === 0) {
       local_14 = 0x25;
@@ -2827,13 +2827,13 @@ export function handle_colortable_3ECA(param_1, param_2, param_3, param_4, param
 // Size: 272 bytes
 // ============================================================
 
-export function handle_colortable_3FEB(param_1, param_2, param_3, param_4, param_5) {
+export function handle_colortable_3FEB_005E3FEB(param_1, param_2, param_3, param_4, param_5) {
 
 
   let cchText;
-  UINT local_14;
-  RGBQUAD local_10[0];
-  HGDIOBJ local_c;
+  let local_14;
+  let local_10 = [0];
+  let local_c;
   let local_8;
   
   if (param_2 === 0) {
@@ -2844,7 +2844,7 @@ export function handle_colortable_3FEB(param_1, param_2, param_3, param_4, param
     // DEVIATION: C pointer — local_c = SelectObject(*(HDC *)(param_1 + 4),(HGDIOBJ)*local_8);
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((DAT_00637e78) >>> 0),1,local_10[0]);
     // DEVIATION: C pointer — SetTextColor(*(HDC *)(param_1 + 4),
-                 ((CONCAT1) >>> 0)2(local_10[0].rgbBlue,CONCAT11(local_10[0].rgbGreen,local_10[0].rgbRed)));
+                 // DEVIATION(cont): (uint)CONCAT12(local_10.rgbBlue,CONCAT11(local_10.rgbGreen,local_10.rgbRed)));
     local_14 = 0x10;
     if (param_5 === 0) {
       local_14 = 0x11;
@@ -2867,12 +2867,12 @@ export function handle_colortable_3FEB(param_1, param_2, param_3, param_4, param
 // Size: 191 bytes
 // ============================================================
 
-export function handle_colortable_40FB(param_1, param_2, param_3, param_4, param_5) {
+export function handle_colortable_40FB_005E40FB(param_1, param_2, param_3, param_4, param_5) {
 
 
-  RGBQUAD local_10[0];
+  let local_10 = [0];
   let local_c;
-  HGDIOBJ local_8;
+  let local_8;
   
   if (param_1 !== 0) {
     // DEVIATION: C pointer — GetDIBColorTable(*(HDC *)(param_1 + 4),((DAT_00637e78) >>> 0),1,local_10[0]);
@@ -2894,7 +2894,7 @@ export function handle_colortable_40FB(param_1, param_2, param_3, param_4, param
 // Size: 518 bytes
 // ============================================================
 
-export function create_dib_41BA(param_1) {
+export function create_dib_41BA_005E41BA(param_1) {
 
 
   let iVar1;
@@ -2903,9 +2903,9 @@ export function create_dib_41BA(param_1) {
   let hdc;
   let h;
   let hMem;
-  HGDIOBJ pvVar4;
+  let pvVar4;
   let local_50;
-  BITMAPINFO local_3c[0];
+  let local_3c = [0];
   let local_10;
   let local_c;
   let local_8 = [0];
@@ -2983,7 +2983,7 @@ export function create_dib_41BA(param_1) {
 // Size: 491 bytes
 // ============================================================
 
-export function create_dib_43C5(param_1) {
+export function create_dib_43C5_005E43C5(param_1) {
 
 
   let iVar1;
@@ -2992,9 +2992,9 @@ export function create_dib_43C5(param_1) {
   let hdc;
   let h;
   let hMem;
-  HGDIOBJ pvVar4;
+  let pvVar4;
   let local_48;
-  BITMAPINFO local_34[0];
+  let local_34 = [0];
   let local_8 = [0];
   
   local_48 = null;
@@ -3063,7 +3063,7 @@ export function create_dib_43C5(param_1) {
 // Size: 491 bytes
 // ============================================================
 
-export function create_dib_45B5(param_1) {
+export function create_dib_45B5_005E45B5(param_1) {
 
 
   let iVar1;
@@ -3072,9 +3072,9 @@ export function create_dib_45B5(param_1) {
   let hdc;
   let h;
   let hMem;
-  HGDIOBJ pvVar4;
+  let pvVar4;
   let local_48;
-  BITMAPINFO local_34[0];
+  let local_34 = [0];
   let local_8 = [0];
   
   local_48 = null;
@@ -3149,12 +3149,12 @@ export function FUN_005e47a5(param_1, param_2, param_3, param_4, param_5, param_
 
   let iVar1;
   let iVar2;
-  HGDIOBJ h;
-  UINT align;
+  let h;
+  let align;
   let cchText;
-  tagRECT *lprc;
-  UINT format;
-  tagRECT local_18[0];
+  let lprc;
+  let format;
+  let local_18 = [0];
   let local_8;
   
   if (param_2 === 0) {
@@ -3212,7 +3212,7 @@ export function FUN_005e49a0(param_1, param_2, param_3, param_4, param_5, param_
 
 
   let puVar1;
-  HGDIOBJ h;
+  let h;
   let cchText;
   let local_10;
   
@@ -3255,9 +3255,9 @@ export function FUN_005e4aa6(param_1, param_2, param_3, param_4, param_5, param_
 
 
   let puVar1;
-  HGDIOBJ h;
+  let h;
   let cchText;
-  UINT local_10;
+  let local_10;
   
   if (param_2 === 0) {
     debug_log(s_Error__NULL_font_in_MSDrawText_00639064);
@@ -3293,7 +3293,7 @@ export function FUN_005e4b9b(param_1, param_2, param_3, param_4, param_5, param_
 
 
   let h;
-  HGDIOBJ h_00;
+  let h_00;
   
   if (param_1 !== 0) {
     h = CreatePen(0,1,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
@@ -3318,7 +3318,7 @@ export function FUN_005e4c3f(param_1, param_2, param_3, param_4, param_5) {
 
 
   let hbr;
-  HGDIOBJ h;
+  let h;
   
   if (param_1 !== 0) {
     hbr = CreateSolidBrush(((CONCAT1) >>> 0)2(param_5,CONCAT11(param_4,param_3)));
@@ -3342,7 +3342,7 @@ export function FUN_005e4cc8(param_1, param_2, param_3, param_4, param_5, param_
 
 
   let uVar1;
-  COLORREF color;
+  let color;
   
   // DEVIATION: C pointer — color = GetPixel(*(HDC *)(param_1 + 4),0,0);
   // DEVIATION: C pointer — SetPixel(*(HDC *)(param_1 + 4),0,0,((CONCAT1) >>> 0)2(param_6,CONCAT11(param_5,param_4)));
@@ -3741,7 +3741,7 @@ export function FUN_005e52bf(param_1, param_2, param_3, param_4, param_5, param_
           iVar5 = *piVar2 - iVar4;
           if (iVar1 <= iVar5) break;
           // DEVIATION: C pointer — if (*(char *)(iVar5 + param_1) !== param_4) {
-            *puVar7 = param_17;
+            // DEVIATION(cont): *puVar7 = param_17;
           }
           piVar2 = piVar2 + 1;
           puVar7 = puVar7 + 1;
@@ -4099,7 +4099,7 @@ export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_
       }
       else {
         // DEVIATION: C pointer — iVar2 = CONCAT22(CONCAT11(*(char *)piVar6,*(char *)piVar6),
-                         // DEVIATION: C pointer — CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
+                         // DEVIATION(cont): CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
         iVar5 = iVar5 - ((uVar1) >>> 0);
         param_1 = (int *)(param_1 + 2);
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
@@ -4170,7 +4170,7 @@ export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_
       }
       else {
         // DEVIATION: C pointer — iVar2 = CONCAT22(CONCAT11(*(char *)piVar6,*(char *)piVar6),
-                         // DEVIATION: C pointer — CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
+                         // DEVIATION(cont): CONCAT11(*(char *)piVar6,*(char *)piVar6)) + iVar4;
         iVar5 = iVar5 - ((uVar1) >>> 0);
         param_1 = (int *)(param_1 + 2);
         for (uVar3 = ((uVar1 >> 2) >>> 0); uVar3 !== 0; uVar3 = uVar3 - 1) {
@@ -4436,7 +4436,7 @@ export function FUN_005e5ef6(in_ECX) {
 export function FUN_005e5f78(param_1, param_2) {
 
 
-  tagRECT local_14[0];
+  let local_14 = [0];
   
   SetRect(local_14[0],0,0,param_1,param_2);
   FUN_005e6018(local_14[0],0);
@@ -4467,7 +4467,7 @@ export function FUN_005e5fb4(param_1) {
 export function FUN_005e5fda(param_1, param_2, param_3) {
 
 
-  tagRECT local_14[0];
+  let local_14 = [0];
   
   SetRect(local_14[0],0,0,param_1,param_2);
   FUN_005e6018(local_14[0],param_3);
@@ -4776,9 +4776,9 @@ export function FUN_005e6651(param_1, param_2, param_3, param_4) {
 
   let uVar1;
   let iVar2;
-  _Timevec *in_ECX;
+  let in_ECX;
   let local_338 = new Array(768).fill(0);
-  tagRECT local_38[0];
+  let local_38 = [0];
   let local_28;
   let local_24;
   let local_20;
@@ -4831,7 +4831,7 @@ export function FUN_005e6651(param_1, param_2, param_3, param_4) {
           local_14 = (void *)(local_14 - s32(in_ECX, 0xc));
           local_8 = (void *)(local_8 + local_18);
         }
-        _Timevec::~_Timevec(in_ECX);
+        // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
         FUN_005c5520(local_24);
         uVar1 = 1;
       }
@@ -4861,8 +4861,8 @@ export function FUN_005e6893(param_1, param_2, param_3, param_4) {
   let uVar1;
   let iVar2;
   let uVar3;
-  _Timevec *in_ECX;
-  tagRECT local_38[0];
+  let in_ECX;
+  let local_38 = [0];
   let local_28;
   let local_24 = [0];
   let local_23;
@@ -4934,7 +4934,7 @@ export function FUN_005e6893(param_1, param_2, param_3, param_4) {
         FUN_005e4d60(local_8,param_2,
                      CONCAT22((((s32(in_ECX, 0xc) << 16 >> 16) >>> 0) >> 0x10),((local_18) & 0xFFFF))
                      ,s32(in_ECX, 0xc),local_1c,local_20,uVar1);
-        _Timevec::~_Timevec(in_ECX);
+        // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
         FUN_005c5580(local_28);
         FUN_005c5520(local_28);
         uVar1 = 1;
@@ -4964,8 +4964,8 @@ export function FUN_005e6bc5(param_1, param_2, param_3, param_4) {
   let bVar1;
   let uVar2;
   let iVar3;
-  _Timevec *in_ECX;
-  tagRECT local_30[0];
+  let in_ECX;
+  let local_30 = [0];
   let local_20;
   let local_1c = [0];
   let local_1b;
@@ -5007,7 +5007,7 @@ export function FUN_005e6bc5(param_1, param_2, param_3, param_4) {
       uVar2 = FUN_005e6188();
       FUN_005e4d60(local_8,param_2,s8(local_c[2]),s32(in_ECX, 0xc),local_14,local_18,
                    uVar2);
-      _Timevec::~_Timevec(in_ECX);
+      // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
       FUN_005c5580(local_20);
       FUN_005c5520(local_20);
       uVar2 = 1;
@@ -5030,10 +5030,10 @@ export function FUN_005e6d4c(param_1) {
   let uVar2;
   let uVar3;
   let iVar4;
-  undefined3 uVar5;
-  _Timevec *in_ECX;
+  let uVar5;
+  let in_ECX;
   let local_3c;
-  tagRECT local_38[0];
+  let local_38 = [0];
   let local_28;
   let local_24;
   let local_20;
@@ -5079,7 +5079,7 @@ export function FUN_005e6d4c(param_1) {
           local_14 = (undefined2 *)(local_14 - s32(in_ECX, 0xc));
         }
       }
-      _Timevec::~_Timevec(in_ECX);
+      // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
       FUN_005c5580(local_24);
       FUN_005c5520(local_24);
       uVar3 = 1;
@@ -5184,7 +5184,7 @@ export function FUN_005e7052(in_ECX, param_1, param_2) {
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_18[0];
+  let local_18 = [0];
   let local_8;
   
   IntersectRect(local_18[0],param_1,(RECT *)(in_ECX + 4));
@@ -5224,7 +5224,7 @@ export function FUN_005e7102(in_ECX, param_1, param_2, param_3, param_4) {
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_1c[0];
+  let local_1c = [0];
   let local_c;
   let local_8;
   
@@ -5282,8 +5282,8 @@ export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
 
   let uVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_30[0];
-  tagRECT local_20[0];
+  let local_30 = [0];
+  let local_20 = [0];
   let local_10;
   let local_c;
   let local_8;
@@ -5322,10 +5322,10 @@ export function FUN_005e7355(param_1, param_2, param_3) {
   let iVar2;
   let iVar3;
   let uVar4;
-  CView *pCVar5;
-  _Timevec *in_ECX;
-  tagRECT local_30[0];
-  tagRECT local_20[0];
+  let pCVar5;
+  let in_ECX;
+  let local_30 = [0];
+  let local_20 = [0];
   let local_10;
   let local_c;
   let local_8;
@@ -5353,7 +5353,7 @@ export function FUN_005e7355(param_1, param_2, param_3) {
                            uVar4);
       FUN_005e4f9b(local_8,uVar4);
     }
-    _Timevec::~_Timevec(in_ECX);
+    // DEVIATION: MFC — _Timevec::~_Timevec(in_ECX);
   }
   return;
 }
@@ -5392,8 +5392,8 @@ export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
 
   let uVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_30[0];
-  tagRECT local_20[0];
+  let local_30 = [0];
+  let local_20 = [0];
   let local_10;
   let local_c;
   let local_8;
@@ -5461,13 +5461,13 @@ export function FUN_005e75df(in_ECX, param_1, param_2, param_3, param_4) {
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
       // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
-                           param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
+                           // DEVIATION(cont): param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
     // DEVIATION: C pointer — iVar1 = FUN_005e997c(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
-                         param_4);
+                         // DEVIATION(cont): param_4);
     if (iVar1 === -1) {
       FUN_005e61e9();
     }
@@ -5487,7 +5487,7 @@ export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_18[0];
+  let local_18 = [0];
   let local_8;
   
   if (PTR_DAT_00637e5c === null) {
@@ -5503,7 +5503,7 @@ export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
       local_18[0].bottom = param_2[3];
       OffsetRect(local_18[0],iVar1,iVar1);
       // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
-                            );
+                            // DEVIATION(cont): );
       if (local_8 === -1) {
         FUN_005e61e9();
       }
@@ -5559,7 +5559,7 @@ export function FUN_005e78c6(in_ECX, param_1, param_2, param_3, param_4) {
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_18[0];
+  let local_18 = [0];
   let local_8;
   
   if (*in_ECX !== 0) {
@@ -5602,8 +5602,8 @@ export function FUN_005e79b1(in_ECX, param_1, param_2, param_3) {
   }
   else if ((*in_ECX !== 0) &&
           // DEVIATION: C pointer — (iVar1 = FUN_005e9d31(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3),
-          iVar1 === -1)) {
-    FUN_005e61e9();
+          // DEVIATION(cont): iVar1 == -1)) {
+    // DEVIATION(cont): FUN_005e61e9();
   }
   return;
 }
@@ -5650,13 +5650,13 @@ export function FUN_005e7a8e(in_ECX, param_1, param_2, param_3, param_4, param_5
       // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
       // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2 + iVar1,
-                           param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
+                           // DEVIATION(cont): param_3 + iVar1,in_ECX + 4,param_4,0,0,0);
       if (iVar1 === -1) {
         FUN_005e61e9();
       }
     }
     // DEVIATION: C pointer — iVar1 = FUN_005e9f8a(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,in_ECX + 4,
-                         param_4,param_5,param_6,param_7);
+                         // DEVIATION(cont): param_4,param_5,param_6,param_7);
     if (iVar1 === -1) {
       FUN_005e61e9();
     }
@@ -5677,7 +5677,7 @@ export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_18[0];
+  let local_18 = [0];
   let local_8;
   
   if (PTR_DAT_00637e5c === null) {
@@ -5693,13 +5693,13 @@ export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5
       local_18[0].bottom = param_2[3];
       OffsetRect(local_18[0],iVar1,iVar1);
       // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,local_18[0],param_3,0,0,0
-                            );
+                            // DEVIATION(cont): );
       if (local_8 === -1) {
         FUN_005e61e9();
       }
     }
     // DEVIATION: C pointer — local_8 = FUN_005ea1dd(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,param_4,
-                           param_5,param_6);
+                           // DEVIATION(cont): param_5,param_6);
     if (local_8 === -1) {
       FUN_005e61e9();
     }
@@ -5753,7 +5753,7 @@ export function FUN_005e7d99(in_ECX, param_1, param_2, param_3, param_4, param_5
 
   let iVar1;
   // in_ECX → promoted to parameter
-  tagRECT local_18[0];
+  let local_18 = [0];
   let local_8;
   
   if (*in_ECX !== 0) {
@@ -5797,8 +5797,8 @@ export function FUN_005e7e90(in_ECX, param_1, param_2, param_3, param_4, param_5
   }
   else if ((*in_ECX !== 0) &&
           // DEVIATION: C pointer — (iVar1 = FUN_005ea32f(*in_ECX,*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,
-                                param_4,param_5,param_6), iVar1 === -1)) {
-    FUN_005e61e9();
+                                // DEVIATION(cont): param_4,param_5,param_6), iVar1 == -1)) {
+    // DEVIATION(cont): FUN_005e61e9();
   }
   return;
 }
@@ -6161,17 +6161,17 @@ export function FUN_005e87a2(in_ECX, param_1) {
       cVar1 = s8(param_1);
       local_31c[local_18] =
            // DEVIATION: C pointer — s8(*(byte *)(local_14 + iVar3) / in_ECX[1]) *
-           cVar1 + s8(local_c);
+           // DEVIATION(cont): cVar1 + (char)local_c;
       iVar2 = local_18 + 1;
       local_18 = local_18 + 1;
       local_31c[iVar2] =
            // DEVIATION: C pointer — s8(*(byte *)(local_14 + 1 + iVar3) / in_ECX[1]) *
-           cVar1 + s8(local_1c);
+           // DEVIATION(cont): cVar1 + (char)local_1c;
       iVar2 = local_18 + 1;
       local_18 = local_18 + 1;
       local_31c[iVar2] =
            // DEVIATION: C pointer — s8(*(byte *)(local_14 + 2 + iVar3) / in_ECX[1]) *
-           cVar1 + s8(local_8);
+           // DEVIATION(cont): cVar1 + (char)local_8;
       local_18 = local_18 + 1;
     }
     FUN_005e8c54(*in_ECX,in_ECX[2],in_ECX[3],local_31c);
@@ -6203,14 +6203,14 @@ export function FUN_005e8990(in_ECX, param_1, param_2, param_3) {
 // Size: 308 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function register_wndclass_89D0() {
+export function register_wndclass_89D0_005E89D0() {
 
 
   let iVar1;
   let uVar2;
-  WNDCLASSA local_2c[0];
+  let local_2c = [0];
   
   local_2c[0].style = 0xb;
   local_2c[0].lpfnWndProc = FUN_005ef6cb;
@@ -6366,8 +6366,8 @@ export function FUN_005e8d58(param_1, param_2, param_3, param_4) {
   
   if ((param_1 !== null) &&
      // DEVIATION: C pointer — (iVar1 = (**(code **)(param_1[0] + 0x10))(param_1,0,param_2,param_3,local_408), iVar1 === 0)) {
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      param_4[0] = local_408[(param_2 + local_8) * 4];
+    // DEVIATION(cont): for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
+      // DEVIATION(cont): *param_4 = local_408[(param_2 + local_8) * 4];
       param_4[1] = local_408[(param_2 + local_8) * 4 + 1];
       param_4[2] = local_408[(param_2 + local_8) * 4 + 2];
       param_4 = param_4 + 3;
@@ -6723,7 +6723,7 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
-  COLORREF local_84;
+  let local_84;
   let local_7c;
   let local_78 = [0];
   let local_74;
@@ -6926,7 +6926,7 @@ export function FUN_005e9783(param_1, param_2, param_3) {
 // Size: 130 bytes
 // ============================================================
 
-export function blit_9838(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+export function blit_9838_005E9838(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
 
 
@@ -6937,7 +6937,7 @@ export function blit_9838(param_1, param_2, param_3, param_4, param_5, param_6, 
     // DEVIATION: C pointer — iVar1 = (**(code **)(param_6[0] + 0x44))(param_6,local_8[0]);
     if (iVar1 === 0) {
       // DEVIATION: C pointer — BitBlt(local_8[0],param_7,param_8,param_4,param_5,*(HDC *)(param_1 + 4),param_2,param_3,0xcc0020)
-      ;
+      // DEVIATION(cont): ;
       // DEVIATION: C pointer — (**(code **)(param_6[0] + 0x68))(param_6,local_8[0]);
     }
   }
@@ -6951,7 +6951,7 @@ export function blit_9838(param_1, param_2, param_3, param_4, param_5, param_6, 
 // Size: 138 bytes
 // ============================================================
 
-export function stretch_blit_98BA(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
+export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
 
 
 
@@ -6962,7 +6962,7 @@ export function stretch_blit_98BA(param_1, param_2, param_3, param_4, param_5, p
     // DEVIATION: C pointer — iVar1 = (**(code **)(param_6[0] + 0x44))(param_6,local_8[0]);
     if (iVar1 === 0) {
       // DEVIATION: C pointer — StretchBlt(local_8[0],param_7,param_8,param_9,param_10,*(HDC *)(param_1 + 4),param_2,param_3,
-                 param_4,param_5,0xcc0020);
+                 // DEVIATION(cont): param_4,param_5,0xcc0020);
       // DEVIATION: C pointer — (**(code **)(param_6[0] + 0x68))(param_6,local_8[0]);
     }
   }
@@ -7076,7 +7076,7 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
 
   let uVar1;
   let iVar2;
-  HGDIOBJ h;
+  let h;
   let cchText;
   let local_18;
   let local_c = [0];
@@ -7136,9 +7136,9 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
 
   let uVar1;
   let iVar2;
-  HGDIOBJ h;
+  let h;
   let cchText;
-  UINT local_18;
+  let local_18;
   let local_c = [0];
   let local_8;
   
@@ -7194,7 +7194,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
   let iVar2;
   let local_10 = [0];
   let local_c;
-  HGDIOBJ local_8;
+  let local_8;
   
   if (param_1 === null) {
     uVar1 = 0;
@@ -7745,10 +7745,10 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
   let iVar1;
   let BVar2;
   let pHVar3;
-  streambuf *this;
+  let this;
   let pcVar4;
-  UINT UVar5;
-  UINT uCmd;
+  let UVar5;
+  let uCmd;
   let local_10;
   
   if (param_2 === (HWND)0x0) {
@@ -7832,10 +7832,10 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
       if ((this !== null) &&
          ((((iVar1 = FUN_005c5e60(), iVar1 === 6 &&
             // DEVIATION: MFC — (pcVar4 = streambuf::egptr(this), pcVar4 !== null)) ||
-           ((iVar1 = FUN_005c5e60(), iVar1 === 2 && (iVar1 = FUN_005c5ec0(), iVar1 !== 0)))) ||
-          (((iVar1 = FUN_005c5e60(), iVar1 === 4 || (iVar1 = FUN_005c5e60(), iVar1 === 7)) ||
-           (iVar1 = FUN_005c5e60(), iVar1 === 10)))))) {
-        SetFocus(param_2);
+           // DEVIATION(cont): ((iVar1 = FUN_005c5e60(), iVar1 == 2 && (iVar1 = FUN_005c5ec0(), iVar1 != 0)))) ||
+          // DEVIATION(cont): (((iVar1 = FUN_005c5e60(), iVar1 == 4 || (iVar1 = FUN_005c5e60(), iVar1 == 7)) ||
+           // DEVIATION(cont): (iVar1 = FUN_005c5e60(), iVar1 == 10)))))) {
+        // DEVIATION(cont): SetFocus(param_2);
         return;
       }
       if (param_3 === 2) {
@@ -7921,7 +7921,7 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
 
 
   let cVar1;
-  SHORT SVar2;
+  let SVar2;
   let LVar3;
   let uVar4;
   let pHVar5;
@@ -7929,18 +7929,18 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
   let BVar7;
   let DVar8;
   let iVar9;
-  tagRECT local_4c[0];
+  let local_4c = [0];
   let local_3c;
   let local_38;
   let local_34;
   let local_30;
   let local_2c;
   let local_28;
-  LONG local_24;
+  let local_24;
   let local_20;
-  LONG local_1c;
-  LONG local_18;
-  LONG local_14;
+  let local_1c;
+  let local_18;
+  let local_14;
   let local_10;
   let local_c;
   let local_8;
@@ -8069,8 +8069,8 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
       else {
         iVar9 = FUN_00414d10();
         // DEVIATION: C pointer — if (((*(byte *)(iVar9 + 0x48) & 0x80) !== 0) ||
-           // DEVIATION: C pointer — (iVar9 = FUN_00414d10(), (*(byte *)(iVar9 + 0x49) & 1) !== 0)) {
-          LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
+           // DEVIATION(cont): (iVar9 = thunk_FUN_00414d10(), (*(byte *)(iVar9 + 0x49) & 1) != 0)) {
+          // DEVIATION(cont): LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
           return LVar3;
         }
         local_c = param_4;
@@ -8235,8 +8235,8 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
   let local_20 = [0];
   let local_1c;
   let local_18;
-  CSplitterWnd *local_14;
-  UINT local_10;
+  let local_14;
+  let local_10;
   let local_c = [0];
   let local_8 = [0];
   
@@ -8533,7 +8533,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -8555,7 +8555,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -8616,7 +8616,7 @@ export function FUN_005ec23a(param_1, param_2) {
 
 
   let iVar1;
-  UINT UVar2;
+  let UVar2;
   let pHVar3;
   let local_c;
   let local_8;
@@ -8666,7 +8666,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
   let local_20 = [0];
   let local_1c = [0];
   let local_18;
-  CSplitterWnd *local_14;
+  let local_14;
   let local_10;
   let local_c = [0];
   let local_8 = [0];
@@ -8909,7 +8909,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -8931,7 +8931,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -8966,7 +8966,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       return uVar2;
     }
     // DEVIATION: C pointer — mciSendCommandA(*(MCIDEVICEID *)(local_10 + 8),0x840,*(DWORD_PTR *)(local_10 + 0x10),
-                    (DWORD_PTR)local_34);
+                    // DEVIATION(cont): (DWORD_PTR)local_34);
   }
   return 0;
 }
@@ -8994,7 +8994,7 @@ export function FUN_005eceda() {
 export function FUN_005ecef0() {
 
 
-  SHORT SVar1;
+  let SVar1;
   
   SVar1 = GetKeyState(0x10);
   return (SVar1 & 0x8000) !== 0;
@@ -9010,7 +9010,7 @@ export function FUN_005ecef0() {
 export function FUN_005ecf20() {
 
 
-  SHORT SVar1;
+  let SVar1;
   
   SVar1 = GetKeyState(0x11);
   return (SVar1 & 0x8000) !== 0;
@@ -9661,13 +9661,13 @@ export function FUN_005ed710(param_1, param_2, param_3, param_4, param_5, param_
 
 
   let hdc;
-  HGDIOBJ h;
+  let h;
   let hdc_00;
   let hdc_01;
   let h_00;
-  HGDIOBJ h_01;
+  let h_01;
   let h_02;
-  HGDIOBJ h_03;
+  let h_03;
   
   hdc = CreateCompatibleDC(param_1);
   h = SelectObject(hdc,param_2);
@@ -9709,7 +9709,7 @@ export function FUN_005ed920() {
 
   let nNumberOfBytesToWrite;
   let lpNumberOfBytesWritten;
-  LPOVERLAPPED lpOverlapped;
+  let lpOverlapped;
   let local_42c = new Array(32).fill(0);
   let local_40c = new Array(1024).fill(0);
   let local_c;
@@ -9752,7 +9752,7 @@ export function FUN_005eda65() {
 
   let nNumberOfBytesToWrite;
   let lpNumberOfBytesWritten;
-  LPOVERLAPPED lpOverlapped;
+  let lpOverlapped;
   let local_40c = new Array(1024).fill(0);
   let local_c;
   let local_8 = [0];
@@ -9786,7 +9786,7 @@ export function FUN_005edb15(param_1) {
   let hFile;
   let nNumberOfBytesToWrite;
   let lpNumberOfBytesWritten;
-  LPOVERLAPPED lpOverlapped;
+  let lpOverlapped;
   let local_8 = [0];
   
   if (DAT_00639be8 !== 0) {
@@ -9936,7 +9936,7 @@ export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) {
 // Size: 43 bytes
 // ============================================================
 
-export function show_messagebox_DD00(param_1, param_2) {
+export function show_messagebox_DD00_005EDD00(param_1, param_2) {
 
 
   MessageBoxA((HWND)0x0,param_2,param_1,0x2030);
@@ -9998,7 +9998,7 @@ export function FUN_005eddaa(param_1) {
 export function FUN_005eddd0() {
 
 
-  MCIERROR MVar1;
+  let MVar1;
   let local_20 = [0];
   let local_1c;
   let local_18;
@@ -10029,7 +10029,7 @@ export function FUN_005ede3b() {
 
 
   let local_c = new Array(4).fill(0);
-  MCIDEVICEID local_8;
+  let local_8;
   
   local_8 = mciGetDeviceIDA(s_avivideo_00639d1c);
   mciSendCommandA(local_8,0x804,0,(DWORD_PTR)local_c);
@@ -10066,8 +10066,8 @@ export function FUN_005ede94(param_1) {
 export function FUN_005edebf(param_1, param_2) {
 
 
-  MCIERROR MVar1;
-  MCIDEVICEID MVar2;
+  let MVar1;
+  let MVar2;
   let local_50 = [0];
   let local_4c;
   let local_48;
@@ -10375,7 +10375,7 @@ export function FUN_005ee49a(param_1) {
 
 
   let local_2c = new Array(4).fill(0);
-  tagRECT local_28[0];
+  let local_28 = [0];
   let local_18 = new Array(12).fill(0);
   let local_c;
   let local_8;
@@ -10450,10 +10450,10 @@ export function FUN_005ee591(param_1, param_2) {
 
 
   let pvVar1;
-  LOGPALETTE *plpal;
+  let plpal;
   let local_3c;
   let local_38 = new Array(8).fill(0);
-  HPALETTE local_30;
+  let local_30;
   let local_1c = new Array(8).fill(0);
   let local_14;
   
@@ -10764,9 +10764,9 @@ export function FUN_005eea3a(in_ECX) {
   let iVar3;
   let iVar4;
   // in_ECX → promoted to parameter
-  tagRECT local_28[0];
+  let local_28 = [0];
   let local_18;
-  tagRECT local_14[0];
+  let local_14 = [0];
   
   GetWindowRect((HWND)*in_ECX,local_28[0]);
   local_18 = GetParent((HWND)*in_ECX);
@@ -10878,7 +10878,7 @@ export function FUN_005eebd6(in_ECX) {
   let local_40c = new Array(2).fill(0);
   let auStack_40a = new Array(255).fill(0);
   let local_c;
-  HPALETTE local_8;
+  let local_8;
   
   local_8 = (HPALETTE)SendMessageA((HWND)*in_ECX,0x47e,0,0);
   GetPaletteEntries(local_8,0,0x100,(LPPALETTEENTRY)local_40c);
@@ -11090,7 +11090,7 @@ export function FUN_005eee86() {
 // Size: 402 bytes
 // ============================================================
 
-export function show_messagebox_EEB0(param_1, param_2, param_3) {
+export function show_messagebox_EEB0_005EEEB0(param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -11162,7 +11162,7 @@ export function show_messagebox_EEB0(param_1, param_2, param_3) {
 // Size: 401 bytes
 // ============================================================
 
-export function show_messagebox_F0B9(param_1, param_2, param_3, param_4) {
+export function show_messagebox_F0B9_005EF0B9(param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -11653,7 +11653,7 @@ export function FUN_005efdc0(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -11689,7 +11689,7 @@ export function FUN_005efeb0(in_ECX) {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -11974,8 +11974,8 @@ function LAB_005eb1df_helper(iVar9, local_10, local_14, local_1c, local_20, loca
       else {
         iVar9 = FUN_00414d10();
         // DEVIATION: C pointer — if (((*(byte *)(iVar9 + 0x48) & 0x80) !== 0) ||
-           // DEVIATION: C pointer — (iVar9 = FUN_00414d10(), (*(byte *)(iVar9 + 0x49) & 1) !== 0)) {
-          LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
+           // DEVIATION(cont): (iVar9 = thunk_FUN_00414d10(), (*(byte *)(iVar9 + 0x49) & 1) != 0)) {
+          // DEVIATION(cont): LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
           return LVar3;
         }
         local_c = param_4;
@@ -12039,7 +12039,7 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12061,7 +12061,7 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12159,7 +12159,7 @@ switchD_005ec033_caseD_4:
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12181,7 +12181,7 @@ switchD_005ec033_caseD_4:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar5 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12381,7 +12381,7 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12403,7 +12403,7 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12438,7 +12438,7 @@ switchD_005ecda6_caseD_6:
       return uVar2;
     }
     // DEVIATION: C pointer — mciSendCommandA(*(MCIDEVICEID *)(local_10 + 8),0x840,*(DWORD_PTR *)(local_10 + 0x10),
-                    (DWORD_PTR)local_34);
+                    // DEVIATION(cont): (DWORD_PTR)local_34);
   }
   return 0;
 }
@@ -12450,7 +12450,7 @@ function switchD_005ecda6_caseD_6_helper(local_10, local_14, local_34, param_1, 
       return uVar2;
     }
     // DEVIATION: C pointer — mciSendCommandA(*(MCIDEVICEID *)(local_10 + 8),0x840,*(DWORD_PTR *)(local_10 + 0x10),
-                    (DWORD_PTR)local_34);
+                    // DEVIATION(cont): (DWORD_PTR)local_34);
   }
   return 0;
 }
@@ -12677,7 +12677,7 @@ switchD_005ecda6_caseD_4:
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12699,7 +12699,7 @@ switchD_005ecda6_caseD_4:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-          // DEVIATION: C pointer — SetFocus(*(HWND *)(local_24 + 4));
+          // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12734,7 +12734,7 @@ switchD_005ecda6_caseD_6:
       return uVar2;
     }
     // DEVIATION: C pointer — mciSendCommandA(*(MCIDEVICEID *)(local_10 + 8),0x840,*(DWORD_PTR *)(local_10 + 0x10),
-                    (DWORD_PTR)local_34);
+                    // DEVIATION(cont): (DWORD_PTR)local_34);
   }
   return 0;
 }

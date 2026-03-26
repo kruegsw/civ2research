@@ -9,7 +9,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
 // Size: 326 bytes
 // ============================================================
 
-/* WARNING: Unable to track spacebase fully for stack */
+// /* WARNING: Unable to track spacebase fully for stack */
 
 export function FUN_0061a000() {
 
@@ -113,7 +113,7 @@ export function FUN_0061a000() {
         puVar11 = (undefined1 *)segment(in_SS,sVar18 + -0x16);
         // DEVIATION: C pointer — *(undefined1 *)
          // DEVIATION: SEH
-          (uint)*puVar7 + (uint)*puVar8) = *puVar11;
+          // DEVIATION(cont): (uint)*puVar7 + (uint)*puVar8) = *puVar11;
       }
       sVar19 = sVar19 + -1;
     } while (0 < sVar19);
@@ -130,7 +130,7 @@ export function FUN_0061a000() {
 // Size: 423 bytes
 // ============================================================
 
-/* WARNING: Unable to track spacebase fully for stack */
+// /* WARNING: Unable to track spacebase fully for stack */
 
 export function FUN_0061a759() {
 

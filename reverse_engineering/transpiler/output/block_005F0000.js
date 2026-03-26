@@ -37,7 +37,7 @@ export function FUN_005f00b8(in_ECX) {
   let iVar1;
   let uVar2;
   // in_ECX → promoted to parameter
-  tagRECT local_14[0];
+  let local_14 = [0];
   
   SetRect(local_14[0],0,0,s32(in_ECX[0x2c] + 0xc, 0),s32(in_ECX[0x2c] + 8, 0));
   FUN_005ef65a(in_ECX[0x2c]);
@@ -108,8 +108,8 @@ export function FUN_005f0213(in_ECX) {
 
   let uVar1;
   // in_ECX → promoted to parameter
-  tagRECT *ptVar2;
-  tagRECT local_14[0];
+  let ptVar2;
+  let local_14 = [0];
   
   SetRect(local_14[0],0,0,in_ECX[2],in_ECX[1]);
   ptVar2 = local_14[0];
@@ -203,7 +203,7 @@ export function FUN_005f0342() {
 export function FUN_005f0391(in_ECX, param_1, param_2, param_3) {
 
 
-  _CRT_CRITICAL_SECTION *p_Var1;
+  let p_Var1;
   let iVar2;
   let iVar3;
   // in_ECX → promoted to parameter
@@ -211,9 +211,9 @@ export function FUN_005f0391(in_ECX, param_1, param_2, param_3) {
   if ((s32(in_ECX, 0xcc) !== 0) && (param_1 === 0x200)) {
     // DEVIATION: MFC — p_Var1 = ios::lockptr(*(ios **)(in_ECX + 0xcc));
     // DEVIATION: C pointer — if ((param_2 < *(int *)p_Var1) ||
-       (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) ||
-        (s32(p_Var1, 0xc) < param_3)))) {
-      FUN_005f130f(0xfff0,param_2,param_3);
+       // DEVIATION(cont): (((*(int *)(p_Var1 + 8) < param_2 || (param_3 < *(int *)(p_Var1 + 4))) ||
+        // DEVIATION(cont): (*(int *)(p_Var1 + 0xc) < param_3)))) {
+      // DEVIATION(cont): FUN_005f130f(0xfff0,param_2,param_3);
       w32(in_ECX, 0xcc, 0);
     }
   }
@@ -245,7 +245,7 @@ export function FUN_005f04c0() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -301,7 +301,7 @@ export function FUN_005f0520(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -412,11 +412,11 @@ export function FUN_005f0640(in_ECX) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
+    // DEVIATION: MFC — public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
    
    Library: Visual Studio 1998 Debug */
 
-void __thiscall CDataBoundProperty::~CDataBoundProperty(CDataBoundProperty *this)
+// DEVIATION: MFC — void __thiscall CDataBoundProperty::~CDataBoundProperty(CDataBoundProperty *this)
 
 {
   return;
@@ -664,7 +664,7 @@ export function FUN_005f08fb(in_ECX, param_1) {
   let local_1c;
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -716,7 +716,7 @@ export function FUN_005f0a04(in_ECX, param_1) {
   let local_24;
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -995,7 +995,7 @@ export function FUN_005f0f1d(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1030,7 +1030,7 @@ export function FUN_005f0fe9(in_ECX, param_1) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1065,7 +1065,7 @@ export function FUN_005f10b6(in_ECX, param_1) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1100,7 +1100,7 @@ export function FUN_005f1183(in_ECX) {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1743,7 +1743,7 @@ export function FUN_005f19ef() {
 export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
 
 
-  _CRT_CRITICAL_SECTION *p_Var1;
+  let p_Var1;
   let iVar2;
   let iVar3;
   // in_ECX → promoted to parameter
@@ -1751,9 +1751,9 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
   if ((s32(in_ECX, 0x1c) !== 0) && (param_1 === 0x200)) {
     // DEVIATION: MFC — p_Var1 = ios::lockptr(*(ios **)(in_ECX + 0x1c));
     // DEVIATION: C pointer — if ((param_2 < *(int *)p_Var1) ||
-       (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) ||
-        (s32(p_Var1, 0xc) < param_3)))) {
-      FUN_005f130f(0xfff0,param_2,param_3);
+       // DEVIATION(cont): (((*(int *)(p_Var1 + 8) < param_2 || (param_3 < *(int *)(p_Var1 + 4))) ||
+        // DEVIATION(cont): (*(int *)(p_Var1 + 0xc) < param_3)))) {
+      // DEVIATION(cont): FUN_005f130f(0xfff0,param_2,param_3);
       w32(in_ECX, 0x1c, 0);
     }
   }
@@ -1797,12 +1797,12 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
 // Size: 181 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __onexit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __onexit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __onexit(_Func) {
+export function __onexit_005F1B80(_Func) {
 
 
   let uVar1;
@@ -1830,15 +1830,15 @@ export function __onexit(_Func) {
 // Size: 48 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _atexit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _atexit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _atexit(param_1) {
+export function _atexit_005F1C40(param_1) {
 
 
-  _onexit_t p_Var1;
+  let p_Var1;
   let iVar2;
   
   p_Var1 = __onexit((_onexit_t)param_1);
@@ -1858,12 +1858,12 @@ export function _atexit(param_1) {
 // Size: 85 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___onexitinit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___onexitinit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___onexitinit() {
+export function ___onexitinit_005F1C70() {
 
 
   DAT_006e6b68 = (undefined4 *)__malloc_dbg(0x80,2,"onexit.c",0xb6);
@@ -1882,12 +1882,12 @@ export function ___onexitinit() {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __global_unwind2
-   
-   Library: Visual Studio */
+// /* Library Function - Single Match
+    // __global_unwind2
+   // 
+   // Library: Visual Studio */
 
-export function __global_unwind2(param_1) {
+export function __global_unwind2_005F1CC8(param_1) {
 
 
   RtlUnwind(param_1,(PVOID)0x5f1ce0,(PEXCEPTION_RECORD)0x0,(PVOID)0x0);
@@ -1901,13 +1901,13 @@ export function __global_unwind2(param_1) {
 // Size: 104 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __local_unwind2
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release, Visual Studio 2003 Debug, Visual
-   Studio 2003 Release */
+// /* Library Function - Single Match
+    // __local_unwind2
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release, Visual Studio 2003 Debug, Visual
+   // Studio 2003 Release */
 
-export function __local_unwind2(param_1, param_2) {
+export function __local_unwind2_005F1D0A(param_1, param_2) {
 
 
   let iVar1;
@@ -1944,12 +1944,12 @@ export function __local_unwind2(param_1, param_2) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __abnormal_termination
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __abnormal_termination
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __abnormal_termination() {
+export function __abnormal_termination_005F1D72() {
 
 
   let iVar1;
@@ -1959,8 +1959,8 @@ export function __abnormal_termination() {
   iVar2 = 0;
   // DEVIATION: SEH
   // DEVIATION: C pointer — if ((*(undefined1 **)(iVar1 + 4) === 0 /* ADDR:LAB_005f1ce8 */) &&
-     (s32(iVar1, 8) === s32(*(int *, 0)(iVar1 + 0xc) + 0xc))) {
-    iVar2 = 1;
+     // DEVIATION(cont): (*(int *)(iVar1 + 8) == *(int *)(*(int *)(iVar1 + 0xc) + 0xc))) {
+    // DEVIATION(cont): iVar2 = 1;
   }
   return iVar2;
 }
@@ -2011,10 +2011,10 @@ export function FUN_005f1d9e(in_EAX, unaff_EBP) {
 // Size: 47 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _JumpToContinuation() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __stdcall _JumpToContinuation(void *,struct EHRegistrationNode *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
 
@@ -2022,8 +2022,8 @@ void _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
   // DEVIATION: SEH
   
   // DEVIATION: SEH
-                    /* WARNING: Could not recover jumptable at 0x005f1ded. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
+                    // /* WARNING: Could not recover jumptable at 0x005f1ded. Too many branches */
+                    // /* WARNING: Treating indirect jump as call */
   (*param_1)();
   return;
 }
@@ -2035,18 +2035,18 @@ void _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
 // Size: 7 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _CallMemberFunction0() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __stdcall _CallMemberFunction0(void *,void *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void _CallMemberFunction0(void *param_1,void *param_2)
 
 
   LOCK();
   UNLOCK();
-                    /* WARNING: Could not recover jumptable at 0x005f1e05. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
+                    // /* WARNING: Could not recover jumptable at 0x005f1e05. Too many branches */
+                    // /* WARNING: Treating indirect jump as call */
   (*param_2)();
   return;
 }
@@ -2058,19 +2058,19 @@ void _CallMemberFunction0(void *param_1,void *param_2)
 // Size: 7 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-export function FID_conflict__CallMemberFunction1() {
-    void __stdcall _CallMemberFunction2(void *,void *,void *,int)
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // void __stdcall _CallMemberFunction1(void *,void *,void *)
+    // void __stdcall _CallMemberFunction2(void *,void *,void *,int)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMPTABLE)
 
 
   LOCK();
   UNLOCK();
-                    /* WARNING: Could not recover jumptable at 0x005f1e15. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
+                    // /* WARNING: Could not recover jumptable at 0x005f1e15. Too many branches */
+                    // /* WARNING: Treating indirect jump as call */
   (*UNRECOVERED_JUMPTABLE)();
   return;
 }
@@ -2082,19 +2082,19 @@ void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMP
 // Size: 7 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-export function FID_conflict__CallMemberFunction1() {
-    void __stdcall _CallMemberFunction2(void *,void *,void *,int)
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // void __stdcall _CallMemberFunction1(void *,void *,void *)
+    // void __stdcall _CallMemberFunction2(void *,void *,void *,int)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMPTABLE)
 
 
   LOCK();
   UNLOCK();
-                    /* WARNING: Could not recover jumptable at 0x005f1e25. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
+                    // /* WARNING: Could not recover jumptable at 0x005f1e25. Too many branches */
+                    // /* WARNING: Treating indirect jump as call */
   (*UNRECOVERED_JUMPTABLE)();
   return;
 }
@@ -2106,10 +2106,10 @@ void FID_conflict__CallMemberFunction1(undefined4 param_1,code *UNRECOVERED_JUMP
 // Size: 81 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _UnwindNestedFrames() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __stdcall _UnwindNestedFrames(struct EHRegistrationNode *,struct EHExceptionRecord *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void _UnwindNestedFrames(EHRegistrationNode *param_1,EHExceptionRecord *param_2)
 
@@ -2154,12 +2154,12 @@ ___CxxFrameHandler(undefined4 param_1,undefined4 param_2,undefined4 param_3,unde
 // Size: 49 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___CxxLongjmpUnwind@4
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___CxxLongjmpUnwind@4
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___CxxLongjmpUnwind_4(param_1) {
+export function ___CxxLongjmpUnwind_4_005F1ED0(param_1) {
 
 
   ___FrameUnwindToState
@@ -2175,11 +2175,11 @@ export function ___CxxLongjmpUnwind_4(param_1) {
 // Size: 102 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _CallCatchBlock2(int, long) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void * __cdecl _CallCatchBlock2(struct EHRegistrationNode *,struct _s_FuncInfo const *,void
+   // *,int,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void * __cdecl
 _CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,int param_4,
@@ -2190,9 +2190,9 @@ _CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,
   // DEVIATION: SEH
   let local_18 = [0];
   let local_14;
-  _s_FuncInfo *local_10;
-  EHRegistrationNode *local_c;
-  // DEVIATION: SEH local
+  let local_10;
+  let local_c;
+  let local_8;
   
   local_14 = CatchGuardHandler;
   local_10 = param_2;
@@ -2212,17 +2212,17 @@ _CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,
 // Size: 62 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function CatchGuardHandler() {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // enum _EXCEPTION_DISPOSITION __cdecl CatchGuardHandler(struct EHExceptionRecord *,struct
+   // CatchGuardRN *,void *,void *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 _EXCEPTION_DISPOSITION __cdecl
 CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3,void *param_4)
 
 
-  _EXCEPTION_DISPOSITION _Var1;
+  let _Var1;
   
   _Var1 = ___InternalCxxFrameHandler
                     (param_1,s32(param_2, 0xc),param_3,0,s32(param_2, 8),
@@ -2237,11 +2237,11 @@ CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3
 // Size: 209 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _CallSETranslator(int) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // int __cdecl _CallSETranslator(struct EHExceptionRecord *,struct EHRegistrationNode *,void *,void
+   // *,struct _s_FuncInfo const *,int,struct EHRegistrationNode *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 int __cdecl
 _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *param_3,void *param_4
@@ -2249,18 +2249,18 @@ _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *p
 
 
   // DEVIATION: SEH
-  EHExceptionRecord *local_34[0];
+  let local_34 = [0];
   let local_30;
   let local_2c = [0];
   let local_28;
-  _s_FuncInfo *local_24;
-  EHRegistrationNode *local_20;
+  let local_24;
+  let local_20;
   let local_1c;
-  EHRegistrationNode *local_18;
+  let local_18;
   let local_14;
   let local_10;
   let local_c;
-  // DEVIATION: SEH local
+  let local_8;
   
   local_c = &stack0xfffffffc;
   local_10 = &stack0xffffffbc;
@@ -2293,18 +2293,18 @@ _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *p
 // Size: 98 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function TranslatorGuardHandler() {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // enum _EXCEPTION_DISPOSITION __cdecl TranslatorGuardHandler(struct EHExceptionRecord *,struct
+   // TranslatorGuardRN *,void *,void *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 _EXCEPTION_DISPOSITION __cdecl
 TranslatorGuardHandler
           (EHExceptionRecord *param_1,TranslatorGuardRN *param_2,void *param_3,void *param_4)
 
 
-  _EXCEPTION_DISPOSITION _Var1;
+  let _Var1;
   
   if ((u8(param_1[4]) & 0x66) !== 0) {
     w32(param_2, 0x24, 1);
@@ -2316,8 +2316,8 @@ TranslatorGuardHandler
   if (s32(param_2, 0x24) === 0) {
     _UnwindNestedFrames((EHRegistrationNode *)param_2,param_1);
   }
-                    /* WARNING: Could not recover jumptable at 0x005f20ff. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
+                    // /* WARNING: Could not recover jumptable at 0x005f20ff. Too many branches */
+                    // /* WARNING: Treating indirect jump as call */
   // DEVIATION: C pointer — _Var1 = (**(code **)(param_2 + 0x18))();
   return _Var1;
 }
@@ -2329,13 +2329,13 @@ TranslatorGuardHandler
 // Size: 285 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _memcpy
-    _memmove
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _memcpy
+    // _memmove
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function FID_conflict__memcpy(in_EDX, _Dst, _Src, _Size) {
+export function FID_conflict__memcpy_005F2110(in_EDX, _Dst, _Src, _Size) {
 
 
   let uVar1;
@@ -2488,12 +2488,12 @@ export function FUN_005f2260(param_1) {
 // Size: 65 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _rand
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _rand
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _rand() {
+export function _rand_005F2280() {
 
 
   DAT_00639e50 = DAT_00639e50 * 0x343fd + 0x269ec3;
@@ -2643,10 +2643,10 @@ export function FUN_005f22e0(param_1, param_2) {
 // Size: 162 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function operator_delete() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl operator delete(void *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl operator_delete(void *param_1)
 
@@ -2676,10 +2676,10 @@ void __cdecl operator_delete(void *param_1)
 // Size: 30 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function operator_new(int) {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void * __cdecl operator new(unsigned int)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void * __cdecl operator_new(uint param_1)
 
@@ -2733,10 +2733,10 @@ void _eh_vector_destructor_iterator_
 // Size: 108 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function __ArrayUnwind(int, int) {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __stdcall __ArrayUnwind(void *,unsigned int,int,void (__thiscall*)(void *))
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __ArrayUnwind(void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4)
 
@@ -2746,7 +2746,7 @@ void __ArrayUnwind(void *param_1,uint param_2,int param_3,_func_void_void_ptr *p
   let local_14 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -2769,17 +2769,17 @@ void __ArrayUnwind(void *param_1,uint param_2,int param_3,_func_void_void_ptr *p
 // Size: 65 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-export function FID_conflict_ArrayUnwindFilter() {
-    int __cdecl FrameUnwindFilter(struct _EXCEPTION_POINTERS *)
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // int __cdecl ArrayUnwindFilter(struct _EXCEPTION_POINTERS *)
+    // int __cdecl FrameUnwindFilter(struct _EXCEPTION_POINTERS *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
 
 
   // DEVIATION: C pointer — if (*(int *)*param_1 === -0x1f928c9d) {
-    terminate();
+    // DEVIATION(cont): terminate();
   }
   return 0;
 }
@@ -2842,13 +2842,13 @@ export function FUN_005f26e0(param_1) {
 // Size: 313 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __toupper_lk
-    _toupper
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __toupper_lk
+    // _toupper
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___toupper_lk(unaff_EDI, _C) {
+export function FID_conflict___toupper_lk_005F2700(unaff_EDI, _C) {
 
 
   let iVar1;
@@ -2910,12 +2910,12 @@ export function FID_conflict___toupper_lk(unaff_EDI, _C) {
 // Size: 74 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isalpha
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isalpha
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isalpha(_C) {
+export function _isalpha_005F2840(_C) {
 
 
   let uVar1;
@@ -2936,12 +2936,12 @@ export function _isalpha(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isupper
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isupper
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isupper(_C) {
+export function _isupper_005F2890(_C) {
 
 
   let uVar1;
@@ -2962,12 +2962,12 @@ export function _isupper(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _islower
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _islower
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _islower(_C) {
+export function _islower_005F28E0(_C) {
 
 
   let uVar1;
@@ -2988,12 +2988,12 @@ export function _islower(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isdigit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isdigit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isdigit(_C) {
+export function _isdigit_005F2930(_C) {
 
 
   let uVar1;
@@ -3014,12 +3014,12 @@ export function _isdigit(_C) {
 // Size: 74 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isxdigit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isxdigit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isxdigit(_C) {
+export function _isxdigit_005F2980(_C) {
 
 
   let uVar1;
@@ -3040,12 +3040,12 @@ export function _isxdigit(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isspace
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isspace
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isspace(_C) {
+export function _isspace_005F29D0(_C) {
 
 
   let uVar1;
@@ -3066,12 +3066,12 @@ export function _isspace(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _ispunct
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _ispunct
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _ispunct(_C) {
+export function _ispunct_005F2A20(_C) {
 
 
   let uVar1;
@@ -3092,12 +3092,12 @@ export function _ispunct(_C) {
 // Size: 74 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isalnum
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isalnum
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isalnum(_C) {
+export function _isalnum_005F2A70(_C) {
 
 
   let uVar1;
@@ -3118,12 +3118,12 @@ export function _isalnum(_C) {
 // Size: 74 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isprint
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isprint
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isprint(_C) {
+export function _isprint_005F2AC0(_C) {
 
 
   let uVar1;
@@ -3144,12 +3144,12 @@ export function _isprint(_C) {
 // Size: 74 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _isgraph
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _isgraph
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _isgraph(_C) {
+export function _isgraph_005F2B10(_C) {
 
 
   let uVar1;
@@ -3170,12 +3170,12 @@ export function _isgraph(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _iscntrl
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _iscntrl
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _iscntrl(_C) {
+export function _iscntrl_005F2B60(_C) {
 
 
   let uVar1;
@@ -3196,12 +3196,12 @@ export function _iscntrl(_C) {
 // Size: 41 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___isascii
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___isascii
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___isascii(_C) {
+export function ___isascii_005F2BB0(_C) {
 
 
   return (((uint) >>> 0)_C < 0x80);
@@ -3227,12 +3227,12 @@ export function FUN_005f2be0(param_1) {
 // Size: 113 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___iscsymf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___iscsymf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___iscsymf(_C) {
+export function ___iscsymf_005F2C00(_C) {
 
 
   let iVar1;
@@ -3260,12 +3260,12 @@ export function ___iscsymf(_C) {
 // Size: 113 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___iscsym
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___iscsym
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___iscsym(_C) {
+export function ___iscsym_005F2C80(_C) {
 
 
   let iVar1;
@@ -3293,17 +3293,17 @@ export function ___iscsym(_C) {
 // Size: 258 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __fsopen
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __fsopen
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __fsopen(_Filename, _Mode, _ShFlag) {
+export function __fsopen_005F2D00(_Filename, _Mode, _ShFlag) {
 
 
   let pcVar1;
   let iVar2;
-  FILE *pFVar3;
+  let pFVar3;
   
   if (_Filename === null) {
     iVar2 = __CrtDbgReport(2,"fopen.c",0x35,0,"file !== NULL");
@@ -3354,15 +3354,15 @@ export function __fsopen(_Filename, _Mode, _ShFlag) {
 // Size: 34 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fopen
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fopen
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fopen(_Filename, _Mode) {
+export function _fopen_005F2E10(_Filename, _Mode) {
 
 
-  FILE *pFVar1;
+  let pFVar1;
   
   pFVar1 = __fsopen(_Filename,_Mode,0x40);
   return pFVar1;
@@ -3375,12 +3375,12 @@ export function _fopen(_Filename, _Mode) {
 // Size: 237 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fclose
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fclose
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fclose(_File) {
+export function _fclose_005F2E40(_File) {
 
 
   let pcVar1;
@@ -3425,12 +3425,12 @@ export function _fclose(_File) {
 // Size: 254 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strncpy
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _strncpy
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _strncpy(_Dest, _Source, _Count) {
+export function _strncpy_005F2F30(_Dest, _Source, _Count) {
 
 
   let uVar1;
@@ -3542,17 +3542,17 @@ export function _strncpy(_Dest, _Source, _Count) {
 // Size: 236 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _sprintf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _sprintf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _sprintf(_Dest, _Format) {
+export function _sprintf_005F3030(_Dest, _Format) {
 
 
   let pcVar1;
   let iVar2;
-  FILE local_24[0];
+  let local_24 = [0];
   
   if (_Dest === null) {
     iVar2 = __CrtDbgReport(2,"sprintf.c",0x5d,0,"string !== NULL");
@@ -3592,12 +3592,12 @@ export function _sprintf(_Dest, _Format) {
 // Size: 282 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _atol
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _atol
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _atol(_Str) {
+export function _atol_005F3120(_Str) {
 
 
   let pbVar1;
@@ -3649,12 +3649,12 @@ export function _atol(_Str) {
 // Size: 28 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _atoi
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _atoi
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _atoi(_Str) {
+export function _atoi_005F3240(_Str) {
 
 
   let lVar1;
@@ -3670,17 +3670,17 @@ export function _atoi(_Str) {
 // Size: 324 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __atoi64
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __atoi64
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __atoi64(_String) {
+export function __atoi64_005F3260(_String) {
 
 
   let pbVar1;
   let uVar2;
-  longlong lVar3;
+  let lVar3;
   let local_1c;
   let local_18;
   let local_10;
@@ -3732,12 +3732,12 @@ export function __atoi64(_String) {
 // Size: 202 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fputs
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fputs
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fputs(_Str, _File) {
+export function _fputs_005F33B0(_Str, _File) {
 
 
   let pcVar1;
@@ -3781,12 +3781,12 @@ export function _fputs(_Str, _File) {
 // Size: 123 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strlen
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _strlen
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _strlen(_Str) {
+export function _strlen_005F3480(_Str) {
 
 
   let uVar1;
@@ -3828,12 +3828,12 @@ export function _strlen(_Str) {
 // Size: 88 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _memset
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _memset
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _memset(_Dst, _Val, _Size) {
+export function _memset_005F3500(_Dst, _Val, _Size) {
 
 
   let uVar1;
@@ -3885,12 +3885,12 @@ export function _memset(_Dst, _Val, _Size) {
 // Size: 129 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strcmp
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _strcmp
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _strcmp(_Str1, _Str2) {
+export function _strcmp_005F3560(_Str1, _Str2) {
 
 
   let uVar1;
@@ -3968,7 +3968,7 @@ export function _strcmp(_Str1, _Str2) {
 // Size: 47 bytes
 // ============================================================
 
-/* WARNING: Unable to track spacebase fully for stack */
+// /* WARNING: Unable to track spacebase fully for stack */
 
 export function FUN_005f35f0(in_EAX) {
 
@@ -3992,12 +3992,12 @@ export function FUN_005f35f0(in_EAX) {
 // Size: 193 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strchr
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _strchr
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _strchr(_Str, _Val) {
+export function _strchr_005F3630(_Str, _Val) {
 
 
   let uVar1;
@@ -4071,12 +4071,12 @@ export function _strchr(_Str, _Val) {
 // Size: 56 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strncmp
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _strncmp
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _strncmp(_Str1, _Str2, _MaxCount) {
+export function _strncmp_005F36F0(_Str1, _Str2, _MaxCount) {
 
 
   let cVar1;
@@ -4129,12 +4129,12 @@ export function _strncmp(_Str1, _Str2, _MaxCount) {
 // Size: 456 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fread
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fread
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fread(_DstBuf, _ElementSize, _Count, _File) {
+export function _fread_005F3730(_DstBuf, _ElementSize, _Count, _File) {
 
 
   let uVar1;
@@ -4215,12 +4215,12 @@ export function _fread(_DstBuf, _ElementSize, _Count, _File) {
 // Size: 536 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fwrite
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fwrite
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fwrite(_Str, _Size, _Count, _File) {
+export function _fwrite_005F3900(_Str, _Size, _Count, _File) {
 
 
   let uVar1;
@@ -4306,18 +4306,18 @@ export function _fwrite(_Str, _Size, _Count, _File) {
 // Size: 226 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __chdir
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __chdir
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __chdir(_Path) {
+export function __chdir_005F3B20(_Path) {
 
 
   let BVar1;
   let DVar2;
   let uVar3;
-  CHAR local_110[0];
+  let local_110 = [0];
   let local_10f;
   let local_10e;
   let local_10d;
@@ -4351,12 +4351,12 @@ export function __chdir(_Path) {
 // Size: 39 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strrchr
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _strrchr
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _strrchr(_Str, _Ch) {
+export function _strrchr_005F3C10(_Str, _Ch) {
 
 
   let cVar1;
@@ -4397,12 +4397,12 @@ export function _strrchr(_Str, _Ch) {
 // Size: 301 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fgets
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fgets
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fgets(_Buf, _MaxCount, _File) {
+export function _fgets_005F3C40(_Buf, _MaxCount, _File) {
 
 
   let cVar1;
@@ -4463,12 +4463,12 @@ export function _fgets(_Buf, _MaxCount, _File) {
 // Size: 479 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __filbuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __filbuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __filbuf(_File) {
+export function __filbuf_005F3D70(_File) {
 
 
   let pbVar1;
@@ -4546,12 +4546,12 @@ export function __filbuf(_File) {
 // Size: 146 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fputc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fputc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fputc(_Ch, _File) {
+export function _fputc_005F3F50(_Ch, _File) {
 
 
   let pcVar1;
@@ -4585,12 +4585,12 @@ export function _fputc(_Ch, _File) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _putc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _putc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _putc(_Ch, _File) {
+export function _putc_005F3FF0(_Ch, _File) {
 
 
   let iVar1;
@@ -4606,12 +4606,12 @@ export function _putc(_Ch, _File) {
 // Size: 126 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fgetc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fgetc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fgetc(_File) {
+export function _fgetc_005F4010(_File) {
 
 
   let pcVar1;
@@ -4644,12 +4644,12 @@ export function _fgetc(_File) {
 // Size: 28 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _getc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _getc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _getc(_File) {
+export function _getc_005F4090(_File) {
 
 
   let iVar1;
@@ -4665,12 +4665,12 @@ export function _getc(_File) {
 // Size: 173 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __strnicmp
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __strnicmp
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __strnicmp(_Str1, _Str2, _MaxCount) {
+export function __strnicmp_005F40B0(_Str1, _Str2, _MaxCount) {
 
 
   let cVar1;
@@ -4754,12 +4754,12 @@ export function __strnicmp(_Str1, _Str2, _MaxCount) {
 // Size: 66 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cinit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cinit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cinit(param_1) {
+export function __cinit_005F4160(param_1) {
 
 
   let iVar1;
@@ -4779,12 +4779,12 @@ export function __cinit(param_1) {
 // Size: 27 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _exit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _exit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _exit(_Code) {
+export function _exit_005F41B0(_Code) {
 
 
   doexit(_Code,0,0);
@@ -4798,12 +4798,12 @@ export function _exit(_Code) {
 // Size: 27 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __exit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __exit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __exit(param_1) {
+export function __exit_005F41D0(param_1) {
 
 
   doexit(param_1,1,0);
@@ -4817,12 +4817,12 @@ export function __exit(param_1) {
 // Size: 25 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cexit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cexit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cexit() {
+export function __cexit_005F41F0() {
 
 
   doexit(0,0,1);
@@ -4836,12 +4836,12 @@ export function __cexit() {
 // Size: 25 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __c_exit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __c_exit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __c_exit() {
+export function __c_exit_005F4210() {
 
 
   doexit(0,1,1);
@@ -4855,18 +4855,18 @@ export function __c_exit() {
 // Size: 251 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    _doexit
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // _doexit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function doexit(param_1, param_2, param_3) {
+export function doexit_005F4230(param_1, param_2, param_3) {
 
 
   let hProcess;
   let uVar1;
-  UINT uExitCode;
+  let uExitCode;
   let local_8;
   
   if (DAT_00639f5c === 1) {
@@ -4894,7 +4894,7 @@ export function doexit(param_1, param_2, param_3) {
   }
   if (param_3 === 0) {
     DAT_00639f5c = 1;
-                    /* WARNING: Subroutine does not return */
+                    // /* WARNING: Subroutine does not return */
     ExitProcess(param_1);
   }
   return;
@@ -4907,12 +4907,12 @@ export function doexit(param_1, param_2, param_3) {
 // Size: 49 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __initterm
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __initterm
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __initterm(param_1, param_2) {
+export function __initterm_005F4330(param_1, param_2) {
 
 
   for (; param_1 < param_2; param_1 = param_1 + 1) {
@@ -4930,12 +4930,12 @@ export function __initterm(param_1, param_2) {
 // Size: 128 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strstr
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _strstr
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _strstr(_Str, _SubStr) {
+export function _strstr_005F4370(_Str, _SubStr) {
 
 
   let pcVar1;
@@ -5046,12 +5046,12 @@ export function _strstr(_Str, _SubStr) {
 // Size: 40 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _malloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _malloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _malloc(_Size) {
+export function _malloc_005F43F0(_Size) {
 
 
   let pvVar1;
@@ -5067,12 +5067,12 @@ export function _malloc(_Size) {
 // Size: 46 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __malloc_dbg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __malloc_dbg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __malloc_dbg(param_1, param_2, param_3, param_4) {
+export function __malloc_dbg_005F4420(param_1, param_2, param_3, param_4) {
 
 
   __nh_malloc_dbg(param_1,DAT_0063a428,param_2,param_3,param_4);
@@ -5086,12 +5086,12 @@ export function __malloc_dbg(param_1, param_2, param_3, param_4) {
 // Size: 38 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __nh_malloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __nh_malloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __nh_malloc(_Size, _NhFlag) {
+export function __nh_malloc_005F4450(_Size, _NhFlag) {
 
 
   let pvVar1;
@@ -5107,12 +5107,12 @@ export function __nh_malloc(_Size, _NhFlag) {
 // Size: 101 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __nh_malloc_dbg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __nh_malloc_dbg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __nh_malloc_dbg(param_1, param_2, param_3, param_4, param_5) {
+export function __nh_malloc_dbg_005F4480(param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -5139,12 +5139,12 @@ export function __nh_malloc_dbg(param_1, param_2, param_3, param_4, param_5) {
 // Size: 34 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heap_alloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heap_alloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heap_alloc(_Size) {
+export function __heap_alloc_005F44F0(_Size) {
 
 
   let pvVar1;
@@ -5160,12 +5160,12 @@ export function __heap_alloc(_Size) {
 // Size: 818 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heap_alloc_dbg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heap_alloc_dbg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heap_alloc_dbg(param_1, param_2, param_3, param_4) {
+export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
 
 
   let pcVar1;
@@ -5285,12 +5285,12 @@ export function __heap_alloc_dbg(param_1, param_2, param_3, param_4) {
 // Size: 38 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _calloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _calloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _calloc(_Count, _Size) {
+export function _calloc_005F4860(_Count, _Size) {
 
 
   let pvVar1;
@@ -5334,13 +5334,13 @@ __calloc_dbg(int param_1,int param_2,undefined4 param_3,undefined4 param_4,undef
 // Size: 38 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __expand
-    _realloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __expand
+    // _realloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___expand(_Memory, _NewSize) {
+export function FID_conflict___expand_005F4900(_Memory, _NewSize) {
 
 
   let pvVar1;
@@ -5579,13 +5579,13 @@ realloc_help(int param_1,uint param_2,uint param_3,int param_4,int param_5,int p
 // Size: 38 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __expand
-    _realloc
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __expand
+    // _realloc
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___expand(_Memory, _NewSize) {
+export function FID_conflict___expand_005F4F00(_Memory, _NewSize) {
 
 
   let pvVar1;
@@ -5638,12 +5638,12 @@ export function FUN_005f4f70(param_1) {
 // Size: 1057 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __free_dbg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __free_dbg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __free_dbg(param_1, param_2) {
+export function __free_dbg_005F4F90(param_1, param_2) {
 
 
   let pcVar1;
@@ -5775,12 +5775,12 @@ export function __free_dbg(param_1, param_2) {
 // Size: 30 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __msize
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __msize
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __msize(_Memory) {
+export function __msize_005F53C0(_Memory) {
 
 
   let sVar1;
@@ -5796,12 +5796,12 @@ export function __msize(_Memory) {
 // Size: 358 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __msize_dbg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __msize_dbg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __msize_dbg(param_1, param_2) {
+export function __msize_dbg_005F53E0(param_1, param_2) {
 
 
   let pcVar1;
@@ -5875,12 +5875,12 @@ export function FUN_005f5550(param_1) {
 // Size: 160 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtSetDbgBlockType
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtSetDbgBlockType
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtSetDbgBlockType(param_1, param_2) {
+export function __CrtSetDbgBlockType_005F5580(param_1, param_2) {
 
 
   let pcVar1;
@@ -5926,12 +5926,12 @@ export function FUN_005f5620(param_1) {
 // Size: 140 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _CheckBytes
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _CheckBytes
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _CheckBytes(param_1, param_2, param_3) {
+export function _CheckBytes_005F5650(param_1, param_2, param_3) {
 
 
   let pcVar1;
@@ -5969,12 +5969,12 @@ export function _CheckBytes(param_1, param_2, param_3) {
 // Size: 873 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtCheckMemory
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtCheckMemory
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtCheckMemory() {
+export function __CrtCheckMemory_005F56E0() {
 
 
   let pcVar1;
@@ -6108,12 +6108,12 @@ export function __CrtCheckMemory() {
 // Size: 48 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtSetDbgFlag
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtSetDbgFlag
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtSetDbgFlag(param_1) {
+export function __CrtSetDbgFlag_005F5A60(param_1) {
 
 
   let iVar1;
@@ -6132,12 +6132,12 @@ export function __CrtSetDbgFlag(param_1) {
 // Size: 105 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtDoForAllClientObjects
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtDoForAllClientObjects
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtDoForAllClientObjects(param_1, param_2) {
+export function __CrtDoForAllClientObjects_005F5A90(param_1, param_2) {
 
 
   let local_8;
@@ -6159,12 +6159,12 @@ export function __CrtDoForAllClientObjects(param_1, param_2) {
 // Size: 92 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtIsValidPointer
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtIsValidPointer
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtIsValidPointer(param_1, param_2, param_3) {
+export function __CrtIsValidPointer_005F5B00(param_1, param_2, param_3) {
 
 
   let BVar1;
@@ -6183,12 +6183,12 @@ export function __CrtIsValidPointer(param_1, param_2, param_3) {
 // Size: 182 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtIsValidHeapPointer
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtIsValidHeapPointer
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtIsValidHeapPointer(param_1) {
+export function __CrtIsValidHeapPointer_005F5B60(param_1) {
 
 
   let BVar1;
@@ -6289,12 +6289,12 @@ export function FUN_005f5d30(param_1) {
 // Size: 316 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtMemCheckpoint
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtMemCheckpoint
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtMemCheckpoint(param_1) {
+export function __CrtMemCheckpoint_005F5D60(param_1) {
 
 
   let pcVar1;
@@ -6343,12 +6343,12 @@ export function __CrtMemCheckpoint(param_1) {
 // Size: 312 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtMemDifference
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtMemDifference
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtMemDifference(param_1, param_2, param_3) {
+export function __CrtMemDifference_005F5EA0(param_1, param_2, param_3) {
 
 
   let pcVar1;
@@ -6392,12 +6392,12 @@ export function __CrtMemDifference(param_1, param_2, param_3) {
 // Size: 704 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtMemDumpAllObjectsSince
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtMemDumpAllObjectsSince
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtMemDumpAllObjectsSince(param_1) {
+export function __CrtMemDumpAllObjectsSince_005F5FE0(param_1) {
 
 
   let pcVar1;
@@ -6500,12 +6500,12 @@ export function __CrtMemDumpAllObjectsSince(param_1) {
 // Size: 252 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __printMemBlockData
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __printMemBlockData
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __printMemBlockData(param_1) {
+export function __printMemBlockData_005F62A0(param_1) {
 
 
   let bVar1;
@@ -6556,12 +6556,12 @@ export function __printMemBlockData(param_1) {
 // Size: 132 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtDumpMemoryLeaks
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtDumpMemoryLeaks
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtDumpMemoryLeaks() {
+export function __CrtDumpMemoryLeaks_005F63A0() {
 
 
   let pcVar1;
@@ -6597,12 +6597,12 @@ export function __CrtDumpMemoryLeaks() {
 // Size: 199 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtMemDumpStatistics
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtMemDumpStatistics
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtMemDumpStatistics(param_1) {
+export function __CrtMemDumpStatistics_005F6430(param_1) {
 
 
   let pcVar1;
@@ -6646,13 +6646,13 @@ export function __CrtMemDumpStatistics(param_1) {
 // Size: 285 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _memcpy
-    _memmove
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _memcpy
+    // _memmove
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function FID_conflict__memcpy(in_EDX, _Dst, _Src, _Size) {
+export function FID_conflict__memcpy_005F6500(in_EDX, _Dst, _Src, _Size) {
 
 
   let uVar1;
@@ -6791,13 +6791,13 @@ export function FID_conflict__memcpy(in_EDX, _Dst, _Src, _Size) {
 // Size: 96 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __wrename
-    _rename
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __wrename
+    // _rename
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___wrename(_OldFilename, _NewFilename) {
+export function FID_conflict___wrename_005F6650(_OldFilename, _NewFilename) {
 
 
   let BVar1;
@@ -6828,13 +6828,13 @@ export function FID_conflict___wrename(_OldFilename, _NewFilename) {
 // Size: 92 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __wremove
-    _remove
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __wremove
+    // _remove
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict__remove(_Filename) {
+export function FID_conflict__remove_005F66B0(_Filename) {
 
 
   let BVar1;
@@ -6865,13 +6865,13 @@ export function FID_conflict__remove(_Filename) {
 // Size: 28 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    __unlink
-    __wunlink
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // __unlink
+    // __wunlink
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___unlink(_Filename) {
+export function FID_conflict___unlink_005F6710(_Filename) {
 
 
   let iVar1;
@@ -6887,12 +6887,12 @@ export function FID_conflict___unlink(_Filename) {
 // Size: 192 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _rewind
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _rewind
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _rewind(_File) {
+export function _rewind_005F6730(_File) {
 
 
   let _FileHandle;
@@ -6934,12 +6934,12 @@ export function _rewind(_File) {
 // Size: 304 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fseek
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fseek
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fseek(_File, _Offset, _Origin) {
+export function _fseek_005F67F0(_File, _Offset, _Origin) {
 
 
   let pcVar1;
@@ -6991,12 +6991,12 @@ export function _fseek(_File, _Offset, _Origin) {
 // Size: 674 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _ftell
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _ftell
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _ftell(_File) {
+export function _ftell_005F6920(_File) {
 
 
   let _FileHandle;
@@ -7035,10 +7035,10 @@ export function _ftell(_File) {
       }
     }
     // DEVIATION: C pointer — else if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                       (_FileHandle & 0x1f) * 8) & 0x80) !== 0) {
-      for (local_8 = _File->_base; local_8 < _File->_ptr; local_8 = local_8 + 1) {
-        if (*local_8 === 0xa) {
-          local_1c = local_1c + 1;
+                       // DEVIATION(cont): (_FileHandle & 0x1f) * 8) & 0x80) != 0) {
+      // DEVIATION(cont): for (local_8 = _File->_base; local_8 < _File->_ptr; local_8 = local_8 + 1) {
+        // DEVIATION(cont): if (*local_8 == '\n') {
+          // DEVIATION(cont): local_1c = local_1c + 1;
         }
       }
     }
@@ -7050,8 +7050,8 @@ export function _ftell(_File) {
         else {
           local_14 = _File->_ptr + (_File->_cnt - _File->_base);
           // DEVIATION: C pointer — if (((int)*(char *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3))
-                              + 4 + (_FileHandle & 0x1f) * 8) & 0x80) !== 0) {
-            lVar3 = __lseek(_FileHandle,0,2);
+                              // DEVIATION(cont): + 4 + (_FileHandle & 0x1f) * 8) & 0x80U) != 0) {
+            // DEVIATION(cont): lVar3 = __lseek(_FileHandle,0,2);
             if (lVar3 === local_20) {
               pcVar4 = _File->_base + local_14;
               for (local_8 = _File->_base; local_8 < pcVar4; local_8 = local_8 + 1) {
@@ -7073,8 +7073,8 @@ export function _ftell(_File) {
                 local_14 = (char *)_File->_bufsiz;
               }
               // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) +
-                             4 + (_FileHandle & 0x1f) * 8) & 4) !== 0) {
-                local_14 = local_14 + 1;
+                             // DEVIATION(cont): 4 + (_FileHandle & 0x1f) * 8) & 4) != 0) {
+                // DEVIATION(cont): local_14 = local_14 + 1;
               }
             }
           }
@@ -7094,12 +7094,12 @@ export function _ftell(_File) {
 // Size: 141 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _printf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _printf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _printf(_Format) {
+export function _printf_005F6BD0(_Format) {
 
 
   let pcVar1;
@@ -7127,15 +7127,15 @@ export function _printf(_Format) {
 // Size: 39 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ftol
-   
-   Library: Visual Studio */
+// /* Library Function - Single Match
+    // __ftol
+   // 
+   // Library: Visual Studio */
 
-export function __ftol() {
+export function __ftol_005F6C60() {
 
 
-  float10 in_ST0;
+  let in_ST0;
   
   return ROUND(in_ST0);
 }
@@ -7147,13 +7147,13 @@ export function __ftol() {
 // Size: 38 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __fpmath
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __fpmath
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __fpmath(param_1) {
+export function __fpmath_005F6C90(param_1) {
 
 
   __cfltcvt_init();
@@ -7182,12 +7182,12 @@ export function FUN_005f6cc0() {
 // Size: 71 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cfltcvt_init
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cfltcvt_init
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cfltcvt_init() {
+export function __cfltcvt_init_005F6CD0() {
 
 
   PTR___fptrap_0063aee0 = __cfltcvt;
@@ -7223,12 +7223,12 @@ export function FUN_005f6d20(param_1) {
 // Size: 172 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _memcmp
-   
-   Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
+// /* Library Function - Single Match
+    // _memcmp
+   // 
+   // Libraries: Visual Studio 1998 Debug, Visual Studio 1998 Release */
 
-export function _memcmp(_Buf1, _Buf2, _Size) {
+export function _memcmp_005F6D50(_Buf1, _Buf2, _Size) {
 
 
   let uVar1;
@@ -7308,8 +7308,8 @@ export function _memcmp(_Buf1, _Buf2, _Size) {
 // LAB_005f6d7d: (code below also in LAB_005f6d7d_helper, kept for 1:1 audit)
         // DEVIATION: C pointer — bVar9 = *(byte *)_Buf1 < *(byte *)_Buf2;
         // DEVIATION: C pointer — if ((*(byte *)_Buf1 !== *(byte *)_Buf2) ||
-           // DEVIATION: C pointer — (bVar9 = *(byte *)(_Buf1 + 1) < *(byte *)(_Buf2 + 1),
-           // DEVIATION: C pointer — *(byte *)(_Buf1 + 1) !== *(byte *)(_Buf2 + 1))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
+           // DEVIATION(cont): (bVar9 = *(byte *)((int)_Buf1 + 1) < *(byte *)((int)_Buf2 + 1),
+           // DEVIATION(cont): *(byte *)((int)_Buf1 + 1) != *(byte *)((int)_Buf2 + 1))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
         _Buf2 = (void *)(_Buf2 + 2);
         _Buf1 = (void *)(_Buf1 + 2);
       }
@@ -7325,12 +7325,12 @@ export function _memcmp(_Buf1, _Buf2, _Size) {
 // Size: 140 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __strcmpi
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __strcmpi
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __strcmpi(_Str1, _Str2) {
+export function __strcmpi_005F6E00(_Str1, _Str2) {
 
 
   let cVar1;
@@ -7392,9 +7392,9 @@ export function __strcmpi(_Str1, _Str2) {
 // Size: 494 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function entry(unaff_EDI) {
+export function entry_005F6E90(unaff_EDI) {
 
 
   let pbVar1;
@@ -7406,12 +7406,12 @@ export function entry(unaff_EDI) {
   let uVar5;
   let local_6c;
   let local_68;
-  _STARTUPINFOA local_60[0];
+  let local_60 = [0];
   let local_1c;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -7468,10 +7468,10 @@ export function entry(unaff_EDI) {
     uVar5 = 0;
     pHVar4 = GetModuleHandleA((LPCSTR)0x0);
     iVar3 = FUN_0055add0(pHVar4,uVar5,local_68,local_6c);
-                    /* WARNING: Subroutine does not return */
+                    // /* WARNING: Subroutine does not return */
     _exit(iVar3);
   }
-                    /* WARNING: Subroutine does not return */
+                    // /* WARNING: Subroutine does not return */
   _exit(-1);
 }
 
@@ -7482,12 +7482,12 @@ export function entry(unaff_EDI) {
 // Size: 55 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __amsg_exit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __amsg_exit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __amsg_exit(param_1) {
+export function __amsg_exit_005F70E0(param_1) {
 
 
   if (DAT_00639fcc === 1) {
@@ -7518,12 +7518,12 @@ export function FUN_005f7120(param_1) {
 // Size: 43 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __getcwd
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __getcwd
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __getcwd(_DstBuf, _SizeInBytes) {
+export function __getcwd_005F7140(_DstBuf, _SizeInBytes) {
 
 
   let pcVar1;
@@ -7539,18 +7539,18 @@ export function __getcwd(_DstBuf, _SizeInBytes) {
 // Size: 312 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __getdcwd
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __getdcwd
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __getdcwd(_Drive, _DstBuf, _SizeInBytes) {
+export function __getdcwd_005F7170(_Drive, _DstBuf, _SizeInBytes) {
 
 
   let iVar1;
   let pcVar2;
   let _Size;
-  CHAR local_118 [260];
+  let local_118 = new Array(260).fill(0);
   let local_14;
   let local_10 = new Array(4).fill(0);
   let local_c = [0];
@@ -7604,16 +7604,16 @@ export function __getdcwd(_Drive, _DstBuf, _SizeInBytes) {
 // Size: 105 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __validdrive
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __validdrive
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __validdrive(param_1) {
+export function __validdrive_005F72B0(param_1) {
 
 
   let iVar1;
-  UINT UVar2;
+  let UVar2;
   let local_c = new Array(8).fill(0);
   
   if (param_1 === 0) {
@@ -7642,20 +7642,20 @@ export function __validdrive(param_1) {
 // Size: 390 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _time
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _time
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _time(_Time) {
+export function _time_005F7320(_Time) {
 
 
   let DVar1;
-  time_t tVar2;
+  let tVar2;
   let local_dc;
-  _TIME_ZONE_INFORMATION local_d4[0];
-  _SYSTEMTIME local_28[0];
-  _SYSTEMTIME local_14[0];
+  let local_d4 = [0];
+  let local_28 = [0];
+  let local_14 = [0];
   
   GetLocalTime(local_28[0]);
   GetSystemTime(local_14[0]);
@@ -7703,12 +7703,12 @@ export function _time(_Time) {
 // Size: 291 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strncat
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _strncat
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _strncat(_Dest, _Source, _Count) {
+export function _strncat_005F74B0(_Dest, _Source, _Count) {
 
 
   let bVar1;
@@ -7816,13 +7816,13 @@ export function _strncat(_Dest, _Source, _Count) {
 // Size: 951 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __assert
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __assert
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __assert(param_1, param_2, param_3) {
+export function __assert_005F75E0(param_1, param_2, param_3) {
 
 
   let pcVar1;
@@ -7830,7 +7830,7 @@ export function __assert(param_1, param_2, param_3) {
   let sVar3;
   let sVar4;
   let iVar5;
-  CHAR local_328 [260];
+  let local_328 = new Array(260).fill(0);
   let local_224;
   let local_220 = new Array(540).fill(0);
   
@@ -7905,7 +7905,7 @@ export function __assert(param_1, param_2, param_3) {
       return;
     }
   }
-                    /* WARNING: Subroutine does not return */
+                    // /* WARNING: Subroutine does not return */
   _abort();
 }
 
@@ -7916,10 +7916,10 @@ export function __assert(param_1, param_2, param_3) {
 // Size: 263 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___InternalCxxFrameHandler
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___InternalCxxFrameHandler
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 undefined4
 ___InternalCxxFrameHandler
@@ -7930,14 +7930,14 @@ ___InternalCxxFrameHandler
   let uVar1;
   
   // DEVIATION: C pointer — if (*(int *)param_5 !== 0x19930520) {
-    _inconsistency();
+    // DEVIATION(cont): _inconsistency();
   }
   if ((u8(param_1[4]) & 0x66) === 0) {
     if (s32(param_5, 0xc) !== 0) {
       // DEVIATION: C pointer — if (((*(int *)param_1 === -0x1f928c9d) && (0x19930520 < u32(param_1, 0x14))) &&
-         (s32(*(int *, 0)(param_1 + 0x1c) + 8) !== 0)) {
-        // DEVIATION: C pointer — uVar1 = (**(code **)(s32(param_1, 0x1c) + 8))
-                          (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+         // DEVIATION(cont): (*(int *)(*(int *)(param_1 + 0x1c) + 8) != 0)) {
+        // DEVIATION(cont): uVar1 = (**(code **)(*(int *)(param_1 + 0x1c) + 8))
+                          // DEVIATION(cont): (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
         return uVar1;
       }
       FindHandler(param_1,param_2,param_3,param_4,param_5,(uchar)param_8,param_6,param_7);
@@ -7956,25 +7956,25 @@ ___InternalCxxFrameHandler
 // Size: 675 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function FindHandler(char, int) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl FindHandler(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
+   // *,void *,struct _s_FuncInfo const *,unsigned char,int,struct EHRegistrationNode *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl
 FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
            _s_FuncInfo *param_5,uchar param_6,int param_7,EHRegistrationNode *param_8)
 
 
-  EHExceptionRecord *pEVar1;
+  let pEVar1;
   let iVar2;
   let local_24;
   let local_20;
   let local_1c;
-  _s_HandlerType *local_18;
+  let local_18;
   let local_14 = [0];
-  _s_TryBlockMapEntry *local_10;
+  let local_10;
   let local_c = [0];
   let local_8;
   
@@ -7984,9 +7984,9 @@ FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *par
   }
   pEVar1 = DAT_0063a018;
   // DEVIATION: C pointer — if ((((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-      (s32(param_1, 0x14) === 0x19930520)) && (s32(param_1, 0x1c) === 0)) {
-    if (DAT_0063a018 === null) {
-      return;
+      // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) && (*(int *)(param_1 + 0x1c) == 0)) {
+    // DEVIATION(cont): if (DAT_0063a018 == (EHExceptionRecord *)0x0) {
+      // DEVIATION(cont): return;
     }
     param_1 = DAT_0063a018;
     param_3 = DAT_0063a01c;
@@ -7995,22 +7995,22 @@ FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *par
       _inconsistency();
     }
     // DEVIATION: C pointer — if (((*(int *)pEVar1 === -0x1f928c9d) && (s32(pEVar1, 0x10) === 3)) &&
-       ((s32(pEVar1, 0x14) === 0x19930520 && (s32(pEVar1, 0x1c) === 0)))) {
-      _inconsistency();
+       // DEVIATION(cont): ((*(int *)(pEVar1 + 0x14) == 0x19930520 && (*(int *)(pEVar1 + 0x1c) == 0)))) {
+      // DEVIATION(cont): _inconsistency();
     }
   }
   // DEVIATION: C pointer — if (((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-     (s32(param_1, 0x14) === 0x19930520)) {
-    local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,local_14[0],local_c[0]);
+     // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) {
+    // DEVIATION(cont): local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,&local_14,&local_c);
     for (; local_14[0] < local_c[0]; local_14[0] = local_14[0] + 1) {
       // DEVIATION: C pointer — if ((*(int *)local_10 <= local_8) && (local_8 <= s32(local_10, 4))) {
-        // DEVIATION: C pointer — local_18 = *(_s_HandlerType **)(local_10 + 0x10);
+        // DEVIATION(cont): local_18 = *(_s_HandlerType **)(local_10 + 0x10);
         for (local_1c = s32(local_10, 0xc); local_1c !== 0; local_1c = local_1c + -1) {
           // DEVIATION: C pointer — local_20 = *(undefined4 **)(s32(param_1, 0x1c) + 0xc);
           // DEVIATION: C pointer — for (local_24 = **(int **)(s32(param_1, 0x1c) + 0xc); local_20 = local_20 + 1,
-              local_24 !== 0; local_24 = local_24 + -1) {
-            iVar2 = TypeMatch(local_18,(_s_CatchableType *)*local_20,
-                              // DEVIATION: C pointer — *(_s_ThrowInfo **)(param_1 + 0x1c));
+              // DEVIATION(cont): local_24 != 0; local_24 = local_24 + -1) {
+            // DEVIATION(cont): iVar2 = TypeMatch(local_18,(_s_CatchableType *)*local_20,
+                              // DEVIATION(cont): *(_s_ThrowInfo **)(param_1 + 0x1c));
             if (iVar2 !== 0) {
               CatchIt(param_1,param_2,param_3,param_4,param_5,local_18,(_s_CatchableType *)*local_20
                       ,local_10,param_7,param_8);
@@ -8043,11 +8043,11 @@ FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *par
 // Size: 288 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function FindHandlerForForeignException(int, int) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl FindHandlerForForeignException(struct EHExceptionRecord *,struct EHRegistrationNode
+   // *,struct _CONTEXT *,void *,struct _s_FuncInfo const *,int,int,struct EHRegistrationNode *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl
 FindHandlerForForeignException
@@ -8057,7 +8057,7 @@ FindHandlerForForeignException
 
   let iVar1;
   let local_10 = [0];
-  _s_TryBlockMapEntry *local_c;
+  let local_c;
   let local_8 = [0];
   
   if ((DAT_0063a020 === 0) ||
@@ -8066,12 +8066,12 @@ FindHandlerForForeignException
     local_c = GetRangeOfTrysToCheck(param_5,param_7,param_6,local_10[0],local_8[0]);
     for (; local_10[0] < local_8[0]; local_10[0] = local_10[0] + 1) {
       // DEVIATION: C pointer — if (((*(int *)local_c <= param_6) && (param_6 <= s32(local_c, 4))) &&
-         ((s32((*(int *, 0)(local_c + 0xc) + -1) * 0x10 + 4 + s32(local_c, 0x10)) === 0 ||
-          // DEVIATION: C pointer — (*(char *)(s32((*(int *, 0)(local_c + 0xc) + -1) * 0x10 + 4 + s32(local_c, 0x10))
-                    + 8) === 0)))) {
-        CatchIt(param_1,param_2,param_3,param_4,param_5,
-                (_s_HandlerType *)((s32(local_c, 0xc) + -1) * 0x10 + s32(local_c, 0x10))
-                ,null,local_c,param_7,param_8);
+         // DEVIATION(cont): ((*(int *)((*(int *)(local_c + 0xc) + -1) * 0x10 + 4 + *(int *)(local_c + 0x10)) == 0 ||
+          // DEVIATION(cont): (*(char *)(*(int *)((*(int *)(local_c + 0xc) + -1) * 0x10 + 4 + *(int *)(local_c + 0x10))
+                    // DEVIATION(cont): + 8) == '\0')))) {
+        // DEVIATION(cont): CatchIt(param_1,param_2,param_3,param_4,param_5,
+                // DEVIATION(cont): (_s_HandlerType *)((*(int *)(local_c + 0xc) + -1) * 0x10 + *(int *)(local_c + 0x10))
+                // DEVIATION(cont): ,(_s_CatchableType *)0x0,local_c,param_7,param_8);
       }
       local_c = local_c + 0x14;
     }
@@ -8086,11 +8086,11 @@ FindHandlerForForeignException
 // Size: 230 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function GetRangeOfTrysToCheck(int, int) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // struct _s_TryBlockMapEntry const * __cdecl GetRangeOfTrysToCheck(struct _s_FuncInfo const
+   // *,int,int,unsigned int *,unsigned int *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 _s_TryBlockMapEntry * __cdecl
 GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4,uint *param_5)
@@ -8133,11 +8133,11 @@ GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4
 // Size: 195 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function TypeMatch() {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // int __cdecl TypeMatch(struct _s_HandlerType const *,struct _s_CatchableType const *,struct
+   // _s_ThrowInfo const *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 int __cdecl TypeMatch(_s_HandlerType *param_1,_s_CatchableType *param_2,_s_ThrowInfo *param_3)
 
@@ -8145,7 +8145,7 @@ int __cdecl TypeMatch(_s_HandlerType *param_1,_s_CatchableType *param_2,_s_Throw
   let iVar1;
   
   // DEVIATION: C pointer — if ((s32(param_1, 4) === 0) || (*(char *)(s32(param_1, 4) + 8) === 0)) {
-    return 1;
+    // DEVIATION(cont): return 1;
   }
   if (((((s32(param_2, 4) === s32(param_1, 4)) ||
         (iVar1 = _strcmp((char *)(s32(param_1, 4) + 8),(char *)(s32(param_2, 4) + 8)),
@@ -8164,12 +8164,12 @@ int __cdecl TypeMatch(_s_HandlerType *param_1,_s_CatchableType *param_2,_s_Throw
 // Size: 234 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___FrameUnwindToState
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___FrameUnwindToState
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) {
+export function ___FrameUnwindToState_005F8050(param_1, param_2, param_3, param_4) {
 
 
   // DEVIATION: SEH
@@ -8177,7 +8177,7 @@ export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) {
   let local_14 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8209,17 +8209,17 @@ export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) {
 // Size: 65 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-export function FID_conflict_ArrayUnwindFilter() {
-    int __cdecl FrameUnwindFilter(struct _EXCEPTION_POINTERS *)
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // int __cdecl ArrayUnwindFilter(struct _EXCEPTION_POINTERS *)
+    // int __cdecl FrameUnwindFilter(struct _EXCEPTION_POINTERS *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
 
 
   // DEVIATION: C pointer — if (*(int *)*param_1 === -0x1f928c9d) {
-    terminate();
+    // DEVIATION(cont): terminate();
   }
   return 0;
 }
@@ -8231,12 +8231,12 @@ undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
 // Size: 209 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function CatchIt(int) {
-
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl CatchIt(struct EHExceptionRecord *,struct EHRegistrationNode *,struct _CONTEXT
+   // *,void *,struct _s_FuncInfo const *,struct _s_HandlerType const *,struct _s_CatchableType const
+   // *,struct _s_TryBlockMapEntry const *,int,struct EHRegistrationNode *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl
 CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
@@ -8271,11 +8271,11 @@ CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3
 // Size: 260 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function CallCatchBlock(int, long) {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void * __cdecl CallCatchBlock(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
+   // _CONTEXT *,struct _s_FuncInfo const *,void *,int,unsigned long)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void * __cdecl
 CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,
@@ -8287,12 +8287,12 @@ CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *
   let uVar3;
   let pvVar4;
   let iVar5;
-  EHExceptionRecord *extraout_EAX;
+  let extraout_EAX;
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8310,8 +8310,8 @@ CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *
   DAT_0063a018 = (EHExceptionRecord *)uVar2;
   DAT_0063a01c = (_CONTEXT *)uVar3;
   // DEVIATION: C pointer — if ((((*(int *)param_1 === -0x1f928c9d) && (s32(param_1, 0x10) === 3)) &&
-      (s32(param_1, 0x14) === 0x19930520)) && (pvVar4 !== null)) {
-    iVar5 = __abnormal_termination();
+      // DEVIATION(cont): (*(int *)(param_1 + 0x14) == 0x19930520)) && (pvVar4 != (void *)0x0)) {
+    // DEVIATION(cont): iVar5 = __abnormal_termination();
     DestructExceptionObject(param_1,(uchar)iVar5);
     param_1 = extraout_EAX;
   }
@@ -8325,15 +8325,15 @@ CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *
 // Size: 96 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function ExFilterRethrow() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // int __cdecl ExFilterRethrow(struct _EXCEPTION_POINTERS *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 int __cdecl ExFilterRethrow(_EXCEPTION_POINTERS *param_1)
 
 
-  PEXCEPTION_RECORD pEVar1;
+  let pEVar1;
   let iVar2;
   
   pEVar1 = param_1->ExceptionRecord;
@@ -8354,18 +8354,18 @@ int __cdecl ExFilterRethrow(_EXCEPTION_POINTERS *param_1)
 // Size: 699 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function BuildCatchObject() {
-
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl BuildCatchObject(struct EHExceptionRecord *,struct EHRegistrationNode *,struct
+   // _s_HandlerType const *,struct _s_CatchableType const *)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl
 BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_HandlerType *param_3,
                 _s_CatchableType *param_4)
 
 
-  EHRegistrationNode *_Dst;
+  let _Dst;
   let iVar1;
   let pvVar2;
   // DEVIATION: SEH
@@ -8374,15 +8374,15 @@ BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_Handl
   let local_14 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: C pointer — if (((s32(param_3, 4) !== 0) && (*(char *)(s32(param_3, 4) + 8) !== 0)) &&
-     (s32(param_3, 8) !== 0)) {
-    _Dst = param_2 + s32(param_3, 8) + 0xc;
+     // DEVIATION(cont): (*(int *)(param_3 + 8) != 0)) {
+    // DEVIATION(cont): _Dst = param_2 + *(int *)(param_3 + 8) + 0xc;
     local_8 = 0;
     if (((byte)*param_3 & 8) === 0) {
       if (((byte)*param_4 & 1) === 0) {
@@ -8401,7 +8401,7 @@ BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_Handl
           // DEVIATION: C pointer — iVar1 = _ValidateRead(*(void **)(param_1 + 0x18),1);
           if (((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) ||
              // DEVIATION: C pointer — (iVar1 = _ValidateExecute(*(_func_int **)(param_4 + 0x18)), iVar1 === 0)) {
-            _inconsistency();
+            // DEVIATION(cont): _inconsistency();
           }
           else if (((byte)*param_4 & 4) === 0) {
             // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)(param_1 + 0x18),(PMD *)(param_4 + 8));
@@ -8422,7 +8422,7 @@ BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_Handl
         else {
           // DEVIATION: C pointer — _memcpy(_Dst,*(void **)(param_1 + 0x18),*(size_t *)(param_4 + 0x14));
           // DEVIATION: C pointer — if ((s32(param_4, 0x14) === 4) && (*(int *)_Dst !== 0)) {
-            // DEVIATION: C pointer — pvVar2 = AdjustPointer(*(void **)_Dst,(PMD *)(param_4 + 8));
+            // DEVIATION(cont): pvVar2 = AdjustPointer(*(void **)_Dst,(PMD *)(param_4 + 8));
             // DEVIATION: C pointer — *(void **)_Dst = pvVar2;
           }
         }
@@ -8451,10 +8451,10 @@ BuildCatchObject(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_s_Handl
 // Size: 124 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function DestructExceptionObject(char) {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl DestructExceptionObject(struct EHExceptionRecord *,unsigned char)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
 
@@ -8463,7 +8463,7 @@ void __cdecl DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
   let local_14 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8484,10 +8484,10 @@ void __cdecl DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
 // Size: 79 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function AdjustPointer() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void * __cdecl AdjustPointer(void *,struct PMD const &)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void * __cdecl AdjustPointer(void *param_1,PMD *param_2)
 
@@ -8511,13 +8511,13 @@ void * __cdecl AdjustPointer(void *param_1,PMD *param_2)
 // Size: 72 bytes
 // ============================================================
 
-/* WARNING: Restarted to delay deadcode elimination for space: stack */
-/* Library Function - Single Match
-    __CallSettingFrame@12
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Restarted to delay deadcode elimination for space: stack */
+// /* Library Function - Single Match
+    // __CallSettingFrame@12
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CallSettingFrame_12(param_1, param_2, param_3) {
+export function __CallSettingFrame_12_005F8830(param_1, param_2, param_3) {
 
 
   let pcVar1;
@@ -8538,10 +8538,10 @@ export function __CallSettingFrame_12(param_1, param_2, param_3) {
 // Size: 105 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function terminate() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl terminate(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl terminate(void)
 
@@ -8550,7 +8550,7 @@ void __cdecl terminate(void)
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8561,7 +8561,7 @@ void __cdecl terminate(void)
     (*DAT_0063a024)();
   }
   // DEVIATION: SEH
-                    /* WARNING: Subroutine does not return */
+                    // /* WARNING: Subroutine does not return */
   _abort();
 }
 
@@ -8572,10 +8572,10 @@ void __cdecl terminate(void)
 // Size: 40 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function unexpected() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl unexpected(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl unexpected(void)
 
@@ -8594,10 +8594,10 @@ void __cdecl unexpected(void)
 // Size: 106 bytes
 // ============================================================
 
-/* Library Function - Single Match
-export function _inconsistency() {
-
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // void __cdecl _inconsistency(void)
+   // 
+   // Library: Visual Studio 1998 Debug */
 
 void __cdecl _inconsistency(void)
 
@@ -8606,7 +8606,7 @@ void __cdecl _inconsistency(void)
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -8628,12 +8628,12 @@ void __cdecl _inconsistency(void)
 // Size: 17 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtDbgBreak
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtDbgBreak
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtDbgBreak() {
+export function __CrtDbgBreak_005F89F0() {
 
 
   DebugBreak();
@@ -8647,12 +8647,12 @@ export function __CrtDbgBreak() {
 // Size: 126 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtSetReportMode
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtSetReportMode
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtSetReportMode(param_1, param_2) {
+export function __CrtSetReportMode_005F8A10(param_1, param_2) {
 
 
   let uVar1;
@@ -8680,12 +8680,12 @@ export function __CrtSetReportMode(param_1, param_2) {
 // Size: 169 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtSetReportFile
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtSetReportFile
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtSetReportFile(param_1, param_2) {
+export function __CrtSetReportFile_005F8A90(param_1, param_2) {
 
 
   let uVar1;
@@ -8738,15 +8738,15 @@ export function FUN_005f8b40(param_1) {
 // Size: 998 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __CrtDbgReport
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __CrtDbgReport
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) {
+export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, param_5) {
 
 
-  LONG LVar1;
+  let LVar1;
   let nNumberOfBytesToWrite;
   let iVar2;
   let puVar3;
@@ -8755,15 +8755,15 @@ export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) {
   let local_3010;
   let local_300c;
   let local_300b = [0];
-  CHAR local_200c[0];
+  let local_200c = [0];
   let local_200b = [0];
   let local_100c;
-  va_list local_1008;
+  let local_1008;
   let local_1004 = [0];
   let local_1003 = [0];
   let uStackY_2c;
   let lpNumberOfBytesWritten;
-  LPOVERLAPPED lpOverlapped;
+  let lpOverlapped;
   
   FUN_005f35f0();
   local_300c = 0;
@@ -8840,7 +8840,7 @@ export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) {
         lpNumberOfBytesWritten = local_3014[0];
         nNumberOfBytesToWrite = _strlen(local_200c[0]);
         // DEVIATION: C pointer — WriteFile(*(HANDLE *)(DAT_0063a048 + param_1 * 4),local_200c[0],nNumberOfBytesToWrite,
-                  lpNumberOfBytesWritten,lpOverlapped);
+                  // DEVIATION(cont): lpNumberOfBytesWritten,lpOverlapped);
       }
       if ((DAT_0063a038[param_1 * 4] & 2) !== 0) {
         OutputDebugStringA(local_200c[0]);
@@ -8875,12 +8875,12 @@ export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) {
 // Size: 813 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _CrtMessageWindow
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _CrtMessageWindow
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _CrtMessageWindow() {
+export function _CrtMessageWindow_005F8F60() {
 
 
   let iVar1;
@@ -8891,7 +8891,7 @@ export function _CrtMessageWindow() {
   let local_1110 = new Array(4036).fill(0);
   let acStackY_14c = new Array(60).fill(0);
   let local_110;
-  CHAR local_10c [188];
+  let local_10c = new Array(188).fill(0);
   let uStackY_50;
   
   FUN_005f35f0();
@@ -9044,12 +9044,12 @@ ___crtLCMapStringW(LPCWSTR _LocaleName,DWORD _DWMapFlag,LPCWSTR _LpSrcStr,int _C
 // Size: 108 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _wcsncnt
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _wcsncnt
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function wcsncnt(param_1, param_2) {
+export function wcsncnt_005F9670(param_1, param_2) {
 
 
   let local_c;
@@ -9172,12 +9172,12 @@ ___crtLCMapStringA(_locale_t _Plocinfo,LPCWSTR _LocaleName,DWORD _DwMapFlag,LPCS
 // Size: 100 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _strncnt
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _strncnt
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _strncnt(_String, _Cnt) {
+export function _strncnt_005F9A00(_String, _Cnt) {
 
 
   let local_c;
@@ -9200,12 +9200,12 @@ export function _strncnt(_String, _Cnt) {
 // Size: 182 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __isctype
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __isctype
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __isctype(_C, _Type) {
+export function __isctype_005F9A70(_C, _Type) {
 
 
   let BVar1;
@@ -9252,13 +9252,13 @@ export function __isctype(_C, _Type) {
 // Size: 831 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __openfile
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __openfile
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __openfile(_Filename, _Mode, _ShFlag, _File) {
+export function __openfile_005F9B30(_Filename, _Mode, _ShFlag, _File) {
 
 
   let cVar1;
@@ -9267,7 +9267,7 @@ export function __openfile(_Filename, _Mode, _ShFlag, _File) {
   let bVar4;
   let bVar5;
   let iVar6;
-  FILE *pFVar7;
+  let pFVar7;
   let local_20;
   let local_18;
   
@@ -9415,16 +9415,16 @@ export function __openfile(_Filename, _Mode, _ShFlag, _File) {
 // Size: 274 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __getstream
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __getstream
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __getstream() {
+export function __getstream_005F9EF0() {
 
 
   let uVar1;
-  FILE *local_c;
+  let local_c;
   let local_8;
   
   local_c = null;
@@ -9451,7 +9451,7 @@ export function __getstream() {
       LAB_005f9fab_helper(local_8, local_c, uVar1); return;
     }
     // DEVIATION: C pointer — if ((*(byte *)(s32(DAT_006e5694, local_8 * 4) + 0xc) & 0x83) === 0) {
-      // DEVIATION: C pointer — local_c = *(FILE **)(DAT_006e5694 + local_8 * 4);
+      // DEVIATION(cont): local_c = *(FILE **)(DAT_006e5694 + local_8 * 4);
       LAB_005f9fab_helper(local_8, local_c, uVar1); return;
     }
     local_8 = local_8 + 1;
@@ -9465,16 +9465,16 @@ export function __getstream() {
 // Size: 267 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __close
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __close
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __close(_FileHandle) {
+export function __close_005FA010(_FileHandle) {
 
 
-  intptr_t iVar1;
-  intptr_t iVar2;
+  let iVar1;
+  let iVar2;
   let hObject;
   let BVar3;
   let iVar4;
@@ -9482,8 +9482,8 @@ export function __close(_FileHandle) {
   
   if ((DAT_006e6b2c <= ((_FileHandle) >>> 0)) ||
      // DEVIATION: C pointer — ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                (_FileHandle & 0x1f) * 8) & 1) === 0)) {
-    DAT_00639f14 = 9;
+                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) == 0)) {
+    // DEVIATION(cont): DAT_00639f14 = 9;
     DAT_00639f18 = 0;
     return -1;
   }
@@ -9506,8 +9506,8 @@ export function __close(_FileHandle) {
   __free_osfhnd(_FileHandle);
   if (local_8 === 0) {
     // DEVIATION: C pointer — *(undefined1 *)
-     (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-     (_FileHandle & 0x1f) * 8) = 0;
+     // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) = 0;
     iVar4 = 0;
   }
   else {
@@ -9524,12 +9524,12 @@ export function __close(_FileHandle) {
 // Size: 138 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __freebuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __freebuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __freebuf(_File) {
+export function __freebuf_005FA120(_File) {
 
 
   let pcVar1;
@@ -9560,12 +9560,12 @@ export function __freebuf(_File) {
 // Size: 126 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _fflush
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _fflush
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _fflush(_File) {
+export function _fflush_005FA1B0(_File) {
 
 
   let iVar1;
@@ -9603,12 +9603,12 @@ export function _fflush(_File) {
 // Size: 186 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __flush
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __flush
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __flush(_File) {
+export function __flush_005FA230(_File) {
 
 
   let _MaxCharCount;
@@ -9641,12 +9641,12 @@ export function __flush(_File) {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __flushall
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __flushall
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __flushall() {
+export function __flushall_005FA2F0() {
 
 
   let iVar1;
@@ -9662,12 +9662,12 @@ export function __flushall() {
 // Size: 247 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _flsall
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _flsall
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function flsall(param_1) {
+export function flsall_005FA310(param_1) {
 
 
   let iVar1;
@@ -9680,16 +9680,16 @@ export function flsall(param_1) {
   for (local_10 = 0; local_10 < DAT_006e69e0; local_10 = local_10 + 1) {
     if ((s32(DAT_006e5694, local_10 * 4) !== 0) &&
        // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e5694, local_10 * 4) + 0xc) & 0x83) !== 0)) {
-      if (param_1 === 1) {
-        // DEVIATION: C pointer — iVar1 = _fflush(*(FILE **)(DAT_006e5694 + local_10 * 4));
+      // DEVIATION(cont): if (param_1 == 1) {
+        // DEVIATION(cont): iVar1 = _fflush(*(FILE **)(DAT_006e5694 + local_10 * 4));
         if (iVar1 !== -1) {
           local_8 = local_8 + 1;
         }
       }
       else if (((param_1 === 0) &&
                // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e5694, local_10 * 4) + 0xc) & 2) !== 0)) &&
-              // DEVIATION: C pointer — (iVar1 = _fflush(*(FILE **)(DAT_006e5694 + local_10 * 4)), iVar1 === -1)) {
-        local_c = -1;
+              // DEVIATION(cont): (iVar1 = _fflush(*(FILE **)(DAT_006e5694 + local_10 * 4)), iVar1 == -1)) {
+        // DEVIATION(cont): local_c = -1;
       }
     }
   }
@@ -9706,16 +9706,16 @@ export function flsall(param_1) {
 // Size: 660 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __flsbuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __flsbuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __flsbuf(_Ch, _File) {
+export function __flsbuf_005FA410(_Ch, _File) {
 
 
   let pcVar1;
-  FILE *_File_00;
+  let _File_00;
   let iVar2;
   let uVar3;
   let local_1c;
@@ -9805,34 +9805,34 @@ export function __flsbuf(_Ch, _File) {
 // Size: 3177 bytes
 // ============================================================
 
-/* WARNING: Type propagation algorithm not settling */
-/* Library Function - Single Match
-    __output
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Type propagation algorithm not settling */
+// /* Library Function - Single Match
+    // __output
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __output(param_1, param_2, param_3) {
+export function __output_005FA6B0(param_1, param_2, param_3) {
 
 
   let pbVar1;
   let pwVar2;
   let sVar3;
   let pcVar4;
-  ulonglong uVar5;
+  let uVar5;
   let wVar6;
   let sVar7;
   let uVar8;
   let iVar9;
   let bVar10;
-  ulonglong uVar11;
-  longlong lVar12;
+  let uVar11;
+  let lVar12;
   let local_28c = new Array(4).fill(0);
   let local_288;
   let local_284;
   let local_280;
-  undefined8 local_27c;
+  let local_27c;
   let local_274;
-  undefined8 local_270;
+  let local_270;
   let local_268 = [0];
   let local_264;
   let local_260;
@@ -9860,7 +9860,7 @@ export function __output(param_1, param_2, param_3) {
   let local_14;
   let local_10;
   let local_c;
-  // DEVIATION: SEH local
+  let local_8;
   
   local_230[0] = 0;
   local_1c = 0;
@@ -10017,7 +10017,7 @@ export function __output(param_1, param_2, param_3) {
         local_264 = param_3[1];
         param_3 = param_3 + 2;
         // DEVIATION: C pointer — (*(code *)PTR___fptrap_0063aee0)
-                  (local_268[0],local_24,s8(uStack_2d)._1_1_,local_238,local_c);
+                  // DEVIATION(cont): (&local_268,local_24,(int)(char)uStack_2d._1_1_,local_238,local_c);
         if (((local_8 & 0x80) !== 0) && (local_238 === 0)) {
           // DEVIATION: C pointer — (*(code *)PTR___fptrap_0063aeec)(local_24);
         }
@@ -10192,7 +10192,7 @@ export function __output(param_1, param_2, param_3) {
         local_270 = 0;
         local_238 = iVar9;
         // DEVIATION: C pointer — if (((local_8 & 0x200) !== 0) && ((*(char *)pwVar2 !== 48 || (local_28 === 0)))) {
-          // DEVIATION: C pointer — *(char *)local_24 = 48;
+          // DEVIATION(cont): *(char *)local_24 = '0';
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }
@@ -10254,12 +10254,12 @@ export function __output(param_1, param_2, param_3) {
 // Size: 117 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _write_char
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _write_char
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function write_char(param_1, param_2, param_3) {
+export function write_char_005FB440(param_1, param_2, param_3) {
 
 
   let local_8;
@@ -10289,12 +10289,12 @@ export function write_char(param_1, param_2, param_3) {
 // Size: 75 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _write_multi_char
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _write_multi_char
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function write_multi_char(param_1, param_2, param_3, param_4) {
+export function write_multi_char_005FB4C0(param_1, param_2, param_3, param_4) {
 
 
   do {
@@ -10314,12 +10314,12 @@ export function write_multi_char(param_1, param_2, param_3, param_4) {
 // Size: 87 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _write_string
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _write_string
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function write_string(param_1, param_2, param_3, param_4) {
+export function write_string_005FB510(param_1, param_2, param_3, param_4) {
 
 
   do {
@@ -10340,12 +10340,12 @@ export function write_string(param_1, param_2, param_3, param_4) {
 // Size: 30 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _get_int_arg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _get_int_arg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function get_int_arg(param_1) {
+export function get_int_arg_005FB570(param_1) {
 
 
   param_1[0] = param_1[0] + 4;
@@ -10359,12 +10359,12 @@ export function get_int_arg(param_1) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _get_int64_arg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _get_int64_arg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function get_int64_arg(param_1) {
+export function get_int64_arg_005FB590(param_1) {
 
 
   param_1[0] = param_1[0] + 8;
@@ -10378,12 +10378,12 @@ export function get_int64_arg(param_1) {
 // Size: 31 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _get_short_arg
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _get_short_arg
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function get_short_arg(param_1) {
+export function get_short_arg_005FB5C0(param_1) {
 
 
   param_1[0] = param_1[0] + 4;
@@ -10397,12 +10397,12 @@ export function get_short_arg(param_1) {
 // Size: 52 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __allmul
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __allmul
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __allmul(param_1, param_2, param_3, param_4) {
+export function __allmul_005FB5E0(param_1, param_2, param_3, param_4) {
 
 
   if (param_4 === 0 && param_2 === 0) {
@@ -10420,13 +10420,13 @@ export function __allmul(param_1, param_2, param_3, param_4) {
 // Size: 330 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __stbuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __stbuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __stbuf(_File) {
+export function __stbuf_005FB620(_File) {
 
 
   let pcVar1;
@@ -10484,12 +10484,12 @@ export function __stbuf(_File) {
 // Size: 182 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ftbuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ftbuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ftbuf(_Flag, _File) {
+export function __ftbuf_005FB770(_Flag, _File) {
 
 
   let pcVar1;
@@ -10523,12 +10523,12 @@ export function __ftbuf(_Flag, _File) {
 // Size: 1156 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __read
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __read
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
+export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
 
 
   let BVar1;
@@ -10542,34 +10542,34 @@ export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
      // DEVIATION: C pointer — ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                (_FileHandle & 0x1f) * 8) & 1) !== 0)) {
-    local_1c = 0;
+                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
+    // DEVIATION(cont): local_1c = 0;
     local_18 = _DstBuf;
     if ((_MaxCharCount === 0) ||
        // DEVIATION: C pointer — ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                  (_FileHandle & 0x1f) * 8) & 2) !== 0)) {
-      local_1c = 0;
+                  // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 2) != 0)) {
+      // DEVIATION(cont): local_1c = 0;
     }
     else {
       // DEVIATION: C pointer — if (((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                     (_FileHandle & 0x1f) * 8) & 0x48) !== 0) &&
-         // DEVIATION: C pointer — (*(char *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 5 +
-                   (_FileHandle & 0x1f) * 8) !== 0xa)) {
-        // DEVIATION: C pointer — *(undefined1 *)_DstBuf =
-             // DEVIATION: C pointer — *(undefined1 *)
-              (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 5 +
-              (_FileHandle & 0x1f) * 8);
+                     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x48) != 0) &&
+         // DEVIATION(cont): (*(char *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 5 +
+                   // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) != '\n')) {
+        // DEVIATION(cont): *(undefined1 *)_DstBuf =
+             // DEVIATION(cont): *(undefined1 *)
+              // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 5 +
+              // DEVIATION(cont): (_FileHandle & 0x1fU) * 8);
         local_18 = (void *)(_DstBuf + 1);
         local_1c = 1;
         _MaxCharCount = _MaxCharCount - 1;
         // DEVIATION: C pointer — *(undefined1 *)
-         (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 5 +
-         (_FileHandle & 0x1f) * 8) = 10;
+         // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 5 +
+         // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) = 10;
       }
       // DEVIATION: C pointer — BVar1 = ReadFile(*(HANDLE *)
-                        (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) +
-                        (_FileHandle & 0x1f) * 8),local_18,_MaxCharCount,local_14[0],
-                       (LPOVERLAPPED)0x0);
+                        // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
+                        // DEVIATION(cont): (_FileHandle & 0x1fU) * 8),local_18,_MaxCharCount,&local_14,
+                       // DEVIATION(cont): (LPOVERLAPPED)0x0);
       if (BVar1 === 0) {
         local_c = GetLastError();
         if (local_c === 5) {
@@ -10588,29 +10588,29 @@ export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
       else {
         local_1c = local_1c + local_14[0];
         // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                      (_FileHandle & 0x1f) * 8) & 0x80) !== 0) {
-          // DEVIATION: C pointer — if ((local_14[0] === 0) || (*(char *)_DstBuf !== 0xa)) {
-            // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                     (_FileHandle & 0x1f) * 8) =
-                 // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) +
-                           4 + (_FileHandle & 0x1f) * 8) & 0xfb;
+                      // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x80) != 0) {
+          // DEVIATION(cont): if ((local_14 == 0) || (*(char *)_DstBuf != '\n')) {
+            // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+                     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) =
+                 // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
+                           // DEVIATION(cont): 4 + (_FileHandle & 0x1fU) * 8) & 0xfb;
           }
           else {
             // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                     (_FileHandle & 0x1f) * 8) =
-                 // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) +
-                           4 + (_FileHandle & 0x1f) * 8) | 4;
+                     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) =
+                 // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
+                           // DEVIATION(cont): 4 + (_FileHandle & 0x1fU) * 8) | 4;
           }
           local_10 = _DstBuf;
           local_8 = _DstBuf;
           while (local_8 < (char *)(local_1c + _DstBuf)) {
             if (*local_8 === 0x1a) {
               // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3))
-                             + 4 + (_FileHandle & 0x1f) * 8) & 0x40) === 0) {
-                // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4
-                         + (_FileHandle & 0x1f) * 8) =
-                     // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)
-                                       ) + 4 + (_FileHandle & 0x1f) * 8) | 2;
+                             // DEVIATION(cont): + 4 + (_FileHandle & 0x1fU) * 8) & 0x40) == 0) {
+                // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4
+                         // DEVIATION(cont): + (_FileHandle & 0x1fU) * 8) =
+                     // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)
+                                       // DEVIATION(cont): ) + 4 + (_FileHandle & 0x1fU) * 8) | 2;
               }
               break;
             }
@@ -10630,19 +10630,19 @@ export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
                 local_8 = local_8 + 1;
                 local_c = 0;
                 // DEVIATION: C pointer — BVar1 = ReadFile(*(HANDLE *)
-                                  (s32((int, 0)DAT_006e69f0 +
-                                           ((_FileHandle & 0xffffffe0) >> 3)) +
-                                  (_FileHandle & 0x1f) * 8),local_20,1,local_14[0],(LPOVERLAPPED)0x0)
-                ;
+                                  // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 +
+                                           // DEVIATION(cont): ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
+                                  // DEVIATION(cont): (_FileHandle & 0x1fU) * 8),local_20,1,&local_14,(LPOVERLAPPED)0x0)
+                // DEVIATION(cont): ;
                 if (BVar1 === 0) {
                   local_c = GetLastError();
                 }
                 if ((local_c === 0) && (local_14[0] !== 0)) {
                   // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 +
-                                         ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                                (_FileHandle & 0x1f) * 8) & 0x48) === 0) {
-                    if ((_DstBuf === local_10) && (local_20[0] === 0xa)) {
-                      *local_10 = 0xa;
+                                         // DEVIATION(cont): ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+                                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x48) == 0) {
+                    // DEVIATION(cont): if ((_DstBuf == local_10) && (local_20[0] == '\n')) {
+                      // DEVIATION(cont): *local_10 = '\n';
                       local_10 = local_10 + 1;
                     }
                     else {
@@ -10660,8 +10660,8 @@ export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
                     else {
                       *local_10 = 0xd;
                       // DEVIATION: C pointer — *(char *)(s32((int, 0)DAT_006e69f0 +
-                                        ((_FileHandle & 0xffffffe0) >> 3)) + 5 +
-                               (_FileHandle & 0x1f) * 8) = local_20[0];
+                                        // DEVIATION(cont): ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 5 +
+                               // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) = local_20[0];
                     }
                     local_10 = local_10 + 1;
                   }
@@ -10698,12 +10698,12 @@ export function __read(_FileHandle, _DstBuf, _MaxCharCount) {
 // Size: 744 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __write
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __write
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __write(_FileHandle, _Buf, _MaxCharCount) {
+export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
 
 
   let cVar1;
@@ -10718,23 +10718,23 @@ export function __write(_FileHandle, _Buf, _MaxCharCount) {
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
      // DEVIATION: C pointer — ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                (_FileHandle & 0x1f) * 8) & 1) !== 0)) {
-    local_14 = 0;
+                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
+    // DEVIATION(cont): local_14 = 0;
     local_424 = 0;
     if (_MaxCharCount === 0) {
       local_424 = 0;
     }
     else {
       // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                    (_FileHandle & 0x1f) * 8) & 0x20) !== 0) {
-        __lseek(_FileHandle,0,2);
+                    // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x20) != 0) {
+        // DEVIATION(cont): __lseek(_FileHandle,0,2);
       }
       // DEVIATION: C pointer — if ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                    (_FileHandle & 0x1f) * 8) & 0x80) === 0) {
-        // DEVIATION: C pointer — BVar2 = WriteFile(*(HANDLE *)
-                           (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) +
-                           (_FileHandle & 0x1f) * 8),_Buf,_MaxCharCount,local_41c[0],
-                          (LPOVERLAPPED)0x0);
+                    // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0x80) == 0) {
+        // DEVIATION(cont): BVar2 = WriteFile(*(HANDLE *)
+                           // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
+                           // DEVIATION(cont): (_FileHandle & 0x1fU) * 8),_Buf,_MaxCharCount,&local_41c,
+                          // DEVIATION(cont): (LPOVERLAPPED)0x0);
         if (BVar2 === 0) {
           local_10 = GetLastError();
         }
@@ -10762,9 +10762,9 @@ export function __write(_FileHandle, _Buf, _MaxCharCount) {
             local_c = local_c + 1;
           }
           // DEVIATION: C pointer — BVar2 = WriteFile(*(HANDLE *)
-                             (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3))
-                             + (_FileHandle & 0x1f) * 8),local_418,local_c - local_418,
-                            local_41c[0],(LPOVERLAPPED)0x0);
+                             // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3))
+                             // DEVIATION(cont): + (_FileHandle & 0x1fU) * 8),local_418,(int)local_c - (int)local_418,
+                            // DEVIATION(cont): &local_41c,(LPOVERLAPPED)0x0);
           if (BVar2 === 0) {
             local_10 = GetLastError();
             break;
@@ -10775,8 +10775,8 @@ export function __write(_FileHandle, _Buf, _MaxCharCount) {
       if (local_14 === 0) {
         if (local_10 === 0) {
           // DEVIATION: C pointer — if (((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4
-                         // DEVIATION: C pointer — + (_FileHandle & 0x1f) * 8) & 0x40) === 0) || (*(char *)_Buf !== 0x1a)) {
-            DAT_00639f14 = 0x1c;
+                         // DEVIATION(cont): + (_FileHandle & 0x1fU) * 8) & 0x40) == 0) || (*(char *)_Buf != '\x1a')) {
+            // DEVIATION(cont): DAT_00639f14 = 0x1c;
             DAT_00639f18 = 0;
             local_424 = -1;
           }
@@ -10815,12 +10815,12 @@ export function __write(_FileHandle, _Buf, _MaxCharCount) {
 // Size: 177 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __dosmaperr
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __dosmaperr
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __dosmaperr(param_1) {
+export function __dosmaperr_005FBFD0(param_1) {
 
 
   let local_8;
@@ -10856,12 +10856,12 @@ export function __dosmaperr(param_1) {
 // Size: 188 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __mbctoupper
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __mbctoupper
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __mbctoupper(unaff_EDI, _Ch) {
+export function __mbctoupper_005FC090(unaff_EDI, _Ch) {
 
 
   let iVar1;
@@ -10897,28 +10897,28 @@ export function __mbctoupper(unaff_EDI, _Ch) {
 // Size: 808 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ioinit
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ioinit
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ioinit() {
+export function __ioinit_005FC160() {
 
 
   let puVar1;
   let DVar2;
   let piVar3;
   let hFile;
-  UINT UVar4;
+  let UVar4;
   let local_6c;
-  UINT local_68;
+  let local_68;
   let local_64;
   let local_60;
   let local_5c;
   let local_58;
   let local_54;
-  _STARTUPINFOA local_4c[0];
-  UINT *local_8;
+  let local_4c = [0];
+  let local_8;
   
   local_54 = (undefined4 *)__malloc_dbg(0x100,2,"ioinit.c",0x83);
   if (local_54 === null) {
@@ -10958,10 +10958,10 @@ export function __ioinit() {
     }
     for (local_5c = 0; local_5c < local_68; local_5c = local_5c + 1) {
       // DEVIATION: C pointer — if (((*(int *)local_64 !== -1) && ((*local_8 & 1) !== 0)) &&
-         // DEVIATION: C pointer — (((*local_8 & 8) !== 0 || (DVar2 = GetFileType(*(HANDLE *)local_64), DVar2 !== 0)))) {
-        puVar1 = (undefined4 *)
-                 (s32((int, 0)DAT_006e69f0 + ((local_5c & 0xffffffe0) >> 3)) +
-                 (local_5c & 0x1f) * 8);
+         // DEVIATION(cont): (((*local_8 & 8) != 0 || (DVar2 = GetFileType(*(HANDLE *)local_64), DVar2 != 0)))) {
+        // DEVIATION(cont): puVar1 = (undefined4 *)
+                 // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(local_5c & 0xffffffe0) >> 3)) +
+                 // DEVIATION(cont): (local_5c & 0x1f) * 8);
         // DEVIATION: C pointer — *puVar1 = *(undefined4 *)local_64;
         // DEVIATION: C pointer — *(byte *)(puVar1 + 1) = (byte)*local_8;
       }
@@ -11012,12 +11012,12 @@ export function __ioinit() {
 // Size: 104 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ioterm
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ioterm
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ioterm() {
+export function __ioterm_005FC490() {
 
 
   let local_8;
@@ -11037,13 +11037,13 @@ export function __ioterm() {
 // Size: 188 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __getbuf
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __getbuf
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __getbuf(_File) {
+export function __getbuf_005FC500(_File) {
 
 
   let pcVar1;
@@ -11095,12 +11095,12 @@ export function FUN_005fc5c0(param_1) {
 // Size: 313 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _tolower
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _tolower
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _tolower(unaff_EDI, _C) {
+export function _tolower_005FC5E0(unaff_EDI, _C) {
 
 
   let iVar1;
@@ -11192,12 +11192,12 @@ export function FUN_005fc750() {
 // Size: 62 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __callnewh
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __callnewh
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __callnewh(_Size) {
+export function __callnewh_005FC770(_Size) {
 
 
   let iVar1;
@@ -11215,12 +11215,12 @@ export function __callnewh(_Size) {
 // Size: 34 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __malloc_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __malloc_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __malloc_base(param_1) {
+export function __malloc_base_005FC7B0(param_1) {
 
 
   __nh_malloc_base(param_1,DAT_0063a428);
@@ -11234,12 +11234,12 @@ export function __malloc_base(param_1) {
 // Size: 150 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __nh_malloc_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __nh_malloc_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __nh_malloc_base(param_1, param_2) {
+export function __nh_malloc_base_005FC7E0(param_1, param_2) {
 
 
   let iVar1;
@@ -11275,16 +11275,16 @@ export function __nh_malloc_base(param_1, param_2) {
 // Size: 99 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heap_alloc_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heap_alloc_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heap_alloc_base(param_1) {
+export function __heap_alloc_base_005FC880(param_1) {
 
 
   let dwBytes;
-  LPVOID pvVar1;
+  let pvVar1;
   
   dwBytes = param_1 + 0xf & 0xfffffff0;
   if ((DAT_0063ac54 < dwBytes) ||
@@ -11314,18 +11314,18 @@ export function FUN_005fc8f0() {
 // Size: 195 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __expand_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __expand_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __expand_base(param_1, param_2) {
+export function __expand_base_005FC910(param_1, param_2) {
 
 
   let iVar1;
   let local_14 = [0];
   let local_10;
-  LPVOID local_c;
+  let local_c;
   let local_8 = [0];
   
   if (param_2 < 0xffffffe1) {
@@ -11360,12 +11360,12 @@ export function __expand_base(param_1, param_2) {
 // Size: 518 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __realloc_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __realloc_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __realloc_base(param_1, param_2) {
+export function __realloc_base_005FC9E0(param_1, param_2) {
 
 
   let pvVar1;
@@ -11451,12 +11451,12 @@ export function __realloc_base(param_1, param_2) {
 // Size: 105 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __free_base
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __free_base
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __free_base(param_1) {
+export function __free_base_005FCBF0(param_1) {
 
 
   let local_10 = [0];
@@ -11482,12 +11482,12 @@ export function __free_base(param_1) {
 // Size: 120 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heapchk
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heapchk
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heapchk() {
+export function __heapchk_005FCC60() {
 
 
   let iVar1;
@@ -11521,12 +11521,12 @@ export function __heapchk() {
 // Size: 21 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heapset
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heapset
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heapset(_Fill) {
+export function __heapset_005FCCE0(_Fill) {
 
 
   let iVar1;
@@ -11542,12 +11542,12 @@ export function __heapset(_Fill) {
 // Size: 93 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heap_init
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heap_init
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heap_init() {
+export function __heap_init_005FCD00() {
 
 
   let iVar1;
@@ -11576,12 +11576,12 @@ export function __heap_init() {
 // Size: 93 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __heap_term
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __heap_term
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __heap_term() {
+export function __heap_term_005FCD60() {
 
 
   undefined **local_8;
@@ -11617,12 +11617,12 @@ export function FUN_005fcdc0() {
 // Size: 61 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __set_sbh_threshold
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __set_sbh_threshold
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __set_sbh_threshold(param_1) {
+export function __set_sbh_threshold_005FCDE0(param_1) {
 
 
   let uVar1;
@@ -11641,15 +11641,15 @@ export function __set_sbh_threshold(param_1) {
 // Size: 508 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_new_region
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_new_region
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_new_region() {
+export function ___sbh_new_region_005FCE30() {
 
 
-  LPVOID pvVar1;
+  let pvVar1;
   undefined **local_10;
   let local_c;
   let local_8;
@@ -11716,12 +11716,12 @@ export function ___sbh_new_region() {
 // Size: 132 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_release_region
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_release_region
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_release_region(param_1) {
+export function ___sbh_release_region_005FD040(param_1) {
 
 
   VirtualFree(param_1[0x204],0,0x8000);
@@ -11746,12 +11746,12 @@ export function ___sbh_release_region(param_1) {
 // Size: 376 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_decommit_pages
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_decommit_pages
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_decommit_pages(param_1) {
+export function ___sbh_decommit_pages_005FD0D0(param_1) {
 
 
   let puVar1;
@@ -11808,12 +11808,12 @@ export function ___sbh_decommit_pages(param_1) {
 // Size: 162 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_find_block
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_find_block
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_find_block(param_1, param_2, param_3) {
+export function ___sbh_find_block_005FD250(param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -11840,12 +11840,12 @@ export function ___sbh_find_block(param_1, param_2, param_3) {
 // Size: 136 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_free_block
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_free_block
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_free_block(param_1, param_2, param_3) {
+export function ___sbh_free_block_005FD300(param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -11855,8 +11855,8 @@ export function ___sbh_free_block(param_1, param_2, param_3) {
   param_3[0] = 0;
   // DEVIATION: C pointer — *(undefined1 *)(iVar1 + 0x410 + param_1) = 0xf1;
   // DEVIATION: C pointer — if ((*(char *)(iVar1 + 0x10 + param_1) === -0x10) &&
-     (DAT_0063ac50 = DAT_0063ac50 + 1, DAT_0063ac50 === 0x20)) {
-    ___sbh_decommit_pages(0x10);
+     // DEVIATION(cont): (DAT_0063ac50 = DAT_0063ac50 + 1, DAT_0063ac50 == 0x20)) {
+    // DEVIATION(cont): ___sbh_decommit_pages(0x10);
   }
   return;
 }
@@ -11868,12 +11868,12 @@ export function ___sbh_free_block(param_1, param_2, param_3) {
 // Size: 1207 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_alloc_block
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_alloc_block
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_alloc_block(param_1) {
+export function ___sbh_alloc_block_005FD390(param_1) {
 
 
   let piVar1;
@@ -11892,16 +11892,16 @@ export function ___sbh_alloc_block(param_1) {
       for (local_10 = local_18[2]; local_10 < 0x400;
           local_10 = (undefined *)(local_10 + 1)) {
         // DEVIATION: C pointer — if (((param_1 <= *(byte *)(local_10 + 0x10 + local_18)) &&
-            // DEVIATION: C pointer — (*(char *)(local_10 + 0x10 + local_18) !== -1)) &&
-           // DEVIATION: C pointer — (param_1 < *(byte *)(local_10 + 0x410 + local_18))) {
-          puVar2 = (undefined *)
-                   ___sbh_alloc_block_from_page
-                             (local_18[0x204] + local_10 * 0x1000,
-                              // DEVIATION: C pointer — *(undefined1 *)(local_10 + 0x10 + local_18),param_1);
+            // DEVIATION(cont): (*(char *)((int)local_10 + 0x10 + (int)local_18) != -1)) &&
+           // DEVIATION(cont): (param_1 < *(byte *)((int)local_10 + 0x410 + (int)local_18))) {
+          // DEVIATION(cont): puVar2 = (undefined *)
+                   // DEVIATION(cont): ___sbh_alloc_block_from_page
+                             // DEVIATION(cont): ((int)local_18[0x204] + (int)local_10 * 0x1000,
+                              // DEVIATION(cont): *(undefined1 *)((int)local_10 + 0x10 + (int)local_18),param_1);
           if (puVar2 !== null) {
             PTR_LOOP_0063ac4c = (undefined *)local_18;
             // DEVIATION: C pointer — *(char *)(local_10 + 0x10 + local_18) =
-                 // DEVIATION: C pointer — *(char *)(local_10 + 0x10 + local_18) - s8(param_1);
+                 // DEVIATION(cont): *(char *)((int)local_10 + 0x10 + (int)local_18) - (char)param_1;
             local_18[2] = local_10;
             return puVar2;
           }
@@ -11911,16 +11911,16 @@ export function ___sbh_alloc_block(param_1) {
       for (local_10 = null; local_10 < local_18[2];
           local_10 = (undefined *)(local_10 + 1)) {
         // DEVIATION: C pointer — if (((param_1 <= *(byte *)(local_10 + 0x10 + local_18)) &&
-            // DEVIATION: C pointer — (*(char *)(local_10 + 0x10 + local_18) !== -1)) &&
-           // DEVIATION: C pointer — (param_1 < *(byte *)(local_10 + 0x410 + local_18))) {
-          puVar2 = (undefined *)
-                   ___sbh_alloc_block_from_page
-                             (local_18[0x204] + local_10 * 0x1000,
-                              // DEVIATION: C pointer — *(undefined1 *)(local_10 + 0x10 + local_18),param_1);
+            // DEVIATION(cont): (*(char *)((int)local_10 + 0x10 + (int)local_18) != -1)) &&
+           // DEVIATION(cont): (param_1 < *(byte *)((int)local_10 + 0x410 + (int)local_18))) {
+          // DEVIATION(cont): puVar2 = (undefined *)
+                   // DEVIATION(cont): ___sbh_alloc_block_from_page
+                             // DEVIATION(cont): ((int)local_18[0x204] + (int)local_10 * 0x1000,
+                              // DEVIATION(cont): *(undefined1 *)((int)local_10 + 0x10 + (int)local_18),param_1);
           if (puVar2 !== null) {
             PTR_LOOP_0063ac4c = (undefined *)local_18;
             // DEVIATION: C pointer — *(char *)(local_10 + 0x10 + local_18) =
-                 // DEVIATION: C pointer — *(char *)(local_10 + 0x10 + local_18) - s8(param_1);
+                 // DEVIATION(cont): *(char *)((int)local_10 + 0x10 + (int)local_18) - (char)param_1;
             local_18[2] = local_10;
             return puVar2;
           }
@@ -12006,12 +12006,12 @@ export function ___sbh_alloc_block(param_1) {
 // Size: 763 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_alloc_block_from_page
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_alloc_block_from_page
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_alloc_block_from_page(param_1, param_2, param_3) {
+export function ___sbh_alloc_block_from_page_005FD860(param_1, param_2, param_3) {
 
 
   let pbVar1;
@@ -12114,12 +12114,12 @@ export function ___sbh_alloc_block_from_page(param_1, param_2, param_3) {
 // Size: 439 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_resize_block
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_resize_block
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_resize_block(param_1, param_2, param_3, param_4) {
+export function ___sbh_resize_block_005FDB60(param_1, param_2, param_3, param_4) {
 
 
   let bVar1;
@@ -12135,8 +12135,8 @@ export function ___sbh_resize_block(param_1, param_2, param_3, param_4) {
   if (param_4 < uVar2) {
     param_3[0] = u8(param_4);
     // DEVIATION: C pointer — *(byte *)((param_2 - s32(param_1, 0x810) >> 0xc) + 0x10 + param_1) =
-         // DEVIATION: C pointer — (*(char *)((param_2 - s32(param_1, 0x810) >> 0xc) + 0x10 + param_1) -
-         u8(param_4)) + bVar1;
+         // DEVIATION(cont): (*(char *)(((int)param_2 - *(int *)(param_1 + 0x810) >> 0xc) + 0x10 + param_1) -
+         // DEVIATION(cont): (byte)param_4) + bVar1;
     // DEVIATION: C pointer — *(undefined1 *)((param_2 - s32(param_1, 0x810) >> 0xc) + 0x410 + param_1) = 0xf1;
     local_14 = 1;
   }
@@ -12162,8 +12162,8 @@ export function ___sbh_resize_block(param_1, param_2, param_3, param_4) {
         }
       }
       // DEVIATION: C pointer — *(byte *)((param_2 - s32(param_1, 0x810) >> 0xc) + 0x10 + param_1) =
-           // DEVIATION: C pointer — (*(char *)((param_2 - s32(param_1, 0x810) >> 0xc) + 0x10 + param_1) -
-           u8(param_4)) + bVar1;
+           // DEVIATION(cont): (*(char *)(((int)param_2 - *(int *)(param_1 + 0x810) >> 0xc) + 0x10 + param_1) -
+           // DEVIATION(cont): (byte)param_4) + bVar1;
       local_14 = 1;
     }
   }
@@ -12177,12 +12177,12 @@ export function ___sbh_resize_block(param_1, param_2, param_3, param_4) {
 // Size: 617 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___sbh_heap_check
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___sbh_heap_check
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___sbh_heap_check() {
+export function ___sbh_heap_check_005FDD20() {
 
 
   let iVar1;
@@ -12232,7 +12232,7 @@ export function ___sbh_heap_check() {
               local_10 = local_10 + 1;
             }
             // DEVIATION: C pointer — if (*(char *)(local_18 + 8 + local_8) === 0) {
-              local_28 = local_28 + 1;
+              // DEVIATION(cont): local_28 = local_28 + 1;
               local_24 = local_24 + 1;
               local_18 = local_18 + 1;
             }
@@ -12250,10 +12250,10 @@ export function ___sbh_heap_check() {
               iVar2 = local_18;
               while (local_1c = iVar2 + 1,
                     // DEVIATION: C pointer — local_1c < ((uint)*(byte *)(local_18 + 8 + local_8) + local_18)) {
-                iVar1 = iVar2 + 9;
+                // DEVIATION(cont): iVar1 = iVar2 + 9;
                 iVar2 = local_1c;
                 // DEVIATION: C pointer — if (*(char *)(iVar1 + local_8) !== 0) {
-                  return 0xfffffffa;
+                  // DEVIATION(cont): return 0xfffffffa;
                 }
               }
               local_18 = local_1c;
@@ -12289,12 +12289,12 @@ export function ___sbh_heap_check() {
 // Size: 285 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __lseek
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __lseek
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __lseek(_FileHandle, _Offset, _Origin) {
+export function __lseek_005FDF90(_FileHandle, _Offset, _Origin) {
 
 
   let DVar1;
@@ -12303,8 +12303,8 @@ export function __lseek(_FileHandle, _Offset, _Origin) {
   
   if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
      // DEVIATION: C pointer — ((*(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                (_FileHandle & 0x1f) * 8) & 1) !== 0)) {
-    hFile = (HANDLE)__get_osfhandle(_FileHandle);
+                // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) {
+    // DEVIATION(cont): hFile = (HANDLE)__get_osfhandle(_FileHandle);
     if (hFile === (HANDLE)0xffffffff) {
       DAT_00639f14 = 9;
       DVar1 = 0xffffffff;
@@ -12319,9 +12319,9 @@ export function __lseek(_FileHandle, _Offset, _Origin) {
       }
       if (local_8 === 0) {
         // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                 (_FileHandle & 0x1f) * 8) =
-             // DEVIATION: C pointer — *(byte *)(s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-                      (_FileHandle & 0x1f) * 8) & 0xfd;
+                 // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) =
+             // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+                      // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 0xfd;
       }
       else {
         __dosmaperr(local_8);
@@ -12344,12 +12344,12 @@ export function __lseek(_FileHandle, _Offset, _Origin) {
 // Size: 338 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___initstdio
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___initstdio
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___initstdio() {
+export function ___initstdio_005FE0B0() {
 
 
   let local_8;
@@ -12389,12 +12389,12 @@ export function ___initstdio() {
 // Size: 36 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___endstdio
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___endstdio
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___endstdio() {
+export function ___endstdio_005FE210() {
 
 
   __flushall();
@@ -12411,12 +12411,12 @@ export function ___endstdio() {
 // Size: 29 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __setdefaultprecision
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __setdefaultprecision
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __setdefaultprecision() {
+export function __setdefaultprecision_005FE240() {
 
 
   __controlfp(0x10000,0x30000);
@@ -12430,13 +12430,13 @@ export function __setdefaultprecision() {
 // Size: 94 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x005fe2a8) */
-/* Library Function - Single Match
-    __ms_p5_test_fdiv
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Removing unreachable block (ram,0x005fe2a8) */
+// /* Library Function - Single Match
+    // __ms_p5_test_fdiv
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ms_p5_test_fdiv() {
+export function __ms_p5_test_fdiv_005FE260() {
 
 
   return 0;
@@ -12449,16 +12449,16 @@ export function __ms_p5_test_fdiv() {
 // Size: 86 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ms_p5_mp_test_fdiv
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ms_p5_mp_test_fdiv
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ms_p5_mp_test_fdiv() {
+export function __ms_p5_mp_test_fdiv_005FE2C0() {
 
 
   let hModule;
-  FARPROC pFVar1;
+  let pFVar1;
   
   hModule = GetModuleHandleA("KERNEL32");
   if ((hModule !== (HMODULE)0x0) &&
@@ -12477,12 +12477,12 @@ export function __ms_p5_mp_test_fdiv() {
 // Size: 179 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __forcdecpt
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __forcdecpt
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __forcdecpt(_Buf) {
+export function __forcdecpt_005FE320(_Buf) {
 
 
   let cVar1;
@@ -12520,12 +12520,12 @@ export function __forcdecpt(_Buf) {
 // Size: 223 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cropzeros
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cropzeros
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cropzeros(_Buf) {
+export function __cropzeros_005FE3E0(_Buf) {
 
 
   let pcVar1;
@@ -12561,12 +12561,12 @@ export function __cropzeros(_Buf) {
 // Size: 50 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __positive
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __positive
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __positive(arg) {
+export function __positive_005FE4C0(arg) {
 
 
   return ((0.0 <= *arg) >>> 0);
@@ -12579,16 +12579,16 @@ export function __positive(arg) {
 // Size: 83 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __fassign
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __fassign
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __fassign(flag, argument, number) {
+export function __fassign_005FE500(flag, argument, number) {
 
 
-  _CRT_FLOAT local_10[0];
-  _CRT_FLOAT local_c[0];
+  let local_10 = [0];
+  let local_c = [0];
   let local_8;
   
   if (flag === 0) {
@@ -12610,16 +12610,16 @@ export function __fassign(flag, argument, number) {
 // Size: 458 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cftoe
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cftoe
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) {
+export function __cftoe_005FE560(_Value, _Buf, _SizeInBytes, _Dec, _Caps) {
 
 
   let puVar1;
-  STRFLT unaff_EDI;
+  let unaff_EDI;
   let local_10;
   let local_c;
   let local_8;
@@ -12648,7 +12648,7 @@ export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) {
     *puVar1 = 0x45;
   }
   // DEVIATION: C pointer — if (*(char *)local_c[3] !== 48) {
-    local_10 = local_c[1] + -1;
+    // DEVIATION(cont): local_10 = local_c[1] + -1;
     if (local_10 < 0) {
       local_10 = -local_10;
       puVar1[1] = 0x2d;
@@ -12673,17 +12673,17 @@ export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) {
 // Size: 393 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cftof
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cftof
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cftof(_Value, _Buf, _SizeInBytes, _Dec) {
+export function __cftof_005FE730(_Value, _Buf, _SizeInBytes, _Dec) {
 
 
   let iVar1;
   let sVar2;
-  STRFLT unaff_EDI;
+  let unaff_EDI;
   let local_c;
   let local_8;
   
@@ -12740,16 +12740,16 @@ export function __cftof(_Value, _Buf, _SizeInBytes, _Dec) {
 // Size: 281 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cftog
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cftog
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cftog(param_1, param_2, param_3, param_4) {
+export function __cftog_005FE8C0(param_1, param_2, param_3, param_4) {
 
 
   let _Buf;
-  STRFLT unaff_EDI;
+  let unaff_EDI;
   let local_8;
   
   DAT_006e54a4 = (int *)__fltout(param_1[0],param_1[1]);
@@ -12781,15 +12781,15 @@ export function __cftog(param_1, param_2, param_3, param_4) {
 // Size: 63 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cftoe_g
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cftoe_g
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cftoe_g(unaff_EDI, param_1, param_2, param_3, param_4) {
+export function __cftoe_g_005FE9E0(unaff_EDI, param_1, param_2, param_3, param_4) {
 
 
-  errno_t eVar1;
+  let eVar1;
   // unaff_EDI → promoted to parameter
   
   DAT_0063aef8 = 1;
@@ -12805,15 +12805,15 @@ export function __cftoe_g(unaff_EDI, param_1, param_2, param_3, param_4) {
 // Size: 59 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __cftof_g
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __cftof_g
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __cftof_g(unaff_EDI, param_1, param_2, param_3) {
+export function __cftof_g_005FEA20(unaff_EDI, param_1, param_2, param_3) {
 
 
-  errno_t eVar1;
+  let eVar1;
   // unaff_EDI → promoted to parameter
   
   DAT_0063aef8 = 1;
@@ -12860,12 +12860,12 @@ __cfltcvt(double *arg,char *buffer,size_t sizeInBytes,int format,int precision,i
 // Size: 54 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __shift
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __shift
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __shift(param_1, param_2) {
+export function __shift_005FEAE0(param_1, param_2) {
 
 
   let sVar1;
@@ -12884,12 +12884,12 @@ export function __shift(param_1, param_2) {
 // Size: 500 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __XcptFilter
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __XcptFilter
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __XcptFilter(_ExceptionNum, _ExceptionPtr) {
+export function __XcptFilter_005FEB20(_ExceptionNum, _ExceptionPtr) {
 
 
   let pcVar1;
@@ -12961,12 +12961,12 @@ export function __XcptFilter(_ExceptionNum, _ExceptionPtr) {
 // Size: 97 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _xcptlookup
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _xcptlookup
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function xcptlookup(param_1) {
+export function xcptlookup_005FED20(param_1) {
 
 
   let local_8;
@@ -12989,12 +12989,12 @@ export function xcptlookup(param_1) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbkalnum
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbkalnum
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbkalnum(_C) {
+export function __ismbbkalnum_005FED90(_C) {
 
 
   let iVar1;
@@ -13010,12 +13010,12 @@ export function __ismbbkalnum(_C) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbkprint
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbkprint
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbkprint(_C) {
+export function __ismbbkprint_005FEDB0(_C) {
 
 
   let iVar1;
@@ -13031,12 +13031,12 @@ export function __ismbbkprint(_C) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbkpunct
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbkpunct
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbkpunct(_C) {
+export function __ismbbkpunct_005FEDD0(_C) {
 
 
   let iVar1;
@@ -13052,12 +13052,12 @@ export function __ismbbkpunct(_C) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbalnum
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbalnum
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbalnum(_C) {
+export function __ismbbalnum_005FEDF0(_C) {
 
 
   let iVar1;
@@ -13073,12 +13073,12 @@ export function __ismbbalnum(_C) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbalpha
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbalpha
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbalpha(_C) {
+export function __ismbbalpha_005FEE20(_C) {
 
 
   let iVar1;
@@ -13094,12 +13094,12 @@ export function __ismbbalpha(_C) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbgraph
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbgraph
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbgraph(_C) {
+export function __ismbbgraph_005FEE50(_C) {
 
 
   let iVar1;
@@ -13115,12 +13115,12 @@ export function __ismbbgraph(_C) {
 // Size: 35 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbprint
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbprint
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbprint(_C) {
+export function __ismbbprint_005FEE80(_C) {
 
 
   let iVar1;
@@ -13136,12 +13136,12 @@ export function __ismbbprint(_C) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbpunct
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbpunct
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbpunct(_C) {
+export function __ismbbpunct_005FEEB0(_C) {
 
 
   let iVar1;
@@ -13157,12 +13157,12 @@ export function __ismbbpunct(_C) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbblead
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbblead
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbblead(_C) {
+export function __ismbblead_005FEED0(_C) {
 
 
   let iVar1;
@@ -13178,12 +13178,12 @@ export function __ismbblead(_C) {
 // Size: 32 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbtrail
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbtrail
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbtrail(_C) {
+export function __ismbbtrail_005FEEF0(_C) {
 
 
   let iVar1;
@@ -13199,12 +13199,12 @@ export function __ismbbtrail(_C) {
 // Size: 68 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __ismbbkana
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __ismbbkana
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __ismbbkana(_C) {
+export function __ismbbkana_005FEF10(_C) {
 
 
   let iVar1;
@@ -13222,12 +13222,12 @@ export function __ismbbkana(_C) {
 // Size: 110 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _x_ismbbtype
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _x_ismbbtype
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function x_ismbbtype(param_1, param_2, param_3) {
+export function x_ismbbtype_005FEF60(param_1, param_2, param_3) {
 
 
   let local_8;
@@ -13253,12 +13253,12 @@ export function x_ismbbtype(param_1, param_2, param_3) {
 // Size: 318 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __setenvp
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __setenvp
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __setenvp() {
+export function __setenvp_005FEFD0() {
 
 
   let sVar1;
@@ -13304,13 +13304,13 @@ export function __setenvp() {
 // Size: 204 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Library Function - Single Match
-    __setargv
-   
-   Library: Visual Studio 1998 Debug */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* Library Function - Single Match
+    // __setargv
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __setargv() {
+export function __setargv_005FF110() {
 
 
   let local_14;
@@ -13509,22 +13509,22 @@ parse_cmdline(byte *param_1,undefined4 *param_2,byte *param_3,int *param_4,int *
 // Size: 689 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___crtGetEnvironmentStringsW
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___crtGetEnvironmentStringsW
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___crtGetEnvironmentStringsW() {
+export function ___crtGetEnvironmentStringsW_005FF5A0() {
 
 
-  LPWCH pWVar1;
-  LPWCH in_EAX;
+  let pWVar1;
+  let in_EAX;
   let sVar2;
   let iVar3;
-  LPWCH local_18;
-  LPWCH local_14;
+  let local_18;
+  let local_14;
   let local_10;
-  LPWCH local_c;
+  let local_c;
   
   local_18 = (LPWCH)0x0;
   local_10 = 0;
@@ -13619,23 +13619,23 @@ export function ___crtGetEnvironmentStringsW() {
 // Size: 602 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___crtGetEnvironmentStringsA
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___crtGetEnvironmentStringsA
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___crtGetEnvironmentStringsA() {
+export function ___crtGetEnvironmentStringsA_005FF860() {
 
 
   let pcVar1;
-  LPWCH pWVar2;
+  let pWVar2;
   let iVar3;
   let cbMultiByte;
   let _Dst;
-  LPCH local_1c;
-  LPWCH local_18;
+  let local_1c;
+  let local_18;
   let local_10;
-  LPWCH local_c;
+  let local_c;
   
   local_18 = (LPWCH)0x0;
   local_1c = (LPCH)0x0;
@@ -13721,20 +13721,20 @@ export function ___crtGetEnvironmentStringsA() {
 // Size: 815 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __setmbcp
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __setmbcp
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __setmbcp(_CodePage) {
+export function __setmbcp_005FFAC0(_CodePage) {
 
 
-  UINT CodePage;
+  let CodePage;
   let iVar1;
   let BVar2;
-  BYTE *local_2c;
+  let local_2c;
   let local_28;
-  _cpinfo local_24[0];
+  let local_24 = [0];
   let local_10;
   let local_c;
   let local_8;
@@ -13750,8 +13750,8 @@ export function __setmbcp(_CodePage) {
   else {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
       // DEVIATION: C pointer — if (*(UINT *)(DAT_0063b0c8 + local_8 * 0x30) === CodePage) {
-        for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
-          DAT_0063afa0[local_28] = 0;
+        // DEVIATION(cont): for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
+          // DEVIATION(cont): (&DAT_0063afa0)[local_28] = 0;
         }
         for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
           for (local_c = DAT_0063b0d8 + local_8 * 0x30 + local_10 * 8;
@@ -13815,12 +13815,12 @@ export function __setmbcp(_CodePage) {
 // Size: 121 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _getSystemCP
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _getSystemCP
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function getSystemCP(param_1) {
+export function getSystemCP_005FFDF0(param_1) {
 
 
   DAT_0063b0bc = 0;
@@ -13846,12 +13846,12 @@ export function getSystemCP(param_1) {
 // Size: 107 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _CPtoLCID
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _CPtoLCID
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function _CPtoLCID(param_1) {
+export function _CPtoLCID_005FFE80(param_1) {
 
 
   let uVar1;
@@ -13882,12 +13882,12 @@ export function _CPtoLCID(param_1) {
 // Size: 120 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    _setSBCS
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // _setSBCS
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function setSBCS() {
+export function setSBCS_005FFF20() {
 
 
   let local_8;
@@ -13923,12 +13923,12 @@ export function FUN_005fffa0() {
 // Size: 21 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    ___initmbctable
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // ___initmbctable
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function ___initmbctable() {
+export function ___initmbctable_005FFFC0() {
 
 
   __setmbcp(-3);
@@ -13942,12 +13942,12 @@ export function ___initmbctable() {
 // Size: 95 bytes
 // ============================================================
 
-/* Library Function - Single Match
-    __FF_MSGBANNER
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Single Match
+    // __FF_MSGBANNER
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function __FF_MSGBANNER() {
+export function __FF_MSGBANNER_005FFFE0() {
 
 
   if ((DAT_00639fcc === 1) || ((DAT_00639fcc === 0 && (DAT_00639fd0 === 1)))) {
@@ -15346,8 +15346,8 @@ function LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5) {
 LAB_005f6d7d:
         // DEVIATION: C pointer — bVar9 = *(byte *)_Buf1 < *(byte *)_Buf2;
         // DEVIATION: C pointer — if ((*(byte *)_Buf1 !== *(byte *)_Buf2) ||
-           // DEVIATION: C pointer — (bVar9 = *(byte *)(_Buf1 + 1) < *(byte *)(_Buf2 + 1),
-           // DEVIATION: C pointer — *(byte *)(_Buf1 + 1) !== *(byte *)(_Buf2 + 1))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
+           // DEVIATION(cont): (bVar9 = *(byte *)((int)_Buf1 + 1) < *(byte *)((int)_Buf2 + 1),
+           // DEVIATION(cont): *(byte *)((int)_Buf1 + 1) != *(byte *)((int)_Buf2 + 1))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
         _Buf2 = (void *)(_Buf2 + 2);
         _Buf1 = (void *)(_Buf1 + 2);
       }
@@ -15359,8 +15359,8 @@ LAB_005f6d7d:
 function LAB_005f6d7d_helper(bVar9) {
         // DEVIATION: C pointer — bVar9 = *(byte *)_Buf1 < *(byte *)_Buf2;
         // DEVIATION: C pointer — if ((*(byte *)_Buf1 !== *(byte *)_Buf2) ||
-           // DEVIATION: C pointer — (bVar9 = *(byte *)(_Buf1 + 1) < *(byte *)(_Buf2 + 1),
-           // DEVIATION: C pointer — *(byte *)(_Buf1 + 1) !== *(byte *)(_Buf2 + 1))) LAB_005f6dca_helper(bVar9); return;
+           // DEVIATION(cont): (bVar9 = *(byte *)((int)_Buf1 + 1) < *(byte *)((int)_Buf2 + 1),
+           // DEVIATION(cont): *(byte *)((int)_Buf1 + 1) != *(byte *)((int)_Buf2 + 1))) LAB_005f6dca_helper(bVar9); return;
         _Buf2 = (void *)(_Buf2 + 2);
         _Buf1 = (void *)(_Buf1 + 2);
       }
@@ -15733,7 +15733,7 @@ function LAB_005f9fab_helper(local_8, local_c, uVar1) {
       LAB_005f9fab_helper(local_8, local_c, uVar1); return;
     }
     // DEVIATION: C pointer — if ((*(byte *)(s32(DAT_006e5694, local_8 * 4) + 0xc) & 0x83) === 0) {
-      // DEVIATION: C pointer — local_c = *(FILE **)(DAT_006e5694 + local_8 * 4);
+      // DEVIATION(cont): local_c = *(FILE **)(DAT_006e5694 + local_8 * 4);
       LAB_005f9fab_helper(local_8, local_c, uVar1); return;
     }
     local_8 = local_8 + 1;
@@ -15753,8 +15753,8 @@ LAB_005fa0c9:
   __free_osfhnd(_FileHandle);
   if (local_8 === 0) {
     // DEVIATION: C pointer — *(undefined1 *)
-     (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-     (_FileHandle & 0x1f) * 8) = 0;
+     // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) = 0;
     iVar4 = 0;
   }
   else {
@@ -15768,8 +15768,8 @@ function LAB_005fa0c9_helper(iVar4, local_8) {
   __free_osfhnd(_FileHandle);
   if (local_8 === 0) {
     // DEVIATION: C pointer — *(undefined1 *)
-     (s32((int, 0)DAT_006e69f0 + ((_FileHandle & 0xffffffe0) >> 3)) + 4 +
-     (_FileHandle & 0x1f) * 8) = 0;
+     // DEVIATION(cont): (*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
+     // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) = 0;
     iVar4 = 0;
   }
   else {
@@ -15915,7 +15915,7 @@ function switchD_005fb3f7_caseD_0_helper(bVar10, iVar9, local_14, local_1c, loca
         local_264 = param_3[1];
         param_3 = param_3 + 2;
         // DEVIATION: C pointer — (*(code *)PTR___fptrap_0063aee0)
-                  (local_268[0],local_24,s8(uStack_2d)._1_1_,local_238,local_c);
+                  // DEVIATION(cont): (&local_268,local_24,(int)(char)uStack_2d._1_1_,local_238,local_c);
         if (((local_8 & 0x80) !== 0) && (local_238 === 0)) {
           // DEVIATION: C pointer — (*(code *)PTR___fptrap_0063aeec)(local_24);
         }
@@ -16090,7 +16090,7 @@ LAB_005faecc:
         local_270 = 0;
         local_238 = iVar9;
         // DEVIATION: C pointer — if (((local_8 & 0x200) !== 0) && ((*(char *)pwVar2 !== 48 || (local_28 === 0)))) {
-          // DEVIATION: C pointer — *(char *)local_24 = 48;
+          // DEVIATION(cont): *(char *)local_24 = '0';
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }
@@ -16211,7 +16211,7 @@ function LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local
         local_270 = 0;
         local_238 = iVar9;
         // DEVIATION: C pointer — if (((local_8 & 0x200) !== 0) && ((*(char *)pwVar2 !== 48 || (local_28 === 0)))) {
-          // DEVIATION: C pointer — *(char *)local_24 = 48;
+          // DEVIATION(cont): *(char *)local_24 = '0';
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }
@@ -16339,7 +16339,7 @@ LAB_005faecc:
         local_270 = 0;
         local_238 = iVar9;
         // DEVIATION: C pointer — if (((local_8 & 0x200) !== 0) && ((*(char *)pwVar2 !== 48 || (local_28 === 0)))) {
-          // DEVIATION: C pointer — *(char *)local_24 = 48;
+          // DEVIATION(cont): *(char *)local_24 = '0';
           local_28 = local_28 + 1;
           pwVar2 = local_24;
         }

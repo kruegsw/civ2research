@@ -146,9 +146,9 @@ export function FUN_00560084(param_1) {
                           uVar2 = FUN_00493c7d(local_10);
                           FUN_0040ff60(1,uVar2);
                           // DEVIATION: C pointer — FUN_00511880(0x50,*(undefined4 *)
-                                                   (DAT_006ad30c +
-                                                   s32(DAT_006ad558, local_c * 4) * 0x54),2,0
-                                             ,0,0);
+                                                   // DEVIATION(cont): (&DAT_006ad30c +
+                                                   // DEVIATION(cont): *(int *)(&DAT_006ad558 + local_c * 4) * 0x54),2,0
+                                             // DEVIATION(cont): ,0,0);
                         }
                       }
                     }
@@ -192,8 +192,8 @@ export function FUN_00560084(param_1) {
           }
           else if (2 < DAT_00655b02) {
             // DEVIATION: C pointer — FUN_0046b14d(0xa0,*(undefined4 *)
-                                     (DAT_006ad30c + s32(DAT_006ad558, local_10 * 4) * 0x54)
-                               ,param_1,local_10,0,0,0,0,0,0);
+                                     // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_10 * 4) * 0x54)
+                               // DEVIATION(cont): ,param_1,local_10,0,0,0,0,0,0);
           }
         }
       }
@@ -208,8 +208,8 @@ export function FUN_00560084(param_1) {
           }
           else if (2 < DAT_00655b02) {
             // DEVIATION: C pointer — FUN_0046b14d(0xa1,*(undefined4 *)
-                                     (DAT_006ad30c + s32(DAT_006ad558, local_14 * 4) * 0x54)
-                               ,param_1,local_14,0,0,0,0,0,0);
+                                     // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_14 * 4) * 0x54)
+                               // DEVIATION(cont): ,param_1,local_14,0,0,0,0,0,0);
           }
         }
       }
@@ -697,9 +697,9 @@ export function FUN_00562021(param_1, param_2) {
               uVar3 = FUN_00493c7d(local_64);
               FUN_0040ff60(1,uVar3);
               // DEVIATION: C pointer — FUN_004271e8(2,*(undefined4 *)
-                                    (DAT_00628420 +
-                                    (((u32(DAT_0064c6c0, param_1 * 0x594 + param_2 * 4) & 8)
-                                     === 0) + 0x73) * 4));
+                                    // DEVIATION(cont): (DAT_00628420 +
+                                    // DEVIATION(cont): (((*(uint *)(&DAT_0064c6c0 + param_1 * 0x594 + param_2 * 4) & 8)
+                                     // DEVIATION(cont): == 0) + 0x73) * 4));
               FUN_005f22d0(local_5c,s_CRUSADE_00633ce0);
               if ((DAT_0064c6c0[local_64 * 4 + param_2 * 0x594] & 8) !== 0) {
                 FUN_005f22d0(local_5c,s_JIHAD_00633ce8);
@@ -817,16 +817,16 @@ export function FUN_00564574() {
 export function FUN_0056459f(param_1) {
 
 
-  UINT uMode;
+  let uMode;
   let DVar1;
   let puVar2;
   let local_1a0;
-  _OFSTRUCT local_19c[0];
-  UINT local_114;
-  CHAR local_110 [256];
+  let local_19c = [0];
+  let local_114;
+  let local_110 = new Array(256).fill(0);
   let local_10;
   let local_c;
-  HFILE local_8;
+  let local_8;
   
   uMode = SetErrorMode(1);
   DVar1 = GetLogicalDrives();
@@ -880,14 +880,14 @@ export function FUN_00564713(param_1) {
   let pcVar1;
   let cVar2;
   let iVar3;
-  UINT uMode;
-  CHAR local_1a8 [128];
+  let uMode;
+  let local_1a8 = new Array(128).fill(0);
   let local_128 = new Array(16).fill(0);
-  _OFSTRUCT local_118[0];
-  CHAR local_90 [128];
+  let local_118 = [0];
+  let local_90 = new Array(128).fill(0);
   let local_10;
   let local_c;
-  HFILE local_8;
+  let local_8;
   
   iVar3 = lstrlenA(param_1);
   local_c = param_1 + iVar3;
@@ -1075,7 +1075,7 @@ export function FUN_00564e6d(in_ECX) {
   let local_14c;
   let local_148;
   let local_144;
-  tagRECT local_140[0];
+  let local_140 = [0];
   let local_130;
   let local_12c;
   let local_128 = [0];
@@ -1083,7 +1083,7 @@ export function FUN_00564e6d(in_ECX) {
   let local_24;
   let local_20;
   let local_1c = new Array(16).fill(0);
-  _Timevec *local_c;
+  let local_c;
   let local_8;
   
   FUN_005c00ce(local_1c);
@@ -1130,9 +1130,9 @@ export function FUN_00564e6d(in_ECX) {
   else {
     if (-1 < s8(DAT_0062768e[local_16c * 0x10])) {
       // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                          (DAT_00627684 + s8(DAT_0062768e[local_16c * 0x10]) * 0x10));
+                          // DEVIATION(cont): (&DAT_00627684 + (char)(&DAT_0062768e)[local_16c * 0x10] * 0x10));
       local_130 = FUN_0040efd0(DAT_00679640);
-      _Timevec::~_Timevec(local_c);
+      // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
       SetRect(local_140[0],local_154,local_158,local_130 + local_154 + 5,extraout_EAX + local_158);
       FUN_00452c14(s8(DAT_0062768e[local_16c * 0x10]),local_154,local_158,0,
                          local_140[0].left,local_140[0].top,local_140[0].right,local_140[0].bottom);
@@ -1149,9 +1149,9 @@ export function FUN_00564e6d(in_ECX) {
       }
       FUN_0040bbb0();
       // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                          (DAT_00627684 + s8(DAT_0062768f[local_16c * 0x10]) * 0x10));
+                          // DEVIATION(cont): (&DAT_00627684 + (char)(&DAT_0062768f)[local_16c * 0x10] * 0x10));
       local_130 = FUN_0040efd0(DAT_00679640);
-      _Timevec::~_Timevec(local_c);
+      // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
       SetRect(local_140[0],local_154,local_158,local_130 + local_154 + 5,extraout_EAX_00 + local_158);
       FUN_00452c14(s8(DAT_0062768f[local_16c * 0x10]),local_154,local_158,0,
                          local_140[0].left,local_140[0].top,local_140[0].right,local_140[0].bottom);
@@ -1184,7 +1184,7 @@ export function FUN_00564e6d(in_ECX) {
       FUN_0040bbb0();
       FUN_0040ff00(s32(DAT_00627684, local_14c * 0x10));
       local_130 = FUN_0040efd0(DAT_00679640);
-      _Timevec::~_Timevec(local_c);
+      // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
       SetRect(local_140[0],local_154,local_158,local_130 + local_154 + 2,extraout_EAX_01 + local_158);
       FUN_00452c14(local_14c,local_154,local_158,0,local_140[0].left,local_140[0].top,
                          local_140[0].right,local_140[0].bottom);
@@ -1202,7 +1202,7 @@ export function FUN_00564e6d(in_ECX) {
         FUN_0040bbb0();
         FUN_0040ff00(s32(DAT_00627684, local_174 * 0x10));
         local_130 = FUN_0040efd0(DAT_00679640);
-        _Timevec::~_Timevec(local_c);
+        // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
         SetRect(local_140[0],local_154,local_158,local_130 + local_154 + 2,extraout_EAX_02 + local_158
                );
         FUN_00452c14(local_174,local_154,local_158,0,local_140[0].left,local_140[0].top,
@@ -1226,7 +1226,7 @@ export function FUN_00564e6d(in_ECX) {
       FUN_0040bbb0();
       FUN_0040ff00(s32(DAT_0064c488, local_164 * 8));
       local_130 = FUN_0040efd0(DAT_00679640);
-      _Timevec::~_Timevec(local_c);
+      // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
       local_160 = extraout_EAX_03;
       if ((local_8 === 0) &&
          (iVar1 = FUN_00407f90(in_ECX + 0x5f8), iVar1 / 2 <= local_130 + local_154 + 5)) {
@@ -1269,7 +1269,7 @@ export function FUN_00564e6d(in_ECX) {
         iVar1 = FUN_004a6980();
         local_154 = local_154 + iVar1 + 5;
         iVar1 = FUN_004bb540();
-        _Timevec::~_Timevec(local_c);
+        // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
         local_148 = (iVar1 / 2 - extraout_EAX_04 / 2) + local_158;
       }
       else {
@@ -1279,7 +1279,7 @@ export function FUN_00564e6d(in_ECX) {
       uVar2 = FUN_00428b0c(s32(DAT_0064b1b8, local_15c * 0x14));
       FUN_0040bbe0(uVar2);
       local_130 = FUN_0040efd0(DAT_00679640);
-      _Timevec::~_Timevec(local_c);
+      // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
       SetRect(local_140[0],local_154,local_148,local_130 + local_154 + 5,extraout_EAX_05 + local_148);
       FUN_00452c14(local_15c,local_154,local_148,3,local_140[0].left,local_140[0].top,
                          local_140[0].right,local_140[0].bottom);
@@ -1424,7 +1424,7 @@ export function FUN_00564e6d(in_ECX) {
         FUN_0040bbb0();
         FUN_0040ff00(DAT_0064c5c0[local_17c * 2]);
         local_130 = FUN_0040efd0(DAT_00679640);
-        _Timevec::~_Timevec(local_c);
+        // DEVIATION: MFC — _Timevec::~_Timevec(local_c);
         SetRect(local_140[0],local_154,local_158,local_130 + local_154,extraout_EAX_06 + local_158);
         FUN_00452c14(local_17c + 0x27,local_154,local_158,2,local_140[0].left,local_140[0].top,
                            local_140[0].right,local_140[0].bottom);
@@ -1532,10 +1532,10 @@ export function FUN_005666da(in_ECX) {
   let local_54;
   let local_50;
   let local_4c = new Array(3).fill(0);
-  tagRECT local_40[0];
+  let local_40 = [0];
   let aiStack_30 = new Array(4).fill(0);
   let local_20 = new Array(16).fill(0);
-  _Timevec *local_10;
+  let local_10;
   let local_c = new Array(2).fill(0);
   
   FUN_005c00ce(local_20);
@@ -1548,7 +1548,7 @@ export function FUN_005666da(in_ECX) {
   FUN_0040bbb0();
   FUN_0040ff00(s32(DAT_00627684, local_108 * 0x10));
   local_4c[2] = FUN_0040efd0(DAT_00679640);
-  _Timevec::~_Timevec(local_10);
+  // DEVIATION: MFC — _Timevec::~_Timevec(local_10);
   local_e0 = DAT_00646cb8 +
              s8(DAT_0062768c[local_108 * 0x10]) * 0xf0 +
              s8(DAT_0062768d[local_108 * 0x10]) * 0x3c;
@@ -1574,7 +1574,7 @@ export function FUN_005666da(in_ECX) {
   iVar1 = FUN_00407fc0(aiStack_84 + 10);
   local_74 = local_58 + iVar1 / 2;
   local_70 = local_74;
-  _Timevec::~_Timevec(local_10);
+  // DEVIATION: MFC — _Timevec::~_Timevec(local_10);
   local_104 = extraout_EAX_00;
   iVar1 = FUN_00407fc0(in_ECX + 0x5f8);
   local_b4 = (s32(in_ECX, 0x5fc) + ((iVar1 + (iVar1 >> 0x1f & 3)) >> 2)) - local_104 / 2
@@ -1624,7 +1624,7 @@ export function FUN_005666da(in_ECX) {
     iVar1 = FUN_00407fc0(in_ECX + 0x5f8);
     local_b4 = local_b4 + iVar1 / 2;
   }
-  _Timevec::~_Timevec(local_10);
+  // DEVIATION: MFC — _Timevec::~_Timevec(local_10);
   local_104 = extraout_EAX_01;
   iVar1 = FUN_00407fc0(in_ECX + 0x5f8);
   local_b4 = (s32(in_ECX, 0x5fc) + ((iVar1 + (iVar1 >> 0x1f & 7)) >> 3)) - local_104 / 2
@@ -1636,7 +1636,7 @@ export function FUN_005666da(in_ECX) {
       if (-1 < aiStack_30[local_b0 * 2 + local_b8]) {
         FUN_0040bbb0();
         // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                            (DAT_00627684 + aiStack_30[local_b0 * 2 + local_b8] * 0x10));
+                            // DEVIATION(cont): (&DAT_00627684 + aiStack_30[local_b0 * 2 + local_b8] * 0x10));
         local_4c[2] = FUN_0040efd0(DAT_00679640);
         local_e0 = DAT_00646cb8 +
                    s8(DAT_0062768d[aiStack_30[local_b0 * 2 + local_b8]) * 0x10] * 0x3c +
@@ -1681,7 +1681,7 @@ export function FUN_005666da(in_ECX) {
   }
   iVar1 = FUN_00407fc0(in_ECX + 0x5f8);
   local_bc = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-  _Timevec::~_Timevec(local_10);
+  // DEVIATION: MFC — _Timevec::~_Timevec(local_10);
   local_8c = s32(in_ECX, 0x5f8) + 2;
   local_104 = extraout_EAX_02;
   for (local_b0 = 0; local_b0 < 4; local_b0 = local_b0 + 1) {
@@ -1691,7 +1691,7 @@ export function FUN_005666da(in_ECX) {
       if (-1 < aiStack_ac[local_b0 * 2 + local_b8]) {
         FUN_0040bbb0();
         // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                            (DAT_00627684 + aiStack_ac[local_b0 * 2 + local_b8] * 0x10));
+                            // DEVIATION(cont): (&DAT_00627684 + aiStack_ac[local_b0 * 2 + local_b8] * 0x10));
         local_4c[2] = FUN_0040efd0(DAT_00679640);
         local_e0 = DAT_00646cb8 +
                    s8(DAT_0062768c[aiStack_ac[local_b0 * 2 + local_b8]) * 0x10] * 0xf0 +
@@ -1788,15 +1788,15 @@ export function FUN_005675b7(in_ECX, param_1, param_2) {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_005680A0() {
 
 
   FUN_005680ba();
@@ -1853,15 +1853,15 @@ export function FUN_005680f1() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056810B() {
 
 
   FUN_00568125();
@@ -1931,9 +1931,9 @@ export function FUN_00568176() {
 // Size: 383 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function load_civ2_art_005681c9() {
+export function load_civ2_art_005681c9_005681C9() {
 
 
   let iVar1;
@@ -1941,10 +1941,10 @@ export function load_civ2_art_005681c9() {
   let local_128 = new Array(20).fill(0);
   let local_114 = new Array(72).fill(0);
   let local_cc = new Array(128).fill(0);
-  CString local_4c [60];
+  let local_4c = new Array(60).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -2002,7 +2002,7 @@ export function FUN_00568348(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  _Timevec::~_Timevec((_Timevec *)(unaff_EBP + -0x114));
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)(unaff_EBP + -0x114));
   return;
 }
 
@@ -2103,8 +2103,8 @@ export function FUN_005683b5() {
 export function FUN_005683c5(param_1, param_2, param_3, param_4) {
 
 
-  CRichEditView *yBottom;
-  CRichEditView *xRight;
+  let yBottom;
+  let xRight;
   let iVar1;
   let uVar2;
   let uVar3;
@@ -2118,9 +2118,9 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
   let local_44;
   let local_3c;
   let local_34;
-  tagRECT local_28[0];
-  tagRECT local_18[0];
-  LPVOID local_8;
+  let local_28 = [0];
+  let local_18 = [0];
+  let local_8;
   
   if (param_2 === null) {
     // DEVIATION: MFC — yBottom = CRichEditCntrItem::GetActiveView(param_1);
@@ -2270,15 +2270,15 @@ export function FUN_00568861(param_1) {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00568B00() {
 
 
   FUN_00568b1a();
@@ -2324,7 +2324,7 @@ export function FUN_00568b34() {
 export function FUN_00568b51() {
 
 
-  COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)DAT_006abc68);
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)DAT_006abc68);
   return;
 }
 
@@ -2335,15 +2335,15 @@ export function FUN_00568b51() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00568B6B() {
 
 
   FUN_00568b85();
@@ -2400,15 +2400,15 @@ export function FUN_00568bbc() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_00568BD6() {
 
 
   FUN_00568bf0();
@@ -2940,7 +2940,7 @@ export function FUN_00569801() {
         FUN_0040fe10();
       }
       // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                          (DAT_0064b1b8 + u8(DAT_006560f6[local_14 * 0x20]) * 0x14));
+                          // DEVIATION(cont): (&DAT_0064b1b8 + (uint)(byte)(&DAT_006560f6)[local_14 * 0x20] * 0x14));
       if (DAT_0064b1ca[u8(DAT_006560f6[local_14 * 0x20]) * 0x14] === 7) {
         FUN_0040fe40();
         if (s8(DAT_006560fd[local_14 * 0x20]) < 0) {
@@ -2948,7 +2948,7 @@ export function FUN_00569801() {
         }
         else {
           // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                              (DAT_0064b168 + s8(DAT_006560fd[local_14 * 0x20]) * 4));
+                              // DEVIATION(cont): (&DAT_0064b168 + (char)(&DAT_006560fd)[local_14 * 0x20] * 4));
         }
       }
       else if ((u16(DAT_006560f4, local_14 * 0x20) & 0x2000) !== 0) {
@@ -3128,8 +3128,8 @@ export function FUN_00569801() {
               FUN_0040fe10();
             }
             // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                                (DAT_0064b1b8 + u8(DAT_006560f6[local_50 * 0x20]) * 0x14
-                                ));
+                                // DEVIATION(cont): (&DAT_0064b1b8 + (uint)(byte)(&DAT_006560f6)[local_50 * 0x20] * 0x14
+                                // DEVIATION(cont): ));
             FUN_0043c8d0(DAT_00679640,iVar14,iVar12 + iVar6);
             if (DAT_00655b07 !== 0) {
               FUN_0040bbb0();
@@ -3157,8 +3157,8 @@ export function FUN_00569801() {
             FUN_0043c8d0(DAT_00679640,iVar14,iVar12 + iVar6);
             FUN_0040bbb0();
             // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                                (DAT_0064b1b8 + u8(DAT_006560f6[local_50 * 0x20]) * 0x14
-                                ));
+                                // DEVIATION(cont): (&DAT_0064b1b8 + (uint)(byte)(&DAT_006560f6)[local_50 * 0x20] * 0x14
+                                // DEVIATION(cont): ));
             if (DAT_0064b1ca[u8(DAT_006560f6[local_50 * 0x20]) * 0x14] === 7) {
               FUN_0040fe40();
               if (s8(DAT_006560fd[local_50 * 0x20]) < 0) {
@@ -3166,7 +3166,7 @@ export function FUN_00569801() {
               }
               else {
                 // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                                    (DAT_0064b168 + s8(DAT_006560fd[local_50 * 0x20]) * 4));
+                                    // DEVIATION(cont): (&DAT_0064b168 + (char)(&DAT_006560fd)[local_50 * 0x20] * 4));
               }
             }
             else if ((u16(DAT_006560f4, local_50 * 0x20) & 0x2000) !== 0) {
@@ -3579,15 +3579,15 @@ export function FUN_0056b847(param_1) {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056B8A0() {
 
 
   FUN_0056b8ba();
@@ -4049,7 +4049,7 @@ export function FUN_0056c705(param_1, param_2, param_3, param_4, param_5, param_
   let aiStack_30 = new Array(8).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -4383,12 +4383,12 @@ export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_
                              s16(DAT_0064f342, param_2 * 0x58));
   if ((-1 < iVar3) && ((param_3 & 2) === 0)) {
     // DEVIATION: C pointer — local_38 = FUN_00472cf0(*(undefined4 *)
-                                   (DAT_00640a18 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
-                                  param_6);
+                                   // DEVIATION(cont): (&DAT_00640a18 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
+                                  // DEVIATION(cont): param_6);
     local_38 = param_4 + local_38;
     // DEVIATION: C pointer — local_44 = FUN_00472cf0(*(undefined4 *)
-                                   (DAT_00640ad8 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
-                                  param_6);
+                                   // DEVIATION(cont): (&DAT_00640ad8 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
+                                  // DEVIATION(cont): param_6);
     local_44 = param_5 + local_44;
     FUN_005cef31(local_7c,param_1,local_38,local_44);
   }
@@ -4414,11 +4414,11 @@ export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_
       local_54 = local_54 + 2;
       FUN_004086c0(local_18[0],0,0,local_50,local_54);
       // DEVIATION: C pointer — iVar3 = FUN_00472cf0(*(undefined4 *)
-                                  (DAT_00643a38 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
-                                 param_6);
+                                  // DEVIATION(cont): (&DAT_00643a38 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
+                                 // DEVIATION(cont): param_6);
       // DEVIATION: C pointer — iVar3 = FUN_00472cf0(*(undefined4 *)
-                                  (DAT_00643978 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
-                                 param_6,param_5 + iVar3);
+                                  // DEVIATION(cont): (&DAT_00643978 + local_58 * 0x20 + local_24 * 4 + local_4c * 8),
+                                 // DEVIATION(cont): param_6,param_5 + iVar3);
       FUN_0043c790(local_18[0],param_4 + iVar3);
       FUN_0043c7c0(param_1,local_18[0],10);
       FUN_004bb800(local_18[0],1,1);
@@ -4530,7 +4530,7 @@ export function FUN_0056e2c9() {
 // Size: 2450 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0056e2e9(in_ECX, param_1, param_2) {
 
@@ -4545,7 +4545,7 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
   let local_28;
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -5049,7 +5049,7 @@ export function FUN_0056f372(in_ECX) {
   iVar1 = s32(in_ECX, 0x28);
   if (((iVar1 !== 0) && (s32(iVar1, 0x10) === 0)) &&
      // DEVIATION: C pointer — (iVar2 = _strcmp(DAT_00679640,*(char **)(iVar1 + 8)), iVar2 === 0)) {
-    return iVar1;
+    // DEVIATION(cont): return iVar1;
   }
   return 0;
 }
@@ -5098,15 +5098,15 @@ export function FUN_0056f42b(param_1) {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056F910() {
 
 
   FUN_0056f92a();
@@ -5163,15 +5163,15 @@ export function FUN_0056f961() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056F97B() {
 
 
   FUN_0056f995();
@@ -5228,15 +5228,15 @@ export function FUN_0056f9cc() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056F9E6() {
 
 
   FUN_0056fa00();
@@ -5293,15 +5293,15 @@ export function FUN_0056fa37() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056FA51() {
 
 
   FUN_0056fa6b();
@@ -5358,15 +5358,15 @@ export function FUN_0056faa2() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056FABC() {
 
 
   FUN_0056fad6();
@@ -5423,15 +5423,15 @@ export function FUN_0056fb0d() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056FB27() {
 
 
   FUN_0056fb41();
@@ -5477,7 +5477,7 @@ export function FUN_0056fb5b() {
 export function FUN_0056fb78() {
 
 
-  COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)DAT_006ac1b0);
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)DAT_006ac1b0);
   return;
 }
 
@@ -5488,15 +5488,15 @@ export function FUN_0056fb78() {
 // Size: 26 bytes
 // ============================================================
 
-/* Library Function - Multiple Matches With Different Base Names
-    _$E26
-    _$E31
-    _$E353
-    _$E354
-   
-   Library: Visual Studio 1998 Debug */
+// /* Library Function - Multiple Matches With Different Base Names
+    // _$E26
+    // _$E31
+    // _$E353
+    // _$E354
+   // 
+   // Library: Visual Studio 1998 Debug */
 
-export function FID_conflict___E31() {
+export function FID_conflict___E31_0056FB92() {
 
 
   FUN_0056fbac();
@@ -5542,7 +5542,7 @@ export function FUN_0056fbc6() {
 export function FUN_0056fbe3() {
 
 
-  CBitmapButton::~CBitmapButton((CBitmapButton *)DAT_006ac488);
+  // DEVIATION: MFC — CBitmapButton::~CBitmapButton((CBitmapButton *)DAT_006ac488);
   return;
 }
 
@@ -5598,7 +5598,7 @@ export function FUN_0056fce4() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -5732,7 +5732,7 @@ export function FUN_0056ffda() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH

@@ -233,7 +233,7 @@ export function FUN_00548df0() {
 // Size: 3045 bytes
 // ============================================================
 
-/* WARNING: Type propagation algorithm not settling */
+// /* WARNING: Type propagation algorithm not settling */
 
 export function FUN_00548e23(param_1, param_2) {
 
@@ -433,8 +433,8 @@ export function FUN_00548e23(param_1, param_2) {
           }
           if (s32(param_2, 0x1b0) < 0) {
             // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-              if (s32(param_2, 0x1b0) === -3) {
-                _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
+              // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
+                // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
               else {
                 _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
@@ -457,8 +457,8 @@ export function FUN_00548e23(param_1, param_2) {
           }
           if (s32(param_2, 0x1b8) < 0) {
             // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-              if (s32(param_2, 0x1b8) === -3) {
-                _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
+              // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
+                // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }
               else {
                 _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);
@@ -967,8 +967,8 @@ export function FUN_0054a4c4() {
   let iVar1;
   let pcVar2;
   let local_228;
-  FILE *local_224;
-  FILE *local_220;
+  let local_224;
+  let local_220;
   let local_21c = new Array(260).fill(0);
   let local_118 = new Array(8).fill(0);
   let local_108 = new Array(260).fill(0);
@@ -1107,7 +1107,7 @@ export function FUN_0054a912(param_1, param_2, param_3) {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1331,7 +1331,7 @@ export function FUN_0054ae93() {
       FUN_00453c40();
     }
     // DEVIATION: C pointer — if (*(int *)local_14 === 0x20) {
-      local_10 = 0;
+      // DEVIATION(cont): local_10 = 0;
       while ((1 << (u8(local_10) & 0x1f) & (u32(local_14, 4) | 0xfffffe6f)) !== 0) {
         local_10 = local_10 + 1;
       }
@@ -1374,13 +1374,13 @@ export function FUN_0054ae93() {
 // Size: 232 bytes
 // ============================================================
 
-export function show_messagebox_B0ED() {
+export function show_messagebox_B0ED_0054B0ED() {
 
 
   let iVar1;
   let lpText;
   let lpCaption;
-  UINT uType;
+  let uType;
   let local_28;
   let local_24 = new Array(32).fill(0);
   
@@ -2072,7 +2072,7 @@ export function FUN_0054bc1a() {
       else if (uVar2 < 0x201) {
         if (uVar2 === 0x200) {
           // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
-                                      (DAT_00627cc4 + s32(local_10c, 0x18c) * 0x18));
+                                      // DEVIATION(cont): (&DAT_00627cc4 + *(int *)(local_10c + 0x18c) * 0x18));
           _sprintf(local_104,s_CHANGETERRAIN___s__00633004,uVar3);
         }
         else if (uVar2 === 0x100) {
@@ -2082,8 +2082,8 @@ export function FUN_0054bc1a() {
       else if (uVar2 === 0x400) {
         if (s32(local_10c, 0x1b0) < 0) {
           // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
-            if (s32(local_10c, 0x1b0) === -3) {
-              _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERATT_0063305c);
+            // DEVIATION(cont): if (*(int *)(local_10c + 0x1b0) == -3) {
+              // DEVIATION(cont): _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERATT_0063305c);
             }
             else {
               _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERDEF_00633084);
@@ -2104,8 +2104,8 @@ export function FUN_0054bc1a() {
         }
         else if (s32(local_10c, 0x1b8) < 0) {
           // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
-            if (s32(local_10c, 0x1b8) === -3) {
-              _sprintf(local_11c,s_TRIGGERATTACKER_006330e8);
+            // DEVIATION(cont): if (*(int *)(local_10c + 0x1b8) == -3) {
+              // DEVIATION(cont): _sprintf(local_11c,s_TRIGGERATTACKER_006330e8);
             }
             else {
               _sprintf(local_11c,s_TRIGGERDEFENDER_006330f8);
@@ -2115,12 +2115,12 @@ export function FUN_0054bc1a() {
             _sprintf(local_11c,s_TRIGGERRECEIVER_006330d8);
           }
           // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
-                                      (DAT_00627684 + s32(local_10c, 0x1b4) * 0x10));
+                                      // DEVIATION(cont): (&DAT_00627684 + *(int *)(local_10c + 0x1b4) * 0x10));
           _sprintf(local_104,s_GIVETECHNOLOGY__receiver__s_tech_00633108,local_11c,uVar3);
         }
         else {
           // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
-                                      (DAT_00627684 + s32(local_10c, 0x1b4) * 0x10));
+                                      // DEVIATION(cont): (&DAT_00627684 + *(int *)(local_10c + 0x1b4) * 0x10));
           uVar3 = FUN_00493c7d(s32(local_10c, 0x1b8),uVar3);
           _sprintf(local_104,s_GIVETECHNOLOGY__receiver__s_tech_006330ac,uVar3);
         }
@@ -2834,7 +2834,7 @@ export function FUN_0054d4ca(param_1) {
 // Size: 500 bytes
 // ============================================================
 
-export function show_messagebox_D4E6() {
+export function show_messagebox_D4E6_0054D4E6() {
 
 
   let piVar1;
@@ -2842,7 +2842,7 @@ export function show_messagebox_D4E6() {
   let lpText;
   let iVar2;
   let pcVar3;
-  UINT uType;
+  let uType;
   let local_14;
   let local_10;
   let local_c;
@@ -2985,7 +2985,7 @@ export function FUN_0054d7ef() {
   let local_14 = [0];
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -3051,7 +3051,7 @@ export function FUN_0054d7ef() {
         else {
           local_1b8[0x25] = local_18;
           // DEVIATION: C pointer — local_14[0] = (char *)FUN_00428b0c(*(undefined4 *)
-                                                 (DAT_0064b1b8 + local_1b8[0x25] * 0x14));
+                                                 // DEVIATION(cont): (&DAT_0064b1b8 + local_1b8[0x25] * 0x14));
         }
         sVar3 = _strlen(local_14[0]);
         uVar1 = thunk_show_messagebox_CA35(DAT_0064b984,sVar3 + 1);
@@ -3167,7 +3167,7 @@ export function FUN_0054d7ef() {
       if (local_18 !== -1) {
         local_1b8[0x38] = local_18;
         // DEVIATION: C pointer — local_14[0] = (char *)FUN_00428b0c(*(undefined4 *)
-                                               (DAT_0064b1b8 + local_1b8[0x38] * 0x14));
+                                               // DEVIATION(cont): (&DAT_0064b1b8 + local_1b8[0x38] * 0x14));
         sVar3 = _strlen(local_14[0]);
         uVar1 = thunk_show_messagebox_CA35(DAT_0064b984,sVar3 + 1);
         local_1b8[0x37] = uVar1;
@@ -3473,14 +3473,14 @@ export function FUN_0054eeb4(param_1) {
 // Size: 667 bytes
 // ============================================================
 
-export function show_messagebox_EED0() {
+export function show_messagebox_EED0_0054EED0() {
 
 
   let lpCaption;
   let lpText;
   let uVar1;
   let iVar2;
-  UINT uType;
+  let uType;
   let local_20;
   let local_18;
   let local_14;
@@ -3618,7 +3618,7 @@ export function FUN_0054f3b9() {
   let uVar4;
   let extraout_EAX;
   let iVar5;
-  CPropertySheet *in_ECX;
+  let in_ECX;
   // DEVIATION: SEH
   let uVar6;
   let uVar7;
@@ -3627,22 +3627,22 @@ export function FUN_0054f3b9() {
   let uVar10;
   let uVar11;
   let uVar12;
-  CPropertySheet *local_4a0;
-  CPropertySheet *local_49c;
-  CPropertySheet *local_498;
-  CPropertySheet *local_494;
-  CPropertySheet *local_48c;
-  CPropertySheet *local_484;
-  CPropertySheet *local_480;
-  CPropertySheet *local_47c;
-  CPropertySheet *local_478;
-  CPropertySheet *local_474;
-  CPropertySheet *local_470;
+  let local_4a0;
+  let local_49c;
+  let local_498;
+  let local_494;
+  let local_48c;
+  let local_484;
+  let local_480;
+  let local_47c;
+  let local_478;
+  let local_474;
+  let local_470;
   let local_464;
   let local_454 = new Array(1092).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -3686,7 +3686,7 @@ export function FUN_0054f3b9() {
   uVar6 = 0xd;
   uVar4 = FUN_00428b0c(s32(DAT_00628420, 0x73c),0xd,0,0,uVar9,uVar3,0,0,0);
   FUN_005534bc(uVar4,uVar6,uVar7,uVar8,uVar9,uVar3,uVar10,uVar11,uVar12);
-  _Timevec::~_Timevec((_Timevec *)PTR_DAT_006359f0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)PTR_DAT_006359f0);
   w32(in_ECX, 0x2e4, extraout_EAX + 8);
   w32(in_ECX, 0x2e0, 0x97);
   iVar5 = s32(in_ECX, 0x128) + 0x90;
@@ -3894,7 +3894,7 @@ export function FUN_0054ffc8() {
   // DEVIATION: SEH
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -3984,8 +3984,8 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
           }
           if (s32(param_2, 0x1b0) < 0) {
             // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-              if (s32(param_2, 0x1b0) === -3) {
-                _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
+              // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
+                // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
               else {
                 _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
@@ -4008,8 +4008,8 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
           }
           if (s32(param_2, 0x1b8) < 0) {
             // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-              if (s32(param_2, 0x1b8) === -3) {
-                _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
+              // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
+                // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }
               else {
                 _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);

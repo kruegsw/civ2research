@@ -147,15 +147,17 @@ function transformLine(line, ctx) {
     out = out.replace(/&(joined_r\w+)/g, '0 /* ADDR:$1 */');
     out = out.replace(/&(PTR_\w+)/g, '$1');
 
-    // ── C++ class method calls → DEVIATION ──
-    if (/\w+::\w+\s*\(/.test(out) && !/\/\//.test(out.split('::')[0])) {
+    // ── C++ class method calls and destructor calls → DEVIATION ──
+    if (/\w+::~?\w+\s*[(\[]/.test(out) && !/\/\//.test(out.split('::')[0])) {
       out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: MFC — $2');
+      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
     }
 
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
     // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
     if (/\*\s*\(\s*\w[\w\s]*\*+\s*\)/.test(out) && !/\/\/|DEVIATION/.test(out)) {
       out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C pointer — $2');
+      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
     }
 
     // ── Equality operators ──
@@ -239,7 +241,13 @@ function processFunction(headerLines, bodyLines, ctx) {
   }
 
   // Prefer header name (handles special chars), fall back to sig parse
-  const funcName = headerNameMatch ? headerNameMatch[1].replace(/[^a-zA-Z0-9_]/g, '_') : sigMatch[1];
+  // Append address from header to disambiguate duplicate names
+  const headerAddr = headerText.match(/@\s*0x([0-9a-fA-F]+)/);
+  let funcName = headerNameMatch ? headerNameMatch[1].replace(/[^a-zA-Z0-9_]/g, '_') : sigMatch[1];
+  // If name doesn't start with FUN_ (non-standard name), append address to avoid duplicates
+  if (!/^FUN_/.test(funcName) && headerAddr) {
+    funcName = funcName + '_' + headerAddr[1];
+  }
   const rawParams = sigMatch[2].trim();
 
   // Parse declared params from signature
@@ -291,9 +299,28 @@ function processFunction(headerLines, bodyLines, ctx) {
   let sigLineIdx = -1;
   let openWriteCall = false; // tracks if a w16/w32 call is open across lines
 
+  ctx.deviationContinuation = false;
+  let inBlockComment = false;
   for (let i = 0; i < bodyLines.length; i++) {
     const line = bodyLines[i];
     const trimmed = line.trim();
+
+    // ── Multi-line C comments: /* ... */ → // ... ──
+    if (inBlockComment) {
+      result.push(line.replace(/^(\s*)/, '$1// '));
+      if (/\*\//.test(trimmed)) inBlockComment = false;
+      continue;
+    }
+    if (/^\/\*/.test(trimmed) && !/\*\//.test(trimmed)) {
+      inBlockComment = true;
+      result.push(line.replace(/^(\s*)/, '$1// '));
+      continue;
+    }
+    if (/^\/\*/.test(trimmed) && /\*\//.test(trimmed)) {
+      // Single-line block comment
+      result.push(line.replace(/^(\s*)\/\*/, '$1// /*').replace(/\*\/\s*$/, '*/'));
+      continue;
+    }
 
     // Find signature line(s) — replace with JS signature
     if (!inBody && i >= sigStartIdx && i <= sigEndIdx) {
@@ -351,8 +378,12 @@ function processFunction(headerLines, bodyLines, ctx) {
       // Already handled above
     }
 
-    const declMatch = trimmed.match(/^(int|uint|char|byte|short|ushort|undefined[124]?|bool|long|ulong|code|size_t|void|DWORD|BOOL|HRESULT|LRESULT|LPARAM|WPARAM|HANDLE|HWND|HDC|HBITMAP|HBRUSH|HPEN|HFONT|HMENU|HMODULE|HINSTANCE|HGLOBAL|HICON|HCURSOR|RECT|POINT|LPDWORD|LPSECURITY_ATTRIBUTES|float|double|wchar_t|WCHAR|TCHAR|LPSTR|LPCSTR|LPWSTR|LPCWSTR)\s+(\*?\s*\w+(?:\s*\[[^\]]*\])?)\s*;$/);
-    if (declMatch) {
+    // Match variable declarations: any type followed by a Ghidra-style variable name
+    // Ghidra variable names: local_XX, iVarN, uVarN, cVarN, sVarN, bVarN, lVarN, param_N, etc.
+    // Match ANY C variable declaration: TYPE [*]name[N];
+    const declMatch = trimmed.match(/^(\w[\w\s]*?)\s+(\*?\s*\w+(?:\s*\[\s*\d+\s*\])?)\s*;$/);
+    const isKeyword = /^(if|else|for|while|do|switch|case|return|break|continue|let|var|const|export|import|function|goto)\b/.test(trimmed);
+    if (declMatch && !isKeyword) {
       const varName = declMatch[2].replace(/^\*\s*/, '').replace(/\s*\[.*\]/, '');
 
       // Register params promoted to parameters — emit comment
@@ -361,8 +392,9 @@ function processFunction(headerLines, bodyLines, ctx) {
         continue;
       }
 
-      // SEH locals
-      if (/^(puStack_|uStack_|local_8$)/.test(varName) && /FS_OFFSET|puStack|uStack/.test(bodyText)) {
+      // SEH locals — puStack_ and uStack_ are always SEH
+      // local_8 is only SEH if it's assigned 0xffffffff AND there's FS_OFFSET in the function
+      if (/^(puStack_|uStack_)/.test(varName)) {
         result.push(line.replace(trimmed, '// DEVIATION: SEH local'));
         continue;
       }
@@ -434,6 +466,13 @@ function processFunction(headerLines, bodyLines, ctx) {
     if (byteWriteMatch) {
       let val = transformLine('  ' + byteWriteMatch[3], ctx).trim();
       result.push(line.replace(trimmed, byteWriteMatch[1] + '[' + byteWriteMatch[2] + '] = ' + val + ';'));
+      continue;
+    }
+
+    // ── Continuation of multi-line DEVIATION ──
+    if (ctx.deviationContinuation) {
+      result.push(line.replace(/^(\s*)/, '$1// DEVIATION(cont): '));
+      if (/;\s*$/.test(trimmed)) ctx.deviationContinuation = false;
       continue;
     }
 

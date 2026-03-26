@@ -24,7 +24,7 @@ export function FUN_00430267(param_1) {
 // Size: 270 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0043028a(param_1, param_2) {
 
@@ -74,7 +74,7 @@ export function FUN_0043039d() {
   let local_30c;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -164,9 +164,9 @@ export function FUN_004305fd(unaff_EBP) {
 // Size: 535 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x004306c1) */
-/* WARNING: Removing unreachable block (ram,0x0043074c) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Removing unreachable block (ram,0x004306c1) */
+// /* WARNING: Removing unreachable block (ram,0x0043074c) */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0043060b(param_1, param_2) {
 
@@ -216,7 +216,7 @@ export function FUN_0043060b(param_1, param_2) {
 // Size: 140 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00430822() {
 
@@ -243,7 +243,7 @@ export function FUN_00430822() {
 // Size: 3218 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_004308ae(param_1) {
 
@@ -258,7 +258,7 @@ export function FUN_004308ae(param_1) {
   let local_31c;
   let local_318;
   let local_314;
-  CPropertySheet local_310 [61];
+  let local_310 = new Array(61).fill(0);
   let local_2d3;
   let local_234;
   let local_1c;
@@ -266,7 +266,7 @@ export function FUN_004308ae(param_1) {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -464,8 +464,8 @@ export function FUN_004308ae(param_1) {
         DAT_0063f278 = -1;
         DAT_00626a2c = 1;
         // DEVIATION: C pointer — FUN_00511880(0x3d,*(undefined4 *)
-                                 (DAT_006ad30c + s32(DAT_006ad558, local_18 * 4) * 0x54),0,0
-                           ,param_1,0);
+                                 // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_18 * 4) * 0x54),0,0
+                           // DEVIATION(cont): ,param_1,0);
         uVar2 = FUN_00493b10(local_18);
         FUN_0040ff60(1,uVar2);
         uVar2 = FUN_00493c7d(local_18);
@@ -476,8 +476,8 @@ export function FUN_004308ae(param_1) {
         if (DAT_006c91e4 === 0) {
           if (local_320 === -1) {
             // DEVIATION: C pointer — FUN_0046b14d(0x81,*(undefined4 *)
-                                     (DAT_006ad30c + s32(DAT_006ad558, local_18 * 4) * 0x54)
-                               ,0,0,0,0,0,0,0,0);
+                                     // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_18 * 4) * 0x54)
+                               // DEVIATION(cont): ,0,0,0,0,0,0,0,0);
             DAT_0067a8c0 = -1;
             DAT_00626a2c = 0;
           }
@@ -585,8 +585,8 @@ export function FUN_00431565(unaff_EBP) {
 // Size: 1763 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x00431bb2) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Removing unreachable block (ram,0x00431bb2) */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00431573() {
 
@@ -625,7 +625,7 @@ export function FUN_00431573() {
   FUN_0042ac18();
   local_58 = DAT_0063ec38 + 2;
   local_6c = DAT_0063ec38 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   local_30 = extraout_EAX;
   FUN_005baeb0(DAT_0063eb10);
   FUN_005baec8(DAT_0063eac0);
@@ -784,7 +784,7 @@ export function FUN_00431c56(param_1) {
 // Size: 175 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00431c73(param_1) {
 
@@ -867,7 +867,7 @@ export function FUN_00431d22() {
   let local_14;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1090,7 +1090,7 @@ export function FUN_004325ed(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)(unaff_EBP + -0x61c));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd((COleCntrFrameWnd *)(unaff_EBP + -0x61c));
   return;
 }
 
@@ -1136,7 +1136,7 @@ export function FUN_00432611() {
   let aiStack_30 = new Array(8).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -1285,7 +1285,7 @@ export function FUN_00432c0e(unaff_EBP) {
 // Size: 1281 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00432c1c() {
 
@@ -1325,7 +1325,7 @@ export function FUN_00432c1c() {
       FUN_0042ac18();
       local_5c = DAT_0063ec38 + 2;
       local_68 = DAT_0063ec38 + 0x174;
-      _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+      // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
       local_30 = extraout_EAX;
       FUN_005baeb0(DAT_0063eb10);
       FUN_005baec8(DAT_0063eac0);
@@ -1423,7 +1423,7 @@ export function FUN_00432c1c() {
 // Size: 175 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00433122(param_1) {
 
@@ -1518,7 +1518,7 @@ export function FUN_004331d1(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 6486 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00433434() {
 
@@ -1627,7 +1627,7 @@ export function FUN_00433434() {
   FUN_0042ac18();
   local_1a8 = DAT_0063ec38 + 2;
   local_1b0 = DAT_0063ec38 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   local_70 = extraout_EAX;
   FUN_005baeb0(DAT_0063eb10);
   FUN_005baec8(DAT_0063eac0);
@@ -1923,7 +1923,7 @@ export function FUN_00433434() {
 // Size: 175 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00434d8a(param_1) {
 
@@ -1951,7 +1951,7 @@ export function FUN_00434d8a(param_1) {
 // Size: 3769 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00434e39() {
 
@@ -1997,7 +1997,7 @@ export function FUN_00434e39() {
   FUN_0042ac18();
   local_5c = DAT_0063ec38 + 2;
   local_64 = DAT_0063ec38 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   local_10 = extraout_EAX;
   FUN_005baeb0(DAT_0063eb10);
   FUN_005baec8(DAT_0063eac0);
@@ -2008,7 +2008,7 @@ export function FUN_00434e39() {
   FUN_0043c910(DAT_00679640,DAT_0063ec34,local_5c,DAT_0063ec3c);
   local_5c = local_5c + local_10;
   FUN_005baec8(DAT_0063eab8);
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eab8);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eab8);
   local_10 = extraout_EAX_00;
   FUN_0040bbb0();
   uVar1 = FUN_00493ba6(local_70);
@@ -2111,9 +2111,9 @@ export function FUN_00434e39() {
         if ((((-1 < s16(DAT_00655be6, local_28 * 2)) &&
              (s16(DAT_00655be6, local_28 * 2) < DAT_00655b18)) &&
             // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
-           (local_54 = s16(DAT_00655be6, local_28 * 2),
-           s8(DAT_0064f348[local_54 * 0x58]) === local_70)) {
-          FUN_005cef31(local_90,DAT_0063eb10,local_34,local_38);
+           // DEVIATION(cont): (local_54 = (int)*(short *)(&DAT_00655be6 + local_28 * 2),
+           // DEVIATION(cont): (char)(&DAT_0064f348)[local_54 * 0x58] == local_70)) {
+          // DEVIATION(cont): FUN_005cef31(local_90,&DAT_0063eb10,local_34,local_38);
           local_40 = local_34 + 0x26;
           FUN_005baee0(0x5e,0x12,0xffffffff,0xffffffff);
           uVar1 = FUN_00428b0c(DAT_0064c5c0[local_28 * 2],local_40,local_38 + 3);
@@ -2273,7 +2273,7 @@ export function FUN_00434e39() {
       local_6c = local_6c + 6;
       FUN_005baee0(0x7a,0x12,1,1);
       FUN_005baec8(DAT_0063eac0);
-      _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+      // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
       local_10 = extraout_EAX_01;
       FUN_0040bbb0();
       uVar1 = FUN_00410070(local_24);
@@ -2359,7 +2359,7 @@ export function FUN_00434e39() {
 // Size: 175 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00435d15(param_1) {
 
@@ -2387,7 +2387,7 @@ export function FUN_00435d15(param_1) {
 // Size: 1032 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00435dc4() {
 
@@ -2414,7 +2414,7 @@ export function FUN_00435dc4() {
   FUN_0042ac18();
   iVar2 = DAT_0063ec38 + 1;
   local_80 = DAT_0063ec38 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   local_10 = extraout_EAX + -3;
   local_68 = DAT_00655b08 + 4;
   if (2 < DAT_00655b08) {
@@ -2487,12 +2487,12 @@ export function FUN_00435dc4() {
     if (local_64 < local_74) {
       FUN_005baec8(DAT_0063e4e0);
       FUN_005baee0(0x1d,0x12,0xffffffff,0xffffffff);
-      _Timevec::~_Timevec((_Timevec *)DAT_0063e4e0);
+      // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063e4e0);
       local_10 = extraout_EAX_00 + -3;
     }
     else {
       FUN_005baec8(DAT_0063eac0);
-      _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+      // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
       local_10 = extraout_EAX_01 + -4;
       FUN_005baee0(0x25,0x12,0xffffffff,0xffffffff);
     }
@@ -2510,7 +2510,7 @@ export function FUN_00435dc4() {
 // Size: 187 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_004361cc(param_1) {
 
@@ -2560,7 +2560,7 @@ export function FUN_00436287(param_1) {
 // Size: 2224 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_004362e2() {
 
@@ -2591,7 +2591,7 @@ export function FUN_004362e2() {
   FUN_0042ac18();
   iVar2 = DAT_0063ec38 + 1;
   iVar3 = DAT_0063ec38 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   local_90 = extraout_EAX + -2;
   FUN_005baeb0(DAT_0063eb10);
   FUN_005baec8(DAT_0063eac0);
@@ -2602,7 +2602,7 @@ export function FUN_004362e2() {
   FUN_0043c910(DAT_00679640,DAT_0063ec34,iVar2,DAT_0063ec3c);
   iVar2 = iVar2 + local_90;
   FUN_005baec8(DAT_0063f030);
-  _Timevec::~_Timevec((_Timevec *)DAT_0063f030);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063f030);
   DAT_0063ef80 = extraout_EAX_00 + -3;
   _DAT_0063ef78 = iVar2 + 6;
   _DAT_0063ef7c = iVar3 - _DAT_0063ef78;
@@ -2728,8 +2728,8 @@ export function FUN_004362e2() {
       FUN_0040fe10();
       FUN_0040fea0();
       // DEVIATION: C pointer — FUN_0040ff00(*(undefined4 *)
-                          (DAT_0064ba10 +
-                          (s16(DAT_0063f0ca, local_ec * 0x48) & 0xf) * 4));
+                          // DEVIATION(cont): (&DAT_0064ba10 +
+                          // DEVIATION(cont): ((int)*(short *)(&DAT_0063f0ca + local_ec * 0x48) & 0xfU) * 4));
       if (s16(DAT_0063f0d8, local_ec * 0x48) !== 0) {
         FUN_0040fe40();
         FUN_0040bc10(0x1a2);
@@ -2778,9 +2778,9 @@ export function FUN_00436b92() {
 // Size: 544 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x00436c7e) */
-/* WARNING: Removing unreachable block (ram,0x00436d09) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Removing unreachable block (ram,0x00436c7e) */
+// /* WARNING: Removing unreachable block (ram,0x00436d09) */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00436bb7(param_1) {
 
@@ -2856,7 +2856,7 @@ export function FUN_00436e28() {
 
 
   let bVar1;
-  FILE *_File;
+  let _File;
   let sVar2;
   let local_8;
   
@@ -2889,7 +2889,7 @@ export function FUN_00436e28() {
 export function FUN_00436ed2() {
 
 
-  FILE *_File;
+  let _File;
   let sVar1;
   let local_8;
   
@@ -2912,7 +2912,7 @@ export function FUN_00436ed2() {
 // Size: 601 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00436f5a(param_1) {
 
@@ -3130,7 +3130,7 @@ export function FUN_004372cd(param_1) {
 // Size: 1469 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0043742f(param_1) {
 
@@ -3143,7 +3143,7 @@ export function FUN_0043742f(param_1) {
   let local_84;
   let local_80;
   let local_7c;
-  CString *local_78;
+  let local_78;
   let local_74;
   let local_70;
   let local_6c;
@@ -3171,7 +3171,7 @@ export function FUN_0043742f(param_1) {
   let local_14;
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -3191,7 +3191,7 @@ export function FUN_0043742f(param_1) {
   }
   local_54 = DAT_0063ec38;
   local_5c = DAT_0063ec38 + 0x176;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063ea20);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063ea20);
   local_28 = extraout_EAX;
   FUN_005baeb0(DAT_0063eb10);
   FUN_005baec8(DAT_0063ea20);
@@ -3359,7 +3359,7 @@ export function FUN_00437a2a() {
 // Size: 544 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00437a4a(param_1) {
 
@@ -3437,7 +3437,7 @@ export function FUN_00437c6f() {
 // Size: 67 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00437c8a() {
 
@@ -3475,8 +3475,8 @@ export function FUN_00437ccd(param_1) {
 // Size: 2172 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x004384ab) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Removing unreachable block (ram,0x004384ab) */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_00437cea() {
 
@@ -3505,7 +3505,7 @@ export function FUN_00437cea() {
   FUN_0042ac18();
   iVar2 = DAT_0063e620 + 2;
   iVar3 = DAT_0063e620 + 0x174;
-  _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+  // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
   FUN_005baeb0(DAT_0063e4f8);
   FUN_005baec8(DAT_0063eac0);
   FUN_005baee0(0x25,0x12,2,1);
@@ -3575,9 +3575,9 @@ export function FUN_00437cea() {
       iVar8 = DAT_0063e61c + 0x8c;
       FUN_0040bbb0();
       // DEVIATION: C pointer — uVar4 = FUN_00428b0c(*(undefined4 *)
-                                  (DAT_0064b1b8 +
-                                  s16(DAT_006af2a0, iVar1 * 0x27d8 + local_38 * 0x22) *
-                                  0x14));
+                                  // DEVIATION(cont): (&DAT_0064b1b8 +
+                                  // DEVIATION(cont): *(short *)(&DAT_006af2a0 + iVar1 * 0x27d8 + local_38 * 0x22) *
+                                  // DEVIATION(cont): 0x14));
       FUN_0040bbe0(uVar4);
       while (iVar9 = FUN_0040efd0(DAT_00679640), 0x60 < iVar9) {
         sVar10 = _strlen(DAT_00679640);
@@ -3652,8 +3652,8 @@ export function FUN_00437cea() {
 // Size: 333 bytes
 // ============================================================
 
-/* WARNING: Removing unreachable block (ram,0x00438634) */
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Removing unreachable block (ram,0x00438634) */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0043856b(param_1) {
 
@@ -3724,11 +3724,11 @@ export function FUN_004386b8(param_1, param_2) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
+    // DEVIATION: MFC — public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
    
    Library: Visual Studio 1998 Debug */
 
-void __thiscall CDaoFieldInfo::~CDaoFieldInfo(CDaoFieldInfo *this)
+// DEVIATION: MFC — void __thiscall CDaoFieldInfo::~CDaoFieldInfo(CDaoFieldInfo *this)
 
 {
   undefined4 *unaff_FS_OFFSET;
@@ -3854,7 +3854,7 @@ export function FUN_0043c1f6(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  // DEVIATION: C pointer — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(COleCntrFrameWnd **)(unaff_EBP + -0x10));
   return;
 }
 
@@ -3889,7 +3889,7 @@ export function FUN_0043c260(in_ECX) {
   // DEVIATION: SEH
   let local_10 = [0];
   // DEVIATION: SEH local
-  // DEVIATION: SEH local
+  let local_8;
   
   // DEVIATION: SEH
   // DEVIATION: SEH
@@ -3939,11 +3939,11 @@ export function FUN_0043c3f0(in_ECX, param_1) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: __thiscall _Timevec::~_Timevec(void)
+    // DEVIATION: MFC — public: __thiscall _Timevec::~_Timevec(void)
    
    Library: Visual Studio 1998 Debug */
 
-void __thiscall _Timevec::~_Timevec(_Timevec *this)
+// DEVIATION: MFC — void __thiscall _Timevec::~_Timevec(_Timevec *this)
 
 {
   // DEVIATION: C pointer — FUN_005db55b(*(undefined4 *)this);
@@ -4334,7 +4334,7 @@ export function FUN_0043c9d0(param_1) {
 export function FUN_0043ca10(param_1, param_2) {
 
 
-  CSocket *in_ECX;
+  let in_ECX;
   
   // DEVIATION: MFC — CSocket::Create(in_ECX,param_1,param_2,null);
   return;
@@ -4751,7 +4751,7 @@ export function FUN_0043d3a4(param_1, param_2) {
 // Size: 8227 bytes
 // ============================================================
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+// /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 export function FUN_0043d400(param_1) {
 
@@ -5482,8 +5482,8 @@ export function FUN_0043f493(param_1) {
   iVar1 = s8(DAT_0064f348[param_1 * 0x58]);
   FUN_004aef20(local_1c);
   // DEVIATION: C pointer — if (s16(DAT_00655504, s16(DAT_0064c6a6, iVar1 * 0x594) * 0x30) < 1) {
-    // DEVIATION: C pointer — local_2c = ~s16(DAT_00655504, s16(DAT_0064c6a6, iVar1 * 0x594) * 0x30) +
-               1;
+    // DEVIATION(cont): local_2c = ~(int)*(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + iVar1 * 0x594) * 0x30) +
+               // DEVIATION(cont): 1;
   }
   else {
     // DEVIATION: C pointer — local_2c = s16(DAT_00655504, s16(DAT_0064c6a6, iVar1 * 0x594) * 0x30);
@@ -5583,7 +5583,7 @@ export function FUN_0043f7a7(param_1) {
 // Size: 2677 bytes
 // ============================================================
 
-export function create_city(param_1, param_2, param_3) {
+export function create_city_0043F8B0(param_1, param_2, param_3) {
 
 
   let cVar1;
@@ -5683,16 +5683,16 @@ export function create_city(param_1, param_2, param_3) {
                (FUN_005b976d(uVar6,iVar4,1 << (u8(param_3) & 0x1f),1,1), 0x27 < DAT_00655af8
                )) && (local_14 < 8)) &&
              // DEVIATION: C pointer — ((iVar5 = FUN_005b8931(uVar6,iVar4), (DAT_00655b0b & *(byte *)(iVar5 + 4)) === 0
-              && (bVar2 = FUN_005b89bb(uVar6,iVar4), DAT_00627cce[((bVar2) >>> 0) * 0x18] === -2
-                 )))) {
-            FUN_005b94fc(uVar6,iVar4,4,1,1);
+              // DEVIATION(cont): && (bVar2 = thunk_FUN_005b89bb(uVar6,iVar4), (&DAT_00627cce)[(uint)bVar2 * 0x18] == -2
+                 // DEVIATION(cont): )))) {
+            // DEVIATION(cont): thunk_FUN_005b94fc(uVar6,iVar4,4,1,1);
           }
         }
         FUN_005b9f1c();
         if ((0x28 < DAT_00655af8) &&
            // DEVIATION: C pointer — (iVar4 = FUN_005b8931(param_1,param_2), (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0)
-           ) {
-          uVar3 = FUN_005adfa0((DAT_00655af8 + -0x14) / 0x14,2,10);
+           // DEVIATION(cont): ) {
+          // DEVIATION(cont): uVar3 = thunk_FUN_005adfa0((DAT_00655af8 + -0x14) / 0x14,2,10);
           DAT_0064f349[local_28 * 0x58] = uVar3;
           FUN_0043d289(local_28,4,1);
           FUN_0043d289(local_28,5,1);
@@ -5853,9 +5853,9 @@ function LAB_004355c2_helper(iVar2, local_10, local_14, local_18, local_1c, loca
         if ((((-1 < s16(DAT_00655be6, local_28 * 2)) &&
              (s16(DAT_00655be6, local_28 * 2) < DAT_00655b18)) &&
             // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
-           (local_54 = s16(DAT_00655be6, local_28 * 2),
-           s8(DAT_0064f348[local_54 * 0x58]) === local_70)) {
-          FUN_005cef31(local_90,DAT_0063eb10,local_34,local_38);
+           // DEVIATION(cont): (local_54 = (int)*(short *)(&DAT_00655be6 + local_28 * 2),
+           // DEVIATION(cont): (char)(&DAT_0064f348)[local_54 * 0x58] == local_70)) {
+          // DEVIATION(cont): FUN_005cef31(local_90,&DAT_0063eb10,local_34,local_38);
           local_40 = local_34 + 0x26;
           FUN_005baee0(0x5e,0x12,0xffffffff,0xffffffff);
           uVar1 = FUN_00428b0c(DAT_0064c5c0[local_28 * 2],local_40,local_38 + 3);
@@ -6015,7 +6015,7 @@ function LAB_004355c2_helper(iVar2, local_10, local_14, local_18, local_1c, loca
       local_6c = local_6c + 6;
       FUN_005baee0(0x7a,0x12,1,1);
       FUN_005baec8(DAT_0063eac0);
-      _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
+      // DEVIATION: MFC — _Timevec::~_Timevec((_Timevec *)DAT_0063eac0);
       local_10 = extraout_EAX_01;
       FUN_0040bbb0();
       uVar1 = FUN_00410070(local_24);
