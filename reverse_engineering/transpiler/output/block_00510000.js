@@ -315,40 +315,46 @@ export function FUN_005117f0(in_ECX, param_1) {
 // Function: EnableStackedTabs @ 0x00511820
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x2cc) = param_1;
-  return;
+export function EnableStackedTabs_00511820() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x2cc) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x00511850
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x2d0) = param_1;
-  return;
+export function EnableStackedTabs_00511850() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x2d0) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00511880 @ 0x00511880
 // Size: 398 bytes

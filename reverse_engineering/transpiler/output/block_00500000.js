@@ -572,21 +572,24 @@ export function FUN_00501440(in_ECX) {
 // Function: OnClose @ 0x005014BF
 // Size: 38 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CMiniDockFrameWnd::OnClose(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CMiniDockFrameWnd::OnClose(CMiniDockFrameWnd *this)
-
-{
-  FUN_0046ac89(2);
-  return;
+export function OnClose_005014BF() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CMiniDockFrameWnd::OnClose(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CMiniDockFrameWnd::OnClose(CMiniDockFrameWnd *this)
+  // 
+  // {
+  // thunk_FUN_0046ac89(2);
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005014e5 @ 0x005014E5
 // Size: 70 bytes
@@ -4678,103 +4681,109 @@ export function citywin_A1C8_0050A1C8(unaff_EBP) {
 // Function: citywin_A1D6 @ 0x0050A1D6
 // Size: 289 bytes
 // ============================================================
-
-undefined4
-citywin_A1D6(undefined4 param_1,undefined4 param_2,int param_3,byte param_4,int param_5,int param_6,
-            int param_7)
-
-{
-  undefined1 local_40 [16];
-  undefined1 local_30 [16];
-  int local_20;
-  undefined4 local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
-  
-  local_18 = -1;
-  local_20 = -1;
-  local_1c = 0xfffffffe;
-  if (param_3 < 0x3e) {
-    local_18 = param_3;
-  }
-  else {
-    local_20 = param_3 + -0x3e;
-  }
-  local_10 = param_5;
-  if ((param_4 & 1) !== 0) {
-    local_10 = param_5 + 0x26;
-  }
-  if (-1 < local_18) {
-    local_14 = param_6;
-    local_8 = FUN_00472cf0(0x30,0xfffffffe);
-    local_c = (local_8 - param_7) / 2;
-    local_14 = local_14 - local_c;
-    FUN_0047df20(local_1c);
-    FUN_005cef31(local_30,param_2,local_10,local_14);
-    FUN_0047df50();
-  }
-  if (-1 < local_20) {
-    local_c = (0x14 - param_7) / 2;
-    local_14 = param_6 - local_c;
-    FUN_005cef31(local_40,param_2,local_10,local_14);
-  }
-  return 0;
+export function citywin_A1D6_0050A1D6() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // citywin_A1D6(undefined4 param_1,undefined4 param_2,int param_3,byte param_4,int param_5,int param_6,
+  // int param_7)
+  // 
+  // {
+  // undefined1 local_40 [16];
+  // undefined1 local_30 [16];
+  // int local_20;
+  // undefined4 local_1c;
+  // int local_18;
+  // int local_14;
+  // int local_10;
+  // int local_c;
+  // int local_8;
+  // 
+  // local_18 = -1;
+  // local_20 = -1;
+  // local_1c = 0xfffffffe;
+  // if (param_3 < 0x3e) {
+  // local_18 = param_3;
+  // }
+  // else {
+  // local_20 = param_3 + -0x3e;
+  // }
+  // local_10 = param_5;
+  // if ((param_4 & 1) != 0) {
+  // local_10 = param_5 + 0x26;
+  // }
+  // if (-1 < local_18) {
+  // local_14 = param_6;
+  // local_8 = thunk_FUN_00472cf0(0x30,0xfffffffe);
+  // local_c = (local_8 - param_7) / 2;
+  // local_14 = local_14 - local_c;
+  // thunk_FUN_0047df20(local_1c);
+  // FUN_005cef31(local_30,param_2,local_10,local_14);
+  // thunk_FUN_0047df50();
+  // }
+  // if (-1 < local_20) {
+  // local_c = (0x14 - param_7) / 2;
+  // local_14 = param_6 - local_c;
+  // FUN_005cef31(local_40,param_2,local_10,local_14);
+  // }
+  // return 0;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: citywin_A2F7 @ 0x0050A2F7
 // Size: 380 bytes
 // ============================================================
-
-undefined4
-citywin_A2F7(undefined4 param_1,undefined4 param_2,int param_3,byte param_4,int param_5,int param_6,
-            int param_7)
-
-{
-  int iVar1;
-  int local_28;
-  int local_20;
-  int local_18;
-  int local_c;
-  int local_8;
-  
-  local_c = 0;
-  local_28 = -1;
-  for (local_20 = 0; local_20 < DAT_00655b18; local_20 = local_20 + 1) {
-    if ((s32(DAT_0064f394, local_20 * 0x58) !== 0) &&
-       (s8(DAT_0064f348[local_20 * 0x58]) === param_3)) {
-      local_8 = s8(DAT_0064f349[local_20 * 0x58]);
-      iVar1 = FUN_0043d20a(local_20,1);
-      if (iVar1 !== 0) {
-        local_8 = local_8 + 200;
-      }
-      if (DAT_0064f379[local_20 * 0x58] === -1) {
-        local_8 = local_8 + 100;
-      }
-      if (local_c < local_8) {
-        local_c = local_8;
-        local_28 = local_20;
-      }
-    }
-  }
-  if (-1 < local_28) {
-    local_18 = param_5;
-    if ((param_4 & 1) !== 0) {
-      local_18 = param_5 + 0x26;
-    }
-    iVar1 = FUN_00472cf0(0x30,0xfffffffe);
-    FUN_0056d289(param_2,local_28,0,local_18,param_6 - (iVar1 - param_7) / 2,0xfffffffe);
-  }
-  return 0;
+export function citywin_A2F7_0050A2F7() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // citywin_A2F7(undefined4 param_1,undefined4 param_2,int param_3,byte param_4,int param_5,int param_6,
+  // int param_7)
+  // 
+  // {
+  // int iVar1;
+  // int local_28;
+  // int local_20;
+  // int local_18;
+  // int local_c;
+  // int local_8;
+  // 
+  // local_c = 0;
+  // local_28 = -1;
+  // for (local_20 = 0; local_20 < DAT_00655b18; local_20 = local_20 + 1) {
+  // if ((*(int *)(&DAT_0064f394 + local_20 * 0x58) != 0) &&
+  // ((char)(&DAT_0064f348)[local_20 * 0x58] == param_3)) {
+  // local_8 = (int)(char)(&DAT_0064f349)[local_20 * 0x58];
+  // iVar1 = thunk_FUN_0043d20a(local_20,1);
+  // if (iVar1 != 0) {
+  // local_8 = local_8 + 200;
+  // }
+  // if ((&DAT_0064f379)[local_20 * 0x58] == -1) {
+  // local_8 = local_8 + 100;
+  // }
+  // if (local_c < local_8) {
+  // local_c = local_8;
+  // local_28 = local_20;
+  // }
+  // }
+  // }
+  // if (-1 < local_28) {
+  // local_18 = param_5;
+  // if ((param_4 & 1) != 0) {
+  // local_18 = param_5 + 0x26;
+  // }
+  // iVar1 = thunk_FUN_00472cf0(0x30,0xfffffffe);
+  // thunk_FUN_0056d289(param_2,local_28,0,local_18,param_6 - (iVar1 - param_7) / 2,0xfffffffe);
+  // }
+  // return 0;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: city_button_change @ 0x0050A473
 // Size: 4544 bytes

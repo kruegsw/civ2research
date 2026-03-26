@@ -3078,59 +3078,65 @@ export function FUN_004f8d51() {
 // Function: FID_conflict:`scalar_deleting_destructor' @ 0x004FA0F0
 // Size: 57 bytes
 // ============================================================
-
-/* Library Function - Multiple Matches With Different Base Names
-    public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
-    public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
-    public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
-    public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
-     9 names - too many to list
-   
-   Library: Visual Studio 1998 Debug */
-
-CControlBarInfo * _scalar_deleting_destructor_(byte param_1)
-
-{
-  CControlBarInfo s32(in_ECX, 0);
-  
-  // DEVIATION: MFC — CControlBarInfo::~CControlBarInfo(in_ECX);
-  if ((param_1 & 1) !== 0) {
-    operator_delete(in_ECX);
-  }
-  return in_ECX;
+export function FID_conflict__scalar_deleting_destructor__004FA0F0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Multiple Matches With Different Base Names
+  // public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
+  // public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
+  // public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
+  // public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
+  // 9 names - too many to list
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CControlBarInfo * FID_conflict__scalar_deleting_destructor_(byte param_1)
+  // 
+  // {
+  // CControlBarInfo *in_ECX;
+  // 
+  // CControlBarInfo::~CControlBarInfo(in_ECX);
+  // if ((param_1 & 1) != 0) {
+  // operator_delete(in_ECX);
+  // }
+  // return in_ECX;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: ~CControlBarInfo @ 0x004FA140
 // Size: 62 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: __thiscall CControlBarInfo::~CControlBarInfo(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CControlBarInfo::~CControlBarInfo(CControlBarInfo *this)
-
-{
-  undefined4 s32(unaff_FS_OFFSET, 0);
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  undefined4 local_8;
-  
-  puStack_c = 0 /* ADDR:LAB_004fa18a */;
-  uStack_10 = s32(unaff_FS_OFFSET, 0);
-  s32(unaff_FS_OFFSET, 0) = &uStack_10;
-  local_8 = 0xffffffff;
-  FUN_004fa17e();
-  FUN_004fa194();
-  return;
+export function _CControlBarInfo_004FA140() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: __thiscall CControlBarInfo::~CControlBarInfo(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CControlBarInfo::~CControlBarInfo(CControlBarInfo *this)
+  // 
+  // {
+  // undefined4 *unaff_FS_OFFSET;
+  // undefined4 uStack_10;
+  // undefined1 *puStack_c;
+  // undefined4 local_8;
+  // 
+  // puStack_c = &LAB_004fa18a;
+  // uStack_10 = *unaff_FS_OFFSET;
+  // *unaff_FS_OFFSET = &uStack_10;
+  // local_8 = 0xffffffff;
+  // FUN_004fa17e();
+  // FUN_004fa194();
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004fa17e @ 0x004FA17E
 // Size: 12 bytes

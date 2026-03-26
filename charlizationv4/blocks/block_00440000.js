@@ -2295,20 +2295,23 @@ export function FUN_00447210(in_ECX, param_1) {
 // Function: GetCheckStyle @ 0x004472C0
 // Size: 28 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
-
-{
-  return u32(this, 0x40);
+export function GetCheckStyle_004472C0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
+  // 
+  // {
+  // return *(uint *)(this + 0x40);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004472f0 @ 0x004472F0
 // Size: 33 bytes
@@ -7047,21 +7050,24 @@ export function FUN_0044c730(in_ECX) {
 // Function: CString @ 0x0044C8B0
 // Size: 33 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: __thiscall CString::CString(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CString * __thiscall CString::CString(CString *this)
-
-{
-  FUN_0044c8e0();
-  return this;
+export function CString_0044C8B0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: __thiscall CString::CString(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CString * __thiscall CString::CString(CString *this)
+  // 
+  // {
+  // thunk_FUN_0044c8e0();
+  // return this;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0044c8e0 @ 0x0044C8E0
 // Size: 281 bytes

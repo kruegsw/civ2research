@@ -2827,21 +2827,24 @@ export function FUN_0046ab49() {
 // Function: InvalidateObjectCache @ 0x0046AB5F
 // Size: 35 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
-
-{
-  s32(this, 0x12c0) = 0;
-  return;
+export function InvalidateObjectCache_0046AB5F() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
+  // 
+  // {
+  // *(undefined4 *)(this + 0x12c0) = 0;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0046ab82 @ 0x0046AB82
 // Size: 107 bytes
@@ -4156,21 +4159,24 @@ export function FUN_0046dea1() {
 // Function: EnableStackedTabs @ 0x0046DFF0
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x114) = param_1;
-  return;
+export function EnableStackedTabs_0046DFF0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x114) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0046e020 @ 0x0046E020
 // Size: 601 bytes

@@ -2253,21 +2253,24 @@ export function FUN_00414d70(param_1) {
 // Function: EnableStackedTabs @ 0x00414DA0
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x2a8) = param_1;
-  return;
+export function EnableStackedTabs_00414DA0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x2a8) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00414dd0 @ 0x00414DD0
 // Size: 39 bytes
@@ -2286,20 +2289,23 @@ export function FUN_00414dd0(param_1, param_2) {
 // Function: IsTracking @ 0x00414E00
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0x15a4);
+export function IsTracking_00414E00() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0x15a4);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00414e30 @ 0x00414E30
 // Size: 210 bytes

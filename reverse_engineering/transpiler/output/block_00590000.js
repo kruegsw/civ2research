@@ -5009,21 +5009,24 @@ export function FUN_0059e472(in_ECX, param_1) {
 // Function: SetObjectSchema @ 0x0059E4A4
 // Size: 33 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CArchive::SetObjectSchema(unsigned int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CArchive::SetObjectSchema(CArchive *this,uint param_1)
-
-{
-  u32(this, 0xc) = param_1;
-  return;
+export function SetObjectSchema_0059E4A4() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CArchive::SetObjectSchema(unsigned int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CArchive::SetObjectSchema(CArchive *this,uint param_1)
+  // 
+  // {
+  // *(uint *)(this + 0xc) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0059e4c5 @ 0x0059E4C5
 // Size: 33 bytes
@@ -5128,21 +5131,24 @@ export function FUN_0059e5c9(in_ECX, param_1, param_2, param_3) {
 // Function: EnableStackedTabs @ 0x0059E624
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 200) = param_1;
-  return;
+export function EnableStackedTabs_0059E624() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 200) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0059e648 @ 0x0059E648
 // Size: 46 bytes
@@ -5224,21 +5230,24 @@ export function FUN_0059e6ff(in_ECX, param_1) {
 // Function: delbuf @ 0x0059E762
 // Size: 33 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall ios::delbuf(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall ios::delbuf(ios *this,int param_1)
-
-{
-  s32(this, 0x1c) = param_1;
-  return;
+export function delbuf_0059E762() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall ios::delbuf(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall ios::delbuf(ios *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x1c) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0059e783 @ 0x0059E783
 // Size: 42 bytes
@@ -5527,154 +5536,178 @@ export function FUN_0059eb42(param_1) {
 // Function: EnableStackedTabs @ 0x0059EB68
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0xd8) = param_1;
-  return;
+export function EnableStackedTabs_0059EB68() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0xd8) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EB8C
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x23c) = param_1;
-  return;
+export function EnableStackedTabs_0059EB8C() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x23c) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EBB0
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x240) = param_1;
-  return;
+export function EnableStackedTabs_0059EBB0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x240) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EBD4
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x244) = param_1;
-  return;
+export function EnableStackedTabs_0059EBD4() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x244) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EBF8
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x248) = param_1;
-  return;
+export function EnableStackedTabs_0059EBF8() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x248) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EC1C
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x24c) = param_1;
-  return;
+export function EnableStackedTabs_0059EC1C() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x24c) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EC40
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x250) = param_1;
-  return;
+export function EnableStackedTabs_0059EC40() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x250) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: EnableStackedTabs @ 0x0059EC64
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-
-{
-  s32(this, 0x130) = param_1;
-  return;
+export function EnableStackedTabs_0059EC64() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+  // 
+  // {
+  // *(int *)(this + 0x130) = param_1;
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0059ec88 @ 0x0059EC88
 // Size: 360 bytes

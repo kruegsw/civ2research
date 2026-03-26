@@ -50,20 +50,23 @@ export function FUN_00490530(param_1, param_2, param_3) {
 // Function: IsTracking @ 0x00490560
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0x159c);
+export function IsTracking_00490560() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0x159c);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00490590 @ 0x00490590
 // Size: 365 bytes
@@ -834,44 +837,50 @@ export function FUN_0049287e(unaff_EBP) {
 // Function: Realloc @ 0x004929C0
 // Size: 40 bytes
 // ============================================================
-
-/* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   long)
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   
-   Library: Visual Studio 1998 Debug */
-
-void Realloc(undefined4 param_1)
-
-{
-  FUN_005d8270(param_1);
-  return;
+export function Realloc_004929C0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Multiple Matches With Same Base Name
+  // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+  // long)
+  // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void Realloc(undefined4 param_1)
+  // 
+  // {
+  // FUN_005d8270(param_1);
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: Realloc @ 0x00492A00
 // Size: 40 bytes
 // ============================================================
-
-/* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   long)
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   
-   Library: Visual Studio 1998 Debug */
-
-void Realloc(void)
-
-{
-  FUN_005d8622();
-  return;
+export function Realloc_00492A00() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Multiple Matches With Same Base Name
+  // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+  // long)
+  // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void Realloc(void)
+  // 
+  // {
+  // FUN_005d8622();
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00492a40 @ 0x00492A40
 // Size: 44 bytes
@@ -2834,41 +2843,44 @@ export function FUN_0049621d(in_ECX) {
 // Function: ~CCommandLineInfo @ 0x0049632A
 // Size: 123 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: virtual __thiscall CCommandLineInfo::~CCommandLineInfo(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CCommandLineInfo::~CCommandLineInfo(CCommandLineInfo *this)
-
-{
-  undefined4 s32(unaff_FS_OFFSET, 0);
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  int local_8;
-  
-  puStack_c = 0 /* ADDR:LAB_004963ea */;
-  uStack_10 = s32(unaff_FS_OFFSET, 0);
-  s32(unaff_FS_OFFSET, 0) = &uStack_10;
-  // DEVIATION: C pointer — *(undefined ***)this = PTR_FUN_0061d6c0;
-  local_8._1_3_ = 0;
-  local_8._0_1_ = 3;
-  FUN_004963a5();
-  local_8._0_1_ = 2;
-  FUN_004963b4();
-  local_8._0_1_ = 1;
-  FUN_004963c3();
-  local_8 = ((local_8) >>> 0)._1_3_ << 8;
-  FUN_004963d2();
-  local_8 = 0xffffffff;
-  FUN_004963e1();
-  FUN_004963f4();
-  return;
+export function _CCommandLineInfo_0049632A() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: virtual __thiscall CCommandLineInfo::~CCommandLineInfo(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CCommandLineInfo::~CCommandLineInfo(CCommandLineInfo *this)
+  // 
+  // {
+  // undefined4 *unaff_FS_OFFSET;
+  // undefined4 uStack_10;
+  // undefined1 *puStack_c;
+  // int local_8;
+  // 
+  // puStack_c = &LAB_004963ea;
+  // uStack_10 = *unaff_FS_OFFSET;
+  // *unaff_FS_OFFSET = &uStack_10;
+  // *(undefined ***)this = &PTR_FUN_0061d6c0;
+  // local_8._1_3_ = 0;
+  // local_8._0_1_ = 3;
+  // FUN_004963a5();
+  // local_8._0_1_ = 2;
+  // FUN_004963b4();
+  // local_8._0_1_ = 1;
+  // FUN_004963c3();
+  // local_8 = (uint)local_8._1_3_ << 8;
+  // FUN_004963d2();
+  // local_8 = 0xffffffff;
+  // FUN_004963e1();
+  // FUN_004963f4();
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004963a5 @ 0x004963A5
 // Size: 15 bytes

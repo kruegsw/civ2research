@@ -454,44 +454,50 @@ export function FUN_00471020(param_1) {
 // Function: GetActiveView @ 0x00471070
 // Size: 30 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
-
-{
-  CView s32(pCVar1, 0);
-  
-  // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView(this);
-  return pCVar1;
+export function GetActiveView_00471070() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
+  // 
+  // {
+  // CView *pCVar1;
+  // 
+  // pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
+  // return (CRichEditView *)pCVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: GetActiveView @ 0x004710A0
 // Size: 30 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
-
-{
-  CView s32(pCVar1, 0);
-  
-  // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView(this);
-  return pCVar1;
+export function GetActiveView_004710A0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
+  // 
+  // {
+  // CView *pCVar1;
+  // 
+  // pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
+  // return (CRichEditView *)pCVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004710d0 @ 0x004710D0
 // Size: 606 bytes
@@ -4639,33 +4645,36 @@ export function FUN_0047c2f2(param_1, param_2, param_3) {
 // Function: FUN_0047c37f @ 0x0047C37F
 // Size: 97 bytes
 // ============================================================
-
-undefined4
-FUN_0047c37f(undefined4 param_1,int param_2,undefined4 param_3,int param_4,undefined4 param_5,
-            int param_6)
-
-{
-  int iVar1;
-  undefined4 uVar2;
-  
-  iVar1 = FUN_0047c2f2(param_1,param_3,param_5);
-  if (iVar1 === 0) {
-    uVar2 = 0;
-  }
-  else if (param_2 < param_4) {
-    uVar2 = 0;
-  }
-  else if (param_2 < param_6 + param_4) {
-    uVar2 = 1;
-  }
-  else {
-    uVar2 = 0;
-  }
-  return uVar2;
+export function FUN_0047c37f_0047C37F() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_0047c37f(undefined4 param_1,int param_2,undefined4 param_3,int param_4,undefined4 param_5,
+  // int param_6)
+  // 
+  // {
+  // int iVar1;
+  // undefined4 uVar2;
+  // 
+  // iVar1 = thunk_FUN_0047c2f2(param_1,param_3,param_5);
+  // if (iVar1 == 0) {
+  // uVar2 = 0;
+  // }
+  // else if (param_2 < param_4) {
+  // uVar2 = 0;
+  // }
+  // else if (param_2 < param_6 + param_4) {
+  // uVar2 = 1;
+  // }
+  // else {
+  // uVar2 = 0;
+  // }
+  // return uVar2;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0047c3e0 @ 0x0047C3E0
 // Size: 99 bytes
@@ -5170,40 +5179,43 @@ export function FUN_0047dce0(in_ECX) {
 // Function: ~CBitmapButton @ 0x0047DE10
 // Size: 114 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
-
-{
-  undefined4 s32(unaff_FS_OFFSET, 0);
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  int local_8;
-  
-  puStack_c = 0 /* ADDR:LAB_0047dec7 */;
-  uStack_10 = s32(unaff_FS_OFFSET, 0);
-  s32(unaff_FS_OFFSET, 0) = &uStack_10;
-  local_8._1_3_ = 0;
-  local_8._0_1_ = 3;
-  FUN_0047de82();
-  local_8._0_1_ = 2;
-  FUN_0047de91();
-  local_8._0_1_ = 1;
-  FUN_0047dea0();
-  local_8 = ((local_8) >>> 0)._1_3_ << 8;
-  FUN_0047deaf();
-  local_8 = 0xffffffff;
-  FUN_0047debe();
-  FUN_0047ded1();
-  return;
+export function _CBitmapButton_0047DE10() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
+  // 
+  // {
+  // undefined4 *unaff_FS_OFFSET;
+  // undefined4 uStack_10;
+  // undefined1 *puStack_c;
+  // int local_8;
+  // 
+  // puStack_c = &LAB_0047dec7;
+  // uStack_10 = *unaff_FS_OFFSET;
+  // *unaff_FS_OFFSET = &uStack_10;
+  // local_8._1_3_ = 0;
+  // local_8._0_1_ = 3;
+  // FUN_0047de82();
+  // local_8._0_1_ = 2;
+  // FUN_0047de91();
+  // local_8._0_1_ = 1;
+  // FUN_0047dea0();
+  // local_8 = (uint)local_8._1_3_ << 8;
+  // FUN_0047deaf();
+  // local_8 = 0xffffffff;
+  // FUN_0047debe();
+  // FUN_0047ded1();
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0047de82 @ 0x0047DE82
 // Size: 15 bytes

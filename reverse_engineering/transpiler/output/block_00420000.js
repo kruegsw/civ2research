@@ -95,23 +95,26 @@ export function FUN_00421bd0() {
 // Function: Realloc @ 0x00421BF0
 // Size: 40 bytes
 // ============================================================
-
-/* Library Function - Multiple Matches With Same Base Name
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-   long)
-    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-   
-   Library: Visual Studio 1998 Debug */
-
-void Realloc(undefined4 param_1)
-
-{
-  FUN_005d83d6(param_1);
-  return;
+export function Realloc_00421BF0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Multiple Matches With Same Base Name
+  // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+  // long)
+  // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void Realloc(undefined4 param_1)
+  // 
+  // {
+  // FUN_005d83d6(param_1);
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00421c30 @ 0x00421C30
 // Size: 34 bytes
@@ -219,23 +222,26 @@ export function FUN_00421dd0() {
 // Function: Create @ 0x00421E00
 // Size: 46 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSocket::Create(unsigned int,int,char const *)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSocket::Create(CSocket *this,uint param_1,int param_2,char s32(param_3, 0))
-
-{
-  int iVar1;
-  
-  iVar1 = FUN_0040ffe0(param_1,param_2,0,param_3);
-  return iVar1;
+export function Create_00421E00() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSocket::Create(unsigned int,int,char const *)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSocket::Create(CSocket *this,uint param_1,int param_2,char *param_3)
+  // 
+  // {
+  // int iVar1;
+  // 
+  // iVar1 = thunk_FUN_0040ffe0(param_1,param_2,0,param_3);
+  // return iVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00421e40 @ 0x00421E40
 // Size: 32 bytes

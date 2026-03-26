@@ -269,8 +269,8 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
   }
   if (!sigLine) {
-    // No signature found — still apply transforms to all body lines
-    for (const line of bodyLines) result.push(transformLine(line, ctx));
+    // No signature found — comment out entire body as DEVIATION
+    for (const line of bodyLines) result.push(line.replace(/^(\s*)/, '$1// DEVIATION(unparsed): '));
     return result;
   }
 
@@ -280,8 +280,16 @@ function processFunction(headerLines, bodyLines, ctx) {
 
   const sigMatch = sigLine.match(/^\w[\w\s*]*\s+(\S+)\s*\(([^)]*)\)/);
   if (!sigMatch) {
-    // Signature parse failed — still apply transforms to all body lines
-    for (const line of bodyLines) result.push(transformLine(line, ctx));
+    // Signature parse failed — wrap body in an exported function with DEVIATION comment
+    const fallbackName = headerNameMatch
+      ? headerNameMatch[1].replace(/[^a-zA-Z0-9_]/g, '_')
+      : 'unknown_' + Math.random().toString(36).substring(2, 8);
+    const headerAddr = headerText.match(/@\s*0x([0-9a-fA-F]+)/);
+    const name = fallbackName + (headerAddr ? '_' + headerAddr[1] : '');
+    result.push('export function ' + name + '() {');
+    result.push('  // DEVIATION: unparsed C++ function');
+    for (const line of bodyLines) result.push('  // ' + line.trimStart());
+    result.push('}');
     return result;
   }
 

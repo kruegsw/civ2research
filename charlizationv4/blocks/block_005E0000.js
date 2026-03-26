@@ -3361,39 +3361,42 @@ export function FUN_005e4cc8(param_1, param_2, param_3, param_4, param_5, param_
 // Function: FUN_005e4d60 @ 0x005E4D60
 // Size: 250 bytes
 // ============================================================
-
-undefined4
-FUN_005e4d60(undefined4 param_1,byte param_2,undefined4 param_3,undefined4 param_4,
-            undefined4 param_5,undefined4 param_6,undefined4 param_7)
-
-{
-  int iVar1;
-  undefined4 uVar2;
-  int iVar3;
-  short local_18;
-  
-  iVar1 = FUN_005dce4f(0x6000);
-  if (iVar1 === 0) {
-    debug_log(s_Error__Cannot_allocate_decompres_00639084);
-    uVar2 = 0;
-  }
-  else {
-    iVar3 = FUN_005dcdf9(iVar1);
-    for (local_18 = 0; local_18 < 0x1000; local_18 = local_18 + 1) {
-      s16(iVar3, local_18 * 2) = 0xffff;
-      u16(iVar3, 0x2000 + local_18 * 2) = ((param_2) & 0xFFFF) + local_18;
-      s16(iVar3, 0x4000 + local_18 * 2) = 1;
-    }
-    FUN_005e53f3(param_1,param_7,iVar3,param_5,param_6,param_4,param_3);
-    FUN_005dce29(iVar1);
-    FUN_005dce96(iVar1);
-    uVar2 = 1;
-  }
-  return uVar2;
+export function FUN_005e4d60_005E4D60() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005e4d60(undefined4 param_1,byte param_2,undefined4 param_3,undefined4 param_4,
+  // undefined4 param_5,undefined4 param_6,undefined4 param_7)
+  // 
+  // {
+  // int iVar1;
+  // undefined4 uVar2;
+  // int iVar3;
+  // short local_18;
+  // 
+  // iVar1 = FUN_005dce4f(0x6000);
+  // if (iVar1 == 0) {
+  // debug_log(s_Error__Cannot_allocate_decompres_00639084);
+  // uVar2 = 0;
+  // }
+  // else {
+  // iVar3 = FUN_005dcdf9(iVar1);
+  // for (local_18 = 0; local_18 < 0x1000; local_18 = local_18 + 1) {
+  // *(undefined2 *)(iVar3 + local_18 * 2) = 0xffff;
+  // *(ushort *)(iVar3 + 0x2000 + local_18 * 2) = (ushort)param_2 + local_18;
+  // *(undefined2 *)(iVar3 + 0x4000 + local_18 * 2) = 1;
+  // }
+  // FUN_005e53f3(param_1,param_7,iVar3,param_5,param_6,param_4,param_3);
+  // FUN_005dce29(iVar1);
+  // FUN_005dce96(iVar1);
+  // uVar2 = 1;
+  // }
+  // return uVar2;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005e4e60 @ 0x005E4E60
 // Size: 152 bytes
@@ -5927,24 +5930,27 @@ export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
 // Function: CReObject @ 0x005E82FB
 // Size: 64 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: __thiscall CReObject::CReObject(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CReObject * __thiscall CReObject::CReObject(CReObject *this)
-
-{
-  // DEVIATION: C pointer — *(undefined4 *)this = 0;
-  s32(this, 0x20) = 0;
-  s32(this, 0x24) = 0;
-  s32(this, 0x28) = 0;
-  return this;
+export function CReObject_005E82FB() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: __thiscall CReObject::CReObject(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CReObject * __thiscall CReObject::CReObject(CReObject *this)
+  // 
+  // {
+  // *(undefined4 *)this = 0;
+  // *(undefined4 *)(this + 0x20) = 0;
+  // *(undefined4 *)(this + 0x24) = 0;
+  // *(undefined4 *)(this + 0x28) = 0;
+  // return this;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005e833b @ 0x005E833B
 // Size: 141 bytes
@@ -6993,83 +6999,86 @@ export function FUN_005e9944(param_1, param_2) {
 // Function: FUN_005e997c @ 0x005E997C
 // Size: 598 bytes
 // ============================================================
-
-undefined4
-FUN_005e997c(int s32(param_1, 0),int param_2,char s32(param_3, 0),int param_4,int param_5,RECT s32(param_6, 0),
-            byte param_7)
-
-{
-  undefined4 uVar1;
-  int iVar2;
-  int iVar3;
-  HGDIOBJ h;
-  size_t cchText;
-  tagRECT *lprc;
-  UINT format;
-  HDC local_20;
-  UINT local_1c;
-  tagRECT local_18;
-  undefined4 s32(local_8, 0);
-  
-  if (param_2 === 0) {
-    debug_log(s_Error__NULL_font_in_MSDrawString_00639708);
-    uVar1 = 0;
-  }
-  else {
-    local_8 = FUN_005dcdf9(param_2);
-    iVar2 = gdi_847F(param_2);
-    iVar2 = param_5 + iVar2;
-    iVar3 = measure_text_858E(param_2,param_3);
-    SetRect(local_18,param_4,param_5,param_4 + iVar3,iVar2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_20);
-    if (iVar2 === 0) {
-      h = SelectObject(local_20,(HGDIOBJ)s32(local_8, 0));
-      SetBkMode(local_20,1);
-      SetTextColor(local_20,((CONCAT1) >>> 0)2(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
-      iVar2 = FUN_00407fc0(local_18);
-      iVar2 = iVar2 / 2;
-      iVar3 = FUN_00407f90(local_18);
-      iVar3 = iVar3 / 2;
-      OffsetRect(local_18,-iVar3,-iVar2);
-      if ((param_7 & 1) !== 0) {
-        OffsetRect(local_18,iVar3,0);
-      }
-      if ((param_7 & 4) !== 0) {
-        OffsetRect(local_18,0,iVar2);
-      }
-      if ((param_7 & 8) !== 0) {
-        OffsetRect(local_18,0,-iVar2);
-      }
-      if ((param_7 & 2) !== 0) {
-        OffsetRect(local_18,-iVar3,0);
-      }
-      local_1c = GetTextAlign(local_20);
-      SetTextAlign(local_20,1);
-      MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
-      IntersectRect(local_18,local_18,param_6);
-      format = 0;
-      lprc = local_18;
-      cchText = _strlen(param_3);
-      DrawTextA(local_20,param_3,cchText,lprc,format);
-      SetTextAlign(local_20,local_1c);
-      SelectObject(local_20,h);
-      FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_20);
-      uVar1 = 1;
-    }
-    else if (iVar2 === -0x7789fe3e) {
-      uVar1 = 0xffffffff;
-    }
-    else {
-      debug_log(s_DrawString___GetDC_Error_0063972c);
-      uVar1 = 0;
-    }
-  }
-  return uVar1;
+export function FUN_005e997c_005E997C() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+  // byte param_7)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int iVar2;
+  // int iVar3;
+  // HGDIOBJ h;
+  // size_t cchText;
+  // tagRECT *lprc;
+  // UINT format;
+  // HDC local_20;
+  // UINT local_1c;
+  // tagRECT local_18;
+  // undefined4 *local_8;
+  // 
+  // if (param_2 == 0) {
+  // debug_log(s_Error__NULL_font_in_MSDrawString_00639708);
+  // uVar1 = 0;
+  // }
+  // else {
+  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+  // iVar2 = gdi_847F(param_2);
+  // iVar2 = param_5 + iVar2;
+  // iVar3 = measure_text_858E(param_2,param_3);
+  // SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
+  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
+  // if (iVar2 == 0) {
+  // h = SelectObject(local_20,(HGDIOBJ)*local_8);
+  // SetBkMode(local_20,1);
+  // SetTextColor(local_20,(uint)CONCAT12(G.DAT_006e5226,CONCAT11(G.DAT_006e5225,G.DAT_006e5224)));
+  // iVar2 = thunk_FUN_00407fc0(&local_18);
+  // iVar2 = iVar2 / 2;
+  // iVar3 = thunk_FUN_00407f90(&local_18);
+  // iVar3 = iVar3 / 2;
+  // OffsetRect(&local_18,-iVar3,-iVar2);
+  // if ((param_7 & 1) != 0) {
+  // OffsetRect(&local_18,iVar3,0);
+  // }
+  // if ((param_7 & 4) != 0) {
+  // OffsetRect(&local_18,0,iVar2);
+  // }
+  // if ((param_7 & 8) != 0) {
+  // OffsetRect(&local_18,0,-iVar2);
+  // }
+  // if ((param_7 & 2) != 0) {
+  // OffsetRect(&local_18,-iVar3,0);
+  // }
+  // local_1c = GetTextAlign(local_20);
+  // SetTextAlign(local_20,1);
+  // MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
+  // IntersectRect(&local_18,&local_18,param_6);
+  // format = 0;
+  // lprc = &local_18;
+  // cchText = _strlen(param_3);
+  // DrawTextA(local_20,param_3,cchText,lprc,format);
+  // SetTextAlign(local_20,local_1c);
+  // SelectObject(local_20,h);
+  // FUN_005dce29(param_2);
+  // (**(code **)(*param_1 + 0x68))(param_1,local_20);
+  // uVar1 = 1;
+  // }
+  // else if (iVar2 == -0x7789fe3e) {
+  // uVar1 = 0xffffffff;
+  // }
+  // else {
+  // debug_log(s_DrawString___GetDC_Error_0063972c);
+  // uVar1 = 0;
+  // }
+  // }
+  // return uVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005e9bd7 @ 0x005E9BD7
 // Size: 341 bytes
@@ -7232,247 +7241,259 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
 // Function: FUN_005e9f8a @ 0x005E9F8A
 // Size: 590 bytes
 // ============================================================
-
-undefined4
-FUN_005e9f8a(int s32(param_1, 0),int param_2,char s32(param_3, 0),int param_4,int param_5,RECT s32(param_6, 0),
-            byte param_7,undefined1 param_8,undefined1 param_9,undefined1 param_10)
-
-{
-  undefined4 uVar1;
-  int iVar2;
-  int iVar3;
-  HGDIOBJ h;
-  size_t cchText;
-  tagRECT *lprc;
-  UINT format;
-  HDC local_20;
-  UINT local_1c;
-  tagRECT local_18;
-  undefined4 s32(local_8, 0);
-  
-  if (param_2 === 0) {
-    debug_log(s_Error__NULL_font_in_MSDrawString_00639768);
-    uVar1 = 0;
-  }
-  else {
-    local_8 = FUN_005dcdf9(param_2);
-    iVar2 = gdi_847F(param_2);
-    iVar2 = param_5 + iVar2;
-    iVar3 = measure_text_858E(param_2,param_3);
-    SetRect(local_18,param_4,param_5,param_4 + iVar3,iVar2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_20);
-    if (iVar2 === 0) {
-      h = SelectObject(local_20,(HGDIOBJ)s32(local_8, 0));
-      SetBkMode(local_20,1);
-      SetTextColor(local_20,((CONCAT1) >>> 0)2(param_10,CONCAT11(param_9,param_8)));
-      iVar2 = FUN_00407fc0(local_18);
-      iVar2 = iVar2 / 2;
-      iVar3 = FUN_00407f90(local_18);
-      iVar3 = iVar3 / 2;
-      OffsetRect(local_18,-iVar3,-iVar2);
-      if ((param_7 & 1) !== 0) {
-        OffsetRect(local_18,iVar3,0);
-      }
-      if ((param_7 & 4) !== 0) {
-        OffsetRect(local_18,0,iVar2);
-      }
-      if ((param_7 & 8) !== 0) {
-        OffsetRect(local_18,0,-iVar2);
-      }
-      if ((param_7 & 2) !== 0) {
-        OffsetRect(local_18,-iVar3,0);
-      }
-      local_1c = GetTextAlign(local_20);
-      SetTextAlign(local_20,1);
-      MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
-      IntersectRect(local_18,local_18,param_6);
-      format = 0;
-      lprc = local_18;
-      cchText = _strlen(param_3);
-      DrawTextA(local_20,param_3,cchText,lprc,format);
-      SetTextAlign(local_20,local_1c);
-      SelectObject(local_20,h);
-      FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_20);
-      uVar1 = 1;
-    }
-    else if (iVar2 === -0x7789fe3e) {
-      uVar1 = 0xffffffff;
-    }
-    else {
-      debug_log(s_DrawString___GetDC_Error_0063978c);
-      uVar1 = 0;
-    }
-  }
-  return uVar1;
+export function FUN_005e9f8a_005E9F8A() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+  // byte param_7,undefined1 param_8,undefined1 param_9,undefined1 param_10)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int iVar2;
+  // int iVar3;
+  // HGDIOBJ h;
+  // size_t cchText;
+  // tagRECT *lprc;
+  // UINT format;
+  // HDC local_20;
+  // UINT local_1c;
+  // tagRECT local_18;
+  // undefined4 *local_8;
+  // 
+  // if (param_2 == 0) {
+  // debug_log(s_Error__NULL_font_in_MSDrawString_00639768);
+  // uVar1 = 0;
+  // }
+  // else {
+  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+  // iVar2 = gdi_847F(param_2);
+  // iVar2 = param_5 + iVar2;
+  // iVar3 = measure_text_858E(param_2,param_3);
+  // SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
+  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
+  // if (iVar2 == 0) {
+  // h = SelectObject(local_20,(HGDIOBJ)*local_8);
+  // SetBkMode(local_20,1);
+  // SetTextColor(local_20,(uint)CONCAT12(param_10,CONCAT11(param_9,param_8)));
+  // iVar2 = thunk_FUN_00407fc0(&local_18);
+  // iVar2 = iVar2 / 2;
+  // iVar3 = thunk_FUN_00407f90(&local_18);
+  // iVar3 = iVar3 / 2;
+  // OffsetRect(&local_18,-iVar3,-iVar2);
+  // if ((param_7 & 1) != 0) {
+  // OffsetRect(&local_18,iVar3,0);
+  // }
+  // if ((param_7 & 4) != 0) {
+  // OffsetRect(&local_18,0,iVar2);
+  // }
+  // if ((param_7 & 8) != 0) {
+  // OffsetRect(&local_18,0,-iVar2);
+  // }
+  // if ((param_7 & 2) != 0) {
+  // OffsetRect(&local_18,-iVar3,0);
+  // }
+  // local_1c = GetTextAlign(local_20);
+  // SetTextAlign(local_20,1);
+  // MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
+  // IntersectRect(&local_18,&local_18,param_6);
+  // format = 0;
+  // lprc = &local_18;
+  // cchText = _strlen(param_3);
+  // DrawTextA(local_20,param_3,cchText,lprc,format);
+  // SetTextAlign(local_20,local_1c);
+  // SelectObject(local_20,h);
+  // FUN_005dce29(param_2);
+  // (**(code **)(*param_1 + 0x68))(param_1,local_20);
+  // uVar1 = 1;
+  // }
+  // else if (iVar2 == -0x7789fe3e) {
+  // uVar1 = 0xffffffff;
+  // }
+  // else {
+  // debug_log(s_DrawString___GetDC_Error_0063978c);
+  // uVar1 = 0;
+  // }
+  // }
+  // return uVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ea1dd @ 0x005EA1DD
 // Size: 333 bytes
 // ============================================================
-
-undefined4
-FUN_005ea1dd(int s32(param_1, 0),int param_2,char s32(param_3, 0),LPRECT param_4,uint param_5,undefined1 param_6,
-            undefined1 param_7,undefined1 param_8)
-
-{
-  undefined4 uVar1;
-  int iVar2;
-  HGDIOBJ h;
-  size_t cchText;
-  uint local_18;
-  HDC local_c;
-  undefined4 s32(local_8, 0);
-  
-  if (param_2 === 0) {
-    uVar1 = 0;
-  }
-  else if (param_1 === 0x0) {
-    uVar1 = 0;
-  }
-  else {
-    local_8 = FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c);
-    if (iVar2 === 0) {
-      h = SelectObject(local_c,(HGDIOBJ)s32(local_8, 0));
-      SetBkMode(local_c,1);
-      SetTextColor(local_c,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
-      local_18 = 0;
-      if (param_5 === 0) {
-        local_18 = 0x25;
-      }
-      else {
-        if ((param_5 & 8) !== 0) {
-          local_18 = 8;
-        }
-        if ((param_5 & 2) !== 0) {
-          local_18 = local_18 | 2;
-        }
-      }
-      cchText = _strlen(param_3);
-      DrawTextA(local_c,param_3,cchText,param_4,local_18);
-      SelectObject(local_c,h);
-      FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c);
-      uVar1 = 1;
-    }
-    else if (iVar2 === -0x7789fe3e) {
-      uVar1 = 0xffffffff;
-    }
-    else {
-      uVar1 = 0;
-    }
-  }
-  return uVar1;
+export function FUN_005ea1dd_005EA1DD() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+  // undefined1 param_7,undefined1 param_8)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int iVar2;
+  // HGDIOBJ h;
+  // size_t cchText;
+  // uint local_18;
+  // HDC local_c;
+  // undefined4 *local_8;
+  // 
+  // if (param_2 == 0) {
+  // uVar1 = 0;
+  // }
+  // else if (param_1 == (int *)0x0) {
+  // uVar1 = 0;
+  // }
+  // else {
+  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
+  // if (iVar2 == 0) {
+  // h = SelectObject(local_c,(HGDIOBJ)*local_8);
+  // SetBkMode(local_c,1);
+  // SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+  // local_18 = 0;
+  // if (param_5 == 0) {
+  // local_18 = 0x25;
+  // }
+  // else {
+  // if ((param_5 & 8) != 0) {
+  // local_18 = 8;
+  // }
+  // if ((param_5 & 2) != 0) {
+  // local_18 = local_18 | 2;
+  // }
+  // }
+  // cchText = _strlen(param_3);
+  // DrawTextA(local_c,param_3,cchText,param_4,local_18);
+  // SelectObject(local_c,h);
+  // FUN_005dce29(param_2);
+  // (**(code **)(*param_1 + 0x68))(param_1,local_c);
+  // uVar1 = 1;
+  // }
+  // else if (iVar2 == -0x7789fe3e) {
+  // uVar1 = 0xffffffff;
+  // }
+  // else {
+  // uVar1 = 0;
+  // }
+  // }
+  // return uVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ea32f @ 0x005EA32F
 // Size: 329 bytes
 // ============================================================
-
-undefined4
-FUN_005ea32f(int s32(param_1, 0),int param_2,char s32(param_3, 0),LPRECT param_4,uint param_5,undefined1 param_6,
-            undefined1 param_7,undefined1 param_8)
-
-{
-  undefined4 uVar1;
-  int iVar2;
-  HGDIOBJ h;
-  size_t cchText;
-  UINT local_18;
-  HDC local_c;
-  undefined4 s32(local_8, 0);
-  
-  if (param_2 === 0) {
-    debug_log(s_Error__NULL_font_in_MSDrawText_006397a8);
-    uVar1 = 0;
-  }
-  else if (param_1 === 0x0) {
-    uVar1 = 0;
-  }
-  else {
-    local_8 = FUN_005dcdf9(param_2);
-    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_c);
-    if (iVar2 === 0) {
-      h = SelectObject(local_c,(HGDIOBJ)s32(local_8, 0));
-      SetBkMode(local_c,1);
-      SetTextColor(local_c,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
-      local_18 = 0x10;
-      if (param_5 === 0) {
-        local_18 = 0x11;
-      }
-      else if ((param_5 & 2) !== 0) {
-        local_18 = 0x12;
-      }
-      cchText = _strlen(param_3);
-      DrawTextA(local_c,param_3,cchText,param_4,local_18);
-      SelectObject(local_c,h);
-      FUN_005dce29(param_2);
-      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_c);
-      uVar1 = 1;
-    }
-    else if (iVar2 === -0x7789fe3e) {
-      uVar1 = 0xffffffff;
-    }
-    else {
-      uVar1 = 0;
-    }
-  }
-  return uVar1;
+export function FUN_005ea32f_005EA32F() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+  // undefined1 param_7,undefined1 param_8)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int iVar2;
+  // HGDIOBJ h;
+  // size_t cchText;
+  // UINT local_18;
+  // HDC local_c;
+  // undefined4 *local_8;
+  // 
+  // if (param_2 == 0) {
+  // debug_log(s_Error__NULL_font_in_MSDrawText_006397a8);
+  // uVar1 = 0;
+  // }
+  // else if (param_1 == (int *)0x0) {
+  // uVar1 = 0;
+  // }
+  // else {
+  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
+  // if (iVar2 == 0) {
+  // h = SelectObject(local_c,(HGDIOBJ)*local_8);
+  // SetBkMode(local_c,1);
+  // SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+  // local_18 = 0x10;
+  // if (param_5 == 0) {
+  // local_18 = 0x11;
+  // }
+  // else if ((param_5 & 2) != 0) {
+  // local_18 = 0x12;
+  // }
+  // cchText = _strlen(param_3);
+  // DrawTextA(local_c,param_3,cchText,param_4,local_18);
+  // SelectObject(local_c,h);
+  // FUN_005dce29(param_2);
+  // (**(code **)(*param_1 + 0x68))(param_1,local_c);
+  // uVar1 = 1;
+  // }
+  // else if (iVar2 == -0x7789fe3e) {
+  // uVar1 = 0xffffffff;
+  // }
+  // else {
+  // uVar1 = 0;
+  // }
+  // }
+  // return uVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ea47d @ 0x005EA47D
 // Size: 246 bytes
 // ============================================================
-
-undefined4
-FUN_005ea47d(int s32(param_1, 0),int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
-            undefined1 param_7,undefined1 param_8)
-
-{
-  undefined4 uVar1;
-  int iVar2;
-  HDC local_10;
-  HPEN local_c;
-  HGDIOBJ local_8;
-  
-  if (param_1 === 0x0) {
-    uVar1 = 0;
-  }
-  else {
-    // DEVIATION: C pointer — iVar2 = (**(code **)(s32(param_1, 0) + 0x44))(param_1,local_10);
-    if (iVar2 === 0) {
-      SetBkMode(local_10,1);
-      local_c = CreatePen(0,1,((CONCAT1) >>> 0)2(param_8,CONCAT11(param_7,param_6)));
-      local_8 = SelectObject(local_10,local_c);
-      MoveToEx(local_10,param_2,param_3,(LPPOINT)0x0);
-      LineTo(local_10,param_4,param_5);
-      SelectObject(local_10,local_8);
-      DeleteObject(local_c);
-      // DEVIATION: C pointer — (**(code **)(s32(param_1, 0) + 0x68))(param_1,local_10);
-      uVar1 = 1;
-    }
-    else if (iVar2 === -0x7789fe52) {
-      uVar1 = 0xffffffff;
-    }
-    else {
-      uVar1 = 0;
-    }
-  }
-  return uVar1;
+export function FUN_005ea47d_005EA47D() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
+  // undefined1 param_7,undefined1 param_8)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int iVar2;
+  // HDC local_10;
+  // HPEN local_c;
+  // HGDIOBJ local_8;
+  // 
+  // if (param_1 == (int *)0x0) {
+  // uVar1 = 0;
+  // }
+  // else {
+  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_10);
+  // if (iVar2 == 0) {
+  // SetBkMode(local_10,1);
+  // local_c = CreatePen(0,1,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+  // local_8 = SelectObject(local_10,local_c);
+  // MoveToEx(local_10,param_2,param_3,(LPPOINT)0x0);
+  // LineTo(local_10,param_4,param_5);
+  // SelectObject(local_10,local_8);
+  // DeleteObject(local_c);
+  // (**(code **)(*param_1 + 0x68))(param_1,local_10);
+  // uVar1 = 1;
+  // }
+  // else if (iVar2 == -0x7789fe52) {
+  // uVar1 = 0xffffffff;
+  // }
+  // else {
+  // uVar1 = 0;
+  // }
+  // }
+  // return uVar1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ea578 @ 0x005EA578
 // Size: 72 bytes
@@ -9551,92 +9572,107 @@ export function FUN_005ed5f0(in_ECX, param_1) {
 // Function: IsTracking @ 0x005ED640
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0xb0);
+export function IsTracking_005ED640() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0xb0);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: IsTracking @ 0x005ED660
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0xb4);
+export function IsTracking_005ED660() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0xb4);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: IsTracking @ 0x005ED680
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0x90);
+export function IsTracking_005ED680() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0x90);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: IsTracking @ 0x005ED6A0
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0x94);
+export function IsTracking_005ED6A0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0x94);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: IsTracking @ 0x005ED6C0
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0xb8);
+export function IsTracking_005ED6C0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0xb8);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ed6e0 @ 0x005ED6E0
 // Size: 47 bytes
@@ -10191,166 +10227,169 @@ export function FUN_005ee088(param_1) {
 // Function: FUN_005ee0b1 @ 0x005EE0B1
 // Size: 927 bytes
 // ============================================================
-
-undefined4 *
-FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
-            )
-
-{
-  undefined4 uVar1;
-  undefined4 s32(puVar2, 0);
-  int iVar3;
-  HWND pHVar4;
-  HDC pHVar5;
-  HCURSOR pHVar6;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  HWND local_20;
-  uint local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  
-  uVar1 = FUN_005dce4f(0x4c);
-  puVar2 = FUN_005dcdf9(uVar1);
-  s32(puVar2, 0) = uVar1;
-  local_14 = GetSystemMetrics(4);
-  local_18 = 0x2000000;
-  if ((param_2 & 4) === 0) {
-    if (((param_2 & 2) === 0) || ((param_2 & 0x40) !== 0)) {
-      if (((param_2 & 2) === 0) || ((param_2 & 0x40) === 0)) {
-        if ((param_2 & 1) !== 0) {
-          local_18 = 0x2800000;
-          iVar3 = GetSystemMetrics(5);
-          local_c = iVar3 * 2;
-          iVar3 = GetSystemMetrics(6);
-          local_10 = iVar3 * 2;
-        }
-      }
-      else {
-        local_18 = 0x2800000;
-        iVar3 = GetSystemMetrics(5);
-        local_c = iVar3 * 2;
-        iVar3 = GetSystemMetrics(6);
-        local_10 = iVar3 * 2;
-      }
-    }
-    else {
-      local_18 = 0x2400000;
-      iVar3 = GetSystemMetrics(0x20);
-      local_c = iVar3 * 2;
-      iVar3 = GetSystemMetrics(0x21);
-      local_10 = iVar3 * 2;
-    }
-  }
-  else {
-    local_18 = 0x2040000;
-    iVar3 = GetSystemMetrics(0x20);
-    local_c = iVar3 * 2;
-    iVar3 = GetSystemMetrics(0x21);
-    local_10 = iVar3 * 2;
-  }
-  if ((param_2 & 8) !== 0) {
-    local_18 = local_18 | 0x20000;
-    param_2 = param_2 | 0x40;
-  }
-  if ((param_2 & 0x10) !== 0) {
-    local_18 = local_18 | 0x10000;
-    param_2 = param_2 | 0x40;
-  }
-  if ((param_2 & 0x20) !== 0) {
-    local_18 = local_18 | 0x80000;
-    param_2 = param_2 | 0x40;
-  }
-  if ((param_2 & 0x40) === 0) {
-    local_14 = 0;
-  }
-  else {
-    local_18 = local_18 | 0xc00000;
-  }
-  if ((param_2 & 0x80) !== 0) {
-    local_18 = local_18 | 0x200000;
-    iVar3 = GetSystemMetrics(2);
-    local_c = local_c + iVar3 + -1;
-  }
-  if ((param_2 & 0x100) !== 0) {
-    local_18 = local_18 | 0x100000;
-    iVar3 = GetSystemMetrics(3);
-    local_10 = local_10 + iVar3 + -1;
-  }
-  if (((param_2 & 0x200) !== 0) && (param_7 !== 0)) {
-    local_18 = local_18 | 0x44000000;
-  }
-  if ((param_2 & 0x800) !== 0) {
-    local_18 = local_18 & 0xbfffffff | 0x80000000;
-  }
-  if ((param_2 & 0x400) === 0) {
-    puVar2[0xc] = 0;
-  }
-  else {
-    puVar2[0xc] = 1;
-  }
-  if ((param_2 & 0x1000) === 0) {
-    puVar2[0xd] = 0;
-  }
-  else {
-    puVar2[0xd] = 1;
-  }
-  if (param_7 === 0) {
-    local_20 = (HWND)0x0;
-  }
-  else {
-    // DEVIATION: C pointer — local_20 = *(HWND *)(param_7 + 4);
-  }
-  if (param_6 === -1) {
-    local_24 = -0x80000000;
-  }
-  else {
-    local_24 = local_10 + local_14 + param_6 + -1;
-  }
-  if (param_5 === -1) {
-    local_28 = -0x80000000;
-  }
-  else {
-    local_28 = local_c + param_5;
-  }
-  if (param_4 === -1) {
-    local_2c = -0x80000000;
-  }
-  else {
-    local_2c = param_4;
-  }
-  if (param_3 === -1) {
-    local_30 = -0x80000000;
-  }
-  else {
-    local_30 = param_3;
-  }
-  pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28,
-                           local_24,local_20,(HMENU)0x0,G.DAT_006e4ff0,(LPVOID)0x0);
-  puVar2[1] = pHVar4;
-  FUN_005bc1b5(puVar2[1]);
-  pHVar5 = GetDC((HWND)puVar2[1]);
-  puVar2[2] = pHVar5;
-  pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  puVar2[7] = pHVar6;
-  puVar2[6] = 0;
-  puVar2[0x11] = 0;
-  puVar2[5] = 0;
-  puVar2[3] = 0;
-  puVar2[9] = 0;
-  puVar2[10] = 0;
-  puVar2[0xb] = 0;
-  puVar2[0x12] = param_2;
-  puVar2[0xe] = 0;
-  puVar2[0xf] = 0;
-  return puVar2;
+export function FUN_005ee0b1_005EE0B1() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4 *
+  // FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
+  // )
+  // 
+  // {
+  // undefined4 uVar1;
+  // undefined4 *puVar2;
+  // int iVar3;
+  // HWND pHVar4;
+  // HDC pHVar5;
+  // HCURSOR pHVar6;
+  // int local_30;
+  // int local_2c;
+  // int local_28;
+  // int local_24;
+  // HWND local_20;
+  // uint local_18;
+  // int local_14;
+  // int local_10;
+  // int local_c;
+  // 
+  // uVar1 = FUN_005dce4f(0x4c);
+  // puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
+  // *puVar2 = uVar1;
+  // local_14 = GetSystemMetrics(4);
+  // local_18 = 0x2000000;
+  // if ((param_2 & 4) == 0) {
+  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
+  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
+  // if ((param_2 & 1) != 0) {
+  // local_18 = 0x2800000;
+  // iVar3 = GetSystemMetrics(5);
+  // local_c = iVar3 * 2;
+  // iVar3 = GetSystemMetrics(6);
+  // local_10 = iVar3 * 2;
+  // }
+  // }
+  // else {
+  // local_18 = 0x2800000;
+  // iVar3 = GetSystemMetrics(5);
+  // local_c = iVar3 * 2;
+  // iVar3 = GetSystemMetrics(6);
+  // local_10 = iVar3 * 2;
+  // }
+  // }
+  // else {
+  // local_18 = 0x2400000;
+  // iVar3 = GetSystemMetrics(0x20);
+  // local_c = iVar3 * 2;
+  // iVar3 = GetSystemMetrics(0x21);
+  // local_10 = iVar3 * 2;
+  // }
+  // }
+  // else {
+  // local_18 = 0x2040000;
+  // iVar3 = GetSystemMetrics(0x20);
+  // local_c = iVar3 * 2;
+  // iVar3 = GetSystemMetrics(0x21);
+  // local_10 = iVar3 * 2;
+  // }
+  // if ((param_2 & 8) != 0) {
+  // local_18 = local_18 | 0x20000;
+  // param_2 = param_2 | 0x40;
+  // }
+  // if ((param_2 & 0x10) != 0) {
+  // local_18 = local_18 | 0x10000;
+  // param_2 = param_2 | 0x40;
+  // }
+  // if ((param_2 & 0x20) != 0) {
+  // local_18 = local_18 | 0x80000;
+  // param_2 = param_2 | 0x40;
+  // }
+  // if ((param_2 & 0x40) == 0) {
+  // local_14 = 0;
+  // }
+  // else {
+  // local_18 = local_18 | 0xc00000;
+  // }
+  // if ((param_2 & 0x80) != 0) {
+  // local_18 = local_18 | 0x200000;
+  // iVar3 = GetSystemMetrics(2);
+  // local_c = local_c + iVar3 + -1;
+  // }
+  // if ((param_2 & 0x100) != 0) {
+  // local_18 = local_18 | 0x100000;
+  // iVar3 = GetSystemMetrics(3);
+  // local_10 = local_10 + iVar3 + -1;
+  // }
+  // if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
+  // local_18 = local_18 | 0x44000000;
+  // }
+  // if ((param_2 & 0x800) != 0) {
+  // local_18 = local_18 & 0xbfffffff | 0x80000000;
+  // }
+  // if ((param_2 & 0x400) == 0) {
+  // puVar2[0xc] = 0;
+  // }
+  // else {
+  // puVar2[0xc] = 1;
+  // }
+  // if ((param_2 & 0x1000) == 0) {
+  // puVar2[0xd] = 0;
+  // }
+  // else {
+  // puVar2[0xd] = 1;
+  // }
+  // if (param_7 == 0) {
+  // local_20 = (HWND)0x0;
+  // }
+  // else {
+  // local_20 = *(HWND *)(param_7 + 4);
+  // }
+  // if (param_6 == -1) {
+  // local_24 = -0x80000000;
+  // }
+  // else {
+  // local_24 = local_10 + local_14 + param_6 + -1;
+  // }
+  // if (param_5 == -1) {
+  // local_28 = -0x80000000;
+  // }
+  // else {
+  // local_28 = local_c + param_5;
+  // }
+  // if (param_4 == -1) {
+  // local_2c = -0x80000000;
+  // }
+  // else {
+  // local_2c = param_4;
+  // }
+  // if (param_3 == -1) {
+  // local_30 = -0x80000000;
+  // }
+  // else {
+  // local_30 = param_3;
+  // }
+  // pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28,
+  // local_24,local_20,(HMENU)0x0,G.DAT_006e4ff0,(LPVOID)0x0);
+  // puVar2[1] = pHVar4;
+  // FUN_005bc1b5(puVar2[1]);
+  // pHVar5 = GetDC((HWND)puVar2[1]);
+  // puVar2[2] = pHVar5;
+  // pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  // puVar2[7] = pHVar6;
+  // puVar2[6] = 0;
+  // puVar2[0x11] = 0;
+  // puVar2[5] = 0;
+  // puVar2[3] = 0;
+  // puVar2[9] = 0;
+  // puVar2[10] = 0;
+  // puVar2[0xb] = 0;
+  // puVar2[0x12] = param_2;
+  // puVar2[0xe] = 0;
+  // puVar2[0xf] = 0;
+  // return puVar2;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005ee450 @ 0x005EE450
 // Size: 74 bytes
@@ -10900,20 +10939,23 @@ export function FUN_005eebd6(in_ECX) {
 // Function: IsTracking @ 0x005EEC80
 // Size: 31 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-
-{
-  return s32(this, 0xb0);
+export function IsTracking_005EEC80() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall CSplitterWnd::IsTracking(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+  // 
+  // {
+  // return *(int *)(this + 0xb0);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005eeca0 @ 0x005EECA0
 // Size: 35 bytes
@@ -11786,49 +11828,55 @@ export function FUN_005eff75(unaff_EBP) {
 // Function: FUN_005eff83 @ 0x005EFF83
 // Size: 105 bytes
 // ============================================================
-
-undefined4
-FUN_005eff83(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-            undefined4 param_5,undefined4 param_6)
-
-{
-  undefined4 uVar1;
-  int in_ECX;
-  
-  uVar1 = FUN_005ef356(param_1,param_2,param_3,param_4);
-  s32(in_ECX, 0xb0) = uVar1;
-  FUN_005ef320(in_ECX,s32(in_ECX, 0xb0));
-  s32(in_ECX, 0xb4) = param_5;
-  FUN_005f01ad(param_6);
-  return 1;
+export function FUN_005eff83_005EFF83() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005eff83(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+  // undefined4 param_5,undefined4 param_6)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int in_ECX;
+  // 
+  // uVar1 = FUN_005ef356(param_1,param_2,param_3,param_4);
+  // *(undefined4 *)(in_ECX + 0xb0) = uVar1;
+  // FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
+  // *(undefined4 *)(in_ECX + 0xb4) = param_5;
+  // FUN_005f01ad(param_6);
+  // return 1;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_005effec @ 0x005EFFEC
 // Size: 106 bytes
 // ============================================================
-
-undefined4
-FUN_005effec(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-            undefined4 param_5)
-
-{
-  undefined4 uVar1;
-  int in_ECX;
-  
-  uVar1 = FUN_005ef356(G.DAT_00639dc4,param_1,param_2,param_3);
-  s32(in_ECX, 0xb0) = uVar1;
-  FUN_005ef320(in_ECX,s32(in_ECX, 0xb0));
-  s32(in_ECX, 0xb4) = param_4;
-  FUN_005f01ad(param_5);
-  return 1;
+export function FUN_005effec_005EFFEC() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_005effec(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+  // undefined4 param_5)
+  // 
+  // {
+  // undefined4 uVar1;
+  // int in_ECX;
+  // 
+  // uVar1 = FUN_005ef356(&G.DAT_00639dc4,param_1,param_2,param_3);
+  // *(undefined4 *)(in_ECX + 0xb0) = uVar1;
+  // FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
+  // *(undefined4 *)(in_ECX + 0xb4) = param_4;
+  // FUN_005f01ad(param_5);
+  // return 1;
+  // }
+  // 
+  // 
+  // 
+  // 
 }
-
-
-
-
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 

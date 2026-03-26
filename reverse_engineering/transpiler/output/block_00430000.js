@@ -3722,44 +3722,47 @@ export function FUN_004386b8(param_1, param_2) {
 // Function: ~CDaoFieldInfo @ 0x0043C110
 // Size: 140 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall CDaoFieldInfo::~CDaoFieldInfo(CDaoFieldInfo *this)
-
-{
-  undefined4 s32(unaff_FS_OFFSET, 0);
-  undefined4 uStack_10;
-  undefined1 *puStack_c;
-  int local_8;
-  
-  puStack_c = 0 /* ADDR:LAB_0043c1ff */;
-  uStack_10 = s32(unaff_FS_OFFSET, 0);
-  s32(unaff_FS_OFFSET, 0) = &uStack_10;
-  local_8._1_3_ = 0;
-  local_8._0_1_ = 5;
-  FUN_0043c19c();
-  local_8._0_1_ = 4;
-  FUN_0043c1ab();
-  local_8._0_1_ = 3;
-  FUN_0043c1ba();
-  local_8._0_1_ = 2;
-  FUN_0043c1c9();
-  local_8._0_1_ = 1;
-  FUN_0043c1d8();
-  local_8 = ((local_8) >>> 0)._1_3_ << 8;
-  FUN_0043c1e7();
-  local_8 = 0xffffffff;
-  FUN_0043c1f6();
-  FUN_0043c209();
-  return;
+export function _CDaoFieldInfo_0043C110() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: __thiscall CDaoFieldInfo::~CDaoFieldInfo(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall CDaoFieldInfo::~CDaoFieldInfo(CDaoFieldInfo *this)
+  // 
+  // {
+  // undefined4 *unaff_FS_OFFSET;
+  // undefined4 uStack_10;
+  // undefined1 *puStack_c;
+  // int local_8;
+  // 
+  // puStack_c = &LAB_0043c1ff;
+  // uStack_10 = *unaff_FS_OFFSET;
+  // *unaff_FS_OFFSET = &uStack_10;
+  // local_8._1_3_ = 0;
+  // local_8._0_1_ = 5;
+  // FUN_0043c19c();
+  // local_8._0_1_ = 4;
+  // FUN_0043c1ab();
+  // local_8._0_1_ = 3;
+  // FUN_0043c1ba();
+  // local_8._0_1_ = 2;
+  // FUN_0043c1c9();
+  // local_8._0_1_ = 1;
+  // FUN_0043c1d8();
+  // local_8 = (uint)local_8._1_3_ << 8;
+  // FUN_0043c1e7();
+  // local_8 = 0xffffffff;
+  // FUN_0043c1f6();
+  // FUN_0043c209();
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0043c19c @ 0x0043C19C
 // Size: 15 bytes
@@ -3937,21 +3940,24 @@ export function FUN_0043c3f0(in_ECX, param_1) {
 // Function: ~_Timevec @ 0x0043C430
 // Size: 36 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: __thiscall _Timevec::~_Timevec(void)
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — void __thiscall _Timevec::~_Timevec(_Timevec *this)
-
-{
-  // DEVIATION: C pointer — FUN_005db55b(*(undefined4 *)this);
-  return;
+export function __Timevec_0043C430() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: __thiscall _Timevec::~_Timevec(void)
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // void __thiscall _Timevec::~_Timevec(_Timevec *this)
+  // 
+  // {
+  // FUN_005db55b(*(undefined4 *)this);
+  // return;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0043c460 @ 0x0043C460
 // Size: 70 bytes
@@ -4014,38 +4020,44 @@ export function FUN_0043c520(in_ECX) {
 // Function: GetActiveView @ 0x0043C560
 // Size: 28 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
-
-{
-  // DEVIATION: C pointer — return *(CView **)(this + 8);
+export function GetActiveView_0043C560() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
+  // 
+  // {
+  // return *(CView **)(this + 8);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: GetActiveView @ 0x0043C590
 // Size: 28 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
-
-{
-  // DEVIATION: C pointer — return *(CView **)(this + 4);
+export function GetActiveView_0043C590() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: class CView * __thiscall COleClientItem::GetActiveView(void)const 
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // CView * __thiscall COleClientItem::GetActiveView(COleClientItem *this)
+  // 
+  // {
+  // return *(CView **)(this + 4);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_0043c5c0 @ 0x0043C5C0
 // Size: 37 bytes

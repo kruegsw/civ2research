@@ -164,90 +164,99 @@ export function FUN_004c09b0(param_1) {
 // Function: FUN_004c0b51 @ 0x004C0B51
 // Size: 151 bytes
 // ============================================================
-
-undefined4
-FUN_004c0b51(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
-            int param_6,int param_7)
-
-{
-  undefined1 local_20 [16];
-  int local_10;
-  int local_c;
-  int local_8;
-  
-  local_c = param_5;
-  if ((param_4 & 1) !== 0) {
-    local_c = param_5 + 0x26;
-  }
-  local_8 = (0x14 - param_7) / 2;
-  local_10 = param_6 - local_8;
-  FUN_005cef31(local_20,param_2,local_c,local_10);
-  return 0;
+export function FUN_004c0b51_004C0B51() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_004c0b51(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
+  // int param_6,int param_7)
+  // 
+  // {
+  // undefined1 local_20 [16];
+  // int local_10;
+  // int local_c;
+  // int local_8;
+  // 
+  // local_c = param_5;
+  // if ((param_4 & 1) != 0) {
+  // local_c = param_5 + 0x26;
+  // }
+  // local_8 = (0x14 - param_7) / 2;
+  // local_10 = param_6 - local_8;
+  // FUN_005cef31(local_20,param_2,local_c,local_10);
+  // return 0;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004c0be8 @ 0x004C0BE8
 // Size: 155 bytes
 // ============================================================
-
-undefined4
-FUN_004c0be8(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
-            int param_6,int param_7)
-
-{
-  undefined1 local_28 [16];
-  undefined4 local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
-  
-  local_18 = 0xfffffffe;
-  local_10 = param_5;
-  if ((param_4 & 1) !== 0) {
-    local_10 = param_5 + 0x26;
-  }
-  local_14 = param_6;
-  local_8 = FUN_00472cf0(0x30,0xfffffffe);
-  local_c = (local_8 - param_7) / 2;
-  local_14 = local_14 - local_c;
-  FUN_0047df20(local_18);
-  FUN_005cef31(local_28,param_2,local_10,local_14);
-  FUN_0047df50();
-  return 0;
+export function FUN_004c0be8_004C0BE8() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_004c0be8(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
+  // int param_6,int param_7)
+  // 
+  // {
+  // undefined1 local_28 [16];
+  // undefined4 local_18;
+  // int local_14;
+  // int local_10;
+  // int local_c;
+  // int local_8;
+  // 
+  // local_18 = 0xfffffffe;
+  // local_10 = param_5;
+  // if ((param_4 & 1) != 0) {
+  // local_10 = param_5 + 0x26;
+  // }
+  // local_14 = param_6;
+  // local_8 = thunk_FUN_00472cf0(0x30,0xfffffffe);
+  // local_c = (local_8 - param_7) / 2;
+  // local_14 = local_14 - local_c;
+  // thunk_FUN_0047df20(local_18);
+  // FUN_005cef31(local_28,param_2,local_10,local_14);
+  // thunk_FUN_0047df50();
+  // return 0;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004c0c83 @ 0x004C0C83
 // Size: 116 bytes
 // ============================================================
-
-undefined4
-FUN_004c0c83(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
-            int param_6,int param_7)
-
-{
-  undefined1 local_20 [16];
-  int local_10;
-  int local_c;
-  int local_8;
-  
-  local_c = param_5;
-  if ((param_4 & 1) !== 0) {
-    local_c = param_5 + 0x26;
-  }
-  local_8 = (0x14 - param_7) / 2;
-  local_10 = param_6 - local_8;
-  FUN_005cef31(local_20,param_2,local_c,local_10);
-  return 0;
+export function FUN_004c0c83_004C0C83() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // undefined4
+  // FUN_004c0c83(undefined4 param_1,undefined4 param_2,undefined4 param_3,byte param_4,int param_5,
+  // int param_6,int param_7)
+  // 
+  // {
+  // undefined1 local_20 [16];
+  // int local_10;
+  // int local_c;
+  // int local_8;
+  // 
+  // local_c = param_5;
+  // if ((param_4 & 1) != 0) {
+  // local_c = param_5 + 0x26;
+  // }
+  // local_8 = (0x14 - param_7) / 2;
+  // local_10 = param_6 - local_8;
+  // FUN_005cef31(local_20,param_2,local_c,local_10);
+  // return 0;
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_004c0cf7 @ 0x004C0CF7
 // Size: 3119 bytes

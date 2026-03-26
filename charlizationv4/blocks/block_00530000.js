@@ -7,25 +7,28 @@
 // Function: egptr @ 0x00530E80
 // Size: 28 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — protected: char * __thiscall streambuf::egptr(void)const 
-   
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
 const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — char * __thiscall streambuf::egptr(streambuf *this)
-
-{
-  // DEVIATION: C pointer — return *(char **)(this + 0x2c);
+export function egptr_00530E80() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // protected: char * __thiscall streambuf::egptr(void)const 
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // char * __thiscall streambuf::egptr(streambuf *this)
+  // 
+  // {
+  // return *(char **)(this + 0x2c);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00530eb0 @ 0x00530EB0
 // Size: 33 bytes
@@ -91,20 +94,23 @@ export function FUN_00530fb0(in_ECX) {
 // Function: width @ 0x00530FE0
 // Size: 28 bytes
 // ============================================================
-
-/* Library Function - Single Match
-    // DEVIATION: MFC — public: int __thiscall ios::width(void)const 
-   
-   Library: Visual Studio 1998 Debug */
-
-// DEVIATION: MFC — int __thiscall ios::width(ios *this)
-
-{
-  return s32(this, 0x30);
+export function width_00530FE0() {
+  // DEVIATION: unparsed C++ function
+  // 
+  // /* Library Function - Single Match
+  // public: int __thiscall ios::width(void)const 
+  // 
+  // Library: Visual Studio 1998 Debug */
+  // 
+  // int __thiscall ios::width(ios *this)
+  // 
+  // {
+  // return *(int *)(this + 0x30);
+  // }
+  // 
+  // 
+  // 
 }
-
-
-
 // ============================================================
 // Function: FUN_00531010 @ 0x00531010
 // Size: 93 bytes
