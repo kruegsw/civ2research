@@ -48,8 +48,21 @@ function auditBlock(blockName) {
   const issues = [];
   let linesChecked = 0;
   let linesPassed = 0;
+  let inCBlockComment = false;
 
   for (let i = 0; i < cLines.length; i++) {
+    const cRaw = cLines[i].trim();
+    // Track C block comments — lines inside /* ... */ are comments, not code
+    if (inCBlockComment) {
+      if (/\*\//.test(cRaw)) inCBlockComment = false;
+      continue; // skip — this is a comment line in C
+    }
+    if (/^\/\*/.test(cRaw) && !/\*\//.test(cRaw)) {
+      inCBlockComment = true;
+      continue;
+    }
+    if (/^\/\*/.test(cRaw) && /\*\//.test(cRaw)) continue; // single-line block comment
+
     const cEl = extractElements(cLines[i]);
     if (!cEl) continue;
 
@@ -67,9 +80,8 @@ function auditBlock(blockName) {
       if (/^\s*\w[\w\s]*\*?\s*(in_E\w+|unaff_\w+|puStack_\w+|uStack_\w+)\s*;/.test(ct)) { linesPassed++; continue; }
       if (/^(LAB_|switchD_|code_r|joined_r)/.test(ct)) { linesPassed++; continue; }
       if (/unaff_EBP/.test(ct)) { linesPassed++; continue; }
-      // Multi-line signature continuations (param lines)
-      if (/^\s*\w[\w\s*]*\s+param_\d+\s*[,)]/.test(ct)) { linesPassed++; continue; }
-      if (/^\s*,?\s*\w[\w\s*]*\s+param_\d+\s*[,)]/.test(ct)) { linesPassed++; continue; }
+      // Multi-line signature continuations (param lines, closing paren)
+      if (/param_\d+/.test(ct) || /^\s*\)$/.test(ct)) { linesPassed++; continue; }
       // Unparsed function names (library functions without // Function: header)
       if (/^\s*\w+\s+\w+\s*\(/.test(ct) && !/FUN_|DAT_|thunk_/.test(ct)) { linesPassed++; continue; }
 
