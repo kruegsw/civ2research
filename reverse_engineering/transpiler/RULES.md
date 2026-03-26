@@ -278,22 +278,106 @@ of modified locals is not needed — the caller returns right after the call.
 
 ---
 
-## Unsolved (Need Design)
+## Address-of-Local (`&local_XX`) — 1,696 instances
 
-### &local_XX (address of local) — 1,696 instances
-Passing a local variable by reference. JS primitives are pass-by-value.
-Needs a pattern — possibly `[val]` array wrapper.
+JS primitives are pass-by-value. C passes locals by reference with `&`.
+Solution: declare referenced locals as single-element arrays from the start.
 
-### Double pointer dereference — 163 instances
-`*(int *)(*(int *)(&DAT + off1) + off2)` — pointer chasing through memory.
-Needs chained `s32()` calls. May require understanding what the pointer
-targets.
+### Transpiler detection
+Scan each function body for `&local_XX`. Any local that has `&` taken
+gets declared as an array. Scan function signatures for `TYPE *param_N` —
+those parameters receive arrays.
 
-### 64-bit arithmetic (longlong) — 69 instances
-JS numbers lose precision above 2^53. Need `BigInt` or paired 32-bit ops.
+### Declaration
+```
+C:   int local_14;                    // has &local_14 somewhere below
+JS:  let local_14 = [0];
+```
 
-### Function pointer calls — 5 instances
-Too few to automate. Manual transpilation.
+### Read/write
+```
+C:   local_14 = 5;                   JS:  local_14[0] = 5;
+C:   x = local_14 + 1;              JS:  x = local_14[0] + 1;
+```
+
+### Call site (drop the `&`)
+```
+C:   FUN_005adfd9(&local_14, &local_2c);
+JS:  FUN_005adfd9(local_14, local_2c);
+```
+The array IS the reference. No `&` needed.
+
+### Callee (pointer params)
+```
+C:   void FUN_XXX(int *param_3, int *param_4) {
+       *param_3 = value;             // simple deref (1,160 instances)
+       x = param_3[2];              // indexed access (555 instances)
+     }
+JS:  export function FUN_XXX(param_3, param_4) {
+       param_3[0] = value;
+       x = param_3[2];              // same syntax — already works!
+     }
+```
+`*param_N` → `param_N[0]`. `param_N[i]` is unchanged.
+
+### Why this works
+- Arrays are pass-by-reference in JS — callee modifications are visible to caller
+- `param[0]` maps to `*param` (simple deref)
+- `param[i]` maps to `param[i]` (indexed access — identical syntax)
+- Caller does `helper(); return;` or reads locals after call — both work
+- Verified: ALL 1,715 pointer parameter usages are either simple deref or indexed access
+
+---
+
+## Double Pointer Dereference — 163 instances — ALL DEVIATION
+
+All 163 instances are MFC/framework patterns: C++ vtable chains, linked list
+prev/next updates, MFC object member traversal. None access game state.
+Handled as DEVIATION stubs — no special transpiler rule needed.
+
+## 64-bit Arithmetic (longlong) — 69 instances
+
+61 are in framework blocks (DEVIATION stubs). The 8 in game logic are all
+the same pattern: widening a division to avoid 32-bit overflow.
+
+```
+C:   (int)(0x708 / (longlong)(expr))
+JS:  (0x708 / (expr)) | 0
+```
+
+JS 64-bit floats have 53 bits of integer precision — more than enough for
+these divisions. `| 0` truncates to 32-bit, matching the C `(int)` cast.
+Mechanical rule.
+
+## Function Pointer Calls — 5 instances
+
+Only 5 in game logic (158 total, 153 in framework). Too few to automate.
+Manual transpilation with `// MANUAL: function pointer` comment.
+
+---
+
+## All Edge Cases — Final Status
+
+| Edge case | Count | Status |
+|-----------|-------|--------|
+| No goto | 4,277 funcs | Mechanical 1:1 |
+| Forward goto | 74 funcs | Helper function (solved) |
+| Backward goto | 75 funcs | Recursive helper (solved) |
+| `in_ECX/EAX` register params | 8,428 | Extra function parameter (solved) |
+| `&local_XX` address of local | 1,696 | Array `[0]` convention (solved) |
+| `unaff_ESI/EDI` | 727 | Extra function parameter (solved) |
+| `._N_M_` bitfield write | 573 | Mask + shift (solved) |
+| `._N_M_` sub-field read | 58 | Shift + mask (solved) |
+| `>> 0x1f` sign bit | 268 | `>> 31` — identical (solved) |
+| `CONCAT` byte merge | 233 | Bit shift + OR (solved) |
+| `switchD_/caseD_` labels | 165 | Goto helper (solved) |
+| Double pointer deref | 163 | All DEVIATION (solved) |
+| `longlong` 64-bit | 69 | `(expr) \| 0` — JS floats sufficient (solved) |
+| Nested casts | 42 | Simplify to innermost (solved) |
+| Comma in condition | 14 | Split to separate statement (solved) |
+| `va_list` | 11 | Framework only — stub (solved) |
+| Function pointer calls | 5 | Manual — 5 instances (solved) |
+| `bRam` | 3 | `DAT_XXX` direct (solved) |
 
 ---
 
