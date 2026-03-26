@@ -58,7 +58,8 @@ Drop return type and parameter types. Add `export`.
 C:   int iVar1;
 JS:  let iVar1;
 ```
-Drop type. `int` / `uint` / `char` / `byte` / `short` / `ushort` all become `let`.
+Drop type. `int` / `uint` / `char` / `byte` / `short` / `ushort` / `undefined` /
+`undefined2` / `undefined4` / `bool` / `long` / `ulong` / `code` all become `let`.
 
 ### Function calls
 ```
@@ -154,6 +155,14 @@ JS:  DAT_XXX[offset] = val;
 ```
 Cast on the target is dropped — writing to a byte array truncates automatically.
 
+### Byte write with cast on RHS
+```
+C:   (&DAT_XXX)[offset] = (byte)expr;
+JS:  DAT_XXX[offset] = u8(expr);
+```
+Keep `u8()` for explicitness — the byte array truncates anyway, but `u8()`
+makes the intent visible for auditing.
+
 ### Equality operators
 ```
 C:   ==    !=
@@ -168,7 +177,7 @@ these is `==` → `===` and `!=` → `!==`.
 ### Type casts
 ```
 C:   (int)expr          →  expr            (no-op — drop, preserve parens)
-C:   (uint)expr         →  (expr) >>> 0    (see below for when)
+C:   (uint)expr         →  (expr) >>> 0    (always — see note)
 C:   (char)expr         →  s8(expr)        (sign-extend to signed byte)
 C:   (byte)expr         →  u8(expr)        (mask to unsigned byte)
 C:   (short)expr        →  ((expr) << 16 >> 16)   (sign-extend 16-bit)
@@ -176,15 +185,42 @@ C:   (ushort)expr       →  (expr) & 0xFFFF (mask to unsigned 16-bit)
 C:   (bool)expr         →  (expr) ? 1 : 0
 ```
 
-**When `(uint)` needs `>>> 0`:** Only when the value is used in a comparison
-(`>`, `>=`, `<`, `<=`) against another unsigned value. In all other cases
-(bitwise ops, assignment, arithmetic), drop the cast — JS bitwise operators
-already produce 32-bit results.
+**`(uint)` always emits `>>> 0`.** This is slightly verbose but always correct
+and always mechanical. No context-checking needed.
 
-**Operator precedence after cast removal:** When dropping `(int)` or `(uint)`,
+**`(int)` is always a no-op.** JS bitwise operators already produce signed
+32-bit values, so `(int)` never changes behavior. The only exception is
+`(int)(longlong_expr)` which uses `| 0` — covered by the longlong rule.
+
+**`(char)` and `(byte)` work on any expression** — whether from a memory
+read or a computed value. `s8()` and `u8()` are value-based helpers that
+sign/zero-extend any input.
+
+**Operator precedence after cast removal:** When dropping `(int)`,
 preserve parentheses around the operand if it's part of a binary expression.
 `(int)a * b` → `(a) * b`. Ghidra output is already heavily parenthesized,
 so this rarely matters in practice.
+
+### Ternary operator
+```
+C:   cond ? a : b
+JS:  cond ? a : b
+```
+Passes through unchanged.
+
+### Negative hex constants
+```
+C:   param_1 * -0x1c
+JS:  param_1 * -0x1c
+```
+Passes through unchanged. JS accepts this syntax.
+
+### Null pointer checks
+```
+C:   expr != (TYPE *)0x0       (any type: code *, int *, undefined4 *, etc.)
+JS:  expr !== null
+```
+`(TYPE *)0x0` → `null` for any pointer type.
 
 ### String constants
 ```
@@ -213,6 +249,25 @@ export function FUN_XXXXXXXX(param_1, param_2) {
 ```
 If the C function returns a value, add `return 0;`.
 
+**How the transpiler identifies DEVIATION functions:** It does NOT pre-classify.
+The transpiler attempts to transpile every function mechanically. Win32 API
+calls (`SendMessageA`, `BitBlt`, `CreateWindowExA`, etc.) and MFC patterns
+(`CRichEditDoc::`, `_Timevec::`) will hit `UNKNOWN_RULE` flags naturally.
+Functions where most/all lines are `UNKNOWN_RULE` are then classified as
+DEVIATION in a second pass, and their bodies are replaced with the stub
+format above.
+
+### Empty C functions
+Some Ghidra functions have truly empty bodies (just `{ return; }`).
+Transpile normally — emit an empty exported function.
+
+### Return with value
+```
+C:   return local_c;
+JS:  return local_c;
+```
+Pass through as-is. If `local_c` has `&` taken, it becomes `return local_c[0];`.
+
 ### Return
 ```
 C:   return;
@@ -240,36 +295,58 @@ Only two flags appear in the output:
 
 ## Edge Cases
 
-### Register parameters (in_ECX, in_EAX)
+### Register parameters (in_ECX, in_EAX) and callee-saved (unaff_ESI, unaff_EDI)
 ```
 C:   void FUN_XXX(int param_1) { int in_ECX; ... }
 JS:  export function FUN_XXX(in_ECX, param_1) { ... }
 ```
-Treat as additional parameter, listed first.
-
-### Callee-saved registers (unaff_ESI, unaff_EDI)
-Same as register parameters — add as function parameter.
+Treat as additional parameters. Canonical ordering when multiple are present:
+`in_EAX, in_ECX, in_EDX, unaff_ESI, unaff_EDI, param_1, param_2, ...`
 
 ### Sub-field read (._N_M_)
 ```
 C:   DAT_00655aea._1_1_          (byte at offset 1 of a 4-byte value)
 JS:  ((DAT_00655aea >> 8) & 0xFF)
 ```
-`._N_M_` means: offset N bytes, read M bytes. Convert to shift + mask.
+General formula: `._N_M_` = offset N bytes, read M bytes.
+- Shift right by `N * 8` bits
+- Mask with `(1 << (M * 8)) - 1`
+
+Examples:
+```
+._0_1_  →  (val) & 0xFF              (low byte)
+._1_1_  →  (val >> 8) & 0xFF         (second byte)
+._2_1_  →  (val >> 16) & 0xFF        (third byte)
+._0_2_  →  (val) & 0xFFFF            (low 2 bytes)
+._2_2_  →  (val >> 16) & 0xFFFF      (high 2 bytes)
+._1_3_  →  (val >> 8) & 0xFFFFFF     (upper 3 bytes)
+```
 
 ### Sub-field write (._N_M_ as lvalue)
 ```
 C:   local_8._0_1_ = 4;
 JS:  local_8 = (local_8 & 0xFFFFFF00) | 4;
 ```
-Mask out the target bytes, OR in the new value.
+General formula: clear the target bytes with a mask, OR in the new value
+shifted into position.
+- Mask = `~(((1 << (M * 8)) - 1) << (N * 8))`
+- New value shifted = `(newVal & ((1 << (M * 8)) - 1)) << (N * 8)`
 
 ### CONCAT (byte merging)
 ```
 C:   CONCAT31(local_8._1_3_, 1)
 JS:  ((local_8 & 0xFFFFFF00) | 1)
 ```
-`CONCAT31` = combine 3 high bytes with 1 low byte.
+General formula: `CONCATNM(high, low)` = `(high << (M * 8)) | low`
+where N = high byte count, M = low byte count.
+
+Examples:
+```
+CONCAT31(hi, lo)  →  (hi << 8) | lo       (3 high bytes + 1 low byte)
+CONCAT22(hi, lo)  →  (hi << 16) | lo      (2 high bytes + 2 low bytes)
+CONCAT13(hi, lo)  →  (hi << 24) | lo      (1 high byte + 3 low bytes)
+CONCAT44(hi, lo)  →  BigInt or paired ops  (8-byte merge — rare, see longlong)
+```
 
 ### Sign bit extraction
 ```
@@ -281,11 +358,10 @@ Identical — extracts sign bit for signed division rounding.
 ### Comma operator in conditions
 ```
 C:   if ((cond1) && (DAT_X = 0, cond2))
-JS:  if (cond1) { DAT_X = 0; }
-     if (cond1 && cond2)
+JS:  if ((cond1) && (DAT_X = 0, cond2))
 ```
-Split the side-effect into a separate statement. Two JS lines for one C line
-(the only 1:1 exception — mark with `// COMMA` comment).
+JS supports the comma operator with identical semantics to C. Pass through
+unchanged. No 1:1 exception needed.
 
 ### bRam (direct memory byte)
 ```
@@ -359,6 +435,11 @@ Maximum recursion depth is bounded by user interaction count.
 Pass all variables used by the labeled block as arguments to the helper.
 Since the caller always does `helper(); return;` immediately, write-back
 of modified locals is not needed — the caller returns right after the call.
+
+**Globals and arrays:** Global `DAT_` variables are shared — modifications in
+the helper are visible everywhere. Locals declared as `[0]` arrays (due to
+`&local_XX`) are pass-by-reference — modifications in the helper are visible
+to the caller, though the caller returns immediately anyway.
 
 ### Statistics
 - 4,277 functions (97%): no goto — fully mechanical 1:1
@@ -503,3 +584,8 @@ All 5 solved mechanically. Zero manual work.
 
 All arrays are `Uint8Array`. Offsets are always byte offsets matching the C.
 No typed arrays with element size > 1 — this eliminates the stride bug class entirely.
+
+**Note on `s8` / `u8` asymmetry:** These take a single value (already read from
+the array), not an array+offset. This is because byte reads are direct array
+access (`arr[offset]`), so the value is already extracted. Multi-byte reads
+(`s16`, `s32`, etc.) need the array+offset to read consecutive bytes.
