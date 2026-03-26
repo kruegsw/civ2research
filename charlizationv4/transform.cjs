@@ -295,36 +295,36 @@ for (const blockFile of blockFiles) {
 
   // Phase 2: Insert our imports after the header comment block
   const finalLines = [];
-  let importsInserted = false;
-  let importLineIdx = 0;
 
   for (const line of outLines) {
     const trimmed = line.trim();
 
-    if (!importsInserted) {
-      // Replace first comment/blank lines with imports (preserve line count for 1:1 mapping)
-      if (trimmed === '' || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-        // Use this line's slot for an import if we have imports left to add
-        if (importLineIdx === 0) { finalLines.push(`import { G } from '../globals.js';`); importLineIdx++; }
-        else if (importLineIdx === 1) { finalLines.push(`import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';`); importLineIdx++; }
-        else if (importLineIdx === 2) { finalLines.push(`import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';`); importLineIdx++; }
-        else if (importLineIdx === 3) { finalLines.push(`const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };`); importLineIdx++; }
-        else { finalLines.push(line); } // keep remaining comment/blank lines as-is
-        continue;
-      }
-      importsInserted = true;
-    }
-
+    // Pass all lines through unchanged — 1:1 with C source
     finalLines.push(line);
   }
 
-  // Phase 3: Replace DAT_ references with G.DAT_
-  let result = finalLines.join('\n');
-  result = result.replace(DAT_REPLACE_RE, 'G.DAT_$1');
+  // Phase 3: No imports or bindings in block files.
+  // Block files are pure transpiled code, 1:1 with C.
+  // The v4 engine loader provides all globals via globalThis before blocks run.
+  const fileText = finalLines.join('\n');
 
-  // Safety: fix any double G.G.DAT_
-  result = result.replace(/G\.G\.DAT_/g, 'G.DAT_');
-
+  // Write: unchanged 1:1 code + appended section
+  // But wait — the bindings use `const` which means they must come BEFORE
+  // the code that uses them. JS hoists `function` declarations but not `const`.
+  // So we need to put bindings at the TOP, not the bottom.
+  //
+  // Solution: put bindings right after the imports, replacing more header lines.
+  // But there may not be enough header lines to replace.
+  //
+  // Alternative: use `var` instead of `const` — `var` is hoisted to function scope.
+  // But we're at module scope, so `var` is also not hoisted above its declaration.
+  //
+  // Real solution: the transpiled code uses `DAT_` as arguments to functions
+  // like s32(DAT_XXX, offset). These are evaluated at call time, not parse time.
+  // So the binding just needs to exist before the first FUNCTION CALL, not before
+  // the function DEFINITION. Since function definitions are hoisted in JS,
+  // bindings at the bottom work IF the functions are called after the bindings run.
+  const result = fileText;
   fs.writeFileSync(path.join(blocksDir, blockFile), result);
   totalTransformed++;
 }
