@@ -909,7 +909,7 @@ export function FUN_004c21d5(param_1, param_2) {
   FUN_00442541(param_1, 0xffffffff);
   if (((G.DAT_00655af8 !== 0) && (-1 < iVar2)) &&
      ((iVar2 < G.DAT_00655b18 &&
-      ((s32(G.DAT_0064f394, iVar2 * 0x58) !== 0 &&
+      ((G.DAT_0064f394[(iVar2 * 0x58) / 4] !== 0 &&
        (s8(G.DAT_0064f348[iVar2 * 0x58]) === param_1)))))) {
     FUN_004eb4ed(iVar2, 0);
   }
@@ -1067,7 +1067,7 @@ export function FUN_004c2b73(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c4210(param_1, param_2) {
-  G.DAT_0063cc30[param_1] = u8(param_2);
+  G.DAT_0063cc30[(param_1) / 4] = u8(param_2);
 }
 
 
@@ -1580,7 +1580,7 @@ export function FUN_004c54da(param_1) {
   G.DAT_0063f660 = 9999;
   local_14 = -1;
   for (local_30 = 0; local_30 < G.DAT_00655b18; local_30 = local_30 + 1) {
-    if ((((s32(G.DAT_0064f394, local_30 * 0x58) !== 0) &&
+    if ((((G.DAT_0064f394[(local_30 * 0x58) / 4] !== 0) &&
          (G.DAT_0064f348[local_30 * 0x58] === bVar2)) &&
         ((local_20 < 0 ||
          (iVar8 = FUN_005b8a81(s16(G.DAT_0064f340, local_30 * 0x58),
@@ -1595,7 +1595,7 @@ export function FUN_004c54da(param_1) {
   }
   if (s8(G.DAT_0064b1c1[u8(G.DAT_006560f6[param_1 * 0x20]) * 0x14]) === 1) {
     for (param_1 = 0; param_1 < G.DAT_00655b16; param_1 = param_1 + 1) {
-      if (((G.DAT_0065610a[param_1 * 8] !== 0) &&
+      if (((G.DAT_0065610a[(param_1 * 8) / 4] !== 0) &&
           (G.DAT_006560f7[param_1 * 0x20] === bVar2)) &&
          ((((G.DAT_0064b1bc[u8(G.DAT_006560f6[param_1 * 0x20]) * 0x14] & 0x80) !== 0 ||
            (((G.DAT_0064b1bd[u8(bVar1) * 0x14] & 0x10) !== 0 &&
@@ -1923,7 +1923,7 @@ export function FUN_004c65d2(param_1, param_2, param_3) {
 
   local_8 = 0x10;
   for (local_c = 0; local_c < G.DAT_00655b18; local_c = local_c + 1) {
-    if ((((s32(G.DAT_0064f394, local_c * 0x58) !== 0) &&
+    if ((((G.DAT_0064f394[(local_c * 0x58) / 4] !== 0) &&
          (s8(G.DAT_0064f348[local_c * 0x58]) === param_1)) &&
         (iVar1 = FUN_0043d20a(local_c, 1), iVar1 !== 0)) &&
        (iVar1 = FUN_005ae31d(s16(G.DAT_0064f340, local_c * 0x58),
@@ -1994,7 +1994,7 @@ export function FUN_004c66ba(param_1, param_2, param_3) {
     }
     local_20 = G.DAT_00655b16;
     while (local_20 = local_20 + -1, -1 < local_20) {
-      if (((G.DAT_0065610a[local_20 * 8] !== 0) &&
+      if (((G.DAT_0065610a[(local_20 * 8) / 4] !== 0) &&
           (s8(G.DAT_006560f7[local_20 * 0x20]) === iVar4)) &&
          ((iVar6 = FUN_005ae31d(s16(G.DAT_006560f0, local_20 * 0x20),
                                       s16(G.DAT_006560f2, local_20 * 0x20), sVar2,

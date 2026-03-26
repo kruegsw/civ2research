@@ -14,28 +14,22 @@ Civilization II MGE reimplementation — save file parser, HTML5 Canvas renderer
 - `public/engine` — **symlink → ../engine** (required for reverse proxy, do not break)
 - `engine/reference/` — 13 JS reference files extracted from binary (29K lines, read-only reference)
 - `reverse_engineering/decompiled/` — 34 Ghidra decompiled .c files (225K lines, **source of truth**)
-- `reverse_engineering/binary_js/` — mechanical JS transpilation of civ2.exe (84K lines, **next-best reference** — see below)
-- `reverse_engineering/archive/` — superseded work (function_docs, function_audit, call_graphs, decompiled_raw)
+- `reverse_engineering/transpiler/` — automated C→JS transpiler (1:1 line mapping, see RULES.md)
+- `reverse_engineering/transpiler/output/` — generated JS (never hand-edit, always re-generable)
+- `reverse_engineering/archive/` — superseded work (binary_js, function_docs, function_audit, call_graphs, decompiled_raw)
 
 ## Binary Fidelity Reference (reverse_engineering/)
 The **source of truth** for game logic is the decompiled C code in `reverse_engineering/decompiled/`.
 These are the raw Ghidra output files from the civ2.exe binary — they contain the exact logic
 the game uses, expressed in C with raw memory addresses and stride arithmetic.
 
-`reverse_engineering/binary_js/` contains a **mechanical JS transpilation** of all 34 decompiled
-C blocks (5,149 functions, 84K lines). This is the **next-best reference** — a line-by-line
-translation that preserves original variable names (`param_1`, `local_8`, `iVar1`), function
-labels (`FUN_XXXXXXXX`), and memory access patterns (`DAT_XXXXXXXX[index]`). It is more readable
-than the C but may contain translation errors. When in doubt, always verify against the
-decompiled C source.
+`reverse_engineering/transpiler/` contains an automated C→JS transpiler that produces output
+with strict 1:1 line correspondence to the C source. Every C line maps to the same JS line number.
+Verification is a mechanical diff. See `transpiler/RULES.md` for conversion rules.
 
-Key files in `reverse_engineering/binary_js/`:
-- `mem.js` — flat memory regions mirroring binary layout (unit types, terrain, civs, cities, units)
-- `fn_utils.js` — 11 core utility functions (tile access, tech checks, ZOC, water source)
-- `block_XXXXXXXX.js` — one file per decompiled block, matching `reverse_engineering/decompiled/`
-
-**WARNING**: Inferred function names in comments are best guesses and may be wrong. Do not trust
-them blindly. If behavior seems incorrect, go back to the decompiled C and re-examine.
+`reverse_engineering/archive/binary_js/` contains the old manual transpilation (5,149 functions,
+84K lines). Archived because it had no verifiable line mapping, systematic bugs kept appearing
+in "audited" code, and session handoffs lost audit context. See `archive/binary_js_README.md`.
 
 ## Key Files
 - `engine/defs.js` — all game constants, unit/building/tech/terrain definitions

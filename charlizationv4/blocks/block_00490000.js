@@ -2029,7 +2029,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
   local_54 = iVar5 + local_54;
   local_114 = 0;
   for (local_224 = 0; local_224 < G.DAT_00655b18; local_224 = local_224 + 1) {
-    if ((((s32(G.DAT_0064f394, local_224 * 0x58) !== 0) &&
+    if ((((G.DAT_0064f394[(local_224 * 0x58) / 4] !== 0) &&
       (s8(G.DAT_0064f34a[local_224 * 0x58]) === uVar4)) &&
       (s8(G.DAT_0064f348[local_224 * 0x58]) !== uVar4)) &&
       ((iVar5 = FUN_005b8a81(s16(G.DAT_0064f340, local_224 * 0x58),
@@ -2167,7 +2167,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
   local_104 = 0;
 
   for (local_224 = 0; local_224 < G.DAT_00655b18; local_224 = local_224 + 1) {
-    if (s32(G.DAT_0064f394, local_224 * 0x58) !== 0) {
+    if (G.DAT_0064f394[(local_224 * 0x58) / 4] !== 0) {
       if (s8(G.DAT_0064f348[local_224 * 0x58]) === uVar4) {
         iVar5 = FUN_0043d20a(local_224, 1);
         if (((iVar5 !== 0) || (G.DAT_0064f379[local_224 * 0x58] === 0xff)) &&
@@ -2267,7 +2267,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
     ((G.DAT_006a65d8 === 0 && ((local_f8 !== 1 && (2 < s8(G.DAT_0064f349[param_1 * 0x58]))))))) {
     local_30 = 9999;
     for (local_224 = 0; local_224 < G.DAT_00655b18; local_224 = local_224 + 1) {
-      if ((((s32(G.DAT_0064f394, local_224 * 0x58) !== 0) && (local_224 !== param_1)) &&
+      if ((((G.DAT_0064f394[(local_224 * 0x58) / 4] !== 0) && (local_224 !== param_1)) &&
         (s8(G.DAT_0064f348[local_224 * 0x58]) === uVar4)) &&
         (local_68 = FUN_005ae1b0(s16(G.DAT_0064f340, param_1 * 0x58),
           s16(G.DAT_0064f342, param_1 * 0x58),
@@ -2412,28 +2412,28 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
     iVar5 = FUN_00453e51(uVar4, 0);
     if ((iVar5 !== 0) && (iVar5 = FUN_0043d20a(param_1, 3), iVar5 !== 0)) {
       FUN_0043d289(param_1, 3, 0);
-      G.DAT_0064c6a2[uVar4] = G.DAT_0064c6a2[uVar4] + G.DAT_0064c4a4 * G.DAT_006a657c;
+      G.DAT_0064c6a2[(uVar4) / 4] = G.DAT_0064c6a2[(uVar4) / 4] + G.DAT_0064c4a4 * G.DAT_006a657c;
     }
     iVar5 = FUN_00453e51(uVar4, 0x1a);
     if ((iVar5 !== 0) && (iVar5 = FUN_0043d20a(param_1, 0x1a), iVar5 !== 0)) {
       FUN_0043d289(param_1, 0x1a, 0);
-      G.DAT_0064c6a2[uVar4] = G.DAT_0064c6a2[uVar4] + G.DAT_0064c55c * G.DAT_006a657c;
+      G.DAT_0064c6a2[(uVar4) / 4] = G.DAT_0064c6a2[(uVar4) / 4] + G.DAT_0064c55c * G.DAT_006a657c;
     }
     iVar5 = FUN_00453e51(uVar4, 0x15);
     if ((iVar5 !== 0) && (iVar5 = FUN_0043d20a(param_1, 0x21), iVar5 !== 0)) {
       FUN_0043d289(param_1, 0x21, 0);
-      G.DAT_0064c6a2[uVar4] = G.DAT_0064c6a2[uVar4] + G.DAT_0064c594 * G.DAT_006a657c;
+      G.DAT_0064c6a2[(uVar4) / 4] = G.DAT_0064c6a2[(uVar4) / 4] + G.DAT_0064c594 * G.DAT_006a657c;
     }
     iVar5 = FUN_00453e51(uVar4, 10);
     if ((iVar5 !== 0) && (iVar5 = FUN_0043d20a(param_1, 0xb), iVar5 !== 0)) {
       FUN_0043d289(param_1, 0xb, 0);
-      G.DAT_0064c6a2[uVar4] = G.DAT_0064c6a2[uVar4] + G.DAT_0064c4e4 * G.DAT_006a657c;
+      G.DAT_0064c6a2[(uVar4) / 4] = G.DAT_0064c6a2[(uVar4) / 4] + G.DAT_0064c4e4 * G.DAT_006a657c;
     }
     iVar5 = FUN_0043d20a(param_1, 0x20);
     if ((((iVar5 !== 0) && (G.DAT_00655b05 === uVar4)) &&
       ((G.DAT_0064f346[param_1 * 0x58] & 1) === 0)) && ((local_f8 !== 4 && (local_f8 !== 5)))) {
       for (local_224 = 0; local_224 < G.DAT_00655b18; local_224 = local_224 + 1) {
-        if (((s32(G.DAT_0064f394, local_224 * 0x58) !== 0) &&
+        if (((G.DAT_0064f394[(local_224 * 0x58) / 4] !== 0) &&
           (s8(G.DAT_0064f348[local_224 * 0x58]) === uVar4)) &&
           ((local_224 !== param_1 &&
             (((iVar5 = FUN_0043d20a(local_224, 0x20), iVar5 !== 0 &&
@@ -3021,7 +3021,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
         if (local_f8 === 4) {
           local_90 = local_b0;
         }
-        iVar5 = (local_18 + local_8c + 8) - ((G.DAT_0064c6a2[uVar4] / 200) | 0);
+        iVar5 = (local_18 + local_8c + 8) - ((G.DAT_0064c6a2[(uVar4) / 4] / 200) | 0);
         if (iVar5 < 2) {
           iVar5 = 1;
         }
@@ -3048,7 +3048,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
           if (local_74 !== 0x17) {
             if (G.DAT_00655b08 < 2) {
               for (local_224 = 0; local_224 < G.DAT_00655b18; local_224 = local_224 + 1) {
-                if (((s32(G.DAT_0064f394, local_224 * 0x58) !== 0) &&
+                if (((G.DAT_0064f394[(local_224 * 0x58) / 4] !== 0) &&
                   ((G.DAT_00655b0b & (1 << (G.DAT_0064f348[local_224 * 0x58] & 0x1f))) !== 0)) &&
                   (s8(G.DAT_0064f379[local_224 * 0x58]) === -local_244)) {
                   local_1c = 999;

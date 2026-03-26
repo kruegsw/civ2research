@@ -353,7 +353,7 @@ export function FUN_00471856() {
   // DEVIATION: Win32 — FUN_00410070(in_ECX_0xf18) get_government_name
   // DEVIATION: Win32 — FUN_0040ff60(2, uVar1) set_format_string
   // DEVIATION: Win32 — FUN_0040bbb0() begin_format_string
-  // DEVIATION: Win32 — FUN_00421f10(G.DAT_0064caa2[in_ECX_0xf18 * 0x594]) format year
+  // DEVIATION: Win32 — FUN_00421f10(G.DAT_0064caa2[(in_ECX_0xf18 * 0x594) / 2]) format year
   // DEVIATION: Win32 — FUN_0040ff60(3, &G.DAT_00679640) set_format_string
   // DEVIATION: Win32 — FUN_00493b10(in_ECX_0xf18) get_leader_name
   // DEVIATION: Win32 — FUN_0040ff60(4, uVar1) set_format_string
@@ -666,13 +666,13 @@ export function FUN_004732a6(param_1, param_2) {
         // DEVIATION: File I/O — _fread(&G.DAT_0064f340, G.DAT_00655b18 * 0x58, 1, param_2)
       }
       for (let local_8 = 0; local_8 < G.DAT_00655b16; local_8 = local_8 + 1) {
-        if (G.DAT_0065610a[local_8 * 8] !== 0) {
-          G.DAT_0065610a[local_8 * 8] = G.DAT_00627fd8;
+        if (G.DAT_0065610a[(local_8 * 8) / 4] !== 0) {
+          G.DAT_0065610a[(local_8 * 8) / 4] = G.DAT_00627fd8;
           G.DAT_00627fd8 = G.DAT_00627fd8 + 1;
         }
       }
       for (let local_8 = 0; local_8 < G.DAT_00655b18; local_8 = local_8 + 1) {
-        if (s32(G.DAT_0064f394, local_8 * 0x58) !== 0) {
+        if (G.DAT_0064f394[(local_8 * 0x58) / 4] !== 0) {
           w32(G.DAT_0064f394, local_8 * 0x58, G.DAT_00627fdc);
           G.DAT_00627fdc = G.DAT_00627fdc + 1;
         }
@@ -685,7 +685,7 @@ export function FUN_004732a6(param_1, param_2) {
         // DEVIATION: File I/O — _fread(&G.DAT_0064f340 + local_8 * 0x58, 0x54, 1, param_2)
       }
       for (let local_8 = 0; local_8 < G.DAT_00655b16; local_8 = local_8 + 1) {
-        G.DAT_0065610a[local_8 * 8] = G.DAT_00627fd8;
+        G.DAT_0065610a[(local_8 * 8) / 4] = G.DAT_00627fd8;
         G.DAT_00627fd8 = G.DAT_00627fd8 + 1;
       }
       for (let local_8 = 0; local_8 < G.DAT_00655b18; local_8 = local_8 + 1) {
@@ -701,13 +701,13 @@ export function FUN_004732a6(param_1, param_2) {
       // DEVIATION: File I/O — _fread(&G.DAT_0064f340, G.DAT_00655b18 * 0x58, 1, param_2)
     }
     for (let local_8 = 0; local_8 < G.DAT_00655b16; local_8 = local_8 + 1) {
-      if (G.DAT_0065610a[local_8 * 8] !== 0) {
-        G.DAT_0065610a[local_8 * 8] = G.DAT_00627fd8;
+      if (G.DAT_0065610a[(local_8 * 8) / 4] !== 0) {
+        G.DAT_0065610a[(local_8 * 8) / 4] = G.DAT_00627fd8;
         G.DAT_00627fd8 = G.DAT_00627fd8 + 1;
       }
     }
     for (let local_8 = 0; local_8 < G.DAT_00655b18; local_8 = local_8 + 1) {
-      if (s32(G.DAT_0064f394, local_8 * 0x58) !== 0) {
+      if (G.DAT_0064f394[(local_8 * 0x58) / 4] !== 0) {
         w32(G.DAT_0064f394, local_8 * 0x58, G.DAT_00627fdc);
         G.DAT_00627fdc = G.DAT_00627fdc + 1;
       }
@@ -1216,14 +1216,14 @@ export function FUN_00475666(param_1) {
         G.DAT_0064c778[local_748 * 0x594 + local_730] = 0;
       }
       for (let local_744 = 0; local_744 < G.DAT_00655b16; local_744 = local_744 + 1) {
-        if ((G.DAT_0065610a[local_744 * 8] !== 0) &&
+        if ((G.DAT_0065610a[(local_744 * 8) / 4] !== 0) &&
             (s8(G.DAT_006560f7[local_744 * 0x20]) === local_748)) {
           G.DAT_0064c778[local_748 * 0x594 + G.DAT_006560f6[local_744 * 0x20]] =
             G.DAT_0064c778[local_748 * 0x594 + G.DAT_006560f6[local_744 * 0x20]] + 1;
         }
       }
       for (let local_73c = 0; local_73c < G.DAT_00655b18; local_73c = local_73c + 1) {
-        if ((s32(G.DAT_0064f394, local_73c * 0x58) !== 0) &&
+        if ((G.DAT_0064f394[(local_73c * 0x58) / 4] !== 0) &&
             (s8(G.DAT_0064f348[local_73c * 0x58]) === local_748) &&
             (s8(G.DAT_0064f379[local_73c * 0x58]) >= 0)) {
           G.DAT_0064c7f4[local_748 * 0x594 + s8(G.DAT_0064f379[local_73c * 0x58])] =
@@ -1417,7 +1417,7 @@ export function load_verify_units(param_1, param_2, param_3) {
       G.DAT_006ad2f7 = 1;
       // Verify unit positions
       for (let local_868 = 0; local_868 < G.DAT_00655b16; local_868 = local_868 + 1) {
-        if (G.DAT_0065610a[local_868 * 8] === 0) {
+        if (G.DAT_0065610a[(local_868 * 8) / 4] === 0) {
           G.DAT_00656108[local_868 * 16] = 0xffff;
           G.DAT_00656106[local_868 * 16] = 0xffff;
         } else {

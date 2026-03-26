@@ -2941,7 +2941,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
   // Transfer cities visibility
   if (param_3 === 0 || param_3 === 1) {
     for (let local_20 = 0; local_20 < G.DAT_00655b18; local_20 = local_20 + 1) {
-      if (s32(G.DAT_0064f394, local_20 * 0x58) !== 0 &&
+      if (G.DAT_0064f394[(local_20 * 0x58) / 4] !== 0 &&
          ((uVar4 & s8(G.DAT_0064f34c[local_20 * 0x58])) !== 0 ||
           s8(G.DAT_0064f348[local_20 * 0x58]) === param_2)) {
         if (s8(G.DAT_0064f348[local_20 * 0x58]) === param_2) {
@@ -3029,7 +3029,7 @@ export function FUN_004de049(param_1, param_2) {
   let local_14 = 3;
   for (let local_c = 0; local_c < iVar1; local_c = local_c + 1) {
     let iVar2 = FUN_0052ed95(param_2[local_14]);
-    if (-1 < iVar2 && s32(G.DAT_0064f394, iVar2 * 0x58) !== 0) {
+    if (-1 < iVar2 && G.DAT_0064f394[(iVar2 * 0x58) / 4] !== 0) {
       FUN_004de0e2(iVar2, param_1);
     }
     local_14 = local_14 + 2;
