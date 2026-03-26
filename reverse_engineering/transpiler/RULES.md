@@ -632,16 +632,24 @@ the verbose form is also correct.
 ## Imports, Exports, and Cross-Block Wiring
 
 The transpiler outputs each block as a standalone file with `export function`
-declarations. It does NOT resolve cross-block references.
+declarations and bare `DAT_XXXXXXXX` names (matching the C source 1:1).
 
 **What the transpiler handles:**
 - Function signatures → `export function FUN_XXXXXXXX(...) {`
-- `import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';` (prelude)
+- 1:1 code transformation (no import lines — they would shift line numbers)
 
-**What a separate wiring step handles (not part of the transpiler):**
-- Cross-block function calls (`FUN_XXXXXXXX` defined in another block)
-- Global `DAT_XXXXXXXX` declarations and sharing across blocks
-- Stub declarations for undefined references
+**What the wiring step handles (appended AFTER the 1:1 section):**
+- Global `DAT_XXXXXXXX` bindings: each `DAT_` name used in the file gets a
+  `const DAT_XXXXXXXX = G.DAT_XXXXXXXX;` line appended at the bottom, binding
+  the bare name to the shared flat memory view.
+- Cross-block function imports
+- `import { G } from '../globals.js';` and mem.js helper imports
 
-This matches the existing v4 pipeline architecture (`transform.cjs` → `wire.cjs`
-→ `fix-blocks.cjs`). The transpiler replaces `transform.cjs` only.
+**Why not `G.DAT_` prefix replacement?** The v4 pipeline previously did
+find-and-replace of `DAT_` → `G.DAT_` throughout each file. This broke
+syntax because it modified lines that were part of multi-line expressions
+(e.g., comma-operator assignments inside `if` conditions). The appended
+binding approach leaves the transpiled code untouched.
+
+The transpiler replaces `transform.cjs` only. The wiring step (`wire.cjs`)
+handles cross-block function resolution.
