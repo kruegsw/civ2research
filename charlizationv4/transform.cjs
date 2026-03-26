@@ -203,6 +203,25 @@ const DAT_REPLACE_RE = /(?<![.'_a-zA-Z])DAT_([0-9a-fA-F]+(?:_val)?)\b/g;
 fs.mkdirSync(blocksDir, { recursive: true });
 let totalTransformed = 0;
 
+// ── Build function registry: FUN_xxx → which block file exports it ──
+const fnRegistry = new Map();
+for (const file of blockFiles) {
+  const src = fs.readFileSync(path.join(srcDir, file), 'utf8');
+  const re = /^export function (\w+)\s*\(/gm;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    fnRegistry.set(m[1], file);
+  }
+}
+console.log(`Registry: ${fnRegistry.size} functions across ${blockFiles.length} blocks`);
+
+// ── Build fn_utils export set (skip these from cross-block wiring) ──
+const fnUtilsExports = new Set();
+const fnUtilsSrc = fs.readFileSync(path.join(srcDir, 'fn_utils.js'), 'utf8');
+const fnRe = /^export function (\w+)\s*\(/gm;
+let fm;
+while ((fm = fnRe.exec(fnUtilsSrc)) !== null) fnUtilsExports.add(fm[1]);
+
 for (const blockFile of blockFiles) {
   const src = fs.readFileSync(path.join(srcDir, blockFile), 'utf8');
   const lines = src.split('\n');
@@ -293,38 +312,76 @@ for (const blockFile of blockFiles) {
     outLines.push(line);
   }
 
-  // Phase 2: Insert our imports after the header comment block
+  // Phase 2: Prefix DAT_ with G. in code lines (not comments/DEVIATION/JOINED)
   const finalLines = [];
-
   for (const line of outLines) {
     const trimmed = line.trim();
-
-    // Pass all lines through unchanged — 1:1 with C source
-    finalLines.push(line);
+    let processed = line;
+    // Only prefix in code lines, not comments or JOINED markers
+    if (!trimmed.startsWith('//') && trimmed !== '/*JOINED*/' && !/^\/\*/.test(trimmed)) {
+      // Replace DAT_ with G.DAT_ but not inside /* */ block comments on this line
+      // Split at block comments, process only code parts
+      processed = processed.replace(
+        /^([^]*?)(?=\/\*|$)/,
+        (codePart) => codePart.replace(/(?<!G\.)(?<![a-zA-Z_.])(DAT_[0-9a-fA-F]+)/g, 'G.$1')
+      );
+    }
+    finalLines.push(processed);
   }
 
-  // Phase 3: No imports or bindings in block files.
-  // Block files are pure transpiled code, 1:1 with C.
-  // The v4 engine loader provides all globals via globalThis before blocks run.
-  const fileText = finalLines.join('\n');
+  // Phase 3: Build imports and insert at top (before first export function)
+  // 3a: Find which functions this block exports
+  const localFns = new Set();
+  for (const line of finalLines) {
+    const m = line.match(/^export function (\w+)\s*\(/);
+    if (m) localFns.add(m[1]);
+  }
 
-  // Write: unchanged 1:1 code + appended section
-  // But wait — the bindings use `const` which means they must come BEFORE
-  // the code that uses them. JS hoists `function` declarations but not `const`.
-  // So we need to put bindings at the TOP, not the bottom.
-  //
-  // Solution: put bindings right after the imports, replacing more header lines.
-  // But there may not be enough header lines to replace.
-  //
-  // Alternative: use `var` instead of `const` — `var` is hoisted to function scope.
-  // But we're at module scope, so `var` is also not hoisted above its declaration.
-  //
-  // Real solution: the transpiled code uses `DAT_` as arguments to functions
-  // like s32(DAT_XXX, offset). These are evaluated at call time, not parse time.
-  // So the binding just needs to exist before the first FUNCTION CALL, not before
-  // the function DEFINITION. Since function definitions are hoisted in JS,
-  // bindings at the bottom work IF the functions are called after the bindings run.
-  const result = fileText;
+  // 3b: Find all FUN_ identifiers called/referenced in this block
+  const refsNeeded = new Map(); // fnName → source block
+  const allText = finalLines.join('\n');
+  const funRefs = allText.matchAll(/\b(FUN_[0-9a-fA-F]+)\b/g);
+  for (const m of funRefs) {
+    const fn = m[1];
+    if (localFns.has(fn)) continue;           // defined locally
+    if (fnUtilsExports.has(fn)) continue;     // in fn_utils
+    const srcBlock = fnRegistry.get(fn);
+    if (srcBlock && srcBlock !== blockFile) {
+      refsNeeded.set(fn, srcBlock);
+    }
+  }
+
+  // 3c: Build import lines
+  const imports = [];
+  imports.push("import { G } from '../globals.js';");
+  imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';");
+
+  // Group cross-block imports by source
+  const importsByBlock = new Map();
+  for (const [fn, src] of refsNeeded) {
+    if (!importsByBlock.has(src)) importsByBlock.set(src, []);
+    importsByBlock.get(src).push(fn);
+  }
+  for (const [src, fns] of [...importsByBlock.entries()].sort()) {
+    const sorted = fns.sort();
+    for (let k = 0; k < sorted.length; k += 6) {
+      imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from './${src}';`);
+    }
+  }
+
+  // 3d: Insert imports before first export function
+  const outputLines = [];
+  let importsInserted = false;
+  for (const line of finalLines) {
+    if (!importsInserted && line.trimStart().startsWith('export function ')) {
+      for (const imp of imports) outputLines.push(imp);
+      outputLines.push('');
+      importsInserted = true;
+    }
+    outputLines.push(line);
+  }
+
+  const result = outputLines.join('\n');
   fs.writeFileSync(path.join(blocksDir, blockFile), result);
   totalTransformed++;
 }
@@ -401,6 +458,10 @@ export function w32(arr, off, val) {
   arr[off + 2] = (val >> 16) & 0xFF;
   arr[off + 3] = (val >> 24) & 0xFF;
 }
+
+// ── Write-and-return helpers (for comma-operator expressions) ──
+export function w16r(arr, off, val) { w16(arr, off, val); return val; }
+export function w32r(arr, off, val) { w32(arr, off, val); return val; }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

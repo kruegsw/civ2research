@@ -34,6 +34,10 @@ export function w32(arr, off, val) {
   arr[off + 3] = (val >> 24) & 0xFF;
 }
 
+// ── Write-and-return helpers (for comma-operator expressions) ──
+export function w16r(arr, off, val) { w16(arr, off, val); return val; }
+export function w32r(arr, off, val) { w32(arr, off, val); return val; }
+
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {
   G._tileData = tileArray;
