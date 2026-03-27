@@ -54,9 +54,6 @@ import { draw_text_9740_005C9740 as draw_text_9740, gdi_8514_005C8514 as gdi_851
 import { measure_text_BF40_005CBF40 as measure_text_BF40, register_wndclass_CF17_005CCF17 as register_wndclass_CF17 } from './block_005C0000.js';
 import { EnableStackedTabs_005DB035 as EnableStackedTabs } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
-const s_FINDCITY_00624f24 = new Uint8Array(256);
-const s_REVOLUTION_00624f34 = new Uint8Array(256);
-const s_STARTREV_00624f40 = new Uint8Array(256);
 const DAT_00624ee0 = globalThis.DAT_00624ee0, DAT_00624ee8 = globalThis.DAT_00624ee8, DAT_00624eec = globalThis.DAT_00624eec, DAT_00624ef0 = globalThis.DAT_00624ef0, DAT_00624ef4 = globalThis.DAT_00624ef4, DAT_00624ef8 = globalThis.DAT_00624ef8;
 const DAT_00624efc = globalThis.DAT_00624efc, DAT_00624f00 = globalThis.DAT_00624f00, DAT_00624f04 = globalThis.DAT_00624f04, DAT_00624f10 = globalThis.DAT_00624f10, DAT_00624f1c = globalThis.DAT_00624f1c, DAT_00624f20 = globalThis.DAT_00624f20;
 const DAT_00624f30 = globalThis.DAT_00624f30, DAT_00627cca = globalThis.DAT_00627cca, DAT_00627ccb = globalThis.DAT_00627ccb, DAT_00627ccc = globalThis.DAT_00627ccc, DAT_00627cce = globalThis.DAT_00627cce, DAT_00627ccf = globalThis.DAT_00627ccf;
@@ -78,6 +75,7 @@ const DAT_0066ca88 = globalThis.DAT_0066ca88, DAT_0066ca8a = globalThis.DAT_0066
 const DAT_0066cad0 = globalThis.DAT_0066cad0, DAT_0066cad4 = globalThis.DAT_0066cad4, DAT_0066cad8 = globalThis.DAT_0066cad8, DAT_0066cadc = globalThis.DAT_0066cadc, DAT_00679640 = globalThis.DAT_00679640, DAT_006ab198 = globalThis.DAT_006ab198;
 const DAT_006ab19c = globalThis.DAT_006ab19c, DAT_006ab1a0 = globalThis.DAT_006ab1a0, DAT_006acbb0 = globalThis.DAT_006acbb0, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006d1160 = globalThis.DAT_006d1160;
 const DAT_006d1162 = globalThis.DAT_006d1162, DAT_006d1164 = globalThis.DAT_006d1164, DAT_006d1166 = globalThis.DAT_006d1166, DAT_006d1188 = globalThis.DAT_006d1188, DAT_006d1da0 = globalThis.DAT_006d1da0, DAT_006d1da8 = globalThis.DAT_006d1da8;
+const PTR_DAT_00637e60 = globalThis.PTR_DAT_00637e60, PTR_DAT_00637e68 = globalThis.PTR_DAT_00637e68, PTR_FUN_0061c054 = globalThis.PTR_FUN_0061c054, s_FINDCITY_00624f24 = globalThis.s_FINDCITY_00624f24, s_REVOLUTION_00624f34 = globalThis.s_REVOLUTION_00624f34, s_STARTREV_00624f40 = globalThis.s_STARTREV_00624f40;
 const SetDlgCtrlID = SetDlgCtrlID_004081B0;
 
 export function FID_conflict___E31_00406A80() {

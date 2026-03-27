@@ -51,25 +51,6 @@ import { FUN_005cef31, GetCheckStyle_005C55F0 as GetCheckStyle } from './block_0
 import { FUN_005d25a8, FUN_005d268e, FUN_005d4167, FUN_005dae6b } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
-const s_000000_006324e0 = new Uint8Array(256);
-const s_ADVANCEDMP_00632294 = new Uint8Array(256);
-const s_DIFFICULTY_00632288 = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_add_d_0063242c = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_add_d_00632480 = new Uint8Array(256);
-const s_D__Ss_Franklinton_startup_multip_006322f4 = new Uint8Array(256);
-const s_GENDER_006322b0 = new Uint8Array(256);
-const s_GENDER_00632340 = new Uint8Array(256);
-const s_HOTSEAT2_006322b8 = new Uint8Array(256);
-const s_JOINGAME0_006322d0 = new Uint8Array(256);
-const s_JOINGAME1_006322c4 = new Uint8Array(256);
-const s_JOINGAME3_006322dc = new Uint8Array(256);
-const s_NOINTEL_006324e8 = new Uint8Array(256);
-const s_OPPONENT_006322e8 = new Uint8Array(256);
-const s_PARLEYACCEPT2_006324f0 = new Uint8Array(256);
-const s_SCENARIOLOADED_00632278 = new Uint8Array(256);
-const s_gNetMgr_bServer_00632320 = new Uint8Array(256);
-const s_leftright____LEFT____leftright___00632458 = new Uint8Array(256);
-const s_theDialog____PDT_NULL____PDT_NUL_006324ac = new Uint8Array(256);
 const DAT_00627684 = globalThis.DAT_00627684, DAT_00628048 = globalThis.DAT_00628048, DAT_00628350 = globalThis.DAT_00628350, DAT_00628360 = globalThis.DAT_00628360, DAT_00628420 = globalThis.DAT_00628420, DAT_0062b420 = globalThis.DAT_0062b420;
 const DAT_0062c488 = globalThis.DAT_0062c488, DAT_0062cd24 = globalThis.DAT_0062cd24, DAT_0062ced0 = globalThis.DAT_0062ced0, DAT_0062d7d0 = globalThis.DAT_0062d7d0, DAT_0062d7d4 = globalThis.DAT_0062d7d4, DAT_0062d7e8 = globalThis.DAT_0062d7e8;
 const DAT_0062d7ec = globalThis.DAT_0062d7ec, DAT_0062d7f8 = globalThis.DAT_0062d7f8, DAT_0062d7fc = globalThis.DAT_0062d7fc, DAT_0062d858 = globalThis.DAT_0062d858, DAT_0062d85c = globalThis.DAT_0062d85c, DAT_0062d868 = globalThis.DAT_0062d868;
@@ -95,7 +76,10 @@ const DAT_0069b018 = globalThis.DAT_0069b018, DAT_0069b020 = globalThis.DAT_0069
 const DAT_006a677c = globalThis.DAT_006a677c, DAT_006a7d4c = globalThis.DAT_006a7d4c, DAT_006a85a4 = globalThis.DAT_006a85a4, DAT_006ab198 = globalThis.DAT_006ab198, DAT_006ab19c = globalThis.DAT_006ab19c, DAT_006ad2f7 = globalThis.DAT_006ad2f7;
 const DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad358 = globalThis.DAT_006ad358, DAT_006ad359 = globalThis.DAT_006ad359, DAT_006ad35c = globalThis.DAT_006ad35c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006ad640 = globalThis.DAT_006ad640;
 const DAT_006ad684 = globalThis.DAT_006ad684, DAT_006ad908 = globalThis.DAT_006ad908, DAT_006c3160 = globalThis.DAT_006c3160, DAT_006c3164 = globalThis.DAT_006c3164, DAT_006c31a8 = globalThis.DAT_006c31a8, DAT_006c31a9 = globalThis.DAT_006c31a9;
-const DAT_006d1da0 = globalThis.DAT_006d1da0;
+const DAT_006d1da0 = globalThis.DAT_006d1da0, s_000000_006324e0 = globalThis.s_000000_006324e0, s_ADVANCEDMP_00632294 = globalThis.s_ADVANCEDMP_00632294, s_DIFFICULTY_00632288 = globalThis.s_DIFFICULTY_00632288, s_D__Ss_Franklinton_parleywin_add_d_0063242c = globalThis.s_D__Ss_Franklinton_parleywin_add_d_0063242c, s_D__Ss_Franklinton_parleywin_add_d_00632480 = globalThis.s_D__Ss_Franklinton_parleywin_add_d_00632480;
+const s_D__Ss_Franklinton_startup_multip_006322f4 = globalThis.s_D__Ss_Franklinton_startup_multip_006322f4, s_GENDER_006322b0 = globalThis.s_GENDER_006322b0, s_GENDER_00632340 = globalThis.s_GENDER_00632340, s_HOTSEAT2_006322b8 = globalThis.s_HOTSEAT2_006322b8, s_JOINGAME0_006322d0 = globalThis.s_JOINGAME0_006322d0, s_JOINGAME1_006322c4 = globalThis.s_JOINGAME1_006322c4;
+const s_JOINGAME3_006322dc = globalThis.s_JOINGAME3_006322dc, s_NOINTEL_006324e8 = globalThis.s_NOINTEL_006324e8, s_OPPONENT_006322e8 = globalThis.s_OPPONENT_006322e8, s_PARLEYACCEPT2_006324f0 = globalThis.s_PARLEYACCEPT2_006324f0, s_SCENARIOLOADED_00632278 = globalThis.s_SCENARIOLOADED_00632278, s_gNetMgr_bServer_00632320 = globalThis.s_gNetMgr_bServer_00632320;
+const s_leftright____LEFT____leftright___00632458 = globalThis.s_leftright____LEFT____leftright___00632458, s_theDialog____PDT_NULL____PDT_NUL_006324ac = globalThis.s_theDialog____PDT_NULL____PDT_NUL_006324ac;
 
 export function FUN_00521807() {
 

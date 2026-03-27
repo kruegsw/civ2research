@@ -37,11 +37,6 @@ import { _ValidateExecute_006010E0 as _ValidateExecute, _ValidateRead_00601060 a
 import { ___loctotime_t_006002E0 as ___loctotime_t, __aulldiv_006023E0 as __aulldiv, __aullrem_00602450 as __aullrem, __commit_006021E0 as __commit, __controlfp_00602640 as __controlfp, __fcloseall_006024D0 as __fcloseall } from './block_00600000.js';
 import { __fltout_006033E0 as __fltout, __fptostr_00603300 as __fptostr, __free_osfhnd_00601F40 as __free_osfhnd, __get_osfhandle_00602060 as __get_osfhandle, __isatty_006022C0 as __isatty, __itoa_00600A10 as __itoa } from './block_00600000.js';
 import { __sopen_00601750 as __sopen, __vsnprintf_00601210 as __vsnprintf, _raise_006006A0 as _raise, _strncnt_00606AF0 as _strncnt, wcsncnt_00606620 as wcsncnt } from './block_00600000.js';
-const s_Assertion_failed___s__file__s__l_00639fe0 = new Uint8Array(256);
-const s_D__Ss_Smeds32_ddcntrl_cpp_00639dcc = new Uint8Array(256);
-const s_D__Ss_Smeds32_ddcntrl_cpp_00639e08 = new Uint8Array(256);
-const s_GetParentGameWin___00639e24 = new Uint8Array(256);
-const s_pParentWin____pParentControl_00639de8 = new Uint8Array(256);
 const DAT_0061dc40 = globalThis.DAT_0061dc40, DAT_0061e724 = globalThis.DAT_0061e724, DAT_0061e748 = globalThis.DAT_0061e748, DAT_00624000 = globalThis.DAT_00624000, DAT_006245a8 = globalThis.DAT_006245a8, DAT_006246ac = globalThis.DAT_006246ac;
 const DAT_006248bc = globalThis.DAT_006248bc, DAT_006249c0 = globalThis.DAT_006249c0, DAT_00624bc8 = globalThis.DAT_00624bc8, DAT_00624ccc = globalThis.DAT_00624ccc, DAT_00624dd0 = globalThis.DAT_00624dd0, DAT_00639dc8 = globalThis.DAT_00639dc8;
 const DAT_00639e3c = globalThis.DAT_00639e3c, DAT_00639e40 = globalThis.DAT_00639e40, DAT_00639e44 = globalThis.DAT_00639e44, DAT_00639e50 = globalThis.DAT_00639e50, DAT_00639f14 = globalThis.DAT_00639f14, DAT_00639f18 = globalThis.DAT_00639f18;
@@ -61,7 +56,11 @@ const DAT_0063b0d8 = globalThis.DAT_0063b0d8, DAT_0063b248 = globalThis.DAT_0063
 const DAT_006e547c = globalThis.DAT_006e547c, DAT_006e5480 = globalThis.DAT_006e5480, DAT_006e5488 = globalThis.DAT_006e5488, DAT_006e5490 = globalThis.DAT_006e5490, DAT_006e5494 = globalThis.DAT_006e5494, DAT_006e5498 = globalThis.DAT_006e5498;
 const DAT_006e549c = globalThis.DAT_006e549c, DAT_006e54a0 = globalThis.DAT_006e54a0, DAT_006e54a4 = globalThis.DAT_006e54a4, DAT_006e54a8 = globalThis.DAT_006e54a8, DAT_006e5694 = globalThis.DAT_006e5694, DAT_006e69e0 = globalThis.DAT_006e69e0;
 const DAT_006e69e4 = globalThis.DAT_006e69e4, DAT_006e69f0 = globalThis.DAT_006e69f0, DAT_006e6b2c = globalThis.DAT_006e6b2c, DAT_006e6b30 = globalThis.DAT_006e6b30, DAT_006e6b3c = globalThis.DAT_006e6b3c, DAT_006e6b48 = globalThis.DAT_006e6b48;
-const DAT_006e6b54 = globalThis.DAT_006e6b54, DAT_006e6b68 = globalThis.DAT_006e6b68;
+const DAT_006e6b54 = globalThis.DAT_006e6b54, DAT_006e6b68 = globalThis.DAT_006e6b68, PTR_DAT_00639f88 = globalThis.PTR_DAT_00639f88, PTR_DAT_0063a008 = globalThis.PTR_DAT_0063a008, PTR_DAT_0063a00c = globalThis.PTR_DAT_0063a00c, PTR_DAT_0063a010 = globalThis.PTR_DAT_0063a010;
+const PTR_DAT_0063a090 = globalThis.PTR_DAT_0063a090, PTR_DAT_0063a2a8 = globalThis.PTR_DAT_0063a2a8, PTR_DAT_0063a2ac = globalThis.PTR_DAT_0063a2ac, PTR_DAT_0063ac58 = globalThis.PTR_DAT_0063ac58, PTR_FUN_0061d720 = globalThis.PTR_FUN_0061d720, PTR_FUN_0063a42c = globalThis.PTR_FUN_0063a42c;
+const PTR_LOOP_0063a438 = globalThis.PTR_LOOP_0063a438, PTR_LOOP_0063a43c = globalThis.PTR_LOOP_0063a43c, PTR_LOOP_0063ac4c = globalThis.PTR_LOOP_0063ac4c, PTR___exit_00639fc8 = globalThis.PTR___exit_00639fc8, PTR___fpmath_00639fb0 = globalThis.PTR___fpmath_00639fb0, PTR___fptrap_0063aee0 = globalThis.PTR___fptrap_0063aee0;
+const PTR___fptrap_0063aee4 = globalThis.PTR___fptrap_0063aee4, PTR___fptrap_0063aee8 = globalThis.PTR___fptrap_0063aee8, PTR___fptrap_0063aeec = globalThis.PTR___fptrap_0063aeec, PTR___fptrap_0063aef0 = globalThis.PTR___fptrap_0063aef0, PTR___fptrap_0063aef4 = globalThis.PTR___fptrap_0063aef4, PTR_terminate_0063a028 = globalThis.PTR_terminate_0063a028;
+const PTR_terminate_0063a02c = globalThis.PTR_terminate_0063a02c, s_Assertion_failed___s__file__s__l_00639fe0 = globalThis.s_Assertion_failed___s__file__s__l_00639fe0, s_D__Ss_Smeds32_ddcntrl_cpp_00639dcc = globalThis.s_D__Ss_Smeds32_ddcntrl_cpp_00639dcc, s_D__Ss_Smeds32_ddcntrl_cpp_00639e08 = globalThis.s_D__Ss_Smeds32_ddcntrl_cpp_00639e08, s_GetParentGameWin___00639e24 = globalThis.s_GetParentGameWin___00639e24, s_pParentWin____pParentControl_00639de8 = globalThis.s_pParentWin____pParentControl_00639de8;
 const lockptr = lockptr_005F0620;
 const length = length_005F07F9;
 const Enable = Enable_005F1221;

@@ -47,10 +47,6 @@ import { FUN_005b8b65, FUN_005b8c18, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62, F
 import { FUN_005b8ffa, FUN_005b9431 } from './block_005B0000.js';
 import { create_window_C0F0_005CC0F0 as create_window_C0F0, gdi_C035_005CC035 as gdi_C035 } from './block_005C0000.js';
 import { FUN_005dcdf9, create_window_8E3F_005D8E3F as create_window_8E3F } from './block_005D0000.js';
-const s_BARBARIANSLAND_00632528 = new Uint8Array(256);
-const s_BARBARIANS_00632538 = new Uint8Array(256);
-const s_BARBARIANS_0063254c = new Uint8Array(256);
-const s_RANSOMCITY_00632560 = new Uint8Array(256);
 const DAT_00627cc8 = globalThis.DAT_00627cc8, DAT_00627cc9 = globalThis.DAT_00627cc9, DAT_00627cca = globalThis.DAT_00627cca, DAT_00627ccb = globalThis.DAT_00627ccb, DAT_00627cd2 = globalThis.DAT_00627cd2, DAT_00627cd4 = globalThis.DAT_00627cd4;
 const DAT_00627cd5 = globalThis.DAT_00627cd5, DAT_00627fe0 = globalThis.DAT_00627fe0, DAT_00628010 = globalThis.DAT_00628010, DAT_0062803c = globalThis.DAT_0062803c, DAT_00628350 = globalThis.DAT_00628350, DAT_00628360 = globalThis.DAT_00628360;
 const DAT_00628370 = globalThis.DAT_00628370, DAT_006283a0 = globalThis.DAT_006283a0, DAT_0062ee08 = globalThis.DAT_0062ee08, DAT_00632544 = globalThis.DAT_00632544, DAT_00632558 = globalThis.DAT_00632558, DAT_006365ec = globalThis.DAT_006365ec;
@@ -74,7 +70,8 @@ const DAT_006560f6 = globalThis.DAT_006560f6, DAT_006560f7 = globalThis.DAT_0065
 const DAT_006560fc = globalThis.DAT_006560fc, DAT_006560fd = globalThis.DAT_006560fd, DAT_006560fe = globalThis.DAT_006560fe, DAT_006560ff = globalThis.DAT_006560ff, DAT_00656100 = globalThis.DAT_00656100, DAT_00656102 = globalThis.DAT_00656102;
 const DAT_00656104 = globalThis.DAT_00656104, DAT_00656108 = globalThis.DAT_00656108, DAT_0065610a = globalThis.DAT_0065610a, DAT_00666130 = globalThis.DAT_00666130, DAT_00666132 = globalThis.DAT_00666132, DAT_00679640 = globalThis.DAT_00679640;
 const DAT_006a657c = globalThis.DAT_006a657c, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006ced4c = globalThis.DAT_006ced4c, DAT_006ced50 = globalThis.DAT_006ced50, DAT_006d1160 = globalThis.DAT_006d1160;
-const DAT_006d1162 = globalThis.DAT_006d1162, DAT_006d116a = globalThis.DAT_006d116a, DAT_006d1da0 = globalThis.DAT_006d1da0;
+const DAT_006d1162 = globalThis.DAT_006d1162, DAT_006d116a = globalThis.DAT_006d116a, DAT_006d1da0 = globalThis.DAT_006d1da0, PTR_DAT_00628040 = globalThis.PTR_DAT_00628040, PTR_DAT_00637e64 = globalThis.PTR_DAT_00637e64, PTR_DAT_00637e68 = globalThis.PTR_DAT_00637e68;
+const s_BARBARIANSLAND_00632528 = globalThis.s_BARBARIANSLAND_00632528, s_BARBARIANS_00632538 = globalThis.s_BARBARIANS_00632538, s_BARBARIANS_0063254c = globalThis.s_BARBARIANS_0063254c, s_RANSOMCITY_00632560 = globalThis.s_RANSOMCITY_00632560;
 
 export function egptr_00530E80(_this) {
 

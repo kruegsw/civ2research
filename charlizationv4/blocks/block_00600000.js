@@ -43,7 +43,8 @@ const DAT_006e55d8 = globalThis.DAT_006e55d8, DAT_006e55dc = globalThis.DAT_006e
 const DAT_006e562e = globalThis.DAT_006e562e, DAT_006e5630 = globalThis.DAT_006e5630, DAT_006e5632 = globalThis.DAT_006e5632, DAT_006e5634 = globalThis.DAT_006e5634, DAT_006e5636 = globalThis.DAT_006e5636, DAT_006e5638 = globalThis.DAT_006e5638;
 const DAT_006e563a = globalThis.DAT_006e563a, DAT_006e563c = globalThis.DAT_006e563c, DAT_006e5640 = globalThis.DAT_006e5640, DAT_006e5680 = globalThis.DAT_006e5680, DAT_006e5682 = globalThis.DAT_006e5682, DAT_006e5684 = globalThis.DAT_006e5684;
 const DAT_006e5686 = globalThis.DAT_006e5686, DAT_006e5688 = globalThis.DAT_006e5688, DAT_006e568a = globalThis.DAT_006e568a, DAT_006e568c = globalThis.DAT_006e568c, DAT_006e568e = globalThis.DAT_006e568e, DAT_006e5690 = globalThis.DAT_006e5690;
-const DAT_006e5694 = globalThis.DAT_006e5694, DAT_006e69e0 = globalThis.DAT_006e69e0, DAT_006e69f0 = globalThis.DAT_006e69f0, DAT_006e6b2c = globalThis.DAT_006e6b2c;
+const DAT_006e5694 = globalThis.DAT_006e5694, DAT_006e69e0 = globalThis.DAT_006e69e0, DAT_006e69f0 = globalThis.DAT_006e69f0, DAT_006e6b2c = globalThis.DAT_006e6b2c, PTR_DAT_0063a090 = globalThis.PTR_DAT_0063a090, PTR_DAT_0063b340 = globalThis.PTR_DAT_0063b340;
+const PTR_DAT_0063b344 = globalThis.PTR_DAT_0063b344, PTR_s_R6002___floating_point_not_loade_0063b1bc = globalThis.PTR_s_R6002___floating_point_not_loade_0063b1bc;
 const ___crtMessageBoxA = ___crtMessageBoxA_00600930;
 const ___tzset = ___tzset_00603620;
 const __isindst = __isindst_006039B0;

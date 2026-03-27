@@ -62,28 +62,6 @@ import { FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdea1, F
 import { FUN_005d268e, FUN_005db0d0, FUN_005dba95, FUN_005dbab8, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __ltoa_00600B30 as __ltoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
-const s_CARAVAN_0062cde0 = new Uint8Array(256);
-const s_COMMONAME_0062ce1c = new Uint8Array(256);
-const s_DEBUG_006359dc = new Uint8Array(256);
-const s_DESTROYED_0062cff4 = new Uint8Array(256);
-const s_EDITORSA_GIF_0062ce78 = new Uint8Array(256);
-const s_Error_updating_RULES__s_0062cde8 = new Uint8Array(256);
-const s_File_I_O_Error_0062ce00 = new Uint8Array(256);
-const s_GOVERNMENTS_0062cdcc = new Uint8Array(256);
-const s_GOVTNAME_0062ce34 = new Uint8Array(256);
-const s_LEADERS_0062cdd8 = new Uint8Array(256);
-const s_MOVEDEBUG_0062d054 = new Uint8Array(256);
-const s_SERVERCONNECTTIME_0062cf40 = new Uint8Array(256);
-const s_SERVERCONNECTTIME_0062cfb0 = new Uint8Array(256);
-const s_SPACEDESTROYED_0062cf04 = new Uint8Array(256);
-const s_SPACERETURNS_0062cef4 = new Uint8Array(256);
-const s_TITLENAME_0062ce58 = new Uint8Array(256);
-const s_TRIBES_0062ce64 = new Uint8Array(256);
-const s__s__s___s__0062ce4c = new Uint8Array(256);
-const s_kill_civ__Connection_to_server_t_0062cf84 = new Uint8Array(256);
-const s_kill_civ__Received_NM_NEW_CIV_AC_0062cfc4 = new Uint8Array(256);
-const s_new_civ__Connection_to_server_ti_0062cf14 = new Uint8Array(256);
-const s_new_civ__Received_NM_NEW_CIV_ACK_0062cf54 = new Uint8Array(256);
 const DAT_0062768c = globalThis.DAT_0062768c, DAT_0062768d = globalThis.DAT_0062768d, DAT_00627cc8 = globalThis.DAT_00627cc8, DAT_00627fe0 = globalThis.DAT_00627fe0, DAT_00628010 = globalThis.DAT_00628010, DAT_00628044 = globalThis.DAT_00628044;
 const DAT_00628350 = globalThis.DAT_00628350, DAT_00628360 = globalThis.DAT_00628360, DAT_00628370 = globalThis.DAT_00628370, DAT_006283a0 = globalThis.DAT_006283a0, DAT_006283d0 = globalThis.DAT_006283d0, DAT_006283e0 = globalThis.DAT_006283e0;
 const DAT_00628420 = globalThis.DAT_00628420, DAT_0062cd20 = globalThis.DAT_0062cd20, DAT_0062cd24 = globalThis.DAT_0062cd24, DAT_0062cd28 = globalThis.DAT_0062cd28, DAT_0062cd2c = globalThis.DAT_0062cd2c, DAT_0062cd38 = globalThis.DAT_0062cd38;
@@ -144,7 +122,11 @@ const DAT_006a1d88 = globalThis.DAT_006a1d88, DAT_006a1d9f = globalThis.DAT_006a
 const DAT_006a2d34 = globalThis.DAT_006a2d34, DAT_006a4f88 = globalThis.DAT_006a4f88, DAT_006a4f90 = globalThis.DAT_006a4f90, DAT_006a85a4 = globalThis.DAT_006a85a4, DAT_006ab198 = globalThis.DAT_006ab198, DAT_006ad0ec = globalThis.DAT_006ad0ec;
 const DAT_006ad2f7 = globalThis.DAT_006ad2f7, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006ad8f0 = globalThis.DAT_006ad8f0, DAT_006ad8f4 = globalThis.DAT_006ad8f4, DAT_006c8fa0 = globalThis.DAT_006c8fa0;
 const DAT_006c8fac = globalThis.DAT_006c8fac, DAT_006c9164 = globalThis.DAT_006c9164, DAT_006c9168 = globalThis.DAT_006c9168, DAT_006ced60 = globalThis.DAT_006ced60, DAT_006d1160 = globalThis.DAT_006d1160, DAT_006d1162 = globalThis.DAT_006d1162;
-const DAT_006d116a = globalThis.DAT_006d116a, DAT_006d116c = globalThis.DAT_006d116c, DAT_006d1da0 = globalThis.DAT_006d1da0, DAT_006d1da8 = globalThis.DAT_006d1da8;
+const DAT_006d116a = globalThis.DAT_006d116a, DAT_006d116c = globalThis.DAT_006d116c, DAT_006d1da0 = globalThis.DAT_006d1da0, DAT_006d1da8 = globalThis.DAT_006d1da8, PTR_s_CIV2_DAT_0062cec8 = globalThis.PTR_s_CIV2_DAT_0062cec8, s_CARAVAN_0062cde0 = globalThis.s_CARAVAN_0062cde0;
+const s_COMMONAME_0062ce1c = globalThis.s_COMMONAME_0062ce1c, s_DEBUG_006359dc = globalThis.s_DEBUG_006359dc, s_DESTROYED_0062cff4 = globalThis.s_DESTROYED_0062cff4, s_EDITORSA_GIF_0062ce78 = globalThis.s_EDITORSA_GIF_0062ce78, s_Error_updating_RULES__s_0062cde8 = globalThis.s_Error_updating_RULES__s_0062cde8, s_File_I_O_Error_0062ce00 = globalThis.s_File_I_O_Error_0062ce00;
+const s_GOVERNMENTS_0062cdcc = globalThis.s_GOVERNMENTS_0062cdcc, s_GOVTNAME_0062ce34 = globalThis.s_GOVTNAME_0062ce34, s_LEADERS_0062cdd8 = globalThis.s_LEADERS_0062cdd8, s_MOVEDEBUG_0062d054 = globalThis.s_MOVEDEBUG_0062d054, s_SERVERCONNECTTIME_0062cf40 = globalThis.s_SERVERCONNECTTIME_0062cf40, s_SERVERCONNECTTIME_0062cfb0 = globalThis.s_SERVERCONNECTTIME_0062cfb0;
+const s_SPACEDESTROYED_0062cf04 = globalThis.s_SPACEDESTROYED_0062cf04, s_SPACERETURNS_0062cef4 = globalThis.s_SPACERETURNS_0062cef4, s_TITLENAME_0062ce58 = globalThis.s_TITLENAME_0062ce58, s_TRIBES_0062ce64 = globalThis.s_TRIBES_0062ce64, s__s__s___s__0062ce4c = globalThis.s__s__s___s__0062ce4c, s_kill_civ__Connection_to_server_t_0062cf84 = globalThis.s_kill_civ__Connection_to_server_t_0062cf84;
+const s_kill_civ__Received_NM_NEW_CIV_AC_0062cfc4 = globalThis.s_kill_civ__Received_NM_NEW_CIV_AC_0062cfc4, s_new_civ__Connection_to_server_ti_0062cf14 = globalThis.s_new_civ__Connection_to_server_ti_0062cf14, s_new_civ__Received_NM_NEW_CIV_ACK_0062cf54 = globalThis.s_new_civ__Received_NM_NEW_CIV_ACK_0062cf54;
 const thunk_new_civ = new_civ_004A7CE9;
 
 export function FUN_004a2020() {

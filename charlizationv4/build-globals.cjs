@@ -63,6 +63,14 @@ for (const file of fs.readdirSync(srcDir).filter(f => f.startsWith('block_') && 
   for (const m of src.matchAll(/\b(DAT_[0-9a-fA-F]+)\b/g)) {
     if (!arrayDats.has(m[1])) scalarDats.add(m[1]);
   }
+  // PTR_ references (pointer labels — also memory addresses)
+  for (const m of src.matchAll(/\b(PTR_\w+_([0-9a-fA-F]{8}))\b/g)) {
+    scalarDats.add(m[1]);
+  }
+  // s_ string labels (string data at memory addresses)
+  for (const m of src.matchAll(/\b(s_\w+_([0-9a-fA-F]{8}))\b/g)) {
+    scalarDats.add(m[1]);
+  }
 
   // Also handle old-style declarations if present (mem.js)
   for (const line of src.split('\n')) {
@@ -117,11 +125,14 @@ for (const name of scalarDats) {
 let minAddr = Infinity, maxAddr = 0;
 const arrayNames = [];
 
-// ALL DAT_ addresses become Uint8Array views — no scalars.
+// ALL addresses become Uint8Array views — no scalars.
 // In the binary, every address is just a location in flat memory.
+// Extract hex address from the END of the identifier name.
 for (const [name, info] of allRefs) {
-  const addrStr = name.replace('DAT_', '').replace('_val', '');
-  const addr = parseInt(addrStr, 16);
+  // Extract the 8-char hex address from the end of the name
+  const addrMatch = name.match(/([0-9a-fA-F]{8})$/);
+  if (!addrMatch) continue;
+  const addr = parseInt(addrMatch[1], 16);
   if (isNaN(addr)) continue;
 
   arrayNames.push({ name, addr });

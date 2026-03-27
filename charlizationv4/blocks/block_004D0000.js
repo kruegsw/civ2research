@@ -65,40 +65,6 @@ import { FUN_005d25a8, FUN_005d268e, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0, F
 import { FUN_005dd377, FUN_005dd3c2, FUN_005dd71e, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
-const s_0_000_0062e2fc = new Uint8Array(256);
-const s_DEBUG_006359dc = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_tran_0062e738 = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_tran_0062e7a0 = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_tran_0062e808 = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_tran_0062e85c = new Uint8Array(256);
-const s_D__Ss_Franklinton_parleywin_tran_0062e96c = new Uint8Array(256);
-const s_EDITORAS_GIF_0062e4b8 = new Uint8Array(256);
-const s_ENDWONDER_0062e428 = new Uint8Array(256);
-const s_End_ExecuteParleyTransaction_Mes_0062ea30 = new Uint8Array(256);
-const s_Error_updating_RULES__s_0062e434 = new Uint8Array(256);
-const s_Failed_to_allocate_buffer_for_pa_0062e6ec = new Uint8Array(256);
-const s_File_I_O_Error_0062e44c = new Uint8Array(256);
-const s_IMPRMISC_0062e480 = new Uint8Array(256);
-const s_IMPRNAME_0062e45c = new Uint8Array(256);
-const s_IMPROVEMENTS_0062e468 = new Uint8Array(256);
-const s_IMPROVE_0062e420 = new Uint8Array(256);
-const s_Lancer_0062e324 = new Uint8Array(256);
-const s_NOTICE_0062e418 = new Uint8Array(256);
-const s_NOTICE_0062e48c = new Uint8Array(256);
-const s_PEDIAIMPROVE_0062e498 = new Uint8Array(256);
-const s_PEDIA_0062e4a8 = new Uint8Array(256);
-const s_Start_ExecuteParleyTransaction_M_0062ea04 = new Uint8Array(256);
-const s_Starten_0062e32c = new Uint8Array(256);
-const s_VFWNOTREGISTERED_0062e350 = new Uint8Array(256);
-const s__CharPtr_pChunk___sizeChunk0______0062e764 = new Uint8Array(256);
-const s__CharPtr_pChunk___sizeChunk1______0062e7cc = new Uint8Array(256);
-const s__S_S__0062e2d4 = new Uint8Array(256);
-const s___0062e404 = new Uint8Array(256);
-const s_civ2_video_launch_avi_0062e334 = new Uint8Array(256);
-const s_ss_dll_0062e2e4 = new Uint8Array(256);
-const s_strlen_parleyDescription____2048_0062e888 = new Uint8Array(256);
-const s_strlen_parleyDescription____2048_0062e998 = new Uint8Array(256);
-const s_strlen_parleyDescription_____0_0062e834 = new Uint8Array(256);
 const DAT_00627670 = globalThis.DAT_00627670, DAT_00627684 = globalThis.DAT_00627684, DAT_00628064 = globalThis.DAT_00628064, DAT_00628350 = globalThis.DAT_00628350, DAT_00628360 = globalThis.DAT_00628360, DAT_00628370 = globalThis.DAT_00628370;
 const DAT_006283a0 = globalThis.DAT_006283a0, DAT_00628420 = globalThis.DAT_00628420, DAT_00628468 = globalThis.DAT_00628468, DAT_0062cd24 = globalThis.DAT_0062cd24, DAT_0062e018 = globalThis.DAT_0062e018, DAT_0062e01c = globalThis.DAT_0062e01c;
 const DAT_0062e250 = globalThis.DAT_0062e250, DAT_0062e254 = globalThis.DAT_0062e254, DAT_0062e258 = globalThis.DAT_0062e258, DAT_0062e25c = globalThis.DAT_0062e25c, DAT_0062e2d0 = globalThis.DAT_0062e2d0, DAT_0062e2dc = globalThis.DAT_0062e2dc;
@@ -133,7 +99,13 @@ const DAT_006a2a00 = globalThis.DAT_006a2a00, DAT_006a2d28 = globalThis.DAT_006a
 const DAT_006a4f90 = globalThis.DAT_006a4f90, DAT_006a5b08 = globalThis.DAT_006a5b08, DAT_006a5b10 = globalThis.DAT_006a5b10, DAT_006a5b14 = globalThis.DAT_006a5b14, DAT_006a5b38 = globalThis.DAT_006a5b38, DAT_006a5b40 = globalThis.DAT_006a5b40;
 const DAT_006a5b48 = globalThis.DAT_006a5b48, DAT_006a5b58 = globalThis.DAT_006a5b58, DAT_006a8c00 = globalThis.DAT_006a8c00, DAT_006ad0dc = globalThis.DAT_006ad0dc, DAT_006ad0e4 = globalThis.DAT_006ad0e4, DAT_006ad0e8 = globalThis.DAT_006ad0e8;
 const DAT_006ad0ec = globalThis.DAT_006ad0ec, DAT_006ad0f0 = globalThis.DAT_006ad0f0, DAT_006ad0f4 = globalThis.DAT_006ad0f4, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006ad698 = globalThis.DAT_006ad698;
-const DAT_006d1160 = globalThis.DAT_006d1160, DAT_006d1164 = globalThis.DAT_006d1164, DAT_006d1da0 = globalThis.DAT_006d1da0;
+const DAT_006d1160 = globalThis.DAT_006d1160, DAT_006d1164 = globalThis.DAT_006d1164, DAT_006d1da0 = globalThis.DAT_006d1da0, s_0_000_0062e2fc = globalThis.s_0_000_0062e2fc, s_DEBUG_006359dc = globalThis.s_DEBUG_006359dc, s_D__Ss_Franklinton_parleywin_tran_0062e738 = globalThis.s_D__Ss_Franklinton_parleywin_tran_0062e738;
+const s_D__Ss_Franklinton_parleywin_tran_0062e7a0 = globalThis.s_D__Ss_Franklinton_parleywin_tran_0062e7a0, s_D__Ss_Franklinton_parleywin_tran_0062e808 = globalThis.s_D__Ss_Franklinton_parleywin_tran_0062e808, s_D__Ss_Franklinton_parleywin_tran_0062e85c = globalThis.s_D__Ss_Franklinton_parleywin_tran_0062e85c, s_D__Ss_Franklinton_parleywin_tran_0062e96c = globalThis.s_D__Ss_Franklinton_parleywin_tran_0062e96c, s_EDITORAS_GIF_0062e4b8 = globalThis.s_EDITORAS_GIF_0062e4b8, s_ENDWONDER_0062e428 = globalThis.s_ENDWONDER_0062e428;
+const s_End_ExecuteParleyTransaction_Mes_0062ea30 = globalThis.s_End_ExecuteParleyTransaction_Mes_0062ea30, s_Error_updating_RULES__s_0062e434 = globalThis.s_Error_updating_RULES__s_0062e434, s_Failed_to_allocate_buffer_for_pa_0062e6ec = globalThis.s_Failed_to_allocate_buffer_for_pa_0062e6ec, s_File_I_O_Error_0062e44c = globalThis.s_File_I_O_Error_0062e44c, s_IMPRMISC_0062e480 = globalThis.s_IMPRMISC_0062e480, s_IMPRNAME_0062e45c = globalThis.s_IMPRNAME_0062e45c;
+const s_IMPROVEMENTS_0062e468 = globalThis.s_IMPROVEMENTS_0062e468, s_IMPROVE_0062e420 = globalThis.s_IMPROVE_0062e420, s_Lancer_0062e324 = globalThis.s_Lancer_0062e324, s_NOTICE_0062e418 = globalThis.s_NOTICE_0062e418, s_NOTICE_0062e48c = globalThis.s_NOTICE_0062e48c, s_PEDIAIMPROVE_0062e498 = globalThis.s_PEDIAIMPROVE_0062e498;
+const s_PEDIA_0062e4a8 = globalThis.s_PEDIA_0062e4a8, s_Start_ExecuteParleyTransaction_M_0062ea04 = globalThis.s_Start_ExecuteParleyTransaction_M_0062ea04, s_Starten_0062e32c = globalThis.s_Starten_0062e32c, s_VFWNOTREGISTERED_0062e350 = globalThis.s_VFWNOTREGISTERED_0062e350, s__CharPtr_pChunk___sizeChunk0______0062e764 = globalThis.s__CharPtr_pChunk___sizeChunk0______0062e764, s__CharPtr_pChunk___sizeChunk1______0062e7cc = globalThis.s__CharPtr_pChunk___sizeChunk1______0062e7cc;
+const s__S_S__0062e2d4 = globalThis.s__S_S__0062e2d4, s___0062e404 = globalThis.s___0062e404, s_civ2_video_launch_avi_0062e334 = globalThis.s_civ2_video_launch_avi_0062e334, s_ss_dll_0062e2e4 = globalThis.s_ss_dll_0062e2e4, s_strlen_parleyDescription____2048_0062e888 = globalThis.s_strlen_parleyDescription____2048_0062e888, s_strlen_parleyDescription____2048_0062e998 = globalThis.s_strlen_parleyDescription____2048_0062e998;
+const s_strlen_parleyDescription_____0_0062e834 = globalThis.s_strlen_parleyDescription_____0_0062e834;
 
 export function FUN_004d007e(param_1) {
 

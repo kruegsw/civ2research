@@ -544,25 +544,22 @@ for (const blockFile of blockFiles) {
     }
   }
 
-  // 3d: Find s_ string references and declare as empty byte arrays
-  const stringRefs = new Set();
-  for (const m of allText.matchAll(/\b(s_\w{10,})\b/g)) {
-    if (!localFns.has(m[1])) stringRefs.add(m[1]);
-  }
-  if (stringRefs.size > 0) {
-    const sorted = [...stringRefs].sort();
-    for (const s of sorted) {
-      imports.push(`const ${s} = new Uint8Array(256);`);
-    }
-  }
+  // s_ string references now come from globalThis (proper memory addresses)
 
   // 3e: Bind DAT_ globals from globalThis into module scope
   // ESM strict mode requires explicit declarations. Use const bindings
   // that reference the globalThis Uint8Array views.
   // Scalar writes (DAT_xxx = 5) are converted to globalThis.DAT_xxx = 5
   // in Phase 2 so the setter fires.
+  // Collect ALL address-bearing identifiers: DAT_, PTR_, s_, _DAT_
   const datRefs = new Set();
-  for (const m of allText.matchAll(/\b(DAT_[0-9a-fA-F]+)\b/g)) {
+  for (const m of allText.matchAll(/\b(_?DAT_[0-9a-fA-F]+)\b/g)) {
+    datRefs.add(m[1]);
+  }
+  for (const m of allText.matchAll(/\b(PTR_\w+_[0-9a-fA-F]{8})\b/g)) {
+    datRefs.add(m[1]);
+  }
+  for (const m of allText.matchAll(/\b(s_\w+_[0-9a-fA-F]{8})\b/g)) {
     datRefs.add(m[1]);
   }
   if (datRefs.size > 0) {
