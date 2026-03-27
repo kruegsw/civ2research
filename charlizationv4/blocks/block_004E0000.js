@@ -847,9 +847,9 @@ export function FUN_004e1763(param_1, param_2, param_3) {
             // DEVIATION: C pointer write — *(ushort *)(&DAT_006560f4 + local_34 * 0x20) =
                  // DEVIATION(cont): *(ushort *)(&DAT_006560f4 + local_34 * 0x20) & 0xfffd;
             u32(G.DAT_0064c6c0, s8(G.DAT_006560fd[local_34 * 0x20]) * 4 + param_1 * 0x594)
-                 = u32(G.DAT_0064c6c0, s8(G.DAT_006560fd[local_34 * 0x20]) * 4 + param_1 * 0x594) &
+                 = u32(G.DAT_0064c6c0, s8(G.DAT_006560fd[local_34 * 0x20]) * 4 + param_1 * 0x594) & 0xfeffffff;
                             /*JOINED*/
-                   0xfeffffff;
+                   /*JOINED*/
             FUN_004c5fae(local_34,0,s8(G.DAT_006560fd[local_34 * 0x20]));
           }
         }

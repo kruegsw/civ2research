@@ -3439,9 +3439,9 @@ export function kill_civ_004AA378(param_1, param_2) {
             // DEVIATION: C pointer write — *(ushort *)(&DAT_006560f4 + local_1c * 0x20) =
                  // DEVIATION(cont): *(ushort *)(&DAT_006560f4 + local_1c * 0x20) & 0xfffd;
             u32(DAT_0064c6c0, s8(DAT_006560fd[local_1c * 0x20]) * 4 + param_1 * 0x594)
-                 = u32(DAT_0064c6c0, s8(DAT_006560fd[local_1c * 0x20]) * 4 + param_1 * 0x594) &
+                 = u32(DAT_0064c6c0, s8(DAT_006560fd[local_1c * 0x20]) * 4 + param_1 * 0x594) & 0xfeffffff;
                             /*JOINED*/
-                   0xfeffffff;
+                   /*JOINED*/
             FUN_004c5fae(local_1c,0,s8(DAT_006560fd[local_1c * 0x20]));
           }
         }

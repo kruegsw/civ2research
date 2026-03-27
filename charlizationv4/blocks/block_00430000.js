@@ -1437,9 +1437,9 @@ export function FUN_00432c1c() {
 // LAB_00432c6b: (code below also in LAB_00432c6b_helper, kept for 1:1 audit)
     local_58 = local_58 + 1;
   }
-  local_18 = (s8(G.DAT_0064f349[local_58 * 0x58]) + s8(G.DAT_0064f392[local_58 * 0x58])) -
+  local_18 = (s8(G.DAT_0064f349[local_58 * 0x58]) + s8(G.DAT_0064f392[local_58 * 0x58])) - s8(G.DAT_0064f393[local_58 * 0x58]);
              /*JOINED*/
-             s8(G.DAT_0064f393[local_58 * 0x58]);
+             /*JOINED*/
   for (local_38 = 0; local_38 < 0x1c; local_38 = local_38 + 1) {
     if (s16(G.DAT_00655be6, local_38 * 2) === local_58) {
       local_18 = local_18 + 10;
@@ -5829,9 +5829,9 @@ function LAB_00432d23_helper(local_34) {
 function LAB_00432c6b_helper(local_18, local_34, local_38, local_3c, local_58) {
     local_58 = local_58 + 1;
   // (outer block close)
-  local_18 = (s8(G.DAT_0064f349[local_58 * 0x58]) + s8(G.DAT_0064f392[local_58 * 0x58])) -
+  local_18 = (s8(G.DAT_0064f349[local_58 * 0x58]) + s8(G.DAT_0064f392[local_58 * 0x58])) - s8(G.DAT_0064f393[local_58 * 0x58]);
              /*JOINED*/
-             s8(G.DAT_0064f393[local_58 * 0x58]);
+             /*JOINED*/
   for (local_38 = 0; local_38 < 0x1c; local_38 = local_38 + 1) {
     if (s16(G.DAT_00655be6, local_38 * 2) === local_58) {
       local_18 = local_18 + 10;

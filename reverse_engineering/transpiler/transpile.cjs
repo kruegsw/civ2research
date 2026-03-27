@@ -970,6 +970,16 @@ function processFunction(headerLines, bodyLines, ctx) {
           bodyLines[j] = nextIndent + '/*JOINED*/';
           j++;
         }
+        // After paren join, continue if result ends with trailing operator
+        while (/[+\-*/,&|]\s*$/.test(joined) && j < bodyLines.length) {
+          const nextT = bodyLines[j].trim();
+          if (nextT === '' || nextT === '{' || nextT === '}') break;
+          joined += ' ' + nextT;
+          const nextIndent = bodyLines[j].match(/^(\s*)/)[1];
+          bodyLines[j] = nextIndent + '/*JOINED*/';
+          j++;
+          if (/;\s*$/.test(nextT) || /\{\s*$/.test(nextT)) break;
+        }
         // Only update if we actually joined something
         if (j > i + 1) {
           bodyLines[i] = indent + joined;
@@ -996,7 +1006,7 @@ function processFunction(headerLines, bodyLines, ctx) {
           j++;
           // Stop when we hit ; or { or depth returns to 0 after closing
           if (/;\s*$/.test(nextT) || /\{\s*$/.test(nextT)) break;
-          if (runningDepth <= 0 && !/[+\-*,&|]\s*$/.test(nextT)) break;
+          if (runningDepth <= 0 && !/[+\-*/,&|]\s*$/.test(nextT)) break;
         }
         if (j > i + 1) {
           bodyLines[i] = indent + joined;

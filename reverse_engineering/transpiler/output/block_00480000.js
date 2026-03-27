@@ -2069,10 +2069,10 @@ export function FUN_00487a41(param_1) {
     local_c = s16(DAT_0064c6bc, ((DAT_00655c20) >>> 0) * 0x594) + 1;
   }
   // DEVIATION: C pointer write — *(ushort *)(&DAT_0064ca80 + param_1 * 0x594) =
-       // DEVIATION(cont): ((ushort)(byte)(&DAT_0064c7a6)[(uint)DAT_00655c20 * 0x594] + (ushort)(byte)(&DAT_0064c7a7)[(uint)DAT_00655c20 * 0x594] + *(short *)(&DAT_0064c6bc + (uint)DAT_00655c20 * 0x594)) *
+       // DEVIATION(cont): ((ushort)(byte)(&DAT_0064c7a6)[(uint)DAT_00655c20 * 0x594] + (ushort)(byte)(&DAT_0064c7a7)[(uint)DAT_00655c20 * 0x594] + *(short *)(&DAT_0064c6bc + (uint)DAT_00655c20 * 0x594)) * (*(short *)(&DAT_0064c6bc + (uint)DAT_00655c20 * 0x594) + (short)local_c) + *(short *)(&DAT_0064ca80 + param_1 * 0x594);
         /*JOINED*/
        /*JOINED*/
-       // DEVIATION(cont): (*(short *)(&DAT_0064c6bc + (uint)DAT_00655c20 * 0x594) + (short)local_c) + *(short *)(&DAT_0064ca80 + param_1 * 0x594);
+       /*JOINED*/
        /*JOINED*/
   if (s32(DAT_0064c6a2, param_1 * 0x594) < s32(DAT_0064c6a2, ((DAT_00655c20) >>> 0) * 0x594)) {
       /*JOINED*/

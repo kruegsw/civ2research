@@ -3916,9 +3916,9 @@ export function FUN_00579dbb(param_1) {
               / (s16(DAT_0064c70c, iVar1 * 0x594) + 1);
   }
   else {
-    local_8 = (s32(DAT_0064c6a2, iVar1 * 0x594) / (s16(DAT_0064c70c, iVar1 * 0x594) + 1)) *
+    local_8 = (s32(DAT_0064c6a2, iVar1 * 0x594) / (s16(DAT_0064c70c, iVar1 * 0x594) + 1)) * s8(DAT_0064f349[param_1 * 0x58]);
               /*JOINED*/
-              s8(DAT_0064f349[param_1 * 0x58]);
+              /*JOINED*/
   }
   if (local_8 < 0) {
     local_8 = 32000;
