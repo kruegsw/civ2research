@@ -340,7 +340,7 @@ export function FUN_004906fd(in_ECX = globalThis.in_ECX) {
     case 0xd:
     case 0x18:
       FUN_005cef31(local_210,v(DAT_006a6668),local_58,local_5c);
-      LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, local_1c0, local_20, local_24, local_250, local_260, local_270, local_280, local_290, local_2a0, local_34, local_38, local_3c, local_40, local_44, local_50, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_bc, local_c0, uVar3); return;
+      LAB_00490a7d_helper(cVar1, extraout_EAX, extraout_EAX_00, extraout_EAX_01, extraout_EAX_02, extraout_EAX_03, iVar2, iVar4, in_ECX, local_18, local_1c, local_1c0, local_20, local_24, local_250, local_260, local_270, local_280, local_290, local_2a0, local_34, local_38, local_3c, local_40, local_44, local_50, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_bc, local_c0, uVar3); return;
     case 0xe:
     case 0x19:
       FUN_005cef31(local_220,v(DAT_006a6668),local_58,local_5c);
@@ -6333,7 +6333,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, local_1c0, local_20, local_24, local_250, local_260, local_270, local_280, local_290, local_2a0, local_34, local_38, local_3c, local_40, local_44, local_50, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_bc, local_c0, uVar3) {
+function LAB_00490a7d_helper(cVar1, extraout_EAX, extraout_EAX_00, extraout_EAX_01, extraout_EAX_02, extraout_EAX_03, iVar2, iVar4, in_ECX, local_18, local_1c, local_1c0, local_20, local_24, local_250, local_260, local_270, local_280, local_290, local_2a0, local_34, local_38, local_3c, local_40, local_44, local_50, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_bc, local_c0, uVar3) {
   FUN_005cd775(local_20[0],local_24[0]);
   local_3c = v(DAT_00635a1c);
   FUN_005c19ad(v(DAT_00635a1c));

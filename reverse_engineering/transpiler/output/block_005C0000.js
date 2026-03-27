@@ -7746,7 +7746,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         SendMessageA(pHVar5,param_2,param_3,param_4);
         return 0;
       }
-      switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
+      switchD_005cbd7f_caseD_203_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9); return;
     }
 // LAB_005cb749: (code below also in LAB_005cb749_helper, kept for 1:1 audit)
     if (s32(iVar3, 0x1c) !== 0) {
@@ -7770,7 +7770,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
       SetCapture(param_1);
-      LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4, uVar9); return;
+      LAB_005cb749_helper(BVar12, iVar3, local_20, local_c, param_1, param_2, param_4, piVar4, uVar9); return;
     case 0x202:
       if (s32(iVar3, 0x1c) !== 0) {
         ReleaseCapture();
@@ -7795,7 +7795,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
       }
       break;
     default:
-      switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
+      switchD_005cbd7f_caseD_203_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9); return;
     case 0x204:
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
@@ -8454,7 +8454,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
     }
   }
   else {
-    if (param_2 !== 0x202) LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, param_1, param_2, param_3, param_4, uVar7); return;
+    if (param_2 !== 0x202) LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, pHVar6, param_1, param_2, param_3, param_4, uVar7); return;
     iVar2 = FUN_005c5ec0();
     if (iVar2 !== 0) {
       ReleaseCapture();
@@ -11008,7 +11008,7 @@ function LAB_005cb26a_helper(param_1, param_2, param_3, param_4, uVar9) {
   return uVar9;
 }
 
-function switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9) {
+function switchD_005cbd7f_caseD_203_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9) {
     uVar9 = send_msg_9307(param_1,param_2,param_3,param_4);
     return uVar9;
   // (outer block close)
@@ -11048,7 +11048,7 @@ function switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, loca
         SendMessageA(pHVar5,param_2,param_3,param_4);
         return 0;
       }
-      switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
+      switchD_005cbd7f_caseD_203_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9); return;
     }
   // LAB_005cb749:
     if (s32(iVar3, 0x1c) !== 0) {
@@ -11072,7 +11072,7 @@ if (true) {
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
       SetCapture(param_1);
-      LAB_005cb749_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
+      LAB_005cb749_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9); return;
     case 0x202:
       if (s32(iVar3, 0x1c) !== 0) {
         ReleaseCapture();
@@ -11097,7 +11097,7 @@ if (true) {
       }
       break;
     default:
-      switchD_005cbd7f_caseD_203_helper(cVar1, iVar3, local_20, local_8, local_c, param_1, param_2, param_3, param_4, sVar2, uVar9); return;
+      switchD_005cbd7f_caseD_203_helper(BVar12, cVar1, iVar3, local_20, local_8, local_c, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar9); return;
     case 0x204:
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
@@ -11130,7 +11130,7 @@ if (true) {
   return 0;
 }
 
-function LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4, uVar9) {
+function LAB_005cb749_helper(BVar12, iVar3, local_20, local_c, param_1, param_2, param_4, piVar4, uVar9) {
     if (s32(iVar3, 0x1c) !== 0) {
       piVar4 = FUN_005c8f50();
       local_20[0].left = s32(piVar4, 0);
@@ -11152,7 +11152,7 @@ if (true) {
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
       SetCapture(param_1);
-      LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4, uVar9); return;
+      LAB_005cb749_helper(BVar12, iVar3, local_20, local_c, param_1, param_2, param_4, piVar4, uVar9); return;
     case 0x202:
       if (s32(iVar3, 0x1c) !== 0) {
         ReleaseCapture();
@@ -11177,7 +11177,7 @@ if (true) {
       }
       break;
     default:
-      switchD_005cbd7f_caseD_203_helper(iVar3, local_20, local_c, param_1, param_2, param_4, uVar9); return;
+      switchD_005cbd7f_caseD_203_helper(BVar12, iVar3, local_20, local_c, param_1, param_2, param_4, piVar4, uVar9); return;
     case 0x204:
       w32(iVar3, 0x1c, 1);
       SetFocus(param_1);
@@ -11210,7 +11210,7 @@ if (true) {
   return 0;
 }
 
-function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, param_1, param_2, param_3, param_4, uVar7) {
+function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, pHVar6, param_1, param_2, param_3, param_4, uVar7) {
       uVar7 = send_msg_9307(param_1,param_2,param_3,param_4);
       return uVar7;
   // (outer block close)
@@ -11270,7 +11270,7 @@ if (true) {
     }
   }
 if (true) {
-    if (param_2 !== 0x202) LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, param_1, param_2, param_3, param_4, uVar7); return;
+    if (param_2 !== 0x202) LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, pHVar6, param_1, param_2, param_3, param_4, uVar7); return;
     iVar2 = FUN_005c5ec0();
     if (iVar2 !== 0) {
       ReleaseCapture();

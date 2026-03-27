@@ -1910,7 +1910,7 @@ export function send_msg_2A01_005D2A01(param_1, param_2, param_3, param_4) {
       return LVar6;
     }
   }
-  else if (uVar2 === 0x204) LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4, uVar2, uVar5); return;
+  else if (uVar2 === 0x204) LAB_005d2c05_helper(LVar6, iVar3, local_8, pHVar4, param_1, param_2, param_3, param_4, uVar2, uVar5); return;
   LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
   return LVar6;
 }
@@ -9707,7 +9707,7 @@ export function FUN_005dd5a4(in_ECX = globalThis.in_ECX, param_1) {
   if (pCVar1 <= pCVar2) {
     devLog('MFC', 'pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);');
     devLog('MFC', 'pCVar2 = COleClientItem::GetActiveView(param_1);');
-    if (pCVar1 <= pCVar2) LAB_005dd60c_helper(in_ECX, local_14, param_1); return;
+    if (pCVar1 <= pCVar2) LAB_005dd60c_helper(in_ECX, local_14, pCVar1, pCVar3, param_1); return;
   }
   devLog('MFC', 'pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);');
   devLog('MFC', 'pCVar3 = CRichEditCntrItem::GetActiveView(in_ECX);');
@@ -11717,19 +11717,19 @@ export function FUN_005dfd8f(param_1, param_2) {
           loopGuard('FUN_005dfd8f', 11402);
           if (local_c < 0x80) {
             w32(local_14, 0, s8(local_c));
-            if (param_2 <= local_8 + 1) LAB_005e0071_helper(param_1, uVar3); return;
+            if (param_2 <= local_8 + 1) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
             local_c = 0;
           }
           else {
             w32(local_14, 0, 0x7f);
-            if (param_2 <= local_8 + 1) LAB_005e0071_helper(param_1, uVar3); return;
+            if (param_2 <= local_8 + 1) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
             local_c = local_c + -0x7f;
           }
           local_14 = local_14 + 1;
           w32(local_14, 0, s32(local_1c, 0));
           local_14 = pcVar1 + 2;
           local_8 = local_8 + 2;
-          if (param_2 <= local_8) LAB_005e0071_helper(param_1, uVar3); return;
+          if (param_2 <= local_8) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
         }
         local_1c = local_24;
       }
@@ -11743,7 +11743,7 @@ export function FUN_005dfd8f(param_1, param_2) {
           w32(local_14, 0, s8(local_c) + -0x80);
           local_14 = local_14 + 1;
           local_8 = local_8 + 1;
-          if (param_2 <= local_8) LAB_005e0071_helper(param_1, uVar3); return;
+          if (param_2 <= local_8) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
           local_10 = local_c;
           local_c = 0;
         }
@@ -11751,7 +11751,7 @@ export function FUN_005dfd8f(param_1, param_2) {
           w32(local_14, 0, -1);
           local_14 = local_14 + 1;
           local_8 = local_8 + 1;
-          if (param_2 <= local_8) LAB_005e0071_helper(param_1, uVar3); return;
+          if (param_2 <= local_8) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
           local_c = local_c + -0x7f;
           local_10 = 0x7f;
         }
@@ -11762,7 +11762,7 @@ export function FUN_005dfd8f(param_1, param_2) {
           local_14 = local_14 + 1;
           local_8 = local_8 + 1;
           local_10 = local_10 + -1;
-          if (param_2 <= local_8) LAB_005e0071_helper(param_1, uVar3); return;
+          if (param_2 <= local_8) LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3); return;
         }
       }
     }
@@ -11787,7 +11787,7 @@ export function FUN_005dfd8f(param_1, param_2) {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4, uVar2, uVar5) {
+function LAB_005d2c05_helper(LVar6, iVar3, local_8, pHVar4, param_1, param_2, param_3, param_4, uVar2, uVar5) {
   // HELPER_SYNTAX_ERROR: Unexpected token '}'
   // Original code had structural issues from DEVIATION lines
 }
@@ -11977,7 +11977,7 @@ if (true) {
   return local_a0;
 }
 
-function LAB_005dd60c_helper(in_ECX, local_14, param_1) {
+function LAB_005dd60c_helper(in_ECX, local_14, pCVar1, pCVar3, param_1) {
   devLog('MFC', 'pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);');
   devLog('MFC', 'pCVar3 = CRichEditCntrItem::GetActiveView(in_ECX);');
   SetRect(local_14[0],0,0,pCVar3,pCVar1);
@@ -11985,7 +11985,7 @@ function LAB_005dd60c_helper(in_ECX, local_14, param_1) {
   return;
 }
 
-function LAB_005e0071_helper(param_1, uVar3) {
+function LAB_005e0071_helper(param_1, pcVar2, pvVar5, uVar3) {
       operator_delete(pcVar2);
       uVar3 = 0xffffffff;
   // (outer block close)

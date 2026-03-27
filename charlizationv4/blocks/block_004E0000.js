@@ -2888,7 +2888,7 @@ export function FUN_004e7641(param_1) {
         local_18 = FUN_005b2e69(uVar3,iVar4);
         while( true ) {
           loopGuard('FUN_004e7641', 2685);
-          if (((local_18 < 0) || (s8(_MEM[DAT_006560f7 + local_18 * 0x20]) === iVar2)) || ((iVar6 = FUN_005b89e4(uVar3,iVar4), iVar6 !== 0 || ((_MEM[DAT_0064c6c0 + s8(_MEM[DAT_006560f7 + local_18 * 0x20]) * 4 + iVar2 * 0x594] & 8) !== 0)))) LAB_004e7898_helper(iVar4, local_8, uVar3); return;
+          if (((local_18 < 0) || (s8(_MEM[DAT_006560f7 + local_18 * 0x20]) === iVar2)) || ((iVar6 = FUN_005b89e4(uVar3,iVar4), iVar6 !== 0 || ((_MEM[DAT_0064c6c0 + s8(_MEM[DAT_006560f7 + local_18 * 0x20]) * 4 + iVar2 * 0x594] & 8) !== 0)))) LAB_004e7898_helper(iVar4, local_8, pbVar5, uVar3); return;
              /*JOINED*/
               /*JOINED*/
                /*JOINED*/
@@ -6330,7 +6330,7 @@ export function FUN_004efd44(param_1) {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function LAB_004e7898_helper(iVar4, local_8, uVar3) {
+function LAB_004e7898_helper(iVar4, local_8, pbVar5, uVar3) {
         iVar4 = FUN_005b8ca6(uVar3,iVar4);
         if (-1 < iVar4) {
           w32(pbVar5, 0, s32(pbVar5, 0) | 8);

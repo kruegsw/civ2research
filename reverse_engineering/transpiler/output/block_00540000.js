@@ -1018,7 +1018,7 @@ export function FUN_0054a4c4() {
         iVar1 = _fputs(s__ENDEVENTS_00632a8c,local_220);
         while (iVar1 !== -1) {
           pcVar2 = _fgets(local_108,0x100,local_224);
-          if (pcVar2 === 0x0) LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228); return;
+          if (pcVar2 === 0x0) LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228, pcVar2); return;
           iVar1 = _fputs(local_108,local_220);
         }
       }
@@ -4075,14 +4075,14 @@ function LAB_0054a7eb_helper(local_21c, local_220, local_224, local_228) {
   return local_228;
 }
 
-function LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228) {
+function LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228, pcVar2) {
           local_228 = 1;
   // (outer block close)
   // (outer block close)
 if (true) {
         do {
           pcVar2 = _fgets(local_108,0x100,local_224);
-          if (pcVar2 === 0x0) LAB_0054a7eb_helper(iVar1, local_108, local_21c, local_220, local_224, local_228); return;
+          if (pcVar2 === 0x0) LAB_0054a7eb_helper(iVar1, local_108, local_21c, local_220, local_224, local_228, pcVar2); return;
           FUN_0056b810(local_108);
           FUN_004d007e(local_108);
           iVar1 = __strcmpi(local_108,s__ENDEVENTS_00632a80);
@@ -4090,7 +4090,7 @@ if (true) {
         iVar1 = _fputs(s__ENDEVENTS_00632a8c,local_220);
         while (iVar1 !== -1) {
           pcVar2 = _fgets(local_108,0x100,local_224);
-          if (pcVar2 === 0x0) LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228); return;
+          if (pcVar2 === 0x0) LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228, pcVar2); return;
           iVar1 = _fputs(local_108,local_220);
         }
       }

@@ -2950,16 +2950,16 @@ export function FUN_005179a3(in_ECX, param_1) {
     bVar2 = true;
     bVar1 = false;
 // LAB_00517ae5: (code below also in LAB_00517ae5_helper, kept for 1:1 audit)
-    if ((2 < local_18) || (s32(in_ECX, 0xe84 + local_18 * 4) === -1)) LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
-    if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+    if ((2 < local_18) || (s32(in_ECX, 0xe84 + local_18 * 4) === -1)) LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
+    if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
     bVar1 = false;
     puVar5 = FUN_004a24b1();
     switch(s32(puVar5, 0)) {
     case 0x23:
       bVar1 = bVar2;
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x3b:
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x41:
     case 0x61:
       param_1 = 4;
@@ -2967,7 +2967,7 @@ export function FUN_005179a3(in_ECX, param_1) {
     case 0x45:
     case 0x65:
       w32(in_ECX, 0xe84 + local_18 * 4, 0xffffffff);
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x46:
     case 0x66:
       param_1 = 3;
@@ -2978,7 +2978,7 @@ export function FUN_005179a3(in_ECX, param_1) {
       break;
     case 0x52:
     case 0x72:
-      switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6); return;
+      switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6, puVar5); return;
     case 0x53:
     case 0x73:
       param_1 = 1;
@@ -3011,14 +3011,14 @@ export function FUN_005179a3(in_ECX, param_1) {
     else {
       bVar2 = false;
     }
-    LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+    LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
   }
 // LAB_00517db5: (code below also in LAB_00517db5_helper, kept for 1:1 audit)
   FUN_004a2020();
   return local_8;
 // LAB_00517dae: (code below also in LAB_00517dae_helper, kept for 1:1 audit)
   local_8 = 1;
-  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
 // switchD_00517c0c_caseD_52: (code below also in switchD_00517c0c_caseD_52_helper, kept for 1:1 audit)
   iVar3 = _atoi(puVar5 + 1);
   iVar6 = FUN_0059a791(1,10);
@@ -3026,7 +3026,7 @@ export function FUN_005179a3(in_ECX, param_1) {
     bVar2 = false;
   }
   bVar1 = iVar6 > iVar3;
-  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
 }
 
 
@@ -5444,7 +5444,7 @@ export function FUN_0051d9a0() {
       FUN_0051dd88();
       return;
     }
-    LAB_0051daa8_helper(iVar3, local_308, local_30c, uVar4); return;
+    LAB_0051daa8_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
   case 3:
     wv(DAT_006c3164, 2);
     iVar3 = FUN_00444310(4);
@@ -5461,7 +5461,7 @@ export function FUN_0051d9a0() {
     FUN_0051dd88();
     return;
   }
-  LAB_0051daa8_helper(iVar3, local_308, local_30c, uVar4); return;
+  LAB_0051daa8_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
 }
 
 
@@ -6909,9 +6909,9 @@ if (true) {
   return uVar2;
 }
 
-function LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, local_8) {
+function LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5) {
   local_8 = 1;
-  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
   // switchD_00517c0c_caseD_52:
   iVar3 = _atoi(puVar5 + 1);
   iVar6 = FUN_0059a791(1,10);
@@ -6919,15 +6919,15 @@ function LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, local_8) {
     bVar2 = false;
   }
   bVar1 = iVar6 > iVar3;
-  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
 }
 
-function LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8) {
+function LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5) {
   FUN_004a2020();
   return local_8;
   // LAB_00517dae:
   local_8 = 1;
-  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
   // switchD_00517c0c_caseD_52:
   iVar3 = _atoi(puVar5 + 1);
   iVar6 = FUN_0059a791(1,10);
@@ -6935,20 +6935,20 @@ function LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, local_8) {
     bVar2 = false;
   }
   bVar1 = iVar6 > iVar3;
-  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, local_8); return;
+  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, local_8, puVar5); return;
 }
 
-function LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4) {
-    if ((2 < local_18) || (s32(in_ECX, 0xe84 + local_18 * 4) === -1)) LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
-    if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+function LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4) {
+    if ((2 < local_18) || (s32(in_ECX, 0xe84 + local_18 * 4) === -1)) LAB_00517dae_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
+    if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     bVar1 = false;
     puVar5 = FUN_004a24b1();
     switch(s32(puVar5, 0)) {
     case 0x23:
       bVar1 = bVar2;
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x3b:
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x41:
     case 0x61:
       param_1 = 4;
@@ -6956,7 +6956,7 @@ function LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local
     case 0x45:
     case 0x65:
       w32(in_ECX, 0xe84 + local_18 * 4, 0xffffffff);
-      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x46:
     case 0x66:
       param_1 = 3;
@@ -6967,7 +6967,7 @@ function LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local
       break;
     case 0x52:
     case 0x72:
-      switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+      switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
     case 0x53:
     case 0x73:
       param_1 = 1;
@@ -7000,14 +7000,14 @@ if (true) {
 if (true) {
       bVar2 = false;
     }
-    LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+    LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
   // (outer block close)
   // LAB_00517db5:
   FUN_004a2020();
   return local_8;
   // LAB_00517dae:
   local_8 = 1;
-  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+  LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
   // switchD_00517c0c_caseD_52:
   iVar3 = _atoi(puVar5 + 1);
   iVar6 = FUN_0059a791(1,10);
@@ -7015,17 +7015,17 @@ if (true) {
     bVar2 = false;
   }
   bVar1 = iVar6 > iVar3;
-  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, uVar4); return;
+  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_8, param_1, puVar5, uVar4); return;
 }
 
-function switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6) {
+function switchD_00517c0c_caseD_52_helper(bVar1, bVar2, iVar3, iVar6, puVar5) {
   iVar3 = _atoi(puVar5 + 1);
   iVar6 = FUN_0059a791(1,10);
   if (iVar6 <= iVar3) {
     bVar2 = false;
   }
   bVar1 = iVar6 > iVar3;
-  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6); return;
+  LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, puVar5); return;
 }
 
 function switchD_0051dd3a_default_helper() {
@@ -7037,7 +7037,7 @@ function switchD_0051dd3a_default_helper() {
   LAB_0051daa8_helper(); return;
 }
 
-function LAB_0051daa8_helper(iVar3, local_308, local_30c, uVar4) {
+function LAB_0051daa8_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4) {
   wv(DAT_006c8fbc, UVar1);
   wv(DAT_006ad2fc, UVar2);
   wv(DAT_006c3164, 7);
@@ -7091,7 +7091,7 @@ if (true) {
     break;
   case 2:
     iVar3 = FUN_00444310(0);
-    if (iVar3 === 0) switchD_0051dd3a_default_helper(iVar3, local_308, local_30c, uVar4); return;
+    if (iVar3 === 0) switchD_0051dd3a_default_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
     UVar2 = v(DAT_006ad2fc);
     UVar1 = v(DAT_006c8fbc);
     if (v(DAT_006ad228) !== -1) {
@@ -7100,13 +7100,13 @@ if (true) {
       FUN_0051dd88();
       return;
     }
-    LAB_0051daa8_helper(iVar3, local_308, local_30c, uVar4); return;
+    LAB_0051daa8_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
   case 3:
     wv(DAT_006c3164, 2);
     iVar3 = FUN_00444310(4);
     break;
   default:
-    switchD_0051dd3a_default_helper(iVar3, local_308, local_30c, uVar4); return;
+    switchD_0051dd3a_default_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
   }
   UVar2 = v(DAT_006ad2fc);
   UVar1 = v(DAT_006c8fbc);
@@ -7117,7 +7117,7 @@ if (true) {
     FUN_0051dd88();
     return;
   }
-  LAB_0051daa8_helper(iVar3, local_308, local_30c, uVar4); return;
+  LAB_0051daa8_helper(UVar1, UVar2, iVar3, local_308, local_30c, uVar4); return;
 }
 
 function LAB_0051e1c8_helper(iVar2, local_18, local_230, local_2d0, local_2e4, local_324, local_328, local_32c, param_1, param_2, uVar3) {

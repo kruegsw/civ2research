@@ -3222,7 +3222,7 @@ export function wait_production_005aa0e5_005AA0E5() {
   bVar1 = v(DAT_00628048);
   if (v(DAT_00628048) !== 0) {
     do {
-      if ((1 << (v(DAT_00628048) & 0x1f) & ((v(DAT_00655b0a)) >>> 0)) !== 0) LAB_005aa3dc_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+      if ((1 << (v(DAT_00628048) & 0x1f) & ((v(DAT_00655b0a)) >>> 0)) !== 0) LAB_005aa3dc_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
       wv(DAT_00628048, v(DAT_00628048) + 1);
       if (v(DAT_00628048) === 8) {
         wv(DAT_00628048, 0);
@@ -3295,7 +3295,7 @@ export function wait_production_005aa0e5_005AA0E5() {
       FUN_0047e94e(1,0);
       if (v(DAT_006ad308) < 2) {
         local_2c = 1;
-        LAB_005aa7ee_helper(local_14, local_1c, local_20, local_24, local_248, local_28, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+        LAB_005aa7ee_helper(SVar2, local_14, local_1c, local_20, local_24, local_248, local_28, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
       }
       local_2c = 1;
       for (local_330 = 1; local_330 < 8; local_330 = local_330 + 1) {
@@ -3306,7 +3306,7 @@ export function wait_production_005aa0e5_005AA0E5() {
           break;
         }
       }
-      LAB_005aa732_helper(local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+      LAB_005aa732_helper(SVar2, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
     }
 // LAB_005aa7ee: (code below also in LAB_005aa7ee_helper, kept for 1:1 audit)
     wv(DAT_006c9210, 0);
@@ -3738,7 +3738,7 @@ export function wait_production_005ab2d5_005AB2D5() {
       }
       if (((v(DAT_006c920c) === 0) && (v(DAT_006c918c) === 0)) && ((v(DAT_006ad685) === 0 && (cVar1 = v(DAT_00628048), v(DAT_00628044) !== 0))))
          /*JOINED*/
-      LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3); return;
+      LAB_005ab60f_helper(SVar2, cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3); return;
     }
     if ((v(DAT_006c918c) === 0) && (v(DAT_00628044) !== 0)) {
       wv(DAT_006c9038, 0);
@@ -5612,7 +5612,7 @@ function LAB_005a4287_helper(iVar2, iVar3, local_8, uVar4) {
   return;
 }
 
-function LAB_005aa3dc_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3) {
+function LAB_005aa3dc_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3) {
   do {
     wv(DAT_00655b0b, v(DAT_006c31a8) | v(DAT_00655b0b));
     wv(DAT_006c31a8, 0);
@@ -5677,7 +5677,7 @@ function LAB_005aa3dc_helper(iVar4, local_14, local_1c, local_20, local_24, loca
       FUN_0047e94e(1,0);
       if (v(DAT_006ad308) < 2) {
         local_2c = 1;
-        LAB_005aa7ee_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+        LAB_005aa7ee_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
       }
       local_2c = 1;
       for (local_330 = 1; local_330 < 8; local_330 = local_330 + 1) {
@@ -5688,7 +5688,7 @@ function LAB_005aa3dc_helper(iVar4, local_14, local_1c, local_20, local_24, loca
           break;
         }
       }
-      LAB_005aa732_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+      LAB_005aa732_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
     }
   // LAB_005aa7ee:
     wv(DAT_006c9210, 0);
@@ -5830,7 +5830,7 @@ if (true) {
       FUN_0047e94e(1,0);
       if (v(DAT_006ad308) < 2) {
         local_30 = 1;
-        LAB_005aaef1_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+        LAB_005aaef1_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
       }
       local_30 = 1;
       for (local_330 = 1; local_330 < 8; local_330 = local_330 + 1) {
@@ -5841,7 +5841,7 @@ if (true) {
           break;
         }
       }
-      LAB_005aae35_helper(iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
+      LAB_005aae35_helper(SVar2, iVar4, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3); return;
     }
   // LAB_005aaef1:
     wv(DAT_006c921c, 0);
@@ -5879,12 +5879,12 @@ if (true) {
   return;
 }
 
-function LAB_005aa7ee_helper(local_14, local_1c, local_20, local_24, local_248, local_28, local_30, local_324, local_328, local_32c, local_330, uVar3) {
+function LAB_005aa7ee_helper(SVar2, local_14, local_1c, local_20, local_24, local_248, local_28, local_30, local_324, local_328, local_32c, local_330, uVar3) {
   // HELPER_SYNTAX_ERROR: Illegal break statement
   // Original code had structural issues from DEVIATION lines
 }
 
-function LAB_005aa732_helper(local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3) {
+function LAB_005aa732_helper(SVar2, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_30, local_324, local_328, local_32c, local_330, uVar3) {
   // HELPER_SYNTAX_ERROR: Illegal break statement
   // Original code had structural issues from DEVIATION lines
 }
@@ -5899,7 +5899,7 @@ function LAB_005aae35_helper(local_30, local_328, local_32c, local_330) {
   // Original code had structural issues from DEVIATION lines
 }
 
-function LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3) {
+function LAB_005ab60f_helper(SVar2, cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3) {
   do {
     wv(DAT_00628048, cVar1);
     for (local_318 = 0; local_318 < v(DAT_00655b16); local_318 = local_318 + 1) {
@@ -5942,7 +5942,7 @@ function LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_2
       }
       if (((v(DAT_006c920c) === 0) && (v(DAT_006c918c) === 0)) && ((v(DAT_006ad685) === 0 && (cVar1 = v(DAT_00628048), v(DAT_00628044) !== 0))))
          /*JOINED*/
-      LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3); return;
+      LAB_005ab60f_helper(SVar2, cVar1, iVar4, local_14, local_18, local_20, local_238, local_314, local_318, uVar3); return;
     }
     if ((v(DAT_006c918c) === 0) && (v(DAT_00628044) !== 0)) {
       wv(DAT_006c9038, 0);

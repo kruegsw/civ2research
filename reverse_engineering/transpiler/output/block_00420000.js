@@ -426,10 +426,10 @@ export function FUN_00421fcd(param_1) {
   else {
     if (param_1 === 0) {
 // LAB_00422109: (code below also in LAB_00422109_helper, kept for 1:1 audit)
-      if (v(DAT_006ad228) === -1) code_r0x00422119_helper(iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
+      if (v(DAT_006ad228) === -1) code_r0x00422119_helper(extraout_ECX, iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
       FUN_005f22d0();
       FUN_005f22d0();
-      LAB_00422228_helper(iVar1, iVar5, local_8, sVar2, sVar4); return;
+      LAB_00422228_helper(extraout_ECX, iVar1, iVar5, local_8, sVar2, sVar4); return;
     }
     FUN_0059baf0();
     pvVar3 = operator_new(0x2f4);
@@ -1261,7 +1261,7 @@ export function FUN_00421fcd(param_1) {
           FUN_0042414b();
           return;
         }
-        LAB_00422d3d_helper(iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+        LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
       }
       if ((v(DAT_006ad228) === -1) || (3 < iVar5)) {
         pcStackY_2c = 0x422656;
@@ -1276,7 +1276,7 @@ export function FUN_00421fcd(param_1) {
       XD_CloseConnection();
     }
   }
-  LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+  LAB_00422109_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4); return;
 }
 
 
@@ -6496,7 +6496,7 @@ export function FUN_0042f293() {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function code_r0x00422119_helper(iVar1, iVar5, local_8, local_858, sVar2, sVar4) {
+function code_r0x00422119_helper(extraout_ECX, iVar1, iVar5, local_8, local_858, sVar2, sVar4) {
   pcStackY_2c = 0x0;
   puStackY_30 = v(DAT_00625a04);
   uStackY_34 = 0x1f;
@@ -6623,7 +6623,7 @@ if (true) {
           FUN_0042414b();
           return;
         }
-        LAB_00422d3d_helper(iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
+        LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
       }
       if ((v(DAT_006ad228) === -1) || (3 < iVar5)) {
         pcStackY_2c = 0x422656;
@@ -6638,10 +6638,10 @@ if (true) {
       XD_CloseConnection();
     }
   }
-  LAB_00422109_helper(iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
+  LAB_00422109_helper(extraout_ECX, iVar1, iVar5, local_8, local_858, sVar2, sVar4); return;
 }
 
-function LAB_00422228_helper(iVar1, iVar5, local_8, sVar2, sVar4) {
+function LAB_00422228_helper(extraout_ECX, iVar1, iVar5, local_8, sVar2, sVar4) {
     iVar1 = XD_OpenConnection(extraout_ECX + 0x22,v(DAT_006ad8b8) * 1000);
     if (iVar1 < 0) {
       FUN_005d2279();
@@ -6746,7 +6746,7 @@ if (true) {
           FUN_0042414b();
           return;
         }
-        LAB_00422d3d_helper(iVar1, iVar5, local_8, sVar2, sVar4); return;
+        LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, local_8, sVar2, sVar4); return;
       }
       if ((v(DAT_006ad228) === -1) || (3 < iVar5)) {
         pcStackY_2c = 0x422656;
@@ -6761,10 +6761,10 @@ if (true) {
       XD_CloseConnection();
     }
   // (outer block close)
-  LAB_00422109_helper(iVar1, iVar5, local_8, sVar2, sVar4); return;
+  LAB_00422109_helper(extraout_ECX, iVar1, iVar5, local_8, sVar2, sVar4); return;
 }
 
-function LAB_00422d3d_helper(iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4) {
+function LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4) {
   wv(DAT_00635a3c, 0 /* ADDR:LAB_00402b58 */);
   wv(_DAT_006ad674, FUN_00421bb0());
   if (param_1 !== 0) {
@@ -7456,7 +7456,7 @@ if (true) {
           FUN_0042414b();
           return;
         }
-        LAB_00422d3d_helper(iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+        LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
       }
       if ((v(DAT_006ad228) === -1) || (3 < iVar5)) {
         pcStackY_2c = 0x422656;
@@ -7471,14 +7471,14 @@ if (true) {
       XD_CloseConnection();
     }
   }
-  LAB_00422109_helper(iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+  LAB_00422109_helper(extraout_ECX, iVar1, iVar5, local_1198, local_11a0, local_8, local_858, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
 }
 
-function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4) {
-      if (v(DAT_006ad228) === -1) code_r0x00422119_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+function LAB_00422109_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4) {
+      if (v(DAT_006ad228) === -1) code_r0x00422119_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4); return;
       FUN_005f22d0();
       FUN_005f22d0();
-      LAB_00422228_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+      LAB_00422228_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4); return;
   // (outer block close)
     FUN_0059baf0();
     pvVar3 = operator_new(0x2f4);
@@ -8310,7 +8310,7 @@ if (true) {
           FUN_0042414b();
           return;
         }
-        LAB_00422d3d_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+        LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4); return;
       }
       if ((v(DAT_006ad228) === -1) || (3 < iVar5)) {
         pcStackY_2c = 0x422656;
@@ -8325,5 +8325,5 @@ if (true) {
       XD_CloseConnection();
     }
   }
-  LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
+  LAB_00422109_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, pvVar3, sVar2, sVar4); return;
 }

@@ -2396,7 +2396,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
   }
   FUN_005c6303(local_b0);
   w32(in_ECX, 0x1ec, param_1);
-  if (s32(in_ECX, 0x1ec) !== 4) LAB_004b4982_helper(in_ECX, uVar2, uVar3, unaff_ESI); return;
+  if (s32(in_ECX, 0x1ec) !== 4) LAB_004b4982_helper(in_ECX, puVar4, puVar5, uVar2, uVar3, unaff_ESI); return;
   wv(DAT_0069b03c, GetPrivateProfileIntA)
                            (s_Civilization_Gold_0062d898,s_ChatShowSize_0062d888,-1, s_CIV_INI_0062d880);
                             /*JOINED*/
@@ -2424,7 +2424,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
   local_8 = 0;
   if (v(DAT_006665fa) === 0) {
     iVar1 = Realloc(s_chatlog_txt_0062d914);
-    if (iVar1 === 0) LAB_004b496e_helper(in_ECX, uVar2, uVar3, unaff_ESI); return;
+    if (iVar1 === 0) LAB_004b496e_helper(in_ECX, puVar4, puVar5, uVar2, uVar3, unaff_ESI); return;
     iVar1 = FUN_00492a80();
     if (v(DAT_0069b03c) < iVar1) {
       Realloc(iVar1 - v(DAT_0069b03c));
@@ -7065,7 +7065,7 @@ export function FUN_004bfe5a(param_1, param_2, param_3) {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function LAB_004b4982_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
+function LAB_004b4982_helper(in_ECX, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
   if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
     FUN_004b4c81();
   }
@@ -7108,7 +7108,7 @@ if (true) {
   return;
 }
 
-function LAB_004b496e_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
+function LAB_004b496e_helper(in_ECX, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
     w32(DAT_0062d870, 0, 0);
   // (outer block close)
   // DEVIATION: SEH

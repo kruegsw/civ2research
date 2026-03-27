@@ -2399,11 +2399,11 @@ export function FID_conflict__memcpy_005F2110(in_EDX, _Dst, _Src, _Size) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f21d9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -2455,11 +2455,11 @@ export function FID_conflict__memcpy_005F2110(in_EDX, _Dst, _Src, _Size) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
@@ -2518,7 +2518,7 @@ export function FUN_005f22d0(param_1, param_2) {
     bVar1 = u8(s32(param_2, 0));
     uVar3 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper(param_1, uVar3); return;
+    if (bVar1 === 0) LAB_005f23b8_helper(param_1, puVar4, uVar3); return;
     // DEVIATION: C pointer write — *(byte *)puVar4 = bVar1;
     puVar4 = (puVar4 + 1);
   }
@@ -2569,15 +2569,15 @@ export function FUN_005f22e0(param_1, param_2) {
   
   puVar3 = param_1;
   do {
-    if ((((puVar3) >>> 0) & 3) === 0) LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if ((((puVar3) >>> 0) & 3) === 0) LAB_005f22fc_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
     uVar4 = s32(puVar3, 0);
     puVar3 = (puVar3 + 1);
   } while (u8(uVar4) !== 0);
-  LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+  LAB_005f232f_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
   while( true ) {
     if ((uVar4 & 0xff0000) === 0) {
       puVar5 = (puVar5 + 2);
-      joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+      joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar5, uVar2, uVar4); return;
     }
     if ((uVar4 & 0xff000000) === 0) break;
 // LAB_005f22fc: (code below also in LAB_005f22fc_helper, kept for 1:1 audit)
@@ -2586,10 +2586,10 @@ export function FUN_005f22e0(param_1, param_2) {
       puVar3 = puVar5 + 1;
     } while (((s32(puVar5, 0) ^ 0xffffffff ^ s32(puVar5, 0) + 0x7efefeff) & 0x81010100) === 0);
     uVar4 = s32(puVar5, 0);
-    if (s8(uVar4) === 0) joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if (s8(uVar4) === 0) joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar5, uVar2, uVar4); return;
     if (s8(uVar4 >> 8) === 0) {
       puVar5 = (puVar5 + 1);
-      joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+      joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar5, uVar2, uVar4); return;
     }
   }
 // LAB_005f232f: (code below also in LAB_005f232f_helper, kept for 1:1 audit)
@@ -2628,7 +2628,7 @@ export function FUN_005f22e0(param_1, param_2) {
     bVar1 = u8(s32(param_2, 0));
     uVar4 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper_2(bVar1, param_1, param_2, uVar4); return;
+    if (bVar1 === 0) LAB_005f23b8_helper_2(bVar1, param_1, param_2, puVar5, uVar4); return;
     // DEVIATION: C pointer write — *(byte *)puVar5 = bVar1;
     puVar5 = (puVar5 + 1);
   } while( true );
@@ -3454,15 +3454,15 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
       if (s8(uVar4) === 0) break;
       if ((((_Source) >>> 0) & 3) === 0) {
         uVar4 = _Count >> 2;
-        joined_r0x005f2f6e_helper(cVar3, uVar4); return;
+        joined_r0x005f2f6e_helper(cVar3, puVar5, uVar4); return;
       }
     }
     do {
       if ((((puVar5) >>> 0) & 3) === 0) {
         uVar4 = _Count >> 2;
         cVar3 = 0;
-        if (uVar4 === 0) LAB_005f2fab_helper(cVar3); return;
-        LAB_005f3019_helper(cVar3, uVar2, uVar4); return;
+        if (uVar4 === 0) LAB_005f2fab_helper(cVar3, puVar5); return;
+        LAB_005f3019_helper(cVar3, puVar5, uVar2, uVar4); return;
       }
       // DEVIATION: C pointer write — *(char *)puVar5 = '\0';
       puVar5 = (puVar5 + 1);
@@ -3489,20 +3489,20 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
           }
           cVar3 = 0;
           _Count = _Count & 3;
-          if (_Count !== 0) LAB_005f2fab_helper(cVar3); return;
+          if (_Count !== 0) LAB_005f2fab_helper(cVar3, puVar5); return;
           return _Dest;
         }
         if (s8(uVar2 >> 8) === 0) {
           w32(puVar5, 0, uVar2 & 0xff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff0000) === 0) {
           w32(puVar5, 0, uVar2 & 0xffff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff000000) === 0) {
           w32(puVar5, 0, uVar2);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
       }
       w32(puVar5, 0, uVar2);
@@ -3793,7 +3793,7 @@ export function _strlen_005F3480(_Str) {
   
   puVar2 = _Str;
   do {
-    if ((((puVar2) >>> 0) & 3) === 0) LAB_005f34a0_helper(uVar1); return;
+    if ((((puVar2) >>> 0) & 3) === 0) LAB_005f34a0_helper(puVar2, puVar3, uVar1); return;
     uVar1 = s32(puVar2, 0);
     puVar2 = (puVar2 + 1);
   } while (s8(uVar1) !== 0);
@@ -3816,7 +3816,7 @@ export function _strlen_005F3480(_Str) {
       return (puVar3 + (2 - _Str));
     }
   } while ((uVar1 & 0xff000000) !== 0);
-  LAB_005f34d3_helper(uVar1); return;
+  LAB_005f34d3_helper(puVar2, puVar3, uVar1); return;
 }
 
 
@@ -5029,7 +5029,7 @@ export function _strstr_005F4370(_Str, _SubStr) {
       }
       if (s32(pcVar10, 0) !== _MEM[pcVar8 + 2]) break;
       pcVar1 = pcVar8 + 3;
-      if (s32(pcVar1, 0) === 0) LAB_005f43e3_helper(); return;
+      if (s32(pcVar1, 0) === 0) LAB_005f43e3_helper(pcVar1, pcVar10, pcVar2, pcVar8); return;
       pcVar2 = pcVar10 + 1;
       pcVar8 = pcVar8 + 2;
       pcVar10 = pcVar10 + 2;
@@ -6716,11 +6716,11 @@ export function FID_conflict__memcpy_005F6500(in_EDX, _Dst, _Src, _Size) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f65c9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -6772,11 +6772,11 @@ export function FID_conflict__memcpy_005F6500(in_EDX, _Dst, _Src, _Size) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
@@ -7721,15 +7721,15 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
     return _Dest;
   }
   do {
-    if ((((puVar5) >>> 0) & 3) === 0) LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4); return;
+    if ((((puVar5) >>> 0) & 3) === 0) LAB_005f74da_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
     uVar4 = s32(puVar5, 0);
     puVar5 = (puVar5 + 1);
   } while (u8(uVar4) !== 0);
-  LAB_005f750b_helper(bVar1, uVar2, uVar3, uVar4); return;
+  LAB_005f750b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
   while( true ) {
     if ((uVar4 & 0xff0000) === 0) {
       puVar6 = (puVar6 + 2);
-      LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
+      LAB_005f751b_helper(bVar1, puVar6, uVar2, uVar3, uVar4); return;
     }
     if ((uVar4 & 0xff000000) === 0) break;
 // LAB_005f74da: (code below also in LAB_005f74da_helper, kept for 1:1 audit)
@@ -7738,10 +7738,10 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
       puVar5 = puVar6 + 1;
     } while (((s32(puVar6, 0) ^ 0xffffffff ^ s32(puVar6, 0) + 0x7efefeff) & 0x81010100) === 0);
     uVar4 = s32(puVar6, 0);
-    if (s8(uVar4) === 0) LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
+    if (s8(uVar4) === 0) LAB_005f751b_helper(bVar1, puVar6, uVar2, uVar3, uVar4); return;
     if (s8(uVar4 >> 8) === 0) {
       puVar6 = (puVar6 + 1);
-      LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
+      LAB_005f751b_helper(bVar1, puVar6, uVar2, uVar3, uVar4); return;
     }
   }
 // LAB_005f750b: (code below also in LAB_005f750b_helper, kept for 1:1 audit)
@@ -7755,11 +7755,11 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
-      if (bVar1 === 0) LAB_005f756a_helper(uVar3, uVar4); return;
+      if (bVar1 === 0) LAB_005f756a_helper(puVar6, uVar3, uVar4); return;
       // DEVIATION: C pointer write — *(byte *)puVar6 = bVar1;
       puVar6 = (puVar6 + 1);
       _Count = _Count - 1;
-      if (_Count === 0) LAB_005f7560_helper(uVar2, uVar3, uVar4); return;
+      if (_Count === 0) LAB_005f7560_helper(puVar6, uVar2, uVar3, uVar4); return;
     } while ((((_Source) >>> 0) & 3) !== 0);
     uVar3 = _Count >> 2;
   }
@@ -9488,7 +9488,7 @@ export function __close_005FA010(_FileHandle) {
   if ((_FileHandle === 1) || (_FileHandle === 2)) {
     iVar1 = __get_osfhandle(2);
     iVar2 = __get_osfhandle(1);
-    if (iVar1 !== iVar2) LAB_005fa099_helper(iVar4, local_8); return;
+    if (iVar1 !== iVar2) LAB_005fa099_helper(BVar3, iVar4, local_8); return;
   }
   else {
 // LAB_005fa099: (code below also in LAB_005fa099_helper, kept for 1:1 audit)
@@ -9956,7 +9956,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
       case 0x49:
         if ((s32(pbVar1, 0) !== 0x36) || (_MEM[param_2 + 2] !== 0x34)) {
           local_1c = 0;
-          switchD_005fb3f7_caseD_0_helper(bVar10, iVar9, local_14, local_1c, local_20, local_22c, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_24c, local_250, local_254, local_258, local_25c, local_260, local_264, local_268, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, local_c, param_1, param_2, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
+          switchD_005fb3f7_caseD_0_helper(bVar10, iVar9, lVar12, local_14, local_1c, local_20, local_22c, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_24c, local_250, local_254, local_258, local_25c, local_260, local_264, local_268, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, local_c, param_1, param_2, param_3, pbVar1, pcVar4, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6); return;
         }
         local_8 = local_8 | 0x8000;
         pbVar1 = param_2 + 3;
@@ -10089,7 +10089,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
       case 0x69:
         local_8 = local_8 | 0x40;
         local_23c = 10;
-        LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
+        LAB_005faecc_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6); return;
       case 0x6e:
         local_260 = get_int_arg(param_3);
         if ((local_8 & 0x20) === 0) {
@@ -10106,15 +10106,15 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
         if ((local_8 & 0x80) !== 0) {
           local_8 = local_8 | 0x200;
         }
-        LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
+        LAB_005faecc_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6); return;
       case 0x70:
         local_238 = 8;
       case 0x58:
         local_234 = 7;
-        LAB_005fae7b_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
+        LAB_005fae7b_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6); return;
       case 0x75:
         local_23c = 10;
-        LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8); return;
+        LAB_005faecc_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6); return;
       case 0x78:
         local_234 = 0x27;
 // LAB_005fae7b: (code below also in LAB_005fae7b_helper, kept for 1:1 audit)
@@ -13962,7 +13962,7 @@ export function __FF_MSGBANNER_005FFFE0() {
 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
-function switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined1 *)((int)puVar5 + 3) = *(undefined1 *)((int)puVar3 + 3);
         return _Dst;
   // (orphan case) case 2:
@@ -14003,11 +14003,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f21d9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -14059,17 +14059,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined2 *)((int)puVar5 + 2) = *(undefined2 *)((int)puVar3 + 2);
         return _Dst;
   // (orphan case) case 3:
@@ -14106,11 +14106,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f21d9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -14162,17 +14162,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f21d9_caseD_3_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined2 *)((int)puVar5 + 2) = *(undefined2 *)((int)puVar3 + 2);
         // DEVIATION: C pointer write — *(undefined1 *)((int)puVar5 + 1) = *(undefined1 *)((int)puVar3 + 1);
         return _Dst;
@@ -14205,11 +14205,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f21d9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f21d9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f21d9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -14261,17 +14261,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f2140_caseD_1_helper(uVar1, uVar2) {
+function switchD_005f2140_caseD_1_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
   // (orphan case) case 2:
@@ -14309,17 +14309,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f2140_caseD_2_helper(uVar1, uVar2) {
+function switchD_005f2140_caseD_2_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
@@ -14353,17 +14353,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f2140_caseD_3_helper(uVar1, uVar2) {
+function switchD_005f2140_caseD_3_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer write — *(undefined1 *)((int)puVar3 + 2) = *(undefined1 *)((int)_Src + 2);
       return _Dst;
@@ -14393,17 +14393,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f2140_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f2140_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f2140_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f2140_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function LAB_005f23b8_helper(param_1, uVar3) {
+function LAB_005f23b8_helper(param_1, puVar4, uVar3) {
         // DEVIATION: C pointer write — *(byte *)puVar4 = (byte)uVar3;
         return param_1;
   // (outer block close)
@@ -14426,16 +14426,16 @@ function LAB_005f23b8_helper(param_1, uVar3) {
   // (outer block close)
 }
 
-function LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4) {
+function LAB_005f22fc_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4) {
     do {
       puVar5 = puVar3;
       puVar3 = puVar5 + 1;
     } while (((s32(puVar5, 0) ^ 0xffffffff ^ s32(puVar5, 0) + 0x7efefeff) & 0x81010100) === 0);
     uVar4 = s32(puVar5, 0);
-    if (s8(uVar4) === 0) joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if (s8(uVar4) === 0) joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
     if (s8(uVar4 >> 8) === 0) {
       puVar5 = (puVar5 + 1);
-      joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+      joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
     }
   // (outer block close)
   // LAB_005f232f:
@@ -14474,13 +14474,13 @@ function LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4) {
     bVar1 = u8(s32(param_2, 0));
     uVar4 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
     // DEVIATION: C pointer write — *(byte *)puVar5 = bVar1;
     puVar5 = (puVar5 + 1);
   } while( true );
 }
 
-function LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4) {
+function LAB_005f232f_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4) {
   puVar5 = (puVar3 + -1);
   // joined_r0x005f234b:
   do {
@@ -14516,13 +14516,13 @@ function LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4) {
     bVar1 = u8(s32(param_2, 0));
     uVar4 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, puVar3, puVar5, uVar2, uVar4); return;
     // DEVIATION: C pointer write — *(byte *)puVar5 = bVar1;
     puVar5 = (puVar5 + 1);
   } while( true );
 }
 
-function joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4) {
+function joined_r0x005f234b_helper(bVar1, param_1, param_2, puVar5, uVar2, uVar4) {
   do {
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
@@ -14556,13 +14556,13 @@ function joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4) {
     bVar1 = u8(s32(param_2, 0));
     uVar4 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
+    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, puVar5, uVar2, uVar4); return;
     // DEVIATION: C pointer write — *(byte *)puVar5 = bVar1;
     puVar5 = (puVar5 + 1);
   } while( true );
 }
 
-function LAB_005f23b8_helper_2(bVar1, param_1, param_2, uVar4) {
+function LAB_005f23b8_helper_2(bVar1, param_1, param_2, puVar5, uVar4) {
             // DEVIATION: C pointer write — *(byte *)puVar5 = (byte)uVar4;
             return param_1;
   // (outer block close)
@@ -14587,13 +14587,13 @@ function LAB_005f23b8_helper_2(bVar1, param_1, param_2, uVar4) {
     bVar1 = u8(s32(param_2, 0));
     uVar4 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
-    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, uVar4); return;
+    if (bVar1 === 0) LAB_005f23b8_helper(bVar1, param_1, param_2, puVar5, uVar4); return;
     // DEVIATION: C pointer write — *(byte *)puVar5 = bVar1;
     puVar5 = (puVar5 + 1);
   // (outer block close)
 }
 
-function joined_r0x005f2f6e_helper(cVar3, uVar4) {
+function joined_r0x005f2f6e_helper(cVar3, puVar5, uVar4) {
   // (outer block close)
     _Count = _Count & 3;
     if (_Count === 0) {
@@ -14618,7 +14618,7 @@ function joined_r0x005f2f6e_helper(cVar3, uVar4) {
   return _Dest;
 }
 
-function LAB_005f2fab_helper(cVar3) {
+function LAB_005f2fab_helper(cVar3, puVar5) {
         // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
   // (outer block close)
@@ -14629,25 +14629,25 @@ function LAB_005f2fab_helper(cVar3) {
   return _Dest;
 }
 
-function LAB_005f3019_helper(cVar3, uVar2, uVar4) {
+function LAB_005f3019_helper(cVar3, puVar5, uVar2, uVar4) {
             w32(puVar5, 0, 0);
   // (outer block close)
           cVar3 = 0;
           _Count = _Count & 3;
-          if (_Count !== 0) LAB_005f2fab_helper(cVar3, uVar2, uVar4); return;
+          if (_Count !== 0) LAB_005f2fab_helper(cVar3, puVar5, uVar2, uVar4); return;
           return _Dest;
   // (outer block close)
         if (s8(uVar2 >> 8) === 0) {
           w32(puVar5, 0, uVar2 & 0xff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff0000) === 0) {
           w32(puVar5, 0, uVar2 & 0xffff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff000000) === 0) {
           w32(puVar5, 0, uVar2);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
   // (outer block close)
       w32(puVar5, 0, uVar2);
@@ -14678,7 +14678,7 @@ function LAB_005f3019_helper(cVar3, uVar2, uVar4) {
   return _Dest;
 }
 
-function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
+function joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4) {
           while( true ) {
             uVar4 = uVar4 - 1;
             puVar5 = puVar5 + 1;
@@ -14688,20 +14688,20 @@ function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
           }
           cVar3 = 0;
           _Count = _Count & 3;
-          if (_Count !== 0) LAB_005f2fab_helper(cVar3, uVar2, uVar4); return;
+          if (_Count !== 0) LAB_005f2fab_helper(cVar3, puVar5, uVar2, uVar4); return;
           return _Dest;
   // (outer block close)
         if (s8(uVar2 >> 8) === 0) {
           w32(puVar5, 0, uVar2 & 0xff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff0000) === 0) {
           w32(puVar5, 0, uVar2 & 0xffff);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
         if ((uVar2 & 0xff000000) === 0) {
           w32(puVar5, 0, uVar2);
-          joined_r0x005f3015_helper(cVar3, uVar2, uVar4); return;
+          joined_r0x005f3015_helper(cVar3, puVar5, uVar2, uVar4); return;
         }
   // (outer block close)
       w32(puVar5, 0, uVar2);
@@ -14732,7 +14732,7 @@ function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
   return _Dest;
 }
 
-function LAB_005f34a0_helper(uVar1) {
+function LAB_005f34a0_helper(puVar2, puVar3, uVar1) {
   do {
     do {
       puVar3 = puVar2;
@@ -14749,10 +14749,10 @@ function LAB_005f34a0_helper(uVar1) {
       return (puVar3 + (2 - _Str));
     }
   } while ((uVar1 & 0xff000000) !== 0);
-  LAB_005f34d3_helper(uVar1); return;
+  LAB_005f34d3_helper(puVar2, puVar3, uVar1); return;
 }
 
-function LAB_005f34d3_helper(uVar1) {
+function LAB_005f34d3_helper(puVar2, puVar3, uVar1) {
   return (puVar2 + (-1 - _Str));
   // LAB_005f34a0:
   do {
@@ -14771,7 +14771,7 @@ function LAB_005f34d3_helper(uVar1) {
       return (puVar3 + (2 - _Str));
     }
   } while ((uVar1 & 0xff000000) !== 0);
-  LAB_005f34d3_helper(uVar1); return;
+  LAB_005f34d3_helper(puVar2, puVar3, uVar1); return;
 }
 
 function LAB_005f35a4_helper(bVar5) {
@@ -14859,12 +14859,12 @@ function LAB_005f414d_helper(bVar6, iVar4) {
   return iVar4;
 }
 
-function LAB_005f43e3_helper() {
+function LAB_005f43e3_helper(pcVar1, pcVar10, pcVar2, pcVar8) {
         return _Str + -1;
   // (outer block close)
       if (s32(pcVar10, 0) !== _MEM[pcVar8 + 2]) return; // (was break)
       pcVar1 = pcVar8 + 3;
-      if (s32(pcVar1, 0) === 0) LAB_005f43e3_helper(); return;
+      if (s32(pcVar1, 0) === 0) LAB_005f43e3_helper(pcVar1, pcVar10, pcVar2, pcVar8); return;
       pcVar2 = pcVar10 + 1;
       pcVar8 = pcVar8 + 2;
       pcVar10 = pcVar10 + 2;
@@ -14872,7 +14872,7 @@ function LAB_005f43e3_helper() {
   // (outer block close)
 }
 
-function switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined1 *)((int)puVar5 + 3) = *(undefined1 *)((int)puVar3 + 3);
         return _Dst;
   // (orphan case) case 2:
@@ -14913,11 +14913,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f65c9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -14969,17 +14969,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined2 *)((int)puVar5 + 2) = *(undefined2 *)((int)puVar3 + 2);
         return _Dst;
   // (orphan case) case 3:
@@ -15016,11 +15016,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f65c9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -15072,17 +15072,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f65c9_caseD_3_helper(in_EDX, uVar1, uVar2) {
+function switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2) {
         // DEVIATION: C pointer write — *(undefined2 *)((int)puVar5 + 2) = *(undefined2 *)((int)puVar3 + 2);
         // DEVIATION: C pointer write — *(undefined1 *)((int)puVar5 + 1) = *(undefined1 *)((int)puVar3 + 1);
         return _Dst;
@@ -15115,11 +15115,11 @@ if (true) {
       }
       switch(uVar1 & 3) {
       case 1:
-        switchD_005f65c9_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 2:
-        switchD_005f65c9_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       case 3:
-        switchD_005f65c9_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+        switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
       }
     }
     return _Dst;
@@ -15171,17 +15171,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(in_EDX, uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f6530_caseD_1_helper(uVar1, uVar2) {
+function switchD_005f6530_caseD_1_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       return _Dst;
   // (orphan case) case 2:
@@ -15219,17 +15219,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f6530_caseD_2_helper(uVar1, uVar2) {
+function switchD_005f6530_caseD_2_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       return _Dst;
   // (orphan case) case 3:
@@ -15263,17 +15263,17 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
 }
 
-function switchD_005f6530_caseD_3_helper(uVar1, uVar2) {
+function switchD_005f6530_caseD_3_helper(puVar3, puVar4, uVar1, uVar2) {
       // DEVIATION: C pointer write — *(undefined2 *)puVar3 = *(undefined2 *)_Src;
       // DEVIATION: C pointer write — *(undefined1 *)((int)puVar3 + 2) = *(undefined1 *)((int)_Src + 2);
       return _Dst;
@@ -15303,11 +15303,11 @@ if (true) {
     }
     switch(uVar1 & 3) {
     case 1:
-      switchD_005f6530_caseD_1_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_1_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 2:
-      switchD_005f6530_caseD_2_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_2_helper(puVar3, puVar4, uVar1, uVar2); return;
     case 3:
-      switchD_005f6530_caseD_3_helper(uVar1, uVar2); return;
+      switchD_005f6530_caseD_3_helper(puVar3, puVar4, uVar1, uVar2); return;
     }
   }
   return _Dst;
@@ -15392,16 +15392,16 @@ if (true) {
   return iVar7;
 }
 
-function LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4) {
+function LAB_005f74da_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4) {
     do {
       puVar6 = puVar5;
       puVar5 = puVar6 + 1;
     } while (((s32(puVar6, 0) ^ 0xffffffff ^ s32(puVar6, 0) + 0x7efefeff) & 0x81010100) === 0);
     uVar4 = s32(puVar6, 0);
-    if (s8(uVar4) === 0) LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
+    if (s8(uVar4) === 0) LAB_005f751b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
     if (s8(uVar4 >> 8) === 0) {
       puVar6 = (puVar6 + 1);
-      LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
+      LAB_005f751b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
     }
   // (outer block close)
   // LAB_005f750b:
@@ -15415,11 +15415,11 @@ if (true) {
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
-      if (bVar1 === 0) LAB_005f756a_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (bVar1 === 0) LAB_005f756a_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
       // DEVIATION: C pointer write — *(byte *)puVar6 = bVar1;
       puVar6 = (puVar6 + 1);
       _Count = _Count - 1;
-      if (_Count === 0) LAB_005f7560_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (_Count === 0) LAB_005f7560_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
     } while ((((_Source) >>> 0) & 3) !== 0);
     uVar3 = _Count >> 2;
   }
@@ -15467,7 +15467,7 @@ if (true) {
   } while( true );
 }
 
-function LAB_005f750b_helper(bVar1, uVar2, uVar3, uVar4) {
+function LAB_005f750b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4) {
   puVar6 = (puVar5 + -1);
   // LAB_005f751b:
   if ((((_Source) >>> 0) & 3) === 0) {
@@ -15478,11 +15478,11 @@ if (true) {
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
-      if (bVar1 === 0) LAB_005f756a_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (bVar1 === 0) LAB_005f756a_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
       // DEVIATION: C pointer write — *(byte *)puVar6 = bVar1;
       puVar6 = (puVar6 + 1);
       _Count = _Count - 1;
-      if (_Count === 0) LAB_005f7560_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (_Count === 0) LAB_005f7560_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4); return;
     } while ((((_Source) >>> 0) & 3) !== 0);
     uVar3 = _Count >> 2;
   }
@@ -15530,7 +15530,7 @@ if (true) {
   } while( true );
 }
 
-function LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4) {
+function LAB_005f751b_helper(bVar1, puVar6, uVar2, uVar3, uVar4) {
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
@@ -15539,11 +15539,11 @@ if (true) {
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
-      if (bVar1 === 0) LAB_005f756a_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (bVar1 === 0) LAB_005f756a_helper(bVar1, puVar6, uVar2, uVar3, uVar4); return;
       // DEVIATION: C pointer write — *(byte *)puVar6 = bVar1;
       puVar6 = (puVar6 + 1);
       _Count = _Count - 1;
-      if (_Count === 0) LAB_005f7560_helper(bVar1, uVar2, uVar3, uVar4); return;
+      if (_Count === 0) LAB_005f7560_helper(bVar1, puVar6, uVar2, uVar3, uVar4); return;
     } while ((((_Source) >>> 0) & 3) !== 0);
     uVar3 = _Count >> 2;
   }
@@ -15591,7 +15591,7 @@ if (true) {
   } while( true );
 }
 
-function LAB_005f756a_helper(uVar3, uVar4) {
+function LAB_005f756a_helper(puVar6, uVar3, uVar4) {
         // DEVIATION: C pointer write — *(byte *)puVar6 = (byte)uVar4;
         return _Dest;
   // (outer block close)
@@ -15615,7 +15615,7 @@ function LAB_005f756a_helper(uVar3, uVar4) {
   // (outer block close)
 }
 
-function LAB_005f7560_helper(uVar2, uVar3, uVar4) {
+function LAB_005f7560_helper(puVar6, uVar2, uVar3, uVar4) {
       // DEVIATION: C pointer write — *(byte *)puVar6 = 0;
       return _Dest;
   // (outer block close)
@@ -15736,12 +15736,12 @@ function LAB_005f9fab_helper(local_8, local_c, uVar1) {
   // (outer block close)
 }
 
-function LAB_005fa099_helper(iVar4, local_8) {
+function LAB_005fa099_helper(BVar3, iVar4, local_8) {
     hObject = __get_osfhandle(_FileHandle);
     BVar3 = CloseHandle(hObject);
     if (BVar3 === 0) {
       local_8 = GetLastError();
-      LAB_005fa0c9_helper(iVar4, local_8); return;
+      LAB_005fa0c9_helper(BVar3, iVar4, local_8); return;
     }
   // (outer block close)
   local_8 = 0;
@@ -15775,12 +15775,12 @@ if (true) {
   return iVar4;
 }
 
-function switchD_005fb3f7_caseD_0_helper(bVar10, iVar9, local_14, local_1c, local_20, local_22c, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_24c, local_250, local_254, local_258, local_25c, local_260, local_264, local_268, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, local_c, param_1, param_2, param_3, sVar3, sVar7, uVar11, uVar5, uVar8) {
+function switchD_005fb3f7_caseD_0_helper(bVar10, iVar9, lVar12, local_14, local_1c, local_20, local_22c, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_24c, local_250, local_254, local_258, local_25c, local_260, local_264, local_268, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, local_c, param_1, param_2, param_3, pbVar1, pcVar4, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6) {
   // HELPER_SYNTAX_ERROR: Illegal break statement
   // Original code had structural issues from DEVIATION lines
 }
 
-function LAB_005faecc_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8) {
+function LAB_005faecc_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6) {
         if ((local_8 & 0x8000) === 0) {
           if ((local_8 & 0x20) === 0) {
             if ((local_8 & 0x40) === 0) {
@@ -15901,7 +15901,7 @@ if (true) {
   // (outer block close)
 }
 
-function LAB_005fae7b_helper(bVar10, iVar9, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, sVar3, sVar7, uVar11, uVar5, uVar8) {
+function LAB_005fae7b_helper(bVar10, iVar9, lVar12, local_14, local_20, local_230, local_234, local_238, local_23c, local_24, local_240, local_243, local_244, local_248, local_270, local_274, local_27c, local_28, local_280, local_284, local_288, local_28c, local_8, param_1, param_3, pwVar2, sVar3, sVar7, uVar11, uVar5, uVar8, wVar6) {
         local_23c = 0x10;
         if ((local_8 & 0x80) !== 0) {
           local_244[0] = 0x30;

@@ -2754,7 +2754,7 @@ export function show_messagebox_6267_00576267() {
     if (iVar2 === 0) {
       if ((v(DAT_006ac924) === 7) || (v(DAT_006ac924) === 10)) {
         iVar2 = _isdigit(_MEM[local_14 + 7]);
-        if ((iVar2 !== 0) && ((_MEM[local_14 + 7] & 1) !== 0)) LAB_00576631_helper(iVar2, local_73c, local_8, local_844, local_948, local_94c, local_9d0, uVar1); return;
+        if ((iVar2 !== 0) && ((_MEM[local_14 + 7] & 1) !== 0)) LAB_00576631_helper(UVar6, iVar2, local_73c, local_8, local_844, local_948, local_94c, local_9d0, pCVar4, pCVar5, pcVar3, uVar1); return;
         FUN_005a6c23(v(DAT_006ac4d0));
         FUN_00444270(s_ODDTERRAIN_00634264);
         FUN_005a6c45();
@@ -6321,7 +6321,7 @@ function LAB_00576783_helper(local_8) {
   return;
 }
 
-function LAB_00576631_helper(iVar2, local_73c, local_8, local_844, local_948, local_94c, local_9d0, uVar1) {
+function LAB_00576631_helper(UVar6, iVar2, local_73c, local_8, local_844, local_948, local_94c, local_9d0, pCVar4, pCVar5, pcVar3, uVar1) {
         pcVar3 = _strstr(local_948,v(DAT_0063427c));
         if (pcVar3 === 0x0) {
           pcVar3 = _strstr(local_948,v(DAT_00634280));

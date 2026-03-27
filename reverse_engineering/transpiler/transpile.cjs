@@ -1660,14 +1660,17 @@ function processGotos(lines) {
     }
 
     // Collect variables referenced in the helper body
+    // Ghidra uses many prefixes: iVar, uVar, cVar, bVar, sVar, puVar, pcVar,
+    // piVar, pbVar, pvVar, pCVar, BVar, UVar, lVar, etc.
+    // Match any wordVar\d+ pattern plus param_, local_, in_E*, unaff_E*, extraout_*
     const vars = new Set();
     const helperText = helperBody.join('\n');
-    for (const m of helperText.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2})\b/g)) {
+    for (const m of helperText.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
       vars.add(m[1]);
     }
     // Also check for variables used in the label line itself
     const labelLine = lines[labelIdx];
-    for (const m of labelLine.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+)\b/g)) {
+    for (const m of labelLine.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
       vars.add(m[1]);
     }
 
@@ -1833,7 +1836,7 @@ function processGotos(lines) {
       }
       const vars = new Set();
       const ht = helperBody.join('\n');
-      for (const m of ht.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|iVar\d+|uVar\d+|cVar\d+|sVar\d+|bVar\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2})\b/g)) {
+      for (const m of ht.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
         vars.add(m[1]);
       }
       const varList = [...vars].sort().join(', ');
