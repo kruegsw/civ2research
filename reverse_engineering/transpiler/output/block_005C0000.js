@@ -4194,7 +4194,7 @@ export function FUN_005c61b0(in_ECX) {
     w32(in_ECX, 0x8c, 1);
     wv(DAT_00637ea8, v(DAT_00637ea8) + 1);
     _MEM[DAT_00637eb0 + DAT_00637ea8] = in_ECX;
-    if (DAT_00637ea8 === 0) {
+    if (v(DAT_00637ea8) === 0) {
       local_8 = 0;
     }
     else {
@@ -4208,7 +4208,7 @@ export function FUN_005c61b0(in_ECX) {
         true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xa4))(); */;
       }
     }
-    if (DAT_00637ea8 === 0) {
+    if (v(DAT_00637ea8) === 0) {
       local_c = 0;
     }
     else {
@@ -6248,8 +6248,8 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
   iVar1 = s32(iVar1, 4);
   switch(param_2) {
   case 0x200:
-    if (DAT_00637c9c === 0) {
-      if (DAT_00637ca0 === 0) {
+    if (v(DAT_00637c9c) === 0) {
+      if (v(DAT_00637ca0) === 0) {
         wv(DAT_00637c9c, 1);
         SetCapture(param_1);
         if (iVar1 !== 0) {
@@ -6268,7 +6268,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
       local_14[0].bottom = piVar2[3];
       OffsetRect(local_14[0],-local_14[0].left,-local_14[0].top);
       BVar3 = PtInRect(local_14[0],((param_4) & 0xffffffff0000ffff));
-      if (((BVar3 === 0) && (wv(DAT_00637c9c, 0), DAT_00637ca0 === 0)) && (ReleaseCapture(), iVar1 !== 0))
+      if (((BVar3 === 0) && (wv(DAT_00637c9c, 0), v(DAT_00637ca0) === 0)) && (ReleaseCapture(), iVar1 !== 0))
       {
         uVar4 = FUN_0040f810();
         FUN_005c6303(uVar4);
@@ -6289,7 +6289,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
   case 0x202:
     if (v(DAT_00637ca0) !== 0) {
       wv(DAT_00637ca0, 0);
-      if (DAT_00637c9c === 0) {
+      if (v(DAT_00637c9c) === 0) {
         ReleaseCapture();
         if (iVar1 !== 0) {
           uVar4 = FUN_0040f810();
@@ -6478,7 +6478,7 @@ export function update_palette_90CA_005C90CA(param_1, param_2) {
     local_14[0].x = param_1[2];
     local_14[0].y = param_1[3];
     MapWindowPoints(param_2,s32(iVar2, 4),local_14[0],1);
-    if ((s32(iVar2, 0x18) !== 0) && (DAT_00638b48 === 1)) {
+    if ((s32(iVar2, 0x18) !== 0) && (v(DAT_00638b48) === 1)) {
       SelectPalette(s32(param_1, 0),s32(iVar2, 0x18),0);
       RealizePalette(s32(param_1, 0));
     }
@@ -6860,7 +6860,7 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           local_18 = GetStockObject(1);
         }
         else {
-          if (DAT_00638b48 === 1) {
+          if (v(DAT_00638b48) === 1) {
             bForceBkgd = 0;
             FUN_0040f810();
             _this = FUN_00511320();
@@ -7644,7 +7644,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
       ValidateRect(pHVar5,lpRect);
       OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
       ValidateRect(param_1,local_20[0]);
-      if (DAT_00638b48 === 1) {
+      if (v(DAT_00638b48) === 1) {
         BVar12 = 0;
         FUN_0040f810();
         _this = FUN_00511320();
@@ -7656,7 +7656,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         FUN_0040f810();
         uVar9 = FUN_00511320();
         FUN_005c0d12(uVar9);
-        if (DAT_00638b48 === 1) {
+        if (v(DAT_00638b48) === 1) {
           RealizePalette(local_24);
         }
         DVar13 = 0xcc0020;
@@ -8295,7 +8295,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
         FUN_0040f810();
         iVar2 = FUN_00414d10();
         if (s32(iVar2, 0x40) === 8) {
-          if (DAT_00637e90 === 0) {
+          if (v(DAT_00637e90) === 0) {
             SetTextColor(local_144,0);
           }
           else {
@@ -8307,7 +8307,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
             ;
           }
         }
-        else if (DAT_00637f03 === 0) {
+        else if (v(DAT_00637f03) === 0) {
           SetTextColor(local_144,0);
         }
         else {
@@ -8320,7 +8320,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
           FUN_0040f810();
           iVar2 = FUN_00414d10();
           if (s32(iVar2, 0x40) === 8) {
-            if (DAT_00637ea0 === 0) {
+            if (v(DAT_00637ea0) === 0) {
               SetTextColor(local_144,0x404040);
             }
             else {
@@ -8332,7 +8332,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
                            /*JOINED*/
             }
           }
-          else if (DAT_00637f07 === 0) {
+          else if (v(DAT_00637f07) === 0) {
             SetTextColor(local_144,0x404040);
           }
           else {
@@ -8434,7 +8434,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
   }
   else if (param_2 === 0x201) {
     iVar2 = FUN_005c5ec0();
-    if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
+    if ((iVar2 !== 0) && (v(DAT_00637f08) === 0)) {
       SetFocus(param_1);
       // DEVIATION: MFC — iVar2 = ios::width(local_198);
       if (iVar2 === 0) {
@@ -8569,7 +8569,7 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
   if (param_4 !== 0) {
     param_3 = param_3 | 0x10000000;
   }
-  if (DAT_00637f58 === 0) {
+  if (v(DAT_00637f58) === 0) {
     pvVar6 = 0x0;
     pHVar4 = 0x0;
     pHVar5 = v(DAT_006e4ff0);
@@ -11250,7 +11250,7 @@ if (true) {
   }
 if (true) {
     iVar2 = FUN_005c5ec0();
-    if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
+    if ((iVar2 !== 0) && (v(DAT_00637f08) === 0)) {
       SetFocus(param_1);
       // DEVIATION: MFC — iVar2 = ios::width(local_198);
       if (iVar2 === 0) {

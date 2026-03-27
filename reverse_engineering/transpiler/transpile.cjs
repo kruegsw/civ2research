@@ -765,7 +765,7 @@ function transformLine(line, ctx) {
     // ── DAT_xxx[idx] → _MEM[DAT_xxx + idx]: byte array access ──
     // With DAT_xxx as a number (offset), bracket access needs _MEM
     out = out.replace(
-      /\b(DAT_[0-9a-fA-F]+)\[/g,
+      /\b(_?DAT_[0-9a-fA-F]+)\[/g,
       (m, name) => '_MEM[' + name + ' + '
     );
     // Fix: _MEM[DAT_xxx + ] (empty index from consecutive replacements)
@@ -777,14 +777,14 @@ function transformLine(line, ctx) {
     // v() reads the int32 value at that offset from _MEM.
     // Skip: first arg to memory helpers, bracket access, write targets, &DAT
     out = out.replace(
-      /\b(DAT_[0-9a-fA-F]+)\b(?!\s*[\[,=])/g,
+      /\b(_?DAT_[0-9a-fA-F]+)\b(?!\s*[\[,])(?!\s*=(?!=))/g,
       (m, name, matchOffset) => {
         // Check preceding context: is this the first arg to a memory helper?
         const before = out.substring(Math.max(0, matchOffset - 40), matchOffset);
         if (/(?:s32|u32|s16|u16|s8|u8|w32|w16|w32r|w16r|ptrAdd|v|wv)\(\s*$/.test(before)) return m;
         if (/&\s*$/.test(before)) return m;
-        if (/_MEM\[\s*$/.test(before)) return m;  // inside _MEM[DAT_xxx + idx]
-        if (/_MEM\[.*\+\s*$/.test(before)) return m;  // _MEM[expr + DAT_xxx]
+        if (/_MEM\[\s*$/.test(before)) return m;
+        if (/_MEM\[.*\+\s*$/.test(before)) return m;
         return 'v(' + name + ')';
       }
     );
@@ -792,7 +792,7 @@ function transformLine(line, ctx) {
     // DAT_xxx = expr → wv(DAT_xxx, expr)
     // Must run AFTER v() wrapping (which skips = targets via negative lookahead)
     {
-      const wvRe = /\b(DAT_[0-9a-fA-F]+)\s*=(?!=)/g;
+      const wvRe = /\b(_?DAT_[0-9a-fA-F]+)\s*=(?!=)/g;
       let wm;
       let newOut6 = '';
       let lastIdx6 = 0;

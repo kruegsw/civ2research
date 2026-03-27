@@ -182,7 +182,7 @@ export function FUN_005218cb(param_1) {
   local_8 = ((local_8) << 8 | (1));
 // LAB_00521912: (code below also in LAB_00521912_helper, kept for 1:1 audit)
   do {
-    if (DAT_0062b420 === 0) {
+    if (v(DAT_0062b420) === 0) {
       FUN_0046e6a9();
       FUN_0046e020(0x6b,0,1,0);
     }
@@ -217,7 +217,7 @@ export function FUN_005218cb(param_1) {
     FUN_00421f10(uVar2);
     FUN_0040ff60(1,v(DAT_00679640));
     FUN_0040bbb0();
-    if (DAT_0064bcb8 === 0) {
+    if (v(DAT_0064bcb8) === 0) {
       FUN_00421f10(2000);
     }
     else {
@@ -269,7 +269,7 @@ export function FUN_005218cb(param_1) {
         FUN_0051d7d6(4,v(DAT_006665fe));
         FUN_0051d7d6(5,v(DAT_00666600));
         FUN_005a632a(DAT_006359d4,s_ADVANCEDMP_00632294,0,0,0,0,0,0);
-        if (DAT_006c3160 === 0) {
+        if (v(DAT_006c3160) === 0) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
@@ -554,13 +554,13 @@ export function FUN_0052263c(param_1, param_2) {
     wv(DAT_00631ef0, 5);
   }
   if (param_1 === -1) {
-    if (DAT_00631ef0 === 5) {
+    if (v(DAT_00631ef0) === 5) {
       wv(DAT_00631ef0, 7);
     }
-    else if (DAT_00631ef0 === 6) {
+    else if (v(DAT_00631ef0) === 6) {
       wv(DAT_00631ef0, 5);
     }
-    else if (DAT_00631ef0 === 7) {
+    else if (v(DAT_00631ef0) === 7) {
       wv(DAT_00631ef0, 6);
     }
     FUN_0055a41d(2,6,v(DAT_00631ef0));
@@ -783,7 +783,7 @@ export function FUN_00522b2b() {
       }
     }
   }
-  if (DAT_006c3164 === local_324) {
+  if (v(DAT_006c3164) === local_324) {
     FUN_00421da0(0,v(DAT_006c3164));
     FUN_00421ea0(s_JOINGAME1_006322c4);
   }
@@ -1054,13 +1054,13 @@ export function FUN_005233fc(param_1, param_2) {
   let local_c;
   let local_8;
   
-  if (DAT_006ad2f7 === 0) {
+  if (v(DAT_006ad2f7) === 0) {
     FUN_005dae6b(7,s_gNetMgr_bServer_00632320,s_D__Ss_Franklinton_startup_multip_006322f4,0x778);
   }
   uVar4 = v(DAT_006d1da0);
   bVar3 = v(DAT_00655b05);
   uVar2 = v(DAT_00655b03);
-  if (((DAT_00654fa6 === 0) && (DAT_00654fa4 === 0)) && (v(DAT_006ad640) < 2)) {
+  if (((v(DAT_00654fa6) === 0) && (v(DAT_00654fa4) === 0)) && (v(DAT_006ad640) < 2)) {
     iVar1 = s32(param_1, 0x18);
     uVar5 = s32(param_1, 0x14);
     local_24 = s32(param_1, 0x10);
@@ -1621,7 +1621,7 @@ export function FUN_00526913(in_ECX = globalThis.in_ECX, param_1) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  if ((v(DAT_006a677c) !== 0) && (DAT_006ad908 === 0)) {
+  if ((v(DAT_006a677c) !== 0) && (v(DAT_006ad908) === 0)) {
     for (local_8 = 0; (local_8 < s32(in_ECX, 0xab8) && (s32(in_ECX, 0xb2c + local_8 * 4) !== param_1)); local_8 = local_8 + 1) {
         /*JOINED*/
         /*JOINED*/
@@ -1975,7 +1975,7 @@ export function FUN_00526ca0(in_ECX = globalThis.in_ECX, param_1, param_2) {
   }
   FUN_004b888e(param_2);
   w32(in_ECX, 0x200 + param_2 * 4, param_1);
-  if (((DAT_0067a8bc === 0) && (param_1 !== 1)) && (param_1 !== 0)) {
+  if (((v(DAT_0067a8bc) === 0) && (param_1 !== 1)) && (param_1 !== 0)) {
     if (param_1 === 0x14) {
       FUN_0043c5f0();
       FUN_00453c40();
@@ -2003,7 +2003,7 @@ export function FUN_00526ca0(in_ECX = globalThis.in_ECX, param_1, param_2) {
   case 0:
     break;
   case 1:
-    if (((DAT_00655c16 === -1) && (iVar1 = FUN_00453e51(DAT_006d1da0,9), iVar1 === 0)) && (DAT_00655b07 === 0)) {
+    if (((v(DAT_00655c16) === -1) && (iVar1 = FUN_00453e51(DAT_006d1da0,9), iVar1 === 0)) && (v(DAT_00655b07) === 0)) {
        /*JOINED*/
       local_c8 = 0;
     }
@@ -2129,7 +2129,7 @@ export function FUN_00526ca0(in_ECX = globalThis.in_ECX, param_1, param_2) {
     local_34 = (iVar1 + v(DAT_0062d858) * -2) / 2;
     local_d4 = 0;
     for (local_d0 = 1; local_d0 < 8; local_d0 = local_d0 + 1) {
-      if (((DAT_006d1da0 === local_d0) || ((1 << (u8(local_d0) & 0x1f) & ((v(DAT_00655b0a)) >>> 0)) === 0)) || (((1 << (u8(local_d0) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) === 0 || (((local_c8 === 0 && (DAT_00654c7a === 0)) && ((_MEM[DAT_0064c6c0 + DAT_006d1da0 * 4 + local_d0 * 0x594] & 1) === 0)))))) {
+      if (((v(DAT_006d1da0) === local_d0) || ((1 << (u8(local_d0) & 0x1f) & ((v(DAT_00655b0a)) >>> 0)) === 0)) || (((1 << (u8(local_d0) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) === 0 || (((local_c8 === 0 && (v(DAT_00654c7a) === 0)) && ((_MEM[DAT_0064c6c0 + DAT_006d1da0 * 4 + local_d0 * 0x594] & 1) === 0)))))) {
          /*JOINED*/
              /*JOINED*/
               /*JOINED*/
@@ -3913,7 +3913,7 @@ export function FUN_00526ca0(in_ECX = globalThis.in_ECX, param_1, param_2) {
     FUN_004189c0(0x2000);
     FUN_00418a00(0 /* ADDR:LAB_00402040 */);
     FUN_0040f380();
-    DAT_0067a9e0 = 1;
+    wv(DAT_0067a9e0, 1);
     if (s32(in_ECX, 0x234) !== 0) {
       iVar1 = s32(in_ECX, 0x234);
       local_4c = (iVar1 + 0x20);
@@ -4829,7 +4829,7 @@ if (true) {
         FUN_0051d7d6(4,v(DAT_006665fe));
         FUN_0051d7d6(5,v(DAT_00666600));
         FUN_005a632a(DAT_006359d4,s_ADVANCEDMP_00632294,0,0,0,0,0,0);
-        if (DAT_006c3160 === 0) {
+        if (v(DAT_006c3160) === 0) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
@@ -4907,7 +4907,7 @@ if (true) {
         FUN_0051d7d6(4,v(DAT_006665fe));
         FUN_0051d7d6(5,v(DAT_00666600));
         FUN_005a632a(DAT_006359d4,s_ADVANCEDMP_00632294,0,0,0,0,0,0);
-        if (DAT_006c3160 === 0) {
+        if (v(DAT_006c3160) === 0) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
@@ -4960,7 +4960,7 @@ if (true) {
 
 function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, local_3e8, local_410, local_8, local_844, param_1, uVar2) {
   do {
-    if (DAT_0062b420 === 0) {
+    if (v(DAT_0062b420) === 0) {
       FUN_0046e6a9();
       FUN_0046e020(0x6b,0,1,0);
     }
@@ -4995,7 +4995,7 @@ function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
     FUN_00421f10(uVar2);
     FUN_0040ff60(1,v(DAT_00679640));
     FUN_0040bbb0();
-    if (DAT_0064bcb8 === 0) {
+    if (v(DAT_0064bcb8) === 0) {
       FUN_00421f10(2000);
     }
 if (true) {
@@ -5047,7 +5047,7 @@ if (true) {
         FUN_0051d7d6(4,v(DAT_006665fe));
         FUN_0051d7d6(5,v(DAT_00666600));
         FUN_005a632a(DAT_006359d4,s_ADVANCEDMP_00632294,0,0,0,0,0,0);
-        if (DAT_006c3160 === 0) {
+        if (v(DAT_006c3160) === 0) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
