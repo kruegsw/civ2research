@@ -402,8 +402,8 @@ for (const blockFile of blockFiles) {
         (m, name) => `globalThis.${name} =`
       );
 
-      // 2f: Stub message pump functions (headless: infinite loop otherwise)
-      if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76)\b/.test(trimmed)) {
+      // 2f: Stub headless functions (message pumps + MFC window callbacks)
+      if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76|citywin_CA8D_\w+|citywin_DB36_\w+|citywin_DADA_\w+)/.test(trimmed)) {
         processed = processed.replace(
           /^(export function \w+\([^)]*\))\s*\{/,
           '$1 { return 0; /* HEADLESS: message pump stub */'

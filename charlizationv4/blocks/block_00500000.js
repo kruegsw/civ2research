@@ -6112,7 +6112,7 @@ export function citywin_C859_0050C859(in_ECX = globalThis.in_ECX) {
 
 // /* WARNING: Removing unreachable block (ram,0x0050cc02) */
 
-export function citywin_CA8D_0050CA8D(in_ECX = globalThis.in_ECX, param_1) {
+export function citywin_CA8D_0050CA8D(in_ECX = globalThis.in_ECX, param_1) { return 0; /* HEADLESS: message pump stub */
 
 
   let pvVar1;
@@ -6528,7 +6528,7 @@ export function citywin_CF06_0050CF06(in_ECX = globalThis.in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function citywin_DADA_0050DADA(in_ECX = globalThis.in_ECX) {
+export function citywin_DADA_0050DADA(in_ECX = globalThis.in_ECX) { return 0; /* HEADLESS: message pump stub */
 
 
   // in_ECX → promoted to parameter
@@ -6552,7 +6552,7 @@ export function citywin_DADA_0050DADA(in_ECX = globalThis.in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function citywin_DB36_0050DB36(in_ECX = globalThis.in_ECX) {
+export function citywin_DB36_0050DB36(in_ECX = globalThis.in_ECX) { return 0; /* HEADLESS: message pump stub */
 
 
   let iVar1;
