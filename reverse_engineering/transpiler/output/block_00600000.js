@@ -5372,7 +5372,7 @@ function LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
       local_2c = local_2c | 0x10000000;
     }
   }
-if (true) {
+  else {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
@@ -5381,14 +5381,14 @@ if (true) {
     wv(DAT_00639f18, 0);
     local_18 = -1;
   }
-if (true) {
+  else {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
     if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = -1;
     }
-if (true) {
+    else {
       local_10 = GetFileType(local_8);
       if (local_10 === 0) {
         CloseHandle(local_8);
@@ -5396,11 +5396,11 @@ if (true) {
         __dosmaperr(DVar2);
         local_18 = -1;
       }
-if (true) {
+      else {
         if (local_10 === 2) {
           local_3c = local_3c | 0x40;
         }
-if (true) {
+        else if (local_10 === 3) {
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
@@ -5414,7 +5414,7 @@ if (true) {
               return -1;
             }
           }
-if (true) {
+          else {
             _MEM[local_34 + 0] = 0;
             iVar4 = __read(local_18,local_34,1);
             if (((iVar4 === 0) && (_MEM[local_34 + 0] === 0x1a)) && (iVar4 = __chsize(local_18,lVar3), iVar4 === -1)) {
@@ -5458,7 +5458,7 @@ function LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
   // LAB_00601936:
     local_1c = 5;
   }
-if (true) {
+  else {
     if (uVar1 < 0x501) {
       if (uVar1 !== 0x500) {
         if (uVar1 !== 0x400) {
@@ -5469,7 +5469,7 @@ if (true) {
         return LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       }
     }
-if (true) {
+    else {
       if (uVar1 === 0x600) return LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       if (uVar1 !== 0x700) {
         wv(DAT_00639f14, 0x16);
@@ -5500,7 +5500,7 @@ if (true) {
       local_2c = local_2c | 0x10000000;
     }
   }
-if (true) {
+  else {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
@@ -5509,14 +5509,14 @@ if (true) {
     wv(DAT_00639f18, 0);
     local_18 = -1;
   }
-if (true) {
+  else {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
     if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = -1;
     }
-if (true) {
+    else {
       local_10 = GetFileType(local_8);
       if (local_10 === 0) {
         CloseHandle(local_8);
@@ -5524,11 +5524,11 @@ if (true) {
         __dosmaperr(DVar2);
         local_18 = -1;
       }
-if (true) {
+      else {
         if (local_10 === 2) {
           local_3c = local_3c | 0x40;
         }
-if (true) {
+        else if (local_10 === 3) {
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
@@ -5542,7 +5542,7 @@ if (true) {
               return -1;
             }
           }
-if (true) {
+          else {
             _MEM[local_34 + 0] = 0;
             iVar4 = __read(local_18,local_34,1);
             if (((iVar4 === 0) && (_MEM[local_34 + 0] === 0x1a)) && (iVar4 = __chsize(local_18,lVar3), iVar4 === -1)) {
@@ -5572,27 +5572,27 @@ if (true) {
 function LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
     local_1c = 5;
   // (outer block close)
-if (true) {
-    if (uVar1 < 0x501) {
-      if (uVar1 !== 0x500) {
-        if (uVar1 !== 0x400) {
-          wv(DAT_00639f14, 0x16);
-          wv(DAT_00639f18, 0);
-          return -1;
-        }
-        return LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
-      }
-    }
-if (true) {
-      if (uVar1 === 0x600) return LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
-      if (uVar1 !== 0x700) {
-        wv(DAT_00639f14, 0x16);
-        wv(DAT_00639f18, 0);
-        return -1;
-      }
-    }
-    local_1c = 1;
-  }
+  // (skipped orphan else)
+  // (skipped else) if (uVar1 < 0x501) {
+  // (skipped else) if (uVar1 !== 0x500) {
+  // (skipped else) if (uVar1 !== 0x400) {
+  // (skipped else) wv(DAT_00639f14, 0x16);
+  // (skipped else) wv(DAT_00639f18, 0);
+  // (skipped else) return -1;
+  // (skipped else) }
+  // (skipped else) goto LAB_00601912;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) if (uVar1 === 0x600) goto LAB_00601936;
+  // (skipped else) if (uVar1 !== 0x700) {
+  // (skipped else) wv(DAT_00639f14, 0x16);
+  // (skipped else) wv(DAT_00639f18, 0);
+  // (skipped else) return -1;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) local_1c = 1;
+  // (skipped else) }
   // LAB_006019fc:
   local_2c = 0x80;
   if ((_OpenFlag & 0x100) !== 0) {
@@ -5614,7 +5614,7 @@ if (true) {
       local_2c = local_2c | 0x10000000;
     }
   }
-if (true) {
+  else {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
@@ -5623,14 +5623,14 @@ if (true) {
     wv(DAT_00639f18, 0);
     local_18 = -1;
   }
-if (true) {
+  else {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
     if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
       local_18 = -1;
     }
-if (true) {
+    else {
       local_10 = GetFileType(local_8);
       if (local_10 === 0) {
         CloseHandle(local_8);
@@ -5638,11 +5638,11 @@ if (true) {
         __dosmaperr(DVar2);
         local_18 = -1;
       }
-if (true) {
+      else {
         if (local_10 === 2) {
           local_3c = local_3c | 0x40;
         }
-if (true) {
+        else if (local_10 === 3) {
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
@@ -5656,7 +5656,7 @@ if (true) {
               return -1;
             }
           }
-if (true) {
+          else {
             _MEM[local_34 + 0] = 0;
             iVar4 = __read(local_18,local_34,1);
             if (((iVar4 === 0) && (_MEM[local_34 + 0] === 0x1a)) && (iVar4 = __chsize(local_18,lVar3), iVar4 === -1)) {

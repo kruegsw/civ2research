@@ -7078,7 +7078,7 @@ function LAB_004b4982_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, 
     FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
-if (true) {
+  else {
     puVar5 = v(DAT_006553d8);
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
@@ -7126,7 +7126,7 @@ function LAB_004b496e_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, 
     FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
-if (true) {
+  else {
     puVar5 = v(DAT_006553d8);
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));

@@ -1720,6 +1720,8 @@ function processGotos(lines) {
     let helperLoopDepth = 0;
     let helperSwitchDepth = 0;
     let helperOrphanElseCont = false;
+    let helperSkipElse = 0; // > 0 when skipping else body (tracks brace depth)
+    let helperJustClosedOuter = false; // true right after consuming an outer-block-close
     // Helper body: transform gotos to this same label into recursive calls
     for (const bodyLine of helperBody) {
       const bt = bodyLine.trim();
@@ -1744,6 +1746,7 @@ function processGotos(lines) {
         helperBraceDepth = 0;
         if (helperLoopDepth > 0) helperLoopDepth--;
         if (helperSwitchDepth > 0) helperSwitchDepth--;
+        helperJustClosedOuter = true; // flag: next else is orphan
         continue;
       }
 
@@ -1764,28 +1767,44 @@ function processGotos(lines) {
       helperBraceDepth += braceChange;
       helperParenDepth += parenChange;
 
-      // Orphan else — convert to if(true) to preserve block structure
-      if (/^\s*\}\s*else\b/.test(bt) || /^\s*else\b/.test(bt)) {
-        if (/\{\s*$/.test(bt)) {
-          helpers.push(bodyLine.replace(/\}\s*else\s*(if\s*\([^)]*\)\s*)?\{/, '} if (true) {').replace(/^\s*else\s*(if\s*\([^)]*\)\s*)?\{/, 'if (true) {'));
-        } else {
-          // Multi-line else-if: the condition continues on following lines
-          // Comment out this line AND set flag to comment continuation lines
-          // until we find one ending with ) {
-          helpers.push('  if (true) // (orphan else)');
-          helperOrphanElseCont = true;
-        }
+      // Orphan else handling:
+      // An else is "orphan" only when its matching if-block was consumed as
+      // "outer block close" (the if opened BEFORE the label). In that case,
+      // the goto jumped into the if-block, so the else should be skipped.
+      //
+      // Non-orphan elses (from complete if/else structures below the label)
+      // should run normally.
+      if (helperSkipElse > 0) {
+        // Still skipping the orphan else body — track braces
+        helperSkipElse += braceChange;
+        helpers.push('  // (skipped else) ' + bt);
+        helperBraceDepth += braceChange;
         continue;
       }
-      // Continuation of orphan else-if condition
+      if (helperJustClosedOuter && (/^\s*\}\s*else\b/.test(bt) || /^\s*else\b/.test(bt))) {
+        // This else is paired with the outer-block-close — skip it
+        let elseOpens = 0;
+        for (const ch of bt) { if (ch === '{') elseOpens++; }
+        if (elseOpens > 0) {
+          helperSkipElse = elseOpens;
+          helpers.push('  // (skipped orphan else)');
+        } else {
+          helperOrphanElseCont = true;
+          helpers.push('  // (skipped orphan else)');
+        }
+        helperJustClosedOuter = false;
+        helperBraceDepth += braceChange;
+        continue;
+      }
+      helperJustClosedOuter = false;
+      // Continuation of orphan else-if condition (waiting for {)
       if (helperOrphanElseCont) {
         if (/\{\s*$/.test(bt)) {
-          // Last line of condition — extract the {
-          helpers.push('  { // (orphan else-if cont)');
+          helperSkipElse = 1;
           helperOrphanElseCont = false;
-        } else {
-          helpers.push('  // (orphan else-if cont): ' + bt);
         }
+        helpers.push('  // (skipped else cont) ' + bt);
+        helperBraceDepth += braceChange;
         continue;
       }
 

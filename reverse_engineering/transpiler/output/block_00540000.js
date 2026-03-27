@@ -3924,138 +3924,138 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
         return;
       }
   // (outer block close)
-if (true) {
-      if (0x20 < uVar2) {
-        if (uVar2 < 0x81) {
-          if (uVar2 === 0x80) {
-            iVar1 = _fputs(s_PLAYCDTRACK_00632700,param_1);
-            if (iVar1 === -1) {
-              return;
-            }
-            _sprintf(local_54,v(DAT_00632710),s32(param_2, 0x188));
-            iVar1 = _fputs(local_54,param_1);
-          }
-if (true) {
-            if (uVar2 !== 0x40) return LAB_005499f7_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-            iVar1 = _fputs(s_JUSTONCE_006326e4,param_1);
-          }
-        }
-if (true) {
-          if (uVar2 === 0x200) {
-            iVar1 = _fputs(s_CHANGETERRAIN_00632728,param_1);
-            if (iVar1 === -1) {
-              return;
-            }
-            _sprintf(local_54,s_terraintype__d_00632738,s32(param_2, 0x18c));
-            iVar1 = _fputs(local_54,param_1);
-            if (iVar1 === -1) {
-              return;
-            }
-            iVar1 = _fputs(s_maprect_00632748,param_1);
-            if (iVar1 === -1) {
-              return;
-            }
-            for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
-              _sprintf(local_54,s__d__d_00632754,s32(param_2, 400 + local_58 * 8), s32(param_2, 0x194 + local_58 * 8));
-                       /*JOINED*/
-              if (local_58 < 3) {
-                FUN_005f22e0(local_54,v(DAT_0063275c));
-              }
-              iVar1 = _fputs(local_54,param_1);
-              if (iVar1 === -1) {
-                return;
-              }
-            }
-            iVar1 = _fputs(v(DAT_00632760),param_1);
-          }
-if (true) {
-            if (uVar2 !== 0x100) return LAB_005499f7_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-            iVar1 = _fputs(s_DONTPLAYWONDERS_00632714,param_1);
-          }
-        }
-if (true) {
-          iVar1 = _fputs(s_DESTROYACIVILIZATION_00632764,param_1);
-          if (iVar1 === -1) {
-            return;
-          }
-          if (s32(param_2, 0x1b0) < 0) {
-            if ((u8(_MEM[param_2 + 1]) & 1) === 0) {
-              if (s32(param_2, 0x1b0) === -3) {
-                _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
-              }
-if (true) {
-                _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
-              }
-            }
-if (true) {
-              _sprintf(local_54,s_whom_TRIGGERRECEIVER_00632788);
-            }
-          }
-if (true) {
-            uVar3 = FUN_00493c7d(s32(param_2, 0x1b0));
-            _sprintf(local_54,s_whom__s_0063277c,uVar3);
-          }
-          iVar1 = _fputs(local_54,param_1);
-        }
-if (true) {
-          iVar1 = _fputs(s_GIVETECHNOLOGY_006327d0,param_1);
-          if (iVar1 === -1) {
-            return;
-          }
-          if (s32(param_2, 0x1b8) < 0) {
-            if ((u8(_MEM[param_2 + 1]) & 1) === 0) {
-              if (s32(param_2, 0x1b8) === -3) {
-                _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
-              }
-if (true) {
-                _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);
-              }
-            }
-if (true) {
-              _sprintf(local_54,s_receiver_TRIGGERRECEIVER_006327f0);
-            }
-          }
-if (true) {
-            uVar3 = FUN_00493c7d(s32(param_2, 0x1b8));
-            _sprintf(local_54,s_receiver__s_006327e0,uVar3);
-          }
-          iVar1 = _fputs(local_54,param_1);
-          if (iVar1 === -1) {
-            return;
-          }
-          _sprintf(local_54,s_technology__d_00632844,s32(param_2, 0x1b4));
-          iVar1 = _fputs(local_54,param_1);
-        }
-if (true) {
-          if (uVar2 !== 0x2000) return LAB_005499f7_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-          iVar1 = _fputs(s_HASTRIGGERED_006326f0,param_1);
-        }
-        return joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-      }
-      if (uVar2 === 0x20) {
-        iVar1 = _fputs(s_MAKEAGGRESSION_006326c0,param_1);
-        if (iVar1 === -1) {
-          return;
-        }
-        _sprintf(local_54,s_who__s_006326d0,s32(param_2, 0xcc));
-        iVar1 = _fputs(local_54,param_1);
-        if (iVar1 === -1) {
-          return;
-        }
-        _sprintf(local_54,s_whom__s_006326d8,s32(param_2, 0xc4));
-        iVar1 = _fputs(local_54,param_1);
-        return joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-      }
-      if (uVar2 === 0x10) {
-        iVar1 = _fputs(s_PLAYWAVEFILE_006326ac,param_1);
-        if (iVar1 === -1) {
-          return;
-        }
-        _sprintf(local_54,v(DAT_006326bc),s32(param_2, 0x184));
-        iVar1 = _fputs(local_54,param_1);
-        return joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) if (0x20 < uVar2) {
+  // (skipped else) if (uVar2 < 0x81) {
+  // (skipped else) if (uVar2 === 0x80) {
+  // (skipped else) iVar1 = _fputs(s_PLAYCDTRACK_00632700,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,v(DAT_00632710),s32(param_2, 0x188));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) if (uVar2 !== 0x40) goto LAB_005499f7;
+  // (skipped else) iVar1 = _fputs(s_JUSTONCE_006326e4,param_1);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else if (uVar2 < 0x201) {
+  // (skipped else) if (uVar2 === 0x200) {
+  // (skipped else) iVar1 = _fputs(s_CHANGETERRAIN_00632728,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,s_terraintype__d_00632738,s32(param_2, 0x18c));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) iVar1 = _fputs(s_maprect_00632748,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
+  // (skipped else) _sprintf(local_54,s__d__d_00632754,s32(param_2, 400 + local_58 * 8), s32(param_2, 0x194 + local_58 * 8));
+  // (skipped else) /*JOINED*/
+  // (skipped else) if (local_58 < 3) {
+  // (skipped else) FUN_005f22e0(local_54,v(DAT_0063275c));
+  // (skipped else) }
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) iVar1 = _fputs(v(DAT_00632760),param_1);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) if (uVar2 !== 0x100) goto LAB_005499f7;
+  // (skipped else) iVar1 = _fputs(s_DONTPLAYWONDERS_00632714,param_1);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else if (uVar2 === 0x400) {
+  // (skipped else) iVar1 = _fputs(s_DESTROYACIVILIZATION_00632764,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) if (s32(param_2, 0x1b0) < 0) {
+  // (skipped else) if ((u8(_MEM[param_2 + 1]) & 1) === 0) {
+  // (skipped else) if (s32(param_2, 0x1b0) === -3) {
+  // (skipped else) _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) _sprintf(local_54,s_whom_TRIGGERRECEIVER_00632788);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) uVar3 = FUN_00493c7d(s32(param_2, 0x1b0));
+  // (skipped else) _sprintf(local_54,s_whom__s_0063277c,uVar3);
+  // (skipped else) }
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) }
+  // (skipped else) else if (uVar2 === 0x800) {
+  // (skipped else) iVar1 = _fputs(s_GIVETECHNOLOGY_006327d0,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) if (s32(param_2, 0x1b8) < 0) {
+  // (skipped else) if ((u8(_MEM[param_2 + 1]) & 1) === 0) {
+  // (skipped else) if (s32(param_2, 0x1b8) === -3) {
+  // (skipped else) _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) _sprintf(local_54,s_receiver_TRIGGERRECEIVER_006327f0);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) uVar3 = FUN_00493c7d(s32(param_2, 0x1b8));
+  // (skipped else) _sprintf(local_54,s_receiver__s_006327e0,uVar3);
+  // (skipped else) }
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,s_technology__d_00632844,s32(param_2, 0x1b4));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) if (uVar2 !== 0x2000) goto LAB_005499f7;
+  // (skipped else) iVar1 = _fputs(s_HASTRIGGERED_006326f0,param_1);
+  // (skipped else) }
+  // (skipped else) goto joined_r0x0054934c;
+  // (skipped else) }
+  // (skipped else) if (uVar2 === 0x20) {
+  // (skipped else) iVar1 = _fputs(s_MAKEAGGRESSION_006326c0,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,s_who__s_006326d0,s32(param_2, 0xcc));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,s_whom__s_006326d8,s32(param_2, 0xc4));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) goto joined_r0x0054934c;
+  // (skipped else) }
+  // (skipped else) if (uVar2 === 0x10) {
+  // (skipped else) iVar1 = _fputs(s_PLAYWAVEFILE_006326ac,param_1);
+  // (skipped else) if (iVar1 === -1) {
+  // (skipped else) return;
+  // (skipped else) }
+  // (skipped else) _sprintf(local_54,v(DAT_006326bc),s32(param_2, 0x184));
+  // (skipped else) iVar1 = _fputs(local_54,param_1);
+  // (skipped else) goto joined_r0x0054934c;
+  // (skipped else) }
+  // (skipped else) }
   // LAB_005499f7:
     local_5c = local_5c << 1;
     if (local_5c === 0x8000) {
@@ -4079,21 +4079,21 @@ function LAB_0054a7e1_helper(iVar1, local_108, local_118, local_21c, local_220, 
           local_228 = 1;
   // (outer block close)
   // (outer block close)
-if (true) {
-        do {
-          pcVar2 = _fgets(local_108,0x100,local_224);
-          if (pcVar2 === 0x0) return LAB_0054a7eb_helper(iVar1, local_108, local_118, local_21c, local_220, local_224, local_228, pcVar2);
-          FUN_0056b810(local_108);
-          FUN_004d007e(local_108);
-          iVar1 = __strcmpi(local_108,s__ENDEVENTS_00632a80);
-        } while (iVar1 !== 0);
-        iVar1 = _fputs(s__ENDEVENTS_00632a8c,local_220);
-        while (iVar1 !== -1) {
-          pcVar2 = _fgets(local_108,0x100,local_224);
-          if (pcVar2 === 0x0) return LAB_0054a7e1_helper(iVar1, local_108, local_118, local_21c, local_220, local_224, local_228, pcVar2);
-          iVar1 = _fputs(local_108,local_220);
-        }
-      }
+  // (skipped orphan else)
+  // (skipped else) do {
+  // (skipped else) pcVar2 = _fgets(local_108,0x100,local_224);
+  // (skipped else) if (pcVar2 === 0x0) goto LAB_0054a7eb;
+  // (skipped else) FUN_0056b810(local_108);
+  // (skipped else) FUN_004d007e(local_108);
+  // (skipped else) iVar1 = __strcmpi(local_108,s__ENDEVENTS_00632a80);
+  // (skipped else) } while (iVar1 !== 0);
+  // (skipped else) iVar1 = _fputs(s__ENDEVENTS_00632a8c,local_220);
+  // (skipped else) while (iVar1 !== -1) {
+  // (skipped else) pcVar2 = _fgets(local_108,0x100,local_224);
+  // (skipped else) if (pcVar2 === 0x0) goto LAB_0054a7e1;
+  // (skipped else) iVar1 = _fputs(local_108,local_220);
+  // (skipped else) }
+  // (skipped else) }
   // (outer block close)
   // (outer block close)
   // LAB_0054a7eb:
