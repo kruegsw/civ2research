@@ -71,8 +71,11 @@ for (const key of Object.keys(G)) {
 globalThis.G = G;
 
 // CPU register globals — simple get/set on globalThis
-// in_ECX is typically a pointer (Uint8Array), default to a dummy buffer
+// in_ECX is typically the MFC "this" pointer. Default to a dummy buffer
+// with specific fields set so UI functions are no-ops:
+//   offset 0x450: -1 (timer ID = inactive, makes FUN_0042a768 skip)
 let _in_ECX = G.in_ECX || new Uint8Array(8192);
+_in_ECX[0x450] = 0xFF; _in_ECX[0x451] = 0xFF; _in_ECX[0x452] = 0xFF; _in_ECX[0x453] = 0xFF;
 let _in_EAX = 0;
 let _in_EDX = 0;
 
