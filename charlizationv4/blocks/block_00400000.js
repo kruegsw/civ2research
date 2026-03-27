@@ -55,6 +55,9 @@ import { draw_text_9740_005C9740 as draw_text_9740, gdi_8514_005C8514 as gdi_851
 import { measure_text_BF40_005CBF40 as measure_text_BF40, register_wndclass_CF17_005CCF17 as register_wndclass_CF17 } from './block_005C0000.js';
 import { EnableStackedTabs_005DB035 as EnableStackedTabs } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
+const s_FINDCITY_00624f24 = new Uint8Array(256);
+const s_REVOLUTION_00624f34 = new Uint8Array(256);
+const s_STARTREV_00624f40 = new Uint8Array(256);
 const SetDlgCtrlID = SetDlgCtrlID_004081B0;
 
 export function FID_conflict___E31_00406A80() {

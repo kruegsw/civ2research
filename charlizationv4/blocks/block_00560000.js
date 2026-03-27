@@ -70,6 +70,48 @@ import { FUN_005cde4d, FUN_005cdf50, FUN_005cedad, FUN_005cef31, FUN_005cf126 } 
 import { FUN_005d2279, FUN_005dae6b, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, _memcmp_005F6D50 as _memcmp } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
+const s_ADMIRECITY_00633cb4 = new Uint8Array(256);
+const s_CDROMNOTFOUND2_00633d5c = new Uint8Array(256);
+const s_CITIES_BMP_00634058 = new Uint8Array(256);
+const s_CITIES_BMP_0063407c = new Uint8Array(256);
+const s_CITIES_BMP_00634088 = new Uint8Array(256);
+const s_CITIES_BMP_00634094 = new Uint8Array(256);
+const s_CITIES_GIF_00634064 = new Uint8Array(256);
+const s_CITIES_GIF_00634070 = new Uint8Array(256);
+const s_CRUSADE_00633ce0 = new Uint8Array(256);
+const s_D__Ss_Franklinton_startup_player_00633e9c = new Uint8Array(256);
+const s_Failed_to_load_civ2art_gif_00633dcc = new Uint8Array(256);
+const s_HELPME_00633ccc = new Uint8Array(256);
+const s_IGZ___Sending_DPLSYS_CONNECTIONS_00633ee0 = new Uint8Array(256);
+const s_IGZ___Sending_DPLSYS_DPLAYCONNEC_00633f48 = new Uint8Array(256);
+const s_IGZ___XD_LobbySendMessage_return_00633f18 = new Uint8Array(256);
+const s_IGZ___XD_LobbySendMessage_return_00633f7c = new Uint8Array(256);
+const s_INSTEAD_00633cd4 = new Uint8Array(256);
+const s_INTRUDERS_00633c5c = new Uint8Array(256);
+const s_INTRUDER_00633c68 = new Uint8Array(256);
+const s_JIHAD_00633ce8 = new Uint8Array(256);
+const s_NEARCITY_00633cc0 = new Uint8Array(256);
+const s_NOTICE_00633dc4 = new Uint8Array(256);
+const s_PEDIACIVFACTS_00633d90 = new Uint8Array(256);
+const s_PEDIA_00633d74 = new Uint8Array(256);
+const s_SENATESCANDAL_00633c9c = new Uint8Array(256);
+const s_TERMS_00633c54 = new Uint8Array(256);
+const s_UNITS_BMP_00634010 = new Uint8Array(256);
+const s_UNITS_BMP_00634034 = new Uint8Array(256);
+const s_UNITS_BMP_00634040 = new Uint8Array(256);
+const s_UNITS_BMP_0063404c = new Uint8Array(256);
+const s_UNITS_GIF_0063401c = new Uint8Array(256);
+const s_UNITS_GIF_00634028 = new Uint8Array(256);
+const s_VIOLATE_00633cac = new Uint8Array(256);
+const s_VIOLATORS_00633c74 = new Uint8Array(256);
+const s_VIOLATOR_00633c80 = new Uint8Array(256);
+const s_WAITINGONJOIN_00633fac = new Uint8Array(256);
+const s_WARENDS_00633c4c = new Uint8Array(256);
+const s_WITHDRAWN_00633c8c = new Uint8Array(256);
+const s_civ2_civ2art_dll_00633db0 = new Uint8Array(256);
+const s_describe__00633d7c = new Uint8Array(256);
+const s_pPlayerPopup____NULL_00633ec4 = new Uint8Array(256);
+const s_pedia__00633d88 = new Uint8Array(256);
 
 export function FUN_00560084(param_1) {
 

@@ -65,6 +65,40 @@ import { FUN_005d25a8, FUN_005d268e, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0, F
 import { FUN_005dd377, FUN_005dd3c2, FUN_005dd71e, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
+const s_0_000_0062e2fc = new Uint8Array(256);
+const s_DEBUG_006359dc = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_tran_0062e738 = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_tran_0062e7a0 = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_tran_0062e808 = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_tran_0062e85c = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_tran_0062e96c = new Uint8Array(256);
+const s_EDITORAS_GIF_0062e4b8 = new Uint8Array(256);
+const s_ENDWONDER_0062e428 = new Uint8Array(256);
+const s_End_ExecuteParleyTransaction_Mes_0062ea30 = new Uint8Array(256);
+const s_Error_updating_RULES__s_0062e434 = new Uint8Array(256);
+const s_Failed_to_allocate_buffer_for_pa_0062e6ec = new Uint8Array(256);
+const s_File_I_O_Error_0062e44c = new Uint8Array(256);
+const s_IMPRMISC_0062e480 = new Uint8Array(256);
+const s_IMPRNAME_0062e45c = new Uint8Array(256);
+const s_IMPROVEMENTS_0062e468 = new Uint8Array(256);
+const s_IMPROVE_0062e420 = new Uint8Array(256);
+const s_Lancer_0062e324 = new Uint8Array(256);
+const s_NOTICE_0062e418 = new Uint8Array(256);
+const s_NOTICE_0062e48c = new Uint8Array(256);
+const s_PEDIAIMPROVE_0062e498 = new Uint8Array(256);
+const s_PEDIA_0062e4a8 = new Uint8Array(256);
+const s_Start_ExecuteParleyTransaction_M_0062ea04 = new Uint8Array(256);
+const s_Starten_0062e32c = new Uint8Array(256);
+const s_VFWNOTREGISTERED_0062e350 = new Uint8Array(256);
+const s__CharPtr_pChunk___sizeChunk0______0062e764 = new Uint8Array(256);
+const s__CharPtr_pChunk___sizeChunk1______0062e7cc = new Uint8Array(256);
+const s__S_S__0062e2d4 = new Uint8Array(256);
+const s___0062e404 = new Uint8Array(256);
+const s_civ2_video_launch_avi_0062e334 = new Uint8Array(256);
+const s_ss_dll_0062e2e4 = new Uint8Array(256);
+const s_strlen_parleyDescription____2048_0062e888 = new Uint8Array(256);
+const s_strlen_parleyDescription____2048_0062e998 = new Uint8Array(256);
+const s_strlen_parleyDescription_____0_0062e834 = new Uint8Array(256);
 
 export function FUN_004d007e(param_1) {
 

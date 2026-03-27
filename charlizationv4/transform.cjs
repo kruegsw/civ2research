@@ -556,7 +556,19 @@ for (const blockFile of blockFiles) {
     }
   }
 
-  // 3d: Add local aliases for same-block renamed functions
+  // 3d: Find s_ string references and declare as empty byte arrays
+  const stringRefs = new Set();
+  for (const m of allText.matchAll(/\b(s_\w{10,})\b/g)) {
+    if (!localFns.has(m[1])) stringRefs.add(m[1]);
+  }
+  if (stringRefs.size > 0) {
+    const sorted = [...stringRefs].sort();
+    for (const s of sorted) {
+      imports.push(`const ${s} = new Uint8Array(256);`);
+    }
+  }
+
+  // 3e: Add local aliases for same-block renamed functions
   if (localAliases && localAliases.size > 0) {
     for (const [callerName, actualName] of localAliases) {
       imports.push(`const ${callerName} = ${actualName};`);

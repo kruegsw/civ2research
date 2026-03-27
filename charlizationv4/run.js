@@ -11,7 +11,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { G } from './globals.js';
-import { s8, u8, s16, u16, s32, u32, w32, getTileOffset, tileRead } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, w32, getTileOffset, tileRead, memStats } from './mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
@@ -190,6 +190,7 @@ if (turns > 0) {
       if (!(info.civsAlive & (1 << civ))) continue;
       try {
         w32(G.DAT_00655b05, 0, civ);
+        w32(G.DAT_006d1da0, 0, civ);  // active civ — set by outer game loop in binary
         FUN_00489553(civ);
         if (((1 << (civ & 0x1f)) & s32(G.DAT_00655b0b, 0)) === 0) {
           FUN_00543cd6();
@@ -258,6 +259,17 @@ if (outPath && turns > 0) {
 if (turns > 0) {
   console.log('\n═══ DevLog Summary ═══');
   printLog();
+}
+
+console.log('\n═══ Memory Stats ═══');
+const ms = memStats();
+console.log(`  w16: ${ms.w16ok} ok, ${ms.w16drops} dropped`);
+console.log(`  w32: ${ms.w32ok} ok, ${ms.w32drops} dropped`);
+if (ms.dropSamples.length > 0) {
+  console.log('  Drop samples:');
+  for (const s of ms.dropSamples) {
+    console.log(`    ${s.fn}(${s.arr}=${s.arrVal}, ${s.off}, ${s.val}) at ${s.stack}`);
+  }
 }
 
 console.log('\nDone.');

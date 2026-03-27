@@ -68,6 +68,26 @@ import { FUN_005d8476, FUN_005d8721, FUN_005dae6b, FUN_005db0d0, Realloc_005DCCC
 import { invalidate_ABC7_005DABC7 as invalidate_ABC7 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strnicmp_005F40B0 as __strnicmp } from './block_005F0000.js';
 import { __ltoa_00600B30 as __ltoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
+const s_CITIES_00625e88 = new Uint8Array(256);
+const s_CITYMISC_00625e98 = new Uint8Array(256);
+const s_DEBUG_006359dc = new Uint8Array(256);
+const s_EDITORSQ_GIF_00625ea4 = new Uint8Array(256);
+const s_GAMEPROFILE_00625d74 = new Uint8Array(256);
+const s_IPOFGAME_00625a08 = new Uint8Array(256);
+const s_NUMBER_00625e48 = new Uint8Array(256);
+const s_STRING_00625e40 = new Uint8Array(256);
+const s_SUPPLYNONE_00625f00 = new Uint8Array(256);
+const s_SUPPLYSEARCH_00625f0c = new Uint8Array(256);
+const s_SUPPLYSHOW_00625ef0 = new Uint8Array(256);
+const s_TILES_DLL_00625ed4 = new Uint8Array(256);
+const s_TITLE_GIF_00625ca4 = new Uint8Array(256);
+const s_WAITINGFORSERVER_00625b24 = new Uint8Array(256);
+const s_WAITINGFORSERVER_00625b38 = new Uint8Array(256);
+const s_WAITINGFORSERVER_00625c24 = new Uint8Array(256);
+const s_WAITINGONJOIN_00625cd0 = new Uint8Array(256);
+const s_WAITINGONJOIN_00625cf8 = new Uint8Array(256);
+const s_WAITTOJOIN_00625c70 = new Uint8Array(256);
+const s_scredits_gif_00625ee0 = new Uint8Array(256);
 const Create = Create_00421E00;
 const thunk_show_credits = show_credits_0042A7BC;
 

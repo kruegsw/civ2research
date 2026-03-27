@@ -51,6 +51,25 @@ import { FUN_005cef31, GetCheckStyle_005C55F0 as GetCheckStyle } from './block_0
 import { FUN_005d25a8, FUN_005d268e, FUN_005d4167, FUN_005dae6b } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
+const s_000000_006324e0 = new Uint8Array(256);
+const s_ADVANCEDMP_00632294 = new Uint8Array(256);
+const s_DIFFICULTY_00632288 = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_add_d_0063242c = new Uint8Array(256);
+const s_D__Ss_Franklinton_parleywin_add_d_00632480 = new Uint8Array(256);
+const s_D__Ss_Franklinton_startup_multip_006322f4 = new Uint8Array(256);
+const s_GENDER_006322b0 = new Uint8Array(256);
+const s_GENDER_00632340 = new Uint8Array(256);
+const s_HOTSEAT2_006322b8 = new Uint8Array(256);
+const s_JOINGAME0_006322d0 = new Uint8Array(256);
+const s_JOINGAME1_006322c4 = new Uint8Array(256);
+const s_JOINGAME3_006322dc = new Uint8Array(256);
+const s_NOINTEL_006324e8 = new Uint8Array(256);
+const s_OPPONENT_006322e8 = new Uint8Array(256);
+const s_PARLEYACCEPT2_006324f0 = new Uint8Array(256);
+const s_SCENARIOLOADED_00632278 = new Uint8Array(256);
+const s_gNetMgr_bServer_00632320 = new Uint8Array(256);
+const s_leftright____LEFT____leftright___00632458 = new Uint8Array(256);
+const s_theDialog____PDT_NULL____PDT_NUL_006324ac = new Uint8Array(256);
 
 export function FUN_00521807() {
 

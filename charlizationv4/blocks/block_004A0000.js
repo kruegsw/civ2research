@@ -62,6 +62,28 @@ import { FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdea1, F
 import { FUN_005d268e, FUN_005db0d0, FUN_005dba95, FUN_005dbab8, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __ltoa_00600B30 as __ltoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
+const s_CARAVAN_0062cde0 = new Uint8Array(256);
+const s_COMMONAME_0062ce1c = new Uint8Array(256);
+const s_DEBUG_006359dc = new Uint8Array(256);
+const s_DESTROYED_0062cff4 = new Uint8Array(256);
+const s_EDITORSA_GIF_0062ce78 = new Uint8Array(256);
+const s_Error_updating_RULES__s_0062cde8 = new Uint8Array(256);
+const s_File_I_O_Error_0062ce00 = new Uint8Array(256);
+const s_GOVERNMENTS_0062cdcc = new Uint8Array(256);
+const s_GOVTNAME_0062ce34 = new Uint8Array(256);
+const s_LEADERS_0062cdd8 = new Uint8Array(256);
+const s_MOVEDEBUG_0062d054 = new Uint8Array(256);
+const s_SERVERCONNECTTIME_0062cf40 = new Uint8Array(256);
+const s_SERVERCONNECTTIME_0062cfb0 = new Uint8Array(256);
+const s_SPACEDESTROYED_0062cf04 = new Uint8Array(256);
+const s_SPACERETURNS_0062cef4 = new Uint8Array(256);
+const s_TITLENAME_0062ce58 = new Uint8Array(256);
+const s_TRIBES_0062ce64 = new Uint8Array(256);
+const s__s__s___s__0062ce4c = new Uint8Array(256);
+const s_kill_civ__Connection_to_server_t_0062cf84 = new Uint8Array(256);
+const s_kill_civ__Received_NM_NEW_CIV_AC_0062cfc4 = new Uint8Array(256);
+const s_new_civ__Connection_to_server_ti_0062cf14 = new Uint8Array(256);
+const s_new_civ__Received_NM_NEW_CIV_ACK_0062cf54 = new Uint8Array(256);
 const thunk_new_civ = new_civ_004A7CE9;
 
 export function FUN_004a2020() {

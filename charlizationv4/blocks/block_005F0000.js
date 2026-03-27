@@ -37,6 +37,11 @@ import { _ValidateExecute_006010E0 as _ValidateExecute, _ValidateRead_00601060 a
 import { ___loctotime_t_006002E0 as ___loctotime_t, __aulldiv_006023E0 as __aulldiv, __aullrem_00602450 as __aullrem, __commit_006021E0 as __commit, __controlfp_00602640 as __controlfp, __fcloseall_006024D0 as __fcloseall } from './block_00600000.js';
 import { __fltout_006033E0 as __fltout, __fptostr_00603300 as __fptostr, __free_osfhnd_00601F40 as __free_osfhnd, __get_osfhandle_00602060 as __get_osfhandle, __isatty_006022C0 as __isatty, __itoa_00600A10 as __itoa } from './block_00600000.js';
 import { __sopen_00601750 as __sopen, __vsnprintf_00601210 as __vsnprintf, _raise_006006A0 as _raise, _strncnt_00606AF0 as _strncnt, wcsncnt_00606620 as wcsncnt } from './block_00600000.js';
+const s_Assertion_failed___s__file__s__l_00639fe0 = new Uint8Array(256);
+const s_D__Ss_Smeds32_ddcntrl_cpp_00639dcc = new Uint8Array(256);
+const s_D__Ss_Smeds32_ddcntrl_cpp_00639e08 = new Uint8Array(256);
+const s_GetParentGameWin___00639e24 = new Uint8Array(256);
+const s_pParentWin____pParentControl_00639de8 = new Uint8Array(256);
 const lockptr = lockptr_005F0620;
 const length = length_005F07F9;
 const Enable = Enable_005F1221;

@@ -47,6 +47,10 @@ import { FUN_005b8b65, FUN_005b8c18, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62, F
 import { FUN_005b8ffa, FUN_005b9431 } from './block_005B0000.js';
 import { create_window_C0F0_005CC0F0 as create_window_C0F0, gdi_C035_005CC035 as gdi_C035 } from './block_005C0000.js';
 import { FUN_005dcdf9, create_window_8E3F_005D8E3F as create_window_8E3F } from './block_005D0000.js';
+const s_BARBARIANSLAND_00632528 = new Uint8Array(256);
+const s_BARBARIANS_00632538 = new Uint8Array(256);
+const s_BARBARIANS_0063254c = new Uint8Array(256);
+const s_RANSOMCITY_00632560 = new Uint8Array(256);
 
 export function egptr_00530E80(_this) {
 
