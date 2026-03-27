@@ -10,7 +10,7 @@
 // /* WARNING: Unable to track spacebase fully for stack */
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { exe, segment } from '../extern-stubs.js';
 

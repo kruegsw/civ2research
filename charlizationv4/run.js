@@ -12,7 +12,8 @@
 import { readFileSync, existsSync } from 'fs';
 import './globals-init.js';
 import { G } from './globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, memStats } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, getTileOffset, tileRead } from './mem.js';
+// v(addr)=read value, wv(addr,val)=write value
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
@@ -86,13 +87,13 @@ for (let i = 0; i < maxShow; i++) {
   const base = i * 0x20;
   const ux = s16(DAT_006560f0, base);
   const uy = s16(DAT_006560f0, base + 2);
-  const utype = DAT_006560f0[base + 6];
-  const uowner = DAT_006560f0[base + 7];
-  const umoves = DAT_006560f0[base + 10];
-  const uorder = DAT_006560f0[base + 15];
+  const utype = G._MEM[DAT_006560f0 + base + 6];
+  const uowner = G._MEM[DAT_006560f0 + base + 7];
+  const umoves = G._MEM[DAT_006560f0 + base + 10];
+  const uorder = G._MEM[DAT_006560f0 + base + 15];
   const uhome = u16(DAT_006560f0, base + 16);
   const uid = u32(DAT_006560f0, base + 26);
-  const dead = DAT_006560f0[base + 14] !== 0;
+  const dead = G._MEM[DAT_006560f0 + base + 14] !== 0;
   console.log(`  [${i}] type=${utype} owner=${uowner} pos=(${ux},${uy}) moves=${umoves} order=${uorder} home=${uhome} id=${uid}${dead ? ' DEAD' : ''}`);
 }
 if (info.totalUnits > maxShow) console.log(`  ... (${info.totalUnits - maxShow} more)`);
@@ -104,12 +105,12 @@ for (let i = 0; i < maxCities; i++) {
   const base = i * 0x58;
   const cx = u16(DAT_0064f340, base);
   const cy = u16(DAT_0064f340, base + 2);
-  const cowner = DAT_0064f340[base + 8];
-  const csize = DAT_0064f340[base + 9];
+  const cowner = G._MEM[DAT_0064f340 + base + 8];
+  const csize = G._MEM[DAT_0064f340 + base + 9];
   // Read city name (16 bytes at +32)
   let cname = '';
   for (let j = 0; j < 16; j++) {
-    const ch = DAT_0064f340[base + 32 + j];
+    const ch = G._MEM[DAT_0064f340 + base + 32 + j];
     if (ch === 0) break;
     cname += String.fromCharCode(ch);
   }
@@ -151,7 +152,7 @@ console.log(`  DAT_006d1162 (mh):  ${s16(DAT_006d1162, 0)} (expected ${info.mh})
 console.log(`  DAT_006d1168 (seed): ${s32(DAT_006d1168, 0)} (expected ${info.mapSeed})`);
 console.log(`  DAT_00655b16 (units): ${s16(DAT_00655b16, 0)} (expected ${info.totalUnits})`);
 console.log(`  DAT_00655b18 (cities): ${s16(DAT_00655b18, 0)} (expected ${info.totalCities})`);
-console.log(`  DAT_00655b0b (human): ${s32(DAT_00655b0b, 0)} (set to 0 for all-AI)`);
+console.log(`  DAT_00655b0b (human): ${v(DAT_00655b0b)} (set to 0 for all-AI)`);
 
 if (turns > 0) {
   // ── Phase 4: Run AI turns ──
@@ -169,13 +170,13 @@ if (turns > 0) {
     const cities = [];
     for (let i = 0; i < s16(DAT_00655b18, 0); i++) {
       const b = i * 0x58;
-      const owner = DAT_0064f340[b + 8];
-      const size = DAT_0064f340[b + 9];
+      const owner = G._MEM[DAT_0064f340 + b + 8];
+      const size = G._MEM[DAT_0064f340 + b + 9];
       const food = s16(DAT_0064f340, b + 26);
       const shields = s16(DAT_0064f340, b + 28);
       let name = '';
       for (let j = 0; j < 16; j++) {
-        const ch = DAT_0064f340[b + 32 + j];
+        const ch = G._MEM[DAT_0064f340 + b + 32 + j];
         if (ch === 0) break;
         name += String.fromCharCode(ch);
       }
@@ -196,10 +197,10 @@ if (turns > 0) {
     for (let civ = 1; civ < 8; civ++) {
       if (!(info.civsAlive & (1 << civ))) continue;
       try {
-        w32(globalThis.DAT_00655b05, 0, civ);
-        w32(globalThis.DAT_006d1da0, 0, civ);  // active civ — set by outer game loop in binary
+        wv(DAT_00655b05, civ);
+        wv(DAT_006d1da0, civ);  // active civ — set by outer game loop in binary
         FUN_00489553(civ);
-        if (((1 << (civ & 0x1f)) & s32(DAT_00655b0b, 0)) === 0) {
+        if (((1 << (civ & 0x1f)) & v(DAT_00655b0b)) === 0) {
           FUN_00543cd6();
         }
       } catch (e) {
@@ -207,7 +208,7 @@ if (turns > 0) {
         if (e.stack) console.error(e.stack.split('\n').slice(1,5).join('\n'));
       }
     }
-    w16(globalThis.DAT_00655af8, 0, s16(DAT_00655af8, 0) + 1);
+    wv(DAT_00655af8, s16(DAT_00655af8, 0) + 1);
   }
 
   const after = snap();
@@ -266,17 +267,6 @@ if (outPath && turns > 0) {
 if (turns > 0) {
   console.log('\n═══ DevLog Summary ═══');
   printLog();
-}
-
-console.log('\n═══ Memory Stats ═══');
-const ms = memStats();
-console.log(`  w16: ${ms.w16ok} ok, ${ms.w16drops} dropped`);
-console.log(`  w32: ${ms.w32ok} ok, ${ms.w32drops} dropped`);
-if (ms.dropSamples.length > 0) {
-  console.log('  Drop samples:');
-  for (const s of ms.dropSamples) {
-    console.log(`    ${s.fn}(${s.arr}=${s.arrVal}, ${s.off}, ${s.val}) at ${s.stack}`);
-  }
 }
 
 console.log('\nDone.');

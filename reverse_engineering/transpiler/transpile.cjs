@@ -762,6 +762,63 @@ function transformLine(line, ctx) {
     // ── (code *)0x0 → null ──
     out = out.replace(/\(\s*code\s*\*\s*\)\s*0x0\b/g, 'null');
 
+    // ── DAT_xxx[idx] → _MEM[DAT_xxx + idx]: byte array access ──
+    // With DAT_xxx as a number (offset), bracket access needs _MEM
+    out = out.replace(
+      /\b(DAT_[0-9a-fA-F]+)\[/g,
+      (m, name) => '_MEM[' + name + ' + '
+    );
+    // Fix: _MEM[DAT_xxx + ] (empty index from consecutive replacements)
+    // Close any remaining brackets correctly
+
+    // ── v(DAT_xxx): wrap bare DAT_ value reads ──
+    // In C, using DAT_xxx reads the value at that address.
+    // In JS with the flat memory model, DAT_xxx is a number (offset).
+    // v() reads the int32 value at that offset from _MEM.
+    // Skip: first arg to memory helpers, bracket access, write targets, &DAT
+    out = out.replace(
+      /\b(DAT_[0-9a-fA-F]+)\b(?!\s*[\[,=])/g,
+      (m, name, matchOffset) => {
+        // Check preceding context: is this the first arg to a memory helper?
+        const before = out.substring(Math.max(0, matchOffset - 40), matchOffset);
+        if (/(?:s32|u32|s16|u16|s8|u8|w32|w16|w32r|w16r|ptrAdd|v|wv)\(\s*$/.test(before)) return m;
+        if (/&\s*$/.test(before)) return m;
+        if (/_MEM\[\s*$/.test(before)) return m;  // inside _MEM[DAT_xxx + idx]
+        if (/_MEM\[.*\+\s*$/.test(before)) return m;  // _MEM[expr + DAT_xxx]
+        return 'v(' + name + ')';
+      }
+    );
+    // ── wv(DAT_xxx, expr): convert DAT_ value writes ──
+    // DAT_xxx = expr → wv(DAT_xxx, expr)
+    // Must run AFTER v() wrapping (which skips = targets via negative lookahead)
+    {
+      const wvRe = /\b(DAT_[0-9a-fA-F]+)\s*=(?!=)/g;
+      let wm;
+      let newOut6 = '';
+      let lastIdx6 = 0;
+      while ((wm = wvRe.exec(out)) !== null) {
+        const valStart = wm.index + wm[0].length;
+        // Find the end of the value expression
+        let depth = 0;
+        let valEnd = valStart;
+        for (let ci = valStart; ci < out.length; ci++) {
+          if (out[ci] === '(' || out[ci] === '[') depth++;
+          if (out[ci] === ')' || out[ci] === ']') { if (depth === 0) { valEnd = ci; break; } depth--; }
+          if ((out[ci] === ';' || out[ci] === ',') && depth === 0) { valEnd = ci; break; }
+          valEnd = ci + 1;
+        }
+        const valExpr = out.substring(valStart, valEnd).trim();
+        newOut6 += out.substring(lastIdx6, wm.index);
+        newOut6 += 'wv(' + wm[1] + ', ' + valExpr + ')';
+        lastIdx6 = valEnd;
+        wvRe.lastIndex = lastIdx6;
+      }
+      if (lastIdx6 > 0) {
+        newOut6 += out.substring(lastIdx6);
+        out = newOut6;
+      }
+    }
+
     if (out !== prev) changed = true;
   }
 

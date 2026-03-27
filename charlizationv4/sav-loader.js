@@ -9,6 +9,7 @@
 // binary's in-memory format. Field-by-field mapping is needed (TODO).
 // ═══════════════════════════════════════════════════════════════════
 
+import './globals-init.js';
 import { G } from './globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, initMapTiles } from './mem.js';
 
@@ -64,17 +65,17 @@ export function loadSav(buf) {
   // ── Set map dimensions in globals ──
   // Write scalar globals — use w16 for 16-bit values, w32 for 32-bit
   // Address spacing tells us width: 2 bytes apart = 16-bit, 4 bytes apart = 32-bit
-  w16(G.DAT_006d1160, 0, mw2);                     // map width doubled-X (16-bit)
-  w16(G.DAT_006d1162, 0, mh);                       // map height (16-bit)
-  w16(G.DAT_00655ae8, 0, flatEarth ? 0x8000 : mapShape); // map shape (16-bit)
-  w32(G.DAT_006d1168, 0, mapSeed);                  // resource seed (32-bit)
+  w16(DAT_006d1160, 0, mw2);                     // map width doubled-X (16-bit)
+  w16(DAT_006d1162, 0, mh);                       // map height (16-bit)
+  w16(DAT_00655ae8, 0, flatEarth ? 0x8000 : mapShape); // map shape (16-bit)
+  w32(DAT_006d1168, 0, mapSeed);                  // resource seed (32-bit)
 
   // ── Set game state globals ──
-  w16(G.DAT_00655af8, 0, turnsPassed);   // turn counter (16-bit)
-  w32(G.DAT_00655b0b, 0, 0);             // human player bitmask (32-bit)
-  w16(G.DAT_00655b16, 0, totalUnits);    // total unit count (16-bit)
-  w16(G.DAT_00655b18, 0, totalCities);   // total city count (16-bit)
-  w32(G.DAT_0064bcc8, 0, 3);             // movement multiplier (32-bit)
+  w16(DAT_00655af8, 0, turnsPassed);   // turn counter (16-bit)
+  w32(DAT_00655b0b, 0, 0);             // human player bitmask (32-bit)
+  w16(DAT_00655b16, 0, totalUnits);    // total unit count (16-bit)
+  w16(DAT_00655b18, 0, totalCities);   // total city count (16-bit)
+  w32(DAT_0064bcc8, 0, 3);             // movement multiplier (32-bit)
 
   // ── Compute section offsets ──
   const block1Off   = MAP_HEADER + 14;               // known improvements
