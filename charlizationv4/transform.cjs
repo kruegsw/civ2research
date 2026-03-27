@@ -382,8 +382,9 @@ for (const blockFile of blockFiles) {
 
     if (!trimmed.startsWith('//') && trimmed !== '/*JOINED*/' && !/^\/\*/.test(trimmed)) {
       // 2b: Prefix DAT_ with G. (not inside block comments)
+      // Process all code segments between /* */ comments
       processed = processed.replace(
-        /^([^]*?)(?=\/\*|$)/,
+        /(?:^|(?<=\*\/))([^]*?)(?=\/\*|$)/g,
         (codePart) => codePart.replace(/(?<!G\.)(?<![a-zA-Z_.])(DAT_[0-9a-fA-F]+)/g, 'G.$1')
       );
 
@@ -400,7 +401,6 @@ for (const blockFile of blockFiles) {
           let newLine = '';
           let lastIdx = 0;
           while ((wm = writeRe.exec(processed)) !== null) {
-            if (!scalarOnlySet.has(wm[1])) continue;
             const valStart = wm.index + wm[0].length;
             // Find end of value: scan for ; or , at paren depth 0
             let depth = 0;
@@ -471,14 +471,17 @@ for (const blockFile of blockFiles) {
   for (const m of allText.matchAll(/\b([a-zA-Z_]\w+)\s*\(/g)) {
     const fn = m[1];
     if (skip.test(fn)) continue;
-    if (localFns.has(fn)) continue;
-    if (fnUtilsExports.has(fn)) {
-      fnUtilsNeeded.add(fn);
-      continue;
-    }
+    // CRT functions take priority over everything (including local definitions)
+    // This ensures our JS implementations of _rand, malloc, etc. are used
+    // instead of the binary's C runtime code which doesn't work in our model
     if (crtExports.has(fn)) {
       if (!crtNeeded) crtNeeded = new Set();
       crtNeeded.add(fn);
+      continue;
+    }
+    if (localFns.has(fn)) continue;
+    if (fnUtilsExports.has(fn)) {
+      fnUtilsNeeded.add(fn);
       continue;
     }
     const srcBlock = fnRegistry.get(fn);
@@ -689,14 +692,27 @@ export function u32(arr, off) {
   return (arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24)) >>> 0;
 }
 
-// ── Write helpers ──
+// ── Write helpers (with drop tracking) ──
+let _w16drops = 0, _w16ok = 0, _w32drops = 0, _w32ok = 0;
+const _dropSamples = [];
+export function memStats() { return { w16drops: _w16drops, w16ok: _w16ok, w32drops: _w32drops, w32ok: _w32ok, dropSamples: _dropSamples }; }
 export function w16(arr, off, val) {
-  if (typeof arr !== 'object' || !arr) return;
+  if (typeof arr !== 'object' || !arr) {
+    _w16drops++;
+    if (_dropSamples.length < 5) _dropSamples.push({ fn: 'w16', arrType: typeof arr, off, val, stack: new Error().stack.split('\\n')[2]?.trim() });
+    return;
+  }
+  _w16ok++;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
 }
 export function w32(arr, off, val) {
-  if (typeof arr !== 'object' || !arr) return;
+  if (typeof arr !== 'object' || !arr) {
+    _w32drops++;
+    if (_dropSamples.length < 5) _dropSamples.push({ fn: 'w32', arrType: typeof arr, off, val, stack: new Error().stack.split('\\n')[2]?.trim() });
+    return;
+  }
+  _w32ok++;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
   arr[off + 2] = (val >> 16) & 0xFF;

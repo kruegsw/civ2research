@@ -3281,7 +3281,7 @@ export function FUN_004f8af9(in_ECX = G.in_ECX) {
           /*JOINED*/
          /*JOINED*/
        /*JOINED*/
-      if (((s32(in_ECX, 0x128) === 0) || (s32(in_ECX, 0x448 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x118))) || ((s32(in_ECX, 0x2b8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x128 + DAT_006a6790 * 4) !== s32(in_ECX, 0x120))))) {
+      if (((s32(in_ECX, 0x128) === 0) || (s32(in_ECX, 0x448 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x118))) || ((s32(in_ECX, 0x2b8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x128 + s32(G.DAT_006a6790, 0) * 4) !== s32(in_ECX, 0x120))))) {
           /*JOINED*/
          /*JOINED*/
           /*JOINED*/

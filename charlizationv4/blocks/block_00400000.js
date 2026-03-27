@@ -3249,7 +3249,7 @@ export function FUN_0040cd64(in_ECX = G.in_ECX, unaff_ESI, param_1) {
   local_464[0] = 0;
   FUN_005c64da();
   local_8 = 0;
-  s32(G.DAT_0063cbb4, 0) = in_ECX;
+  w32(G.DAT_0063cbb4, 0, in_ECX);
   w32(in_ECX, 0x2d8, param_1);
   w32(G.DAT_0063cbb0, 0, 1);
   pvVar3 = operator_new(0x48);

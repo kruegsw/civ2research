@@ -412,7 +412,7 @@ export function FUN_004d0517(in_ECX = G.in_ECX, param_1) {
   w32(in_ECX, 0x62c, 0);
   FUN_005bcaa7(in_ECX + 0x1d4);
   w32(in_ECX, 0x8c0, 0);
-  s32(G.DAT_0062e2d0, 0) = in_ECX;
+  w32(G.DAT_0062e2d0, 0, in_ECX);
   FUN_0043c6c0(0,0x18,1);
   FUN_0043c6c0(0,0x14,1);
   FUN_0043c6c0(0,0x10,1);
@@ -454,7 +454,7 @@ export function FUN_004d08b0(in_ECX = G.in_ECX) {
   devLog('SEH', '');
   local_8 = 0xf;
   FUN_00450340();
-  s32(G.DAT_0062e2d0, 0) = 0;
+  w32(G.DAT_0062e2d0, 0, 0);
   if (s32(in_ECX, 0x634) !== 0) {
     FUN_005d2004(s32(in_ECX, 0x634));
     w32(in_ECX, 0x634, 0);
@@ -772,7 +772,7 @@ export function FUN_004d0b58(in_ECX = G.in_ECX) {
     FUN_00408010(0x1fc);
     FUN_00596eec(s32(in_ECX, 0x1cc),1);
     FUN_004d4a7b();
-    if ((s16(G.DAT_0064caae, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594) !== 0) && (DAT_006ad0ec !== 0))
+    if ((s16(G.DAT_0064caae, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594) !== 0) && (s32(G.DAT_006ad0ec, 0) !== 0))
     {
       w32(in_ECX, 0xae0, 1);
     }
@@ -5364,7 +5364,7 @@ export function FUN_004da107(in_ECX = G.in_ECX) {
   FUN_005c64da();
   local_8 = 0;
   w32(G.DAT_006a1d7c, 0, 1);
-  s32(G.DAT_006a4f88, 0) = in_ECX;
+  w32(G.DAT_006a4f88, 0, in_ECX);
   pvVar2 = operator_new(0x48);
   local_8 = 1;
   if (pvVar2 === 0x0) {

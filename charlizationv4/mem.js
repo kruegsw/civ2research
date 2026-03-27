@@ -24,14 +24,27 @@ export function u32(arr, off) {
   return (arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24)) >>> 0;
 }
 
-// ── Write helpers ──
+// ── Write helpers (with drop tracking) ──
+let _w16drops = 0, _w16ok = 0, _w32drops = 0, _w32ok = 0;
+const _dropSamples = [];
+export function memStats() { return { w16drops: _w16drops, w16ok: _w16ok, w32drops: _w32drops, w32ok: _w32ok, dropSamples: _dropSamples }; }
 export function w16(arr, off, val) {
-  if (typeof arr !== 'object' || !arr) return;
+  if (typeof arr !== 'object' || !arr) {
+    _w16drops++;
+    if (_dropSamples.length < 5) _dropSamples.push({ fn: 'w16', arrType: typeof arr, off, val, stack: new Error().stack.split('\n')[2]?.trim() });
+    return;
+  }
+  _w16ok++;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
 }
 export function w32(arr, off, val) {
-  if (typeof arr !== 'object' || !arr) return;
+  if (typeof arr !== 'object' || !arr) {
+    _w32drops++;
+    if (_dropSamples.length < 5) _dropSamples.push({ fn: 'w32', arrType: typeof arr, off, val, stack: new Error().stack.split('\n')[2]?.trim() });
+    return;
+  }
+  _w32ok++;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
   arr[off + 2] = (val >> 16) & 0xFF;

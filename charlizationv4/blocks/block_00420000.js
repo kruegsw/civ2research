@@ -832,7 +832,7 @@ export function FUN_00421fcd(param_1) {
           puStackY_30 = 0x423717;
           FUN_0046e020();
         }
-        s32(G.DAT_00655aea, 0) = s32(G.DAT_0064bc1e, 0) & 0xffff7fff;
+        w32(G.DAT_00655aea, 0, s32(G.DAT_0064bc1e, 0) & 0xffff7fff);
         w32(G.DAT_00655af2, 0, s32(G.DAT_0064bc22, 0));
         FUN_0040ff60();
         FUN_00421da0();
@@ -1868,7 +1868,7 @@ export function FUN_00424ae9() {
       FUN_004af01a(local_108);
       w32(G.DAT_00655af0, 0, s16(local_8, 0x110));
       w32(G.DAT_00655afc, 0, s16(local_8, 0x112));
-      s32(G.DAT_0064bcb4, 0) = s16(local_8, 0x114);
+      w32(G.DAT_0064bcb4, 0, s16(local_8, 0x114));
       w32(G.DAT_0064bcb6, 0, s16(local_8, 0x116));
       w32(G.DAT_00655b08, 0, local_8[0xb2]);
       uVar2 = FUN_00484fec(s16(local_8, 0x118));
@@ -2974,7 +2974,7 @@ export function FUN_00428a95(param_1) {
   }
   else {
     sVar1 = _strlen(param_1);
-    s32(G.DAT_0063e4b8, 0) = FUN_00498159(s32(G.DAT_0063e4c0, 0),sVar1 + 1);
+    w32(G.DAT_0063e4b8, 0, FUN_00498159(s32(G.DAT_0063e4c0, 0),sVar1 + 1));
     FUN_005f22d0(s32(G.DAT_0063e4b8, 0),param_1);
     iVar2 = s32(G.DAT_00625e60, 0);
     w32(G.DAT_00625e60, 0, s32(G.DAT_00625e60, 0) + 1);
@@ -3026,7 +3026,7 @@ export function FUN_00428b68(param_1, param_2) {
   else {
     local_8 = param_2;
   }
-  s32(G.DAT_0063e4b8, 0) = FUN_00498159(s32(G.DAT_0063e4c0, 0),local_8);
+  w32(G.DAT_0063e4b8, 0, FUN_00498159(s32(G.DAT_0063e4c0, 0),local_8));
   _memset(s32(G.DAT_0063e4b8, 0),0,local_8);
   _strncpy(s32(G.DAT_0063e4b8, 0),param_1,local_8);
   sVar2 = _strlen(param_1);
@@ -3396,7 +3396,7 @@ export function FUN_00429671(in_ECX = G.in_ECX) {
   FUN_005c64da();
   local_8 = 0;
   w32(G.DAT_006a1d7c, 0, 1);
-  s32(G.DAT_006a4f88, 0) = in_ECX;
+  w32(G.DAT_006a4f88, 0, in_ECX);
   pvVar2 = operator_new(0x48);
   local_8 = 1;
   if (pvVar2 === 0x0) {
@@ -7027,7 +7027,7 @@ if (true) {
           puStackY_30 = 0x423717;
           FUN_0046e020();
         }
-        s32(G.DAT_00655aea, 0) = s32(G.DAT_0064bc1e, 0) & 0xffff7fff;
+        w32(G.DAT_00655aea, 0, s32(G.DAT_0064bc1e, 0) & 0xffff7fff);
         w32(G.DAT_00655af2, 0, s32(G.DAT_0064bc22, 0));
         FUN_0040ff60();
         FUN_00421da0();
@@ -7881,7 +7881,7 @@ if (true) {
           puStackY_30 = 0x423717;
           FUN_0046e020();
         }
-        s32(G.DAT_00655aea, 0) = s32(G.DAT_0064bc1e, 0) & 0xffff7fff;
+        w32(G.DAT_00655aea, 0, s32(G.DAT_0064bc1e, 0) & 0xffff7fff);
         w32(G.DAT_00655af2, 0, s32(G.DAT_0064bc22, 0));
         FUN_0040ff60();
         FUN_00421da0();

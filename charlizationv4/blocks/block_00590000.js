@@ -4416,7 +4416,7 @@ export function FUN_0059d34e() {
 export function FUN_0059d363() {
 
 
-  s32(G.DAT_006cec84, 0) = s32(G.DAT_00635a58, 0);
+  w32(G.DAT_006cec84, 0, s32(G.DAT_00635a58, 0));
   return;
 }
 
@@ -4890,8 +4890,8 @@ export function FUN_0059db65(in_ECX = G.in_ECX) {
                    /*JOINED*/
     }
     w32(G.DAT_00635a9c, 0, s32(G.DAT_00635a9c, 0) + -1);
-    s32(G.DAT_006ad678, 0) = G.DAT_00635a58[s32(G.DAT_00635a9c, 0)];
-    s32(G.DAT_006cec84, 0) = s32(G.DAT_006ad678, 0);
+    w32(G.DAT_006ad678, 0, G.DAT_00635a58[s32(G.DAT_00635a9c, 0)]);
+    w32(G.DAT_006cec84, 0, s32(G.DAT_006ad678, 0));
     _DAT_006cec80 = FUN_00421bb0();
   }
   return;

@@ -484,10 +484,10 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
   if (s32(G.DAT_0063b260, 0) === 0x0) {
     hModule = LoadLibraryA("user32.dll");
     if (hModule !== 0x0) {
-      s32(G.DAT_0063b260, 0) = GetProcAddress(hModule,"MessageBoxA");
+      w32(G.DAT_0063b260, 0, GetProcAddress(hModule,"MessageBoxA"));
       if (s32(G.DAT_0063b260, 0) !== 0x0) {
-        s32(G.DAT_0063b264, 0) = GetProcAddress(hModule,"GetActiveWindow");
-        s32(G.DAT_0063b268, 0) = GetProcAddress(hModule,"GetLastActivePopup");
+        w32(G.DAT_0063b264, 0, GetProcAddress(hModule,"GetActiveWindow"));
+        w32(G.DAT_0063b268, 0, GetProcAddress(hModule,"GetLastActivePopup"));
         LAB_006009b5_helper(iVar1, local_8); return;
       }
     }
@@ -867,7 +867,7 @@ export function _E1_00600F70() {
 
 
   // DEVIATION: C runtime — _atexit(FUN_00601040);
-  s32(G.DAT_006e55ac, 0) = SetUnhandledExceptionFilter(__CxxUnhandledExceptionFilter);
+  w32(G.DAT_006e55ac, 0, SetUnhandledExceptionFilter(__CxxUnhandledExceptionFilter));
   return;
 }
 
@@ -2918,7 +2918,7 @@ export function ___tzset_00603620() {
 
   if (s32(G.DAT_0063b36c, 0) === 0) {
     __tzset();
-    s32(G.DAT_0063b36c, 0) = s32(G.DAT_0063b36c, 0) + 1;
+    w32(G.DAT_0063b36c, 0, s32(G.DAT_0063b36c, 0) + 1);
   }
   return;
 }
@@ -4318,7 +4318,7 @@ export function _getenv_00605AB0(_VarName) {
     }
     local_c = s32(G.DAT_00639f3c, 0);
   }
-  s32(G.DAT_00639f3c, 0) = local_c;
+  w32(G.DAT_00639f3c, 0, local_c);
   if ((local_c !== 0x0) && (_VarName !== 0x0)) {
     _MaxCount = _strlen(_VarName);
     for (; s32(local_c, 0) !== 0; local_c = local_c + 1) {
@@ -5015,20 +5015,20 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
   }
   bVar5 = true /* DEVIATION: C pointer — *(uchar *)(ppcVar1 + 1) */ === 0;
   if (s32(G.DAT_00639f40, 0) === s32(G.DAT_00639f3c, 0)) {
-    s32(G.DAT_00639f3c, 0) = copy_environ(s32(G.DAT_00639f3c, 0));
+    w32(G.DAT_00639f3c, 0, copy_environ(s32(G.DAT_00639f3c, 0)));
   }
   if (s32(G.DAT_00639f3c, 0) === 0x0) {
     if ((_Primary === 0) || (s32(G.DAT_00639f44, 0) === 0x0)) {
       if (bVar5) {
         return 0;
       }
-      s32(G.DAT_00639f3c, 0) = __malloc_dbg(4,2,"setenv.c",0x87);
+      w32(G.DAT_00639f3c, 0, __malloc_dbg(4,2,"setenv.c",0x87));
       if (s32(G.DAT_00639f3c, 0) === 0x0) {
         return -1;
       }
       w32(G.DAT_00639f3c, 0, 0);
       if (s32(G.DAT_00639f44, 0) === 0x0) {
-        s32(G.DAT_00639f44, 0) = __malloc_dbg(4,2,"setenv.c",0x8e);
+        w32(G.DAT_00639f44, 0, __malloc_dbg(4,2,"setenv.c",0x8e));
         if (s32(G.DAT_00639f44, 0) === 0x0) {
           return -1;
         }
@@ -5057,7 +5057,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     }
     piVar3[local_c] = _POption;
     piVar3[local_c + 1] = 0;
-    s32(G.DAT_00639f3c, 0) = piVar3;
+    w32(G.DAT_00639f3c, 0, piVar3);
   }
   else if (bVar5) {
     __free_dbg(piVar3[local_c],2);
@@ -5066,7 +5066,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     }
     piVar3 = __realloc_dbg(piVar3,local_c << 2,2,"setenv.c",0xb9);
     if (piVar3 !== 0x0) {
-      s32(G.DAT_00639f3c, 0) = piVar3;
+      w32(G.DAT_00639f3c, 0, piVar3);
     }
   }
   else {

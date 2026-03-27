@@ -3895,7 +3895,7 @@ export function FUN_0054f3b9(in_ECX = G.in_ECX) {
   FUN_005c64da();
   local_8 = 0;
   w32(G.DAT_006a1d7c, 0, 1);
-  s32(G.DAT_006a4f88, 0) = in_ECX;
+  w32(G.DAT_006a4f88, 0, in_ECX);
   pvVar2 = operator_new(0x310);
   local_8 = 1;
   if (pvVar2 === 0x0) {

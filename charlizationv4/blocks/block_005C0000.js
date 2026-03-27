@@ -9184,7 +9184,7 @@ export function FUN_005cd775(param_1, param_2) {
         }
       }
 // LAB_005cda01: (code below also in LAB_005cda01_helper, kept for 1:1 audit)
-      s32(G.DAT_006e47c8, 0) = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
+      w32(G.DAT_006e47c8, 0, ptrAdd(G.DAT_006d470c, local_18 * 0x100c));
       return;
     }
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === s32(G.DAT_00637f98, 0)) && (s32(G.DAT_006d4704, local_14 * 0x100c) === s32(G.DAT_00637f9c, 0))) {
@@ -11472,7 +11472,7 @@ if (true) {
 }
 
 function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
-      s32(G.DAT_006e47c8, 0) = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
+      w32(G.DAT_006e47c8, 0, ptrAdd(G.DAT_006d470c, local_18 * 0x100c));
       return;
   // (outer block close)
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === s32(G.DAT_00637f98, 0)) && (s32(G.DAT_006d4704, local_14 * 0x100c) === s32(G.DAT_00637f9c, 0))) {

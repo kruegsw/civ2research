@@ -3191,10 +3191,10 @@ export function create_window_423C_005D423C(param_1) {
   }
   else {
     w32(G.DAT_006e4808, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_TimerCallBack_006383d0));
-    s32(G.DAT_006e4810, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_SetTimerID_006383e0);
-    s32(G.DAT_006e47fc, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerID_006383ec);
+    w32(G.DAT_006e4810, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_SetTimerID_006383e0));
+    w32(G.DAT_006e47fc, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerID_006383ec));
     w32(G.DAT_006e4800, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerIndex_006383f8));
-    s32(G.DAT_006e480c, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_ResetTimerNotified_00638408);
+    w32(G.DAT_006e480c, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_ResetTimerNotified_00638408));
     if ((((s32(G.DAT_006e4808, 0) === 0x0) || (s32(G.DAT_006e4810, 0) === 0x0)) || (s32(G.DAT_006e47fc, 0) === 0x0)) || ((s32(G.DAT_006e4800, 0) === 0x0 || (s32(G.DAT_006e480c, 0) === 0x0)))) {
         /*JOINED*/
        /*JOINED*/
@@ -3702,7 +3702,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                   w16(local_34, 0x22, 1);
                   local_34[0x2d] = param_4;
                   if (s32(G.DAT_006385d0, 0) === 0x0) {
-                    s32(G.DAT_006385d0, 0) = local_34;
+                    w32(G.DAT_006385d0, 0, local_34);
                   }
                   else {
                     for (local_3c = s32(G.DAT_006385d0, 0); local_3c[0x2e] !== 0; local_3c = local_3c[0x2e]) {
@@ -3841,7 +3841,7 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                     // DEVIATION: C pointer write — *(undefined2 *)((int)local_38 + 0x8a) = param_3;
                     FUN_005d6283(local_38);
                     if (s32(G.DAT_006385d0, 0) === 0x0) {
-                      s32(G.DAT_006385d0, 0) = local_38;
+                      w32(G.DAT_006385d0, 0, local_38);
                     }
                     else {
                       for (local_40 = s32(G.DAT_006385d0, 0); local_40[0x2e] !== 0; local_40 = local_40[0x2e]) {
@@ -3997,7 +3997,7 @@ export function FUN_005d52a2(param_1) {
               local_b4[0x2a] = local_b4[0x2a] + 1;
             }
             local_b4[0x2e] = s32(G.DAT_006385d0, 0);
-            s32(G.DAT_006385d0, 0) = local_b4;
+            w32(G.DAT_006385d0, 0, local_b4);
             w32(G.DAT_0063858c, 0, s32(G.DAT_0063858c, 0) + 1);
             uVar1 = 0;
           }
@@ -4106,7 +4106,7 @@ export function FUN_005d57b1(param_1) {
   }
   else if ((u8(G.DAT_006385d0[0x70]) & 1) === 0) {
     if ((u32(true /* DEVIATION: C pointer — s32(DAT_006385d0, 0x98) */ + 0xc, 0) >> 3 & 1) === 0) {
-      if (((u32(true /* DEVIATION: C pointer — s32(DAT_006385d0, 0x98) */ + 0xc, 0) >> 7) - (u32(DAT_006385c8, 0xc) >> 7) & 7) === 0) {
+      if (((u32(true /* DEVIATION: C pointer — s32(DAT_006385d0, 0x98) */ + 0xc, 0) >> 7) - (u32(G.DAT_006385c8, 0xc) >> 7) & 7) === 0) {
            /*JOINED*/
         param_1 = ((s32(G.DAT_006385d0, 0x9c) - s32(G.DAT_006385d0, 0x68)) >>> 0) / u16(G.DAT_006385d0, 0x80);
                   /*JOINED*/
@@ -4193,7 +4193,7 @@ export function FUN_005d5b88() {
     uVar1 = 5;
   }
   else {
-    s32(G.DAT_006385d0, 0) = FUN_005d7494(0,s32(G.DAT_006385d0, 0));
+    w32(G.DAT_006385d0, 0, FUN_005d7494(0,s32(G.DAT_006385d0, 0)));
     uVar1 = 0;
   }
   return uVar1;
@@ -4308,7 +4308,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
         local_8[3] = local_8[3] | 8;
         local_8 = local_8[7];
       }
-      s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c0, 0);
+      w32(G.DAT_006385c8, 0, s32(G.DAT_006385c0, 0));
       uVar1 = 0;
     }
   }
@@ -4577,7 +4577,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       }
       if (local_14 === 0) {
         w32(G.DAT_006385c0, 0, local_8);
-        s32(G.DAT_006385c8, 0) = local_8;
+        w32(G.DAT_006385c8, 0, local_8);
       }
       _memset(local_8,0,0x20);
       local_8[2] = local_1c[0];
@@ -4644,7 +4644,7 @@ export function FUN_005d6685(param_1) {
   }
   uVar1 = s32(local_8, 0x1c);
   w32(local_c, 0x1c, s32(G.DAT_006385c4, 0));
-  s32(G.DAT_006385c4, 0) = uVar1;
+  w32(G.DAT_006385c4, 0, uVar1);
   w32(local_8, 0x1c, s32(G.DAT_006385c0, 0));
   w32(G.DAT_00638588, 0, s32(G.DAT_00638588, 0) + param_1);
   return;
@@ -4666,7 +4666,7 @@ export function FUN_005d673a(param_1) {
   
   local_8 = s32(G.DAT_006385c0, 0);
   if (((s32(G.DAT_00638588, 0) - param_1) >>> 0) <= (u32(G.DAT_006385c8, 0xc) >> 7 & 0xff)) {
-    s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c0, 0);
+    w32(G.DAT_006385c8, 0, s32(G.DAT_006385c0, 0));
   }
   for (local_14 = 0; local_14 < (s32(G.DAT_00638588, 0) - param_1) - 1; local_14 = local_14 + 1) {
     local_8 = s32(local_8, 0x1c);
@@ -4689,7 +4689,7 @@ export function FUN_005d673a(param_1) {
     local_8 = s32(local_8, 0x1c);
   }
   w32(local_8, 0x1c, s32(G.DAT_006385c4, 0));
-  s32(G.DAT_006385c4, 0) = iVar1;
+  w32(G.DAT_006385c4, 0, iVar1);
   w32(G.DAT_00638588, 0, s32(G.DAT_00638588, 0) - param_1);
   return;
 }
@@ -4867,9 +4867,9 @@ export function FUN_005d6b89(param_1) {
   }
   w32(G.DAT_006385c0, 0, 0x0);
   do {
-    s32(G.DAT_006385d0, 0) = FUN_005d7494(0,s32(G.DAT_006385d0, 0));
+    w32(G.DAT_006385d0, 0, FUN_005d7494(0,s32(G.DAT_006385d0, 0)));
   } while (s32(G.DAT_006385d0, 0) !== 0);
-  s32(G.DAT_006385d0, 0) = 0;
+  w32(G.DAT_006385d0, 0, 0);
   return local_c;
 }
 
@@ -4904,7 +4904,7 @@ export function FUN_005d6c99(param_1, param_2) {
   if (s32(G.DAT_006385b0, 0) !== 0) {
     local_20 = true /* DEVIATION: C pointer — *(int **)(param_2 + 0xc) */;
     local_2c = 0;
-    while ((local_2c < s32(G.DAT_00638588, 0) && (s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c8, 0x1c), (u32(G.DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
+    while ((local_2c < s32(G.DAT_00638588, 0) && (w32(G.DAT_006385c8, 0, s32(G.DAT_006385c8, 0x1c)), (u32(G.DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
            /*JOINED*/
            /*JOINED*/
       local_2c = local_2c + 1;
@@ -5131,7 +5131,7 @@ export function FUN_005d7494(param_1, param_2) {
       w32(param_1, 0xb8, uVar2);
       uVar1 = s32(G.DAT_006385d0, 0);
     }
-    s32(G.DAT_006385d0, 0) = uVar1;
+    w32(G.DAT_006385d0, 0, uVar1);
     mmioClose(s32(param_2, 0),0);
     if ((((param_2[0x1c]) >>> 0) >> 2 & 1) !== 0) {
       mmioClose(param_2[0x18],0);
@@ -10544,7 +10544,7 @@ export function FUN_005de689(param_1) {
 export function FUN_005de6a5(param_1) {
 
 
-  s32(G.DAT_006e5004, 0) = param_1;
+  w32(G.DAT_006e5004, 0, param_1);
   return;
 }
 
@@ -10588,7 +10588,7 @@ export function FUN_005de6e0(param_1) {
 export function FUN_005de6fc(param_1) {
 
 
-  s32(G.DAT_006e5000, 0) = param_1;
+  w32(G.DAT_006e5000, 0, param_1);
   return;
 }
 

@@ -1965,11 +1965,11 @@ export function __onexit_005F1B80(_Func) {
     if (iVar2 === 0) {
       return 0x0;
     }
-    s32(G.DAT_006e6b54, 0) = ((s32(G.DAT_006e6b54, 0) - s32(G.DAT_006e6b68, 0) & 0xfffffffc) + iVar2);
-    s32(G.DAT_006e6b68, 0) = iVar2;
+    w32(G.DAT_006e6b54, 0, ((s32(G.DAT_006e6b54, 0) - s32(G.DAT_006e6b68, 0) & 0xfffffffc) + iVar2));
+    w32(G.DAT_006e6b68, 0, iVar2);
   }
   w32(G.DAT_006e6b54, 0, _Func);
-  s32(G.DAT_006e6b54, 0) = s32(G.DAT_006e6b54, 0) + 1;
+  w32(G.DAT_006e6b54, 0, s32(G.DAT_006e6b54, 0) + 1);
   return _Func;
 }
 
@@ -2016,12 +2016,12 @@ export function _atexit_005F1C40(param_1) {
 export function ___onexitinit_005F1C70() {
 
 
-  s32(G.DAT_006e6b68, 0) = __malloc_dbg(0x80,2,"onexit.c",0xb6);
+  w32(G.DAT_006e6b68, 0, __malloc_dbg(0x80,2,"onexit.c",0xb6));
   if (s32(G.DAT_006e6b68, 0) === 0x0) {
     __amsg_exit(0x18);
   }
   w32(G.DAT_006e6b68, 0, 0);
-  s32(G.DAT_006e6b54, 0) = s32(G.DAT_006e6b68, 0);
+  w32(G.DAT_006e6b54, 0, s32(G.DAT_006e6b68, 0));
   return;
 }
 
@@ -5338,7 +5338,7 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
     puVar5 = (s32(pcVar1, 0))();
     return puVar5;
   }
-  iVar6 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(1,0,param_1,param_2,DAT_00639f74,param_3,param_4);
+  iVar6 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(1,0,param_1,param_2,s32(G.DAT_00639f74, 0),param_3,param_4);
   if (iVar6 === 0) {
     if (param_3 === 0) {
       iVar4 = __CrtDbgReport(0,0,0,0,s32(G.DAT_0061dc40, 0),"Client hook allocation failure.\n");
@@ -5407,7 +5407,7 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
           puVar5[4] = param_1;
           puVar5[5] = param_2;
           puVar5[6] = iVar4;
-          s32(G.DAT_006e5478, 0) = puVar5;
+          w32(G.DAT_006e5478, 0, puVar5);
         }
         _memset(puVar5 + 7,((s32(G.DAT_00639f7c, 0)) >>> 0),4);
         _memset((puVar5 + param_1 + 0x20),((s32(G.DAT_00639f7c, 0)) >>> 0),4);
@@ -5563,7 +5563,7 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
       piVar4 = (s32(pcVar1, 0))();
       return piVar4;
     }
-    iVar5 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(2,param_1,param_2,param_3,DAT_00639f74,param_4,param_5);
+    iVar5 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(2,param_1,param_2,param_3,s32(G.DAT_00639f74, 0),param_4,param_5);
     if (iVar5 === 0) {
       if (param_4 === 0) {
         iVar3 = __CrtDbgReport(0,0,0,0,s32(G.DAT_0061dc40, 0),"Client hook re-allocation failure.\n");
@@ -5689,7 +5689,7 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
             piVar4 = (s32(pcVar1, 0))();
             return piVar4;
           }
-          s32(G.DAT_006e5478, 0) = s32(local_10, 0);
+          w32(G.DAT_006e5478, 0, s32(local_10, 0));
         }
         else {
           // DEVIATION: C pointer write — *(int *)local_10[1] = *local_10;
@@ -5702,7 +5702,7 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
         }
         w32(local_10, 0, s32(G.DAT_006e5478, 0));
         local_10[1] = 0;
-        s32(G.DAT_006e5478, 0) = local_10;
+        w32(G.DAT_006e5478, 0, local_10);
       }
     }
     else {
@@ -5900,7 +5900,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
               (s32(pcVar1, 0))();
               return;
             }
-            s32(G.DAT_006e5478, 0) = s32(_Dst, 0);
+            w32(G.DAT_006e5478, 0, s32(_Dst, 0));
           }
           else {
             // DEVIATION: C pointer write — **(int **)((int)param_1 + -0x1c) = *_Dst;
@@ -6270,7 +6270,7 @@ export function __CrtSetDbgFlag_005F5A60(param_1) {
   
   iVar1 = s32(G.DAT_00639f70, 0);
   if (param_1 !== -1) {
-    s32(G.DAT_00639f70, 0) = param_1;
+    w32(G.DAT_00639f70, 0, param_1);
   }
   return iVar1;
 }
@@ -6428,7 +6428,7 @@ export function FUN_005f5d30(param_1) {
   let uVar1;
   
   uVar1 = s32(G.DAT_006e6b48, 0);
-  s32(G.DAT_006e6b48, 0) = param_1;
+  w32(G.DAT_006e6b48, 0, param_1);
   return uVar1;
 }
 
@@ -7581,7 +7581,7 @@ export function entry_005F6E90(unaff_EDI) {
   local_8 = 0;
   __ioinit();
   ___initmbctable();
-  s32(G.DAT_006e6b3c, 0) = GetCommandLineA();
+  w32(G.DAT_006e6b3c, 0, GetCommandLineA());
   w32(G.DAT_00639fc0, 0, ___crtGetEnvironmentStringsA());
   if ((s32(G.DAT_00639fc0, 0) !== 0x0) && (s32(G.DAT_006e6b3c, 0) !== 0x0)) {
     __setargv();
@@ -8877,7 +8877,7 @@ export function FUN_005f8b40(param_1) {
   let uVar1;
   
   uVar1 = s32(G.DAT_006e6b30, 0);
-  s32(G.DAT_006e6b30, 0) = param_1;
+  w32(G.DAT_006e6b30, 0, param_1);
   return uVar1;
 }
 
@@ -8945,7 +8945,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
     local_100c = 0xffffffff;
   }
   else if ((param_1 === 2) && (LVar1 = InterlockedIncrement(s32(G.DAT_0063a030, 0)), 0 < LVar1)) {
-    if ((s32(G.DAT_0063a064, 0) === 0x0) && ((local_3010 = LoadLibraryA("user32.dll"), local_3010 === 0x0 || (s32(G.DAT_0063a064, 0) = GetProcAddress(local_3010,"wsprintfA"), s32(G.DAT_0063a064, 0) === 0x0)))) {
+    if ((s32(G.DAT_0063a064, 0) === 0x0) && ((local_3010 = LoadLibraryA("user32.dll"), local_3010 === 0x0 || (w32(G.DAT_0063a064, 0, GetProcAddress(local_3010,"wsprintfA")), s32(G.DAT_0063a064, 0) === 0x0)))) {
        /*JOINED*/
         /*JOINED*/
       local_100c = 0xffffffff;
@@ -9836,7 +9836,7 @@ export function flsall_005FA310(param_1) {
           local_8 = local_8 + 1;
         }
       }
-      else if (((param_1 === 0) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e5694, local_10 * 4) */ + 0xc)[0]) & 2) !== 0)) && (iVar1 = _fflush(s32(DAT_006e5694, local_10 * 4)), iVar1 === -1)) {
+      else if (((param_1 === 0) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e5694, local_10 * 4) */ + 0xc)[0]) & 2) !== 0)) && (iVar1 = _fflush(s32(G.DAT_006e5694, local_10 * 4)), iVar1 === -1)) {
                /*JOINED*/
               /*JOINED*/
         local_c = -1;
@@ -11075,7 +11075,7 @@ export function __ioinit_005FC160() {
     __amsg_exit(0x1b);
   }
   w32(G.DAT_006e6b2c, 0, 0x20);
-  s32(G.DAT_006e69f0, 0) = local_54;
+  w32(G.DAT_006e69f0, 0, local_54);
   for (; local_54 < s32(G.DAT_006e69f0, 0) + 0x40; local_54 = local_54 + 2) {
     local_54[1] = 0;
     w32(local_54, 0, 0xffffffff);
@@ -11318,7 +11318,7 @@ export function FUN_005fc720(param_1) {
   let uVar1;
   
   uVar1 = s32(G.DAT_006e54a0, 0);
-  s32(G.DAT_006e54a0, 0) = param_1;
+  w32(G.DAT_006e54a0, 0, param_1);
   return uVar1;
 }
 
@@ -12510,10 +12510,10 @@ export function ___initstdio_005FE0B0() {
   else if (s32(G.DAT_006e69e0, 0) < 0x14) {
     w32(G.DAT_006e69e0, 0, 0x14);
   }
-  s32(G.DAT_006e5694, 0) = __calloc_dbg(s32(G.DAT_006e69e0, 0),4,2,"_file.c",0x84);
+  w32(G.DAT_006e5694, 0, __calloc_dbg(s32(G.DAT_006e69e0, 0),4,2,"_file.c",0x84));
   if (s32(G.DAT_006e5694, 0) === 0) {
     w32(G.DAT_006e69e0, 0, 0x14);
-    s32(G.DAT_006e5694, 0) = __calloc_dbg(0x14,4,2,"_file.c",0x87);
+    w32(G.DAT_006e5694, 0, __calloc_dbg(0x14,4,2,"_file.c",0x87));
     if (s32(G.DAT_006e5694, 0) === 0) {
       __amsg_exit(0x1a);
     }
@@ -12902,7 +12902,7 @@ export function __cftog_005FE8C0(unaff_EDI, param_1, param_2, param_3, param_4) 
   // unaff_EDI → promoted to parameter
   let local_8;
   
-  s32(G.DAT_006e54a4, 0) = __fltout(s32(param_1, 0),param_1[1]);
+  w32(G.DAT_006e54a4, 0, __fltout(s32(param_1, 0),param_1[1]));
   w32(G.DAT_0063aefc, 0, G.DAT_006e54a4[1] + -1);
   _Buf = (((s32(G.DAT_006e54a4, 0) === 0x2d) >>> 0) + param_2);
   __fptostr(_Buf,param_3,s32(G.DAT_006e54a4, 0),unaff_EDI);
@@ -13425,7 +13425,7 @@ export function __setenvp_005FEFD0() {
     sVar1 = _strlen(local_8);
   }
   local_10 = __malloc_dbg(local_c * 4 + 4,2,"stdenvp.c",0x55);
-  s32(G.DAT_00639f3c, 0) = local_10;
+  w32(G.DAT_00639f3c, 0, local_10);
   if (local_10 === 0x0) {
     __amsg_exit(9);
   }
