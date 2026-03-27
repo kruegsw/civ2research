@@ -396,8 +396,7 @@ for (const blockFile of blockFiles) {
         );
       }
 
-      // 2e: Stub Windows message pump functions (headless: infinite loop otherwise)
-      // These do-while loops poll for Windows messages that never arrive
+      // 2e: Stub message pump functions (headless: infinite loop otherwise)
       if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76)\b/.test(trimmed)) {
         processed = processed.replace(
           /^(export function \w+\([^)]*\))\s*\{/,
