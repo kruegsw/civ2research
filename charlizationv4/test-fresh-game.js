@@ -88,6 +88,10 @@ function placeCity(idx, owner, name, x, y, size) {
   for (let i = 0; i < size; i++) tileBits |= (1 << i);
   w32(c, 0x30, tileBits);
   w32(c, 0x54, 1);       // exists flag
+  // Stamp city on tile data: byte 1 bit 1 = city flag, byte 5 upper nibble = city index
+  const tileOff = TILE_DATA_BASE + (s16(DAT_006d1160, 0) & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
+  _MEM[tileOff + 1] |= 0x02;           // city improvement flag
+  _MEM[tileOff + 5] = (_MEM[tileOff + 5] & 0x0F) | (idx << 4); // city index in upper nibble
 }
 
 // Civ 1: city at (20,10), settler at (30,10)
