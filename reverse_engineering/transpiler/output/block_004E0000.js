@@ -2666,15 +2666,15 @@ export function FUN_004e7641(param_1) {
                                /*JOINED*/
     iVar4 = s16(DAT_0064f342, param_1 * 0x58) + s8(_MEM[DAT_006283a0 + local_8]);
     pbVar5 = ptrAdd(DAT_006a6530, local_8);
-    _MEM[pbVar5] = 0;
+    w32(pbVar5, 0, 0);
     iVar6 = FUN_004087c0(uVar3,iVar4);
     if ((iVar6 === 0) || (0x14 < local_8)) {
-      _MEM[pbVar5] = _MEM[pbVar5] | 1;
+      w32(pbVar5, 0, s32(pbVar5, 0) | 1);
     }
     else {
       iVar6 = FUN_005b8b65(uVar3,iVar4,iVar2);
       if (iVar6 === 0) {
-        _MEM[pbVar5] = _MEM[pbVar5] | 1;
+        w32(pbVar5, 0, s32(pbVar5, 0) | 1);
       }
       else {
         if ((((1 << (bVar1 & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) === 0) && (v(DAT_0062edf8) !== 0)) && (uVar7 = FUN_005b94d5(uVar3,iVar4), (uVar7 & 0x80) !== 0)) {
@@ -2682,25 +2682,22 @@ export function FUN_004e7641(param_1) {
           wv(DAT_00655b10, v(DAT_00655b10) + 1);
         }
         local_18 = FUN_005b2e69(uVar3,iVar4);
-        let _gotoLabel = false;
         while( true ) {
-          if (((local_18 < 0) || (s8(_MEM[DAT_006560f7 + local_18 * 0x20]) === iVar2)) || ((iVar6 = FUN_005b89e4(uVar3,iVar4), iVar6 !== 0 || ((_MEM[DAT_0064c6c0 + s8(_MEM[DAT_006560f7 + local_18 * 0x20]) * 4 + iVar2 * 0x594] & 8) !== 0)))) { _gotoLabel = true; break; }
+          if (((local_18 < 0) || (s8(_MEM[DAT_006560f7 + local_18 * 0x20]) === iVar2)) || ((iVar6 = FUN_005b89e4(uVar3,iVar4), iVar6 !== 0 || ((_MEM[DAT_0064c6c0 + s8(_MEM[DAT_006560f7 + local_18 * 0x20]) * 4 + iVar2 * 0x594] & 8) !== 0)))) return LAB_004e7898_helper(bVar1, iVar2, iVar4, iVar6, local_18, local_8, param_1, pbVar5, uVar3, uVar7);
              /*JOINED*/
               /*JOINED*/
                /*JOINED*/
           if (_MEM[DAT_0064b1c4 + u8(_MEM[DAT_006560f6 + local_18 * 0x20]) * 0x14] !== 0) break;
           local_18 = FUN_005b2c82(local_18);
         }
-        if (!_gotoLabel) {
-          _MEM[pbVar5] = _MEM[pbVar5] | 4;
-          if ((((v(DAT_00655b0b)) >>> 0) & 1 << (_MEM[DAT_006560f7 + local_18 * 0x20] & 0x1f)) !== 0) {
-            _MEM[pbVar5] = _MEM[pbVar5] | 0x20;
-          }
+        w32(pbVar5, 0, s32(pbVar5, 0) | 4);
+        if ((((v(DAT_00655b0b)) >>> 0) & 1 << (_MEM[DAT_006560f7 + local_18 * 0x20] & 0x1f)) !== 0) {
+          w32(pbVar5, 0, s32(pbVar5, 0) | 0x20);
         }
 // LAB_004e7898: (code below also in LAB_004e7898_helper, kept for 1:1 audit)
         iVar4 = FUN_005b8ca6(uVar3,iVar4);
         if (-1 < iVar4) {
-          _MEM[pbVar5] = _MEM[pbVar5] | 8;
+          w32(pbVar5, 0, s32(pbVar5, 0) | 8);
         }
       }
     }
@@ -3351,7 +3348,7 @@ export function FUN_004e8f42(param_1) {
   let local_5c = 0;
   let aiStack_58 = new Array(20).fill(0);
   let local_8;
-
+  
   local_7c = 0;
   wv(DAT_006a65dc, 0);
   bVar1 = _MEM[DAT_0064f348 + param_1 * 0x58];
