@@ -2,23 +2,31 @@
 // ═══════════════════════════════════════════════════════════════════
 // watch-game.js — Watch a Civ2 game by monitoring save files
 //
-// Usage: node charlizationv4/watch-game.js [save-dir]
+// Usage: node charlizationv4/watch-game.js [save-dir] [--log file.txt]
 //
-// Watches for new/modified .sav files. When one changes:
-//   1. Parses it using the v3 parser (structured game objects)
-//   2. Diffs against the previous state
-//   3. Prints human-readable changes (units, cities, etc.)
+// Watches for new/modified .sav files. Parses each save and logs
+// human-readable diffs to stdout AND optionally to a log file.
 //
-// Default dir: the Civ2 game folder
+// Designed to run on any machine (Windows/Linux/Mac) with Node.js.
+// Dependencies: charlizationv3/engine/parser.js, defs.js, state.js
+//
+// Workflow:
+//   1. Start this alongside Civ2
+//   2. Play the game, save or let autosave run
+//   3. Bring the log file back for analysis
 // ═══════════════════════════════════════════════════════════════════
 
-import { readFileSync, watch, statSync } from 'fs';
-import { join } from 'path';
 import { Civ2Parser } from '../charlizationv3/engine/parser.js';
-function parse(buf, name) { return Civ2Parser.parse(buf, name || 'save.sav'); }
+import { readFileSync, watch, statSync, writeFileSync, appendFileSync, readdirSync } from 'fs';
+import { join, basename } from 'path';
 
-const GAME_DIR = process.argv[2] ||
-  '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition';
+const args = process.argv.slice(2);
+const logIdx = args.indexOf('--log');
+const LOG_FILE = logIdx >= 0 ? args[logIdx + 1] : null;
+const GAME_DIR = args.find(a => a !== '--log' && (logIdx < 0 || a !== args[logIdx + 1])) ||
+  (process.platform === 'win32'
+    ? 'C:\\Program Files (x86)\\Civilization II Multiplayer Gold Edition'
+    : '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition');
 
 const UNIT_NAMES = [
   'Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen',
@@ -29,115 +37,164 @@ const UNIT_NAMES = [
   'Trireme','Caravel','Galleon','Frigate','Ironclad','Destroyer',
   'Cruiser','AEGIS','Battleship','Submarine','Carrier','Transport',
   'Cruise Msl','Nuclear Msl','Diplomat','Spy','Caravan','Freight',
-  'Explorer','Extra L1','Extra L2','Extra L3','Extra L4','Extra L5',
-  'Extra L6','Extra L7','Extra L8','Extra L9','Extra S1','Extra S2'
+  'Explorer'
 ];
 
-const CIV_NAMES = ['Barbarians','Civ1','Civ2','Civ3','Civ4','Civ5','Civ6','Civ7'];
+const ORDER_NAMES = {
+  0: 'fortify', 1: 'sentry', 2: 'fortress', 3: 'road', 4: 'irrigate',
+  5: 'mine', 6: 'transform', 7: 'clean', 8: 'fortress2', 9: 'airbase',
+  10: 'load', 11: 'goto', 12: 'no_orders', 27: 'goto_ai',
+  255: 'none'
+};
 
-let prevState = null;
-let prevFile = null;
-
-function summarizeState(state) {
-  const gs = state.gameState || {};
-  const summary = {
-    turn: gs.turnsPassed ?? '?',
-    difficulty: gs.difficulty ?? '?',
-    units: [],
-    cities: [],
-  };
-
-  if (state.units) {
-    for (const u of state.units) {
-      if (!u.saveIndex && u.gx === 0 && u.gy === 0) continue;
-      summary.units.push({
-        id: u.saveIndex, type: u.type, typeName: UNIT_NAMES[u.type] || 'Type'+u.type,
-        owner: u.owner, x: u.gx, y: u.gy,
-        moves: u.movesRemain, order: u.order,
-        homeCity: u.homeCity,
-      });
-    }
+function log(text) {
+  console.log(text);
+  if (LOG_FILE) {
+    appendFileSync(LOG_FILE, text + '\n');
   }
-
-  if (state.cities) {
-    for (const c of state.cities) {
-      if (!c.name && c.size === 0) continue;
-      summary.cities.push({
-        name: c.name, owner: c.owner, size: c.size,
-        x: c.gx, y: c.gy,
-        food: c.foodStore, shields: c.shieldStore,
-        producing: c.producing,
-      });
-    }
-  }
-
-  return summary;
 }
 
-function diffStates(prev, curr) {
-  const lines = [];
+function summarize(state) {
+  const gs = state.gameState || {};
+  const out = {
+    turn: gs.turnsPassed ?? '?',
+    difficulty: gs.difficulty ?? '?',
+    humanPlayers: gs.humanPlayers,
+    units: [],
+    cities: [],
+    civs: [],
+  };
 
-  // Turn info
+  // Civs
+  if (state.civs) {
+    for (let i = 0; i < state.civs.length; i++) {
+      const cv = state.civs[i];
+      if (cv && cv.name) {
+        out.civs.push({ id: i, name: cv.name, gold: cv.gold, gov: cv.government });
+      }
+    }
+  }
+
+  // Cities
+  if (state.cities) {
+    for (let i = 0; i < state.cities.length; i++) {
+      const c = state.cities[i];
+      if (!c.name && c.size === 0) continue;
+      out.cities.push({
+        idx: i, name: c.name, owner: c.owner, size: c.size,
+        x: c.gx, y: c.gy,
+        food: c.foodInBox, shields: c.shieldsInBox,
+        producing: typeof c.itemInProduction === 'object'
+          ? (c.itemInProduction?.type === 'unit' ? UNIT_NAMES[c.itemInProduction.id] || 'Unit'+c.itemInProduction.id
+             : c.itemInProduction?.name || 'Bldg'+c.itemInProduction?.id)
+          : c.itemInProduction,
+        prodRaw: c.prodRaw,
+        trade: c.netBaseTrade, foodProd: c.foodProduction, shieldProd: c.shieldProduction,
+      });
+    }
+  }
+
+  // Units
+  if (state.units) {
+    for (const u of state.units) {
+      if (u.dead || (u.id === 0 && u.gx === 0 && u.gy === 0)) continue;
+      out.units.push({
+        id: u.id || u.saveIndex, type: u.type,
+        typeName: UNIT_NAMES[u.type] || 'Type' + u.type,
+        owner: u.owner, x: u.gx, y: u.gy,
+        moves: u.movesRemain, order: u.order,
+        orderName: ORDER_NAMES[u.order] || 'order_' + u.order,
+        homeCity: u.homeCity ?? u.homeCityId,
+        gotoX: u.gotoX, gotoY: u.gotoY,
+        veteran: u.veteran ? 1 : 0,
+      });
+    }
+  }
+
+  return out;
+}
+
+function diff(prev, curr) {
+  const lines = [];
+  const civName = (id) => {
+    const c = curr.civs.find(c => c.id === id);
+    return c ? c.name : 'Civ' + id;
+  };
+
   if (prev.turn !== curr.turn) {
-    lines.push(`\n═══ Turn ${curr.turn} (${curr.year}) ═══`);
+    lines.push(`\n${'═'.repeat(60)}`);
+    lines.push(`Turn ${curr.turn} | ${curr.difficulty}`);
+    lines.push('═'.repeat(60));
+  }
+
+  // Civ gold changes
+  for (const c of curr.civs) {
+    const p = prev.civs.find(pc => pc.id === c.id);
+    if (p && p.gold !== c.gold) {
+      lines.push(`  ${c.name}: gold ${p.gold}→${c.gold}`);
+    }
   }
 
   // City changes
-  const prevCities = new Map(prev.cities.map(c => [c.name, c]));
+  const pc = new Map(prev.cities.map(c => [c.idx, c]));
   for (const c of curr.cities) {
-    const p = prevCities.get(c.name);
+    const p = pc.get(c.idx);
     if (!p) {
-      lines.push(`  NEW CITY: ${c.name} (${CIV_NAMES[c.owner]}) at (${c.x},${c.y})`);
+      lines.push(`  NEW CITY: ${c.name} (${civName(c.owner)}) at (${c.x},${c.y})`);
       continue;
     }
-    const changes = [];
-    if (p.size !== c.size) changes.push(`size ${p.size}→${c.size}`);
-    if (p.food !== c.food) changes.push(`food ${p.food}→${c.food}`);
-    if (p.shields !== c.shields) changes.push(`shields ${p.shields}→${c.shields}`);
-    if (p.producing !== c.producing) changes.push(`producing: ${c.producing}`);
-    if (changes.length > 0) {
-      lines.push(`  ${c.name} (${CIV_NAMES[c.owner]}): ${changes.join(', ')}`);
+    const ch = [];
+    if (p.size !== c.size) ch.push(`size ${p.size}→${c.size}`);
+    if (p.food !== c.food) ch.push(`food ${p.food}→${c.food}`);
+    if (p.shields !== c.shields) ch.push(`shld ${p.shields}→${c.shields}`);
+    if (p.producing !== c.producing) ch.push(`build: ${c.producing}`);
+    if (ch.length > 0) {
+      lines.push(`  ${c.name} (${civName(c.owner)}): ${ch.join(', ')}`);
+    }
+  }
+  // Deleted cities
+  for (const [idx, p] of pc) {
+    if (!curr.cities.find(c => c.idx === idx)) {
+      lines.push(`  CITY LOST: ${p.name} (${civName(p.owner)})`);
     }
   }
 
   // Unit changes
-  const prevUnits = new Map(prev.units.map(u => [u.id, u]));
-  const movedUnits = [];
-  const newUnits = [];
-  const deadUnits = [];
+  const pu = new Map(prev.units.map(u => [u.id, u]));
+  const moved = [], created = [], died = [], orderChanged = [];
 
   for (const u of curr.units) {
-    const p = prevUnits.get(u.id);
-    if (!p) {
-      newUnits.push(u);
-      continue;
-    }
-    prevUnits.delete(u.id);
-    if (p.x !== u.x || p.y !== u.y) {
-      movedUnits.push({ prev: p, curr: u });
-    }
+    const p = pu.get(u.id);
+    if (!p) { created.push(u); continue; }
+    pu.delete(u.id);
+    if (p.x !== u.x || p.y !== u.y) moved.push({ p, u });
+    else if (p.order !== u.order) orderChanged.push({ p, u });
   }
-  for (const [id, u] of prevUnits) {
-    deadUnits.push(u);
-  }
+  for (const [, u] of pu) died.push(u);
 
-  if (movedUnits.length > 0) {
-    lines.push(`  Units moved: ${movedUnits.length}`);
-    for (const { prev: p, curr: u } of movedUnits.slice(0, 10)) {
-      lines.push(`    ${u.typeName} (${CIV_NAMES[u.owner]}): (${p.x},${p.y})→(${u.x},${u.y})`);
-    }
-    if (movedUnits.length > 10) lines.push(`    ... and ${movedUnits.length - 10} more`);
-  }
-  if (newUnits.length > 0) {
-    lines.push(`  Units created: ${newUnits.length}`);
-    for (const u of newUnits.slice(0, 5)) {
-      lines.push(`    ${u.typeName} (${CIV_NAMES[u.owner]}) at (${u.x},${u.y})`);
+  if (moved.length > 0) {
+    lines.push(`  Moved (${moved.length}):`);
+    for (const { p, u } of moved) {
+      lines.push(`    ${u.typeName} (${civName(u.owner)}) (${p.x},${p.y})→(${u.x},${u.y}) [${u.orderName}${u.gotoX != null && u.order === 11 ? ' →(' + u.gotoX + ',' + u.gotoY + ')' : ''}]`);
     }
   }
-  if (deadUnits.length > 0) {
-    lines.push(`  Units lost: ${deadUnits.length}`);
-    for (const u of deadUnits.slice(0, 5)) {
-      lines.push(`    ${u.typeName} (${CIV_NAMES[u.owner]}) at (${u.x},${u.y})`);
+  if (orderChanged.length > 0) {
+    lines.push(`  Orders changed (${orderChanged.length}):`);
+    for (const { p, u } of orderChanged.slice(0, 8)) {
+      lines.push(`    ${u.typeName} (${civName(u.owner)}) at (${u.x},${u.y}): ${ORDER_NAMES[p.order]||p.order}→${u.orderName}${u.gotoX != null && u.order === 11 ? ' →(' + u.gotoX + ',' + u.gotoY + ')' : ''}`);
+    }
+    if (orderChanged.length > 8) lines.push(`    ... +${orderChanged.length - 8} more`);
+  }
+  if (created.length > 0) {
+    lines.push(`  Created (${created.length}):`);
+    for (const u of created.slice(0, 5)) {
+      lines.push(`    ${u.typeName} (${civName(u.owner)}) at (${u.x},${u.y}) home=${u.homeCity}`);
+    }
+  }
+  if (died.length > 0) {
+    lines.push(`  Died (${died.length}):`);
+    for (const u of died.slice(0, 5)) {
+      lines.push(`    ${u.typeName} (${civName(u.owner)}) at (${u.x},${u.y})`);
     }
   }
 
@@ -147,77 +204,82 @@ function diffStates(prev, curr) {
 function processFile(filepath) {
   try {
     const buf = readFileSync(filepath);
-    const state = parse(buf);
-    const summary = summarizeState(state);
-
-    if (prevState) {
-      const diff = diffStates(prevState, summary);
-      if (diff.length > 0) {
-        console.log(diff.join('\n'));
-      } else {
-        console.log(`  (no changes detected)`);
-      }
-    } else {
-      // First load — show full state
-      console.log(`\n═══ Initial State: Turn ${summary.turn} (${summary.year}) ═══`);
-      console.log(`  Cities: ${summary.cities.length}`);
-      for (const c of summary.cities) {
-        console.log(`    ${c.name} (${CIV_NAMES[c.owner]}) size=${c.size} at (${c.x},${c.y}) food=${c.food} shields=${c.shields}`);
-      }
-      console.log(`  Units: ${summary.units.length}`);
-      const byCiv = {};
-      for (const u of summary.units) {
-        const key = CIV_NAMES[u.owner] || 'Civ'+u.owner;
-        if (!byCiv[key]) byCiv[key] = {};
-        if (!byCiv[key][u.typeName]) byCiv[key][u.typeName] = 0;
-        byCiv[key][u.typeName]++;
-      }
-      for (const [civ, units] of Object.entries(byCiv)) {
-        const counts = Object.entries(units).map(([t,c]) => `${c}×${t}`).join(', ');
-        console.log(`    ${civ}: ${counts}`);
-      }
-    }
-
-    prevState = summary;
-    prevFile = filepath;
+    const state = Civ2Parser.parse(buf, basename(filepath));
+    return summarize(state);
   } catch (e) {
-    console.error(`Error parsing ${filepath}: ${e.message}`);
+    log(`Error parsing ${filepath}: ${e.message}`);
+    return null;
   }
 }
 
 // ── Main ──
 
-console.log(`Watching: ${GAME_DIR}`);
-console.log(`Save a game or wait for autosave. Press Ctrl+C to stop.\n`);
+log(`Civ2 Game Watcher`);
+log(`Save dir: ${GAME_DIR}`);
+if (LOG_FILE) {
+  writeFileSync(LOG_FILE, `Civ2 Game Watcher — ${new Date().toISOString()}\nSave dir: ${GAME_DIR}\n\n`);
+  log(`Logging to: ${LOG_FILE}`);
+}
+log(`Waiting for save files... (Ctrl+C to stop)\n`);
 
-// Process any existing autosave first
-const autoSaves = ['La_Auto2.SAV', 'ka_Auto2.SAV', 'TE_Auto2.SAV'];
-for (const name of autoSaves) {
-  const path = join(GAME_DIR, name);
-  try {
-    statSync(path);
-    console.log(`Found existing autosave: ${name}`);
-    processFile(path);
-    break;
-  } catch {}
+let prevState = null;
+const fileTimestamps = {};
+
+// Scan for initial saves
+try {
+  const files = readdirSync(GAME_DIR).filter(f => /\.(sav|SAV)$/i.test(f));
+  // Find most recent
+  let newest = null, newestTime = 0;
+  for (const f of files) {
+    try {
+      const t = statSync(join(GAME_DIR, f)).mtimeMs;
+      if (t > newestTime) { newestTime = t; newest = f; }
+    } catch {}
+  }
+  if (newest) {
+    log(`Most recent save: ${newest}`);
+    const state = processFile(join(GAME_DIR, newest));
+    if (state) {
+      log(`\nInitial state: Turn ${state.turn} | ${state.difficulty}`);
+      log(`Civs: ${state.civs.map(c => c.name).join(', ')}`);
+      log(`Cities: ${state.cities.length} | Units: ${state.units.length}`);
+      for (const c of state.cities.slice(0, 5)) {
+        log(`  ${c.name} (${state.civs.find(cv=>cv.id===c.owner)?.name||'?'}) size=${c.size} food=${c.food} shld=${c.shields} build=${c.producing}`);
+      }
+      if (state.cities.length > 5) log(`  ... +${state.cities.length - 5} more cities`);
+      prevState = state;
+    }
+    fileTimestamps[newest] = newestTime;
+  }
+} catch (e) {
+  log(`Could not scan directory: ${e.message}`);
 }
 
 // Watch for changes
-const seen = new Set();
 watch(GAME_DIR, (event, filename) => {
-  if (!filename || !filename.match(/\.(sav|SAV)$/)) return;
+  if (!filename || !/\.(sav|SAV)$/i.test(filename)) return;
   const filepath = join(GAME_DIR, filename);
 
-  // Debounce: skip if we just saw this file
-  const key = filename + '_' + Date.now().toString().slice(0, -3);
-  if (seen.has(key)) return;
-  seen.add(key);
-  setTimeout(() => seen.delete(key), 2000);
+  let mtime;
+  try { mtime = statSync(filepath).mtimeMs; } catch { return; }
 
-  try {
-    statSync(filepath); // verify file exists
-  } catch { return; }
+  // Skip if we already processed this version
+  if (fileTimestamps[filename] === mtime) return;
+  fileTimestamps[filename] = mtime;
 
-  console.log(`\n── File changed: ${filename} ──`);
-  processFile(filepath);
+  // Small delay to let the file finish writing
+  setTimeout(() => {
+    const state = processFile(filepath);
+    if (!state) return;
+
+    if (prevState) {
+      const lines = diff(prevState, state);
+      if (lines.length > 0) {
+        for (const line of lines) log(line);
+      }
+    } else {
+      log(`\n── Loaded: ${filename} (Turn ${state.turn}) ──`);
+    }
+    prevState = state;
+  }, 500);
 });
