@@ -288,3 +288,17 @@ export function __expand_dbg() { return 0; }
 export function __expand_base() { return 0; }
 export function __msize() { return 1024; }
 export function __msize_dbg() { return 1024; }
+
+// ── Windows message pump (headless: no messages) ──
+export function PeekMessageA() { return 0; }
+export function TranslateMessage() { return 0; }
+export function DispatchMessageA() { return 0; }
+export function GetMessageA() { return 0; }
+export function PostMessageA() { return 0; }
+export function SendMessageA() { return 0; }
+
+
+// ── GDI message pump functions (headless: all no-ops) ──
+export function GdiFlush() { return 1; }
+export function gdi_BA4F() { return 0; }
+export function gdi_BB76() { return 0; }

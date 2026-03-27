@@ -380,11 +380,59 @@ for (const blockFile of blockFiles) {
         processed = processed.replace(/\b(in_EDX)(?=[\s,)])/g, '$1 = globalThis.in_EDX');
       }
 
-      // No G. prefix, no scalar wrapping, no coercion transforms needed.
-      // DAT_xxx is a number (offset). v()/wv() are emitted by the transpiler.
+      // 2d: Fix bool returns: return expr !== 0 → return (expr !== 0) ? 1 : 0
+      // In C, bool is an integer (0 or 1). In JS, !== produces a boolean.
+      // When the caller checks result !== 0, boolean !== 0 is always true.
+      if (/return\s+.*!==\s*0\s*;/.test(processed)) {
+        processed = processed.replace(
+          /return\s+(.*)\s*!==\s*0\s*;/,
+          (m, expr) => `return (${expr.trim()} !== 0) ? 1 : 0;`
+        );
+      }
+      if (/return\s+.*===\s*0\s*;/.test(processed)) {
+        processed = processed.replace(
+          /return\s+(.*)\s*===\s*0\s*;/,
+          (m, expr) => `return (${expr.trim()} === 0) ? 1 : 0;`
+        );
+      }
+
+      // 2e: Stub Windows message pump functions (headless: infinite loop otherwise)
+      // These do-while loops poll for Windows messages that never arrive
+      if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76)\b/.test(trimmed)) {
+        processed = processed.replace(
+          /^(export function \w+\([^)]*\))\s*\{/,
+          '$1 { return 0; /* HEADLESS: message pump stub */'
+        );
+      }
     }
 
     finalLines.push(processed);
+  }
+
+  // Phase 2.5: Inject loop guards into while/for/do loop bodies
+  // Find lines with loop headers ending in {, inject loopGuard() after
+  {
+    let currentFn = blockFile;
+    const guarded = [];
+    for (let li = 0; li < finalLines.length; li++) {
+      const line = finalLines[li];
+      const t = line.trim();
+      // Track current function name
+      const fnMatch = t.match(/^(?:export )?function (\w+)\s*\(/);
+      if (fnMatch) currentFn = fnMatch[1];
+      guarded.push(line);
+      // After a loop header line ending with {, insert loopGuard
+      if (/^\s*(while|for)\s*\(.*\{\s*$/.test(t) || /^\s*do\s*\{\s*$/.test(t)) {
+        const indent = line.match(/^(\s*)/)[1] + '  ';
+        guarded.push(indent + `loopGuard('${currentFn}', ${li + 1});`);
+      }
+      // Also catch while(true) { on its own line
+      if (/^\s*while\s*\(\s*true\s*\)\s*\{\s*$/.test(t)) {
+        // already caught above
+      }
+    }
+    finalLines.length = 0;
+    finalLines.push(...guarded);
   }
 
   // Phase 3: Build imports and insert at top (before first export function)
@@ -404,7 +452,7 @@ for (const blockFile of blockFiles) {
   const allText = finalLines.join('\n');
 
   // Find all function-call-like identifiers
-  const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|ptrAdd|v|wv|_MEM|fill)$/;
+  const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|ptrAdd|v|wv|_MEM|loopGuard|loopReset|fill)$/;
   const fnUtilsNeeded = new Set(); // functions needed from fn_utils.js
   for (const m of allText.matchAll(/\b([a-zA-Z_]\w+)\s*\(/g)) {
     const fn = m[1];
@@ -450,7 +498,7 @@ for (const blockFile of blockFiles) {
   // 3c: Build import lines
   const imports = [];
   imports.push("import '../globals-init.js';");  // populates globalThis with DAT_ addresses
-  imports.push("import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM } from '../mem.js';");
+  imports.push("import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';");
   imports.push("import { devLog } from '../devlog.js';");
 
   // Import fn_utils functions used by this block
@@ -704,6 +752,17 @@ export function w32r(addr, off, val) { w32(addr, off, val); return val; }
 
 // ── Pointer arithmetic: &DAT_xxx + offset → addr + offset ──
 export function ptrAdd(addr, off) { return addr + off; }
+
+// ── Loop guard: prevents infinite loops, logs diagnostic info ──
+let _loopCount = 0;
+const _LOOP_LIMIT = 5000000;
+export function loopGuard(fnName, line) {
+  if (++_loopCount > _LOOP_LIMIT) {
+    _loopCount = 0;
+    throw new Error('LOOP_GUARD: ' + fnName + ' line ' + line + ' exceeded ' + _LOOP_LIMIT + ' iterations');
+  }
+}
+export function loopReset() { _loopCount = 0; }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

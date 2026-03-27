@@ -8,7 +8,7 @@
 // ============================================================
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { SetRect, __calloc_dbg, __expand_base, __expand_dbg, __free_base, __free_dbg } from '../crt.js';
 import { __heap_alloc_base, __heap_alloc_dbg, __malloc_base, __malloc_dbg, __msize_dbg, __nh_malloc } from '../crt.js';
@@ -317,6 +317,7 @@ export function FUN_005f029e() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f029e', 147);
     FUN_005f0c69();
     local_8 = FUN_005f0590();
   }
@@ -337,6 +338,7 @@ export function FUN_005f02f3() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f02f3', 167);
     FUN_005f15f2();
     local_8 = FUN_005f05d0();
   }
@@ -357,6 +359,7 @@ export function FUN_005f0342() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f0342', 187);
     FUN_005f1683();
     local_8 = FUN_005f05d0();
   }
@@ -389,6 +392,7 @@ export function FUN_005f0391(in_ECX = globalThis.in_ECX, param_1, param_2, param
   }
   iVar2 = FUN_005f0590();
   while( true ) {
+    loopGuard('FUN_005f0391', 219);
     if (iVar2 === 0) {
       return 0;
     }
@@ -684,7 +688,7 @@ export function FUN_005f0742(in_ECX = globalThis.in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  return s32(in_ECX, 0) === 0;
+  return (s32(in_ECX, 0) === 0) ? 1 : 0;
 }
 
 
@@ -953,6 +957,7 @@ export function FUN_005f0bce(param_1) {
   
   local_8 = FUN_005f0770();
   while( true ) {
+    loopGuard('FUN_005f0bce', 783);
     if (local_8 === 0) {
       return 0;
     }
@@ -978,6 +983,7 @@ export function FUN_005f0c21() {
   local_c = 0;
   local_8 = FUN_005f0770();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f0c21', 808);
     local_c = local_c + 1;
     local_8 = FUN_005f0833();
   }
@@ -1051,6 +1057,7 @@ export function FUN_005f0e13(in_ECX = globalThis.in_ECX) {
   
   FUN_005f0770();
   while (s32(in_ECX, 8) !== 0) {
+    loopGuard('FUN_005f0e13', 881);
     FUN_005f0c69();
   }
   return;
@@ -1857,6 +1864,7 @@ export function FUN_005f195a() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f195a', 1687);
     FUN_005f0c69();
     local_8 = FUN_005f0590();
   }
@@ -1877,6 +1885,7 @@ export function FUN_005f19a6() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f19a6', 1707);
     FUN_005f1683();
     local_8 = FUN_005f05d0();
   }
@@ -1897,6 +1906,7 @@ export function FUN_005f19ef() {
   
   local_8 = FUN_005f0590();
   while (local_8 !== 0) {
+    loopGuard('FUN_005f19ef', 1727);
     FUN_005f15f2();
     local_8 = FUN_005f05d0();
   }
@@ -1929,6 +1939,7 @@ export function FUN_005f1a40(in_ECX = globalThis.in_ECX, param_1, param_2, param
   }
   iVar2 = FUN_005f0590();
   while( true ) {
+    loopGuard('FUN_005f1a40', 1759);
     if (iVar2 === 0) {
       return 0;
     }
@@ -2093,6 +2104,7 @@ export function __local_unwind2_005F1D0A(param_1, param_2) {
   devLog('SEH', '');
   devLog('SEH', '');
   while( true ) {
+    loopGuard('__local_unwind2_005F1D0A', 1923);
     iVar1 = s32(param_1, 8);
     iVar2 = s32(param_1, 0xc);
     if ((iVar2 === -1) || (iVar2 === param_2)) break;
@@ -2522,6 +2534,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
     if ((((puVar5) >>> 0) & 3) === 0) {
       uVar1 = _Size >> 2;
       while( true ) {
+        loopGuard('FID_conflict__memcpy_005F2110', 2352);
         puVar5 = puVar5 + -1;
         puVar3 = puVar3 + -1;
         if (uVar1 === 0) break;
@@ -2549,6 +2562,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('FID_conflict__memcpy_005F2110', 2379);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -2558,6 +2572,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('FID_conflict__memcpy_005F2110', 2388);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -2565,6 +2580,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('FID_conflict__memcpy_005F2110', 2395);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -2583,6 +2599,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('FID_conflict__memcpy_005F2110', 2413);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -2607,6 +2624,7 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('FID_conflict__memcpy_005F2110', 2437);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -2616,11 +2634,13 @@ export function FID_conflict__memcpy_005F2110(in_EDX = globalThis.in_EDX, _Dst, 
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('FID_conflict__memcpy_005F2110', 2446);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('FID_conflict__memcpy_005F2110', 2451);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -2687,6 +2707,7 @@ export function FUN_005f22d0(param_1, param_2) {
   
   puVar4 = param_1;
   while ((((param_2) >>> 0) & 3) !== 0) {
+    loopGuard('FUN_005f22d0', 2517);
     bVar1 = u8(s32(param_2, 0));
     uVar3 = ((bVar1) >>> 0);
     param_2 = (param_2 + 1);
@@ -2695,6 +2716,7 @@ export function FUN_005f22d0(param_1, param_2) {
     puVar4 = (puVar4 + 1);
   }
   do {
+    loopGuard('FUN_005f22d0', 2525);
     uVar2 = s32(param_2, 0);
     uVar3 = s32(param_2, 0);
     param_2 = param_2 + 1;
@@ -2741,12 +2763,14 @@ export function FUN_005f22e0(param_1, param_2) {
   
   puVar3 = param_1;
   do {
+    loopGuard('FUN_005f22e0', 2571);
     if ((((puVar3) >>> 0) & 3) === 0) LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
     uVar4 = s32(puVar3, 0);
     puVar3 = (puVar3 + 1);
   } while (u8(uVar4) !== 0);
   LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
   while( true ) {
+    loopGuard('FUN_005f22e0', 2577);
     if ((uVar4 & 0xff0000) === 0) {
       puVar5 = (puVar5 + 2);
       joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4); return;
@@ -2754,6 +2778,7 @@ export function FUN_005f22e0(param_1, param_2) {
     if ((uVar4 & 0xff000000) === 0) break;
 // LAB_005f22fc: (code below also in LAB_005f22fc_helper, kept for 1:1 audit)
     do {
+      loopGuard('FUN_005f22e0', 2584);
       puVar5 = puVar3;
       puVar3 = puVar5 + 1;
     } while (((s32(puVar5, 0) ^ 0xffffffff ^ s32(puVar5, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -2768,8 +2793,10 @@ export function FUN_005f22e0(param_1, param_2) {
   puVar5 = (puVar3 + -1);
 // joined_r0x005f234b: (code below also in joined_r0x005f234b_helper, kept for 1:1 audit)
   do {
+    loopGuard('FUN_005f22e0', 2598);
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
+        loopGuard('FUN_005f22e0', 2600);
         uVar2 = s32(param_2, 0);
         uVar4 = s32(param_2, 0);
         param_2 = param_2 + 1;
@@ -2891,6 +2918,7 @@ export function _eh_vector_destructor_iterator__005F2490(unaff_EDI, param_1, par
   devLog('SEH', '');
   local_8 = 0;
   while (param_3 = param_3 + -1, -1 < param_3) {
+    loopGuard('_eh_vector_destructor_iterator__005F2490', 2721);
     (s32(param_4, 0))(unaff_EDI);
   }
   return;
@@ -2924,6 +2952,7 @@ export function __ArrayUnwind_005F2540(unaff_EDI, param_1, param_2, param_3, par
   devLog('SEH', '');
   local_8 = 0;
   while( true ) {
+    loopGuard('__ArrayUnwind_005F2540', 2754);
     param_3 = param_3 + -1;
     if (param_3 < 0) break;
     (s32(param_4, 0))(unaff_EDI);
@@ -2987,6 +3016,7 @@ export function _eh_vector_constructor_iterator__005F2620(unaff_EDI, param_1, pa
   devLog('SEH', '');
   local_8 = 0;
   for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
+    loopGuard('_eh_vector_constructor_iterator__005F2620', 2817);
     (s32(param_4, 0))(unaff_EDI);
   }
   return;
@@ -3615,6 +3645,7 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
   puVar5 = _Dest;
   if ((((_Source) >>> 0) & 3) !== 0) {
     while( true ) {
+      loopGuard('_strncpy_005F2F30', 3445);
       uVar4 = u32(_Source, 0);
       _Source = (_Source + 1);
       // DEVIATION: C pointer write — *(char *)puVar5 = (char)uVar4;
@@ -3630,6 +3661,7 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
       }
     }
     do {
+      loopGuard('_strncpy_005F2F30', 3460);
       if ((((puVar5) >>> 0) & 3) === 0) {
         uVar4 = _Count >> 2;
         cVar3 = 0;
@@ -3645,6 +3677,7 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
   uVar4 = _Count >> 2;
   if (uVar4 !== 0) {
     do {
+      loopGuard('_strncpy_005F2F30', 3475);
       uVar1 = u32(_Source, 0);
       uVar2 = u32(_Source, 0);
       _Source = (_Source + 4);
@@ -3653,6 +3686,7 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
           w32(puVar5, 0, 0);
 // joined_r0x005f3015: (code below also in joined_r0x005f3015_helper, kept for 1:1 audit)
           while( true ) {
+            loopGuard('_strncpy_005F2F30', 3483);
             uVar4 = uVar4 - 1;
             puVar5 = puVar5 + 1;
             if (uVar4 === 0) break;
@@ -3688,12 +3722,14 @@ export function _strncpy_005F2F30(_Dest, _Source, _Count) {
     }
   }
   do {
+    loopGuard('_strncpy_005F2F30', 3518);
     cVar3 = s8(u32(_Source, 0));
     _Source = (_Source + 1);
     // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
+        loopGuard('_strncpy_005F2F30', 3524);
 // LAB_005f2fab: (code below also in LAB_005f2fab_helper, kept for 1:1 audit)
         // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
@@ -3778,6 +3814,7 @@ export function _atol_005F3120(_Str) {
   let local_8;
   
   while( true ) {
+    loopGuard('_atol_005F3120', 3608);
     if (v(DAT_0063a29c) < 2) {
       local_14 = u16(PTR_DAT_0063a090, u8(s32(_Str, 0)) * 2) & 8;
     }
@@ -3795,6 +3832,7 @@ export function _atol_005F3120(_Str) {
   _Str = pbVar1;
   local_c = 0;
   while( true ) {
+    loopGuard('_atol_005F3120', 3625);
     if (v(DAT_0063a29c) < 2) {
       local_18 = u16(PTR_DAT_0063a090, local_8 * 2) & 4;
     }
@@ -3858,6 +3896,7 @@ export function __atoi64_005F3260(_String) {
   let local_8;
   
   while( true ) {
+    loopGuard('__atoi64_005F3260', 3688);
     if (v(DAT_0063a29c) < 2) {
       local_18 = u16(PTR_DAT_0063a090, u8(s32(_String, 0)) * 2) & 8;
     }
@@ -3875,6 +3914,7 @@ export function __atoi64_005F3260(_String) {
   _String = pbVar1;
   lVar3 = 0;
   while( true ) {
+    loopGuard('__atoi64_005F3260', 3705);
     local_c = lVar3 >> 0x20;
     local_10 = lVar3;
     if (v(DAT_0063a29c) < 2) {
@@ -3965,6 +4005,7 @@ export function _strlen_005F3480(_Str) {
   
   puVar2 = _Str;
   do {
+    loopGuard('_strlen_005F3480', 3795);
     if ((((puVar2) >>> 0) & 3) === 0) LAB_005f34a0_helper(uVar1); return;
     uVar1 = s32(puVar2, 0);
     puVar2 = (puVar2 + 1);
@@ -3973,7 +4014,9 @@ export function _strlen_005F3480(_Str) {
   return (puVar2 + (-1 - _Str));
 // LAB_005f34a0: (code below also in LAB_005f34a0_helper, kept for 1:1 audit)
   do {
+    loopGuard('_strlen_005F3480', 3803);
     do {
+      loopGuard('_strlen_005F3480', 3804);
       puVar3 = puVar2;
       puVar2 = puVar3 + 1;
     } while (((s32(puVar3, 0) ^ 0xffffffff ^ s32(puVar3, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -4022,6 +4065,7 @@ export function _memset_005F3500(_Dst, _Val, _Size) {
     if (uVar2 !== 0) {
       sVar3 = _Size - uVar2;
       do {
+        loopGuard('_memset_005F3500', 3852);
         // DEVIATION: C pointer write — *(undefined1 *)puVar4 = (undefined1)_Val;
         puVar4 = (puVar4 + 1);
         uVar2 = uVar2 - 1;
@@ -4032,6 +4076,7 @@ export function _memset_005F3500(_Dst, _Val, _Size) {
     uVar2 = sVar3 >> 2;
     if (uVar2 !== 0) {
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('_memset_005F3500', 3862);
         w32(puVar4, 0, uVar1);
         puVar4 = puVar4 + 1;
       }
@@ -4041,6 +4086,7 @@ export function _memset_005F3500(_Dst, _Val, _Size) {
     }
   }
   do {
+    loopGuard('_memset_005F3500', 3871);
     // DEVIATION: C pointer write — *(char *)puVar4 = (char)uVar1;
     puVar4 = (puVar4 + 1);
     _Size = _Size - 1;
@@ -4099,6 +4145,7 @@ export function _strcmp_005F3560(_Str1, _Str2) {
   }
 // LAB_005f3570: (code below also in LAB_005f3570_helper, kept for 1:1 audit)
   while( true ) {
+    loopGuard('_strcmp_005F3560', 3929);
     uVar2 = s32(_Str1, 0);
     bVar4 = u8(uVar2);
     bVar5 = bVar4 < u8(s32(_Str2, 0));
@@ -4149,6 +4196,7 @@ export function FUN_005f35f0(in_EAX = globalThis.in_EAX, unaff_retaddr) {
   
   puVar1 = 0 /* ADDR:stack0x00000004 */;
   for (; 0xfff < in_EAX; in_EAX = in_EAX - 0x1000) {
+    loopGuard('FUN_005f35f0', 3979);
     puVar1 = puVar1 + -0x1000;
   }
   // DEVIATION: C pointer write — *(undefined4 *)(puVar1 + (-4 - in_EAX)) = unaff_retaddr;
@@ -4177,6 +4225,7 @@ export function _strchr_005F3630(_Str, _Val) {
   let puVar5;
   
   while ((((_Str) >>> 0) & 3) !== 0) {
+    loopGuard('_strchr_005F3630', 4007);
     uVar1 = u32(_Str, 0);
     if (s8(uVar1) === s8(_Val)) {
       return _Str;
@@ -4187,7 +4236,9 @@ export function _strchr_005F3630(_Str, _Val) {
     }
   }
   while( true ) {
+    loopGuard('_strchr_005F3630', 4017);
     while( true ) {
+      loopGuard('_strchr_005F3630', 4018);
       uVar1 = u32(_Str, 0);
       uVar4 = uVar1 ^ ((((s8(_Val)) << 8 | (s8(_Val)))) << 16 | (((s8(_Val)) << 8 | (s8(_Val)))));
       uVar3 = uVar1 ^ 0xffffffff ^ uVar1 + 0x7efefeff;
@@ -4262,6 +4313,7 @@ export function _strncmp_005F36F0(_Str1, _Str2, _MaxCount) {
   pcVar6 = _Str1;
   if (_MaxCount !== 0) {
     do {
+      loopGuard('_strncmp_005F36F0', 4092);
       if (sVar3 === 0) break;
       sVar3 = sVar3 - 1;
       cVar1 = s32(pcVar6, 0);
@@ -4269,6 +4321,7 @@ export function _strncmp_005F36F0(_Str1, _Str2, _MaxCount) {
     } while (cVar1 !== 0);
     iVar4 = _MaxCount - sVar3;
     do {
+      loopGuard('_strncmp_005F36F0', 4099);
       pcVar6 = _Str2;
       pcVar7 = _Str1;
       if (iVar4 === 0) break;
@@ -4330,6 +4383,7 @@ export function _fread_005F3730(_DstBuf, _ElementSize, _Count, _File) {
       // DEVIATION: C struct — local_20 = _File->_bufsiz;
     }
     while (local_10 !== 0) {
+      loopGuard('_fread_005F3730', 4160);
       if (true /* DEVIATION: C struct — if (((_File->_flag & 0x10c) === 0) || (_File->_cnt === 0)) { */) {
         if (local_10 < local_20) {
           iVar2 = __filbuf(_File);
@@ -4416,8 +4470,11 @@ export function _fwrite_005F3900(_Str, _Size, _Count, _File) {
       // DEVIATION: C struct — local_20 = _File->_bufsiz;
     }
     do {
+      loopGuard('_fwrite_005F3900', 4246);
       while( true ) {
+        loopGuard('_fwrite_005F3900', 4247);
         while( true ) {
+          loopGuard('_fwrite_005F3900', 4248);
           if (local_10 === 0) {
             return _Count;
           }
@@ -4536,6 +4593,7 @@ export function _strrchr_005F3C10(_Str, _Ch) {
   
   iVar2 = -1;
   do {
+    loopGuard('_strrchr_005F3C10', 4366);
     pcVar4 = _Str;
     if (iVar2 === 0) break;
     iVar2 = iVar2 + -1;
@@ -4546,6 +4604,7 @@ export function _strrchr_005F3C10(_Str, _Ch) {
   iVar2 = -(iVar2 + 1);
   pcVar4 = pcVar4 + -1;
   do {
+    loopGuard('_strrchr_005F3C10', 4376);
     pcVar3 = pcVar4;
     if (iVar2 === 0) break;
     iVar2 = iVar2 + -1;
@@ -4600,6 +4659,7 @@ export function _fgets_005F3C40(_Buf, _MaxCount, _File) {
   }
   else {
     do {
+      loopGuard('_fgets_005F3C40', 4430);
       _MaxCount = _MaxCount + -1;
       if (_MaxCount === 0) break;
       // DEVIATION: C struct — _File->_cnt = _File->_cnt + -1;
@@ -4855,6 +4915,7 @@ export function __strnicmp_005F40B0(_Str1, _Str2, _MaxCount) {
   if (_MaxCount !== 0) {
     if (v(DAT_0063a078) === 0) {
       do {
+        loopGuard('__strnicmp_005F40B0', 4685);
         bVar2 = s32(_Str1, 0);
         cVar1 = s32(_Str2, 0);
         uVar3 = ((bVar2) << 8 | (cVar1));
@@ -4892,6 +4953,7 @@ export function __strnicmp_005F40B0(_Str1, _Str2, _MaxCount) {
       uVar5 = 0;
       _C = 0;
       do {
+        loopGuard('__strnicmp_005F40B0', 4722);
         _C = ((((_C >> 8) & 0xFFFFFF)) << 8 | (s32(_Str1, 0)));
         uVar5 = ((((uVar5 >> 8) & 0xFFFFFF)) << 8 | (s32(_Str2, 0)));
         if ((_C === 0) || (uVar5 === 0)) break;
@@ -5050,6 +5112,7 @@ export function doexit_005F4230(param_1, param_2, param_3) {
     if (v(DAT_006e6b68) !== 0x0) {
       local_8 = v(DAT_006e6b54);
       while (local_8 = local_8 + -1, v(DAT_006e6b68) <= local_8) {
+        loopGuard('doexit_005F4230', 4880);
         if (s32(local_8, 0) !== 0) {
           true /* DEVIATION: function pointer call — (*(code *)*local_8)(); */;
         }
@@ -5086,6 +5149,7 @@ export function __initterm_005F4330(param_1, param_2) {
 
 
   for (; param_1 < param_2; param_1 = param_1 + 1) {
+    loopGuard('__initterm_005F4330', 4916);
     if (s32(param_1, 0) !== 0) {
       true /* DEVIATION: function pointer call — (*(code *)*param_1)(); */;
     }
@@ -5125,6 +5189,7 @@ export function _strstr_005F4370(_Str, _SubStr) {
   }
   if (_SubStr[1] === 0) {
     while ((((_Str) >>> 0) & 3) !== 0) {
+      loopGuard('_strstr_005F4370', 4955);
       uVar4 = u32(_Str, 0);
       if (s8(uVar4) === cVar3) {
         return _Str;
@@ -5135,7 +5200,9 @@ export function _strstr_005F4370(_Str, _SubStr) {
       }
     }
     while( true ) {
+      loopGuard('_strstr_005F4370', 4965);
       while( true ) {
+        loopGuard('_strstr_005F4370', 4966);
         uVar4 = u32(_Str, 0);
         uVar7 = uVar4 ^ ((((cVar3) << 8 | (cVar3))) << 16 | (((cVar3) << 8 | (cVar3))));
         uVar6 = uVar4 ^ 0xffffffff ^ uVar4 + 0x7efefeff;
@@ -5182,9 +5249,12 @@ export function _strstr_005F4370(_Str, _SubStr) {
     return 0x0;
   }
   do {
+    loopGuard('_strstr_005F4370', 5012);
     cVar5 = s32(_Str, 0);
     do {
+      loopGuard('_strstr_005F4370', 5014);
       while (_Str = _Str + 1, cVar5 !== cVar3) {
+        loopGuard('_strstr_005F4370', 5015);
         if (cVar5 === 0) {
           return 0x0;
         }
@@ -5195,6 +5265,7 @@ export function _strstr_005F4370(_Str, _SubStr) {
       pcVar8 = _SubStr;
     } while (cVar5 !== _SubStr[1]);
     do {
+      loopGuard('_strstr_005F4370', 5025);
       if (pcVar8[2] === 0) {
 // LAB_005f43e3: (code below also in LAB_005f43e3_helper, kept for 1:1 audit)
         return _Str + -1;
@@ -5289,6 +5360,7 @@ export function __nh_malloc_dbg_005F4480(param_1, param_2, param_3, param_4, par
   let iVar1;
   
   while( true ) {
+    loopGuard('__nh_malloc_dbg_005F4480', 5119);
     iVar1 = __heap_alloc_dbg(param_1,param_3,param_4,param_5);
     if (iVar1 !== 0) {
       return iVar1;
@@ -5491,6 +5563,7 @@ export function __calloc_dbg_005F4890(param_1, param_2, param_3, param_4, param_
   puVar1 = __malloc_dbg(param_2 * param_1,param_3,param_4,param_5);
   if (puVar1 !== 0x0) {
     for (local_10 = puVar1; local_10 < puVar1 + param_2 * param_1; local_10 = local_10 + 1) {
+      loopGuard('__calloc_dbg_005F4890', 5321);
       w32(local_10, 0, 0);
     }
   }
@@ -6113,7 +6186,9 @@ export function _CheckBytes_005F5650(param_1, param_2, param_3) {
   local_8 = 1;
   pcVar2 = param_1;
   while( true ) {
+    loopGuard('_CheckBytes_005F5650', 5943);
     do {
+      loopGuard('_CheckBytes_005F5650', 5944);
       param_1 = pcVar2;
       iVar3 = param_3 + -1;
       if (param_3 === 0) {
@@ -6163,6 +6238,7 @@ export function __CrtCheckMemory_005F56E0() {
     iVar3 = __heapchk();
     if ((iVar3 === -1) || (iVar3 === -2)) {
       for (local_c = v(DAT_006e5478); local_c !== 0x0; local_c = s32(local_c, 0)) {
+        loopGuard('__CrtCheckMemory_005F56E0', 5993);
         bVar2 = true;
         if (((((local_c[5] & 0xffff) === 4) || (local_c[5] === 1)) || ((local_c[5] & 0xffff) === 2)) || (local_c[5] === 3)) {
            /*JOINED*/
@@ -6314,6 +6390,7 @@ export function __CrtDoForAllClientObjects_005F5A90(param_1, param_2) {
   
   if ((u8(DAT_00639f70) & 1) !== 0) {
     for (local_8 = v(DAT_006e5478); local_8 !== 0x0; local_8 = s32(local_8, 0)) {
+      loopGuard('__CrtDoForAllClientObjects_005F5A90', 6144);
       if ((local_8[5] & 0xffff) === 4) {
         (s32(param_1, 0))(local_8 + 8,param_2);
       }
@@ -6483,10 +6560,12 @@ export function __CrtMemCheckpoint_005F5D60(param_1) {
   else {
     w32(param_1, 0, v(DAT_006e5478));
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
+      loopGuard('__CrtMemCheckpoint_005F5D60', 6313);
       param_1[local_8 + 6] = 0;
       param_1[local_8 + 1] = param_1[local_8 + 6];
     }
     for (local_c = v(DAT_006e5478); local_c !== 0x0; local_c = s32(local_c, 0)) {
+      loopGuard('__CrtMemCheckpoint_005F5D60', 6317);
       if ((local_c[5] & 0xffff) < 5) {
         param_1[(local_c[5] & 0xffff) + 1] = param_1[(local_c[5] & 0xffff) + 1] + 1;
         param_1[(local_c[5] & 0xffff) + 6] = param_1[(local_c[5] & 0xffff) + 6] + local_c[4];
@@ -6539,6 +6618,7 @@ export function __CrtMemDifference_005F5EA0(param_1, param_2, param_3) {
   }
   else {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
+      loopGuard('__CrtMemDifference_005F5EA0', 6369);
       param_1[local_8 + 6] =
            s32(param_3, 0x18 + local_8 * 4) - s32(param_2, 0x18 + local_8 * 4);
       param_1[local_8 + 1] =
@@ -6587,6 +6667,7 @@ export function __CrtMemDumpAllObjectsSince_005F5FE0(param_1) {
   }
   local_8 = v(DAT_006e5478);
   do {
+    loopGuard('__CrtMemDumpAllObjectsSince_005F5FE0', 6417);
     if ((local_8 === 0x0) || (local_8 === local_c)) {
       iVar2 = __CrtDbgReport(0,0,0,0,DAT_0061dc40,"Object dump complete.\n");
       if (iVar2 !== 1) {
@@ -6688,6 +6769,7 @@ export function __printMemBlockData_005F62A0(param_1) {
   
   local_50 = 0;
   while( true ) {
+    loopGuard('__printMemBlockData_005F62A0', 6518);
     iVar3 = s32(param_1, 0x10);
     if (0xf < iVar3) {
       iVar3 = 0x10;
@@ -6781,6 +6863,7 @@ export function __CrtMemDumpStatistics_005F6430(param_1) {
   
   if (param_1 !== 0) {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
+      loopGuard('__CrtMemDumpStatistics_005F6430', 6611);
       iVar2 = __CrtDbgReport(0,0,0,0,"%ld bytes in %ld %hs Blocks.\n", s32(param_1, 0x18 + local_8 * 4), s32(param_1, 4 + local_8 * 4),(PTR_DAT_00639f88)[local_8] );
                              /*JOINED*/
                              /*JOINED*/
@@ -6839,6 +6922,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
     if ((((puVar5) >>> 0) & 3) === 0) {
       uVar1 = _Size >> 2;
       while( true ) {
+        loopGuard('FID_conflict__memcpy_005F6500', 6669);
         puVar5 = puVar5 + -1;
         puVar3 = puVar3 + -1;
         if (uVar1 === 0) break;
@@ -6866,6 +6950,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('FID_conflict__memcpy_005F6500', 6696);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -6875,6 +6960,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('FID_conflict__memcpy_005F6500', 6705);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -6882,6 +6968,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('FID_conflict__memcpy_005F6500', 6712);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -6900,6 +6987,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('FID_conflict__memcpy_005F6500', 6730);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -6924,6 +7012,7 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('FID_conflict__memcpy_005F6500', 6754);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -6933,11 +7022,13 @@ export function FID_conflict__memcpy_005F6500(in_EDX = globalThis.in_EDX, _Dst, 
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('FID_conflict__memcpy_005F6500', 6763);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('FID_conflict__memcpy_005F6500', 6768);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -7420,6 +7511,7 @@ export function _memcmp_005F6D50(_Buf1, _Buf2, _Size) {
       puVar8 = _Buf2;
       if (uVar5 !== 0) {
         do {
+          loopGuard('_memcmp_005F6D50', 7250);
           _Buf1 = puVar7;
           _Buf2 = puVar8;
           if (uVar5 === 0) break;
@@ -7475,6 +7567,7 @@ export function _memcmp_005F6D50(_Buf1, _Buf2, _Size) {
       _Buf1 = (_Buf1 + 1);
       _Buf2 = (_Buf2 + 1);
       for (_Size = _Size - 1; _Size !== 0; _Size = _Size - 2) {
+        loopGuard('_memcmp_005F6D50', 7305);
 // LAB_005f6d7d: (code below also in LAB_005f6d7d_helper, kept for 1:1 audit)
         bVar9 = u8(_Buf1[0]) < u8(_Buf2[0]);
         if ((u8(_Buf1[0]) !== u8(_Buf2[0])) || (bVar9 = u8((_Buf1 + 1)[0]) < u8((_Buf2 + 1)[0]), u8((_Buf1 + 1)[0]) !== u8((_Buf2 + 1)[0]))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
@@ -7515,7 +7608,9 @@ export function __strcmpi_005F6E00(_Str1, _Str2) {
   if (v(DAT_0063a078) === 0) {
     bVar5 = 0xff;
     do {
+      loopGuard('__strcmpi_005F6E00', 7345);
       do {
+        loopGuard('__strcmpi_005F6E00', 7346);
         cVar6 = 0;
         if (bVar5 === 0) LAB_005f6e4e_helper(cVar1, cVar6, iVar7, uVar2); return;
         bVar5 = s32(_Str2, 0);
@@ -7535,7 +7630,9 @@ export function __strcmpi_005F6E00(_Str1, _Str2) {
     _C = 0;
     iVar7 = 0xff;
     do {
+      loopGuard('__strcmpi_005F6E00', 7365);
       do {
+        loopGuard('__strcmpi_005F6E00', 7366);
         if (s8(iVar7) === 0) {
           return iVar7;
         }
@@ -7611,6 +7708,7 @@ export function entry_005F6E90(unaff_EDI) {
     pbVar1 = local_68;
     if (s32(DAT_006e6b3c, 0) === 0x22) {
       while ((local_68 = pbVar1, pbVar1 = local_68 + 1, s32(pbVar1, 0) !== 0x22 && (s32(pbVar1, 0) !== 0))) {
+        loopGuard('entry_005F6E90', 7441);
         iVar3 = __ismbblead(((s32(pbVar1, 0)) >>> 0));
         if (iVar3 !== 0) {
           pbVar1 = local_68 + 2;
@@ -7622,9 +7720,11 @@ export function entry_005F6E90(unaff_EDI) {
     }
     else {
       for (; pbVar1 = local_68, 0x20 < s32(local_68, 0); local_68 = local_68 + 1) {
+        loopGuard('entry_005F6E90', 7452);
       }
     }
     while ((local_68 = pbVar1, s32(local_68, 0) !== 0 && (s32(local_68, 0) < 0x21))) {
+      loopGuard('entry_005F6E90', 7455);
       pbVar1 = local_68 + 1;
     }
     local_60[0].dwFlags = 0;
@@ -7893,12 +7993,14 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
     return _Dest;
   }
   do {
+    loopGuard('_strncat_005F74B0', 7723);
     if ((((puVar5) >>> 0) & 3) === 0) LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4); return;
     uVar4 = s32(puVar5, 0);
     puVar5 = (puVar5 + 1);
   } while (u8(uVar4) !== 0);
   LAB_005f750b_helper(bVar1, uVar2, uVar3, uVar4); return;
   while( true ) {
+    loopGuard('_strncat_005F74B0', 7729);
     if ((uVar4 & 0xff0000) === 0) {
       puVar6 = (puVar6 + 2);
       LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4); return;
@@ -7906,6 +8008,7 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
     if ((uVar4 & 0xff000000) === 0) break;
 // LAB_005f74da: (code below also in LAB_005f74da_helper, kept for 1:1 audit)
     do {
+      loopGuard('_strncat_005F74B0', 7736);
       puVar6 = puVar5;
       puVar5 = puVar6 + 1;
     } while (((s32(puVar6, 0) ^ 0xffffffff ^ s32(puVar6, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -7924,6 +8027,7 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
   }
   else {
     do {
+      loopGuard('_strncat_005F74B0', 7754);
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
@@ -7936,8 +8040,10 @@ export function _strncat_005F74B0(_Dest, _Source, _Count) {
     uVar3 = _Count >> 2;
   }
   do {
+    loopGuard('_strncat_005F74B0', 7766);
     if (uVar3 === 0) {
       for (uVar4 = _Count & 3; uVar4 !== 0; uVar4 = uVar4 - 1) {
+        loopGuard('_strncat_005F74B0', 7768);
         uVar3 = u32(_Source, 0);
         _Source = (_Source + 1);
         // DEVIATION: C pointer write — *(byte *)puVar6 = (byte)uVar3;
@@ -8173,11 +8279,14 @@ export function FindHandler_005F7AC0(param_1, param_2, param_3, param_4, param_5
      /*JOINED*/
     local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,local_14[0],local_c[0]);
     for (; local_14[0] < local_c[0]; local_14[0] = local_14[0] + 1) {
+      loopGuard('FindHandler_005F7AC0', 8003);
       if ((s32(local_10, 0) <= local_8) && (local_8 <= s32(local_10, 4))) {
         local_18 = true /* DEVIATION: C pointer — *(_s_HandlerType **)(local_10 + 0x10) */;
         for (local_1c = s32(local_10, 0xc); local_1c !== 0; local_1c = local_1c + -1) {
+          loopGuard('FindHandler_005F7AC0', 8006);
           local_20 = true /* DEVIATION: C pointer — *(undefined4 **)(s32(param_1, 0x1c) + 0xc) */;
           for (local_24 = true /* DEVIATION: C pointer — **(int **)(s32(param_1, 0x1c) + 0xc) */; local_20 = local_20 + 1, local_24 !== 0; local_24 = local_24 + -1) {
+            loopGuard('FindHandler_005F7AC0', 8008);
               /*JOINED*/
             iVar2 = TypeMatch(local_18,s32(local_20, 0), true /* DEVIATION: C pointer — *(_s_ThrowInfo **)(param_1 + 0x1c) */);
                               /*JOINED*/
@@ -8235,6 +8344,7 @@ export function FindHandlerForForeignException_005F7D70(param_1, param_2, param_
      /*JOINED*/
     local_c = GetRangeOfTrysToCheck(param_5,param_7,param_6,local_10[0],local_8[0]);
     for (; local_10[0] < local_8[0]; local_10[0] = local_10[0] + 1) {
+      loopGuard('FindHandlerForForeignException_005F7D70', 8065);
       if (((s32(local_c, 0) <= param_6) && (param_6 <= s32(local_c, 4))) && ((s32((true /* DEVIATION: C pointer — s32(local_c, 0xc) */ + -1) * 0x10 + 4 + true /* DEVIATION: C pointer — s32(local_c, 0x10) */, 0) === 0 || (s8((true /* DEVIATION: C pointer — s32((s32(local_c, 0xc) + -1) * 0x10 + 4 + s32(local_c, 0x10), 0) */ + 8)[0]) === 0)))) {
          /*JOINED*/
           /*JOINED*/
@@ -8276,6 +8386,7 @@ export function GetRangeOfTrysToCheck_005F7E90(param_1, param_2, param_3, param_
   local_10 = local_14;
   local_8 = local_14;
   while (-1 < param_2) {
+    loopGuard('GetRangeOfTrysToCheck_005F7E90', 8106);
     if (local_14 === 0xffffffff) {
       _inconsistency();
     }
@@ -8354,6 +8465,7 @@ export function ___FrameUnwindToState_005F8050(param_1, param_2, param_3, param_
   devLog('SEH', '');
   devLog('SEH', '');
   for (local_20 = s32(param_1, 8); local_8 = 0xffffffff, local_20 !== param_4; local_20 = s32(true /* DEVIATION: C pointer — s32(param_3, 8) */ + local_20 * 8, 0)) {
+    loopGuard('___FrameUnwindToState_005F8050', 8184);
       /*JOINED*/
     if ((local_20 < 0) || (s32(param_3, 4) <= local_20)) {
       _inconsistency();
@@ -8939,6 +9051,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
   local_300c = 0;
   puVar3 = local_300b[0];
   for (iVar2 = 0x3ff; iVar2 !== 0; iVar2 = iVar2 + -1) {
+    loopGuard('__CrtDbgReport_005F8B70', 8769);
     w32(puVar3, 0, 0);
     puVar3 = puVar3 + 1;
   }
@@ -8947,6 +9060,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
   local_200c[0] = 0;
   puVar3 = local_200b[0];
   for (iVar2 = 0x3ff; iVar2 !== 0; iVar2 = iVar2 + -1) {
+    loopGuard('__CrtDbgReport_005F8B70', 8777);
     w32(puVar3, 0, 0);
     puVar3 = puVar3 + 1;
   }
@@ -8955,6 +9069,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
   local_1004[0] = 0;
   puVar3 = local_1003[0];
   for (iVar2 = 0x3ff; iVar2 !== 0; iVar2 = iVar2 + -1) {
+    loopGuard('__CrtDbgReport_005F8B70', 8785);
     w32(puVar3, 0, 0);
     puVar3 = puVar3 + 1;
   }
@@ -9227,6 +9342,7 @@ export function wcsncnt_005F9670(param_1, param_2) {
   
   local_c = param_2;
   for (local_8 = param_1; (local_c !== 0 && (s32(local_8, 0) !== 0)); local_8 = local_8 + 1) {
+    loopGuard('wcsncnt_005F9670', 9057);
     local_c = local_c + -1;
   }
   if (s32(local_8, 0) === 0) {
@@ -9355,6 +9471,7 @@ export function _strncnt_005F9A00(_String, _Cnt) {
   
   local_c = _Cnt;
   for (local_8 = _String; (local_c !== 0 && (s32(local_8, 0) !== 0)); local_8 = local_8 + 1) {
+    loopGuard('_strncnt_005F9A00', 9185);
     local_c = local_c - 1;
   }
   if (s32(local_8, 0) === 0) {
@@ -9480,6 +9597,7 @@ export function __openfile_005F9B30(_Filename, _Mode, _ShFlag, _File) {
   }
   bVar3 = true;
   while ((_Mode = _Mode + 1, s32(_Mode, 0) !== 0 && (bVar3))) {
+    loopGuard('__openfile_005F9B30', 9310);
     switch(s32(_Mode, 0)) {
     case 43:
       if ((local_18 & 2) === 0) {
@@ -9600,6 +9718,7 @@ export function __getstream_005F9EF0() {
   local_c = 0x0;
   local_8 = 0;
   do {
+    loopGuard('__getstream_005F9EF0', 9430);
     if (v(DAT_006e69e0) <= local_8) {
 // LAB_005f9fab: (code below also in LAB_005f9fab_helper, kept for 1:1 audit)
       if (local_c !== 0x0) {
@@ -9848,6 +9967,7 @@ export function flsall_005FA310(param_1) {
   local_8 = 0;
   local_c = 0;
   for (local_10 = 0; local_10 < v(DAT_006e69e0); local_10 = local_10 + 1) {
+    loopGuard('flsall_005FA310', 9678);
     if ((s32(DAT_006e5694, local_10 * 4) !== 0) && ((u8((true /* DEVIATION: C pointer — s32(v(DAT_006e5694) + local_10 * 4, 0) */ + 0xc)[0]) & 0x83) !== 0)) {
        /*JOINED*/
       if (param_1 === 1) {
@@ -10036,6 +10156,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
   local_1c = 0;
   pbVar1 = param_2;
   do {
+    loopGuard('__output_005FA6B0', 9866);
     param_2 = pbVar1;
     uStack_2d = s32(param_2, 0);
     pbVar1 = param_2 + 1;
@@ -10218,6 +10339,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
             local_24 = PTR_DAT_0063a2a8;
           }
           for (local_254 = local_24; (local_25c !== 0 && (s8(s32(local_254, 0)) !== 0)); local_254 = (local_254 + 1)) {
+            loopGuard('__output_005FA6B0', 10048);
               /*JOINED*/
             local_25c = local_25c + -1;
           }
@@ -10231,6 +10353,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
           }
           local_20 = 1;
           for (local_258 = local_24; (local_25c !== 0 && (s32(local_258, 0) !== L0)); local_258 = local_258 + 1) {
+            loopGuard('__output_005FA6B0', 10061);
               /*JOINED*/
             local_25c = local_25c + -1;
           }
@@ -10346,6 +10469,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
         local_24 = uStack_2d;
         local_27c = uVar11;
         while ((iVar9 = local_238 + -1, 0 < local_238 || (lVar12 !== 0))) {
+          loopGuard('__output_005FA6B0', 10176);
           local_238 = iVar9;
           local_270 = lVar12;
           local_274 = __aullrem(lVar12,local_23c,local_23c >> 0x1f);
@@ -10402,6 +10526,7 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
           local_284 = local_24;
           local_288 = local_28;
           while (sVar3 = local_288 - 1, bVar10 = local_288 !== 0, local_288 = sVar3, bVar10) {
+            loopGuard('__output_005FA6B0', 10232);
             wVar6 = s32(local_284, 0);
             local_284 = local_284 + 1;
             iVar9 = _wctomb(local_28c,wVar6);
@@ -10468,6 +10593,7 @@ export function write_multi_char_005FB4C0(param_1, param_2, param_3, param_4) {
 
 
   do {
+    loopGuard('write_multi_char_005FB4C0', 10298);
     if (param_2 < 1) {
       return;
     }
@@ -10493,6 +10619,7 @@ export function write_string_005FB510(param_1, param_2, param_3, param_4) {
 
 
   do {
+    loopGuard('write_string_005FB510', 10323);
     if (param_2 < 1) {
       return;
     }
@@ -10774,6 +10901,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
           local_10 = _DstBuf;
           local_8 = _DstBuf;
           while (local_8 < (local_1c + _DstBuf)) {
+            loopGuard('__read_005FB830', 10604);
             if (s32(local_8, 0) === 0x1a) {
               if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40) === 0) {
                              /*JOINED*/
@@ -10917,9 +11045,11 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
         local_8 = _Buf;
         local_10 = 0;
         do {
+          loopGuard('__write_005FBCD0', 10747);
           if (_MaxCharCount <= ((local_8 - _Buf) >>> 0)) break;
           local_c = local_418;
           while ((local_c - local_418 < 0x400 && (((local_8 - _Buf) >>> 0) < _MaxCharCount))) {
+            loopGuard('__write_005FBCD0', 10750);
                  /*JOINED*/
             cVar1 = s32(local_8, 0);
             local_8 = local_8 + 1;
@@ -10998,6 +11128,7 @@ export function __dosmaperr_005FBFD0(param_1) {
   wv(DAT_00639f18, param_1);
   local_8 = 0;
   while( true ) {
+    loopGuard('__dosmaperr_005FBFD0', 10828);
     if (0x2c < local_8) {
       if ((param_1 < 0x13) || (0x24 < param_1)) {
         if ((param_1 < 0xbc) || (0xca < param_1)) {
@@ -11097,6 +11228,7 @@ export function __ioinit_005FC160() {
   wv(DAT_006e6b2c, 0x20);
   wv(DAT_006e69f0, local_54);
   for (; local_54 < v(DAT_006e69f0) + 0x40; local_54 = local_54 + 2) {
+    loopGuard('__ioinit_005FC160', 10927);
     local_54[1] = 0;
     w32(local_54, 0, 0xffffffff);
     // DEVIATION: C pointer write — *(undefined1 *)((int)local_54 + 5) = 10;
@@ -11111,6 +11243,7 @@ export function __ioinit_005FC160() {
     }
     local_60 = 1;
     while (v(DAT_006e6b2c) < local_68) {
+      loopGuard('__ioinit_005FC160', 10941);
       local_54 = __malloc_dbg(0x100,2,"ioinit.c",0xb8);
       if (local_54 === 0x0) {
         local_68 = v(DAT_006e6b2c);
@@ -11119,6 +11252,7 @@ export function __ioinit_005FC160() {
       _MEM[DAT_006e69f0 + local_60] = local_54;
       wv(DAT_006e6b2c, v(DAT_006e6b2c) + 0x20);
       for (; local_54 < (_MEM[DAT_006e69f0 + local_60] + 0x100); local_54 = local_54 + 2) {
+        loopGuard('__ioinit_005FC160', 10949);
           /*JOINED*/
         local_54[1] = 0;
         w32(local_54, 0, 0xffffffff);
@@ -11127,6 +11261,7 @@ export function __ioinit_005FC160() {
       local_60 = local_60 + 1;
     }
     for (local_5c = 0; local_5c < local_68; local_5c = local_5c + 1) {
+      loopGuard('__ioinit_005FC160', 10957);
       if (((s32(local_64, 0) !== -1) && ((s32(local_8, 0) & 1) !== 0)) && (((s32(local_8, 0) & 8) !== 0 || (DVar2 = GetFileType(s32(local_64, 0)), DVar2 !== 0)))) {
          /*JOINED*/
         puVar1 = (s32(ptrAdd(DAT_006e69f0, (local_5c & 0xffffffe0 >> 3)), 0) + (local_5c & 0x1f) * 8);
@@ -11140,6 +11275,7 @@ export function __ioinit_005FC160() {
     }
   }
   for (local_5c = 0; local_5c < 3; local_5c = local_5c + 1) {
+    loopGuard('__ioinit_005FC160', 10970);
     piVar3 = v(DAT_006e69f0) + local_5c * 2;
     if (s32(piVar3, 0) === -1) {
       piVar3[1] = 0x81;
@@ -11193,6 +11329,7 @@ export function __ioterm_005FC490() {
   let local_8;
   
   for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
+    loopGuard('__ioterm_005FC490', 11023);
     if (_MEM[DAT_006e69f0 + local_8] !== 0) {
       __free_dbg(_MEM[DAT_006e69f0 + local_8],2);
     }
@@ -11420,6 +11557,7 @@ export function __nh_malloc_base_005FC7E0(param_1, param_2) {
       param_1 = 1;
     }
     do {
+      loopGuard('__nh_malloc_base_005FC7E0', 11250);
       if (param_1 < 0xffffffe1) {
         local_8 = __heap_alloc_base(param_1);
       }
@@ -11564,6 +11702,7 @@ export function __realloc_base_005FC9E0(param_1, param_2) {
       }
     }
     do {
+      loopGuard('__realloc_base_005FC9E0', 11394);
       local_c = 0x0;
       if (param_2 < 0xffffffe1) {
         local_10 = ___sbh_find_block(param_1,local_18[0],local_8[0]);
@@ -11758,6 +11897,7 @@ export function __heap_term_005FCD60() {
   
   local_8 = PTR_LOOP_0063a438;
   do {
+    loopGuard('__heap_term_005FCD60', 11588);
     if (local_8[0x204] !== 0x0) {
       VirtualFree(local_8[0x204],0,0x8000);
     }
@@ -11855,6 +11995,7 @@ export function ___sbh_new_region_005FCE30() {
       local_10[2] = 0x0;
       local_10[3] = 0x10;
       for (local_c = 0; local_c < 0x400; local_c = local_c + 1) {
+        loopGuard('___sbh_new_region_005FCE30', 11685);
         if (local_c < 0x10) {
           // DEVIATION: C pointer write — *(undefined1 *)(local_c + 0x10 + (int)local_10) = 0xf0;
         }
@@ -11865,6 +12006,7 @@ export function ___sbh_new_region_005FCE30() {
       }
       _memset(local_8,0,0x10000);
       for (; local_8 < local_10[0x204] + 0x10000; local_8 = local_8 + 0x400) {
+        loopGuard('___sbh_new_region_005FCE30', 11695);
         w32(local_8, 0, local_8 + 2);
         local_8[1] = 0xf0;
         local_8[0x3e] = 0xff;
@@ -11933,11 +12075,13 @@ export function ___sbh_decommit_pages_005FD0D0(param_1) {
   
   local_18 = PTR_LOOP_0063a43c;
   do {
+    loopGuard('___sbh_decommit_pages_005FD0D0', 11763);
     puVar1 = local_18;
     if (s32(local_18, 0x810) !== 0) {
       local_14 = 0;
       local_c = local_18 + 0x40f;
       for (local_10 = 0x3ff; -1 < local_10; local_10 = local_10 + -1) {
+        loopGuard('___sbh_decommit_pages_005FD0D0', 11768);
         if ((s32(local_c, 0) === -0x10) && (BVar2 = VirtualFree((s32(local_18, 0x810) + local_10 * 0x1000),0x1000, 0x4000), BVar2 !== 0)) {
            /*JOINED*/
                                 /*JOINED*/
@@ -11956,6 +12100,7 @@ export function ___sbh_decommit_pages_005FD0D0(param_1) {
       if ((local_14 !== 0) && (local_18[0x10] === -1)) {
         local_10 = 1;
         for (local_c = local_18 + 0x11; (local_10 < 0x400 && (s32(local_c, 0) === -1)); local_c = local_c + 1) {
+          loopGuard('___sbh_decommit_pages_005FD0D0', 11786);
             /*JOINED*/
           local_10 = local_10 + 1;
         }
@@ -11991,6 +12136,7 @@ export function ___sbh_find_block_005FD250(param_1, param_2, param_3) {
   
   local_c = PTR_LOOP_0063a438;
   while (((local_c[0x204] === 0x0 || (param_1 <= local_c[0x204])) || (local_c[0x204] + 0x400000 <= param_1))) {
+    loopGuard('___sbh_find_block_005FD250', 11821);
          /*JOINED*/
     local_c = s32(local_c, 0);
     if (local_c === PTR_LOOP_0063a438) {
@@ -12058,8 +12204,10 @@ export function ___sbh_alloc_block_005FD390(param_1) {
   
   local_18 = PTR_LOOP_0063ac4c;
   do {
+    loopGuard('___sbh_alloc_block_005FD390', 11888);
     if (local_18[0x204] !== 0x0) {
       for (local_10 = local_18[2]; local_10 < 0x400; local_10 = (local_10 + 1)) {
+        loopGuard('___sbh_alloc_block_005FD390', 11890);
           /*JOINED*/
         if (((param_1 <= u8((local_10 + 0x10 + local_18)[0])) && (s8((local_10 + 0x10 + local_18)[0]) !== -1)) && (param_1 < u8((local_10 + 0x410 + local_18)[0]))) {
             /*JOINED*/
@@ -12079,6 +12227,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
         }
       }
       for (local_10 = 0x0; local_10 < local_18[2]; local_10 = (local_10 + 1)) {
+        loopGuard('___sbh_alloc_block_005FD390', 11909);
           /*JOINED*/
         if (((param_1 <= u8((local_10 + 0x10 + local_18)[0])) && (s8((local_10 + 0x10 + local_18)[0]) !== -1)) && (param_1 < u8((local_10 + 0x410 + local_18)[0]))) {
             /*JOINED*/
@@ -12102,6 +12251,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
   } while (local_18 !== PTR_LOOP_0063ac4c);
   local_18 = PTR_LOOP_0063a438;
   while ((local_18[0x204] === 0x0 || (local_18[3] === 0xffffffff))) {
+    loopGuard('___sbh_alloc_block_005FD390', 11932);
     local_18 = s32(local_18, 0);
     if (local_18 === PTR_LOOP_0063a438) {
       puVar2 = ___sbh_new_region();
@@ -12123,6 +12273,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
     puVar3 = 0x400;
   }
   do {
+    loopGuard('___sbh_alloc_block_005FD390', 11953);
     local_10 = puVar2 + 1;
     if (puVar3 <= local_10) break;
     puVar4 = puVar2 + 0x11;
@@ -12136,6 +12287,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
     local_14 = local_18[3];
     local_8 = (local_18[0x204] + local_14 * 0x1000);
     for (; local_14 < local_10; local_14 = local_14 + 1) {
+      loopGuard('___sbh_alloc_block_005FD390', 11966);
       _memset(local_8,0x1000,0);
       w32(local_8, 0, local_8 + 2);
       local_8[1] = 0xf0;
@@ -12146,6 +12298,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
     }
     PTR_LOOP_0063ac4c = local_18;
     for (; (local_10 < 0x400 && ((local_10 + 0x10)[local_18] !== -1)); local_10 = local_10 + 1) {
+      loopGuard('___sbh_alloc_block_005FD390', 11976);
         /*JOINED*/
     }
     puVar2 = local_18[3];
@@ -12197,10 +12350,12 @@ export function ___sbh_alloc_block_from_page_005FD860(param_1, param_2, param_3)
       local_c = pbVar1 + param_1[1];
     }
     while (local_c + param_3 < param_1 + 0x3e) {
+      loopGuard('___sbh_alloc_block_from_page_005FD860', 12027);
       if (s32(local_c, 0) === 0) {
         local_14 = 1;
         local_10 = local_c;
         while (local_10 = local_10 + 1, s32(local_10, 0) === 0) {
+          loopGuard('___sbh_alloc_block_from_page_005FD860', 12031);
           local_14 = local_14 + 1;
         }
         if (param_3 <= local_14) {
@@ -12232,10 +12387,12 @@ export function ___sbh_alloc_block_from_page_005FD860(param_1, param_2, param_3)
     }
     local_c = (param_1 + 2);
     while ((local_c < pbVar1 && (local_c + param_3 <= (param_1 + 0xf7)))) {
+      loopGuard('___sbh_alloc_block_from_page_005FD860', 12062);
       if (s32(local_c, 0) === 0) {
         local_14 = 1;
         local_10 = local_c;
         while (local_10 = local_10 + 1, s32(local_10, 0) === 0) {
+          loopGuard('___sbh_alloc_block_from_page_005FD860', 12066);
           local_14 = local_14 + 1;
         }
         if (param_3 <= local_14) {
@@ -12313,6 +12470,7 @@ export function ___sbh_resize_block_005FDB60(param_1, param_2, param_3, param_4)
   else if ((uVar2 < param_4) && (param_3 + param_4 <= param_2 + 0x3e)) {
     local_18 = param_3 + param_4;
     for (local_10 = param_3 + uVar2; (local_10 < local_18 && (s32(local_10, 0) === 0)); local_10 = local_10 + 1) {
+      loopGuard('___sbh_resize_block_005FDB60', 12143);
         /*JOINED*/
     }
     if (local_18 === local_10) {
@@ -12322,6 +12480,7 @@ export function ___sbh_resize_block_005FDB60(param_1, param_2, param_3, param_4)
           w32(param_2, 0, local_18);
           local_8 = 0;
           for (; s32(local_18, 0) === 0; local_18 = local_18 + 1) {
+            loopGuard('___sbh_resize_block_005FDB60', 12152);
             local_8 = local_8 + 1;
           }
           param_2[1] = local_8;
@@ -12372,6 +12531,7 @@ export function ___sbh_heap_check_005FDD20() {
   local_c = 0;
   local_20 = PTR_LOOP_0063a438;
   do {
+    loopGuard('___sbh_heap_check_005FDD20', 12202);
     if (local_20 === PTR_LOOP_0063ac4c) {
       local_c = local_c + 1;
     }
@@ -12380,6 +12540,7 @@ export function ___sbh_heap_check_005FDD20() {
       local_2c = 0;
       local_8 = local_20[0x204];
       for (; local_14 < 0x400; local_14 = local_14 + 1) {
+        loopGuard('___sbh_heap_check_005FDD20', 12210);
         if ((local_14 + 0x10)[local_20] === -1) {
           if ((local_2c === 0) && (local_20[3] !== local_14)) {
             return 0xffffffff;
@@ -12398,6 +12559,7 @@ export function ___sbh_heap_check_005FDD20() {
           local_28 = 0;
           local_24 = 0;
           while (local_18 < 0xf0) {
+            loopGuard('___sbh_heap_check_005FDD20', 12228);
             if (local_8 + local_18 + 8 === s32(local_8, 0)) {
               local_10 = local_10 + 1;
             }
@@ -12419,6 +12581,7 @@ export function ___sbh_heap_check_005FDD20() {
               local_24 = 0;
               iVar2 = local_18;
               while (local_1c = iVar2 + 1, local_1c < u8(local_18[8 + local_8]) + local_18) {
+                loopGuard('___sbh_heap_check_005FDD20', 12249);
                     /*JOINED*/
                 iVar1 = iVar2 + 9;
                 iVar2 = local_1c;
@@ -12539,9 +12702,11 @@ export function ___initstdio_005FE0B0() {
     }
   }
   for (local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
+    loopGuard('___initstdio_005FE0B0', 12369);
     // DEVIATION: C pointer write — *(undefined ***)(DAT_006e5694 + local_8 * 4) = &PTR_DAT_0063ac58 + local_8 * 8;
   }
   for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
+    loopGuard('___initstdio_005FE0B0', 12372);
     if ((s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)), 0) */ + (local_8 & 0x1f) * 8, 0) === -1) || (s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)), 0) */ + (local_8 & 0x1f) * 8, 0) === 0)) {
                  /*JOINED*/
        /*JOINED*/
@@ -12663,6 +12828,7 @@ export function __forcdecpt_005FE320(_Buf) {
   iVar2 = _tolower(s32(_Buf, 0));
   if (iVar2 !== 0x65) {
     do {
+      loopGuard('__forcdecpt_005FE320', 12493);
       _Buf = _Buf + 1;
       if (v(DAT_0063a29c) < 2) {
         local_10 = u16(PTR_DAT_0063a090, s32(_Buf, 0) * 2) & 4;
@@ -12675,6 +12841,7 @@ export function __forcdecpt_005FE320(_Buf) {
   local_c = s32(_Buf, 0);
   w32(_Buf, 0, v(DAT_0063a2a0));
   do {
+    loopGuard('__forcdecpt_005FE320', 12505);
     _Buf = _Buf + 1;
     cVar1 = s32(_Buf, 0);
     w32(_Buf, 0, local_c);
@@ -12702,20 +12869,24 @@ export function __cropzeros_005FE3E0(_Buf) {
   let local_8;
   
   for (; (s32(_Buf, 0) !== 0 && (v(DAT_0063a2a0) !== s32(_Buf, 0))); _Buf = _Buf + 1) {
+    loopGuard('__cropzeros_005FE3E0', 12532);
   }
   if (s32(_Buf, 0) !== 0) {
     do {
+      loopGuard('__cropzeros_005FE3E0', 12535);
       pcVar1 = _Buf;
       _Buf = pcVar1 + 1;
       if ((s32(_Buf, 0) === 0) || (s32(_Buf, 0) === 101)) break;
     } while (s32(_Buf, 0) !== 69);
     local_8 = _Buf;
     for (_Buf = pcVar1; s32(_Buf, 0) === 48; _Buf = _Buf + -1) {
+      loopGuard('__cropzeros_005FE3E0', 12541);
     }
     if (v(DAT_0063a2a0) === s32(_Buf, 0)) {
       _Buf = _Buf + -1;
     }
     do {
+      loopGuard('__cropzeros_005FE3E0', 12546);
       _Buf = _Buf + 1;
       w32(_Buf, 0, s32(local_8, 0));
       local_8 = local_8 + 1;
@@ -12934,6 +13105,7 @@ export function __cftog_005FE8C0(unaff_EDI, param_1, param_2, param_3, param_4) 
   else {
     if (((v(DAT_0063af00)) ? 1 : 0)) {
       do {
+        loopGuard('__cftog_005FE8C0', 12764);
         local_8 = _Buf;
         _Buf = local_8 + 1;
       } while (s32(local_8, 0) !== 0);
@@ -13087,6 +13259,7 @@ export function __XcptFilter_005FEB20(_ExceptionNum, _ExceptionPtr) {
     wv(DAT_0063af90, _ExceptionPtr);
     if (piVar4[1] === 8) {
       for (local_14 = v(DAT_0063af80); uVar2 = DAT_0063af8c, local_14 < v(DAT_0063af84) + v(DAT_0063af80); local_14 = local_14 + 1) {
+        loopGuard('__XcptFilter_005FEB20', 12917);
           /*JOINED*/
         w32(local_14 * 0xc + 0x63af10, 0, 0);
       }
@@ -13143,6 +13316,7 @@ export function xcptlookup_005FED20(param_1) {
   
   local_8 = v(DAT_0063af08);
   do {
+    loopGuard('xcptlookup_005FED20', 12973);
     if (s32(local_8, 0) === param_1) break;
     local_8 = local_8 + 3;
   } while (local_8 < ptrAdd(DAT_0063af08, v(DAT_0063af88) * 3));
@@ -13439,6 +13613,7 @@ export function __setenvp_005FEFD0() {
   
   local_c = 0;
   for (local_8 = v(DAT_00639fc0); s32(local_8, 0) !== 0; local_8 = local_8 + sVar1 + 1) {
+    loopGuard('__setenvp_005FEFD0', 13269);
     if (s32(local_8, 0) !== 61) {
       local_c = local_c + 1;
     }
@@ -13450,6 +13625,7 @@ export function __setenvp_005FEFD0() {
     __amsg_exit(9);
   }
   for (local_8 = v(DAT_00639fc0); s32(local_8, 0) !== 0; local_8 = local_8 + sVar1 + 1) {
+    loopGuard('__setenvp_005FEFD0', 13280);
     sVar1 = _strlen(local_8);
     if (s32(local_8, 0) !== 61) {
       iVar2 = __malloc_dbg(sVar1 + 1,2,"stdenvp.c",0x61);
@@ -13539,6 +13715,7 @@ export function parse_cmdline_005FF1E0(param_1, param_2, param_3, param_4, param
   }
   if (s32(param_1, 0) === 0x22) {
     while ((pbVar1 = local_8 + 1, s32(pbVar1, 0) !== 0x22 && (s32(pbVar1, 0) !== 0))) {
+      loopGuard('parse_cmdline_005FF1E0', 13369);
       if (((_MEM[DAT_0063afa1 + s32(pbVar1, 0)] & 4) !== 0) && (w32r(param_5, 0, s32(param_5, 0) + 1), param_3 !== 0x0) ) {
          /*JOINED*/
         w32(param_3, 0, s32(pbVar1, 0));
@@ -13563,6 +13740,7 @@ export function parse_cmdline_005FF1E0(param_1, param_2, param_3, param_4, param
   }
   else {
     do {
+      loopGuard('parse_cmdline_005FF1E0', 13393);
       w32(param_5, 0, s32(param_5, 0) + 1);
       if (param_3 !== 0x0) {
         w32(param_3, 0, s32(local_8, 0));
@@ -13593,8 +13771,10 @@ export function parse_cmdline_005FF1E0(param_1, param_2, param_3, param_4, param
   local_8 = pbVar1;
   bVar3 = false;
   while( true ) {
+    loopGuard('parse_cmdline_005FF1E0', 13423);
     if (s32(local_8, 0) !== 0) {
       for (; (s32(local_8, 0) === 0x20 || (s32(local_8, 0) === 9)); local_8 = local_8 + 1) {
+        loopGuard('parse_cmdline_005FF1E0', 13425);
       }
     }
     if (s32(local_8, 0) === 0) break;
@@ -13604,9 +13784,11 @@ export function parse_cmdline_005FF1E0(param_1, param_2, param_3, param_4, param
     }
     w32(param_4, 0, s32(param_4, 0) + 1);
     while( true ) {
+      loopGuard('parse_cmdline_005FF1E0', 13434);
       bVar4 = true;
       local_14 = 0;
       for (; s32(local_8, 0) === 0x5c; local_8 = local_8 + 1) {
+        loopGuard('parse_cmdline_005FF1E0', 13437);
         local_14 = local_14 + 1;
       }
       if (s32(local_8, 0) === 0x22) {
@@ -13630,6 +13812,7 @@ export function parse_cmdline_005FF1E0(param_1, param_2, param_3, param_4, param
         local_14 = local_14 >> 1;
       }
       while (local_14 !== 0) {
+        loopGuard('parse_cmdline_005FF1E0', 13460);
         if (param_3 !== 0x0) {
           w32(param_3, 0, 0x5c);
           param_3 = param_3 + 1;
@@ -13721,6 +13904,7 @@ export function ___crtGetEnvironmentStringsW_005FF5A0(in_EAX = globalThis.in_EAX
       local_14 = local_18;
       pWVar1 = local_14;
       while (local_14 = pWVar1, s32(local_14, 0) !== L0) {
+        loopGuard('___crtGetEnvironmentStringsW_005FF5A0', 13551);
         pWVar1 = local_14 + 1;
         if (local_14[1] === L0) {
           pWVar1 = local_14 + 2;
@@ -13762,6 +13946,7 @@ export function ___crtGetEnvironmentStringsW_005FF5A0(in_EAX = globalThis.in_EAX
         local_c = local_18;
         local_14 = in_EAX;
         while (s8(s32(local_c, 0)) !== 0) {
+          loopGuard('___crtGetEnvironmentStringsW_005FF5A0', 13592);
           iVar3 = MultiByteToWideChar(DAT_0063a088,1,local_c,-1,local_14, (local_10 + 1) - (local_14 - in_EAX >> 1));
                                       /*JOINED*/
           if (iVar3 === 0) {
@@ -13830,6 +14015,7 @@ export function ___crtGetEnvironmentStringsA_005FF860() {
       local_c = local_18;
       pWVar2 = local_c;
       while (local_c = pWVar2, s32(local_c, 0) !== L0) {
+        loopGuard('___crtGetEnvironmentStringsA_005FF860', 13660);
         pWVar2 = local_c + 1;
         if (local_c[1] === L0) {
           pWVar2 = local_c + 2;
@@ -13862,6 +14048,7 @@ export function ___crtGetEnvironmentStringsA_005FF860() {
       local_10 = local_1c;
       pcVar1 = local_10;
       while (local_10 = pcVar1, s32(local_10, 0) !== 0) {
+        loopGuard('___crtGetEnvironmentStringsA_005FF860', 13692);
         pcVar1 = local_10 + 1;
         if (local_10[1] === 0) {
           pcVar1 = local_10 + 2;
@@ -13919,14 +14106,19 @@ export function __setmbcp_005FFAC0(_CodePage) {
   }
   else {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
+      loopGuard('__setmbcp_005FFAC0', 13749);
       if (s32(ptrAdd(DAT_0063b0c8, local_8 * 0x30), 0) === CodePage) {
         for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
+          loopGuard('__setmbcp_005FFAC0', 13751);
           _MEM[DAT_0063afa0 + local_28] = 0;
         }
         for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
+          loopGuard('__setmbcp_005FFAC0', 13754);
           for (local_c = ptrAdd(DAT_0063b0d8, local_8 * 0x30 + local_10 * 8); (s32(local_c, 0) !== 0 && (local_c[1] !== 0)); local_c = local_c + 2) {
+            loopGuard('__setmbcp_005FFAC0', 13755);
               /*JOINED*/
             for (local_28 = ((s32(local_c, 0)) >>> 0); local_28 <= local_c[1]; local_28 = local_28 + 1) {
+              loopGuard('__setmbcp_005FFAC0', 13757);
               _MEM[DAT_0063afa1 + local_28] = _MEM[DAT_0063afa1 + local_28] | _MEM[DAT_0063b0c0 + local_10];
             }
           }
@@ -13934,6 +14126,7 @@ export function __setmbcp_005FFAC0(_CodePage) {
         wv(DAT_0063b0a4, CodePage);
         wv(DAT_0063b0a8, _CPtoLCID(CodePage));
         for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
+          loopGuard('__setmbcp_005FFAC0', 13764);
           // DEVIATION: C pointer write — *(undefined2 *)(&DAT_0063b0b0 + local_10 * 2) =
                // DEVIATION(cont): *(undefined2 *)(&DAT_0063b0cc + local_10 * 2 + local_8 * 0x30);
         }
@@ -13943,6 +14136,7 @@ export function __setmbcp_005FFAC0(_CodePage) {
     BVar2 = GetCPInfo(CodePage,local_24[0]);
     if (BVar2 === 1) {
       for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
+        loopGuard('__setmbcp_005FFAC0', 13773);
         _MEM[DAT_0063afa0 + local_28] = 0;
       }
       if (local_24[0].MaxCharSize < 2) {
@@ -13951,18 +14145,22 @@ export function __setmbcp_005FFAC0(_CodePage) {
       }
       else {
         for (local_2c = local_24[0].LeadByte; (s32(local_2c, 0) !== 0 && (local_2c[1] !== 0)); local_2c = local_2c + 2) {
+          loopGuard('__setmbcp_005FFAC0', 13781);
             /*JOINED*/
           for (local_28 = ((s32(local_2c, 0)) >>> 0); local_28 <= local_2c[1]; local_28 = local_28 + 1) {
+            loopGuard('__setmbcp_005FFAC0', 13783);
             _MEM[DAT_0063afa1 + local_28] = _MEM[DAT_0063afa1 + local_28] | 4;
           }
         }
         for (local_28 = 1; local_28 < 0xff; local_28 = local_28 + 1) {
+          loopGuard('__setmbcp_005FFAC0', 13787);
           _MEM[DAT_0063afa1 + local_28] = _MEM[DAT_0063afa1 + local_28] | 8;
         }
         wv(DAT_0063b0a4, CodePage);
         wv(DAT_0063b0a8, _CPtoLCID(CodePage));
       }
       for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
+        loopGuard('__setmbcp_005FFAC0', 13793);
         w16(v(DAT_0063b0b0), local_10 * 2, 0);
       }
       iVar1 = 0;
@@ -14063,11 +14261,13 @@ export function setSBCS_005FFF20() {
   let local_8;
   
   for (local_8 = 0; local_8 < 0x101; local_8 = local_8 + 1) {
+    loopGuard('setSBCS_005FFF20', 13893);
     _MEM[DAT_0063afa0 + local_8] = 0;
   }
   wv(DAT_0063b0a4, 0);
   wv(DAT_0063b0a8, 0);
   for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+    loopGuard('setSBCS_005FFF20', 13898);
     w16(v(DAT_0063b0b0), local_8 * 2, 0);
   }
   return;
@@ -14153,6 +14353,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f21d9_caseD_1_helper', 13983);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -14162,6 +14363,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_1_helper', 13992);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -14169,6 +14371,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_1_helper', 13999);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -14187,6 +14390,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f21d9_caseD_1_helper', 14017);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14211,6 +14415,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f21d9_caseD_1_helper', 14041);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14220,11 +14425,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_1_helper', 14050);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_1_helper', 14055);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14256,6 +14463,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f21d9_caseD_2_helper', 14086);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -14265,6 +14473,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_2_helper', 14095);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -14272,6 +14481,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_2_helper', 14102);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -14290,6 +14500,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f21d9_caseD_2_helper', 14120);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14314,6 +14525,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f21d9_caseD_2_helper', 14144);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14323,11 +14535,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_2_helper', 14153);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_2_helper', 14158);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14355,6 +14569,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f21d9_caseD_3_helper', 14185);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -14364,6 +14579,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_3_helper', 14194);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -14371,6 +14587,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f21d9_caseD_3_helper', 14201);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -14389,6 +14606,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f21d9_caseD_3_helper', 14219);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14413,6 +14631,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f21d9_caseD_3_helper', 14243);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14422,11 +14641,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_3_helper', 14252);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f21d9_caseD_3_helper', 14257);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14461,6 +14682,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f2140_caseD_1_helper', 14291);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14470,11 +14692,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_1_helper', 14300);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_1_helper', 14305);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14505,6 +14729,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f2140_caseD_2_helper', 14335);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14514,11 +14739,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_2_helper', 14344);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_2_helper', 14349);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14545,6 +14772,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f2140_caseD_3_helper', 14375);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -14554,11 +14782,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_3_helper', 14384);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f2140_caseD_3_helper', 14389);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -14600,6 +14830,7 @@ function LAB_005f23b8_helper(param_1, uVar3) {
 
 function LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4) {
     do {
+      loopGuard('LAB_005f22fc_helper', 14430);
       puVar5 = puVar3;
       puVar3 = puVar5 + 1;
     } while (((s32(puVar5, 0) ^ 0xffffffff ^ s32(puVar5, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -14614,8 +14845,10 @@ function LAB_005f22fc_helper(bVar1, param_1, param_2, uVar2, uVar4) {
   puVar5 = (puVar3 + -1);
   // joined_r0x005f234b:
   do {
+    loopGuard('LAB_005f22fc_helper', 14444);
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
+        loopGuard('LAB_005f22fc_helper', 14446);
         uVar2 = s32(param_2, 0);
         uVar4 = s32(param_2, 0);
         param_2 = param_2 + 1;
@@ -14656,8 +14889,10 @@ function LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4) {
   puVar5 = (puVar3 + -1);
   // joined_r0x005f234b:
   do {
+    loopGuard('LAB_005f232f_helper', 14486);
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
+        loopGuard('LAB_005f232f_helper', 14488);
         uVar2 = s32(param_2, 0);
         uVar4 = s32(param_2, 0);
         param_2 = param_2 + 1;
@@ -14696,8 +14931,10 @@ function LAB_005f232f_helper(bVar1, param_1, param_2, uVar2, uVar4) {
 
 function joined_r0x005f234b_helper(bVar1, param_1, param_2, uVar2, uVar4) {
   do {
+    loopGuard('joined_r0x005f234b_helper', 14526);
     if ((((param_2) >>> 0) & 3) === 0) {
       do {
+        loopGuard('joined_r0x005f234b_helper', 14528);
         uVar2 = s32(param_2, 0);
         uVar4 = s32(param_2, 0);
         param_2 = param_2 + 1;
@@ -14773,12 +15010,14 @@ function joined_r0x005f2f6e_helper(cVar3, uVar4) {
     }
   // (outer block close)
   do {
+    loopGuard('joined_r0x005f2f6e_helper', 14603);
     cVar3 = s8(u32(_Source, 0));
     _Source = (_Source + 1);
     // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
+        loopGuard('joined_r0x005f2f6e_helper', 14609);
   // LAB_005f2fab:
         // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
@@ -14833,12 +15072,14 @@ function LAB_005f3019_helper(cVar3, uVar2, uVar4) {
     }
   // (outer block close)
   do {
+    loopGuard('LAB_005f3019_helper', 14663);
     cVar3 = s8(u32(_Source, 0));
     _Source = (_Source + 1);
     // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
+        loopGuard('LAB_005f3019_helper', 14669);
   // LAB_005f2fab:
         // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
@@ -14852,6 +15093,7 @@ function LAB_005f3019_helper(cVar3, uVar2, uVar4) {
 
 function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
           while( true ) {
+            loopGuard('joined_r0x005f3015_helper', 14682);
             uVar4 = uVar4 - 1;
             puVar5 = puVar5 + 1;
             if (uVar4 === 0) break;
@@ -14887,12 +15129,14 @@ function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
     }
   // (outer block close)
   do {
+    loopGuard('joined_r0x005f3015_helper', 14717);
     cVar3 = s8(u32(_Source, 0));
     _Source = (_Source + 1);
     // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
     puVar5 = (puVar5 + 1);
     if (cVar3 === 0) {
       while (_Count = _Count - 1, _Count !== 0) {
+        loopGuard('joined_r0x005f3015_helper', 14723);
   // LAB_005f2fab:
         // DEVIATION: C pointer write — *(char *)puVar5 = cVar3;
         puVar5 = (puVar5 + 1);
@@ -14906,7 +15150,9 @@ function joined_r0x005f3015_helper(cVar3, uVar2, uVar4) {
 
 function LAB_005f34a0_helper(uVar1) {
   do {
+    loopGuard('LAB_005f34a0_helper', 14736);
     do {
+      loopGuard('LAB_005f34a0_helper', 14737);
       puVar3 = puVar2;
       puVar2 = puVar3 + 1;
     } while (((s32(puVar3, 0) ^ 0xffffffff ^ s32(puVar3, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -14928,7 +15174,9 @@ function LAB_005f34d3_helper(uVar1) {
   return (puVar2 + (-1 - _Str));
   // LAB_005f34a0:
   do {
+    loopGuard('LAB_005f34d3_helper', 14758);
     do {
+      loopGuard('LAB_005f34d3_helper', 14759);
       puVar3 = puVar2;
       puVar2 = puVar3 + 1;
     } while (((s32(puVar3, 0) ^ 0xffffffff ^ s32(puVar3, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -14952,6 +15200,7 @@ function LAB_005f35a4_helper(bVar5) {
 
 function LAB_005f3570_helper(bVar3, bVar4, bVar5, uVar2) {
   while( true ) {
+    loopGuard('LAB_005f3570_helper', 14782);
     uVar2 = s32(_Str1, 0);
     bVar4 = u8(uVar2);
     bVar5 = bVar4 < u8(s32(_Str2, 0));
@@ -14995,6 +15244,7 @@ if (true) {
       uVar5 = 0;
       _C = 0;
       do {
+        loopGuard('LAB_005f410b_helper', 14825);
         _C = ((((_C >> 8) & 0xFFFFFF)) << 8 | (s32(_Str1, 0)));
         uVar5 = ((((uVar5 >> 8) & 0xFFFFFF)) << 8 | (s32(_Str2, 0)));
         if ((_C === 0) || (uVar5 === 0)) break;
@@ -15063,6 +15313,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f65c9_caseD_1_helper', 14893);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -15072,6 +15323,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_1_helper', 14902);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -15079,6 +15331,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_1_helper', 14909);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -15097,6 +15350,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f65c9_caseD_1_helper', 14927);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15121,6 +15375,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f65c9_caseD_1_helper', 14951);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15130,11 +15385,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_1_helper', 14960);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_1_helper', 14965);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15166,6 +15423,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f65c9_caseD_2_helper', 14996);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -15175,6 +15433,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_2_helper', 15005);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -15182,6 +15441,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_2_helper', 15012);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -15200,6 +15460,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f65c9_caseD_2_helper', 15030);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15224,6 +15485,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f65c9_caseD_2_helper', 15054);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15233,11 +15495,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_2_helper', 15063);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_2_helper', 15068);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15265,6 +15529,7 @@ if (true) {
       puVar6 = (puVar5 + -1);
       if (_Size < 0xd) {
         for (; _Size !== 0; _Size = _Size - 1) {
+          loopGuard('switchD_005f65c9_caseD_3_helper', 15095);
           w32(puVar6, 0, s32(puVar4, 0));
           puVar4 = puVar4 + -1;
           puVar6 = puVar6 + -1;
@@ -15274,6 +15539,7 @@ if (true) {
       uVar2 = -in_EDX & 3;
       uVar1 = _Size - uVar2;
       for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_3_helper', 15104);
         w32(puVar6, 0, s32(puVar4, 0));
         puVar4 = puVar4 + -1;
         puVar6 = puVar6 + -1;
@@ -15281,6 +15547,7 @@ if (true) {
       puVar3 = (puVar4 + -3);
       puVar5 = (puVar6 + -3);
       for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+        loopGuard('switchD_005f65c9_caseD_3_helper', 15111);
         w32(puVar5, 0, s32(puVar3, 0));
         puVar3 = puVar3 + -1;
         puVar5 = puVar5 + -1;
@@ -15299,6 +15566,7 @@ if (true) {
   puVar3 = _Dst;
   if ((((_Dst) >>> 0) & 3) === 0) {
     for (uVar1 = _Size >> 2; uVar1 !== 0; uVar1 = uVar1 - 1) {
+      loopGuard('switchD_005f65c9_caseD_3_helper', 15129);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15323,6 +15591,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f65c9_caseD_3_helper', 15153);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15332,11 +15601,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_3_helper', 15162);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f65c9_caseD_3_helper', 15167);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15371,6 +15642,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f6530_caseD_1_helper', 15201);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15380,11 +15652,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_1_helper', 15210);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_1_helper', 15215);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15415,6 +15689,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f6530_caseD_2_helper', 15245);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15424,11 +15699,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_2_helper', 15254);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_2_helper', 15259);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15455,6 +15732,7 @@ if (true) {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
+        loopGuard('switchD_005f6530_caseD_3_helper', 15285);
         w32(puVar4, 0, _Src[0]);
         _Src = (_Src + 1);
         puVar4 = puVar4 + 1;
@@ -15464,11 +15742,13 @@ if (true) {
     uVar2 = -_Dst & 3;
     uVar1 = _Size - uVar2;
     for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_3_helper', 15294);
       // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
       _Src = (_Src + 1);
       puVar3 = (puVar3 + 1);
     }
     for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+      loopGuard('switchD_005f6530_caseD_3_helper', 15299);
       w32(puVar3, 0, s32(_Src, 0));
       _Src = (_Src + 4);
       puVar3 = puVar3 + 1;
@@ -15511,6 +15791,7 @@ if (true) {
       _Buf1 = (_Buf1 + 1);
       _Buf2 = (_Buf2 + 1);
       for (_Size = _Size - 1; _Size !== 0; _Size = _Size - 2) {
+        loopGuard('LAB_005f6dca_helper', 15341);
   // LAB_005f6d7d:
         bVar9 = u8(_Buf1[0]) < u8(_Buf2[0]);
         if ((u8(_Buf1[0]) !== u8(_Buf2[0])) || (bVar9 = u8((_Buf1 + 1)[0]) < u8((_Buf2 + 1)[0]), u8((_Buf1 + 1)[0]) !== u8((_Buf2 + 1)[0]))) LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, uVar1, uVar2, uVar5); return;
@@ -15544,7 +15825,9 @@ if (true) {
     _C = 0;
     iVar7 = 0xff;
     do {
+      loopGuard('LAB_005f6e4e_helper', 15374);
       do {
+        loopGuard('LAB_005f6e4e_helper', 15375);
         if (s8(iVar7) === 0) {
           return iVar7;
         }
@@ -15566,6 +15849,7 @@ if (true) {
 
 function LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4) {
     do {
+      loopGuard('LAB_005f74da_helper', 15396);
       puVar6 = puVar5;
       puVar5 = puVar6 + 1;
     } while (((s32(puVar6, 0) ^ 0xffffffff ^ s32(puVar6, 0) + 0x7efefeff) & 0x81010100) === 0);
@@ -15584,6 +15868,7 @@ function LAB_005f74da_helper(bVar1, uVar2, uVar3, uVar4) {
   }
 if (true) {
     do {
+      loopGuard('LAB_005f74da_helper', 15414);
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
@@ -15596,8 +15881,10 @@ if (true) {
     uVar3 = _Count >> 2;
   }
   do {
+    loopGuard('LAB_005f74da_helper', 15426);
     if (uVar3 === 0) {
       for (uVar4 = _Count & 3; uVar4 !== 0; uVar4 = uVar4 - 1) {
+        loopGuard('LAB_005f74da_helper', 15428);
         uVar3 = u32(_Source, 0);
         _Source = (_Source + 1);
         // DEVIATION: C pointer write — *(byte *)puVar6 = (byte)uVar3;
@@ -15647,6 +15934,7 @@ function LAB_005f750b_helper(bVar1, uVar2, uVar3, uVar4) {
   }
 if (true) {
     do {
+      loopGuard('LAB_005f750b_helper', 15477);
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
@@ -15659,8 +15947,10 @@ if (true) {
     uVar3 = _Count >> 2;
   }
   do {
+    loopGuard('LAB_005f750b_helper', 15489);
     if (uVar3 === 0) {
       for (uVar4 = _Count & 3; uVar4 !== 0; uVar4 = uVar4 - 1) {
+        loopGuard('LAB_005f750b_helper', 15491);
         uVar3 = u32(_Source, 0);
         _Source = (_Source + 1);
         // DEVIATION: C pointer write — *(byte *)puVar6 = (byte)uVar3;
@@ -15708,6 +15998,7 @@ function LAB_005f751b_helper(bVar1, uVar2, uVar3, uVar4) {
   }
 if (true) {
     do {
+      loopGuard('LAB_005f751b_helper', 15538);
       bVar1 = u8(u32(_Source, 0));
       uVar4 = ((bVar1) >>> 0);
       _Source = (_Source + 1);
@@ -15720,8 +16011,10 @@ if (true) {
     uVar3 = _Count >> 2;
   }
   do {
+    loopGuard('LAB_005f751b_helper', 15550);
     if (uVar3 === 0) {
       for (uVar4 = _Count & 3; uVar4 !== 0; uVar4 = uVar4 - 1) {
+        loopGuard('LAB_005f751b_helper', 15552);
         uVar3 = u32(_Source, 0);
         _Source = (_Source + 1);
         // DEVIATION: C pointer write — *(byte *)puVar6 = (byte)uVar3;
@@ -16002,6 +16295,7 @@ if (true) {
         local_24 = uStack_2d;
         local_27c = uVar11;
         while ((iVar9 = local_238 + -1, 0 < local_238 || (lVar12 !== 0))) {
+          loopGuard('LAB_005faecc_helper', 15832);
           local_238 = iVar9;
           local_270 = lVar12;
           local_274 = __aullrem(lVar12,local_23c,local_23c >> 0x1f);
@@ -16058,6 +16352,7 @@ if (true) {
           local_284 = local_24;
           local_288 = local_28;
           while (sVar3 = local_288 - 1, bVar10 = local_288 !== 0, local_288 = sVar3, bVar10) {
+            loopGuard('LAB_005faecc_helper', 15888);
             wVar6 = s32(local_284, 0);
             local_284 = local_284 + 1;
             iVar9 = _wctomb(local_28c,wVar6);
@@ -16130,6 +16425,7 @@ if (true) {
         local_24 = uStack_2d;
         local_27c = uVar11;
         while ((iVar9 = local_238 + -1, 0 < local_238 || (lVar12 !== 0))) {
+          loopGuard('LAB_005fae7b_helper', 15960);
           local_238 = iVar9;
           local_270 = lVar12;
           local_274 = __aullrem(lVar12,local_23c,local_23c >> 0x1f);
@@ -16186,6 +16482,7 @@ if (true) {
           local_284 = local_24;
           local_288 = local_28;
           while (sVar3 = local_288 - 1, bVar10 = local_288 !== 0, local_288 = sVar3, bVar10) {
+            loopGuard('LAB_005fae7b_helper', 16016);
             wVar6 = s32(local_284, 0);
             local_284 = local_284 + 1;
             iVar9 = _wctomb(local_28c,wVar6);

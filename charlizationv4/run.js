@@ -159,9 +159,30 @@ if (turns > 0) {
   // Import turn pipeline functions
   const { FUN_00489553 } = await import('./blocks/block_00480000.js');
   const { FUN_00543cd6 } = await import('./blocks/block_00540000.js');
-  // Sub-functions of the turn pipeline for tracing
   const { FUN_004d01ae } = await import('./blocks/block_004D0000.js');
   const { FUN_004e4ceb } = await import('./blocks/block_004E0000.js');
+  const { loopReset } = await import('./mem.js');
+
+  // Memory diff helper: snapshot _MEM, compare with previous, report changes
+  function memDiff(label, before, after) {
+    let changed = 0;
+    const regions = []; // { addr, oldVal, newVal }
+    for (let i = 0; i < before.length; i++) {
+      if (before[i] !== after[i]) {
+        changed++;
+        if (regions.length < 10) {
+          // Find the absolute address
+          const absAddr = 0x61c068 + i; // BASE from build-globals
+          regions.push({ offset: i, addr: '0x' + absAddr.toString(16), old: before[i], new: after[i] });
+        }
+      }
+    }
+    console.log(`    ${label}: ${changed} bytes changed`);
+    for (const r of regions) {
+      console.log(`      ${r.addr} (offset ${r.offset}): ${r.old} → ${r.new}`);
+    }
+    return changed;
+  }
 
   console.log(`\n═══ Running ${turns} turns (all AI) ═══`);
 
@@ -194,19 +215,29 @@ if (turns > 0) {
   const before = snap();
 
   for (let t = 0; t < turns; t++) {
+    console.log(`\n═══ Turn ${t + 1} ═══`);
     for (let civ = 1; civ < 8; civ++) {
       if (!(info.civsAlive & (1 << civ))) continue;
+      console.log(`  ── Civ ${civ} ──`);
+      const memBefore = G._MEM.slice(); // snapshot
+      loopReset(); // reset loop guard counter
       try {
         wv(DAT_00655b05, civ);
-        wv(DAT_006d1da0, civ);  // active civ — set by outer game loop in binary
+        wv(DAT_006d1da0, civ);
         FUN_00489553(civ);
         if (((1 << (civ & 0x1f)) & v(DAT_00655b0b)) === 0) {
           FUN_00543cd6();
         }
       } catch (e) {
-        console.error(`  Turn ${t+1}, civ ${civ}: ERROR — ${e.message.substring(0, 120)}`);
-        if (e.stack) console.error(e.stack.split('\n').slice(1,5).join('\n'));
+        const msg = e.message.substring(0, 120);
+        if (msg.startsWith('LOOP_GUARD:')) {
+          console.error(`    ${msg}`);
+        } else {
+          console.error(`    ERROR: ${msg}`);
+          if (e.stack) console.error('    ' + e.stack.split('\n')[1]?.trim());
+        }
       }
+      memDiff(`Civ ${civ}`, memBefore, G._MEM);
     }
     wv(DAT_00655af8, s16(DAT_00655af8, 0) + 1);
   }

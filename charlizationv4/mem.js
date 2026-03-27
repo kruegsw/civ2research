@@ -81,6 +81,17 @@ export function w32r(addr, off, val) { w32(addr, off, val); return val; }
 // ── Pointer arithmetic: &DAT_xxx + offset → addr + offset ──
 export function ptrAdd(addr, off) { return addr + off; }
 
+// ── Loop guard: prevents infinite loops, logs diagnostic info ──
+let _loopCount = 0;
+const _LOOP_LIMIT = 5000000;
+export function loopGuard(fnName, line) {
+  if (++_loopCount > _LOOP_LIMIT) {
+    _loopCount = 0;
+    throw new Error('LOOP_GUARD: ' + fnName + ' line ' + line + ' exceeded ' + _LOOP_LIMIT + ' iterations');
+  }
+}
+export function loopReset() { _loopCount = 0; }
+
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {
   G._tileData = tileArray;

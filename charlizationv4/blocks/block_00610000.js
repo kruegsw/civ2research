@@ -10,7 +10,7 @@
 // /* WARNING: Unable to track spacebase fully for stack */
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { exe, segment } from '../extern-stubs.js';
 
@@ -69,11 +69,13 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   psVar3 = segment(in_SS,sVar20 + 0x28);
   sVar19 = s32(psVar3, 0);
   do {
+    loopGuard('FUN_0061a000', 66);
     psVar3 = segment(in_SS,sVar20 + -0x10);
     w32(psVar3, 0, sVar19);
     psVar3 = segment(in_SS,sVar20 + 0x24);
     sVar19 = s32(psVar3, 0);
     do {
+      loopGuard('FUN_0061a000', 71);
       puVar4 = segment(in_SS,sVar20 + 0x16);
       uVar22 = ((((s32(puVar4, 0)) >>> 0) >> 0x10) & 0xFFFF);
       sVar17 = ((s32(puVar4, 0)) << 16 >> 16);
@@ -219,6 +221,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   sVar25 = s32(psVar4, 0);
   uVar21 = 0;
   do {
+    loopGuard('FUN_0061a759', 216);
     w16(iVar24, -10, sVar25);
     piVar10 = segment(in_SS,sVar17 + -4);
     iVar22 = s32(piVar10, 0);
@@ -227,6 +230,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
     puVar3 = segment(in_SS,sVar17 + -10);
     puVar7 = segment(in_SS,sVar17 + -0x10);
     while( true ) {
+      loopGuard('FUN_0061a759', 224);
       psVar4 = segment(s32(puVar3, 0),s32(puVar7, 0));
       sVar25 = ((iVar20) << 16 >> 16);
       uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
@@ -259,6 +263,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
       psVar5 = segment(in_SS,sVar23 + 0x24);
       sVar18 = s32(psVar5, 0);
       while (psVar5 = segment(uVar14,sVar25), s32(psVar5, 0) < s32(psVar4, 0)) {
+        loopGuard('FUN_0061a759', 256);
         sVar25 = sVar25 + 2;
         pcVar26 = pcVar26 + 1;
         sVar18 = sVar18 + -1;
@@ -274,6 +279,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
         piVar10 = segment(in_SS,sVar23 + -4);
         iVar22 = s32(piVar10, 0);
         do {
+          loopGuard('FUN_0061a759', 271);
           psVar8 = segment(uVar14,sVar25);
           psVar4 = segment(in_SS,sVar23 + -0x14);
           psVar5 = segment(in_SS,sVar23 + -0x16);
