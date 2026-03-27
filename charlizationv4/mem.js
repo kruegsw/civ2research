@@ -46,22 +46,26 @@ export function u8(val) { return val & 0xFF; }
 // Dual-mode: if first arg is a number, read from _MEM at addr+off.
 // If first arg is a Uint8Array/Buffer, read from it at off (legacy mode).
 export function s16(arrOrAddr, off) {
+  if (arrOrAddr == null) return 0;
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   const val = (buf[i + 1] << 8) | buf[i];
   return (val & 0x8000) ? (val | 0xFFFF0000) : val;
 }
 export function u16(arrOrAddr, off) {
+  if (arrOrAddr == null) return 0;
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   return (buf[i + 1] << 8) | buf[i];
 }
 export function s32(arrOrAddr, off) {
+  if (arrOrAddr == null) return 0;
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   return buf[i] | (buf[i+1] << 8) | (buf[i+2] << 16) | (buf[i+3] << 24);
 }
 export function u32(arrOrAddr, off) {
+  if (arrOrAddr == null) return 0;
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   return (buf[i] | (buf[i+1] << 8) | (buf[i+2] << 16) | (buf[i+3] << 24)) >>> 0;
