@@ -14,9 +14,7 @@ import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, F
 import { FUN_005b94d5 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __chdir, __toupper_lk, _atexit, _memcpy } from '../crt.js';
 import { _memset, _printf, _rand, _strcmp, _strlen, _strncpy } from '../crt.js';
-import { CControlBarInfo, DEVIATION, HELPERS, IsTracking, OffsetRect, __strcmpi } from '../extern-stubs.js';
-import { __strnicmp, _scalar_deleting_destructor_, exe, operator_delete, operator_new, thunk_citywin_9429 } from '../extern-stubs.js';
-import { thunk_delete_city, thunk_handle_city_disorder_004ef578, thunk_handle_city_disorder_00509590, thunk_new_civ } from '../extern-stubs.js';
+import { CControlBarInfo, DEVIATION, HELPERS, OffsetRect, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_00408230, FUN_004083b0, FUN_00408460 } from './block_00400000.js';
 import { FUN_004085f0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
 import { FUN_0040efd0, FUN_0040f350, FUN_0040f380, FUN_0040f3e0, FUN_0040f570, FUN_0040f680 } from './block_00400000.js';
@@ -25,7 +23,7 @@ import { FUN_0040fcf0, FUN_0040fd80, FUN_0040fdb0, FUN_0040fe10 } from './block_
 import { FUN_00414bb0, FUN_00415133, FUN_004187a0, FUN_00418870, FUN_00419b80 } from './block_00410000.js';
 import { FUN_00421da0, FUN_00421dd0, FUN_00421ea0, FUN_004271e8, FUN_00428b0c, FUN_00428cb0 } from './block_00420000.js';
 import { FUN_0043c260, FUN_0043cf76, FUN_0043d20a, FUN_0043d289, FUN_0043f7a7 } from './block_00430000.js';
-import { FUN_0044c5a0, FUN_0044cba0 } from './block_00440000.js';
+import { FUN_0044c5a0, FUN_0044cba0, delete_city_004413D1 as thunk_delete_city } from './block_00440000.js';
 import { FUN_004503d0, FUN_00451860, FUN_00451890, FUN_004518d0, FUN_00451900, FUN_00451930 } from './block_00450000.js';
 import { FUN_004519b0, FUN_00451a60, FUN_00451ac0, FUN_00451af0, FUN_00451bf0, FUN_00452315 } from './block_00450000.js';
 import { FUN_00452a67, FUN_00453aa0, FUN_00453e18, FUN_00453e51 } from './block_00450000.js';
@@ -35,9 +33,11 @@ import { FUN_00484d52 } from './block_00480000.js';
 import { FUN_004906fd, FUN_0049301b, FUN_00493c7d, FUN_00497d00, FUN_00497ea0, FUN_004980ec } from './block_00490000.js';
 import { FUN_00498159 } from './block_00490000.js';
 import { FUN_004a2020, FUN_004a2379, FUN_004a23fc, FUN_004a2534, FUN_004a6980, FUN_004abfe5 } from './block_004A0000.js';
+import { new_civ_004A7CE9 as thunk_new_civ } from './block_004A0000.js';
 import { FUN_004b0b53, FUN_004bb540, FUN_004bb620, FUN_004bb800, FUN_004bf05b } from './block_004B0000.js';
 import { FUN_004e1763, FUN_004e7492, FUN_004eb4ed, FUN_004eb571, FUN_004ebbde, FUN_004ec3fe } from './block_004E0000.js';
-import { FUN_004eef23, FUN_004efbc6, FUN_004efd44 } from './block_004E0000.js';
+import { FUN_004eef23, FUN_004efbc6, FUN_004efd44, handle_city_disorder_004ef578_004EF578 as thunk_handle_city_disorder_004ef578 } from './block_004E0000.js';
+import { citywin_9429_00509429 as thunk_citywin_9429, handle_city_disorder_00509590_00509590 as thunk_handle_city_disorder_00509590 } from './block_00500000.js';
 import { FUN_00511880 } from './block_00510000.js';
 import { FUN_0052630d } from './block_00520000.js';
 import { FUN_00564bf0, FUN_00564e6d } from './block_00560000.js';
@@ -50,7 +50,8 @@ import { FUN_005b9f1c, FUN_005bb4ae, FUN_005bb574 } from './block_005B0000.js';
 import { FUN_005c0034, FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, FUN_005c19ad } from './block_005C0000.js';
 import { FUN_005c64da, FUN_005c656b, FUN_005cd775, FUN_005cda06, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d268e, FUN_005d6038, FUN_005d8236, FUN_005db0d0, FUN_005dde57, FUN_005ddeff } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, __strcmpi_005F6E00 as __strcmpi, __strnicmp_005F40B0 as __strnicmp, _scalar_deleting_destructor__005F0EB0 as _scalar_deleting_destructor_ } from './block_005F0000.js';
+import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
 
 export function FUN_004f00f0(param_1, param_2) {
 
@@ -320,10 +321,10 @@ export function FUN_004f0a9c(param_1) {
   w32(G.DAT_006aa760, 0, 1);
   bVar1 = G.DAT_0064f348[param_1 * 0x58];
   iVar5 = s8(bVar1);
-  if (((u8(G.DAT_0064f34b[param_1 * 0x58]) - 1 ^ G.DAT_00655af8 & 0x3f) & 0x3f) === 0) {
+  if (((u8(G.DAT_0064f34b[param_1 * 0x58]) - 1 ^ s32(G.DAT_00655af8, 0) & 0x3f) & 0x3f) === 0) {
     G.DAT_0064f34a[param_1 * 0x58] = bVar1;
   }
-  if ((G.DAT_006d1da0 === iVar5) && ((1 << (bVar1 & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0)) {
+  if ((s32(G.DAT_006d1da0, 0) === iVar5) && ((1 << (bVar1 & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0)) {
     w32(G.DAT_006a65ac, 0, 1);
   }
   else {
@@ -348,7 +349,7 @@ export function FUN_004f0a9c(param_1) {
     if ((s32(G.DAT_006a65dc, 0) !== 0) && (s32(G.DAT_00654fa8, 0) === 0)) {
       FUN_004eb571(s_DECREASE_0062ef84,param_1,0,0);
     }
-    w32(G.DAT_006a661c, 0, (G.DAT_006a65c8 - s8(G.DAT_0064f349[param_1 * 0x58]) * ((s32(G.DAT_0064bcca, 0)) >>> 0)))
+    w32(G.DAT_006a661c, 0, (s32(G.DAT_006a65c8, 0) - s8(G.DAT_0064f349[param_1 * 0x58]) * ((s32(G.DAT_0064bcca, 0)) >>> 0)))
                    - s32(G.DAT_006a65d8, 0) * s32(G.DAT_006a6608, 0);
     // DEVIATION: C pointer write — *(short *)(&DAT_0064f35a + param_1 * 0x58) =
          // DEVIATION(cont): *(short *)(&DAT_0064f35a + param_1 * 0x58) + (short)DAT_006a661c;
@@ -365,7 +366,7 @@ export function FUN_004f0a9c(param_1) {
     w32(G.DAT_006a65d4, 0, 0);
     FUN_004eb4ed(param_1,1);
     w32(G.DAT_0062edfc, 0, 0);
-    if (G.DAT_006a65cc < s32(G.DAT_006a6568, 0)) {
+    if (s32(G.DAT_006a65cc, 0) < s32(G.DAT_006a6568, 0)) {
       // DEVIATION: C pointer write — *(short *)(&DAT_0064ca74 + iVar5 * 0x594) =
            // DEVIATION(cont): *(short *)(&DAT_0064ca74 + iVar5 * 0x594) + ((short)DAT_006a6568 - (short)DAT_006a65cc) * 5;
            /*JOINED*/
@@ -435,7 +436,7 @@ export function FUN_004f0a9c(param_1) {
       FUN_004f0221(param_1);
     }
     FUN_004f080d(param_1);
-    iVar6 = G.DAT_006a65cc * 2 - s32(G.DAT_006a6568, 0);
+    iVar6 = s32(G.DAT_006a65cc, 0) * 2 - s32(G.DAT_006a6568, 0);
     if (s16(G.DAT_0064ca72, iVar5 * 0x594) <= iVar6) {
       w16(G.DAT_0064ca72, iVar5 * 0x594, ((iVar6) << 16 >> 16));
     }
@@ -449,7 +450,7 @@ export function FUN_004f0a9c(param_1) {
       thunk_handle_city_disorder_00509590(param_1);
     }
     w32(G.DAT_0062edf8, 0, 0);
-    iVar5 = G.DAT_006a6550 - G.DAT_006a65a8;
+    iVar5 = s32(G.DAT_006a6550, 0) - s32(G.DAT_006a65a8, 0);
   }
   else {
     iVar5 = -999;
@@ -509,7 +510,7 @@ export function FUN_004f1220() {
         FUN_00511880(0x49,0xff,0,0,0,0);
       }
     }
-    FUN_0047cf9e(G.DAT_006d1da0,1);
+    FUN_0047cf9e(s32(G.DAT_006d1da0, 0),1);
     if (s32(G.DAT_00654fa8, 0) === 0) {
       FUN_00421ea0(s_ASTRONAUTS_0062efa0);
     }
@@ -3556,7 +3557,7 @@ export function FUN_004fa707(param_1) {
   let iVar2;
   let local_f4 = new Array(240).fill(0);
   
-  if ((u8(G.DAT_00655aea) & 0x10) === 0) {
+  if ((u8(s32(G.DAT_00655aea, 0)) & 0x10) === 0) {
     uVar1 = 0;
   }
   else {
@@ -3799,7 +3800,7 @@ export function FUN_004fad02(param_1) {
     uVar1 = 0;
   }
   else {
-    if (((1 << (u8(local_8) & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0) && (G.DAT_006d1da0 === local_8)) {
+    if (((1 << (u8(local_8) & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0) && (s32(G.DAT_006d1da0, 0) === local_8)) {
       w32(G.DAT_0064b1ac, 0, 4);
     }
     FUN_004e1763(local_8,1,1);
@@ -4111,7 +4112,7 @@ export function FUN_004fb5b2(param_1) {
           FUN_005b4391(local_44,1);
         }
       }
-      if (((1 << (u8(local_48) & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0) && (G.DAT_006d1da0 === local_48))
+      if (((1 << (u8(local_48) & 0x1f) & ((s32(G.DAT_00655b0b, 0)) >>> 0)) !== 0) && (s32(G.DAT_006d1da0, 0) === local_48))
       {
         w32(G.DAT_0064b1ac, 0, 4);
       }
@@ -4122,7 +4123,7 @@ export function FUN_004fb5b2(param_1) {
         }
       }
       thunk_new_civ(local_48);
-      FUN_0047cf9e(G.DAT_006d1da0,1);
+      FUN_0047cf9e(s32(G.DAT_006d1da0, 0),1);
     }
   }
   return local_34;

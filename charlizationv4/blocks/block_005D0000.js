@@ -16,33 +16,25 @@ import { _time } from '../crt.js';
 import { AVIStreamInfoA, AVIStreamRead, AVIStreamReadFormat, AVIStreamTimeToSample, AnimatePalette, BeginPaint } from '../extern-stubs.js';
 import { BringWindowToTop, CallWindowProcA, CloseHandle, CommDlgExtendedError, CopyRect, CreateCompatibleDC } from '../extern-stubs.js';
 import { CreateFileA, CreateFileMappingA, CreatePalette, CreateWindowExA, DEVIATION, DefWindowProcA } from '../extern-stubs.js';
-import { DeleteDC, DeleteObject, DestroyWindow, DrawIcon, DrawTextA, EnableStackedTabs } from '../extern-stubs.js';
-import { EnableWindow, EndPaint, FillRect, FindResourceA, FrameRect, FreeLibrary } from '../extern-stubs.js';
-import { FreeResource, GdiFlush, GetActiveView, GetBitmapDimensionEx, GetCheckStyle, GetClassLongA } from '../extern-stubs.js';
-import { GetClassNameA, GetClientRect, GetDC, GetDeviceCaps, GetFileSize, GetFocus } from '../extern-stubs.js';
-import { GetOpenFileNameA, GetParent, GetProcAddress, GetSaveFileNameA, GetStockObject, GetSystemPaletteEntries } from '../extern-stubs.js';
-import { GetTextMetricsA, GetWindowLongA, GetWindowRect, GlobalAlloc, GlobalFree, GlobalLock } from '../extern-stubs.js';
-import { GlobalSize, GlobalUnlock, HELPERS, InflateRect, InitCommonControls, IntersectRect } from '../extern-stubs.js';
-import { InvalidateRect, Iostream_init, IsIconic, IsTracking, IsWindowVisible, KillTimer } from '../extern-stubs.js';
-import { LineTo, LoadBitmapA, LoadCursorA, LoadIconA, LoadLibraryA, LoadLibraryExA } from '../extern-stubs.js';
-import { LoadResource, LockResource, MapViewOfFile, MessageBeep, MessageBoxA, MoveToEx } from '../extern-stubs.js';
-import { OffsetRect, OpenFile, OutputDebugStringA, PeekMessageA, ReadFile, RealizePalette } from '../extern-stubs.js';
-import { Realloc, RegisterClassA, ReleaseCapture, ReleaseDC, SelectObject, SendMessageA } from '../extern-stubs.js';
-import { SetBkMode, SetCapture, SetCursor, SetFilePointer, SetFocus, SetMenu } from '../extern-stubs.js';
-import { SetPaletteEntries, SetTextColor, SetTimer, SetWindowLongA, UnmapViewOfFile, UnregisterClassA } from '../extern-stubs.js';
-import { WriteFile, _Timevec, __expand, __ftol, __msize, __strlwr } from '../extern-stubs.js';
-import { __strupr, _hread, _llseek, build_menu_16E0, build_menu_1768, build_menu_1805 } from '../extern-stubs.js';
-import { create_window_423C, create_window_B601, create_window_BC10, debug_log, exe, gdi_8DA1 } from '../extern-stubs.js';
-import { gdi_D39E, invalidate_8B00, invalidate_96CC, manage_window_447C, manage_window_8B2D, manage_window_8B58 } from '../extern-stubs.js';
-import { manage_window_C0AB, manage_window_DECF, mciSendCommandA, mmioAdvance, mmioAscend, mmioClose } from '../extern-stubs.js';
-import { mmioDescend, mmioGetInfo, mmioOpenA, mmioRead, mmioSeek, operator_delete } from '../extern-stubs.js';
-import { operator_new, register_wndclass_2740, register_wndclass_BC5A, register_wndclass_D8A0, render_text_8834, send_msg_2D7F } from '../extern-stubs.js';
-import { send_msg_2DC6, send_msg_2E31, send_msg_2E77, send_msg_2E9C, send_msg_2EC1, send_msg_2F0D } from '../extern-stubs.js';
-import { send_msg_2F47, send_msg_362D, send_msg_3CFF, send_msg_9307, show_messagebox_2997, show_messagebox_49A3 } from '../extern-stubs.js';
-import { show_messagebox_4C18, show_messagebox_DA53, show_messagebox_DD00, show_open_dialog_8C0C, sndPlaySoundA, timeBeginPeriod } from '../extern-stubs.js';
-import { timeEndPeriod, timeKillEvent, timeSetEvent, update_palette_90CA, waveOutClose, waveOutGetDevCapsA } from '../extern-stubs.js';
-import { waveOutGetErrorTextA, waveOutGetNumDevs, waveOutGetPosition, waveOutOpen, waveOutPrepareHeader, waveOutReset } from '../extern-stubs.js';
-import { waveOutUnprepareHeader, waveOutWrite } from '../extern-stubs.js';
+import { DeleteDC, DeleteObject, DestroyWindow, DrawIcon, DrawTextA, EnableWindow } from '../extern-stubs.js';
+import { EndPaint, FillRect, FindResourceA, FrameRect, FreeLibrary, FreeResource } from '../extern-stubs.js';
+import { GdiFlush, GetBitmapDimensionEx, GetClassLongA, GetClassNameA, GetClientRect, GetDC } from '../extern-stubs.js';
+import { GetDeviceCaps, GetFileSize, GetFocus, GetOpenFileNameA, GetParent, GetProcAddress } from '../extern-stubs.js';
+import { GetSaveFileNameA, GetStockObject, GetSystemPaletteEntries, GetTextMetricsA, GetWindowLongA, GetWindowRect } from '../extern-stubs.js';
+import { GlobalAlloc, GlobalFree, GlobalLock, GlobalSize, GlobalUnlock, HELPERS } from '../extern-stubs.js';
+import { InflateRect, InitCommonControls, IntersectRect, InvalidateRect, Iostream_init, IsIconic } from '../extern-stubs.js';
+import { IsWindowVisible, KillTimer, LineTo, LoadBitmapA, LoadCursorA, LoadIconA } from '../extern-stubs.js';
+import { LoadLibraryA, LoadLibraryExA, LoadResource, LockResource, MapViewOfFile, MessageBeep } from '../extern-stubs.js';
+import { MessageBoxA, MoveToEx, OffsetRect, OpenFile, OutputDebugStringA, PeekMessageA } from '../extern-stubs.js';
+import { ReadFile, RealizePalette, RegisterClassA, ReleaseCapture, ReleaseDC, SelectObject } from '../extern-stubs.js';
+import { SendMessageA, SetBkMode, SetCapture, SetCursor, SetFilePointer, SetFocus } from '../extern-stubs.js';
+import { SetMenu, SetPaletteEntries, SetTextColor, SetTimer, SetWindowLongA, UnmapViewOfFile } from '../extern-stubs.js';
+import { UnregisterClassA, WriteFile, _Timevec, __expand, _hread, _llseek } from '../extern-stubs.js';
+import { exe, mciSendCommandA, mmioAdvance, mmioAscend, mmioClose, mmioDescend } from '../extern-stubs.js';
+import { mmioGetInfo, mmioOpenA, mmioRead, mmioSeek, sndPlaySoundA, timeBeginPeriod } from '../extern-stubs.js';
+import { timeEndPeriod, timeKillEvent, timeSetEvent, waveOutClose, waveOutGetDevCapsA, waveOutGetErrorTextA } from '../extern-stubs.js';
+import { waveOutGetNumDevs, waveOutGetPosition, waveOutOpen, waveOutPrepareHeader, waveOutReset, waveOutUnprepareHeader } from '../extern-stubs.js';
+import { waveOutWrite } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_004080c0, FUN_00408490, FUN_004085f0 } from './block_00400000.js';
 import { FUN_0040f3e0, FUN_0040f610, FUN_0040f680, FUN_0040f730, FUN_0040f810, FUN_0040f880 } from './block_00400000.js';
 import { FUN_00414bb0, FUN_00414d10, FUN_00417ef0, FUN_00418740, FUN_00418910, FUN_00418cb0 } from './block_00410000.js';
@@ -51,6 +43,7 @@ import { FUN_0043c630, FUN_0043c660 } from './block_00430000.js';
 import { FUN_00447210, FUN_004472f0, FUN_0044c5a0, FUN_0044cba0 } from './block_00440000.js';
 import { FUN_00450390, FUN_004503d0, FUN_00450400, FUN_00451830, FUN_00451860, FUN_00453af0 } from './block_00450000.js';
 import { FUN_0046f440 } from './block_00460000.js';
+import { GetActiveView_004710A0 as GetActiveView } from './block_00470000.js';
 import { FUN_00492a80, FUN_00497c40 } from './block_00490000.js';
 import { FUN_004a6980 } from './block_004A0000.js';
 import { FUN_004bb370, FUN_004bb3b0, FUN_004bb540 } from './block_004B0000.js';
@@ -59,21 +52,49 @@ import { FUN_00511320 } from './block_00510000.js';
 import { FUN_005a95b0 } from './block_005A0000.js';
 import { FUN_005bb3f0, FUN_005bb4ae, FUN_005bb6c7, FUN_005bb8c0, FUN_005bc019, FUN_005bc173 } from './block_005B0000.js';
 import { FUN_005bcfa0, FUN_005bd298, FUN_005bd4cd, FUN_005bd500, FUN_005bd610, FUN_005bd630 } from './block_005B0000.js';
-import { FUN_005bd65c, FUN_005bd915 } from './block_005B0000.js';
+import { FUN_005bd65c, FUN_005bd915, create_window_BC10_005BBC10 as create_window_BC10, gdi_D39E_005BD39E as gdi_D39E, manage_window_C0AB_005BC0AB as manage_window_C0AB } from './block_005B0000.js';
 import { FUN_005c041f, FUN_005c0593, FUN_005c0979, FUN_005c0cc5, FUN_005c0d12, FUN_005c1167 } from './block_005C0000.js';
 import { FUN_005c11b2, FUN_005c19ad, FUN_005c5540, FUN_005c5560, FUN_005c55d0, FUN_005c5640 } from './block_005C0000.js';
 import { FUN_005c5660, FUN_005c56a0, FUN_005c5ee0, FUN_005c5f00, FUN_005c62ee, FUN_005c6303 } from './block_005C0000.js';
 import { FUN_005c64da, FUN_005c656b, FUN_005c9499, FUN_005c9563, FUN_005cbdd0, FUN_005cbeb0 } from './block_005C0000.js';
 import { FUN_005cd535, FUN_005cd6e0, FUN_005cd775, FUN_005cda06, FUN_005cef31, FUN_005cf2ff } from './block_005C0000.js';
-import { FUN_005cf337, FUN_005cf39b, FUN_005cf3c5 } from './block_005C0000.js';
+import { FUN_005cf337, FUN_005cf39b, FUN_005cf3c5, GetCheckStyle_005C55F0 as GetCheckStyle, create_window_B601_005CB601 as create_window_B601, invalidate_8B00_005C8B00 as invalidate_8B00 } from './block_005C0000.js';
+import { invalidate_96CC_005C96CC as invalidate_96CC, manage_window_8B2D_005C8B2D as manage_window_8B2D, manage_window_8B58_005C8B58 as manage_window_8B58, render_text_8834_005C8834 as render_text_8834, send_msg_9307_005C9307 as send_msg_9307, update_palette_90CA_005C90CA as update_palette_90CA } from './block_005C0000.js';
 import { FUN_005e0b50, FUN_005e0b80, FUN_005e0ba0, FUN_005e0c90, FUN_005e10c7, FUN_005e1599 } from './block_005E0000.js';
 import { FUN_005e17db, FUN_005e1c8e, FUN_005e22ed, FUN_005e2675, FUN_005e26f6, FUN_005e2799 } from './block_005E0000.js';
 import { FUN_005e28cd, FUN_005e30a1, FUN_005e32b2, FUN_005e395a, FUN_005e518e, FUN_005e52bf } from './block_005E0000.js';
 import { FUN_005e6188, FUN_005e7f85, FUN_005eb370, FUN_005eb3ed, FUN_005ed710, FUN_005ed920 } from './block_005E0000.js';
 import { FUN_005eda65, FUN_005edb15, FUN_005edbb2, FUN_005edc6c, FUN_005edcac, FUN_005eddaa } from './block_005E0000.js';
-import { FUN_005ee0b1, FUN_005eeca0, FUN_005eed1b } from './block_005E0000.js';
-import { FUN_005f2260, FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
+import { FUN_005ee0b1, FUN_005eeca0, FUN_005eed1b, build_menu_16E0_005E16E0 as build_menu_16E0, build_menu_1768_005E1768 as build_menu_1768, build_menu_1805_005E1805 as build_menu_1805 } from './block_005E0000.js';
+import { show_messagebox_2997_005E2997 as show_messagebox_2997, show_messagebox_DD00_005EDD00 as show_messagebox_DD00 } from './block_005E0000.js';
+import { FUN_005f2260, FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, __ftol_005F6C60 as __ftol, __msize_005F53C0 as __msize } from './block_005F0000.js';
+import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { __strlwr_006077F0 as __strlwr, __strupr_006076C0 as __strupr } from './block_00600000.js';
 import { FUN_0061a000, FUN_0061a759 } from './block_00610000.js';
+const debug_log = debug_log_005D225B;
+const create_window_423C = create_window_423C_005D423C;
+const manage_window_447C = manage_window_447C_005D447C;
+const register_wndclass_2740 = register_wndclass_2740_005D2740;
+const send_msg_2D7F = send_msg_2D7F_005D2D7F;
+const send_msg_2DC6 = send_msg_2DC6_005D2DC6;
+const send_msg_2E31 = send_msg_2E31_005D2E31;
+const send_msg_2E9C = send_msg_2E9C_005D2E9C;
+const send_msg_2EC1 = send_msg_2EC1_005D2EC1;
+const send_msg_2F47 = send_msg_2F47_005D2F47;
+const send_msg_2E77 = send_msg_2E77_005D2E77;
+const send_msg_2F0D = send_msg_2F0D_005D2F0D;
+const send_msg_362D = send_msg_362D_005D362D;
+const send_msg_3CFF = send_msg_3CFF_005D3CFF;
+const show_messagebox_49A3 = show_messagebox_49A3_005D49A3;
+const show_messagebox_4C18 = show_messagebox_4C18_005D4C18;
+const Realloc = Realloc_005DCCC1;
+const show_open_dialog_8C0C = show_open_dialog_8C0C_005D8C0C;
+const gdi_8DA1 = gdi_8DA1_005D8DA1;
+const EnableStackedTabs = EnableStackedTabs_005DB035;
+const register_wndclass_BC5A = register_wndclass_BC5A_005DBC5A;
+const register_wndclass_D8A0 = register_wndclass_D8A0_005DD8A0;
+const manage_window_DECF = manage_window_DECF_005DDECF;
+const show_messagebox_DA53 = show_messagebox_DA53_005DDA53;
 
 export function FUN_005d056c(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
@@ -138,7 +159,7 @@ export function FUN_005d056c(in_ECX = G.in_ECX, param_1, param_2, param_3, param
       devLog('MFC', 'uVar10 = CCheckListBox::GetCheckStyle(param_2);');
       iVar1 = FUN_005e395a(uVar10,pCVar9,uVar5,uVar8,local_30,iVar4,iVar6,iVar1,iVar2,iVar3);
       iVar2 = FUN_005c55d0();
-      uVar5 = FUN_005c5640(G.DAT_006e47c8,u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
+      uVar5 = FUN_005c5640(s32(G.DAT_006e47c8, 0),u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
                            /*JOINED*/
       FUN_005e518e(in_ECX[0xe],uVar5);
     }
@@ -225,7 +246,7 @@ export function FUN_005d080d(in_ECX = G.in_ECX, param_1, param_2, param_3, param
       if (iVar5 !== 0) {
         uVar6 = FUN_005c5660(uVar6,uVar8,local_34,local_c,local_8,iVar1 - iVar2,iVar3,iVar4);
         uVar6 = FUN_005c56a0(uVar6);
-        FUN_005e518e(in_ECX[0xe],iVar5,G.DAT_006e47c8,u8(param_3),local_28,local_2c,uVar6);
+        FUN_005e518e(in_ECX[0xe],iVar5,s32(G.DAT_006e47c8, 0),u8(param_3),local_28,local_2c,uVar6);
         devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       }
     }
@@ -494,7 +515,7 @@ export function FUN_005d10cd(in_ECX = G.in_ECX, param_1, param_2, param_3, param
       iVar1 = FUN_005e395a(uVar10,pCVar9,uVar5,uVar8,local_30,iVar4,iVar6,iVar1,iVar2,iVar3,param_6)
       ;
       iVar2 = FUN_005c55d0();
-      uVar5 = FUN_005c5640(G.DAT_006e47c8,u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
+      uVar5 = FUN_005c5640(s32(G.DAT_006e47c8, 0),u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
                            /*JOINED*/
       FUN_005e52bf(in_ECX[0xe],uVar5);
     }
@@ -584,7 +605,7 @@ export function FUN_005d1372(in_ECX = G.in_ECX, param_1, param_2, param_3, param
         uVar6 = FUN_005c5660(uVar6,uVar8,local_34,local_10,local_8,iVar1 - iVar2,iVar3,iVar4,param_6 );
                             /*JOINED*/
         uVar6 = FUN_005c56a0(uVar6);
-        FUN_005e52bf(in_ECX[0xe],local_c,G.DAT_006e47c8,u8(param_3),local_2c,local_30,uVar6);
+        FUN_005e52bf(in_ECX[0xe],local_c,s32(G.DAT_006e47c8, 0),u8(param_3),local_2c,local_30,uVar6);
         devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       }
     }
@@ -3069,11 +3090,11 @@ export function create_window_423C_005D423C(param_1) {
   }
   else {
     w32(G.DAT_006e4808, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_TimerCallBack_006383d0));
-    G.DAT_006e4810 = GetProcAddress(s32(G.DAT_006e4804, 0),s_SetTimerID_006383e0);
-    G.DAT_006e47fc = GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerID_006383ec);
+    s32(G.DAT_006e4810, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_SetTimerID_006383e0);
+    s32(G.DAT_006e47fc, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerID_006383ec);
     w32(G.DAT_006e4800, 0, GetProcAddress(s32(G.DAT_006e4804, 0),s_GetTimerIndex_006383f8));
-    G.DAT_006e480c = GetProcAddress(s32(G.DAT_006e4804, 0),s_ResetTimerNotified_00638408);
-    if ((((s32(G.DAT_006e4808, 0) === 0x0) || (G.DAT_006e4810 === 0x0)) || (G.DAT_006e47fc === 0x0)) || ((s32(G.DAT_006e4800, 0) === 0x0 || (G.DAT_006e480c === 0x0)))) {
+    s32(G.DAT_006e480c, 0) = GetProcAddress(s32(G.DAT_006e4804, 0),s_ResetTimerNotified_00638408);
+    if ((((s32(G.DAT_006e4808, 0) === 0x0) || (s32(G.DAT_006e4810, 0) === 0x0)) || (s32(G.DAT_006e47fc, 0) === 0x0)) || ((s32(G.DAT_006e4800, 0) === 0x0 || (s32(G.DAT_006e480c, 0) === 0x0)))) {
         /*JOINED*/
        /*JOINED*/
       FUN_005dae6b(9,s_ERR_DYNAMICLINKFAILED_00638438,s_D__Ss_Smeds32_Pctimer_cpp_0063841c,0x55);
@@ -3579,11 +3600,11 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                   local_34[0x20] = local_20;
                   w16(local_34, 0x22, 1);
                   local_34[0x2d] = param_4;
-                  if (G.DAT_006385d0 === 0x0) {
-                    G.DAT_006385d0 = local_34;
+                  if (s32(G.DAT_006385d0, 0) === 0x0) {
+                    s32(G.DAT_006385d0, 0) = local_34;
                   }
                   else {
-                    for (local_3c = G.DAT_006385d0; local_3c[0x2e] !== 0; local_3c = local_3c[0x2e]) {
+                    for (local_3c = s32(G.DAT_006385d0, 0); local_3c[0x2e] !== 0; local_3c = local_3c[0x2e]) {
                         /*JOINED*/
                     }
                     local_3c[0x2e] = local_34;
@@ -3718,11 +3739,11 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                     local_38[0x1c] = local_38[0x1c] | 4;
                     // DEVIATION: C pointer write — *(undefined2 *)((int)local_38 + 0x8a) = param_3;
                     FUN_005d6283(local_38);
-                    if (G.DAT_006385d0 === 0x0) {
-                      G.DAT_006385d0 = local_38;
+                    if (s32(G.DAT_006385d0, 0) === 0x0) {
+                      s32(G.DAT_006385d0, 0) = local_38;
                     }
                     else {
-                      for (local_40 = G.DAT_006385d0; local_40[0x2e] !== 0; local_40 = local_40[0x2e]) {
+                      for (local_40 = s32(G.DAT_006385d0, 0); local_40[0x2e] !== 0; local_40 = local_40[0x2e]) {
                           /*JOINED*/
                       }
                       local_40[0x2e] = local_38;
@@ -3800,7 +3821,7 @@ export function FUN_005d52a2(param_1) {
   else if (param_1 === 0) {
     uVar1 = 0xc;
   }
-  else if ((G.DAT_006385d0 === 0x0) || (s16(G.DAT_006385d0, 0x22) !== 4)) {
+  else if ((s32(G.DAT_006385d0, 0) === 0x0) || (s16(G.DAT_006385d0, 0x22) !== 4)) {
     AVIStreamInfoA(param_1,local_98,0x8c);
     if (local_98[0] === 0x73647561) {
       AVIStreamRead(param_1,0,1,0,0,local_ac,0);
@@ -3874,8 +3895,8 @@ export function FUN_005d52a2(param_1) {
               local_b4[0x2a] = local_b4[0x2a] << 1;
               local_b4[0x2a] = local_b4[0x2a] + 1;
             }
-            local_b4[0x2e] = G.DAT_006385d0;
-            G.DAT_006385d0 = local_b4;
+            local_b4[0x2e] = s32(G.DAT_006385d0, 0);
+            s32(G.DAT_006385d0, 0) = local_b4;
             w32(G.DAT_0063858c, 0, s32(G.DAT_0063858c, 0) + 1);
             uVar1 = 0;
           }
@@ -3972,14 +3993,14 @@ export function FUN_005d57b1(param_1) {
   let local_c;
   let local_8 = [0];
   
-  iVar1 = G.DAT_006385d0;
+  iVar1 = s32(G.DAT_006385d0, 0);
   if (s32(G.DAT_00638578, 0) === 0) {
     uVar2 = 3;
   }
   else if (s32(G.DAT_006385bc, 0) === 0) {
     uVar2 = 0xe;
   }
-  else if ((G.DAT_006385d0 === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
+  else if ((s32(G.DAT_006385d0, 0) === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
     uVar2 = 5;
   }
   else if ((u8(G.DAT_006385d0[0x70]) & 1) === 0) {
@@ -4067,11 +4088,11 @@ export function FUN_005d5b88() {
   let uVar1;
   
   w32(G.DAT_006385bc, 0, 0);
-  if ((G.DAT_006385d0 === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
+  if ((s32(G.DAT_006385d0, 0) === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
     uVar1 = 5;
   }
   else {
-    G.DAT_006385d0 = FUN_005d7494(0,G.DAT_006385d0);
+    s32(G.DAT_006385d0, 0) = FUN_005d7494(0,s32(G.DAT_006385d0, 0));
     uVar1 = 0;
   }
   return uVar1;
@@ -4134,7 +4155,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
   if (s32(G.DAT_00638578, 0) === 0) {
     uVar1 = 3;
   }
-  else if ((G.DAT_006385d0 === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
+  else if ((s32(G.DAT_006385d0, 0) === 0) || (s16(G.DAT_006385d0, 0x88) !== 4)) {
     uVar1 = 5;
   }
   else {
@@ -4162,7 +4183,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
       w32(G.DAT_006385d0, 100, 0);
       w32(G.DAT_006385d0, 0x68, 0);
       w32(G.DAT_006385d0, 0x34, s32(G.DAT_006385d0, 0x3c));
-      FUN_005d5bec(G.DAT_006385d0);
+      FUN_005d5bec(s32(G.DAT_006385d0, 0));
       w32(G.DAT_006385d0, 0x70, u32(G.DAT_006385d0, 0x70) & 0xfffffffd);
       w32(G.DAT_006385d0, 0x70, u32(G.DAT_006385d0, 0x70) & 0xfffffffe);
       w32(G.DAT_006385d0, 0x8c, param_3);
@@ -4180,13 +4201,13 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
         if (iVar2 === 1) break;
         local_8 = local_8[7];
       }
-      FUN_005d5bec(G.DAT_006385d0);
+      FUN_005d5bec(s32(G.DAT_006385d0, 0));
       local_8 = s32(G.DAT_006385c0, 0);
       for (local_c = 0; local_c < s32(G.DAT_00638584, 0); local_c = local_c + 1) {
         local_8[3] = local_8[3] | 8;
         local_8 = local_8[7];
       }
-      G.DAT_006385c8 = s32(G.DAT_006385c0, 0);
+      s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c0, 0);
       uVar1 = 0;
     }
   }
@@ -4203,7 +4224,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
 export function FUN_005d5f91() {
 
 
-  if ((G.DAT_006385d0 !== 0) && (s16(G.DAT_006385d0, 0x88) === 4)) {
+  if ((s32(G.DAT_006385d0, 0) !== 0) && (s16(G.DAT_006385d0, 0x88) === 4)) {
     FUN_005d6947(s32(G.DAT_006385c0, 0));
     w32(G.DAT_006385d0, 0x70, u32(G.DAT_006385d0, 0x70) | 0x10);
     if (s32(G.DAT_006385d0, 0x8c) !== 0) {
@@ -4246,12 +4267,12 @@ export function FUN_005d6038(param_1, param_2, param_3, param_4) {
     }
     if ((sVar1 === 0) && (w32(G.DAT_0063858c, 0, s32(G.DAT_0063858c, 0) + 1), (((G.DAT_006385c8[3]) >>> 0) >> 5 & 1) === 0)) {
       local_10 = 0;
-      local_8 = G.DAT_006385c8;
+      local_8 = s32(G.DAT_006385c8, 0);
       while ((local_10 < s32(G.DAT_00638588, 0) && (iVar2 = FUN_005d717f(s32(local_8, 0)), iVar2 !== 1))) {
         local_8 = local_8[7];
         local_10 = local_10 + 1;
       }
-      FUN_005d6947(G.DAT_006385c8);
+      FUN_005d6947(s32(G.DAT_006385c8, 0));
     }
   }
   else {
@@ -4274,7 +4295,7 @@ export function FUN_005d61ab(param_1) {
   let local_8;
   
   local_8 = 0;
-  local_c = G.DAT_006385d0;
+  local_c = s32(G.DAT_006385d0, 0);
   while (local_c !== 0) {
     if (s16(local_c, 0x8a) === param_1) {
       local_c = FUN_005d7494(local_8,local_c);
@@ -4299,7 +4320,7 @@ export function FUN_005d6222(param_1) {
 
   let local_8;
   
-  for (local_8 = G.DAT_006385d0; local_8 !== 0; local_8 = s32(local_8, 0xb8)) {
+  for (local_8 = s32(G.DAT_006385d0, 0); local_8 !== 0; local_8 = s32(local_8, 0xb8)) {
     if (s16(local_8, 0x8a) === param_1) {
       w32(local_8, 0x70, u32(local_8, 0x70) | 2);
     }
@@ -4455,7 +4476,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       }
       if (local_14 === 0) {
         w32(G.DAT_006385c0, 0, local_8);
-        G.DAT_006385c8 = local_8;
+        s32(G.DAT_006385c8, 0) = local_8;
       }
       _memset(local_8,0,0x20);
       local_8[2] = local_1c[0];
@@ -4510,7 +4531,7 @@ export function FUN_005d6685(param_1) {
   let local_c;
   let local_8;
   
-  local_8 = G.DAT_006385c4;
+  local_8 = s32(G.DAT_006385c4, 0);
   w32(G.DAT_006385c4, 0xc, u32(G.DAT_006385c4, 0xc) & 0xfffffffe);
   for (local_10 = 0; local_10 < param_1 + -1; local_10 = local_10 + 1) {
     local_8 = s32(local_8, 0x1c);
@@ -4521,8 +4542,8 @@ export function FUN_005d6685(param_1) {
     local_c = s32(local_c, 0x1c);
   }
   uVar1 = s32(local_8, 0x1c);
-  w32(local_c, 0x1c, G.DAT_006385c4);
-  G.DAT_006385c4 = uVar1;
+  w32(local_c, 0x1c, s32(G.DAT_006385c4, 0));
+  s32(G.DAT_006385c4, 0) = uVar1;
   w32(local_8, 0x1c, s32(G.DAT_006385c0, 0));
   w32(G.DAT_00638588, 0, s32(G.DAT_00638588, 0) + param_1);
   return;
@@ -4544,7 +4565,7 @@ export function FUN_005d673a(param_1) {
   
   local_8 = s32(G.DAT_006385c0, 0);
   if (((s32(G.DAT_00638588, 0) - param_1) >>> 0) <= (u32(G.DAT_006385c8, 0xc) >> 7 & 0xff)) {
-    G.DAT_006385c8 = s32(G.DAT_006385c0, 0);
+    s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c0, 0);
   }
   for (local_14 = 0; local_14 < (s32(G.DAT_00638588, 0) - param_1) - 1; local_14 = local_14 + 1) {
     local_8 = s32(local_8, 0x1c);
@@ -4566,8 +4587,8 @@ export function FUN_005d673a(param_1) {
   for (local_14 = 0; local_14 < param_1 + -1; local_14 = local_14 + 1) {
     local_8 = s32(local_8, 0x1c);
   }
-  w32(local_8, 0x1c, G.DAT_006385c4);
-  G.DAT_006385c4 = iVar1;
+  w32(local_8, 0x1c, s32(G.DAT_006385c4, 0));
+  s32(G.DAT_006385c4, 0) = iVar1;
   w32(G.DAT_00638588, 0, s32(G.DAT_00638588, 0) - param_1);
   return;
 }
@@ -4582,7 +4603,7 @@ export function FUN_005d673a(param_1) {
 export function FUN_005d687b(param_1) {
 
 
-  if ((s32(G.DAT_00638578, 0) !== 0) && (((G.DAT_006385d0 === 0 || (s16(G.DAT_006385d0, 0x88) !== 4)) || ((u32(G.DAT_006385d0, 0x70) >> 1 & 1) !== 0)))) {
+  if ((s32(G.DAT_00638578, 0) !== 0) && (((s32(G.DAT_006385d0, 0) === 0 || (s16(G.DAT_006385d0, 0x88) !== 4)) || ((u32(G.DAT_006385d0, 0x70) >> 1 & 1) !== 0)))) {
      /*JOINED*/
       /*JOINED*/
     if (s32(G.DAT_00638584, 0) < param_1) {
@@ -4661,7 +4682,7 @@ export function FUN_005d6a2c() {
   
   local_c = 0;
   _DAT_006385b8 = 0;
-  local_14 = G.DAT_006385d0;
+  local_14 = s32(G.DAT_006385d0, 0);
   if (s32(G.DAT_00638578, 0) !== 0x0) {
     waveOutReset(s32(G.DAT_00638578, 0));
     while (BVar1 = PeekMessageA(local_30[0],s32(G.DAT_0063857c, 0),0x3bd,0x3bd,1), BVar1 !== 0) {
@@ -4745,9 +4766,9 @@ export function FUN_005d6b89(param_1) {
   }
   w32(G.DAT_006385c0, 0, 0x0);
   do {
-    G.DAT_006385d0 = FUN_005d7494(0,G.DAT_006385d0);
-  } while (G.DAT_006385d0 !== 0);
-  G.DAT_006385d0 = 0;
+    s32(G.DAT_006385d0, 0) = FUN_005d7494(0,s32(G.DAT_006385d0, 0));
+  } while (s32(G.DAT_006385d0, 0) !== 0);
+  s32(G.DAT_006385d0, 0) = 0;
   return local_c;
 }
 
@@ -4776,20 +4797,20 @@ export function FUN_005d6c99(param_1, param_2) {
   let local_10;
   let local_8;
   
-  puVar2 = G.DAT_006385d0;
+  puVar2 = s32(G.DAT_006385d0, 0);
   local_8 = 0x0;
   uVar1 = 0;
   if (s32(G.DAT_006385b0, 0) !== 0) {
     local_20 = true /* DEVIATION: C pointer — *(int **)(param_2 + 0xc) */;
     local_2c = 0;
-    while ((local_2c < s32(G.DAT_00638588, 0) && (G.DAT_006385c8 = s32(G.DAT_006385c8, 0x1c), (u32(G.DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
+    while ((local_2c < s32(G.DAT_00638588, 0) && (s32(G.DAT_006385c8, 0) = s32(G.DAT_006385c8, 0x1c), (u32(G.DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
            /*JOINED*/
            /*JOINED*/
       local_2c = local_2c + 1;
     }
     if ((u8(local_20[3]) & 1) === 0) {
-      local_30 = G.DAT_006385d0;
-      if ((((G.DAT_006385d0 !== 0x0) && (s16(G.DAT_006385d0, 0x22) === 4)) && ((((local_20[3]) >>> 0) >> 1 & 1) !== 0)) && ((((local_20[3]) >>> 0) >> 4 & 1) !== 0)) {
+      local_30 = s32(G.DAT_006385d0, 0);
+      if ((((s32(G.DAT_006385d0, 0) !== 0x0) && (s16(G.DAT_006385d0, 0x22) === 4)) && ((((local_20[3]) >>> 0) >> 1 & 1) !== 0)) && ((((local_20[3]) >>> 0) >> 4 & 1) !== 0)) {
           /*JOINED*/
         // DEVIATION: C pointer write — *(ushort *)DAT_006385d0[0x23] = *(ushort *)DAT_006385d0[0x23] & 0xfffb;
         puVar2[0x1c] = puVar2[0x1c] | 2;
@@ -4847,7 +4868,7 @@ export function FUN_005d6c99(param_1, param_2) {
             local_20[3] = local_20[3] & 0xffffffdf;
           }
         }
-        local_30 = G.DAT_006385d0;
+        local_30 = s32(G.DAT_006385d0, 0);
         local_18 = 0x0;
         local_14 = 0;
         while (local_30 !== 0x0) {
@@ -4878,7 +4899,7 @@ export function FUN_005d6c99(param_1, param_2) {
             local_30 = FUN_005d7494(local_18,local_30);
           }
         }
-        local_30 = G.DAT_006385d0;
+        local_30 = s32(G.DAT_006385d0, 0);
         local_20 = local_20[7];
       } while ((local_14 !== 0) && ((((local_20[3]) >>> 0) >> 5 & 1) === 0));
       if (local_8 !== 0x0) {
@@ -4913,7 +4934,7 @@ export function FUN_005d717f(param_1) {
   else {
     iVar1 = param_1[3];
     w32(iVar1, 0xc, u32(iVar1, 0xc) & 0xfffffffd);
-    local_20 = G.DAT_006385d0;
+    local_20 = s32(G.DAT_006385d0, 0);
     while ((local_20 !== 0x0 && ((((local_20[0x1c]) >>> 0) >> 1 & 1) !== 0))) {
       local_20 = local_20[0x2e];
     }
@@ -4946,7 +4967,7 @@ export function FUN_005d717f(param_1) {
       }
       param_1[4] = param_1[4] & 0xfffffffe;
     }
-    local_20 = G.DAT_006385d0;
+    local_20 = s32(G.DAT_006385d0, 0);
     local_c = 0x0;
     while (local_20 !== 0x0) {
       if ((u8(local_20[0x1c]) & 1) === 0) {
@@ -4976,7 +4997,7 @@ export function FUN_005d717f(param_1) {
         local_20 = FUN_005d7494(local_c,local_20);
       }
     }
-    if ((G.DAT_006385d0 === 0x0) || (bVar2)) {
+    if ((s32(G.DAT_006385d0, 0) === 0x0) || (bVar2)) {
       uVar3 = 1;
     }
     else {
@@ -5007,9 +5028,9 @@ export function FUN_005d7494(param_1, param_2) {
     uVar1 = uVar2;
     if (param_1 !== 0) {
       w32(param_1, 0xb8, uVar2);
-      uVar1 = G.DAT_006385d0;
+      uVar1 = s32(G.DAT_006385d0, 0);
     }
-    G.DAT_006385d0 = uVar1;
+    s32(G.DAT_006385d0, 0) = uVar1;
     mmioClose(s32(param_2, 0),0);
     if ((((param_2[0x1c]) >>> 0) >> 2 & 1) !== 0) {
       mmioClose(param_2[0x18],0);
@@ -5167,7 +5188,7 @@ export function FUN_005d791b(param_1, param_2) {
   let local_10;
   let local_8 = [0];
   
-  iVar1 = G.DAT_006385d0;
+  iVar1 = s32(G.DAT_006385d0, 0);
   if (s32(param_2, 0x98) === param_1) {
     local_14 = s32(G.DAT_006385d0, 0x9c) - s32(G.DAT_006385d0, 0x68);
     local_8[0] = 0;
@@ -5230,7 +5251,7 @@ export function FUN_005d7b94(param_1) {
 
   let local_c;
   
-  local_c = G.DAT_006385d0;
+  local_c = s32(G.DAT_006385d0, 0);
   while( true ) {
     if (local_c === 0) {
       return 0;
@@ -10422,7 +10443,7 @@ export function FUN_005de689(param_1) {
 export function FUN_005de6a5(param_1) {
 
 
-  G.DAT_006e5004 = param_1;
+  s32(G.DAT_006e5004, 0) = param_1;
   return;
 }
 
@@ -10436,7 +10457,7 @@ export function FUN_005de6a5(param_1) {
 export function FUN_005de6bd() {
 
 
-  if (G.DAT_006e5004 !== 0x0) {
+  if (s32(G.DAT_006e5004, 0) !== 0x0) {
     (s32(G.DAT_006e5004, 0))();
   }
   return;
@@ -10466,7 +10487,7 @@ export function FUN_005de6e0(param_1) {
 export function FUN_005de6fc(param_1) {
 
 
-  G.DAT_006e5000 = param_1;
+  s32(G.DAT_006e5000, 0) = param_1;
   return;
 }
 
@@ -10480,7 +10501,7 @@ export function FUN_005de6fc(param_1) {
 export function FUN_005de714() {
 
 
-  if (G.DAT_006e5000 !== 0x0) {
+  if (s32(G.DAT_006e5000, 0) !== 0x0) {
     (s32(G.DAT_006e5000, 0))();
   }
   return;

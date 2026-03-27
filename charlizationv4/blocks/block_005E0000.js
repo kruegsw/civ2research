@@ -15,34 +15,32 @@ import { _strcmp, _strlen, _strncat } from '../crt.js';
 import { AVIFileExit, AVIFileGetStream, AVIFileInit, AVIFileOpenA, AVIFileRelease, AVIStreamFindSample } from '../extern-stubs.js';
 import { AVIStreamInfoA, AVIStreamLength, AVIStreamRead, AVIStreamReadFormat, AVIStreamRelease, AVIStreamSampleToTime } from '../extern-stubs.js';
 import { AVIStreamStart, AVIStreamTimeToSample, AppendMenuA, BeginPaint, BitBlt, BringWindowToTop } from '../extern-stubs.js';
-import { CONCAT11, CONCAT22, CReObject, CheckMenuItem, ClientToScreen, CloseHandle } from '../extern-stubs.js';
-import { CopyRect, CreateBitmap, CreateCompatibleBitmap, CreateCompatibleDC, CreateDIBSection, CreateFileA } from '../extern-stubs.js';
-import { CreateMenu, CreatePalette, CreatePen, CreatePopupMenu, CreateSolidBrush, CreateWindowExA } from '../extern-stubs.js';
-import { DebugBreak, DefWindowProcA, DeleteDC, DeleteMenu, DeleteObject, DestroyMenu } from '../extern-stubs.js';
-import { DestroyWindow, DirectDrawCreate, DrawMenuBar, DrawTextA, EnableMenuItem, EndPaint } from '../extern-stubs.js';
-import { FillRect, GetActiveView, GetAsyncKeyState, GetCheckStyle, GetClassLongA, GetClientRect } from '../extern-stubs.js';
-import { GetDC, GetDIBColorTable, GetFocus, GetKeyState, GetMenu, GetMenuItemCount } from '../extern-stubs.js';
-import { GetMenuItemID, GetPaletteEntries, GetParent, GetPixel, GetScrollPos, GetSubMenu } from '../extern-stubs.js';
-import { GetTextAlign, GetWindow, GetWindowLongA, GetWindowRect, GlobalAlloc, GlobalFree } from '../extern-stubs.js';
-import { GlobalHandle, GlobalLock, GlobalUnlock, HELPERS, ICClose, ICLocate } from '../extern-stubs.js';
-import { ICSendMessage, InsertMenuA, IntersectRect, InvalidateRect, IsBadHugeReadPtr, IsChild } from '../extern-stubs.js';
-import { IsIconic, IsTracking, IsWindow, IsWindowVisible, KillTimer, LineTo } from '../extern-stubs.js';
-import { LoadCursorA, LoadMenuA, LocalAlloc, LocalFree, LocalLock, LocalUnlock } from '../extern-stubs.js';
-import { MCIWndCreateA, MessageBoxA, ModifyMenuA, MoveToEx, MoveWindow, OffsetRect } from '../extern-stubs.js';
-import { OutputDebugStringA, RealizePalette, RegisterClassA, ReleaseDC, RemoveMenu, SCARRY1 } from '../extern-stubs.js';
-import { SelectObject, SelectPalette, SendMessageA, SetBkColor, SetBkMode, SetClassLongA } from '../extern-stubs.js';
-import { SetDIBColorTable, SetFilePointer, SetFocus, SetPixel, SetScrollPos, SetTextAlign } from '../extern-stubs.js';
-import { SetTextColor, SetTimer, SetWindowLongA, SetWindowPos, ShowWindow, StretchBlt } from '../extern-stubs.js';
-import { TrackPopupMenu, UnionRect, UnregisterClassA, UpdateWindow, WriteFile, create_window_931B } from '../extern-stubs.js';
-import { debug_log, exe, fill_rect_BE88, gdi_847F, gdi_8514, gdi_D149 } from '../extern-stubs.js';
-import { handle_colortable_3B4C, mciGetDeviceIDA, mciSendCommandA, measure_text_858E, operator_delete, operator_new } from '../extern-stubs.js';
-import { show_messagebox_2997, show_messagebox_EEB0, show_messagebox_F0B9, timeGetTime, wsprintfA } from '../extern-stubs.js';
+import { CONCAT11, CONCAT22, CheckMenuItem, ClientToScreen, CloseHandle, CopyRect } from '../extern-stubs.js';
+import { CreateBitmap, CreateCompatibleBitmap, CreateCompatibleDC, CreateDIBSection, CreateFileA, CreateMenu } from '../extern-stubs.js';
+import { CreatePalette, CreatePen, CreatePopupMenu, CreateSolidBrush, CreateWindowExA, DebugBreak } from '../extern-stubs.js';
+import { DefWindowProcA, DeleteDC, DeleteMenu, DeleteObject, DestroyMenu, DestroyWindow } from '../extern-stubs.js';
+import { DirectDrawCreate, DrawMenuBar, DrawTextA, EnableMenuItem, EndPaint, FillRect } from '../extern-stubs.js';
+import { GetAsyncKeyState, GetClassLongA, GetClientRect, GetDC, GetDIBColorTable, GetFocus } from '../extern-stubs.js';
+import { GetKeyState, GetMenu, GetMenuItemCount, GetMenuItemID, GetPaletteEntries, GetParent } from '../extern-stubs.js';
+import { GetPixel, GetScrollPos, GetSubMenu, GetTextAlign, GetWindow, GetWindowLongA } from '../extern-stubs.js';
+import { GetWindowRect, GlobalAlloc, GlobalFree, GlobalHandle, GlobalLock, GlobalUnlock } from '../extern-stubs.js';
+import { HELPERS, ICClose, ICLocate, ICSendMessage, InsertMenuA, IntersectRect } from '../extern-stubs.js';
+import { InvalidateRect, IsBadHugeReadPtr, IsChild, IsIconic, IsWindow, IsWindowVisible } from '../extern-stubs.js';
+import { KillTimer, LineTo, LoadCursorA, LoadMenuA, LocalAlloc, LocalFree } from '../extern-stubs.js';
+import { LocalLock, LocalUnlock, MCIWndCreateA, MessageBoxA, ModifyMenuA, MoveToEx } from '../extern-stubs.js';
+import { MoveWindow, OffsetRect, OutputDebugStringA, RealizePalette, RegisterClassA, ReleaseDC } from '../extern-stubs.js';
+import { RemoveMenu, SCARRY1, SelectObject, SelectPalette, SendMessageA, SetBkColor } from '../extern-stubs.js';
+import { SetBkMode, SetClassLongA, SetDIBColorTable, SetFilePointer, SetFocus, SetPixel } from '../extern-stubs.js';
+import { SetScrollPos, SetTextAlign, SetTextColor, SetTimer, SetWindowLongA, SetWindowPos } from '../extern-stubs.js';
+import { ShowWindow, StretchBlt, TrackPopupMenu, UnionRect, UnregisterClassA, UpdateWindow } from '../extern-stubs.js';
+import { WriteFile, exe, mciGetDeviceIDA, mciSendCommandA, timeGetTime, wsprintfA } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_0040f3e0 } from './block_00400000.js';
 import { FUN_0040f570, FUN_0040f610, FUN_0040f680, FUN_0040f730, FUN_0040f880 } from './block_00400000.js';
 import { FUN_00414d10, FUN_00417ef0, FUN_00418770, FUN_004187a0, FUN_00418870 } from './block_00410000.js';
 import { FUN_0043c520, FUN_0043c690 } from './block_00430000.js';
 import { FUN_0044c5a0, FUN_0044ca40, FUN_0044cba0 } from './block_00440000.js';
 import { FUN_00450400 } from './block_00450000.js';
+import { GetActiveView_004710A0 as GetActiveView } from './block_00470000.js';
 import { FUN_00497c40 } from './block_00490000.js';
 import { FUN_004bb740 } from './block_004B0000.js';
 import { FUN_004d8af0 } from './block_004D0000.js';
@@ -56,12 +54,18 @@ import { FUN_005c54d0, FUN_005c5520, FUN_005c5540, FUN_005c5560, FUN_005c5580, F
 import { FUN_005c55d0, FUN_005c5640, FUN_005c5660, FUN_005c56a0, FUN_005c5740, FUN_005c5c86 } from './block_005C0000.js';
 import { FUN_005c5e60, FUN_005c5e80, FUN_005c5ee0, FUN_005c61b0, FUN_005c63af, FUN_005c64da } from './block_005C0000.js';
 import { FUN_005c656b, FUN_005c6b63, FUN_005c6b93, FUN_005c6da8, FUN_005cac22, FUN_005cbdd0 } from './block_005C0000.js';
+import { GetCheckStyle_005C55F0 as GetCheckStyle, gdi_847F_005C847F as gdi_847F, gdi_8514_005C8514 as gdi_8514, gdi_D149_005CD149 as gdi_D149, measure_text_858E_005C858E as measure_text_858E } from './block_005C0000.js';
 import { FUN_005d2279, FUN_005d268e, FUN_005d4167, FUN_005d52a2, FUN_005d5643, FUN_005d57b1 } from './block_005D0000.js';
 import { FUN_005d5b88, FUN_005d5d11, FUN_005d5f91, FUN_005d6c99, FUN_005d8236, FUN_005dab5a } from './block_005D0000.js';
 import { FUN_005dabe5, FUN_005dac39, FUN_005dae6b, FUN_005db2f8, FUN_005dcdf9, FUN_005dce29 } from './block_005D0000.js';
-import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d } from './block_005D0000.js';
+import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d, create_window_931B_005D931B as create_window_931B, debug_log_005D225B as debug_log, fill_rect_BE88_005DBE88 as fill_rect_BE88 } from './block_005D0000.js';
 import { FUN_005f01ad, FUN_005f029e, FUN_005f0391, FUN_005f04c0, FUN_005f0520, FUN_005f22d0 } from './block_005F0000.js';
-import { FUN_005f22e0 } from './block_005F0000.js';
+import { FUN_005f22e0, IsTracking_005F1B50 as IsTracking, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+const show_messagebox_EEB0 = show_messagebox_EEB0_005EEEB0;
+const show_messagebox_F0B9 = show_messagebox_F0B9_005EF0B9;
+const show_messagebox_2997 = show_messagebox_2997_005E2997;
+const handle_colortable_3B4C = handle_colortable_3B4C_005E3B4C;
+const CReObject = CReObject_005E82FB;
 
 export function FUN_005e00bb(param_1) {
 
@@ -6277,7 +6281,7 @@ export function register_wndclass_89D0_005E89D0() {
   local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSDirectWindow_006394c4;
   RegisterClassA(local_2c[0]);
-  iVar1 = DirectDrawCreate(0,G.DAT_006394c0,0);
+  iVar1 = DirectDrawCreate(0,s32(G.DAT_006394c0, 0),0);
   if (iVar1 === 0) {
     _DAT_006e50e8 = 0x13c;
     _DAT_006e5228 = 0x13c;
@@ -6313,9 +6317,9 @@ export function register_wndclass_89D0_005E89D0() {
 export function FUN_005e8b04() {
 
 
-  if (G.DAT_006394c0 !== 0x0) {
+  if (s32(G.DAT_006394c0, 0) !== 0x0) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
-    G.DAT_006394c0 = 0x0;
+    s32(G.DAT_006394c0, 0) = 0x0;
     UnregisterClassA(s_MSDirectWindow_006395a0,s32(G.DAT_006e4ff0, 0));
   }
   return;
@@ -6336,7 +6340,7 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
   let local_c;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -6385,7 +6389,7 @@ export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0x0) && (G.DAT_006394c0 !== 0x0)) {
+  if ((param_1 !== 0x0) && (s32(G.DAT_006394c0, 0) !== 0x0)) {
     for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
       local_40c[local_8 * 4] = s32(param_4, 0);
       local_40c[local_8 * 4 + 1] = param_4[1];
@@ -6489,7 +6493,7 @@ export function FUN_005e8eb0(param_1) {
   let local_5c;
   let local_8;
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6556,7 +6560,7 @@ export function FUN_005e8fb7(param_1, param_2) {
   let local_64;
   let local_8;
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -7589,7 +7593,7 @@ export function FUN_005ea610(param_1) {
 
   let local_8;
   
-  if (G.DAT_006394c0 !== 0x0) {
+  if (s32(G.DAT_006394c0, 0) !== 0x0) {
     if (param_1 === 0) {
       local_8 = 4;
     }
@@ -7615,7 +7619,7 @@ export function FUN_005ea677(in_EAX = G.in_EAX) {
   let uVar1;
   let local_8 = new Array(4).fill(0);
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -7643,7 +7647,7 @@ export function FUN_005ea6c4() {
   let iVar1;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -7668,7 +7672,7 @@ export function FUN_005ea711() {
   let uVar1;
   let local_8 = [0];
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -11350,7 +11354,7 @@ export function FUN_005ef41e(in_EAX = G.in_EAX, param_1, param_2) {
   let uVar1;
   let local_c;
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11388,7 +11392,7 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
   let uVar1;
   let uVar2;
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     uVar1 = 0;
   }
   else {
@@ -11421,7 +11425,7 @@ export function FUN_005ef58e(in_EAX = G.in_EAX) {
   // in_EAX → promoted to parameter
   let uVar1;
   
-  if (G.DAT_006394c0 === 0x0) {
+  if (s32(G.DAT_006394c0, 0) === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11667,7 +11671,7 @@ export function FUN_005efca3(param_1, param_2) {
 export function FUN_005efcde(param_1, param_2) {
 
 
-  if (((G.DAT_006394c0 !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
+  if (((s32(G.DAT_006394c0, 0) !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;

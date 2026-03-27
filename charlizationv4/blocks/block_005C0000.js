@@ -12,24 +12,18 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { SetRect, _atexit, _memcpy, _rand, _strcmp, _strlen } from '../crt.js';
 import { _strncmp, _strncpy } from '../crt.js';
-import { AddFontResourceA, BeginPaint, BitBlt, CString, CreateCompatibleBitmap, CreateCompatibleDC } from '../extern-stubs.js';
-import { CreateFontIndirectA, CreatePen, CreateWindowExA, DEVIATION, DefWindowProcA, DeleteDC } from '../extern-stubs.js';
-import { DeleteObject, DestroyWindow, DrawTextA, EnableWindow, EndPaint, EnumFontFamiliesA } from '../extern-stubs.js';
-import { FillRect, FrameRect, GetActiveView, GetAsyncKeyState, GetBitmapDimensionEx, GetCheckStyle } from '../extern-stubs.js';
-import { GetClassLongA, GetClientRect, GetDC, GetFocus, GetParent, GetScrollPos } from '../extern-stubs.js';
-import { GetScrollRange, GetStockObject, GetTextExtentPointA, GetTextMetricsA, GetWindowLongA, GetWindowRect } from '../extern-stubs.js';
-import { HELPERS, IntersectRect, InvalidateObjectCache, InvalidateRect, IsTracking, LineTo } from '../extern-stubs.js';
-import { LoadBitmapA, LoadCursorA, MapWindowPoints, MoveToEx, MoveWindow, OffsetRect } from '../extern-stubs.js';
-import { PostMessageA, PtInRect, RealizePalette, Realloc, RegisterClassA, ReleaseCapture } from '../extern-stubs.js';
+import { AddFontResourceA, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreateFontIndirectA } from '../extern-stubs.js';
+import { CreatePen, CreateWindowExA, DEVIATION, DefWindowProcA, DeleteDC, DeleteObject } from '../extern-stubs.js';
+import { DestroyWindow, DrawTextA, EnableWindow, EndPaint, EnumFontFamiliesA, FillRect } from '../extern-stubs.js';
+import { FrameRect, GetAsyncKeyState, GetBitmapDimensionEx, GetClassLongA, GetClientRect, GetDC } from '../extern-stubs.js';
+import { GetFocus, GetParent, GetScrollPos, GetScrollRange, GetStockObject, GetTextExtentPointA } from '../extern-stubs.js';
+import { GetTextMetricsA, GetWindowLongA, GetWindowRect, HELPERS, IntersectRect, InvalidateRect } from '../extern-stubs.js';
+import { LineTo, LoadBitmapA, LoadCursorA, MapWindowPoints, MoveToEx, MoveWindow } from '../extern-stubs.js';
+import { OffsetRect, PostMessageA, PtInRect, RealizePalette, RegisterClassA, ReleaseCapture } from '../extern-stubs.js';
 import { ReleaseDC, RemoveFontResourceA, SelectObject, SelectPalette, SendMessageA, SetBkMode } from '../extern-stubs.js';
 import { SetCapture, SetFocus, SetScrollPos, SetScrollRange, SetTextColor, SetWindowLongA } from '../extern-stubs.js';
-import { ShowScrollBar, ShowWindow, UpdateWindow, ValidateRect, _Timevec, __strlwr } from '../extern-stubs.js';
-import { blit_9838, blit_ACD4, blit_B6EB, blit_CC8D, create_dib_35B0, create_dib_41BA } from '../extern-stubs.js';
-import { create_dib_43C5, create_dib_45B5, debug_log, delbuf, egptr, exe } from '../extern-stubs.js';
-import { gdi_847F, gdi_8736, gdi_D149, gdi_E780, handle_colortable_3ECA, handle_colortable_3FEB } from '../extern-stubs.js';
-import { handle_colortable_40FB, invalidate_8B00, invalidate_96CC, invalidate_9A9A, invalidate_C274, lstrcpyA } from '../extern-stubs.js';
-import { lstrlenA, operator_delete, operator_new, send_msg_9307, stretch_blit_98BA, stretch_blit_CD66 } from '../extern-stubs.js';
-import { update_palette_90CA, update_palette_CC11, update_palette_CCE2, update_palette_EA62, width } from '../extern-stubs.js';
+import { ShowScrollBar, ShowWindow, UpdateWindow, ValidateRect, _Timevec, exe } from '../extern-stubs.js';
+import { lstrcpyA, lstrlenA } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_0040ef50, FUN_0040f810, FUN_0040fad0 } from './block_00400000.js';
 import { FUN_00414d10, FUN_00418740, FUN_00418770 } from './block_00410000.js';
 import { FUN_00421bb0, FUN_00421c30, FUN_00421c60 } from './block_00420000.js';
@@ -37,13 +31,16 @@ import { FUN_0043c520, FUN_0043c690 } from './block_00430000.js';
 import { FUN_0044c8e0 } from './block_00440000.js';
 import { FUN_00453af0 } from './block_00450000.js';
 import { FUN_0046f440 } from './block_00460000.js';
+import { GetActiveView_004710A0 as GetActiveView } from './block_00470000.js';
 import { FUN_00497c40 } from './block_00490000.js';
 import { FUN_004bb370 } from './block_004B0000.js';
 import { FUN_004d8af0 } from './block_004D0000.js';
 import { FUN_00511320 } from './block_00510000.js';
-import { FUN_00579b40 } from './block_00570000.js';
+import { egptr_00551D20 as egptr } from './block_00550000.js';
+import { FUN_00579b40, width_00578610 as width } from './block_00570000.js';
 import { FUN_005bb8c0, FUN_005bd14c, FUN_005bd1c5, FUN_005bd4cd, FUN_005bd630, FUN_005bd65c } from './block_005B0000.js';
-import { FUN_005bd696, FUN_005bd7db, FUN_005bd813, FUN_005bd915, FUN_005bf930 } from './block_005B0000.js';
+import { FUN_005bd696, FUN_005bd7db, FUN_005bd813, FUN_005bd915, FUN_005bf930, blit_CC8D_005BCC8D as blit_CC8D } from './block_005B0000.js';
+import { stretch_blit_CD66_005BCD66 as stretch_blit_CD66, update_palette_CC11_005BCC11 as update_palette_CC11, update_palette_CCE2_005BCCE2 as update_palette_CCE2 } from './block_005B0000.js';
 import { FUN_005d056c, FUN_005d080d, FUN_005d0aac, FUN_005d0dbf, FUN_005d10cd, FUN_005d1372 } from './block_005D0000.js';
 import { FUN_005d1612, FUN_005d1b38, FUN_005d1cb0, FUN_005d1cd0, FUN_005d1ef0, FUN_005d1f20 } from './block_005D0000.js';
 import { FUN_005d2279, FUN_005d22b7, FUN_005d233f, FUN_005d4204, FUN_005d7c00, FUN_005d7c6e } from './block_005D0000.js';
@@ -51,13 +48,31 @@ import { FUN_005d89e8, FUN_005d8ab8, FUN_005dae6b, FUN_005db1e0, FUN_005db1fa, F
 import { FUN_005db531, FUN_005db54b, FUN_005db67b, FUN_005db704, FUN_005db893, FUN_005db923 } from './block_005D0000.js';
 import { FUN_005dcdf9, FUN_005dce29, FUN_005dce4f, FUN_005dce96, FUN_005dced3, FUN_005dcef7 } from './block_005D0000.js';
 import { FUN_005de984, FUN_005de9e0, FUN_005dea9e, FUN_005deadb, FUN_005deb12, FUN_005dec4e } from './block_005D0000.js';
-import { FUN_005dec8a, FUN_005decb1, FUN_005deced, FUN_005ded12 } from './block_005D0000.js';
+import { FUN_005dec8a, FUN_005decb1, FUN_005deced, FUN_005ded12, Realloc_005DCCC1 as Realloc, debug_log_005D225B as debug_log } from './block_005D0000.js';
+import { gdi_E780_005DE780 as gdi_E780, invalidate_9A9A_005D9A9A as invalidate_9A9A, update_palette_EA62_005DEA62 as update_palette_EA62 } from './block_005D0000.js';
 import { FUN_005e388f, FUN_005e392a, FUN_005e395a, FUN_005e3988, FUN_005e3a81, FUN_005e3aa8 } from './block_005E0000.js';
 import { FUN_005e3bdc, FUN_005e3cb4, FUN_005e47a5, FUN_005e49a0, FUN_005e4aa6, FUN_005e4b9b } from './block_005E0000.js';
 import { FUN_005e4c3f, FUN_005e4cc8, FUN_005e4d60, FUN_005e4e60, FUN_005e4ef8, FUN_005e4f9b } from './block_005E0000.js';
 import { FUN_005e511c, FUN_005e5869, FUN_005e58e7, FUN_005e6188, FUN_005e7028, FUN_005e92c9 } from './block_005E0000.js';
-import { FUN_005ea7a0, FUN_005eabcc, FUN_005eb393, FUN_005ed710 } from './block_005E0000.js';
-import { FUN_005f22d0, FUN_005f7120 } from './block_005F0000.js';
+import { FUN_005ea7a0, FUN_005eabcc, FUN_005eb393, FUN_005ed710, blit_9838_005E9838 as blit_9838, create_dib_35B0_005E35B0 as create_dib_35B0 } from './block_005E0000.js';
+import { create_dib_41BA_005E41BA as create_dib_41BA, create_dib_43C5_005E43C5 as create_dib_43C5, create_dib_45B5_005E45B5 as create_dib_45B5, handle_colortable_3ECA_005E3ECA as handle_colortable_3ECA, handle_colortable_3FEB_005E3FEB as handle_colortable_3FEB, handle_colortable_40FB_005E40FB as handle_colortable_40FB } from './block_005E0000.js';
+import { stretch_blit_98BA_005E98BA as stretch_blit_98BA } from './block_005E0000.js';
+import { FUN_005f22d0, FUN_005f7120, IsTracking_005F1B50 as IsTracking, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { __strlwr_006077F0 as __strlwr } from './block_00600000.js';
+const GetCheckStyle = GetCheckStyle_005C55F0;
+const gdi_847F = gdi_847F_005C847F;
+const invalidate_8B00 = invalidate_8B00_005C8B00;
+const invalidate_C274 = invalidate_C274_005CC274;
+const InvalidateObjectCache = InvalidateObjectCache_005C62CB;
+const gdi_8736 = gdi_8736_005C8736;
+const send_msg_9307 = send_msg_9307_005C9307;
+const update_palette_90CA = update_palette_90CA_005C90CA;
+const delbuf = delbuf_005C9710;
+const invalidate_96CC = invalidate_96CC_005C96CC;
+const blit_ACD4 = blit_ACD4_005CACD4;
+const blit_B6EB = blit_B6EB_005CB6EB;
+const gdi_D149 = gdi_D149_005CD149;
+const CString = CString_005CDE2C;
 
 export function FUN_005c000d() {
 
@@ -9045,7 +9060,7 @@ export function FUN_005cd775(param_1, param_2) {
         }
       }
 // LAB_005cda01: (code below also in LAB_005cda01_helper, kept for 1:1 audit)
-      G.DAT_006e47c8 = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
+      s32(G.DAT_006e47c8, 0) = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
       return;
     }
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === s32(G.DAT_00637f98, 0)) && (s32(G.DAT_006d4704, local_14 * 0x100c) === s32(G.DAT_00637f9c, 0))) {
@@ -11333,7 +11348,7 @@ if (true) {
 }
 
 function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
-      G.DAT_006e47c8 = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
+      s32(G.DAT_006e47c8, 0) = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
       return;
   // (outer block close)
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === s32(G.DAT_00637f98, 0)) && (s32(G.DAT_006d4704, local_14 * 0x100c) === s32(G.DAT_00637f9c, 0))) {

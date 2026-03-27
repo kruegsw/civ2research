@@ -225,7 +225,20 @@ for (const file of blockFiles) {
     fnRegistry.set(m[1], file);
   }
 }
-console.log(`Registry: ${fnRegistry.size} functions across ${blockFiles.length} blocks`);
+// Also build alias map: base_name → address_suffixed_name
+// e.g., kill_civ → kill_civ_004AA378, thunk_kill_civ → kill_civ_004AA378
+const nameAliases = new Map();
+for (const [name, file] of fnRegistry) {
+  if (/^FUN_/.test(name)) continue;
+  const m = name.match(/^(.+)_([0-9a-fA-F]{8})$/);
+  if (m) {
+    const baseName = m[1];
+    nameAliases.set(baseName, name);
+    // Also map thunk_ prefixed version (transpiler only drops thunk_ for FUN_ names)
+    nameAliases.set('thunk_' + baseName, name);
+  }
+}
+console.log(`Registry: ${fnRegistry.size} functions, ${nameAliases.size} name aliases`);
 
 // ── Build crt.js export set (C runtime functions with real implementations) ──
 const crtExports = new Set();
@@ -412,14 +425,15 @@ for (const blockFile of blockFiles) {
         }
 
         // Step 2: Scalar reads. Replace G.DAT_xxx with s32(G.DAT_xxx, 0)
-        // when the address is scalar-only AND not already the first arg to a helper.
+        // when NOT used as an array (first arg to helper, bracket access, or .set/.subarray).
         processed = processed.replace(
-          /\bG\.(DAT_[0-9a-fA-F]+)\b(?!\s*\[)/g,
+          /\bG\.(DAT_[0-9a-fA-F]+)\b(?!\s*[\[.])/g,
           (m, name, matchOffset) => {
-            if (!scalarOnlySet.has(name)) return m;
-            // Check: is this the array arg to s32/w32/ptrAdd? Look at preceding text.
+            // Check: is this the array arg to s32/w32/ptrAdd/w32r? Look at preceding text.
             const before = processed.substring(Math.max(0, matchOffset - 40), matchOffset);
             if (/(?:s32|u32|s16|u16|w32|w16|w32r|w16r|ptrAdd)\(\s*$/.test(before)) return m;
+            // Also skip if inside a w32() we just created (the first arg)
+            if (/w32\(\s*$/.test(before)) return m;
             return `s32(G.${name}, 0)`;
           }
         );
@@ -447,6 +461,8 @@ for (const blockFile of blockFiles) {
   const refsNeeded = new Map(); // fnName → source block
   const externNeeded = new Set(); // functions not in any block (Win32, etc.)
   let crtNeeded = null; // C runtime functions (real implementations in crt.js)
+  let aliasImports = null; // base_name → address_suffixed_name (cross-block)
+  let localAliases = null; // base_name → address_suffixed_name (same-block)
   const allText = finalLines.join('\n');
 
   // Find all function-call-like identifiers
@@ -469,7 +485,22 @@ for (const blockFile of blockFiles) {
     if (srcBlock && srcBlock !== blockFile) {
       refsNeeded.set(fn, srcBlock);
     } else if (!srcBlock) {
-      externNeeded.add(fn);
+      // Check if this is a base name that maps to an address-suffixed export
+      const aliased = nameAliases.get(fn);
+      if (aliased) {
+        const aliasSrc = fnRegistry.get(aliased);
+        if (aliasSrc && aliasSrc !== blockFile) {
+          refsNeeded.set(fn, aliasSrc);
+          if (!aliasImports) aliasImports = new Map();
+          aliasImports.set(fn, aliased);
+        } else if (aliasSrc === blockFile) {
+          // Same-block alias: need a local const alias
+          if (!localAliases) localAliases = new Map();
+          localAliases.set(fn, aliased);
+        }
+      } else {
+        externNeeded.add(fn);
+      }
     }
   }
   // Track extern stubs needed globally
@@ -514,11 +545,25 @@ for (const blockFile of blockFiles) {
   for (const [src, fns] of [...importsByBlock.entries()].sort()) {
     const sorted = fns.sort();
     for (let k = 0; k < sorted.length; k += 6) {
-      imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from './${src}';`);
+      const importNames = sorted.slice(k, k + 6).map(fn => {
+        // For aliased names: import { kill_civ_004AA378 as kill_civ }
+        if (aliasImports && aliasImports.has(fn)) {
+          return `${aliasImports.get(fn)} as ${fn}`;
+        }
+        return fn;
+      });
+      imports.push(`import { ${importNames.join(', ')} } from './${src}';`);
     }
   }
 
-  // 3d: Insert imports before first export function
+  // 3d: Add local aliases for same-block renamed functions
+  if (localAliases && localAliases.size > 0) {
+    for (const [callerName, actualName] of localAliases) {
+      imports.push(`const ${callerName} = ${actualName};`);
+    }
+  }
+
+  // 3e: Insert imports before first export function
   const outputLines = [];
   let importsInserted = false;
   for (const line of finalLines) {

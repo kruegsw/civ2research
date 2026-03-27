@@ -14,48 +14,159 @@ import { SetRect, __snprintf, _abort, _atol, _exit, _fflush } from '../crt.js';
 import { _fprintf, _fputc, _ftell, _fwrite, _malloc, _memcpy } from '../crt.js';
 import { _memset, _remove, _setvbuf, _sprintf, _strcmp, _strlen } from '../crt.js';
 import { _strncat, _strncpy, _tolower, _wcslen, _wctomb } from '../crt.js';
-import { AdjustPointer, ArrayUnwindFilter, BuildCatchObject, CDataBoundProperty, CallCatchBlock, CatchGuardHandler } from '../extern-stubs.js';
-import { CatchIt, CloseHandle, DEVIATION, DebugBreak, DeleteFileA, DestructExceptionObject } from '../extern-stubs.js';
-import { Enable, ExFilterRethrow, ExitProcess, FindHandler, FindHandlerForForeignException, FrameUnwindFilter } from '../extern-stubs.js';
-import { FreeEnvironmentStringsA, FreeEnvironmentStringsW, GetACP, GetCPInfo, GetCommandLineA, GetCurrentDirectoryA } from '../extern-stubs.js';
-import { GetCurrentProcess, GetDriveTypeA, GetEnvironmentStrings, GetEnvironmentStringsW, GetFileType, GetFullPathNameA } from '../extern-stubs.js';
-import { GetLastError, GetLocalTime, GetModuleFileNameA, GetModuleHandleA, GetOEMCP, GetProcAddress } from '../extern-stubs.js';
-import { GetRangeOfTrysToCheck, GetStartupInfoA, GetStdHandle, GetSystemTime, GetTimeZoneInformation, GetVersion } from '../extern-stubs.js';
-import { HELPERS, HeapAlloc, HeapCreate, HeapDestroy, HeapFree, HeapReAlloc } from '../extern-stubs.js';
-import { HeapValidate, InterlockedDecrement, InterlockedIncrement, IsBadReadPtr, IsBadWritePtr, IsTracking } from '../extern-stubs.js';
+import { ArrayUnwindFilter, CDataBoundProperty, CloseHandle, DEVIATION, DebugBreak, DeleteFileA } from '../extern-stubs.js';
+import { ExitProcess, FrameUnwindFilter, FreeEnvironmentStringsA, FreeEnvironmentStringsW, GetACP, GetCPInfo } from '../extern-stubs.js';
+import { GetCommandLineA, GetCurrentDirectoryA, GetCurrentProcess, GetDriveTypeA, GetEnvironmentStrings, GetEnvironmentStringsW } from '../extern-stubs.js';
+import { GetFileType, GetFullPathNameA, GetLastError, GetLocalTime, GetModuleFileNameA, GetModuleHandleA } from '../extern-stubs.js';
+import { GetOEMCP, GetProcAddress, GetStartupInfoA, GetStdHandle, GetSystemTime, GetTimeZoneInformation } from '../extern-stubs.js';
+import { GetVersion, HELPERS, HeapAlloc, HeapCreate, HeapDestroy, HeapFree } from '../extern-stubs.js';
+import { HeapReAlloc, HeapValidate, InterlockedDecrement, InterlockedIncrement, IsBadReadPtr, IsBadWritePtr } from '../extern-stubs.js';
 import { LCMapStringA, LCMapStringW, LOCK, LoadLibraryA, MoveFileA, MultiByteToWideChar } from '../extern-stubs.js';
 import { OutputDebugStringA, ROUND, ReadFile, RtlUnwind, SetCurrentDirectoryA, SetEnvironmentVariableA } from '../extern-stubs.js';
-import { SetFilePointer, SetHandleCount, TerminateProcess, TranslatorGuardHandler, TypeMatch, UNLOCK } from '../extern-stubs.js';
-import { UnhandledExceptionFilter, VirtualAlloc, VirtualFree, WideCharToMultiByte, WriteFile, _BLOCK_TYPE } from '../extern-stubs.js';
-import { _BLOCK_TYPE_IS_VALID, _CPtoLCID, _CallCatchBlock2, _CallMemberFunction0, _CallMemberFunction1, _CallMemberFunction2 } from '../extern-stubs.js';
-import { _CallSETranslator, _CheckBytes, _CrtCheckMemory, _CrtIsValidHeapPointer, _CrtMessageWindow, _JumpToContinuation } from '../extern-stubs.js';
-import { _T, _UnwindNestedFrames, _ValidateExecute, _ValidateRead, _ValidateWrite, __ArrayUnwind } from '../extern-stubs.js';
-import { __CallSettingFrame_12, __CrtCheckMemory, __CrtDbgBreak, __CrtDbgReport, __CrtDumpMemoryLeaks, __CrtIsValidHeapPointer } from '../extern-stubs.js';
-import { __CrtIsValidPointer, __CrtMemCheckpoint, __CrtMemDumpAllObjectsSince, __CrtSetDbgFlag, __FF_MSGBANNER, __NMSG_WRITE } from '../extern-stubs.js';
-import { ___FrameUnwindToState, ___InternalCxxFrameHandler, ___crtGetEnvironmentStringsA, ___crtGetStringTypeA, ___crtLCMapStringA, ___crtMessageBoxA } from '../extern-stubs.js';
-import { ___initmbctable, ___loctotime_t, ___sbh_alloc_block, ___sbh_decommit_pages, ___sbh_find_block, ___sbh_free_block } from '../extern-stubs.js';
-import { ___sbh_heap_check, ___sbh_new_region, ___sbh_release_region, ___sbh_resize_block, __abnormal_termination, __allmul } from '../extern-stubs.js';
-import { __amsg_exit, __assert, __atodbl, __aulldiv, __aullrem, __callnewh } from '../extern-stubs.js';
-import { __calloc_dbg, __cfltcvt_init, __cftoe, __cftoe_g, __cftof, __cftof_g } from '../extern-stubs.js';
-import { __cftog, __cinit, __close, __commit, __controlfp, __dosmaperr } from '../extern-stubs.js';
-import { __exit, __expand_base, __expand_dbg, __fcloseall, __filbuf, __flsbuf } from '../extern-stubs.js';
-import { __fltout, __flush, __flushall, __fptostr, __free_base, __free_dbg } from '../extern-stubs.js';
-import { __free_osfhnd, __freebuf, __fsopen, __ftbuf, __get_osfhandle, __getbuf } from '../extern-stubs.js';
-import { __getdcwd, __getstream, __heap_alloc_base, __heap_alloc_dbg, __heap_init, __heapchk } from '../extern-stubs.js';
-import { __initterm, __ioinit, __isatty, __isctype, __ismbblead, __itoa } from '../extern-stubs.js';
-import { __local_unwind2, __lseek, __malloc_base, __malloc_dbg, __mbctoupper, __ms_p5_mp_test_fdiv } from '../extern-stubs.js';
-import { __ms_p5_test_fdiv, __msize_dbg, __nh_malloc, __nh_malloc_base, __nh_malloc_dbg, __onexit } from '../extern-stubs.js';
-import { __openfile, __output, __printMemBlockData, __read, __realloc_base, __realloc_dbg } from '../extern-stubs.js';
-import { __setargv, __setdefaultprecision, __setenvp, __setmbcp, __shift, __sopen } from '../extern-stubs.js';
-import { __stbuf, __validdrive, __vsnprintf, __write, _fgetc, _inconsistency } from '../extern-stubs.js';
-import { _raise, _strncnt, block, doexit, exe, flsall } from '../extern-stubs.js';
-import { getSystemCP, get_int64_arg, get_int_arg, get_short_arg, hs, length } from '../extern-stubs.js';
-import { lockptr, operator_delete, operator_new, parse_cmdline, realloc_help, setSBCS } from '../extern-stubs.js';
-import { swi, terminate, unexpected, wcsncnt, write_char, write_multi_char } from '../extern-stubs.js';
-import { write_string, x_ismbbtype, xcptlookup } from '../extern-stubs.js';
+import { SetFilePointer, SetHandleCount, TerminateProcess, UNLOCK, UnhandledExceptionFilter, VirtualAlloc } from '../extern-stubs.js';
+import { VirtualFree, WideCharToMultiByte, WriteFile, _BLOCK_TYPE, _BLOCK_TYPE_IS_VALID, _CallMemberFunction1 } from '../extern-stubs.js';
+import { _CallMemberFunction2, _CrtCheckMemory, _CrtIsValidHeapPointer, _T, __atodbl, block } from '../extern-stubs.js';
+import { exe, hs, swi } from '../extern-stubs.js';
 import { FUN_0055add0 } from './block_00550000.js';
 import { FUN_005e0cc0, FUN_005e6297, FUN_005e635f, FUN_005e8e06, FUN_005e8f4b, FUN_005ef4e3 } from './block_005E0000.js';
 import { FUN_005ef65a } from './block_005E0000.js';
+import { _ValidateExecute_006010E0 as _ValidateExecute, _ValidateRead_00601060 as _ValidateRead, _ValidateWrite_006010A0 as _ValidateWrite, __NMSG_WRITE_00600040 as __NMSG_WRITE, ___crtGetStringTypeA_00601560 as ___crtGetStringTypeA, ___crtMessageBoxA_00600930 as ___crtMessageBoxA } from './block_00600000.js';
+import { ___loctotime_t_006002E0 as ___loctotime_t, __aulldiv_006023E0 as __aulldiv, __aullrem_00602450 as __aullrem, __commit_006021E0 as __commit, __controlfp_00602640 as __controlfp, __fcloseall_006024D0 as __fcloseall } from './block_00600000.js';
+import { __fltout_006033E0 as __fltout, __fptostr_00603300 as __fptostr, __free_osfhnd_00601F40 as __free_osfhnd, __get_osfhandle_00602060 as __get_osfhandle, __isatty_006022C0 as __isatty, __itoa_00600A10 as __itoa } from './block_00600000.js';
+import { __sopen_00601750 as __sopen, __vsnprintf_00601210 as __vsnprintf, _raise_006006A0 as _raise, _strncnt_00606AF0 as _strncnt, wcsncnt_00606620 as wcsncnt } from './block_00600000.js';
+const lockptr = lockptr_005F0620;
+const length = length_005F07F9;
+const operator_new = operator_new_005F2470;
+const operator_delete = operator_delete_005F23C0;
+const Enable = Enable_005F1221;
+const __assert = __assert_005F75E0;
+const IsTracking = IsTracking_005F1B50;
+const __msize_dbg = __msize_dbg_005F53E0;
+const __realloc_dbg = __realloc_dbg_005F4930;
+const __onexit = __onexit_005F1B80;
+const __malloc_dbg = __malloc_dbg_005F4420;
+const __amsg_exit = __amsg_exit_005F70E0;
+const _JumpToContinuation = _JumpToContinuation_005F1DC0;
+const _CallMemberFunction0 = _CallMemberFunction0_005F1E00;
+const _UnwindNestedFrames = _UnwindNestedFrames_005F1E30;
+const ___InternalCxxFrameHandler = ___InternalCxxFrameHandler_005F79A0;
+const ___FrameUnwindToState = ___FrameUnwindToState_005F8050;
+const _CallCatchBlock2 = _CallCatchBlock2_005F1F10;
+const __CallSettingFrame_12 = __CallSettingFrame_12_005F8830;
+const CatchGuardHandler = CatchGuardHandler_005F1F80;
+const _CallSETranslator = _CallSETranslator_005F1FC0;
+const TranslatorGuardHandler = TranslatorGuardHandler_005F20A0;
+const __CrtDbgReport = __CrtDbgReport_005F8B70;
+const __free_dbg = __free_dbg_005F4F90;
+const __nh_malloc = __nh_malloc_005F4450;
+const __ArrayUnwind = __ArrayUnwind_005F2540;
+const terminate = terminate_005F8880;
+const __isctype = __isctype_005F9A70;
+const ___crtLCMapStringA = ___crtLCMapStringA_005F96E0;
+const __getstream = __getstream_005F9EF0;
+const __openfile = __openfile_005F9B30;
+const __fsopen = __fsopen_005F2D00;
+const __flush = __flush_005FA230;
+const __freebuf = __freebuf_005FA120;
+const __close = __close_005FA010;
+const __output = __output_005FA6B0;
+const __flsbuf = __flsbuf_005FA410;
+const __allmul = __allmul_005FB5E0;
+const __stbuf = __stbuf_005FB620;
+const __ftbuf = __ftbuf_005FB770;
+const __filbuf = __filbuf_005F3D70;
+const __read = __read_005FB830;
+const __write = __write_005FBCD0;
+const __mbctoupper = __mbctoupper_005FC090;
+const __dosmaperr = __dosmaperr_005FBFD0;
+const __getbuf = __getbuf_005FC500;
+const _fgetc = _fgetc_005F4010;
+const __initterm = __initterm_005F4330;
+const doexit = doexit_005F4230;
+const __CrtSetDbgFlag = __CrtSetDbgFlag_005F5A60;
+const __CrtDumpMemoryLeaks = __CrtDumpMemoryLeaks_005F63A0;
+const __nh_malloc_dbg = __nh_malloc_dbg_005F4480;
+const __heap_alloc_dbg = __heap_alloc_dbg_005F4520;
+const __callnewh = __callnewh_005FC770;
+const __CrtCheckMemory = __CrtCheckMemory_005F56E0;
+const __heap_alloc_base = __heap_alloc_base_005FC880;
+const __calloc_dbg = __calloc_dbg_005F4890;
+const realloc_help = realloc_help_005F4970;
+const __CrtIsValidHeapPointer = __CrtIsValidHeapPointer_005F5B60;
+const __expand_base = __expand_base_005FC910;
+const __realloc_base = __realloc_base_005FC9E0;
+const __expand_dbg = __expand_dbg_005F4F30;
+const _CheckBytes = _CheckBytes_005F5650;
+const __free_base = __free_base_005FCBF0;
+const __heapchk = __heapchk_005FCC60;
+const __CrtIsValidPointer = __CrtIsValidPointer_005F5B00;
+const ___sbh_find_block = ___sbh_find_block_005FD250;
+const __printMemBlockData = __printMemBlockData_005F62A0;
+const __CrtMemCheckpoint = __CrtMemCheckpoint_005F5D60;
+const __CrtMemDumpAllObjectsSince = __CrtMemDumpAllObjectsSince_005F5FE0;
+const __lseek = __lseek_005FDF90;
+const __cfltcvt_init = __cfltcvt_init_005F6CD0;
+const __ms_p5_mp_test_fdiv = __ms_p5_mp_test_fdiv_005FE2C0;
+const __setdefaultprecision = __setdefaultprecision_005FE240;
+const __heap_init = __heap_init_005FCD00;
+const __ioinit = __ioinit_005FC160;
+const ___initmbctable = ___initmbctable_005FFFC0;
+const ___crtGetEnvironmentStringsA = ___crtGetEnvironmentStringsA_005FF860;
+const __setargv = __setargv_005FF110;
+const __setenvp = __setenvp_005FEFD0;
+const __cinit = __cinit_005F4160;
+const __ismbblead = __ismbblead_005FEED0;
+const __FF_MSGBANNER = __FF_MSGBANNER_005FFFE0;
+const __getdcwd = __getdcwd_005F7170;
+const __validdrive = __validdrive_005F72B0;
+const __exit = __exit_005F41D0;
+const _inconsistency = _inconsistency_005F8950;
+const FindHandler = FindHandler_005F7AC0;
+const GetRangeOfTrysToCheck = GetRangeOfTrysToCheck_005F7E90;
+const TypeMatch = TypeMatch_005F7F80;
+const CatchIt = CatchIt_005F81B0;
+const DestructExceptionObject = DestructExceptionObject_005F8740;
+const FindHandlerForForeignException = FindHandlerForForeignException_005F7D70;
+const BuildCatchObject = BuildCatchObject_005F8460;
+const CallCatchBlock = CallCatchBlock_005F8290;
+const __abnormal_termination = __abnormal_termination_005F1D72;
+const ExFilterRethrow = ExFilterRethrow_005F83F0;
+const AdjustPointer = AdjustPointer_005F87E0;
+const unexpected = unexpected_005F8920;
+const __CrtDbgBreak = __CrtDbgBreak_005F89F0;
+const _CrtMessageWindow = _CrtMessageWindow_005F8F60;
+const __local_unwind2 = __local_unwind2_005F1D0A;
+const flsall = flsall_005FA310;
+const write_char = write_char_005FB440;
+const get_int_arg = get_int_arg_005FB570;
+const get_short_arg = get_short_arg_005FB5C0;
+const get_int64_arg = get_int64_arg_005FB590;
+const write_multi_char = write_multi_char_005FB4C0;
+const write_string = write_string_005FB510;
+const __nh_malloc_base = __nh_malloc_base_005FC7E0;
+const ___sbh_alloc_block = ___sbh_alloc_block_005FD390;
+const ___sbh_resize_block = ___sbh_resize_block_005FDB60;
+const __malloc_base = __malloc_base_005FC7B0;
+const ___sbh_free_block = ___sbh_free_block_005FD300;
+const ___sbh_heap_check = ___sbh_heap_check_005FDD20;
+const ___sbh_new_region = ___sbh_new_region_005FCE30;
+const ___sbh_release_region = ___sbh_release_region_005FD040;
+const ___sbh_decommit_pages = ___sbh_decommit_pages_005FD0D0;
+const __flushall = __flushall_005FA2F0;
+const __ms_p5_test_fdiv = __ms_p5_test_fdiv_005FE260;
+const __shift = __shift_005FEAE0;
+const __cftoe_g = __cftoe_g_005FE9E0;
+const __cftof_g = __cftof_g_005FEA20;
+const __cftoe = __cftoe_005FE560;
+const __cftof = __cftof_005FE730;
+const __cftog = __cftog_005FE8C0;
+const xcptlookup = xcptlookup_005FED20;
+const x_ismbbtype = x_ismbbtype_005FEF60;
+const parse_cmdline = parse_cmdline_005FF1E0;
+const getSystemCP = getSystemCP_005FFDF0;
+const setSBCS = setSBCS_005FFF20;
+const _CPtoLCID = _CPtoLCID_005FFE80;
+const __setmbcp = __setmbcp_005FFAC0;
 
 export function FUN_005f0056(in_ECX = G.in_ECX) {
 
@@ -1856,18 +1967,18 @@ export function __onexit_005F1B80(_Func) {
   let uVar1;
   let iVar2;
   
-  uVar1 = __msize_dbg(G.DAT_006e6b68,2);
-  if (uVar1 < ((G.DAT_006e6b54 + (4 - G.DAT_006e6b68)) >>> 0)) {
-    iVar2 = __msize_dbg(G.DAT_006e6b68,2,2,"onexit.c",0x68);
-    iVar2 = __realloc_dbg(G.DAT_006e6b68,iVar2 + 0x10);
+  uVar1 = __msize_dbg(s32(G.DAT_006e6b68, 0),2);
+  if (uVar1 < ((s32(G.DAT_006e6b54, 0) + (4 - s32(G.DAT_006e6b68, 0))) >>> 0)) {
+    iVar2 = __msize_dbg(s32(G.DAT_006e6b68, 0),2,2,"onexit.c",0x68);
+    iVar2 = __realloc_dbg(s32(G.DAT_006e6b68, 0),iVar2 + 0x10);
     if (iVar2 === 0) {
       return 0x0;
     }
-    G.DAT_006e6b54 = ((G.DAT_006e6b54 - G.DAT_006e6b68 & 0xfffffffc) + iVar2);
-    G.DAT_006e6b68 = iVar2;
+    s32(G.DAT_006e6b54, 0) = ((s32(G.DAT_006e6b54, 0) - s32(G.DAT_006e6b68, 0) & 0xfffffffc) + iVar2);
+    s32(G.DAT_006e6b68, 0) = iVar2;
   }
   w32(G.DAT_006e6b54, 0, _Func);
-  G.DAT_006e6b54 = G.DAT_006e6b54 + 1;
+  s32(G.DAT_006e6b54, 0) = s32(G.DAT_006e6b54, 0) + 1;
   return _Func;
 }
 
@@ -1914,12 +2025,12 @@ export function _atexit_005F1C40(param_1) {
 export function ___onexitinit_005F1C70() {
 
 
-  G.DAT_006e6b68 = __malloc_dbg(0x80,2,"onexit.c",0xb6);
-  if (G.DAT_006e6b68 === 0x0) {
+  s32(G.DAT_006e6b68, 0) = __malloc_dbg(0x80,2,"onexit.c",0xb6);
+  if (s32(G.DAT_006e6b68, 0) === 0x0) {
     __amsg_exit(0x18);
   }
   w32(G.DAT_006e6b68, 0, 0);
-  G.DAT_006e6b54 = G.DAT_006e6b68;
+  s32(G.DAT_006e6b54, 0) = s32(G.DAT_006e6b68, 0);
   return;
 }
 
@@ -4925,9 +5036,9 @@ export function doexit_005F4230(param_1, param_2, param_3) {
   _DAT_00639f58 = 1;
   w32(G.DAT_00639f54, 0, u8(param_3));
   if (param_2 === 0) {
-    if (G.DAT_006e6b68 !== 0x0) {
-      local_8 = G.DAT_006e6b54;
-      while (local_8 = local_8 + -1, G.DAT_006e6b68 <= local_8) {
+    if (s32(G.DAT_006e6b68, 0) !== 0x0) {
+      local_8 = s32(G.DAT_006e6b54, 0);
+      while (local_8 = local_8 + -1, s32(G.DAT_006e6b68, 0) <= local_8) {
         if (s32(local_8, 0) !== 0) {
           true /* DEVIATION: function pointer call — (*(code *)*local_8)(); */;
         }
@@ -5224,7 +5335,7 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
   let iVar6;
   
   bVar2 = false;
-  if ((((u8(G.DAT_00639f70) & 4) !== 0) && (iVar4 = __CrtCheckMemory(), iVar4 === 0)) && (iVar4 = __CrtDbgReport(2,"dbgheap.c",0x141,0,"_CrtCheckMemory()"), iVar4 === 1)) {
+  if ((((u8(s32(G.DAT_00639f70, 0)) & 4) !== 0) && (iVar4 = __CrtCheckMemory(), iVar4 === 0)) && (iVar4 = __CrtDbgReport(2,"dbgheap.c",0x141,0,"_CrtCheckMemory()"), iVar4 === 1)) {
      /*JOINED*/
     pcVar1 = swi(3);
     puVar5 = (s32(pcVar1, 0))();
@@ -5258,7 +5369,7 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
     puVar5 = 0x0;
   }
   else {
-    if (((param_2 & 0xffff) !== 2) && ((u8(G.DAT_00639f70) & 1) === 0)) {
+    if (((param_2 & 0xffff) !== 2) && ((u8(s32(G.DAT_00639f70, 0)) & 1) === 0)) {
       bVar2 = true;
     }
     if ((param_1 < 0xffffffe1) && (param_1 + 0x24 < 0xffffffe1)) {
@@ -5293,19 +5404,19 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
             w32(G.DAT_006e5480, 0, s32(G.DAT_006e547c, 0));
           }
           puVar3 = puVar5;
-          if (G.DAT_006e5478 !== 0x0) {
+          if (s32(G.DAT_006e5478, 0) !== 0x0) {
             G.DAT_006e5478[1] = puVar5;
             puVar3 = s32(G.DAT_006e5470, 0);
           }
           w32(G.DAT_006e5470, 0, puVar3);
-          w32(puVar5, 0, G.DAT_006e5478);
+          w32(puVar5, 0, s32(G.DAT_006e5478, 0));
           puVar5[1] = 0;
           puVar5[2] = param_3;
           puVar5[3] = param_4;
           puVar5[4] = param_1;
           puVar5[5] = param_2;
           puVar5[6] = iVar4;
-          G.DAT_006e5478 = puVar5;
+          s32(G.DAT_006e5478, 0) = puVar5;
         }
         _memset(puVar5 + 7,((s32(G.DAT_00639f7c, 0)) >>> 0),4);
         _memset((puVar5 + param_1 + 0x20),((s32(G.DAT_00639f7c, 0)) >>> 0),4);
@@ -5448,7 +5559,7 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
     piVar2 = __malloc_dbg(param_2,param_3,param_4,param_5);
   }
   else if ((param_6 === 0) || (param_2 !== 0)) {
-    if (((u8(G.DAT_00639f70) & 4) !== 0) && ((iVar3 = __CrtCheckMemory(), iVar3 === 0 && (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x239,0,"_CrtCheckMemory()"), iVar3 === 1)))) {
+    if (((u8(s32(G.DAT_00639f70, 0)) & 4) !== 0) && ((iVar3 = __CrtCheckMemory(), iVar3 === 0 && (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x239,0,"_CrtCheckMemory()"), iVar3 === 1)))) {
        /*JOINED*/
         /*JOINED*/
       pcVar1 = swi(3);
@@ -5580,27 +5691,27 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
           w32(s32(local_10, 0) + 4, 0, local_10[1]);
         }
         if (local_10[1] === 0) {
-          if ((G.DAT_006e5478 !== piVar4) && (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2c2,0,"_pFirstBlock === pOldBlock"), iVar3 === 1) ) {
+          if ((s32(G.DAT_006e5478, 0) !== piVar4) && (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2c2,0,"_pFirstBlock === pOldBlock"), iVar3 === 1) ) {
              /*JOINED*/
              /*JOINED*/
             pcVar1 = swi(3);
             piVar4 = (s32(pcVar1, 0))();
             return piVar4;
           }
-          G.DAT_006e5478 = s32(local_10, 0);
+          s32(G.DAT_006e5478, 0) = s32(local_10, 0);
         }
         else {
           // DEVIATION: C pointer write — *(int *)local_10[1] = *local_10;
         }
-        if (G.DAT_006e5478 === 0x0) {
+        if (s32(G.DAT_006e5478, 0) === 0x0) {
           w32(G.DAT_006e5470, 0, local_10);
         }
         else {
           G.DAT_006e5478[1] = local_10;
         }
-        w32(local_10, 0, G.DAT_006e5478);
+        w32(local_10, 0, s32(G.DAT_006e5478, 0));
         local_10[1] = 0;
-        G.DAT_006e5478 = local_10;
+        s32(G.DAT_006e5478, 0) = local_10;
       }
     }
     else {
@@ -5698,7 +5809,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
   let iVar2;
   let _Dst;
   
-  if ((((u8(G.DAT_00639f70) & 4) !== 0) && (iVar2 = __CrtCheckMemory(), iVar2 === 0)) && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x3e1,0,"_CrtCheckMemory()"), iVar2 === 1)) {
+  if ((((u8(s32(G.DAT_00639f70, 0)) & 4) !== 0) && (iVar2 = __CrtCheckMemory(), iVar2 === 0)) && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x3e1,0,"_CrtCheckMemory()"), iVar2 === 1)) {
      /*JOINED*/
     pcVar1 = swi(3);
     (s32(pcVar1, 0))();
@@ -5733,7 +5844,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
         (s32(pcVar1, 0))();
         return;
       }
-      if ((u8(G.DAT_00639f70) & 4) === 0) {
+      if ((u8(s32(G.DAT_00639f70, 0)) & 4) === 0) {
         iVar2 = _CheckBytes(param_1 + -4,s32(G.DAT_00639f7c, 0),4);
         if ((iVar2 === 0) && (iVar2 = __CrtDbgReport(1,0,0,0,"DAMAGE: before %hs block (#%d) at 0x%08X.\n", (PTR_DAT_00639f88)[u32(param_1 + -0xc, 0) & 0xffff], s32(param_1 + -8, 0),param_1), iVar2 === 1)) {
            /*JOINED*/
@@ -5777,7 +5888,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
           return;
         }
         w32(G.DAT_006e547c, 0, s32(G.DAT_006e547c, 0) - s32(param_1 + -0x10, 0));
-        if ((u8(G.DAT_00639f70) & 2) === 0) {
+        if ((u8(s32(G.DAT_00639f70, 0)) & 2) === 0) {
           if (s32(_Dst, 0) === 0) {
             if ((_Dst !== s32(G.DAT_006e5470, 0)) && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x42a,0,"_pLastBlock === pHead"), iVar2 === 1)) {
                /*JOINED*/
@@ -5791,14 +5902,14 @@ export function __free_dbg_005F4F90(param_1, param_2) {
             w32(s32(_Dst, 0) + 4, 0, s32(param_1 + -0x1c, 0));
           }
           if (s32(param_1 + -0x1c, 0) === 0) {
-            if ((_Dst !== G.DAT_006e5478) && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x434,0,"_pFirstBlock === pHead"), iVar2 === 1))
+            if ((_Dst !== s32(G.DAT_006e5478, 0)) && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x434,0,"_pFirstBlock === pHead"), iVar2 === 1))
                /*JOINED*/
             {
               pcVar1 = swi(3);
               (s32(pcVar1, 0))();
               return;
             }
-            G.DAT_006e5478 = s32(_Dst, 0);
+            s32(G.DAT_006e5478, 0) = s32(_Dst, 0);
           }
           else {
             // DEVIATION: C pointer write — **(int **)((int)param_1 + -0x1c) = *_Dst;
@@ -5856,7 +5967,7 @@ export function __msize_dbg_005F53E0(param_1, param_2) {
   let iVar2;
   let uVar3;
   
-  if ((u8(G.DAT_00639f70) & 4) !== 0) {
+  if ((u8(s32(G.DAT_00639f70, 0)) & 4) !== 0) {
     iVar2 = __CrtCheckMemory();
     if (iVar2 === 0) {
       iVar2 = __CrtDbgReport(2,"dbgheap.c",0x47c,0,"_CrtCheckMemory()");
@@ -6034,13 +6145,13 @@ export function __CrtCheckMemory_005F56E0() {
   let local_8;
   
   local_8 = 1;
-  if ((u8(G.DAT_00639f70) & 1) === 0) {
+  if ((u8(s32(G.DAT_00639f70, 0)) & 1) === 0) {
     local_8 = 1;
   }
   else {
     iVar3 = __heapchk();
     if ((iVar3 === -1) || (iVar3 === -2)) {
-      for (local_c = G.DAT_006e5478; local_c !== 0x0; local_c = s32(local_c, 0)) {
+      for (local_c = s32(G.DAT_006e5478, 0); local_c !== 0x0; local_c = s32(local_c, 0)) {
         bVar2 = true;
         if (((((local_c[5] & 0xffff) === 4) || (local_c[5] === 1)) || ((local_c[5] & 0xffff) === 2)) || (local_c[5] === 3)) {
            /*JOINED*/
@@ -6166,9 +6277,9 @@ export function __CrtSetDbgFlag_005F5A60(param_1) {
 
   let iVar1;
   
-  iVar1 = G.DAT_00639f70;
+  iVar1 = s32(G.DAT_00639f70, 0);
   if (param_1 !== -1) {
-    G.DAT_00639f70 = param_1;
+    s32(G.DAT_00639f70, 0) = param_1;
   }
   return iVar1;
 }
@@ -6190,8 +6301,8 @@ export function __CrtDoForAllClientObjects_005F5A90(param_1, param_2) {
 
   let local_8;
   
-  if ((u8(G.DAT_00639f70) & 1) !== 0) {
-    for (local_8 = G.DAT_006e5478; local_8 !== 0x0; local_8 = s32(local_8, 0)) {
+  if ((u8(s32(G.DAT_00639f70, 0)) & 1) !== 0) {
+    for (local_8 = s32(G.DAT_006e5478, 0); local_8 !== 0x0; local_8 = s32(local_8, 0)) {
       if ((local_8[5] & 0xffff) === 4) {
         (s32(param_1, 0))(local_8 + 8,param_2);
       }
@@ -6325,8 +6436,8 @@ export function FUN_005f5d30(param_1) {
 
   let uVar1;
   
-  uVar1 = G.DAT_006e6b48;
-  G.DAT_006e6b48 = param_1;
+  uVar1 = s32(G.DAT_006e6b48, 0);
+  s32(G.DAT_006e6b48, 0) = param_1;
   return uVar1;
 }
 
@@ -6359,12 +6470,12 @@ export function __CrtMemCheckpoint_005F5D60(param_1) {
     }
   }
   else {
-    w32(param_1, 0, G.DAT_006e5478);
+    w32(param_1, 0, s32(G.DAT_006e5478, 0));
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
       param_1[local_8 + 6] = 0;
       param_1[local_8 + 1] = param_1[local_8 + 6];
     }
-    for (local_c = G.DAT_006e5478; local_c !== 0x0; local_c = s32(local_c, 0)) {
+    for (local_c = s32(G.DAT_006e5478, 0); local_c !== 0x0; local_c = s32(local_c, 0)) {
       if ((local_c[5] & 0xffff) < 5) {
         param_1[(local_c[5] & 0xffff) + 1] = param_1[(local_c[5] & 0xffff) + 1] + 1;
         param_1[(local_c[5] & 0xffff) + 6] = param_1[(local_c[5] & 0xffff) + 6] + local_c[4];
@@ -6421,7 +6532,7 @@ export function __CrtMemDifference_005F5EA0(param_1, param_2, param_3) {
            s32(param_3, 0x18 + local_8 * 4) - s32(param_2, 0x18 + local_8 * 4);
       param_1[local_8 + 1] =
            s32(param_3, 4 + local_8 * 4) - s32(param_2, 4 + local_8 * 4);
-      if (((param_1[local_8 + 6] !== 0) || (param_1[local_8 + 1] !== 0)) && ((local_8 !== 0 && ((local_8 !== 2 || ((u8(G.DAT_00639f70) & 0x10) !== 0)))))) {
+      if (((param_1[local_8 + 6] !== 0) || (param_1[local_8 + 1] !== 0)) && ((local_8 !== 0 && ((local_8 !== 2 || ((u8(s32(G.DAT_00639f70, 0)) & 0x10) !== 0)))))) {
          /*JOINED*/
         local_c = 1;
       }
@@ -6463,7 +6574,7 @@ export function __CrtMemDumpAllObjectsSince_005F5FE0(param_1) {
   if (param_1 !== 0x0) {
     local_c = s32(param_1, 0);
   }
-  local_8 = G.DAT_006e5478;
+  local_8 = s32(G.DAT_006e5478, 0);
   do {
     if ((local_8 === 0x0) || (local_8 === local_c)) {
       iVar2 = __CrtDbgReport(0,0,0,0,s32(G.DAT_0061dc40, 0),"Object dump complete.\n");
@@ -6474,7 +6585,7 @@ export function __CrtMemDumpAllObjectsSince_005F5FE0(param_1) {
       (s32(pcVar1, 0))();
       return;
     }
-    if ((((local_8[5] & 0xffff) !== 3) && ((local_8[5] & 0xffff) !== 0)) && (((local_8[5] & 0xffff) !== 2 || ((u8(G.DAT_00639f70) & 0x10) !== 0)))) {
+    if ((((local_8[5] & 0xffff) !== 3) && ((local_8[5] & 0xffff) !== 0)) && (((local_8[5] & 0xffff) !== 2 || ((u8(s32(G.DAT_00639f70, 0)) & 0x10) !== 0)))) {
        /*JOINED*/
       if (local_8[2] !== 0) {
         iVar2 = __CrtIsValidPointer(local_8[2],1,0);
@@ -6509,7 +6620,7 @@ export function __CrtMemDumpAllObjectsSince_005F5FE0(param_1) {
           (s32(pcVar1, 0))();
           return;
         }
-        if (G.DAT_006e6b48 === 0x0) {
+        if (s32(G.DAT_006e6b48, 0) === 0x0) {
           __printMemBlockData(local_8);
         }
         else {
@@ -6621,7 +6732,7 @@ export function __CrtDumpMemoryLeaks_005F63A0() {
   let local_24;
   
   __CrtMemCheckpoint(local_38);
-  if (((local_24 === 0) && (local_30 === 0)) && (((u8(G.DAT_00639f70) & 0x10) === 0 || (local_2c === 0)))) {
+  if (((local_24 === 0) && (local_30 === 0)) && (((u8(s32(G.DAT_00639f70, 0)) & 0x10) === 0 || (local_2c === 0)))) {
      /*JOINED*/
     uVar3 = 0;
   }
@@ -7479,13 +7590,13 @@ export function entry_005F6E90(unaff_EDI) {
   local_8 = 0;
   __ioinit();
   ___initmbctable();
-  G.DAT_006e6b3c = GetCommandLineA();
+  s32(G.DAT_006e6b3c, 0) = GetCommandLineA();
   w32(G.DAT_00639fc0, 0, ___crtGetEnvironmentStringsA());
-  if ((s32(G.DAT_00639fc0, 0) !== 0x0) && (G.DAT_006e6b3c !== 0x0)) {
+  if ((s32(G.DAT_00639fc0, 0) !== 0x0) && (s32(G.DAT_006e6b3c, 0) !== 0x0)) {
     __setargv();
     __setenvp();
     __cinit(unaff_EDI);
-    local_68 = G.DAT_006e6b3c;
+    local_68 = s32(G.DAT_006e6b3c, 0);
     pbVar1 = local_68;
     if (s32(G.DAT_006e6b3c, 0) === 0x22) {
       while ((local_68 = pbVar1, pbVar1 = local_68 + 1, s32(pbVar1, 0) !== 0x22 && (s32(pbVar1, 0) !== 0))) {
@@ -8108,7 +8219,7 @@ export function FindHandlerForForeignException_005F7D70(param_1, param_2, param_
   let local_c;
   let local_8 = [0];
   
-  if ((G.DAT_0063a020 === 0) || (iVar1 = _CallSETranslator(param_1,param_2,param_3,param_4,param_5,param_7,param_8), iVar1 === 0 )) {
+  if ((s32(G.DAT_0063a020, 0) === 0) || (iVar1 = _CallSETranslator(param_1,param_2,param_3,param_4,param_5,param_7,param_8), iVar1 === 0 )) {
      /*JOINED*/
      /*JOINED*/
     local_c = GetRangeOfTrysToCheck(param_5,param_7,param_6,local_10[0],local_8[0]);
@@ -8604,7 +8715,7 @@ export function terminate_005F8880() {
   devLog('SEH', '');
   devLog('SEH', '');
   devLog('SEH', '');
-  if (G.DAT_0063a024 !== 0x0) {
+  if (s32(G.DAT_0063a024, 0) !== 0x0) {
     local_8 = 1;
     (s32(G.DAT_0063a024, 0))();
   }
@@ -8774,8 +8885,8 @@ export function FUN_005f8b40(param_1) {
 
   let uVar1;
   
-  uVar1 = G.DAT_006e6b30;
-  G.DAT_006e6b30 = param_1;
+  uVar1 = s32(G.DAT_006e6b30, 0);
+  s32(G.DAT_006e6b30, 0) = param_1;
   return uVar1;
 }
 
@@ -8843,7 +8954,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
     local_100c = 0xffffffff;
   }
   else if ((param_1 === 2) && (LVar1 = InterlockedIncrement(s32(G.DAT_0063a030, 0)), 0 < LVar1)) {
-    if ((G.DAT_0063a064 === 0x0) && ((local_3010 = LoadLibraryA("user32.dll"), local_3010 === 0x0 || (G.DAT_0063a064 = GetProcAddress(local_3010,"wsprintfA"), G.DAT_0063a064 === 0x0)))) {
+    if ((s32(G.DAT_0063a064, 0) === 0x0) && ((local_3010 = LoadLibraryA("user32.dll"), local_3010 === 0x0 || (s32(G.DAT_0063a064, 0) = GetProcAddress(local_3010,"wsprintfA"), s32(G.DAT_0063a064, 0) === 0x0)))) {
        /*JOINED*/
         /*JOINED*/
       local_100c = 0xffffffff;
@@ -8881,7 +8992,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
         FUN_005f22d0();
       }
     }
-    if ((G.DAT_006e6b30 === 0x0) || (iVar2 = (s32(G.DAT_006e6b30, 0))(), iVar2 === 0)) {
+    if ((s32(G.DAT_006e6b30, 0) === 0x0) || (iVar2 = (s32(G.DAT_006e6b30, 0))(), iVar2 === 0)) {
       if (((G.DAT_0063a038[param_1 * 4] & 1) !== 0) && (s32(G.DAT_0063a048, param_1 * 4) !== -1) ) {
          /*JOINED*/
         lpOverlapped = 0x0;
@@ -10973,8 +11084,8 @@ export function __ioinit_005FC160() {
     __amsg_exit(0x1b);
   }
   w32(G.DAT_006e6b2c, 0, 0x20);
-  G.DAT_006e69f0 = local_54;
-  for (; local_54 < G.DAT_006e69f0 + 0x40; local_54 = local_54 + 2) {
+  s32(G.DAT_006e69f0, 0) = local_54;
+  for (; local_54 < s32(G.DAT_006e69f0, 0) + 0x40; local_54 = local_54 + 2) {
     local_54[1] = 0;
     w32(local_54, 0, 0xffffffff);
     // DEVIATION: C pointer write — *(undefined1 *)((int)local_54 + 5) = 10;
@@ -11018,7 +11129,7 @@ export function __ioinit_005FC160() {
     }
   }
   for (local_5c = 0; local_5c < 3; local_5c = local_5c + 1) {
-    piVar3 = G.DAT_006e69f0 + local_5c * 2;
+    piVar3 = s32(G.DAT_006e69f0, 0) + local_5c * 2;
     if (s32(piVar3, 0) === -1) {
       piVar3[1] = 0x81;
       if (local_5c === 0) {
@@ -11215,8 +11326,8 @@ export function FUN_005fc720(param_1) {
 
   let uVar1;
   
-  uVar1 = G.DAT_006e54a0;
-  G.DAT_006e54a0 = param_1;
+  uVar1 = s32(G.DAT_006e54a0, 0);
+  s32(G.DAT_006e54a0, 0) = param_1;
   return uVar1;
 }
 
@@ -11230,7 +11341,7 @@ export function FUN_005fc720(param_1) {
 export function FUN_005fc750() {
 
 
-  return G.DAT_006e54a0;
+  return s32(G.DAT_006e54a0, 0);
 }
 
 
@@ -11250,7 +11361,7 @@ export function __callnewh_005FC770(_Size) {
 
   let iVar1;
   
-  if ((G.DAT_006e54a0 !== 0x0) && (iVar1 = (s32(G.DAT_006e54a0, 0))(_Size), iVar1 !== 0)) {
+  if ((s32(G.DAT_006e54a0, 0) !== 0x0) && (iVar1 = (s32(G.DAT_006e54a0, 0))(_Size), iVar1 !== 0)) {
     return 1;
   }
   return 0;
@@ -12408,11 +12519,11 @@ export function ___initstdio_005FE0B0() {
   else if (s32(G.DAT_006e69e0, 0) < 0x14) {
     w32(G.DAT_006e69e0, 0, 0x14);
   }
-  G.DAT_006e5694 = __calloc_dbg(s32(G.DAT_006e69e0, 0),4,2,"_file.c",0x84);
-  if (G.DAT_006e5694 === 0) {
+  s32(G.DAT_006e5694, 0) = __calloc_dbg(s32(G.DAT_006e69e0, 0),4,2,"_file.c",0x84);
+  if (s32(G.DAT_006e5694, 0) === 0) {
     w32(G.DAT_006e69e0, 0, 0x14);
-    G.DAT_006e5694 = __calloc_dbg(0x14,4,2,"_file.c",0x87);
-    if (G.DAT_006e5694 === 0) {
+    s32(G.DAT_006e5694, 0) = __calloc_dbg(0x14,4,2,"_file.c",0x87);
+    if (s32(G.DAT_006e5694, 0) === 0) {
       __amsg_exit(0x1a);
     }
   }
@@ -12678,7 +12789,7 @@ export function __cftoe_005FE560(unaff_EDI, _Value, _Buf, _SizeInBytes, _Dec, _C
               /*JOINED*/
   }
   else {
-    local_c = G.DAT_006e54a4;
+    local_c = s32(G.DAT_006e54a4, 0);
     __shift(_Buf + (s32(G.DAT_006e54a4, 0) === 0x2d),0 < _SizeInBytes);
   }
   local_8 = _Buf;
@@ -12740,7 +12851,7 @@ export function __cftof_005FE730(unaff_EDI, _Value, _Buf, _SizeInBytes, _Dec) {
     __fptostr(_Buf + (s32(local_c, 0) === 0x2d),local_c[1] + _SizeInBytes,local_c,unaff_EDI);
   }
   else {
-    local_c = G.DAT_006e54a4;
+    local_c = s32(G.DAT_006e54a4, 0);
     if (_SizeInBytes === s32(G.DAT_0063aefc, 0)) {
       iVar1 = s32(G.DAT_0063aefc, 0) + (s32(G.DAT_006e54a4, 0) === 0x2d);
       _Buf[iVar1] = 48;
@@ -12800,10 +12911,10 @@ export function __cftog_005FE8C0(unaff_EDI, param_1, param_2, param_3, param_4) 
   // unaff_EDI → promoted to parameter
   let local_8;
   
-  G.DAT_006e54a4 = __fltout(s32(param_1, 0),param_1[1]);
+  s32(G.DAT_006e54a4, 0) = __fltout(s32(param_1, 0),param_1[1]);
   w32(G.DAT_0063aefc, 0, G.DAT_006e54a4[1] + -1);
   _Buf = (((s32(G.DAT_006e54a4, 0) === 0x2d) >>> 0) + param_2);
-  __fptostr(_Buf,param_3,G.DAT_006e54a4,unaff_EDI);
+  __fptostr(_Buf,param_3,s32(G.DAT_006e54a4, 0),unaff_EDI);
   w32(G.DAT_0063af00, 0, s32(G.DAT_0063aefc, 0) < G.DAT_006e54a4[1] + -1);
   w32(G.DAT_0063aefc, 0, G.DAT_006e54a4[1] + -1);
   if ((s32(G.DAT_0063aefc, 0) < -4) || (param_3 <= s32(G.DAT_0063aefc, 0))) {
@@ -13323,7 +13434,7 @@ export function __setenvp_005FEFD0() {
     sVar1 = _strlen(local_8);
   }
   local_10 = __malloc_dbg(local_c * 4 + 4,2,"stdenvp.c",0x55);
-  G.DAT_00639f3c = local_10;
+  s32(G.DAT_00639f3c, 0) = local_10;
   if (local_10 === 0x0) {
     __amsg_exit(9);
   }
@@ -13372,7 +13483,7 @@ export function __setargv_005FF110() {
     local_14 = s32(G.DAT_006e54a8, 0);
   }
   else {
-    local_14 = G.DAT_006e6b3c;
+    local_14 = s32(G.DAT_006e6b3c, 0);
   }
   parse_cmdline(local_14,0,0,local_10[0],local_8[0]);
   local_c = __malloc_dbg(local_10[0] * 4 + local_8[0],2,"stdargv.c",0x75);
@@ -14000,7 +14111,7 @@ export function __FF_MSGBANNER_005FFFE0() {
 
   if ((s32(G.DAT_00639fcc, 0) === 1) || ((s32(G.DAT_00639fcc, 0) === 0 && (s32(G.DAT_00639fd0, 0) === 1)))) {
     __NMSG_WRITE(0xfc);
-    if (G.DAT_0063b248 !== 0x0) {
+    if (s32(G.DAT_0063b248, 0) !== 0x0) {
       (s32(G.DAT_0063b248, 0))();
     }
     __NMSG_WRITE(0xff);

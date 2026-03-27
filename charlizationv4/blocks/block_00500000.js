@@ -21,15 +21,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { GetSystemMetrics, _atexit } from '../crt.js';
-import { BringWindowToTop, Create, DEVIATION, GetActiveView, HELPERS, IsTracking } from '../extern-stubs.js';
-import { OnClose, XD_InFlushSendBuffer, __strcmpi, block, citywin_70B8, citywin_70C1 } from '../extern-stubs.js';
-import { citywin_70D7, citywin_A1B2, citywin_A1C8, citywin_B638, citywin_B644, citywin_B650 } from '../extern-stubs.js';
-import { citywin_B666, debug_log, exe, operator_new, thunk_city_mouse, thunk_citywin_70E5 } from '../extern-stubs.js';
-import { thunk_citywin_7B69, thunk_citywin_7F31, thunk_citywin_8177, thunk_citywin_8552, thunk_citywin_8ADC, thunk_citywin_8BC5 } from '../extern-stubs.js';
-import { thunk_citywin_8C84, thunk_citywin_8D24, thunk_citywin_8EC6, thunk_citywin_9028, thunk_citywin_92AF, thunk_citywin_9429 } from '../extern-stubs.js';
-import { thunk_citywin_994F, thunk_citywin_998F, thunk_citywin_9A49, thunk_citywin_9AC0, thunk_citywin_BC4F, thunk_citywin_C7A3 } from '../extern-stubs.js';
-import { thunk_citywin_C859, thunk_citywin_CA8D, thunk_citywin_CCB3, thunk_citywin_CF06, thunk_handle_city_disorder_00509590, thunk_load_city_preferences } from '../extern-stubs.js';
-import { tie } from '../extern-stubs.js';
+import { BringWindowToTop, DEVIATION, HELPERS, XD_InFlushSendBuffer, block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_004080f0, FUN_00408130, FUN_00408170 } from './block_00400000.js';
 import { FUN_00408230, FUN_00408270, FUN_004082b0, FUN_004082f0, FUN_00408330, FUN_004083b0 } from './block_00400000.js';
 import { FUN_004083f0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_004086c0, FUN_00408780 } from './block_00400000.js';
@@ -40,19 +32,20 @@ import { FUN_0040fe40, FUN_0040fe70, FUN_0040fea0, FUN_0040fed0, FUN_0040ff00, F
 import { FUN_0040ff60, FUN_0040ffa0 } from './block_00400000.js';
 import { FUN_00410070, FUN_00410402, FUN_00410d98, FUN_00414bb0, FUN_00414d10, FUN_00414d70 } from './block_00410000.js';
 import { FUN_00414dd0, FUN_00417ef0, FUN_004190d0 } from './block_00410000.js';
-import { FUN_00421bb0, FUN_00421d30, FUN_00421da0, FUN_00421ea0, FUN_00421ed0, FUN_00421f10 } from './block_00420000.js';
-import { FUN_004271e8, FUN_00428b0c } from './block_00420000.js';
+import { Create_00421E00 as Create, FUN_00421bb0, FUN_00421d30, FUN_00421da0, FUN_00421ea0, FUN_00421ed0 } from './block_00420000.js';
+import { FUN_00421f10, FUN_004271e8, FUN_00428b0c } from './block_00420000.js';
 import { FUN_00436287, FUN_0043c460, FUN_0043c520, FUN_0043c690, FUN_0043c6c0, FUN_0043c790 } from './block_00430000.js';
 import { FUN_0043c7c0, FUN_0043c840, FUN_0043c8a0, FUN_0043c8d0, FUN_0043c910, FUN_0043c950 } from './block_00430000.js';
 import { FUN_0043c990, FUN_0043c9d0, FUN_0043ca80, FUN_0043cef9, FUN_0043cf76, FUN_0043d07a } from './block_00430000.js';
 import { FUN_0043d20a, FUN_0043d289 } from './block_00430000.js';
 import { FUN_00441b11, FUN_00444270, FUN_00448f92 } from './block_00440000.js';
 import { FUN_004503d0, FUN_00451900, FUN_00451ac0, FUN_00453da0, FUN_00453e51, FUN_00454260 } from './block_00450000.js';
+import { tie_00456EE0 as tie } from './block_00450000.js';
 import { FUN_00467580, FUN_0046ab30, FUN_0046ab49, FUN_0046ac89, FUN_0046ad85, FUN_0046e020 } from './block_00460000.js';
 import { FUN_00472cf0, FUN_00472d20, FUN_0047a8c9, FUN_0047cf9e, FUN_0047df20, FUN_0047df50 } from './block_00470000.js';
-import { FUN_0047e94e } from './block_00470000.js';
+import { FUN_0047e94e, GetActiveView_004710A0 as GetActiveView } from './block_00470000.js';
 import { FUN_00484d52, FUN_004897fa, FUN_00489a0d } from './block_00480000.js';
-import { FUN_00497c90, FUN_00498e8b } from './block_00490000.js';
+import { FUN_00497c90, FUN_00498e8b, load_city_preferences_00498D40 as thunk_load_city_preferences } from './block_00490000.js';
 import { FUN_004a6980, FUN_004aef20, FUN_004af122 } from './block_004A0000.js';
 import { FUN_004bb3b0, FUN_004bb4f0, FUN_004bb540, FUN_004bb570, FUN_004bb800, FUN_004bb840 } from './block_004B0000.js';
 import { FUN_004bfe5a } from './block_004B0000.js';
@@ -75,8 +68,43 @@ import { FUN_005baeb0, FUN_005baec8, FUN_005baee0, FUN_005bb574, FUN_005bd630, F
 import { FUN_005bd915, FUN_005bf071 } from './block_005B0000.js';
 import { FUN_005c0bf2, FUN_005c0cc5, FUN_005c5aeb, FUN_005c64da, FUN_005c656b, FUN_005cde4d } from './block_005C0000.js';
 import { FUN_005cdea1, FUN_005cedad, FUN_005cef31, FUN_005cf126 } from './block_005C0000.js';
-import { FUN_005d7cb0, FUN_005d8236, FUN_005db0d0 } from './block_005D0000.js';
-import { FUN_005f22d0 } from './block_005F0000.js';
+import { FUN_005d7cb0, FUN_005d8236, FUN_005db0d0, debug_log_005D225B as debug_log } from './block_005D0000.js';
+import { FUN_005f22d0, IsTracking_005F1B50 as IsTracking, __strcmpi_005F6E00 as __strcmpi, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+const thunk_citywin_BC4F = citywin_BC4F_0050BC4F;
+const OnClose = OnClose_005014BF;
+const thunk_citywin_8ADC = citywin_8ADC_00508ADC;
+const thunk_citywin_9429 = citywin_9429_00509429;
+const thunk_citywin_994F = citywin_994F_0050994F;
+const citywin_70B8 = citywin_70B8_005070B8;
+const citywin_70C1 = citywin_70C1_005070C1;
+const citywin_70D7 = citywin_70D7_005070D7;
+const thunk_handle_city_disorder_00509590 = handle_city_disorder_00509590_00509590;
+const thunk_citywin_7F31 = citywin_7F31_00507F31;
+const thunk_citywin_8177 = citywin_8177_00508177;
+const thunk_citywin_70E5 = citywin_70E5_005070E5;
+const thunk_citywin_7B69 = citywin_7B69_00507B69;
+const thunk_citywin_8552 = citywin_8552_00508552;
+const thunk_citywin_8C84 = citywin_8C84_00508C84;
+const thunk_citywin_CF06 = citywin_CF06_0050CF06;
+const thunk_citywin_9028 = citywin_9028_00509028;
+const thunk_citywin_92AF = citywin_92AF_005092AF;
+const thunk_citywin_8EC6 = citywin_8EC6_00508EC6;
+const thunk_citywin_8D24 = citywin_8D24_00508D24;
+const thunk_citywin_8BC5 = citywin_8BC5_00508BC5;
+const thunk_citywin_CA8D = citywin_CA8D_0050CA8D;
+const thunk_citywin_CCB3 = citywin_CCB3_0050CCB3;
+const thunk_citywin_998F = citywin_998F_0050998F;
+const citywin_A1B2 = citywin_A1B2_0050A1B2;
+const citywin_A1C8 = citywin_A1C8_0050A1C8;
+const citywin_B638 = citywin_B638_0050B638;
+const citywin_B644 = citywin_B644_0050B644;
+const citywin_B650 = citywin_B650_0050B650;
+const citywin_B666 = citywin_B666_0050B666;
+const thunk_citywin_9AC0 = citywin_9AC0_00509AC0;
+const thunk_city_mouse = city_mouse_0050C1D1;
+const thunk_citywin_C7A3 = citywin_C7A3_0050C7A3;
+const thunk_citywin_C859 = citywin_C859_0050C859;
+const thunk_citywin_9A49 = citywin_9A49_00509A49;
 
 export function FID_conflict___E51_00500E00() {
 
@@ -884,7 +912,7 @@ export function FUN_00501819(param_1) {
   let local_10;
   
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (s32(G.DAT_00655b07, 0) !== 0)) {
+  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === s32(G.DAT_006d1da0, 0)) || (s32(G.DAT_00655b07, 0) !== 0)) {
     uVar4 = 0;
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar4);
@@ -1160,9 +1188,9 @@ export function FUN_0050207f(in_ECX = G.in_ECX, param_1) {
     iVar3 = iVar1 + iVar3;
     iVar4 = FUN_00511690(199);
     FUN_0043c910(s32(G.DAT_00679640, 0),local_28 + iVar4,iVar3,uVar2);
-    uVar2 = G.DAT_006a6550;
-    uVar6 = G.DAT_006a65a8;
-    uVar7 = G.DAT_006a659c;
+    uVar2 = s32(G.DAT_006a6550, 0);
+    uVar6 = s32(G.DAT_006a65a8, 0);
+    uVar7 = s32(G.DAT_006a659c, 0);
     uVar5 = FUN_00511690(0x1a6);
     iVar3 = FUN_00511690(9);
     iVar3 = iVar1 + iVar3;
@@ -1208,7 +1236,7 @@ export function FUN_005022c0(param_1, param_2) {
   
   local_1c = -1;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (s32(G.DAT_00655b07, 0) !== 0)) {
+  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === s32(G.DAT_006d1da0, 0)) || (s32(G.DAT_00655b07, 0) !== 0)) {
     uVar5 = 0;
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar5);
@@ -1479,7 +1507,7 @@ export function FUN_005025d5(in_ECX = G.in_ECX, param_1) {
         local_e8 = 0;
         FUN_004e8e4d(s32(in_ECX, 0x159c),local_94,0);
         iVar1 = local_e0;
-        local_7c = s32(G.DAT_006a65bc, 0) + s32(G.DAT_006a65c0, 0) + G.DAT_006a65b8;
+        local_7c = s32(G.DAT_006a65bc, 0) + s32(G.DAT_006a65c0, 0) + s32(G.DAT_006a65b8, 0);
         if (local_7c === 0) {
           local_7c = 1;
           local_e8 = 1;
@@ -1540,15 +1568,15 @@ export function FUN_005025d5(in_ECX = G.in_ECX, param_1) {
     local_40 = ((s32(in_ECX, 0x15d4) === 3) >>> 0);
     local_f0 = s8(G.DAT_0064f349[s32(in_ECX, 0x159c) * 0x58]) * ((s32(G.DAT_0064bcca, 0)) >>> 0) + s32(G.DAT_006a65d8, 0) * s32(G.DAT_006a6608, 0);
                /*JOINED*/
-    local_48 = G.DAT_006a65c8;
-    local_c = G.DAT_006a65c8 - local_f0;
+    local_48 = s32(G.DAT_006a65c8, 0);
+    local_c = s32(G.DAT_006a65c8, 0) - local_f0;
     local_ec = local_f0;
-    if (local_f0 <= G.DAT_006a65c8) {
-      local_ec = G.DAT_006a65c8;
+    if (local_f0 <= s32(G.DAT_006a65c8, 0)) {
+      local_ec = s32(G.DAT_006a65c8, 0);
     }
     local_98 = local_f0;
     if (local_c < 0) {
-      local_98 = G.DAT_006a65c8;
+      local_98 = s32(G.DAT_006a65c8, 0);
     }
     local_38 = local_f0;
     iVar1 = FUN_00511690(0xe2);
@@ -1697,8 +1725,8 @@ export function FUN_005025d5(in_ECX = G.in_ECX, param_1) {
     FUN_0040ff30(local_1fc);
     FUN_0043c950(s32(G.DAT_00679640, 0),local_60,local_4c,0);
     local_b8 = s32(G.DAT_006a6568, 0);
-    local_48 = G.DAT_006a65cc + s32(G.DAT_006a656c, 0);
-    local_c = G.DAT_006a65cc - s32(G.DAT_006a6568, 0);
+    local_48 = s32(G.DAT_006a65cc, 0) + s32(G.DAT_006a656c, 0);
+    local_c = s32(G.DAT_006a65cc, 0) - s32(G.DAT_006a6568, 0);
     local_54 = s32(G.DAT_006a6568, 0);
     if (s32(G.DAT_006a6568, 0) <= local_48) {
       local_54 = local_48;
@@ -2680,7 +2708,7 @@ export function FUN_00505d3d(param_1) {
   local_c = 0;
   local_10 = -1;
   devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(G.DAT_0064f348[iVar3 * 0x58]) === G.DAT_006d1da0) || (s32(G.DAT_00655b07, 0) !== 0)) {
+  if ((s8(G.DAT_0064f348[iVar3 * 0x58]) === s32(G.DAT_006d1da0, 0)) || (s32(G.DAT_00655b07, 0) !== 0)) {
     devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (((G.DAT_0064f344[iVar3 * 0x58] & 4) === 0) || ((s32(G.DAT_00655b07, 0) !== 0 && ((s32(G.DAT_00655af0, 0) & 0x80) !== 0)))) {
        /*JOINED*/
@@ -2956,7 +2984,7 @@ export function FUN_00506637(param_1) {
   if (s32(G.DAT_00630d2c, 0) === 0) {
     w32(G.DAT_00630d2c, 0, 1);
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-    if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (s32(G.DAT_00655b07, 0) !== 0)) {
+    if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === s32(G.DAT_006d1da0, 0)) || (s32(G.DAT_00655b07, 0) !== 0)) {
       uVar4 = 0;
       devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004eb4ed(iVar1,uVar4);
@@ -3128,7 +3156,7 @@ export function FUN_00506a42(param_1) {
   w32(G.DAT_00630d2c, 0, 1);
   FUN_005cdea1(0x40,0x20,0);
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) !== G.DAT_006d1da0) && (s32(G.DAT_00655b07, 0) === 0))
+  if ((s8(G.DAT_0064f348[iVar1 * 0x58]) !== s32(G.DAT_006d1da0, 0)) && (s32(G.DAT_00655b07, 0) === 0))
   LAB_0050708f_helper(local_8); return;
   uVar6 = 0;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
@@ -4372,14 +4400,14 @@ export function handle_city_disorder_00509590_00509590(in_ECX = G.in_ECX, param_
     thunk_citywin_CCB3(1);
     w32(G.DAT_00630d18, 0, 0);
     if (s32(G.DAT_0062edf8, 0) === 0) {
-      if (((((G.DAT_00655aea & 1) !== 0) && (0x03 < s8(G.DAT_0064f349[param_1 * 0x58]))) && ((s32(G.DAT_00655af4, 0) & 1) === 0)) && (s8(G.DAT_0064f348[param_1 * 0x58]) !== G.DAT_006d1da0)) {
+      if (((((s32(G.DAT_00655aea, 0) & 1) !== 0) && (0x03 < s8(G.DAT_0064f349[param_1 * 0x58]))) && ((s32(G.DAT_00655af4, 0) & 1) === 0)) && (s8(G.DAT_0064f348[param_1 * 0x58]) !== s32(G.DAT_006d1da0, 0))) {
           /*JOINED*/
         FUN_004190d0(PTR_s_TUTORIAL_00627678,s_CITYSTUFF_00630e00);
         w32(G.DAT_00655af4, 0, s32(G.DAT_00655af4, 0) | 1);
       }
     }
     else {
-      if ((((((G.DAT_00655aea & 1) !== 0) && ((G.DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((G.DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (s32(G.DAT_00655b08, 0) < 3)))) && ((s8(G.DAT_0064f348[param_1 * 0x58]) === G.DAT_006d1da0 && (s32(G.DAT_00654fa8, 0) === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), s32(G.DAT_00631edc, 0) !== 0)) {
+      if ((((((s32(G.DAT_00655aea, 0) & 1) !== 0) && ((G.DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((G.DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (s32(G.DAT_00655b08, 0) < 3)))) && ((s8(G.DAT_0064f348[param_1 * 0x58]) === s32(G.DAT_006d1da0, 0) && (s32(G.DAT_00654fa8, 0) === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), s32(G.DAT_00631edc, 0) !== 0)) {
            /*JOINED*/
           /*JOINED*/
          /*JOINED*/
@@ -4522,7 +4550,7 @@ export function citywin_9AC0_00509AC0(param_1, param_2) {
   let iVar1;
   
   param_1 = param_1 * s32(G.DAT_006a657c, 0);
-  iVar1 = FUN_00511350(G.DAT_006a65cc - s32(G.DAT_006a6568, 0),1,99,1,999);
+  iVar1 = FUN_00511350(s32(G.DAT_006a65cc, 0) - s32(G.DAT_006a6568, 0),1,99,1,999);
   iVar1 = FUN_00511350(((param_1 + -1) - param_2) / iVar1 + 1);
   FUN_0040ff30(iVar1);
   FUN_0040fe10();
@@ -4606,7 +4634,7 @@ export function city_button_buy_00509B48(param_1) {
   iVar3 = s8(G.DAT_0064f379[iVar3 * 0x58]);
   devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar4 = s8(G.DAT_0064f379[iVar4 * 0x58]);
-  if ((G.DAT_006d1da0 !== iVar2) && (s32(G.DAT_00655b07, 0) === 0)) {
+  if ((s32(G.DAT_006d1da0, 0) !== iVar2) && (s32(G.DAT_00655b07, 0) === 0)) {
     devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
@@ -4920,7 +4948,7 @@ export function city_button_change_0050A473(param_1) {
   devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   bVar1 = G.DAT_0064f348[iVar2 * 0x58];
   iVar2 = s8(bVar1);
-  if ((G.DAT_006d1da0 !== iVar2) && (s32(G.DAT_00655b07, 0) === 0)) {
+  if ((s32(G.DAT_006d1da0, 0) !== iVar2) && (s32(G.DAT_00655b07, 0) === 0)) {
     local_8 = 1;
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
@@ -4947,7 +4975,7 @@ export function city_button_change_0050A473(param_1) {
       citywin_B666();
       return;
     }
-    if ((G.DAT_00655aea & 2) !== 0) {
+    if ((s32(G.DAT_00655aea, 0) & 2) !== 0) {
       piVar7 = local_95c[0];
       piVar5 = local_660[0];
       devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
@@ -5088,11 +5116,11 @@ export function city_button_change_0050A473(param_1) {
         local_65c = local_65c + 1;
       }
     }
-    if (((G.DAT_00655aea & 0x80) !== 0) && (s32(G.DAT_00655b02, 0) === 0)) {
+    if (((s32(G.DAT_00655aea, 0) & 0x80) !== 0) && (s32(G.DAT_00655b02, 0) === 0)) {
       uVar6 = FUN_00428b0c(s32(G.DAT_00628420, 0x130));
       FUN_0059f2a3(uVar6);
     }
-    if ((G.DAT_00655aea & 2) !== 0) {
+    if ((s32(G.DAT_00655aea, 0) & 2) !== 0) {
       if (0xb < local_65c) {
         local_65c = 0xc;
       }
@@ -5112,7 +5140,7 @@ export function city_button_change_0050A473(param_1) {
     if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ('))
        /*JOINED*/
     /* DEVIATION(cont): goto LAB_0050b609 */;
-    if ((G.DAT_00655aea & 2) !== 0) {
+    if ((s32(G.DAT_00655aea, 0) & 2) !== 0) {
       FUN_0059db65();
       FUN_0059db65();
       FUN_00484d52();
@@ -5401,7 +5429,7 @@ export function city_button_rename_0050B74E(param_1) {
         devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         FUN_005f22d0(ptrAdd(G.DAT_0064f360, iVar1 * 0x58),puVar2);
         thunk_citywin_9429();
-        FUN_0047cf9e(G.DAT_006d1da0,1);
+        FUN_0047cf9e(s32(G.DAT_006d1da0, 0),1);
       }
       w32(G.DAT_00630d30, 0, 0);
     }

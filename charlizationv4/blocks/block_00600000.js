@@ -22,22 +22,69 @@ import { CompareStringW, CreateDirectoryA, CreateFileA, DEVIATION, FlushFileBuff
 import { GetFileType, GetLastError, GetModuleFileNameA, GetProcAddress, GetStdHandle, GetStringTypeA } from '../extern-stubs.js';
 import { GetStringTypeW, GetTimeZoneInformation, HELPERS, IsBadCodePtr, IsBadReadPtr, IsBadWritePtr } from '../extern-stubs.js';
 import { LoadLibraryA, MultiByteToWideChar, SetConsoleCtrlHandler, SetEndOfFile, SetEnvironmentVariableA, SetStdHandle } from '../extern-stubs.js';
-import { SetUnhandledExceptionFilter, WideCharToMultiByte, WriteFile, _E1, _I10_OUTPUT, _ValidateExecute } from '../extern-stubs.js';
-import { _ValidateRead, _ValidateWrite, __CopyMan, __CrtDbgReport, __CxxUnhandledExceptionFilter, __FillZeroMan } from '../extern-stubs.js';
-import { __IncMan, __IsZeroMan, __NMSG_WRITE, __RoundMan, __ShrMan, __ZeroTail } from '../extern-stubs.js';
-import { ___add_12, ___addl, ___crtCompareStringA, ___crtLCMapStringA, ___crtMessageBoxA, ___crtsetenv } from '../extern-stubs.js';
-import { ___dtold, ___ld12mul, ___mtold12, ___multtenpow12, ___shl_12, ___shr_12 } from '../extern-stubs.js';
-import { ___strgtold12, ___tzset, ___wtomb_environ, __abstract_cw, __abstract_sw, __alloc_osfhnd } from '../extern-stubs.js';
-import { __amsg_exit, __aulldiv, __aullrem, __calloc_dbg, __chsize, __close } from '../extern-stubs.js';
-import { __control87, __dosmaperr, __exit, __flsbuf, __flush, __free_dbg } from '../extern-stubs.js';
-import { __freebuf, __ftbuf, __get_osfhandle, __hw_cw, __isctype, __isindst } from '../extern-stubs.js';
-import { __ld12cvt, __ld12tod, __ld12told, __lseek, __malloc_dbg, __mbschr } from '../extern-stubs.js';
-import { __mbsnbicoll, __output, __read, __realloc_dbg, __set_osfhnd, __setdefaultprecision } from '../extern-stubs.js';
-import { __setmode, __sopen, __stbuf, __tzset, __write, _getenv } from '../extern-stubs.js';
-import { _raise, _strncnt, copy_environ, cvtdate, exe, findenv } from '../extern-stubs.js';
-import { int, siglookup, swi, terminate, wcsncnt, x64toa } from '../extern-stubs.js';
-import { xtoa } from '../extern-stubs.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_005F0000.js';
+import { SetUnhandledExceptionFilter, WideCharToMultiByte, WriteFile, __ld12tod, exe, int } from '../extern-stubs.js';
+import { swi } from '../extern-stubs.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __CrtDbgReport_005F8B70 as __CrtDbgReport, ___crtLCMapStringA_005F96E0 as ___crtLCMapStringA, __amsg_exit_005F70E0 as __amsg_exit } from './block_005F0000.js';
+import { __calloc_dbg_005F4890 as __calloc_dbg, __close_005FA010 as __close, __dosmaperr_005FBFD0 as __dosmaperr, __exit_005F41D0 as __exit, __flsbuf_005FA410 as __flsbuf, __flush_005FA230 as __flush } from './block_005F0000.js';
+import { __free_dbg_005F4F90 as __free_dbg, __freebuf_005FA120 as __freebuf, __ftbuf_005FB770 as __ftbuf, __isctype_005F9A70 as __isctype, __lseek_005FDF90 as __lseek, __malloc_dbg_005F4420 as __malloc_dbg } from './block_005F0000.js';
+import { __output_005FA6B0 as __output, __read_005FB830 as __read, __realloc_dbg_005F4930 as __realloc_dbg, __setdefaultprecision_005FE240 as __setdefaultprecision, __stbuf_005FB620 as __stbuf, __write_005FBCD0 as __write } from './block_005F0000.js';
+import { terminate_005F8880 as terminate } from './block_005F0000.js';
+const ___crtMessageBoxA = ___crtMessageBoxA_00600930;
+const ___tzset = ___tzset_00603620;
+const __isindst = __isindst_006039B0;
+const __NMSG_WRITE = __NMSG_WRITE_00600040;
+const _raise = _raise_006006A0;
+const siglookup = siglookup_006008C0;
+const xtoa = xtoa_00600A70;
+const x64toa = x64toa_00600C30;
+const __aullrem = __aullrem_00602450;
+const __aulldiv = __aulldiv_006023E0;
+const _E1 = _E1_00600F70;
+const __CxxUnhandledExceptionFilter = __CxxUnhandledExceptionFilter_00600FA0;
+const _ValidateExecute = _ValidateExecute_006010E0;
+const _ValidateRead = _ValidateRead_00601060;
+const _ValidateWrite = _ValidateWrite_006010A0;
+const __sopen = __sopen_00601750;
+const __alloc_osfhnd = __alloc_osfhnd_00601CF0;
+const __set_osfhnd = __set_osfhnd_00601E40;
+const __chsize = __chsize_00603F30;
+const __get_osfhandle = __get_osfhandle_00602060;
+const __abstract_sw = __abstract_sw_006029F0;
+const __abstract_cw = __abstract_cw_006026D0;
+const __hw_cw = __hw_cw_00602820;
+const __control87 = __control87_006025F0;
+const ___addl = ___addl_006041E0;
+const __ZeroTail = __ZeroTail_00602A90;
+const __IncMan = __IncMan_00602B30;
+const __IsZeroMan = __IsZeroMan_00602D60;
+const __FillZeroMan = __FillZeroMan_00602D20;
+const __CopyMan = __CopyMan_00602CD0;
+const __RoundMan = __RoundMan_00602BF0;
+const __ShrMan = __ShrMan_00602DB0;
+const __ld12cvt = __ld12cvt_00602EA0;
+const ___strgtold12 = ___strgtold12_00604520;
+const __ld12told = __ld12told_00603170;
+const ___dtold = ___dtold_00603450;
+const _I10_OUTPUT = _I10_OUTPUT_006051A0;
+const __tzset = __tzset_00603650;
+const _getenv = _getenv_00605AB0;
+const cvtdate = cvtdate_00603D20;
+const __setmode = __setmode_00605BA0;
+const ___shl_12 = ___shl_12_006042E0;
+const ___add_12 = ___add_12_00604230;
+const ___mtold12 = ___mtold12_006043E0;
+const ___multtenpow12 = ___multtenpow12_00606110;
+const ___ld12mul = ___ld12mul_00605CE0;
+const ___shr_12 = ___shr_12_00604360;
+const wcsncnt = wcsncnt_00606620;
+const ___wtomb_environ = ___wtomb_environ_00606260;
+const __mbsnbicoll = __mbsnbicoll_006061F0;
+const ___crtCompareStringA = ___crtCompareStringA_00606690;
+const ___crtsetenv = ___crtsetenv_00606B60;
+const _strncnt = _strncnt_00606AF0;
+const __mbschr = __mbschr_00607070;
+const copy_environ = copy_environ_00606F70;
+const findenv = findenv_00606ED0;
 
 export function __NMSG_WRITE_00600040(param_1) {
 
@@ -67,7 +114,7 @@ export function __NMSG_WRITE_00600040(param_1) {
       return;
     }
     if ((s32(G.DAT_00639fcc, 0) === 1) || ((s32(G.DAT_00639fcc, 0) === 0 && (s32(G.DAT_00639fd0, 0) === 1)))) {
-      if ((G.DAT_006e69f0 === 0) || (s32(G.DAT_006e69f0, 0x10) === -1)) {
+      if ((s32(G.DAT_006e69f0, 0) === 0) || (s32(G.DAT_006e69f0, 0x10) === -1)) {
         local_1b8 = GetStdHandle(0xfffffff4);
       }
       else {
@@ -434,13 +481,13 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
   let local_8;
   
   local_8 = 0;
-  if (G.DAT_0063b260 === 0x0) {
+  if (s32(G.DAT_0063b260, 0) === 0x0) {
     hModule = LoadLibraryA("user32.dll");
     if (hModule !== 0x0) {
-      G.DAT_0063b260 = GetProcAddress(hModule,"MessageBoxA");
-      if (G.DAT_0063b260 !== 0x0) {
-        G.DAT_0063b264 = GetProcAddress(hModule,"GetActiveWindow");
-        G.DAT_0063b268 = GetProcAddress(hModule,"GetLastActivePopup");
+      s32(G.DAT_0063b260, 0) = GetProcAddress(hModule,"MessageBoxA");
+      if (s32(G.DAT_0063b260, 0) !== 0x0) {
+        s32(G.DAT_0063b264, 0) = GetProcAddress(hModule,"GetActiveWindow");
+        s32(G.DAT_0063b268, 0) = GetProcAddress(hModule,"GetLastActivePopup");
         LAB_006009b5_helper(iVar1, local_8); return;
       }
     }
@@ -448,10 +495,10 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
   }
   else {
 // LAB_006009b5: (code below also in LAB_006009b5_helper, kept for 1:1 audit)
-    if (G.DAT_0063b264 !== 0x0) {
+    if (s32(G.DAT_0063b264, 0) !== 0x0) {
       local_8 = (s32(G.DAT_0063b264, 0))();
     }
-    if ((local_8 !== 0) && (G.DAT_0063b268 !== 0x0)) {
+    if ((local_8 !== 0) && (s32(G.DAT_0063b268, 0) !== 0x0)) {
       local_8 = (s32(G.DAT_0063b268, 0))(local_8);
     }
     iVar1 = (s32(G.DAT_0063b260, 0))(local_8,_LpText,_LpCaption,_UType);
@@ -820,7 +867,7 @@ export function _E1_00600F70() {
 
 
   // DEVIATION: C runtime — _atexit(FUN_00601040);
-  G.DAT_006e55ac = SetUnhandledExceptionFilter(__CxxUnhandledExceptionFilter);
+  s32(G.DAT_006e55ac, 0) = SetUnhandledExceptionFilter(__CxxUnhandledExceptionFilter);
   return;
 }
 
@@ -849,7 +896,7 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
     lVar1 = 1;
   }
   else {
-    if ((G.DAT_006e55ac !== 0x0) && (iVar2 = _ValidateExecute(G.DAT_006e55ac), iVar2 !== 0))
+    if ((s32(G.DAT_006e55ac, 0) !== 0x0) && (iVar2 = _ValidateExecute(s32(G.DAT_006e55ac, 0)), iVar2 !== 0))
     {
       iVar2 = (s32(G.DAT_006e55ac, 0))(param_1);
       return iVar2;
@@ -869,7 +916,7 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
 export function FUN_00601040() {
 
 
-  SetUnhandledExceptionFilter(G.DAT_006e55ac);
+  SetUnhandledExceptionFilter(s32(G.DAT_006e55ac, 0));
   return;
 }
 
@@ -2869,9 +2916,9 @@ export function _wcslen_006035D0(_Str) {
 export function ___tzset_00603620() {
 
 
-  if (G.DAT_0063b36c === 0) {
+  if (s32(G.DAT_0063b36c, 0) === 0) {
     __tzset();
-    G.DAT_0063b36c = G.DAT_0063b36c + 1;
+    s32(G.DAT_0063b36c, 0) = s32(G.DAT_0063b36c, 0) + 1;
   }
   return;
 }
@@ -4263,15 +4310,15 @@ export function _getenv_00605AB0(_VarName) {
   let sVar2;
   let local_c;
   
-  local_c = G.DAT_00639f3c;
-  if ((G.DAT_00639f3c === 0x0) && (G.DAT_00639f44 !== 0)) {
+  local_c = s32(G.DAT_00639f3c, 0);
+  if ((s32(G.DAT_00639f3c, 0) === 0x0) && (s32(G.DAT_00639f44, 0) !== 0)) {
     iVar1 = ___wtomb_environ();
     if (iVar1 !== 0) {
       return 0x0;
     }
-    local_c = G.DAT_00639f3c;
+    local_c = s32(G.DAT_00639f3c, 0);
   }
-  G.DAT_00639f3c = local_c;
+  s32(G.DAT_00639f3c, 0) = local_c;
   if ((local_c !== 0x0) && (_VarName !== 0x0)) {
     _MaxCount = _strlen(_VarName);
     for (; s32(local_c, 0) !== 0; local_c = local_c + 1) {
@@ -4607,7 +4654,7 @@ export function ___wtomb_environ_00606260() {
   char *s32(_POption, 0);
   let local_8;
   
-  local_8 = G.DAT_00639f44;
+  local_8 = s32(G.DAT_00639f44, 0);
   while( true ) {
     if (s32(local_8, 0) === 0) {
       return 0;
@@ -4967,22 +5014,22 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     return -1;
   }
   bVar5 = true /* DEVIATION: C pointer — *(uchar *)(ppcVar1 + 1) */ === 0;
-  if (s32(G.DAT_00639f40, 0) === G.DAT_00639f3c) {
-    G.DAT_00639f3c = copy_environ(G.DAT_00639f3c);
+  if (s32(G.DAT_00639f40, 0) === s32(G.DAT_00639f3c, 0)) {
+    s32(G.DAT_00639f3c, 0) = copy_environ(s32(G.DAT_00639f3c, 0));
   }
-  if (G.DAT_00639f3c === 0x0) {
-    if ((_Primary === 0) || (G.DAT_00639f44 === 0x0)) {
+  if (s32(G.DAT_00639f3c, 0) === 0x0) {
+    if ((_Primary === 0) || (s32(G.DAT_00639f44, 0) === 0x0)) {
       if (bVar5) {
         return 0;
       }
-      G.DAT_00639f3c = __malloc_dbg(4,2,"setenv.c",0x87);
-      if (G.DAT_00639f3c === 0x0) {
+      s32(G.DAT_00639f3c, 0) = __malloc_dbg(4,2,"setenv.c",0x87);
+      if (s32(G.DAT_00639f3c, 0) === 0x0) {
         return -1;
       }
       w32(G.DAT_00639f3c, 0, 0);
-      if (G.DAT_00639f44 === 0x0) {
-        G.DAT_00639f44 = __malloc_dbg(4,2,"setenv.c",0x8e);
-        if (G.DAT_00639f44 === 0x0) {
+      if (s32(G.DAT_00639f44, 0) === 0x0) {
+        s32(G.DAT_00639f44, 0) = __malloc_dbg(4,2,"setenv.c",0x8e);
+        if (s32(G.DAT_00639f44, 0) === 0x0) {
           return -1;
         }
         w32(G.DAT_00639f44, 0, 0);
@@ -4995,7 +5042,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
       }
     }
   }
-  piVar3 = G.DAT_00639f3c;
+  piVar3 = s32(G.DAT_00639f3c, 0);
   local_c = findenv(_POption,ppcVar1 - _POption);
   if ((local_c < 0) || (s32(piVar3, 0) === 0)) {
     if (bVar5) {
@@ -5010,7 +5057,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     }
     piVar3[local_c] = _POption;
     piVar3[local_c + 1] = 0;
-    G.DAT_00639f3c = piVar3;
+    s32(G.DAT_00639f3c, 0) = piVar3;
   }
   else if (bVar5) {
     __free_dbg(piVar3[local_c],2);
@@ -5019,7 +5066,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
     }
     piVar3 = __realloc_dbg(piVar3,local_c << 2,2,"setenv.c",0xb9);
     if (piVar3 !== 0x0) {
-      G.DAT_00639f3c = piVar3;
+      s32(G.DAT_00639f3c, 0) = piVar3;
     }
   }
   else {
@@ -5063,17 +5110,17 @@ export function findenv_00606ED0(param_1, param_2) {
   let iVar1;
   let local_8;
   
-  local_8 = G.DAT_00639f3c;
+  local_8 = s32(G.DAT_00639f3c, 0);
   while( true ) {
     if (s32(local_8, 0) === 0) {
-      return -(local_8 - G.DAT_00639f3c >> 2);
+      return -(local_8 - s32(G.DAT_00639f3c, 0) >> 2);
     }
     iVar1 = __mbsnbicoll(param_1,s32(local_8, 0),param_2);
     if ((iVar1 === 0) && ((s8(param_2[s32(local_8, 0)]) === 61 || (s8(param_2[s32(local_8, 0)]) === 0)))) break;
        /*JOINED*/
     local_8 = local_8 + 1;
   }
-  return local_8 - G.DAT_00639f3c >> 2;
+  return local_8 - s32(G.DAT_00639f3c, 0) >> 2;
 }
 
 
@@ -5367,10 +5414,10 @@ export function FID_conflict___mkdir_00607920(_Path) {
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_006009b5_helper(iVar1, local_8) {
-    if (G.DAT_0063b264 !== 0x0) {
+    if (s32(G.DAT_0063b264, 0) !== 0x0) {
       local_8 = (s32(G.DAT_0063b264, 0))();
     }
-    if ((local_8 !== 0) && (G.DAT_0063b268 !== 0x0)) {
+    if ((local_8 !== 0) && (s32(G.DAT_0063b268, 0) !== 0x0)) {
       local_8 = (s32(G.DAT_0063b268, 0))(local_8);
     }
     iVar1 = (s32(G.DAT_0063b260, 0))(local_8,_LpText,_LpCaption,_UType);
