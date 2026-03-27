@@ -39,12 +39,30 @@ w16(DAT_006d1162, 0, MH);
 wv(DAT_006d1168, 42);      // seed
 wv(DAT_00655b02, 3);        // difficulty = prince
 
+// Set map dimension derived values (from C: FUN_005b7fe0)
+w16(DAT_006d116a, 0, (mw2 + 3) >> 2);        // exploration map stride
+w32(DAT_006d1164, 0, (mw2 / 2) * MH);        // total tiles count
+
 // Allocate tile data at end of _MEM (DAT_00636598 is a pointer to tile array)
 const TILE_DATA_BASE = _MEM.length - 100000;  // 100KB region at end of buffer
 wv(DAT_00636598, TILE_DATA_BASE);             // store pointer to tile data
 wv(DAT_006d1188, TILE_DATA_BASE);             // also set "bad tile" pointer (fallback)
 
+// Allocate per-civ exploration maps (DAT_006365c0 array of pointers)
+// Each civ gets DAT_006d1164 bytes (total_tiles = 2000 for 100x40 map)
+const totalTiles = s32(DAT_006d1164, 0);
+const EXPLORE_BASE = TILE_DATA_BASE - 8 * totalTiles - 1000; // before tile data
+for (let civ = 0; civ < 8; civ++) {
+  const explorePtr = EXPLORE_BASE + civ * totalTiles;
+  w32(DAT_006365c0, civ * 4, explorePtr);
+  // Initialize: 0 = unexplored (AI will want to explore these)
+  for (let j = 0; j < totalTiles; j++) _MEM[explorePtr + j] = 0;
+}
+// Set the main exploration map pointer (used by some functions)
+wv(DAT_006365ec, s32(DAT_006365c0, 0));
+
 // Fill tiles with grassland (terrain type 2)
+// Visibility: only tiles near cities are visible (like a real new game)
 for (let y = 0; y < MH; y++) {
   for (let x = 0; x < mw2; x += 2) {
     const off = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
@@ -52,7 +70,7 @@ for (let y = 0; y < MH; y++) {
     _MEM[off + 1] = 0;  // improvements
     _MEM[off + 2] = 0;
     _MEM[off + 3] = 0;
-    _MEM[off + 4] = 0x06; // visibility: civ 1 (bit 1) + civ 2 (bit 2)
+    _MEM[off + 4] = 0;  // visibility: 0 = undiscovered (set near cities below)
     _MEM[off + 5] = 0;
   }
 }
@@ -107,6 +125,31 @@ placeUnit(3, 2, 2, 70, 30);
 w16(DAT_00655b16, 0, 4);   // 4 units total
 w16(DAT_00655b18, 0, 2);   // 2 cities total
 wv(DAT_00655b0b, 0);        // all AI
+
+// Set visibility near cities (sight range ~3 tiles, like real Civ2 start)
+function revealAround(cx, cy, owner, radius) {
+  const exploreMap = s32(DAT_006365c0, owner * 4); // per-civ exploration map
+  const stride = s16(DAT_006d116a, 0);
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius * 2; dx <= radius * 2; dx += 2) {
+      const tx = cx + dx, ty = cy + dy;
+      if (tx >= 0 && tx < mw2 && ty >= 0 && ty < MH) {
+        // Set tile visibility byte
+        const off = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * ty * 3 + (tx & 0xFFFFFFFE) * 3;
+        _MEM[off + 4] |= (1 << owner);
+        // Set per-civ exploration map
+        if (exploreMap) {
+          const ei = stride * ty + (tx >> 2);  // exploration map index
+          if (ei >= 0 && ei < totalTiles) _MEM[exploreMap + ei] = 1;
+        }
+      }
+    }
+  }
+}
+revealAround(20, 10, 1, 3); // civ 1 sees around Alpha
+revealAround(30, 10, 1, 2); // civ 1 sees around warrior
+revealAround(60, 30, 2, 3); // civ 2 sees around Beta
+revealAround(70, 30, 2, 2); // civ 2 sees around warrior
 
 // Set civ government to despotism
 _MEM[DAT_0064c600 + 1 * 0x594 + 0xB5] = 1;  // civ 1 = despotism
