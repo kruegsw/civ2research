@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { Create, DEVIATION, GetCheckStyle, HELPERS, SetRect, __itoa } from '../extern-stubs.js';
 import { _rand, _sprintf, _strlen, block, egptr, exe } from '../extern-stubs.js';
 import { operator_delete, operator_new, thunk_citywin_994F, thunk_load_verify_units, width } from '../extern-stubs.js';

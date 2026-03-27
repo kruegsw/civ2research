@@ -19,6 +19,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { BringWindowToTop, Create, DEVIATION, GetActiveView, GetSystemMetrics, HELPERS } from '../extern-stubs.js';
 import { IsTracking, OnClose, XD_InFlushSendBuffer, __strcmpi, _atexit, block } from '../extern-stubs.js';
 import { citywin_70B8, citywin_70C1, citywin_70D7, citywin_A1B2, citywin_A1C8, citywin_B638 } from '../extern-stubs.js';

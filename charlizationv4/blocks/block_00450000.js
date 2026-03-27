@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4 } from '../fn_utils.js';
 import { CreateWindowExA, DEVIATION, GetAsyncKeyState, GetCursorPos, GetSystemMetrics, HELPERS } from '../extern-stubs.js';
 import { LoadCursorA, OffsetRect, RegCloseKey, RegCreateKeyExA, RegOpenKeyExA, RegQueryValueExA } from '../extern-stubs.js';
 import { RegSetValueExA, RegisterClassA, SetHelpID, SetRect, SetWindowLongA, __chdir } from '../extern-stubs.js';

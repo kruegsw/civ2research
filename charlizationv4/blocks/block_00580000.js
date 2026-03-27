@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
+import { FUN_005b8ca6, FUN_005b94d5 } from '../fn_utils.js';
 import { DEVIATION, DebugBreak, GetFileAttributesA, GetSystemMetrics, HELPERS, IsTracking } from '../extern-stubs.js';
 import { MessageBoxA, OutputDebugStringA, SetFocus, SetRect, WritePrivateProfileStringA, __itoa } from '../extern-stubs.js';
 import { __ltoa, _atexit, _atoi, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _exit } from '../extern-stubs.js';

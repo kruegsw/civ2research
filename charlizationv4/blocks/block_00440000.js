@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { CString, Create, DEVIATION, GetCheckStyle, HELPERS, OffsetRect } from '../extern-stubs.js';
 import { SetRect, XD_FlushSendBuffer, XD_GetCurrentProtoAddr, __chdir, _atexit, _eh_vector_destructor_iterator_ } from '../extern-stubs.js';
 import { _memset, _rand, _strlen, _strncpy, debug_log, exe } from '../extern-stubs.js';

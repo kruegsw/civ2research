@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, FUN_005b8ca6 } from '../fn_utils.js';
+import { FUN_005b94d5 } from '../fn_utils.js';
 import { CControlBarInfo, DEVIATION, GetSystemMetrics, HELPERS, IsTracking, OffsetRect } from '../extern-stubs.js';
 import { SetRect, __chdir, __strcmpi, __strnicmp, __toupper_lk, _atexit } from '../extern-stubs.js';
 import { _memcpy, _memset, _printf, _rand, _scalar_deleting_destructor_, _strcmp } from '../extern-stubs.js';

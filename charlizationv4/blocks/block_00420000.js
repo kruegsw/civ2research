@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, FUN_005b8ca6 } from '../fn_utils.js';
 import { Create, DEVIATION, GetActiveView, GetSystemMetrics, HELPERS, Realloc } from '../extern-stubs.js';
 import { XD_CloseConnection, XD_FlushSendBuffer, XD_LobbySendMessage, XD_OpenConnection, __chdir, __ltoa } from '../extern-stubs.js';
 import { __strnicmp, __strupr, _atexit, _atoi, _memset, _strchr } from '../extern-stubs.js';

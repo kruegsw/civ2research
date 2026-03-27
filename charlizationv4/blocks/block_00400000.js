@@ -18,6 +18,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4, FUN_005b8ee1 } from '../fn_utils.js';
 import { DEVIATION, EnableStackedTabs, GetSystemMetrics, SetDlgCtrlID, SetRect, _Timevec } from '../extern-stubs.js';
 import { _atexit, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _memcpy, _rand, create_window_C0F0 } from '../extern-stubs.js';
 import { draw_text_9740, exe, gdi_8514, gdi_BA4F, invalidate_8B00, invalidate_CE5F } from '../extern-stubs.js';

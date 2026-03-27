@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_0058c56c, FUN_005ae052, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
+import { FUN_005b89e4, FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { DEVIATION, GetActiveView, GetAsyncKeyState, HELPERS, SetRect, Sleep } from '../extern-stubs.js';
 import { XD_FlushSendBuffer, XD_InFlushSendBuffer, _atexit, _rand, _strcmp, debug_log } from '../extern-stubs.js';
 import { exe, manage_window_C692, operator_new, thunk_citywin_8ADC, thunk_citywin_994F, thunk_citywin_9A49 } from '../extern-stubs.js';

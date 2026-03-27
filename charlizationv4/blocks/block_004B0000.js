@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { DEVIATION, GetActiveView, GetPrivateProfileIntA, GlobalCompact, HELPERS, InflateRect } from '../extern-stubs.js';
 import { MessageBoxA, OffsetRect, Realloc, SetRect, WritePrivateProfileStringA, XD_FlushSendBuffer } from '../extern-stubs.js';
 import { _E1, __expand, __itoa, __msize, __strcmpi, _atexit } from '../extern-stubs.js';

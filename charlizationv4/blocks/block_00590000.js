@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
+import { FUN_005b8ca6 } from '../fn_utils.js';
 import { DEVIATION, EnableStackedTabs, GetAsyncKeyState, GetPrivateProfileIntA, GetSystemMetrics, HELPERS } from '../extern-stubs.js';
 import { SetObjectSchema, SetRect, WritePrivateProfileStringA, XD_ActivateServer, XD_CloseConnection, XD_FlushSendBuffer } from '../extern-stubs.js';
 import { XD_InitializeModem, XD_InitializeSerial, XD_InitializeSocketsIPXSPX, XD_InitializeSocketsTCP, XD_ResetLibrary, XD_SetBroadcastReceive } from '../extern-stubs.js';

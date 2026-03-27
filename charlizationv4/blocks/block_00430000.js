@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
+import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { BringWindowToTop, CDaoFieldInfo, CString, Create, DEVIATION, GetActiveView } from '../extern-stubs.js';
 import { HELPERS, OffsetRect, XD_FlushSendBuffer, _Timevec, __chdir, __strnicmp } from '../extern-stubs.js';
 import { _atoi, _fclose, _fopen, _fread, _fwrite, _memcpy } from '../extern-stubs.js';

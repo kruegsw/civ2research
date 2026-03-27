@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
+import { FUN_005b8ee1 } from '../fn_utils.js';
 import { Create, DEVIATION, EnableStackedTabs, GetAsyncKeyState, GetPrivateProfileIntA, HELPERS } from '../extern-stubs.js';
 import { IsTracking, MessageBoxA, Realloc, SetFocus, WritePrivateProfileStringA, XD_FlushSendBuffer } from '../extern-stubs.js';
 import { XD_GetXDaemonVersion, XD_InFlushSendBuffer, XD_LaunchedByLobby, XD_LobbySendMessage, __chdir, __filelength } from '../extern-stubs.js';

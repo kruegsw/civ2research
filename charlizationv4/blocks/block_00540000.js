@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_005b89e4 } from '../fn_utils.js';
 import { HELPERS, MessageBoxA, SetFocus, XD_FlushSendBuffer, __chdir, __getcwd } from '../extern-stubs.js';
 import { __strcmpi, __strupr, __wrename, _atol, _fclose, _fgets } from '../extern-stubs.js';
 import { _fputs, _remove, _sprintf, _strchr, _strlen, egptr } from '../extern-stubs.js';

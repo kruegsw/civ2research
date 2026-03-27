@@ -376,11 +376,15 @@ for (const blockFile of blockFiles) {
 
   // Find all function-call-like identifiers
   const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|fill)$/;
+  const fnUtilsNeeded = new Set(); // functions needed from fn_utils.js
   for (const m of allText.matchAll(/\b([a-zA-Z_]\w+)\s*\(/g)) {
     const fn = m[1];
     if (skip.test(fn)) continue;
     if (localFns.has(fn)) continue;
-    if (fnUtilsExports.has(fn)) continue;
+    if (fnUtilsExports.has(fn)) {
+      fnUtilsNeeded.add(fn);
+      continue;
+    }
     const srcBlock = fnRegistry.get(fn);
     if (srcBlock && srcBlock !== blockFile) {
       refsNeeded.set(fn, srcBlock);
@@ -396,6 +400,14 @@ for (const blockFile of blockFiles) {
   imports.push("import { G } from '../globals.js';");
   imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';");
   imports.push("import { devLog } from '../devlog.js';");
+
+  // Import fn_utils functions used by this block
+  if (fnUtilsNeeded.size > 0) {
+    const sorted = [...fnUtilsNeeded].sort();
+    for (let k = 0; k < sorted.length; k += 6) {
+      imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from '../fn_utils.js';`);
+    }
+  }
 
   // Import extern stubs
   if (externNeeded.size > 0) {

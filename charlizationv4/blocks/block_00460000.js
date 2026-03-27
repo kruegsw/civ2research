@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { CreatePalette, DEVIATION, DeleteObject, EnableStackedTabs, GetNearestPaletteIndex, GetSystemMetrics } from '../extern-stubs.js';
 import { HELPERS, InvalidateObjectCache, MessageBoxA, SetRect, XD_SendBroadcastData, XD_SendSecureData } from '../extern-stubs.js';
 import { __filbuf, __fsopen, __toupper_lk, _atexit, _fclose, _fputc } from '../extern-stubs.js';

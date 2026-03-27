@@ -10,6 +10,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b68f6, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
+import { FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { CCommandLineInfo, CharUpperA, CopyRect, DEVIATION, GetActiveView, HELPERS } from '../extern-stubs.js';
 import { InflateRect, IsTracking, MessageBoxA, OffsetRect, Realloc, SetRect } from '../extern-stubs.js';
 import { __strcmpi, _eh_vector_destructor_iterator_, _fgetc, _fputc, _rand, _sprintf } from '../extern-stubs.js';

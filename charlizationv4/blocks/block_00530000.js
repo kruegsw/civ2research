@@ -15,6 +15,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b68f6, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
+import { FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { DEVIATION, HELPERS, __chdir, _atoi, _rand, create_window_8E3F } from '../extern-stubs.js';
 import { create_window_C0F0, egptr, exe, gdi_C035, thunk_citywin_C679, thunk_kill_civ } from '../extern-stubs.js';
 import { thunk_pick_up_unit_004c9528, width } from '../extern-stubs.js';

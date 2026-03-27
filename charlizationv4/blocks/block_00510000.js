@@ -10,6 +10,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { FUN_004bd9f0 } from '../fn_utils.js';
 import { CopyRect, Create, DEVIATION, EnableStackedTabs, GetActiveView, GetCheckStyle } from '../extern-stubs.js';
 import { GetPrivateProfileIntA, HELPERS, InflateRect, MessageBoxA, OffsetRect, SetFocus } from '../extern-stubs.js';
 import { SetRect, WritePrivateProfileStringA, __itoa, _atexit, _atoi, _atol } from '../extern-stubs.js';
