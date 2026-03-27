@@ -480,12 +480,12 @@ export function FUN_005011b4(param_1, param_2, param_3, param_4, param_5) {
   
   local_10 = FUN_00407f90(param_5);
   local_34 = FUN_00407fc0(param_5);
-  FUN_005d7cb0(param_1,param_2,s32(param_5, 0),param_5[1],local_10,local_34,param_4,0x17);
+  FUN_005d7cb0(param_1,param_2,s32(param_5, 0),_MEM[param_5 + 1],local_10,local_34,param_4,0x17);
   piVar1 = FUN_00497c90();
   local_30[0] = s32(piVar1, 0);
-  local_2c = piVar1[1];
-  local_28 = piVar1[2];
-  local_24 = piVar1[3];
+  local_2c = _MEM[piVar1 + 1];
+  local_28 = _MEM[piVar1 + 2];
+  local_24 = _MEM[piVar1 + 3];
   iVar2 = FUN_00407f90(local_30[0]);
   iVar4 = local_30[0] + iVar2 / 2;
   iVar2 = FUN_004a6980();
@@ -757,7 +757,7 @@ export function FUN_005016b2(in_ECX, param_1) {
   
   uVar1 = FUN_00407fc0(param_1);
   uVar1 = FUN_00407f90(param_1,uVar1);
-  FUN_005a9afe(DAT_006a9170,in_ECX, (s32(param_1, 0) - s32(in_ECX, 0x15c4)) - s32(in_ECX, 0x124), (param_1[1] - s32(in_ECX, 0x15c8)) - s32(in_ECX, 0x128),s32(param_1, 0), param_1[1],uVar1);
+  FUN_005a9afe(DAT_006a9170,in_ECX, (s32(param_1, 0) - s32(in_ECX, 0x15c4)) - s32(in_ECX, 0x124), (_MEM[param_1 + 1] - s32(in_ECX, 0x15c8)) - s32(in_ECX, 0x128),s32(param_1, 0), _MEM[param_1 + 1],uVar1);
                      /*JOINED*/
                      /*JOINED*/
                      /*JOINED*/

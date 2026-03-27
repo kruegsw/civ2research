@@ -284,7 +284,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
           psVar4 = segment(in_SS,sVar23 + -0x14);
           psVar5 = segment(in_SS,sVar23 + -0x16);
           if (s32(psVar5, 0) <= ((s32(psVar8, 0) - s32(psVar4, 0)) << 16 >> 16)) break;
-          cVar13 = s8(((((s32(psVar8, 0) - s32(psVar4, 0)) & 0xFFFF) >>> 0) + iVar22)[0]);
+          cVar13 = s8(_MEM[(((s32(psVar8, 0) - s32(psVar4, 0)) & 0xFFFF) >>> 0) + iVar22]);
           if (cVar13 !== cVar12) {
             w32(pcVar26, 0, cVar13);
           }

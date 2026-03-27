@@ -93,16 +93,13 @@ function replaceTypedPtrDeref(line) {
     const inner = balanced.content.trim();
     const parts = splitBaseOffset(inner);
     if (helper === null || helper === 's8_arr' || helper === 'u8_arr') {
-      // Byte access: undefined1 → base[offset], char → s8(base[offset]), byte → u8(base[offset])
+      // Byte access: *(byte/char/undefined1 *)(base + off) → _MEM[base + off]
       const wrapFn = helper === 's8_arr' ? 's8' : helper === 'u8_arr' ? 'u8' : null;
       if (parts) {
-        const access = parts.base + '[' + parts.offset + ']';
+        const access = '_MEM[' + parts.base + ' + ' + parts.offset + ']';
         result += wrapFn ? wrapFn + '(' + access + ')' : access;
       } else {
-        // Wrap in parens if inner has operators
-        const needsParens = /[+\-*\/%]/.test(inner);
-        const baseExpr = needsParens ? '(' + inner + ')' : inner;
-        const access = baseExpr + '[0]';
+        const access = '_MEM[' + inner + ']';
         result += wrapFn ? wrapFn + '(' + access + ')' : access;
       }
     } else if (parts) {
@@ -124,7 +121,7 @@ function replaceTypedPtrDeref(line) {
     (m, type, varName) => {
       const h = typeMap2[type];
       if (h === null || h === 's8_arr' || h === 'u8_arr') {
-        const access = varName + '[0]';
+        const access = '_MEM[' + varName + ']';
         const wrapFn = h === 's8_arr' ? 's8' : h === 'u8_arr' ? 'u8' : null;
         return wrapFn ? wrapFn + '(' + access + ')' : access;
       }
@@ -762,14 +759,31 @@ function transformLine(line, ctx) {
     // ── (code *)0x0 → null ──
     out = out.replace(/\(\s*code\s*\*\s*\)\s*0x0\b/g, 'null');
 
-    // ── DAT_xxx[idx] → _MEM[DAT_xxx + idx]: byte array access ──
-    // With DAT_xxx as a number (offset), bracket access needs _MEM
-    out = out.replace(
-      /\b(_?DAT_[0-9a-fA-F]+)\[/g,
-      (m, name) => '_MEM[' + name + ' + '
-    );
-    // Fix: _MEM[DAT_xxx + ] (empty index from consecutive replacements)
-    // Close any remaining brackets correctly
+    // ── Pointer bracket access → _MEM[ptr + idx] ──
+    // In C, expr[idx] on a non-array variable is pointer dereference: *(expr + idx).
+    // DAT_xxx and scalar locals are numbers (addresses/offsets). Bracket access
+    // on them must go through _MEM.
+    //
+    // Array locals (declared with new Array() or [0]) keep normal bracket access.
+    // Known arrays: localArrays (from ctx), in_ECX/in_EAX (register buffers),
+    //               _MEM itself, s_ string labels, acStack/local arrays.
+    {
+      const arrays = ctx.localArrays || new Set();
+      out = out.replace(
+        /\b([a-zA-Z_]\w*)\[/g,
+        (m, name) => {
+          // Keep bracket access for known arrays and non-pointer patterns
+          if (arrays.has(name)) return m;                    // local array
+          if (name === '_MEM' || name === 'G') return m;     // flat memory / globals object
+          if (/^(in_ECX|in_EAX|in_EDX)$/.test(name)) return m; // register buffers
+          if (/^(Math|Array|String|Object|console)$/.test(name)) return m; // JS builtins
+          if (/^(acStack|auStack|abStack)/.test(name)) return m; // stack arrays
+          if (/^s_/.test(name)) return m;                    // string labels (Uint8Array)
+          // Everything else: pointer dereference → _MEM[var + idx]
+          return '_MEM[' + name + ' + ';
+        }
+      );
+    }
 
     // ── v(DAT_xxx): wrap bare DAT_ value reads ──
     // In C, using DAT_xxx reads the value at that address.
@@ -1079,6 +1093,7 @@ function processFunction(headerLines, bodyLines, ctx) {
   let openWriteCall = false; // tracks if a w16/w32 call is open across lines
 
   ctx.deviationContinuation = false;
+  ctx.localArrays = localArrays; // pass to transformLine for bracket access conversion
   let inBlockComment = false;
   for (let i = 0; i < bodyLines.length; i++) {
     const line = bodyLines[i];
@@ -1249,17 +1264,14 @@ function processFunction(headerLines, bodyLines, ctx) {
       val = transformLine('  ' + val, ctx).trim();
       const parts = splitBaseOffset(inner);
       if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
-        // Byte write → base[offset] = value (need parens if base is complex expression)
+        // Byte write → _MEM[base + offset] = value
         if (parts) {
           const base = transformLine('  ' + parts.base, ctx).trim();
           const offset = transformLine('  ' + parts.offset, ctx).trim();
-          result.push(line.replace(trimmed, base + '[' + offset + '] = ' + val + ';'));
+          result.push(line.replace(trimmed, '_MEM[' + base + ' + ' + offset + '] = ' + val + ';'));
         } else {
           const base = transformLine('  ' + inner, ctx).trim();
-          // Wrap in parens if base contains operators
-          const needsParens = /[+\-*\/%]/.test(base);
-          const baseExpr = needsParens ? '(' + base + ')' : base;
-          result.push(line.replace(trimmed, baseExpr + '[0] = ' + val + ';'));
+          result.push(line.replace(trimmed, '_MEM[' + base + '] = ' + val + ';'));
         }
       } else {
         const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
