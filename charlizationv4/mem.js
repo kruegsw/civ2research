@@ -11,20 +11,16 @@ import { G } from './globals.js';
 export function s8(val) { return (val & 0x80) ? (val | 0xFFFFFF00) : (val & 0xFF); }
 export function u8(val) { return val & 0xFF; }
 export function s16(arr, off) {
-  if (!arr || typeof arr === 'number') return arr || 0;
   const v = (arr[off + 1] << 8) | arr[off];
   return (v & 0x8000) ? (v | 0xFFFF0000) : v;
 }
-export function u16(arr, off) {
-  if (!arr || typeof arr === 'number') return arr || 0;
-  return (arr[off + 1] << 8) | arr[off];
-}
+export function u16(arr, off) { return (arr[off + 1] << 8) | arr[off]; }
 export function s32(arr, off) {
-  if (!arr || typeof arr === 'number') return arr || 0;
+  if (typeof arr === 'number') return arr; // scalar fallback
   return arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24);
 }
 export function u32(arr, off) {
-  if (!arr || typeof arr === 'number') return (arr || 0) >>> 0;
+  if (typeof arr === 'number') return arr >>> 0;
   return (arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24)) >>> 0;
 }
 

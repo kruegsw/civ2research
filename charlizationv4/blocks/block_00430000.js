@@ -1097,7 +1097,7 @@ export function FUN_00431d22() {
       }
     }
   }
-  for (local_3c = 0; (local_3c <= DAT_00655af8 && (local_3c < 0x259)); local_3c = local_3c + local_34) {
+  for (local_3c = 0; (local_3c <= +DAT_00655af8 && (local_3c < 0x259)); local_3c = local_3c + local_34) {
       /*JOINED*/
     if (((DAT_00655af0 & 0x80) === 0) || ((DAT_0064bc60 & 2) === 0)) {
       local_624 = local_3c;
@@ -5748,7 +5748,7 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
   
   globalThis.DAT_006ad8c4 = 1;
   if ((DAT_00655b02 < 3) || (cVar1 = FUN_00421f40(), cVar1 !== 0)) {
-    for (local_28 = 0; (local_28 < DAT_00655b18 && (s32(DAT_0064f394, local_28 * 0x58) !== 0)) ; local_28 = local_28 + 1) {
+    for (local_28 = 0; (local_28 < +DAT_00655b18 && (s32(DAT_0064f394, local_28 * 0x58) !== 0)) ; local_28 = local_28 + 1) {
         /*JOINED*/
     }
     if (+DAT_00655b18 === local_28) {

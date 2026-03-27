@@ -409,6 +409,28 @@ for (const blockFile of blockFiles) {
         /!==\s*(DAT_[0-9a-fA-F]+)\b/g,
         (m, name) => `!== +${name}`
       );
+
+      // 2f: Force numeric coercion in boolean contexts
+      // DAT_xxx is a Uint8Array (always truthy). In boolean contexts
+      // we need +DAT_xxx to get the numeric value.
+      // Patterns: if(DAT_xxx), while(DAT_xxx), !DAT_xxx, DAT_xxx &&, DAT_xxx ||, DAT_xxx ?
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*&&/g,
+        (m, name) => `+${name} &&`
+      );
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*\|\|/g,
+        (m, name) => `+${name} ||`
+      );
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*\?/g,
+        (m, name) => `+${name} ?`
+      );
+      // !DAT_xxx → !+DAT_xxx
+      processed = processed.replace(
+        /!\s*(DAT_[0-9a-fA-F]+)\b/g,
+        (m, name) => `!+${name}`
+      );
     }
 
     finalLines.push(processed);

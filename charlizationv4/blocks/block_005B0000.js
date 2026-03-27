@@ -1650,7 +1650,7 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
   
   globalThis.DAT_006ad8bc = 1;
   if ((DAT_00655b02 < 3) || (cVar1 = FUN_00421f40(), cVar1 !== 0)) {
-    for (local_10 = 0; (local_10 < DAT_00655b16 && (s32(DAT_0065610a, local_10 * 0x20) !== 0)) ; local_10 = local_10 + 1) {
+    for (local_10 = 0; (local_10 < +DAT_00655b16 && (s32(DAT_0065610a, local_10 * 0x20) !== 0)) ; local_10 = local_10 + 1) {
         /*JOINED*/
     }
     if (+DAT_00655b16 === local_10) {
@@ -5563,7 +5563,7 @@ export function FUN_005bc1db(param_1) {
 
   let local_8;
   
-  for (local_8 = 0; (local_8 < DAT_006366cc && (s32(DAT_006d1db8, local_8 * 4) !== param_1)); local_8 = local_8 + 1) {
+  for (local_8 = 0; (local_8 < +DAT_006366cc && (s32(DAT_006d1db8, local_8 * 4) !== param_1)); local_8 = local_8 + 1) {
       /*JOINED*/
   }
   if (local_8 < DAT_006366cc + -1) {

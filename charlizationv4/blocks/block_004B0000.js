@@ -6646,7 +6646,7 @@ export function FUN_004be6ba(param_1) {
          /*JOINED*/
         uVar2 = u8(DAT_006560f6[local_54 * 0x20]);
         local_50 = s8(DAT_0064b1c0[uVar2 * 0x14]);
-        if ((DAT_0064b1ca[uVar2 * 0x14] === 0x01) && ((s8(DAT_0064b1c5[uVar2 * 0x14]) < DAT_0064b251 && (iVar1 = FUN_004bd9f0(param_1,0x23), iVar1 !== 0)))) {
+        if ((DAT_0064b1ca[uVar2 * 0x14] === 0x01) && ((s8(DAT_0064b1c5[uVar2 * 0x14]) < +DAT_0064b251 && (iVar1 = FUN_004bd9f0(param_1,0x23), iVar1 !== 0)))) {
            /*JOINED*/
             /*JOINED*/
           local_50 = 0x23;

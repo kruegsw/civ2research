@@ -1265,7 +1265,7 @@ export function FUN_004853e7() {
 // LAB_00485891: (code below also in LAB_00485891_helper, kept for 1:1 audit)
       local_1c = 0;
       local_50 = ((DAT_00655c31) >>> 0);
-      if (((((((DAT_00655b0b) >>> 0) & 1 << (DAT_00655c31 & 0x1f)) !== 0) && (4 < s16(DAT_0064c708, ((DAT_00655c31) >>> 0) * 0x594))) && (DAT_0064c7a5[((DAT_00655c31) >>> 0) * 0x594] === 0)) && ((200 < DAT_00655af8 && (+DAT_00655b08 !== 0)))) {
+      if (((((((DAT_00655b0b) >>> 0) & 1 << (DAT_00655c31 & 0x1f)) !== 0) && (4 < s16(DAT_0064c708, ((DAT_00655c31) >>> 0) * 0x594))) && (DAT_0064c7a5[((DAT_00655c31) >>> 0) * 0x594] === 0)) && ((200 < +DAT_00655af8 && (+DAT_00655b08 !== 0)))) {
            /*JOINED*/
           /*JOINED*/
          /*JOINED*/
@@ -1781,7 +1781,7 @@ export function FUN_00486c2e() {
     local_c = (iVar2 + -1 + local_c) / iVar2;
   }
   iVar2 = (local_c * 2 + DAT_00655b0f * -4) - local_14;
-  if (iVar2 === +DAT_00655b0e || iVar2 - DAT_00655b0e < 0) {
+  if (iVar2 === ++DAT_00655b0e || iVar2 - DAT_00655b0e < 0) {
     if (((local_c * 2 + DAT_00655b0f * -4) - local_14) - DAT_00655b0e < 0) {
       globalThis.DAT_00655b0e = DAT_00655b0e + -1;
     }
@@ -4591,7 +4591,7 @@ export function FUN_0048de75() {
 function LAB_00485891_helper(iVar2, local_10, local_14, local_1c, local_50, uVar3, uVar4) {
       local_1c = 0;
       local_50 = ((DAT_00655c31) >>> 0);
-      if (((((((DAT_00655b0b) >>> 0) & 1 << (DAT_00655c31 & 0x1f)) !== 0) && (4 < s16(DAT_0064c708, ((DAT_00655c31) >>> 0) * 0x594))) && (DAT_0064c7a5[((DAT_00655c31) >>> 0) * 0x594] === 0)) && ((200 < DAT_00655af8 && (+DAT_00655b08 !== 0)))) {
+      if (((((((DAT_00655b0b) >>> 0) & 1 << (DAT_00655c31 & 0x1f)) !== 0) && (4 < s16(DAT_0064c708, ((DAT_00655c31) >>> 0) * 0x594))) && (DAT_0064c7a5[((DAT_00655c31) >>> 0) * 0x594] === 0)) && ((200 < +DAT_00655af8 && (+DAT_00655b08 !== 0)))) {
            /*JOINED*/
           /*JOINED*/
          /*JOINED*/

@@ -2384,7 +2384,7 @@ export function FUN_004e4ceb() {
     local_3c = 1;
   }
   FUN_005792e1(0x220,local_3c);
-  if (((+DAT_006d1da8 === 0) || (+DAT_00655b16 === 0)) || ((DAT_00655afe < 0 || ((DAT_00655b16 < DAT_00655afe || (s32(DAT_0065610a, DAT_00655afe * 0x20) === 0)))))) {
+  if (((+DAT_006d1da8 === 0) || (+DAT_00655b16 === 0)) || ((DAT_00655afe < 0 || ((DAT_00655b16 < +DAT_00655afe || (s32(DAT_0065610a, DAT_00655afe * 0x20) === 0)))))) {
      /*JOINED*/
       /*JOINED*/
     FUN_005794cf(4,1);
@@ -3604,7 +3604,7 @@ export function FUN_004e8f42(param_1) {
   if (DAT_0064bcca < 2) {
     bVar3 = 1;
   }
-  while (((DAT_006a65c8 + DAT_006a654c / ((bVar3) >>> 0) < s8(DAT_0064f349[param_1 * 0x58]) * ((DAT_0064bcca) >>> 0) + DAT_006a65d8 * DAT_006a6608 || (s8(DAT_0064f349[param_1 * 0x58]) < 0x03)) && ((+DAT_006a654c !== local_60 && -1 < DAT_006a654c - local_60 && (-1 < local_5c))))) {
+  while (((DAT_006a65c8 + DAT_006a654c / ((bVar3) >>> 0) < s8(DAT_0064f349[param_1 * 0x58]) * ((DAT_0064bcca) >>> 0) + DAT_006a65d8 * +DAT_006a6608 || (s8(DAT_0064f349[param_1 * 0x58]) < 0x03)) && ((+DAT_006a654c !== local_60 && -1 < DAT_006a654c - local_60 && (-1 < local_5c))))) {
            /*JOINED*/
                 /*JOINED*/
          /*JOINED*/
@@ -5091,7 +5091,7 @@ export function FUN_004ec3fe(param_1) {
               }
             }
           }
-          if (((DAT_00655b02 < 3) && (s16(DAT_00655be6, local_3c * 2) === -1)) || ((2 < DAT_00655b02 && (local_14 = FUN_004e7270(local_84,param_1,local_3c,local_58,local_24), local_14 !== 0)))) {
+          if (((DAT_00655b02 < 3) && (s16(DAT_00655be6, local_3c * 2) === -1)) || ((2 < +DAT_00655b02 && (local_14 = FUN_004e7270(local_84,param_1,local_3c,local_58,local_24), local_14 !== 0)))) {
              /*JOINED*/
               /*JOINED*/
               /*JOINED*/
@@ -5895,7 +5895,7 @@ export function FUN_004eef23(param_1) {
     if (DAT_00655b16 <= local_28) {
       return;
     }
-    if (((((s32(DAT_0065610a, local_28 * 0x20) !== 0) && (s8(DAT_006560f7[local_28 * 0x20]) === iVar6)) && (u8(DAT_00656100[local_28 * 0x20]) === param_1)) && (s8(DAT_0064b1ca[u8(DAT_006560f6[local_28 * 0x20]) * 0x14]) < 0x06)) && ((FUN_004e7d7f(param_1,local_28,bVar2), DAT_006a65cc < DAT_006a6568 || ((((DAT_0064f344[param_1 * 0x58] & 1) !== 0 && ((DAT_00655af8 + local_28 & 7) === 0)) && (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0 && (4 < bVar2)))))))) {
+    if (((((s32(DAT_0065610a, local_28 * 0x20) !== 0) && (s8(DAT_006560f7[local_28 * 0x20]) === iVar6)) && (u8(DAT_00656100[local_28 * 0x20]) === param_1)) && (s8(DAT_0064b1ca[u8(DAT_006560f6[local_28 * 0x20]) * 0x14]) < 0x06)) && ((FUN_004e7d7f(param_1,local_28,bVar2), DAT_006a65cc < +DAT_006a6568 || ((((DAT_0064f344[param_1 * 0x58] & 1) !== 0 && ((DAT_00655af8 + local_28 & 7) === 0)) && (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0 && (4 < bVar2)))))))) {
           /*JOINED*/
          /*JOINED*/
         /*JOINED*/
@@ -6863,7 +6863,7 @@ function LAB_004eef5f_helper(bVar1, bVar2, bVar3, bVar4, bVar5, iVar6, iVar7, iV
     if (DAT_00655b16 <= local_28) {
       return;
     }
-    if (((((s32(DAT_0065610a, local_28 * 0x20) !== 0) && (s8(DAT_006560f7[local_28 * 0x20]) === iVar6)) && (u8(DAT_00656100[local_28 * 0x20]) === param_1)) && (s8(DAT_0064b1ca[u8(DAT_006560f6[local_28 * 0x20]) * 0x14]) < 0x06)) && ((FUN_004e7d7f(param_1,local_28,bVar2), DAT_006a65cc < DAT_006a6568 || ((((DAT_0064f344[param_1 * 0x58] & 1) !== 0 && ((DAT_00655af8 + local_28 & 7) === 0)) && (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0 && (4 < bVar2)))))))) {
+    if (((((s32(DAT_0065610a, local_28 * 0x20) !== 0) && (s8(DAT_006560f7[local_28 * 0x20]) === iVar6)) && (u8(DAT_00656100[local_28 * 0x20]) === param_1)) && (s8(DAT_0064b1ca[u8(DAT_006560f6[local_28 * 0x20]) * 0x14]) < 0x06)) && ((FUN_004e7d7f(param_1,local_28,bVar2), DAT_006a65cc < +DAT_006a6568 || ((((DAT_0064f344[param_1 * 0x58] & 1) !== 0 && ((DAT_00655af8 + local_28 & 7) === 0)) && (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0 && (4 < bVar2)))))))) {
           /*JOINED*/
          /*JOINED*/
         /*JOINED*/

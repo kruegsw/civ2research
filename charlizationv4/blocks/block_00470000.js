@@ -4738,7 +4738,7 @@ export function FUN_0047be63(in_ECX = globalThis.in_ECX, param_1, param_2, param
       }
     }
     else {
-      for (; (local_c !== +DAT_00633e48 && (-1 < local_c)); local_c = FUN_005b2c82(local_c)) {
+      for (; (local_c !== ++DAT_00633e48 && (-1 < local_c)); local_c = FUN_005b2c82(local_c)) {
       }
       FUN_0047bd04(local_c,param_1,param_2);
     }

@@ -4717,7 +4717,7 @@ export function handle_exchange_gift_0045950B(param_1, param_2, param_3, param_4
         return;
       }
     }
-    if ((((((DAT_00655c22[param_1] === 7) && (4 < s16(DAT_0064c708, param_1 * 0x594))) && (!bVar5)) && ((uVar3 = u32(DAT_0064c6c0, param_1 * 4 + param_2 * 0x594), bVar4 = DAT_00655af8 < 0xc9, iVar6 = FUN_004679ab(DAT_0064b114), (bVar4 + 3) - (((uVar3 & 4) === 0) >>> 0) < iVar6 && (+DAT_0064b383 !== +DAT_0064b124)))) && (+DAT_0064b36f !== +DAT_0064b124)) && (((+DAT_0064b3bf !== +DAT_0064b124 && (+DAT_0064b3d3 !== +DAT_0064b124)) && ((+DAT_0064b2a7 !== +DAT_0064b124 && ((+DAT_0064b257 !== +DAT_0064b124 && (+DAT_0064b124 !== 0x22))) ))))) {
+    if ((((((DAT_00655c22[param_1] === 7) && (4 < s16(DAT_0064c708, param_1 * 0x594))) && (!bVar5)) && ((uVar3 = u32(DAT_0064c6c0, param_1 * 4 + param_2 * 0x594), bVar4 = DAT_00655af8 < 0xc9, iVar6 = FUN_004679ab(DAT_0064b114), (bVar4 + 3) - (((uVar3 & 4) === 0) >>> 0) < iVar6 && (+DAT_0064b383 !== +DAT_0064b124)))) && (+DAT_0064b36f !== +DAT_0064b124)) && (((+DAT_0064b3bf !== ++DAT_0064b124 && (+DAT_0064b3d3 !== +DAT_0064b124)) && ((+DAT_0064b2a7 !== ++DAT_0064b124 && ((+DAT_0064b257 !== ++DAT_0064b124 && (+DAT_0064b124 !== 0x22))) ))))) {
           /*JOINED*/
          /*JOINED*/
           /*JOINED*/
@@ -6258,7 +6258,7 @@ export function FUN_0045dd7f(param_1, param_2) {
       FUN_004b0b53(0xff,2,0,0,0);
 // LAB_0045eb0a: (code below also in LAB_0045eb0a_helper, kept for 1:1 audit)
       if (iVar4 === 3) {
-        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
+        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < +DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
              /*JOINED*/
             /*JOINED*/
            /*JOINED*/
@@ -8077,7 +8077,7 @@ if (true) {
       FUN_004b0b53(0xff,2,0,0,0);
   // LAB_0045eb0a:
       if (iVar4 === 3) {
-        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
+        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < +DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
              /*JOINED*/
             /*JOINED*/
            /*JOINED*/
@@ -8170,7 +8170,7 @@ if (true) {
 
 function LAB_0045eb0a_helper(bVar2, iVar4, local_18, local_314, local_320, local_328, local_32c, local_330, local_33c, param_1, param_2, uVar6, uVar7, uVar9) {
       if (iVar4 === 3) {
-        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
+        if ((((((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] & 8) === 0) && (0 < DAT_0064b114)) && (iVar4 = FUN_00453e51(param_1,9), iVar4 === 0)) && (iVar4 = FUN_00453e51(param_1,0xc), iVar4 === 0)) || (((0x19 < +DAT_0064b114 || (iVar4 = FUN_004bd9f0(param_2,0x2e), iVar4 === 0)) || (iVar4 = FUN_004bd9f0(param_1,0x2e), iVar4 === 0)))) {
              /*JOINED*/
             /*JOINED*/
            /*JOINED*/

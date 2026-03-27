@@ -5292,7 +5292,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/
@@ -7382,7 +7382,7 @@ if (true) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/
@@ -8909,7 +8909,7 @@ if (true) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/
@@ -10448,7 +10448,7 @@ if (true) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/
@@ -11917,7 +11917,7 @@ if (true) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/
@@ -13397,7 +13397,7 @@ if (true) {
             /*JOINED*/
           local_1c = local_1c + -1;
         }
-        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
+        if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) || ((((DAT_00655b0b & u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0])) === 0 || ((s16(DAT_00655b98, s8(DAT_0064f379[param_1 * 0x58]) * -2) !== -1 || (s16(DAT_0064f35c, param_1 * 0x58) < u8(DAT_0064c48c[s8(DAT_0064f379[param_1 * 0x58]) * -8]) * DAT_006a657c / 2)))) && ((u8((local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))[0]) & 1) === 0)))) && (((1 < +DAT_00655b08 || (local_a0 = s8(DAT_0064c48e[local_244 * 8]), local_a0 < 0)) || ((DAT_00655b0b & DAT_00655b82[local_a0]) !== 0)))) {
             /*JOINED*/
                /*JOINED*/
               /*JOINED*/

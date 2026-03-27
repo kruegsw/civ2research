@@ -9918,7 +9918,7 @@ export function __flsbuf_005FA410(_Ch, _File) {
     // DEVIATION: C struct — _File->_flag = _File->_flag & 0xffffffef;
     // DEVIATION: C struct — _File->_cnt = 0;
     // DEVIATION: C struct — local_10 = _File->_cnt;
-    if (true /* DEVIATION: C struct — if (((_File->_flag & 0x10c) === 0) && (((_File !== +DAT_0063ac78 && (_File !== +DAT_0063ac98)) || (iVar2 = __isatty(uVar3), iVar2 === 0)))) { */) {
+    if (true /* DEVIATION: C struct — if (((_File->_flag & 0x10c) === 0) && (((_File !== ++DAT_0063ac78 && (_File !== +DAT_0063ac98)) || (iVar2 = __isatty(uVar3), iVar2 === 0)))) { */) {
        /*JOINED*/
         /*JOINED*/
       __getbuf(_File_00);

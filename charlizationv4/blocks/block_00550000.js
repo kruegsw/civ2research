@@ -4390,7 +4390,7 @@ export function FUN_0055a980() {
                    /*JOINED*/
               local_10 = FUN_005ae0b0(s8(DAT_006283d0[local_44]) + local_34);
               local_14 = s8(DAT_006283e0[local_44]) + local_20;
-              if (((-1 < local_10) && (-1 < local_14)) && ((local_10 < DAT_006d116a && (local_14 < DAT_006d116c)))) {
+              if (((-1 < local_10) && (-1 < local_14)) && ((local_10 < +DAT_006d116a && (local_14 < DAT_006d116c)))) {
                  /*JOINED*/
                 // DEVIATION: C pointer write — *(byte *)(DAT_006d116a * local_14 + local_10 + (int)local_8) =
                      // DEVIATION(cont): *(byte *)(DAT_006d116a * local_14 + local_10 + (int)local_8) | (byte)(1 << ((char)local_44 - 4U & 7));

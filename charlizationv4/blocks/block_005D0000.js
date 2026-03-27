@@ -4390,7 +4390,7 @@ export function FUN_005d6038(param_1, param_2, param_3, param_4) {
     if ((sVar1 === 0) && (globalThis.DAT_0063858c = DAT_0063858c + 1, (((DAT_006385c8[3]) >>> 0) >> 5 & 1) === 0)) {
       local_10 = 0;
       local_8 = DAT_006385c8;
-      while ((local_10 < DAT_00638588 && (iVar2 = FUN_005d717f(s32(local_8, 0)), iVar2 !== 1))) {
+      while ((local_10 < +DAT_00638588 && (iVar2 = FUN_005d717f(s32(local_8, 0)), iVar2 !== 1))) {
         local_8 = local_8[7];
         local_10 = local_10 + 1;
       }
@@ -4925,7 +4925,7 @@ export function FUN_005d6c99(param_1, param_2) {
   if (+DAT_006385b0 !== 0) {
     local_20 = true /* DEVIATION: C pointer — *(int **)(param_2 + 0xc) */;
     local_2c = 0;
-    while ((local_2c < DAT_00638588 && (globalThis.DAT_006385c8 = s32(DAT_006385c8, 0x1c), (u32(DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
+    while ((local_2c < +DAT_00638588 && (globalThis.DAT_006385c8 = s32(DAT_006385c8, 0x1c), (u32(DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
            /*JOINED*/
            /*JOINED*/
       local_2c = local_2c + 1;
@@ -7687,7 +7687,7 @@ export function FUN_005db1fa(param_1, param_2) {
   local_10 = FindResourceA(DAT_006e4ff0,param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < +DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;
@@ -7727,7 +7727,7 @@ export function FUN_005db2f8(param_1) {
   local_8 = FindResourceA(DAT_006e4ff0,param_1,0x2);
   if (local_8 === 0x0) {
     local_c = 0;
-    while ((local_c < DAT_006387cc && (local_8 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_c * 4), 0),param_1,0x2), local_8 === 0x0))) {
+    while ((local_c < +DAT_006387cc && (local_8 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_c * 4), 0),param_1,0x2), local_8 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_c = local_c + 1;
@@ -7783,7 +7783,7 @@ export function FUN_005db3ca(param_1, param_2) {
   local_10 = FindResourceA(DAT_006e4ff0,param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < +DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;

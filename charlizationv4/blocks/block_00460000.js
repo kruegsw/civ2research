@@ -786,7 +786,7 @@ export function FUN_00460129(param_1, param_2, param_3, param_4, param_5) {
     else {
       bVar4 = true;
     }
-    if (((((((+DAT_0064b0ec !== 0) || (bVar3)) || (bVar4)) && ((1 < DAT_0064b140 || (bVar3)))) && ((local_44 === 0 && ((DAT_0064b114 < 0x19 || ((DAT_0064b114 < 0x32 && (bVar4)))))))) && ((bVar4 || ((bVar6 || (bVar3)))))) && ((((u8(DAT_0064c6be[param_1 * 0x594]) - s8(DAT_0064c6e8[param_2 * 0x594 + param_1]) < 4 && (((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 2) === 0 && (DAT_0064b0f4 < 2)))) && ((u8(DAT_00655c22[param_1]) < 6 || (u8(DAT_00655c22[param_2]) < 5)))) && ((iVar13 = FUN_00458df9(param_1,param_2,param_3,param_4), iVar13 !== 0 && (iVar13 = FUN_00410030(s_PROPOSEALLIANCE_0062702c, ptrAdd(DAT_00648018, ((+DAT_00655b91 !== 0) - 1 & 0xffff7c80)),0), iVar13 === 0)))))) {
+    if (((((((+DAT_0064b0ec !== 0) || (bVar3)) || (bVar4)) && ((1 < +DAT_0064b140 || (bVar3)))) && ((local_44 === 0 && ((DAT_0064b114 < 0x19 || ((DAT_0064b114 < 0x32 && (bVar4)))))))) && ((bVar4 || ((bVar6 || (bVar3)))))) && ((((u8(DAT_0064c6be[param_1 * 0x594]) - s8(DAT_0064c6e8[param_2 * 0x594 + param_1]) < 4 && (((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 2) === 0 && (DAT_0064b0f4 < 2)))) && ((u8(DAT_00655c22[param_1]) < 6 || (u8(DAT_00655c22[param_2]) < 5)))) && ((iVar13 = FUN_00458df9(param_1,param_2,param_3,param_4), iVar13 !== 0 && (iVar13 = FUN_00410030(s_PROPOSEALLIANCE_0062702c, ptrAdd(DAT_00648018, ((+DAT_00655b91 !== 0) - 1 & 0xffff7c80)),0), iVar13 === 0)))))) {
          /*JOINED*/
         /*JOINED*/
        /*JOINED*/

@@ -4466,7 +4466,7 @@ export function handle_city_disorder_00509590_00509590(in_ECX = globalThis.in_EC
       }
     }
     else {
-      if ((((((DAT_00655aea & 1) !== 0) && ((DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (DAT_00655b08 < 3)))) && ((s8(DAT_0064f348[param_1 * 0x58]) === +DAT_006d1da0 && (+DAT_00654fa8 === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), +DAT_00631edc !== 0)) {
+      if ((((((DAT_00655aea & 1) !== 0) && ((DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (DAT_00655b08 < 3)))) && ((s8(DAT_0064f348[param_1 * 0x58]) === ++DAT_006d1da0 && (+DAT_00654fa8 === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), +DAT_00631edc !== 0)) {
            /*JOINED*/
           /*JOINED*/
          /*JOINED*/
