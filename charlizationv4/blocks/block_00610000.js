@@ -11,6 +11,8 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { exe, segment } from '../extern-stubs.js';
 
 export function FUN_0061a000(unaff_SI, unaff_DI) {
 
@@ -40,7 +42,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   let in_SS;
   let in_DS;
   let uVar22;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let auStack_2 = new Array(2).fill(0);
   let iVar21;
   
@@ -98,7 +100,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
       segment(in_SS,sVar20 + -2);
       puVar7 = segment(in_SS,sVar20 + 0x2a);
       puVar8 = segment(in_SS,sVar20 + -0x14);
-      // DEVIATION: SEH
+      devLog('SEH', '');
                                  /*JOINED*/
                         /*JOINED*/
       psVar3 = segment(in_SS,sVar20 + 0x32);
@@ -112,7 +114,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
         puVar7 = segment(in_SS,sVar18 + 0x2e);
         puVar8 = segment(in_SS,sVar18 + -0x14);
         puVar11 = segment(in_SS,sVar18 + -0x16);
-        // DEVIATION: SEH
+        devLog('SEH', '');
          /*JOINED*/
           /*JOINED*/
       }

@@ -14,6 +14,28 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { CARRY4, CONCAT12, CONCAT13, CONCAT22, CloseHandle, CompareStringA } from '../extern-stubs.js';
+import { CompareStringW, CreateDirectoryA, CreateFileA, DEVIATION, FlushFileBuffers, GetCPInfo } from '../extern-stubs.js';
+import { GetFileType, GetLastError, GetModuleFileNameA, GetProcAddress, GetStdHandle, GetStringTypeA } from '../extern-stubs.js';
+import { GetStringTypeW, GetTimeZoneInformation, HELPERS, IsBadCodePtr, IsBadReadPtr, IsBadWritePtr } from '../extern-stubs.js';
+import { LoadLibraryA, MultiByteToWideChar, SetConsoleCtrlHandler, SetEndOfFile, SetEnvironmentVariableA, SetStdHandle } from '../extern-stubs.js';
+import { SetUnhandledExceptionFilter, WideCharToMultiByte, WriteFile, _E1, _I10_OUTPUT, _ValidateExecute } from '../extern-stubs.js';
+import { _ValidateRead, _ValidateWrite, __CopyMan, __CrtDbgReport, __CxxUnhandledExceptionFilter, __FillZeroMan } from '../extern-stubs.js';
+import { __IncMan, __IsZeroMan, __NMSG_WRITE, __RoundMan, __ShrMan, __ZeroTail } from '../extern-stubs.js';
+import { ___add_12, ___addl, ___crtCompareStringA, ___crtLCMapStringA, ___crtMessageBoxA, ___crtsetenv } from '../extern-stubs.js';
+import { ___dtold, ___ld12mul, ___mtold12, ___multtenpow12, ___shl_12, ___shr_12 } from '../extern-stubs.js';
+import { ___strgtold12, ___tzset, ___wtomb_environ, __abstract_cw, __abstract_sw, __alloc_osfhnd } from '../extern-stubs.js';
+import { __amsg_exit, __aulldiv, __aullrem, __calloc_dbg, __chsize, __close } from '../extern-stubs.js';
+import { __control87, __dosmaperr, __exit, __flsbuf, __flush, __free_dbg } from '../extern-stubs.js';
+import { __freebuf, __ftbuf, __get_osfhandle, __hw_cw, __isctype, __isindst } from '../extern-stubs.js';
+import { __ld12cvt, __ld12tod, __ld12told, __lseek, __malloc_dbg, __mbschr } from '../extern-stubs.js';
+import { __mbsnbicoll, __output, __read, __realloc_dbg, __set_osfhnd, __setdefaultprecision } from '../extern-stubs.js';
+import { __setmode, __sopen, __stbuf, __tzset, __write, _atexit } from '../extern-stubs.js';
+import { _atol, _fclose, _getenv, _memcpy, _memset, _raise } from '../extern-stubs.js';
+import { _strchr, _strcmp, _strlen, _strncnt, _strncpy, _wcslen } from '../extern-stubs.js';
+import { _wcstombs, copy_environ, cvtdate, exe, findenv, int } from '../extern-stubs.js';
+import { siglookup, swi, terminate, wcsncnt, x64toa, xtoa } from '../extern-stubs.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_005F0000.js';
 
 export function __NMSG_WRITE_00600040(param_1) {
@@ -1103,7 +1125,7 @@ export function ___crtGetStringTypeW_00601300(param_1, param_2, param_3, param_4
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function ___crtGetStringTypeA_00601560(in_EAX, _Plocinfo, _DWInfoType, _LpSrcStr, _CchSrc, _LpCharType, _Code_page, _BError) {
+export function ___crtGetStringTypeA_00601560(in_EAX = G.in_EAX, _Plocinfo, _DWInfoType, _LpSrcStr, _CchSrc, _LpCharType, _Code_page, _BError) {
 
 
 
@@ -4618,7 +4640,7 @@ export function ___wtomb_environ_00606260() {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function ___crtCompareStringW_00606330(in_EAX, _LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2) {
+export function ___crtCompareStringW_00606330(in_EAX = G.in_EAX, _LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2) {
 
 
 
@@ -4748,7 +4770,7 @@ export function wcsncnt_00606620(param_1, param_2) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function ___crtCompareStringA_00606690(in_EAX, _Plocinfo, _LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2, _Code_page) {
+export function ___crtCompareStringA_00606690(in_EAX = G.in_EAX, _Plocinfo, _LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2, _Code_page) {
 
 
 

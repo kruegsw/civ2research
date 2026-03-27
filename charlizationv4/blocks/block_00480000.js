@@ -9,6 +9,11 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { DEVIATION, GetAsyncKeyState, HELPERS, IsTracking, XD_CloseConnection, XD_FlushSendBuffer } from '../extern-stubs.js';
+import { XD_OpenConnection, __chdir, __wrename, _memcpy, _memset, _rand } from '../extern-stubs.js';
+import { _remove, _strcmp, _strlen, debug_log, exe, thunk_citywin_9429 } from '../extern-stubs.js';
+import { thunk_citywin_994F, thunk_citywin_DADA, thunk_citywin_DB36, thunk_save_game } from '../extern-stubs.js';
 import { FUN_00407ff0, FUN_00408490, FUN_004085f0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';
 import { FUN_0040bc80, FUN_0040ddc6, FUN_0040ef50, FUN_0040fe10, FUN_0040ff60, FUN_0040ffa0 } from './block_00400000.js';
 import { FUN_00410030, FUN_00410070, FUN_0041033a, FUN_00410402, FUN_004105f8, FUN_00413476 } from './block_00410000.js';
@@ -80,9 +85,9 @@ export function FUN_00482327(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -99,7 +104,7 @@ export function FUN_00482337() {
   FUN_0047e94e(1,0);
   if (G.DAT_006c9178 !== 0) {
     G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
 }
@@ -122,7 +127,7 @@ export function FUN_0048237d() {
   iVar1 = FUN_00421bb0();
   if (0x4b0 < iVar1 - _DAT_006cec80) {
     G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     _DAT_006cec80 = FUN_00421bb0();
   }
   return;
@@ -166,7 +171,7 @@ export function FUN_00482470() {
     return;
   }
   G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -236,7 +241,7 @@ export function FUN_00482724() {
   FUN_0047e94e(1,0);
   if (G.DAT_006ad698 === 0x02) {
     G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
 }
@@ -261,7 +266,7 @@ export function FUN_0048276d() {
     return;
   }
   G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -285,7 +290,7 @@ export function FUN_004827d5() {
     return;
   }
   G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -309,7 +314,7 @@ export function FUN_0048283d() {
     return;
   }
   G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -2028,7 +2033,7 @@ export function FUN_00487a41(param_1) {
             G.DAT_0064f34d[local_24 * 0x58 + local_2c] = G.DAT_0064f349[local_24 * 0x58];
           }
         }
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         if ((iVar4 === local_24) && (G.DAT_006a65a0 === 0)) {
           thunk_citywin_9429();
         }
@@ -2990,7 +2995,7 @@ export function FUN_0048a416() {
         uVar3 = FUN_0048a004();
         local_c = local_c | uVar3;
       }
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       if (iVar2 === -1) {
         G.DAT_00655aee = G.DAT_00655aee & 0xfffd;
       }
@@ -3007,7 +3012,7 @@ export function FUN_0048a416() {
     }
     if (((G.DAT_00628044 === 0) || (G.DAT_0064b9bc === 0)) || ((1 << (u8(G.DAT_006d1da0) & 0x1f) & ((G.DAT_00655b0b) >>> 0)) === 0)) {
        /*JOINED*/
-      if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((DAT_006aa75c === 0) && (iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8), s8(DAT_0064f348[iVar2 * 0x58]) !== DAT_006d1da0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+      if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
          /*JOINED*/
          /*JOINED*/
         thunk_citywin_994F();
@@ -3300,7 +3305,7 @@ export function FUN_0048b340() {
   let uVar3;
   let iVar4;
   let uVar5;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_330;
   let local_32c;
   let local_324;
@@ -3315,10 +3320,10 @@ export function FUN_0048b340() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_24 = 0;
   bVar1 = false;
   FUN_0059db08(0x4000);
@@ -3485,7 +3490,7 @@ export function FUN_0048b340() {
                 FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c76c);
               }
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_318,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -3551,7 +3556,7 @@ export function FUN_0048b340() {
     if (G.DAT_00628044 === 0) {
 // LAB_0048bf12: (code below also in LAB_0048bf12_helper, kept for 1:1 audit)
       FUN_0055ae80(0);
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048bf2d();
       FUN_0048bf43();
       return;
@@ -3586,9 +3591,9 @@ export function FUN_0048bf43(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3607,7 +3612,7 @@ export function FUN_0048bf51() {
   if ((((G.DAT_006c9038 !== 0) || (G.DAT_006ad698 !== 0)) || (G.DAT_006c918c !== 0)) || (((G.DAT_006ad685 !== 0 || (G.DAT_00628044 === 0)) || (G.DAT_006c8fb4 !== 0)))) {
      /*JOINED*/
     G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
 }
@@ -3628,7 +3633,7 @@ export function FUN_0048bfec() {
   let SVar2;
   let uVar3;
   let iVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_31c;
   let local_318;
   let local_314 = new Array(220).fill(0);
@@ -3641,10 +3646,10 @@ export function FUN_0048bfec() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_14 = 1;
   FUN_0059db08(0x4000);
   local_8 = 0;
@@ -3717,7 +3722,7 @@ export function FUN_0048bfec() {
       FUN_0048da51(G.DAT_006ad35c);
       iVar4 = FUN_0048dab9();
       if (iVar4 !== 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
@@ -3726,13 +3731,13 @@ export function FUN_0048bfec() {
     if (G.DAT_006ad698 !== 0) {
       iVar4 = FUN_004828a5();
       if (iVar4 === 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
       }
       if (G.DAT_006ad2f7 !== 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
@@ -3768,7 +3773,7 @@ export function FUN_0048bfec() {
         if (local_18 < 1) {
           FUN_0043ca10(G.DAT_006359d4,s_OURTURNTOMOVE_0062c7c0);
           FUN_0059ec88(G.DAT_0063fc58,0,0);
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
           FUN_00421bd0();
           FUN_0046e020(0x30,0,0,0);
           FUN_0040bc80(0);
@@ -3784,7 +3789,7 @@ export function FUN_0048bfec() {
             FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c7b4);
           }
           FUN_0059ec88(G.DAT_0063fc58,0,0);
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
           FUN_00421bd0();
           FUN_0046e020(0x30,0,0,0);
           FUN_0040bc80(0);
@@ -3853,7 +3858,7 @@ export function FUN_0048bfec() {
       if (G.DAT_0064b1ac !== 0) {
         FUN_0048b165();
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048c9ce();
       FUN_0048c9e4();
       return;
@@ -3886,9 +3891,9 @@ export function FUN_0048c9e4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3908,7 +3913,7 @@ export function FUN_0048c9f3(param_1) {
   let SVar2;
   let uVar3;
   let iVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_32c;
   let local_328;
   let local_320;
@@ -3924,10 +3929,10 @@ export function FUN_0048c9f3(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   uVar3 = FUN_00493c7d(G.DAT_006d1da0,G.DAT_006d1da0);
@@ -3999,7 +4004,7 @@ export function FUN_0048c9f3(param_1) {
       if (G.DAT_0064b1ac !== 0) {
         FUN_0048b165();
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048d989();
       FUN_0048d99f();
       return;
@@ -4076,7 +4081,7 @@ export function FUN_0048c9f3(param_1) {
                 FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c7fc);
               }
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -4087,7 +4092,7 @@ export function FUN_0048c9f3(param_1) {
             else {
               FUN_0043ca10(G.DAT_006359d4,s_OURTURNTOMOVE_0062c808);
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -4260,9 +4265,9 @@ export function FUN_0048d99f(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4690,7 +4695,7 @@ function LAB_0048a77d_helper(iVar2, local_14, local_c, uVar3) {
 
 function LAB_0048bf12_helper() {
       FUN_0055ae80(0);
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048bf2d();
       FUN_0048bf43();
       return;
@@ -4718,7 +4723,7 @@ function LAB_0048c326_helper(bVar1, iVar4, local_14, local_18, local_20, local_2
       FUN_0048da51(G.DAT_006ad35c);
       iVar4 = FUN_0048dab9();
       if (iVar4 !== 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
@@ -4727,13 +4732,13 @@ function LAB_0048c326_helper(bVar1, iVar4, local_14, local_18, local_20, local_2
     if (G.DAT_006ad698 !== 0) {
       iVar4 = FUN_004828a5();
       if (iVar4 === 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
       }
       if (G.DAT_006ad2f7 !== 0) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0048c9ce();
         FUN_0048c9e4();
         return;
@@ -4769,7 +4774,7 @@ function LAB_0048c326_helper(bVar1, iVar4, local_14, local_18, local_20, local_2
         if (local_18 < 1) {
           FUN_0043ca10(G.DAT_006359d4,s_OURTURNTOMOVE_0062c7c0);
           FUN_0059ec88(G.DAT_0063fc58,0,0);
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
           FUN_00421bd0();
           FUN_0046e020(0x30,0,0,0);
           FUN_0040bc80(0);
@@ -4785,7 +4790,7 @@ if (true) {
             FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c7b4);
           }
           FUN_0059ec88(G.DAT_0063fc58,0,0);
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
           FUN_00421bd0();
           FUN_0046e020(0x30,0,0,0);
           FUN_0040bc80(0);
@@ -4854,7 +4859,7 @@ if (true) {
       if (G.DAT_0064b1ac !== 0) {
         FUN_0048b165();
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048c9ce();
       FUN_0048c9e4();
       return;
@@ -4884,7 +4889,7 @@ function LAB_0048ccea_helper(iVar4, local_14, local_1c, local_20, local_24, loca
       if (G.DAT_0064b1ac !== 0) {
         FUN_0048b165();
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048d989();
       FUN_0048d99f();
       return;
@@ -4961,7 +4966,7 @@ if (true) {
                 FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c7fc);
               }
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -4972,7 +4977,7 @@ if (true) {
 if (true) {
               FUN_0043ca10(G.DAT_006359d4,s_OURTURNTOMOVE_0062c808);
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -5126,7 +5131,7 @@ function LAB_0048d957_helper(iVar4, local_14, local_1c, local_20, local_24, loca
       if (G.DAT_0064b1ac !== 0) {
         FUN_0048b165();
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0048d989();
       FUN_0048d99f();
       return;
@@ -5203,7 +5208,7 @@ if (true) {
                 FUN_0043ca10(G.DAT_006359d4,s_CASUALTIES_0062c7fc);
               }
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);
@@ -5214,7 +5219,7 @@ if (true) {
 if (true) {
               FUN_0043ca10(G.DAT_006359d4,s_OURTURNTOMOVE_0062c808);
               FUN_0059ec88(G.DAT_0063fc58,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_31c,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
               FUN_00421bd0();
               FUN_0046e020(0x30,0,0,0);
               FUN_0040bc80(0);

@@ -9,6 +9,16 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { DEVIATION, EnableStackedTabs, GetAsyncKeyState, GetPrivateProfileIntA, GetSystemMetrics, HELPERS } from '../extern-stubs.js';
+import { SetObjectSchema, SetRect, WritePrivateProfileStringA, XD_ActivateServer, XD_CloseConnection, XD_FlushSendBuffer } from '../extern-stubs.js';
+import { XD_InitializeModem, XD_InitializeSerial, XD_InitializeSocketsIPXSPX, XD_InitializeSocketsTCP, XD_ResetLibrary, XD_SetBroadcastReceive } from '../extern-stubs.js';
+import { XD_SetNewClientConnection, XD_SetOnClientConnectionToServer, XD_SetOnConnectionLost, XD_SetOversizedMessageCB, XD_SetSecureReceive, XD_ShutdownModem } from '../extern-stubs.js';
+import { XD_ShutdownSockets, XD_ShutdownTEN, __expand, __ftol, __itoa, __msize } from '../extern-stubs.js';
+import { __strcmpi, __strupr, __ultoa, _atexit, _memcpy, _memset } from '../extern-stubs.js';
+import { _rand, _sprintf, _strchr, _strcmp, _strlen, _strncmp } from '../extern-stubs.js';
+import { _strncpy, _vector_deleting_destructor_, block, debug_log, delbuf, exe } from '../extern-stubs.js';
+import { operator_delete, operator_new, thunk_citywin_C494 } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408460, FUN_00408490, FUN_004085f0 } from './block_00400000.js';
 import { FUN_004086c0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
 import { FUN_0040efd0, FUN_0040fcf0, FUN_0040fd40, FUN_0040fe10, FUN_0040fe40, FUN_0040fe70 } from './block_00400000.js';
@@ -68,9 +78,9 @@ export function FUN_0059061d(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -1846,17 +1856,17 @@ export function FUN_0059772c(param_1, param_2) {
   let bVar2;
   let uVar3;
   let iVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_230;
   let local_18;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x2000);
   local_8 = 0;
   bVar2 = false;
@@ -1981,7 +1991,7 @@ export function FUN_0059772c(param_1, param_2) {
       FUN_005973fd(param_1);
     }
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00597d4b();
   FUN_00597d61();
   return;
@@ -2012,9 +2022,9 @@ export function FUN_00597d61(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2327,17 +2337,17 @@ export function FUN_00598b4e() {
   let iVar2;
   let uVar3;
   let iVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar5;
   let local_30c;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_0040ffa0(s_SPACESHIPS_00635024,1);
@@ -2354,14 +2364,14 @@ export function FUN_00598b4e() {
   }
   if (!bVar1) {
     FUN_00421ea0(s_NOSPACESHIPS_00635030);
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00598cc7();
     FUN_00598cdd();
     return;
   }
   iVar2 = FUN_0040bc80(0);
   if (iVar2 < 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00598cc7();
     FUN_00598cdd();
     return;
@@ -2372,7 +2382,7 @@ export function FUN_00598b4e() {
     local_30c = u8(iVar2);
     FUN_0059772c(iVar2,((G.DAT_00655b0b) >>> 0) & 1 << (u8(local_30c) & 0x1f));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00598cc7();
   FUN_00598cdd();
   return;
@@ -2403,9 +2413,9 @@ export function FUN_00598cdd(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2550,7 +2560,7 @@ export function FUN_005999c0(param_1, param_2) {
 // Size: 365 bytes
 // ============================================================
 
-export function FUN_00599a20(in_ECX) {
+export function FUN_00599a20(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2590,7 +2600,7 @@ export function FUN_00599a20(in_ECX) {
 // /* WARNING: Removing unreachable block (ram,0x00599e9a) */
 // /* WARNING: Removing unreachable block (ram,0x00599fc4) */
 
-export function FUN_00599b8d(in_ECX) {
+export function FUN_00599b8d(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -2653,7 +2663,7 @@ export function FUN_00599b8d(in_ECX) {
   else {
     FUN_0040ff00(s32(G.DAT_00627684, s8(G.DAT_0064c48e[local_68 * 8]) * 0x10));
     local_20 = FUN_0040efd0(G.DAT_00679640);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     SetRect(local_30[0],local_40,local_48,local_40 + local_20 + 5,local_48 + extraout_EAX);
     FUN_00452c14(s8(G.DAT_0064c48e[local_68 * 8]),local_40,local_48,0,local_30[0].left, local_30[0].top,local_30[0].right,local_30[0].bottom);
                        /*JOINED*/
@@ -2781,7 +2791,7 @@ export function FUN_0059a15d() {
 // Size: 369 bytes
 // ============================================================
 
-export function FUN_0059a2e6(in_ECX, param_1) {
+export function FUN_0059a2e6(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2809,9 +2819,9 @@ export function FUN_0059a2e6(in_ECX, param_1) {
         FUN_004085f0();
         FUN_00408460();
         FUN_004518d0();
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0x401843); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         FUN_005c61b0();
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       }
     }
     else {
@@ -2955,19 +2965,19 @@ export function FUN_0059a8a1() {
 // Size: 196 bytes
 // ============================================================
 
-export function FUN_0059a8bb(in_ECX) {
+export function FUN_0059a8bb(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059d080();
   FUN_00514220();
   local_8 = 0;
@@ -2978,7 +2988,7 @@ export function FUN_0059a8bb(in_ECX) {
   XD_SetNewClientConnection(FUN_0059bfb5);
   XD_SetOnConnectionLost(FUN_0059c04b);
   XD_SetOversizedMessageCB(50000,FUN_0059c0a4);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -2989,7 +2999,7 @@ export function FUN_0059a8bb(in_ECX) {
 // Size: 936 bytes
 // ============================================================
 
-export function FUN_0059a998(in_ECX) {
+export function FUN_0059a998(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3077,18 +3087,18 @@ export function FUN_0059a998(in_ECX) {
 // Size: 136 bytes
 // ============================================================
 
-export function FUN_0059ad40(in_ECX) {
+export function FUN_0059ad40(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x534) !== 0) {
     operator_delete(true /* DEVIATION: C pointer — *(void **)(in_ECX + 0x534) */);
@@ -3096,7 +3106,7 @@ export function FUN_0059ad40(in_ECX) {
   }
   FUN_0059b293(1);
   FUN_0059c2b8();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0059adc8();
   FUN_0059ade1();
   return;
@@ -3127,9 +3137,9 @@ export function FUN_0059ade1(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3140,7 +3150,7 @@ export function FUN_0059ade1(unaff_EBP) {
 // Size: 1167 bytes
 // ============================================================
 
-export function FUN_0059adef(in_ECX, param_1, param_2) {
+export function FUN_0059adef(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let uVar1;
@@ -3282,7 +3292,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
 
 // /* WARNING: Removing unreachable block (ram,0x0059b3ca) */
 
-export function FUN_0059b293(in_ECX, param_1) {
+export function FUN_0059b293(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3376,7 +3386,7 @@ export function FUN_0059b55b() {
 // Size: 651 bytes
 // ============================================================
 
-export function FUN_0059b571(in_ECX, param_1) {
+export function FUN_0059b571(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -3455,7 +3465,7 @@ export function FUN_0059b571(in_ECX, param_1) {
 // Size: 366 bytes
 // ============================================================
 
-export function FUN_0059b7fc(in_ECX, param_1) {
+export function FUN_0059b7fc(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3490,7 +3500,7 @@ export function FUN_0059b7fc(in_ECX, param_1) {
 // Size: 390 bytes
 // ============================================================
 
-export function FUN_0059b96a(in_ECX, param_1) {
+export function FUN_0059b96a(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3523,7 +3533,7 @@ export function FUN_0059b96a(in_ECX, param_1) {
 // Size: 100 bytes
 // ============================================================
 
-export function FUN_0059baf0(in_ECX) {
+export function FUN_0059baf0(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -3983,7 +3993,7 @@ export function FUN_0059c575(param_1, param_2, param_3, param_4, param_5) {
 // Size: 209 bytes
 // ============================================================
 
-export function FUN_0059d080(in_ECX) {
+export function FUN_0059d080(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4518,7 +4528,7 @@ export function FUN_0059d59d(param_1) {
 // Size: 64 bytes
 // ============================================================
 
-export function FUN_0059d5b5(in_ECX, param_1) {
+export function FUN_0059d5b5(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4535,7 +4545,7 @@ export function FUN_0059d5b5(in_ECX, param_1) {
 // Size: 1299 bytes
 // ============================================================
 
-export function FUN_0059d5f5(in_ECX) {
+export function FUN_0059d5f5(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4648,7 +4658,7 @@ export function FUN_0059d5f5(in_ECX) {
 // Size: 93 bytes
 // ============================================================
 
-export function FUN_0059db08(in_ECX, param_1) {
+export function FUN_0059db08(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4670,7 +4680,7 @@ export function FUN_0059db08(in_ECX, param_1) {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_0059db65(in_ECX) {
+export function FUN_0059db65(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4776,7 +4786,7 @@ export function FUN_0059db65(in_ECX) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_0059df8a(in_ECX) {
+export function FUN_0059df8a(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4793,7 +4803,7 @@ export function FUN_0059df8a(in_ECX) {
 // Size: 306 bytes
 // ============================================================
 
-export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_0059dfb9(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4809,7 +4819,7 @@ export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
     FUN_0059d5b5(s16(in_ECX, 0x262));
   }
   FUN_0059e472(PTR_DAT_006359e4);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CArchive::SetObjectSchema(in_ECX,((PTR_DAT_006359e8) >>> 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_0059e4c5(PTR_DAT_006359ec);
   // DEVIATION: C pointer write — *(int *)in_ECX = param_1;
   w32(in_ECX, 4, param_2);
@@ -4824,7 +4834,7 @@ export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
     uVar1 = FUN_00407f90(param_3);
     FUN_0059e6ff(uVar1);
     iVar2 = FUN_00407fc0(param_3);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — ios::delbuf(in_ECX,iVar2); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   if (param_1 !== 0) {
     w32(in_ECX, 0x3c, u32(in_ECX, 0x3c) | 0x10);
@@ -4839,7 +4849,7 @@ export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 160 bytes
 // ============================================================
 
-export function FUN_0059e0eb(in_ECX, param_1, param_2) {
+export function FUN_0059e0eb(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let sVar1;
@@ -4864,7 +4874,7 @@ export function FUN_0059e0eb(in_ECX, param_1, param_2) {
 // Size: 412 bytes
 // ============================================================
 
-export function FUN_0059e18b(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_0059e18b(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
   let piVar1;
@@ -4929,7 +4939,7 @@ export function FUN_0059e18b(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_0059e327(in_ECX) {
+export function FUN_0059e327(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4957,7 +4967,7 @@ export function FUN_0059e356() {
 // Size: 132 bytes
 // ============================================================
 
-export function FUN_0059e376(in_ECX) {
+export function FUN_0059e376(in_ECX = G.in_ECX) {
 
 
   let extraout_EAX;
@@ -4969,17 +4979,17 @@ export function FUN_0059e376(in_ECX) {
   let local_8;
   
   local_8 = FUN_0059e356();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   if (extraout_EAX * 5 >> 2 <= local_8) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     local_8 = extraout_EAX_00 * 5 >> 2;
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   if (extraout_EAX_01 < local_8) {
     local_c = local_8;
   }
   else {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     local_c = extraout_EAX_02;
   }
   return local_c;
@@ -4992,7 +5002,7 @@ export function FUN_0059e376(in_ECX) {
 // Size: 78 bytes
 // ============================================================
 
-export function FUN_0059e3fa(in_ECX) {
+export function FUN_0059e3fa(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -5015,13 +5025,13 @@ export function FUN_0059e3fa(in_ECX) {
 // Size: 42 bytes
 // ============================================================
 
-export function FUN_0059e448(in_ECX) {
+export function FUN_0059e448(in_ECX = G.in_ECX) {
 
 
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return extraout_EAX + 10;
 }
 
@@ -5032,7 +5042,7 @@ export function FUN_0059e448(in_ECX) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_0059e472(in_ECX, param_1) {
+export function FUN_0059e472(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -5070,7 +5080,7 @@ export function SetObjectSchema_0059E4A4(_this, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0059e4c5(in_ECX, param_1) {
+export function FUN_0059e4c5(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5086,7 +5096,7 @@ export function FUN_0059e4c5(in_ECX, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0059e4e6(in_ECX, param_1) {
+export function FUN_0059e4e6(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5102,7 +5112,7 @@ export function FUN_0059e4e6(in_ECX, param_1) {
 // Size: 126 bytes
 // ============================================================
 
-export function FUN_0059e507(in_ECX, param_1) {
+export function FUN_0059e507(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -5128,7 +5138,7 @@ export function FUN_0059e507(in_ECX, param_1) {
 // Size: 68 bytes
 // ============================================================
 
-export function FUN_0059e585(in_ECX, param_1) {
+export function FUN_0059e585(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5149,7 +5159,7 @@ export function FUN_0059e585(in_ECX, param_1) {
 // Size: 91 bytes
 // ============================================================
 
-export function FUN_0059e5c9(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059e5c9(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5189,13 +5199,13 @@ export function EnableStackedTabs_0059E624(_this, param_1) {
 // Size: 46 bytes
 // ============================================================
 
-export function FUN_0059e648(in_ECX) {
+export function FUN_0059e648(in_ECX = G.in_ECX) {
 
 
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return extraout_EAX + 4 + s32(in_ECX, 0xb8) * 2;
 }
 
@@ -5206,7 +5216,7 @@ export function FUN_0059e648(in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_0059e676(in_ECX, param_1) {
+export function FUN_0059e676(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -5225,7 +5235,7 @@ export function FUN_0059e676(in_ECX, param_1) {
 // Size: 86 bytes
 // ============================================================
 
-export function FUN_0059e6a9(in_ECX, param_1) {
+export function FUN_0059e6a9(in_ECX = G.in_ECX, param_1) {
 
 
   let sVar1;
@@ -5246,7 +5256,7 @@ export function FUN_0059e6a9(in_ECX, param_1) {
 // Size: 99 bytes
 // ============================================================
 
-export function FUN_0059e6ff(in_ECX, param_1) {
+export function FUN_0059e6ff(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5285,7 +5295,7 @@ export function delbuf_0059E762(_this, param_1) {
 // Size: 42 bytes
 // ============================================================
 
-export function FUN_0059e783(in_ECX, param_1, param_2) {
+export function FUN_0059e783(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -5302,7 +5312,7 @@ export function FUN_0059e783(in_ECX, param_1, param_2) {
 // Size: 101 bytes
 // ============================================================
 
-export function FUN_0059e7ad(in_ECX, param_1) {
+export function FUN_0059e7ad(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5327,7 +5337,7 @@ export function FUN_0059e7ad(in_ECX, param_1) {
 // Size: 101 bytes
 // ============================================================
 
-export function FUN_0059e812(in_ECX, param_1) {
+export function FUN_0059e812(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5352,7 +5362,7 @@ export function FUN_0059e812(in_ECX, param_1) {
 // Size: 100 bytes
 // ============================================================
 
-export function FUN_0059e877(in_ECX, param_1) {
+export function FUN_0059e877(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5425,7 +5435,7 @@ export function FUN_0059e927(param_1, param_2) {
 // Size: 64 bytes
 // ============================================================
 
-export function FUN_0059e973(in_ECX) {
+export function FUN_0059e973(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5444,7 +5454,7 @@ export function FUN_0059e973(in_ECX) {
 // Size: 64 bytes
 // ============================================================
 
-export function FUN_0059e9b3(in_ECX) {
+export function FUN_0059e9b3(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5513,7 +5523,7 @@ export function FUN_0059ea4d(param_1, param_2) {
 // Size: 116 bytes
 // ============================================================
 
-export function FUN_0059ea99(in_ECX, param_1) {
+export function FUN_0059ea99(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -5721,7 +5731,7 @@ export function EnableStackedTabs_0059EC64(_this, param_1) {
 // Size: 360 bytes
 // ============================================================
 
-export function FUN_0059ec88(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059ec88(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let puVar1;
@@ -5779,7 +5789,7 @@ export function FUN_0059ec88(in_ECX, param_1, param_2, param_3) {
 // Size: 566 bytes
 // ============================================================
 
-export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059edf0(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -5859,7 +5869,7 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
 // Size: 71 bytes
 // ============================================================
 
-export function FUN_0059f026(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059f026(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let puVar1;
@@ -5880,7 +5890,7 @@ export function FUN_0059f026(in_ECX, param_1, param_2, param_3) {
 // Size: 566 bytes
 // ============================================================
 
-export function FUN_0059f06d(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059f06d(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let puVar1;
@@ -5953,7 +5963,7 @@ export function FUN_0059f06d(in_ECX, param_1, param_2, param_3) {
 // Size: 119 bytes
 // ============================================================
 
-export function FUN_0059f2a3(in_ECX, param_1) {
+export function FUN_0059f2a3(in_ECX = G.in_ECX, param_1) {
 
 
   let sVar1;
@@ -5977,7 +5987,7 @@ export function FUN_0059f2a3(in_ECX, param_1) {
 // Size: 189 bytes
 // ============================================================
 
-export function FUN_0059f31a(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059f31a(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -6024,7 +6034,7 @@ export function FUN_0059f31a(in_ECX, param_1, param_2, param_3) {
 // Size: 226 bytes
 // ============================================================
 
-export function FUN_0059f3d7(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_0059f3d7(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
   let pcVar1;
@@ -6057,7 +6067,7 @@ export function FUN_0059f3d7(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 61 bytes
 // ============================================================
 
-export function FUN_0059f5ba(in_ECX, param_1, param_2, param_3) {
+export function FUN_0059f5ba(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -6073,7 +6083,7 @@ export function FUN_0059f5ba(in_ECX, param_1, param_2, param_3) {
 // Size: 83 bytes
 // ============================================================
 
-export function FUN_0059f5f7(in_ECX) {
+export function FUN_0059f5f7(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6097,7 +6107,7 @@ export function FUN_0059f5f7(in_ECX) {
 // Size: 1326 bytes
 // ============================================================
 
-export function FUN_0059f64a(in_ECX, param_1) {
+export function FUN_0059f64a(in_ECX = G.in_ECX, param_1) {
 
 
   let extraout_EAX;
@@ -6126,7 +6136,7 @@ export function FUN_0059f64a(in_ECX, param_1) {
   iVar5 = s32(in_ECX, 0x11c);
   local_17c = 0;
   local_174 = s32(in_ECX, 0xfc);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_160[0] = 0;
   local_10 = 0;
   local_8 = extraout_EAX;
@@ -6240,7 +6250,7 @@ export function FUN_0059f64a(in_ECX, param_1) {
 // Size: 156 bytes
 // ============================================================
 
-export function FUN_0059fb78(in_ECX, param_1) {
+export function FUN_0059fb78(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -6268,7 +6278,7 @@ export function FUN_0059fb78(in_ECX, param_1) {
 // Size: 156 bytes
 // ============================================================
 
-export function FUN_0059fc19(in_ECX, param_1) {
+export function FUN_0059fc19(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -6296,7 +6306,7 @@ export function FUN_0059fc19(in_ECX, param_1) {
 // Size: 56 bytes
 // ============================================================
 
-export function FUN_0059fcba(in_ECX, param_1) {
+export function FUN_0059fcba(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -6313,7 +6323,7 @@ export function FUN_0059fcba(in_ECX, param_1) {
 // Size: 56 bytes
 // ============================================================
 
-export function FUN_0059fcf2(in_ECX, param_1) {
+export function FUN_0059fcf2(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -6329,7 +6339,7 @@ export function FUN_0059fcf2(in_ECX, param_1) {
 // Size: 4785 bytes
 // ============================================================
 
-export function FUN_0059fd2a(in_ECX) {
+export function FUN_0059fd2a(in_ECX = G.in_ECX) {
 
 
   let sVar1;

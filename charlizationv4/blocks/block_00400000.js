@@ -17,6 +17,13 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { DEVIATION, EnableStackedTabs, GetSystemMetrics, SetDlgCtrlID, SetRect, _Timevec } from '../extern-stubs.js';
+import { _atexit, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _memcpy, _rand, create_window_C0F0 } from '../extern-stubs.js';
+import { draw_text_9740, exe, gdi_8514, gdi_BA4F, invalidate_8B00, invalidate_CE5F } from '../extern-stubs.js';
+import { manage_window_8B2D, manage_window_944B, manage_window_C0AB, manage_window_C40A, manage_window_C636, measure_text_858E } from '../extern-stubs.js';
+import { measure_text_BF40, operator_delete, operator_new, register_wndclass_CF17, thunk_citywin_9429, thunk_citywin_9545 } from '../extern-stubs.js';
+import { thunk_handle_city_disorder_00509590, tie } from '../extern-stubs.js';
 import { FUN_00410030, FUN_00410070, FUN_00410402, FUN_00413717 } from './block_00410000.js';
 import { FUN_004271e8, FUN_00428b0c } from './block_00420000.js';
 import { FUN_00436287, FUN_0043cef9, FUN_0043cf76, FUN_0043d20a } from './block_00430000.js';
@@ -92,7 +99,7 @@ export function FUN_00406ab4() {
 export function FUN_00406ad1() {
 
 
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(DAT_0063c818); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -680,10 +687,10 @@ export function FUN_004079a6() {
   ;
   FUN_005534bc(uVar3,uVar4,uVar5,uVar6,iVar2,iVar1,uVar7,uVar8,uVar9);
   FUN_00408370(0x28,0x19);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_0063c818,0x402581); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_00408130(0 /* ADDR:LAB_004022de */);
   FUN_00408170(0 /* ADDR:LAB_00401942 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID(DAT_0063c870,0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   tie(thunk_map_ascii);
   FUN_00408010(0x1ff);
   FUN_00408050(1);
@@ -761,7 +768,7 @@ export function FUN_00407ff0() {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00408010(in_ECX, param_1) {
+export function FUN_00408010(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -777,7 +784,7 @@ export function FUN_00408010(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00408050(in_ECX, param_1) {
+export function FUN_00408050(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -793,7 +800,7 @@ export function FUN_00408050(in_ECX, param_1) {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_00408090(in_ECX) {
+export function FUN_00408090(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -809,7 +816,7 @@ export function FUN_00408090(in_ECX) {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_004080c0(in_ECX) {
+export function FUN_004080c0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -825,7 +832,7 @@ export function FUN_004080c0(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_004080f0(in_ECX, param_1) {
+export function FUN_004080f0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -841,7 +848,7 @@ export function FUN_004080f0(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408130(in_ECX, param_1) {
+export function FUN_00408130(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -859,7 +866,7 @@ export function FUN_00408130(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408170(in_ECX, param_1) {
+export function FUN_00408170(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -908,7 +915,7 @@ export function SetDlgCtrlID_004081B0(_this, param_1) {
    // 
    // Library: Visual Studio 1998 Debug */
 
-export function tie_004081F0(in_ECX, param_1) {
+export function tie_004081F0(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -926,7 +933,7 @@ export function tie_004081F0(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408230(in_ECX, param_1) {
+export function FUN_00408230(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -944,7 +951,7 @@ export function FUN_00408230(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408270(in_ECX, param_1) {
+export function FUN_00408270(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -962,7 +969,7 @@ export function FUN_00408270(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_004082b0(in_ECX, param_1) {
+export function FUN_004082b0(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -980,7 +987,7 @@ export function FUN_004082b0(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_004082f0(in_ECX, param_1) {
+export function FUN_004082f0(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -998,7 +1005,7 @@ export function FUN_004082f0(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408330(in_ECX, param_1) {
+export function FUN_00408330(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -1016,7 +1023,7 @@ export function FUN_00408330(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00408370(in_ECX, param_1, param_2) {
+export function FUN_00408370(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -1062,7 +1069,7 @@ export function FUN_004083f0() {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00408420(in_ECX) {
+export function FUN_00408420(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -1094,7 +1101,7 @@ export function FUN_00408460() {
 // Size: 180 bytes
 // ============================================================
 
-export function FUN_00408490(in_ECX, param_1) {
+export function FUN_00408490(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -1131,7 +1138,7 @@ export function FUN_00408490(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00408580(in_ECX, param_1) {
+export function FUN_00408580(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -1195,7 +1202,7 @@ export function FUN_00408620() {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_00408650(in_ECX) {
+export function FUN_00408650(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -1506,7 +1513,7 @@ export function FUN_00408d33(param_1) {
   let puVar5;
   let uVar6;
   let iVar7;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_3ec;
   let local_3e4;
   let local_3dc;
@@ -1545,10 +1552,10 @@ export function FUN_00408d33(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_0040bc40(8);
@@ -2134,7 +2141,7 @@ export function FUN_00408d33(param_1) {
   _memcpy(G.DAT_006d1188,G.DAT_00636598,6);
   FUN_00408010(0x201);
   FUN_00484d52();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040a54e();
   FUN_0040a564();
   return;
@@ -2165,9 +2172,9 @@ export function FUN_0040a564(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2969,7 +2976,7 @@ export function FUN_0040c3a5() {
 
 
   G.DAT_0063cbb0 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_0063cbb4 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -3005,7 +3012,7 @@ export function FUN_0040c3cd(param_1, param_2) {
 // Size: 848 bytes
 // ============================================================
 
-export function FUN_0040c480(in_ECX) {
+export function FUN_0040c480(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -3063,7 +3070,7 @@ export function FUN_0040c480(in_ECX) {
 // Size: 1428 bytes
 // ============================================================
 
-export function FUN_0040c7d0(in_ECX) {
+export function FUN_0040c7d0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3187,7 +3194,7 @@ export function FUN_0040c7d0(in_ECX) {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
+export function FUN_0040cd64(in_ECX = G.in_ECX, unaff_ESI, param_1) {
 
 
   let iVar1;
@@ -3201,7 +3208,7 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   let extraout_EAX;
   // in_ECX → promoted to parameter
   // unaff_ESI → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar9;
   let uVar10;
   let uVar11;
@@ -3228,10 +3235,10 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_464[0] = 0;
   FUN_005c64da();
   local_8 = 0;
@@ -3376,7 +3383,7 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   FUN_0040fd40(0,10);
   FUN_0040fcf0(s32(in_ECX, 0x2e4));
   FUN_0040fd80(0 /* ADDR:LAB_004020f4 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   w32(in_ECX, 0x328, extraout_EAX + 8);
   w32(in_ECX, 0x324, s32(in_ECX, 300) + -4);
   iVar5 = s32(in_ECX, 0x128);
@@ -3416,14 +3423,14 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
                 /*JOINED*/
   }
   FUN_0040c480();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402cf7); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_005bb574();
   FUN_004085f0();
   if (2 < G.DAT_00655b02) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX + 0x48,0x403585); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   FUN_005c61b0();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX + 0x48,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   while (G.DAT_0063cbb0 !== 0) {
     FUN_0040ef50();
   }
@@ -3460,7 +3467,7 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   FUN_00436287(4);
   FUN_00436287(5);
   FUN_00436287(6);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040dda0();
   FUN_0040ddb6(unaff_ESI);
   return;
@@ -3491,9 +3498,9 @@ export function FUN_0040ddb6(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3507,19 +3514,19 @@ export function FUN_0040ddb6(unaff_EBP) {
 export function FUN_0040ddc6(param_1) {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f060();
   local_8 = 0;
   if ((1 << (u8(param_1) & 0x1f) & ((G.DAT_00655b0b) >>> 0)) === 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0040dea8();
     FUN_0040debe();
     return;
@@ -3533,7 +3540,7 @@ export function FUN_0040ddc6(param_1) {
                              /*JOINED*/
                        /*JOINED*/
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040dea8();
   FUN_0040debe();
   return;
@@ -3564,9 +3571,9 @@ export function FUN_0040debe(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3620,7 +3627,7 @@ export function FUN_0040e017() {
   let uVar3;
   let uVar4;
   let iVar5;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_31c;
   let local_318;
   let local_310;
@@ -3629,10 +3636,10 @@ export function FUN_0040e017() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   uVar2 = G.DAT_006d1da0;
   local_8 = 0;
@@ -3688,17 +3695,17 @@ export function FUN_0040e017() {
          /*JOINED*/
         thunk_handle_city_disorder_00509590(iVar5);
       }
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0040e38d();
       FUN_0040e3a3();
       return;
     }
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0040e38d();
     FUN_0040e3a3();
     return;
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040e38d();
   FUN_0040e3a3();
   return;
@@ -3729,9 +3736,9 @@ export function FUN_0040e3a3(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3798,7 +3805,7 @@ export function FUN_0040ef50() {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_0040ef70(in_ECX) {
+export function FUN_0040ef70(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3832,7 +3839,7 @@ export function __Timevec_0040EFA0(_this) {
 // Size: 42 bytes
 // ============================================================
 
-export function FUN_0040efd0(in_ECX, param_1) {
+export function FUN_0040efd0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3848,7 +3855,7 @@ export function FUN_0040efd0(in_ECX, param_1) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_0040f010(in_ECX, param_1) {
+export function FUN_0040f010(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3867,19 +3874,19 @@ export function FUN_0040f010(in_ECX, param_1) {
 // Size: 196 bytes
 // ============================================================
 
-export function FUN_0040f060(in_ECX) {
+export function FUN_0040f060(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0055339f();
   local_8 = 0;
   FUN_0040fb00();
@@ -3892,7 +3899,7 @@ export function FUN_0040f060(in_ECX) {
   local_8 = ((local_8) << 8 | (4));
   FUN_0040f3e0();
   w32(in_ECX, 0, PTR_FUN_0061c054);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -3906,14 +3913,14 @@ export function FUN_0040f060(in_ECX) {
 export function FUN_0040f1e0() {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   local_8 = 4;
   FUN_0040f25f();
@@ -3925,7 +3932,7 @@ export function FUN_0040f1e0() {
   FUN_0040f295();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_0040f2a4();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040f2b3();
   FUN_0040f2c6();
   return;
@@ -4016,7 +4023,7 @@ export function FUN_0040f2b3(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(unaff_EBP, -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -4031,9 +4038,9 @@ export function FUN_0040f2c6(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4063,7 +4070,7 @@ export function EnableStackedTabs_0040F320(_this, param_1) {
 // Size: 36 bytes
 // ============================================================
 
-export function FUN_0040f350(in_ECX, param_1) {
+export function FUN_0040f350(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4079,7 +4086,7 @@ export function FUN_0040f350(in_ECX, param_1) {
 // Size: 65 bytes
 // ============================================================
 
-export function FUN_0040f380(in_ECX) {
+export function FUN_0040f380(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4098,23 +4105,23 @@ export function FUN_0040f380(in_ECX) {
 // Size: 100 bytes
 // ============================================================
 
-export function FUN_0040f3e0(in_ECX) {
+export function FUN_0040f3e0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   in_ECX[0x25] = 0;
   w32(in_ECX, 0x34, 0xffffffff);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4125,7 +4132,7 @@ export function FUN_0040f3e0(in_ECX) {
 // Size: 110 bytes
 // ============================================================
 
-export function FUN_0040f480(in_ECX) {
+export function FUN_0040f480(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4148,7 +4155,7 @@ export function FUN_0040f480(in_ECX) {
 // Size: 75 bytes
 // ============================================================
 
-export function FUN_0040f510(in_ECX) {
+export function FUN_0040f510(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4168,23 +4175,23 @@ export function FUN_0040f510(in_ECX) {
 // Size: 83 bytes
 // ============================================================
 
-export function FUN_0040f570(in_ECX) {
+export function FUN_0040f570(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040f5c3();
   FUN_0040f5d6();
   return;
@@ -4215,9 +4222,9 @@ export function FUN_0040f5d6(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4228,7 +4235,7 @@ export function FUN_0040f5d6(unaff_EBP) {
 // Size: 88 bytes
 // ============================================================
 
-export function FUN_0040f610(in_ECX) {
+export function FUN_0040f610(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4250,7 +4257,7 @@ export function FUN_0040f610(in_ECX) {
 // Size: 133 bytes
 // ============================================================
 
-export function FUN_0040f680(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_0040f680(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4275,7 +4282,7 @@ export function FUN_0040f680(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 120 bytes
 // ============================================================
 
-export function FUN_0040f730(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_0040f730(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   // in_ECX → promoted to parameter
@@ -4301,7 +4308,7 @@ export function FUN_0040f730(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_0040f7d0(in_ECX) {
+export function FUN_0040f7d0(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4319,7 +4326,7 @@ export function FUN_0040f7d0(in_ECX) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_0040f810(in_ECX) {
+export function FUN_0040f810(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4334,7 +4341,7 @@ export function FUN_0040f810(in_ECX) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_0040f840(in_ECX) {
+export function FUN_0040f840(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4352,7 +4359,7 @@ export function FUN_0040f840(in_ECX) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0040f880(in_ECX, param_1) {
+export function FUN_0040f880(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4368,21 +4375,21 @@ export function FUN_0040f880(in_ECX, param_1) {
 // Size: 83 bytes
 // ============================================================
 
-export function FUN_0040f8b0(in_ECX) {
+export function FUN_0040f8b0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4393,23 +4400,23 @@ export function FUN_0040f8b0(in_ECX) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_0040f930(in_ECX) {
+export function FUN_0040f930(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_005cc248(s32(in_ECX, 0x1c));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040f98a();
   FUN_0040f99d();
   return;
@@ -4440,9 +4447,9 @@ export function FUN_0040f99d(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4453,7 +4460,7 @@ export function FUN_0040f99d(unaff_EBP) {
 // Size: 167 bytes
 // ============================================================
 
-export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_0040f9d0(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -4482,7 +4489,7 @@ export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0040faa0(in_ECX, param_1) {
+export function FUN_0040faa0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4498,7 +4505,7 @@ export function FUN_0040faa0(in_ECX, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0040fad0(in_ECX, param_1) {
+export function FUN_0040fad0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4514,24 +4521,24 @@ export function FUN_0040fad0(in_ECX, param_1) {
 // Size: 113 bytes
 // ============================================================
 
-export function FUN_0040fb00(in_ECX) {
+export function FUN_0040fb00(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   w32(in_ECX, 0x34, 1);
   w32(in_ECX, 0x2c, 0);
   w32(in_ECX, 0x30, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4542,23 +4549,23 @@ export function FUN_0040fb00(in_ECX) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_0040fbb0(in_ECX) {
+export function FUN_0040fbb0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_005cd139(s32(in_ECX, 0x1c));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0040fc0a();
   FUN_0040fc1d();
   return;
@@ -4589,9 +4596,9 @@ export function FUN_0040fc1d(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4602,7 +4609,7 @@ export function FUN_0040fc1d(unaff_EBP) {
 // Size: 124 bytes
 // ============================================================
 
-export function FUN_0040fc50(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_0040fc50(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4626,7 +4633,7 @@ export function FUN_0040fc50(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_0040fcf0(in_ECX, param_1) {
+export function FUN_0040fcf0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4643,7 +4650,7 @@ export function FUN_0040fcf0(in_ECX, param_1) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_0040fd40(in_ECX, param_1, param_2) {
+export function FUN_0040fd40(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -4659,7 +4666,7 @@ export function FUN_0040fd40(in_ECX, param_1, param_2) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_0040fd80(in_ECX, param_1) {
+export function FUN_0040fd80(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter

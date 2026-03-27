@@ -155,6 +155,12 @@ export const G = {
   _tileData: null,
   _MEM,  // exposed for debugging
 
+  // CPU register globals (set by caller, read by callee)
+  // Default to empty Uint8Arrays so headless in_ECX[offset] doesn't crash
+  in_ECX: new Uint8Array(8192),
+  in_EAX: 0,
+  in_EDX: 0,
+
 `;
 
 // Write array views — sorted by address

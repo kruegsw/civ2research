@@ -14,6 +14,10 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { DEVIATION, HELPERS, __chdir, _atoi, _rand, create_window_8E3F } from '../extern-stubs.js';
+import { create_window_C0F0, egptr, exe, gdi_C035, thunk_citywin_C679, thunk_kill_civ } from '../extern-stubs.js';
+import { thunk_pick_up_unit_004c9528, width } from '../extern-stubs.js';
 import { FUN_0040f480, FUN_0040f610, FUN_0040f730, FUN_0040ff60 } from './block_00400000.js';
 import { FUN_004105f8 } from './block_00410000.js';
 import { FUN_00421da0 } from './block_00420000.js';
@@ -54,7 +58,7 @@ export function egptr_00530E80(_this) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_00530eb0(in_ECX, param_1) {
+export function FUN_00530eb0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -70,7 +74,7 @@ export function FUN_00530eb0(in_ECX, param_1) {
 // Size: 167 bytes
 // ============================================================
 
-export function FUN_00530ee0(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_00530ee0(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -99,7 +103,7 @@ export function FUN_00530ee0(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 32 bytes
 // ============================================================
 
-export function FUN_00530fb0(in_ECX) {
+export function FUN_00530fb0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -133,22 +137,22 @@ export function width_00530FE0(_this) {
 // Size: 93 bytes
 // ============================================================
 
-export function FUN_00531010(in_ECX) {
+export function FUN_00531010(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   w32(in_ECX, 0x44, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -159,7 +163,7 @@ export function FUN_00531010(in_ECX) {
 // Size: 207 bytes
 // ============================================================
 
-export function FUN_005310a0(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005310a0(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -192,7 +196,7 @@ export function FUN_005310a0(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_005311b0(in_ECX, param_1) {
+export function FUN_005311b0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -208,7 +212,7 @@ export function FUN_005311b0(in_ECX, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_005311e0(in_ECX, param_1) {
+export function FUN_005311e0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter

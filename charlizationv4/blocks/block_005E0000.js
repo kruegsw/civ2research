@@ -9,6 +9,34 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { AVIFileExit, AVIFileGetStream, AVIFileInit, AVIFileOpenA, AVIFileRelease, AVIStreamFindSample } from '../extern-stubs.js';
+import { AVIStreamInfoA, AVIStreamLength, AVIStreamRead, AVIStreamReadFormat, AVIStreamRelease, AVIStreamSampleToTime } from '../extern-stubs.js';
+import { AVIStreamStart, AVIStreamTimeToSample, AppendMenuA, BeginPaint, BitBlt, BringWindowToTop } from '../extern-stubs.js';
+import { CONCAT11, CONCAT22, CReObject, CheckMenuItem, ClientToScreen, CloseHandle } from '../extern-stubs.js';
+import { CopyRect, CreateBitmap, CreateCompatibleBitmap, CreateCompatibleDC, CreateDIBSection, CreateFileA } from '../extern-stubs.js';
+import { CreateMenu, CreatePalette, CreatePen, CreatePopupMenu, CreateSolidBrush, CreateWindowExA } from '../extern-stubs.js';
+import { DebugBreak, DefWindowProcA, DeleteDC, DeleteMenu, DeleteObject, DestroyMenu } from '../extern-stubs.js';
+import { DestroyWindow, DirectDrawCreate, DrawMenuBar, DrawTextA, EnableMenuItem, EndPaint } from '../extern-stubs.js';
+import { FillRect, GetActiveView, GetAsyncKeyState, GetCheckStyle, GetClassLongA, GetClientRect } from '../extern-stubs.js';
+import { GetDC, GetDIBColorTable, GetFocus, GetKeyState, GetMenu, GetMenuItemCount } from '../extern-stubs.js';
+import { GetMenuItemID, GetPaletteEntries, GetParent, GetPixel, GetScrollPos, GetSubMenu } from '../extern-stubs.js';
+import { GetSystemMetrics, GetTextAlign, GetWindow, GetWindowLongA, GetWindowRect, GlobalAlloc } from '../extern-stubs.js';
+import { GlobalFree, GlobalHandle, GlobalLock, GlobalUnlock, HELPERS, ICClose } from '../extern-stubs.js';
+import { ICLocate, ICSendMessage, InsertMenuA, IntersectRect, InvalidateRect, IsBadHugeReadPtr } from '../extern-stubs.js';
+import { IsChild, IsIconic, IsTracking, IsWindow, IsWindowVisible, KillTimer } from '../extern-stubs.js';
+import { LineTo, LoadCursorA, LoadMenuA, LocalAlloc, LocalFree, LocalLock } from '../extern-stubs.js';
+import { LocalUnlock, MCIWndCreateA, MessageBoxA, ModifyMenuA, MoveToEx, MoveWindow } from '../extern-stubs.js';
+import { OffsetRect, OutputDebugStringA, RealizePalette, RegisterClassA, ReleaseDC, RemoveMenu } from '../extern-stubs.js';
+import { SCARRY1, SelectObject, SelectPalette, SendMessageA, SetBkColor, SetBkMode } from '../extern-stubs.js';
+import { SetClassLongA, SetDIBColorTable, SetFilePointer, SetFocus, SetPixel, SetRect } from '../extern-stubs.js';
+import { SetScrollPos, SetTextAlign, SetTextColor, SetTimer, SetWindowLongA, SetWindowPos } from '../extern-stubs.js';
+import { ShowWindow, StretchBlt, TrackPopupMenu, UnionRect, UnregisterClassA, UpdateWindow } from '../extern-stubs.js';
+import { WriteFile, _memcpy, _memset, _rand, _sprintf, _strcmp } from '../extern-stubs.js';
+import { _strlen, _strncat, create_window_931B, debug_log, exe, fill_rect_BE88 } from '../extern-stubs.js';
+import { gdi_847F, gdi_8514, gdi_D149, handle_colortable_3B4C, mciGetDeviceIDA, mciSendCommandA } from '../extern-stubs.js';
+import { measure_text_858E, operator_delete, operator_new, show_messagebox_2997, show_messagebox_EEB0, show_messagebox_F0B9 } from '../extern-stubs.js';
+import { timeGetTime, wsprintfA } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_0040f3e0 } from './block_00400000.js';
 import { FUN_0040f570, FUN_0040f610, FUN_0040f680, FUN_0040f730, FUN_0040f880 } from './block_00400000.js';
 import { FUN_00414d10, FUN_00417ef0, FUN_00418770, FUN_004187a0, FUN_00418870 } from './block_00410000.js';
@@ -26,9 +54,8 @@ import { FUN_005bbb5a, FUN_005bc1b5, FUN_005bc9d3, FUN_005bca3d, FUN_005bd610, F
 import { FUN_005c041f, FUN_005c0593, FUN_005c0979, FUN_005c1167, FUN_005c19ad, FUN_005c5410 } from './block_005C0000.js';
 import { FUN_005c54d0, FUN_005c5520, FUN_005c5540, FUN_005c5560, FUN_005c5580, FUN_005c55a0 } from './block_005C0000.js';
 import { FUN_005c55d0, FUN_005c5640, FUN_005c5660, FUN_005c56a0, FUN_005c5740, FUN_005c5c86 } from './block_005C0000.js';
-import { FUN_005c5e60, FUN_005c5e80, FUN_005c5ec0, FUN_005c5ee0, FUN_005c61b0, FUN_005c63af } from './block_005C0000.js';
-import { FUN_005c64da, FUN_005c656b, FUN_005c6b63, FUN_005c6b93, FUN_005c6da8, FUN_005cac22 } from './block_005C0000.js';
-import { FUN_005cbdd0 } from './block_005C0000.js';
+import { FUN_005c5e60, FUN_005c5e80, FUN_005c5ee0, FUN_005c61b0, FUN_005c63af, FUN_005c64da } from './block_005C0000.js';
+import { FUN_005c656b, FUN_005c6b63, FUN_005c6b93, FUN_005c6da8, FUN_005cac22, FUN_005cbdd0 } from './block_005C0000.js';
 import { FUN_005d2279, FUN_005d268e, FUN_005d4167, FUN_005d52a2, FUN_005d5643, FUN_005d57b1 } from './block_005D0000.js';
 import { FUN_005d5b88, FUN_005d5d11, FUN_005d5f91, FUN_005d6c99, FUN_005d8236, FUN_005dab5a } from './block_005D0000.js';
 import { FUN_005dabe5, FUN_005dac39, FUN_005dae6b, FUN_005db2f8, FUN_005dcdf9, FUN_005dce29 } from './block_005D0000.js';
@@ -40,11 +67,11 @@ export function FUN_005e00bb(param_1) {
 
 
   if (param_1 === 0x65) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006e5020 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   else if (param_1 === 0x66) {
     G.DAT_006e5018 = 0xffffffff;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006e5020 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
 }
@@ -74,7 +101,7 @@ export function FUN_005e0122(param_1, param_2) {
 
 
   G.DAT_006e5018 = param_2;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006e5020 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -166,7 +193,7 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   let pCVar5;
   let pCVar6;
   let iVar7;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_684 = [0];
   let local_680 = new Array(68).fill(0);
   let local_63c;
@@ -187,10 +214,10 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005c64da();
   local_8 = 0;
   FUN_0043c690();
@@ -242,19 +269,19 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   G.DAT_006e5020 = local_124;
   FUN_005c19ad(((((((G.DAT_006e5020) >>> 0) >> 8) & 0xFFFFFF)) << 8 | (G.DAT_00638b40)));
   iVar2 = local_628 * local_63c + 10;
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124);
+  devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_124);');
   SetRect(local_638[0],10,10,pCVar5 + -10,iVar2);
   FUN_005c1167(local_680,local_5ac,local_638[0],1);
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124);
+  devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_124);');
   SetRect(local_624,local_638[0].left,local_638[0].bottom + 10,local_638[0].right + -0x46,pCVar5 + -10 );
          /*JOINED*/
   FUN_005e0bc0(local_dc,100,local_624,1,local_174);
   FUN_005311b0(FUN_005e010a);
   FUN_005311e0(FUN_005e0122);
   SetRect(local_134[0],0,0,0x3c,0x19);
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124);
+  devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_124);');
   pCVar5 = pCVar5 + -0x23;
-  // DEVIATION: MFC — pCVar6 = CRichEditCntrItem::GetActiveView(local_124);
+  devLog('MFC', 'pCVar6 = CRichEditCntrItem::GetActiveView(local_124);');
   OffsetRect(local_134[0],pCVar6 + -0x46,pCVar5);
   FUN_0040f680(local_dc,0x65,local_134[0],G.DAT_00638d84);
   FUN_0040f880(FUN_005e00bb);
@@ -275,7 +302,7 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   FUN_005e0826();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_005e0832();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_005e083e();
   FUN_005e0854();
   return;
@@ -376,9 +403,9 @@ export function FUN_005e0854(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -394,7 +421,7 @@ export function FUN_005e0863() {
 
   let pCVar1;
   let pCVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_5f4 = new Array(1084).fill(0);
   let local_1b8 = new Array(72).fill(0);
   let local_170 = new Array(336).fill(0);
@@ -403,10 +430,10 @@ export function FUN_005e0863() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005c64da();
   local_8 = 0;
   FUN_0044c5a0();
@@ -423,9 +450,9 @@ export function FUN_005e0863() {
   FUN_005d8236(local_5f4);
   FUN_005d268e(local_5f4);
   SetRect(local_20[0],0,0,0x3c,0x19);
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(local_1b8);
+  devLog('MFC', 'pCVar1 = CRichEditCntrItem::GetActiveView(local_1b8);');
   pCVar1 = pCVar1 + -0x23;
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(local_1b8);
+  devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(local_1b8);');
   OffsetRect(local_20[0],pCVar2 + -0x46,pCVar1);
   FUN_0040f680(local_170,0x65,local_20[0],G.DAT_00638d90);
   FUN_0040f880(FUN_005e00bb);
@@ -442,7 +469,7 @@ export function FUN_005e0863() {
   FUN_005e0a52();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_005e0a5e();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_005e0a6a();
   FUN_005e0a80();
   return;
@@ -543,9 +570,9 @@ export function FUN_005e0a80(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -649,7 +676,7 @@ export function FUN_005e0b80(param_1) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_005e0ba0(in_ECX) {
+export function FUN_005e0ba0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -664,7 +691,7 @@ export function FUN_005e0ba0(in_ECX) {
 // Size: 194 bytes
 // ============================================================
 
-export function FUN_005e0bc0(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005e0bc0(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -713,7 +740,7 @@ export function FUN_005e0c90(param_1) {
 // Size: 27 bytes
 // ============================================================
 
-export function FUN_005e0cc0(in_ECX) {
+export function FUN_005e0cc0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -1484,27 +1511,27 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
       local_c = local_68[0].rcPaint.right;
       local_8 = local_68[0].rcPaint.bottom;
       SetRect(local_24[0],0,0,0,0);
-      // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
-      // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+      devLog('MFC', 'pCVar4 = CRichEditCntrItem::GetActiveView(local_74);');
+      devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_74);');
       if (pCVar4 < pCVar5) {
-        // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
+        devLog('MFC', 'pCVar4 = CRichEditCntrItem::GetActiveView(local_74);');
         iVar3 = FUN_00407f90(local_14[0]);
-        // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+        devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_74);');
         local_24[0].right = (pCVar4 * iVar3) / pCVar5;
         local_24[0].bottom = FUN_00407fc0(local_14[0]);
       }
       else {
         local_24[0].right = FUN_00407f90(local_14[0]);
-        // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
+        devLog('MFC', 'pCVar4 = CRichEditCntrItem::GetActiveView(local_74);');
         iVar3 = FUN_00407fc0(local_14[0]);
-        // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+        devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_74);');
         local_24[0].bottom = (pCVar4 * iVar3) / pCVar5;
       }
-      // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle(local_74);
+      devLog('MFC', 'uVar6 = CCheckListBox::GetCheckStyle(local_74);');
       hdcSrc = s32(uVar6, 4);
       rop = 0xcc0020;
-      // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
-      // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+      devLog('MFC', 'pCVar4 = CRichEditCntrItem::GetActiveView(local_74);');
+      devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_74);');
       ySrc = 0;
       xSrc = 0;
       wDest = local_24[0].right;
@@ -1637,7 +1664,7 @@ export function FUN_005e1c8e(param_1, param_2) {
         w32(param_1, 0x608, 0x100);
         G.DAT_00638db4 = s32(param_1, 0x5c4);
         G.DAT_00638db8 = s32(param_1, 0x5c8);
-        // DEVIATION: MFC — uVar4 = CCheckListBox::GetCheckStyle(param_1);
+        devLog('MFC', 'uVar4 = CCheckListBox::GetCheckStyle(param_1);');
         iVar3 = FUN_005e395a(uVar4);
         if (iVar3 !== 0) {
           w32(param_1, 0x5f0, -s32(param_1, 0x5f0));
@@ -2366,8 +2393,8 @@ export function FUN_005e32b2(param_1, param_2) {
     }
     else {
       FUN_005bd65c(G.DAT_00638db4,G.DAT_00638db8);
-      // DEVIATION: MFC — yBottom = CRichEditCntrItem::GetActiveView(param_1);
-      // DEVIATION: MFC — xRight = CRichEditCntrItem::GetActiveView(param_1);
+      devLog('MFC', 'yBottom = CRichEditCntrItem::GetActiveView(param_1);');
+      devLog('MFC', 'xRight = CRichEditCntrItem::GetActiveView(param_1);');
       SetRect(local_1c[0],0,0,xRight,yBottom);
       local_2c[0].left = local_1c[0].left;
       local_2c[0].top = local_1c[0].top;
@@ -2395,7 +2422,7 @@ export function FUN_005e32b2(param_1, param_2) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005e3550(in_ECX) {
+export function FUN_005e3550(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2413,7 +2440,7 @@ export function FUN_005e3550(in_ECX) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005e3580(in_ECX) {
+export function FUN_005e3580(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4402,7 +4429,7 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 64 bytes
 // ============================================================
 
-export function FUN_005e5ea0(in_ECX) {
+export function FUN_005e5ea0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4434,7 +4461,7 @@ export function FUN_005e5ee0() {
 // Size: 130 bytes
 // ============================================================
 
-export function FUN_005e5ef6(in_ECX) {
+export function FUN_005e5ef6(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4508,7 +4535,7 @@ export function FUN_005e5fda(param_1, param_2, param_3) {
 // Size: 368 bytes
 // ============================================================
 
-export function FUN_005e6018(in_ECX, param_1, param_2) {
+export function FUN_005e6018(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4557,7 +4584,7 @@ export function FUN_005e6018(in_ECX, param_1, param_2) {
 // Size: 97 bytes
 // ============================================================
 
-export function FUN_005e6188(in_ECX) {
+export function FUN_005e6188(in_ECX = G.in_ECX) {
 
 
   let cVar1;
@@ -4582,7 +4609,7 @@ export function FUN_005e6188(in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function FUN_005e61e9(in_ECX) {
+export function FUN_005e61e9(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4633,7 +4660,7 @@ export function FUN_005e626c(param_1, param_2, param_3) {
 // Size: 200 bytes
 // ============================================================
 
-export function FUN_005e6297(in_ECX, param_1, param_2) {
+export function FUN_005e6297(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4667,7 +4694,7 @@ export function FUN_005e6297(in_ECX, param_1, param_2) {
 // Size: 241 bytes
 // ============================================================
 
-export function FUN_005e635f(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e635f(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -4702,7 +4729,7 @@ export function FUN_005e635f(in_ECX, param_1, param_2, param_3) {
 // Size: 278 bytes
 // ============================================================
 
-export function FUN_005e6450(in_ECX, param_1) {
+export function FUN_005e6450(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4750,7 +4777,7 @@ export function FUN_005e6566(param_1) {
 // Size: 103 bytes
 // ============================================================
 
-export function FUN_005e658a(in_ECX, param_1, param_2) {
+export function FUN_005e658a(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4775,7 +4802,7 @@ export function FUN_005e658a(in_ECX, param_1, param_2) {
 // Size: 96 bytes
 // ============================================================
 
-export function FUN_005e65f1(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e65f1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -4798,7 +4825,7 @@ export function FUN_005e65f1(in_ECX, param_1, param_2, param_3) {
 // Size: 578 bytes
 // ============================================================
 
-export function FUN_005e6651(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6651(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4858,7 +4885,7 @@ export function FUN_005e6651(in_ECX, param_1, param_2, param_3, param_4) {
           local_14 = (local_14 - s32(in_ECX, 0xc));
           local_8 = (local_8 + local_18);
         }
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         FUN_005c5520(local_24);
         uVar1 = 1;
       }
@@ -4882,7 +4909,7 @@ export function FUN_005e6651(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 818 bytes
 // ============================================================
 
-export function FUN_005e6893(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6893(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4961,7 +4988,7 @@ export function FUN_005e6893(in_ECX, param_1, param_2, param_3, param_4) {
         FUN_005e4d60(local_8,param_2, ((((((s32(in_ECX, 0xc)) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (((local_18) & 0xFFFF))) ,s32(in_ECX, 0xc),local_1c,local_20,uVar1);
                      /*JOINED*/
                      /*JOINED*/
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         FUN_005c5580(local_28);
         FUN_005c5520(local_28);
         uVar1 = 1;
@@ -4985,7 +5012,7 @@ export function FUN_005e6893(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 391 bytes
 // ============================================================
 
-export function FUN_005e6bc5(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6bc5(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let bVar1;
@@ -5034,7 +5061,7 @@ export function FUN_005e6bc5(in_ECX, param_1, param_2, param_3, param_4) {
       uVar2 = FUN_005e6188();
       FUN_005e4d60(local_8,param_2,s8(local_c[2]),s32(in_ECX, 0xc),local_14,local_18, uVar2);
                    /*JOINED*/
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       FUN_005c5580(local_20);
       FUN_005c5520(local_20);
       uVar2 = 1;
@@ -5050,7 +5077,7 @@ export function FUN_005e6bc5(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 453 bytes
 // ============================================================
 
-export function FUN_005e6d4c(in_ECX, param_1) {
+export function FUN_005e6d4c(in_ECX = G.in_ECX, param_1) {
 
 
   let sVar1;
@@ -5106,7 +5133,7 @@ export function FUN_005e6d4c(in_ECX, param_1) {
           local_14 = (local_14 - s32(in_ECX, 0xc));
         }
       }
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       FUN_005c5580(local_24);
       FUN_005c5520(local_24);
       uVar3 = 1;
@@ -5122,7 +5149,7 @@ export function FUN_005e6d4c(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005e6f25(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e6f25(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5138,7 +5165,7 @@ export function FUN_005e6f25(in_ECX, param_1, param_2, param_3) {
 // Size: 63 bytes
 // ============================================================
 
-export function FUN_005e6f57(in_ECX) {
+export function FUN_005e6f57(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5155,7 +5182,7 @@ export function FUN_005e6f57(in_ECX) {
 // Size: 91 bytes
 // ============================================================
 
-export function FUN_005e6f96(in_ECX, param_1) {
+export function FUN_005e6f96(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5172,7 +5199,7 @@ export function FUN_005e6f96(in_ECX, param_1) {
 // Size: 55 bytes
 // ============================================================
 
-export function FUN_005e6ff1(in_ECX, param_1) {
+export function FUN_005e6ff1(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5191,7 +5218,7 @@ export function FUN_005e6ff1(in_ECX, param_1) {
 // Size: 42 bytes
 // ============================================================
 
-export function FUN_005e7028(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7028(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5206,7 +5233,7 @@ export function FUN_005e7028(in_ECX, param_1, param_2, param_3) {
 // Size: 133 bytes
 // ============================================================
 
-export function FUN_005e7052(in_ECX, param_1, param_2) {
+export function FUN_005e7052(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -5230,7 +5257,7 @@ export function FUN_005e7052(in_ECX, param_1, param_2) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005e70d7(in_ECX, param_1) {
+export function FUN_005e70d7(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5246,7 +5273,7 @@ export function FUN_005e70d7(in_ECX, param_1) {
 // Size: 308 bytes
 // ============================================================
 
-export function FUN_005e7102(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7102(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5288,7 +5315,7 @@ export function FUN_005e7102(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005e7257(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7257(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5304,7 +5331,7 @@ export function FUN_005e7257(in_ECX, param_1, param_2, param_3) {
 // Size: 198 bytes
 // ============================================================
 
-export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e728a(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5342,7 +5369,7 @@ export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
 // Size: 290 bytes
 // ============================================================
 
-export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7355(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5370,17 +5397,17 @@ export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
       local_10 = local_20[0].bottom - local_20[0].top;
     }
     if ((local_c !== 0) && (local_10 !== 0)) {
-      // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(param_1);
+      devLog('MFC', 'uVar1 = CCheckListBox::GetCheckStyle(param_1);');
       iVar2 = FUN_005e395a(uVar1);
       iVar3 = FUN_005c55d0();
       uVar4 = FUN_005c56a0(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3);
-      // DEVIATION: MFC — pCVar5 = COleClientItem::GetActiveView(param_1);
+      devLog('MFC', 'pCVar5 = COleClientItem::GetActiveView(param_1);');
       uVar4 = FUN_005c5660(pCVar5,uVar4);
       uVar4 = FUN_005c5640(local_20[0].left,local_20[0].top,local_30[0].left,local_30[0].top,local_c,local_10, uVar4);
                            /*JOINED*/
       FUN_005e4f9b(local_8,uVar4);
     }
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
 }
@@ -5392,7 +5419,7 @@ export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
 // Size: 76 bytes
 // ============================================================
 
-export function FUN_005e747c(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e747c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5414,7 +5441,7 @@ export function FUN_005e747c(in_ECX, param_1, param_2, param_3) {
 // Size: 198 bytes
 // ============================================================
 
-export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e74c8(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5452,7 +5479,7 @@ export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
 // Size: 76 bytes
 // ============================================================
 
-export function FUN_005e7593(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7593(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5474,7 +5501,7 @@ export function FUN_005e7593(in_ECX, param_1, param_2, param_3) {
 // Size: 254 bytes
 // ============================================================
 
-export function FUN_005e75df(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e75df(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5509,7 +5536,7 @@ export function FUN_005e75df(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 272 bytes
 // ============================================================
 
-export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e76dd(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -5550,7 +5577,7 @@ export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
 // Size: 217 bytes
 // ============================================================
 
-export function FUN_005e77ed(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005e77ed(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
   let iVar1;
@@ -5581,7 +5608,7 @@ export function FUN_005e77ed(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 235 bytes
 // ============================================================
 
-export function FUN_005e78c6(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e78c6(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5618,7 +5645,7 @@ export function FUN_005e78c6(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 127 bytes
 // ============================================================
 
-export function FUN_005e79b1(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e79b1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -5642,7 +5669,7 @@ export function FUN_005e79b1(in_ECX, param_1, param_2, param_3) {
 // Size: 94 bytes
 // ============================================================
 
-export function FUN_005e7a30(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7a30(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5662,7 +5689,7 @@ export function FUN_005e7a30(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 266 bytes
 // ============================================================
 
-export function FUN_005e7a8e(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7a8e(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5698,7 +5725,7 @@ export function FUN_005e7a8e(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 284 bytes
 // ============================================================
 
-export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e7b98(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -5741,7 +5768,7 @@ export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 229 bytes
 // ============================================================
 
-export function FUN_005e7cb4(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+export function FUN_005e7cb4(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
 
 
@@ -5774,7 +5801,7 @@ export function FUN_005e7cb4(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 247 bytes
 // ============================================================
 
-export function FUN_005e7d99(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7d99(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5812,7 +5839,7 @@ export function FUN_005e7d99(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 139 bytes
 // ============================================================
 
-export function FUN_005e7e90(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e7e90(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -5837,7 +5864,7 @@ export function FUN_005e7e90(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 106 bytes
 // ============================================================
 
-export function FUN_005e7f1b(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7f1b(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5859,7 +5886,7 @@ export function FUN_005e7f1b(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 232 bytes
 // ============================================================
 
-export function FUN_005e7f85(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7f85(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5883,7 +5910,7 @@ export function FUN_005e7f85(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 181 bytes
 // ============================================================
 
-export function FUN_005e806d(in_ECX, param_1) {
+export function FUN_005e806d(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5904,7 +5931,7 @@ export function FUN_005e806d(in_ECX, param_1) {
 // Size: 244 bytes
 // ============================================================
 
-export function FUN_005e8122(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e8122(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5930,7 +5957,7 @@ export function FUN_005e8122(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 229 bytes
 // ============================================================
 
-export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e8216(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   // in_ECX → promoted to parameter
@@ -5973,7 +6000,7 @@ export function CReObject_005E82FB(_this) {
 // Size: 141 bytes
 // ============================================================
 
-export function FUN_005e833b(in_ECX) {
+export function FUN_005e833b(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6001,7 +6028,7 @@ export function FUN_005e833b(in_ECX) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005e83c8(in_ECX) {
+export function FUN_005e83c8(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6020,7 +6047,7 @@ export function FUN_005e83c8(in_ECX) {
 // Size: 619 bytes
 // ============================================================
 
-export function FUN_005e8401(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e8401(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -6091,7 +6118,7 @@ export function FUN_005e8401(in_ECX, param_1, param_2, param_3) {
 // Size: 134 bytes
 // ============================================================
 
-export function FUN_005e866c(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e866c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -6115,7 +6142,7 @@ export function FUN_005e866c(in_ECX, param_1, param_2, param_3) {
 // Size: 71 bytes
 // ============================================================
 
-export function FUN_005e86f2(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e86f2(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -6135,7 +6162,7 @@ export function FUN_005e86f2(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 105 bytes
 // ============================================================
 
-export function FUN_005e8739(in_ECX) {
+export function FUN_005e8739(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -6156,7 +6183,7 @@ export function FUN_005e8739(in_ECX) {
 // Size: 484 bytes
 // ============================================================
 
-export function FUN_005e87a2(in_ECX, param_1) {
+export function FUN_005e87a2(in_ECX = G.in_ECX, param_1) {
 
 
   let cVar1;
@@ -6214,7 +6241,7 @@ export function FUN_005e87a2(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005e8990(in_ECX, param_1, param_2, param_3) {
+export function FUN_005e8990(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -7501,7 +7528,7 @@ export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 72 bytes
 // ============================================================
 
-export function FUN_005ea578(in_EAX, param_1) {
+export function FUN_005ea578(in_EAX = G.in_EAX, param_1) {
 
 
   // in_EAX → promoted to parameter
@@ -7581,7 +7608,7 @@ export function FUN_005ea610(param_1) {
 // Size: 77 bytes
 // ============================================================
 
-export function FUN_005ea677(in_EAX) {
+export function FUN_005ea677(in_EAX = G.in_EAX) {
 
 
   // in_EAX → promoted to parameter
@@ -7856,7 +7883,7 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
         return;
       }
       _this = FUN_005ea7d7(param_2,s32(param_1, 0xb8));
-      if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((_this !== 0x0) && ((((iVar1 = FUN_005c5e60(), iVar1 === 6 && (pcVar4 = streambuf::egptr(_this), pcVar4 !== 0x0)) || ((iVar1 = FUN_005c5e60(), iVar1 === 2 && (iVar1 = FUN_005c5ec0(), iVar1 !== 0)))) || (((iVar1 = FUN_005c5e60(), iVar1 === 4 || (iVar1 = FUN_005c5e60(), iVar1 === 7)) || (iVar1 = FUN_005c5e60(), iVar1 === 10)))))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+      if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
          /*JOINED*/
             /*JOINED*/
            /*JOINED*/
@@ -8143,7 +8170,7 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eb2f0(in_ECX) {
+export function FUN_005eb2f0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -8161,7 +8188,7 @@ export function FUN_005eb2f0(in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eb330(in_ECX) {
+export function FUN_005eb330(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -8381,7 +8408,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
       }
       sVar1 = ((((param_3) >>> 0) >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_1c = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_1c = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0x0:
           local_1c = local_1c + -1;
@@ -8400,7 +8427,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_1c);
           break;
         case 0x2:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(local_14);');
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
@@ -8409,7 +8436,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_1c);
           break;
         case 0x3:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(local_14);');
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
@@ -8431,7 +8458,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
       }
       else {
         if (param_2 !== 0x115) switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
-        // DEVIATION: MFC — local_1c = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_1c = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0x0:
           local_1c = local_1c + -1;
@@ -8450,7 +8477,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_1c);
           break;
         case 0x2:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(local_14);');
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
@@ -8459,7 +8486,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_1c);
           break;
         case 0x3:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(local_14);');
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
@@ -8811,7 +8838,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       }
       sVar1 = ((param_3 >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -8830,7 +8857,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -8839,7 +8866,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -8863,7 +8890,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         }
       }
       if (param_2 === 0x115) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -8882,7 +8909,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -8891,7 +8918,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -8987,7 +9014,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_24, local_34, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
     }
 // switchD_005ecda6_caseD_6: (code below also in switchD_005ecda6_caseD_6_helper, kept for 1:1 audit)
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    devLog('MFC', 'local_10 = CSplitterWnd::IsTracking(local_14);');
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -9050,7 +9077,7 @@ export function FUN_005ecf20() {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005ecf50(in_ECX, param_1, param_2) {
+export function FUN_005ecf50(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9068,7 +9095,7 @@ export function FUN_005ecf50(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ecf90(in_ECX, param_1, param_2) {
+export function FUN_005ecf90(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9086,7 +9113,7 @@ export function FUN_005ecf90(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ecfd0(in_ECX, param_1, param_2) {
+export function FUN_005ecfd0(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9104,7 +9131,7 @@ export function FUN_005ecfd0(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed010(in_ECX, param_1, param_2) {
+export function FUN_005ed010(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9122,7 +9149,7 @@ export function FUN_005ed010(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed050(in_ECX, param_1, param_2) {
+export function FUN_005ed050(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9140,7 +9167,7 @@ export function FUN_005ed050(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed090(in_ECX, param_1, param_2) {
+export function FUN_005ed090(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9158,7 +9185,7 @@ export function FUN_005ed090(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed0d0(in_ECX, param_1, param_2) {
+export function FUN_005ed0d0(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9176,7 +9203,7 @@ export function FUN_005ed0d0(in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed110(in_ECX, param_1, param_2) {
+export function FUN_005ed110(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9194,7 +9221,7 @@ export function FUN_005ed110(in_ECX, param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed150(in_ECX, param_1) {
+export function FUN_005ed150(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9212,7 +9239,7 @@ export function FUN_005ed150(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed190(in_ECX, param_1) {
+export function FUN_005ed190(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9230,7 +9257,7 @@ export function FUN_005ed190(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed1d0(in_ECX, param_1) {
+export function FUN_005ed1d0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9248,7 +9275,7 @@ export function FUN_005ed1d0(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed210(in_ECX, param_1) {
+export function FUN_005ed210(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9266,7 +9293,7 @@ export function FUN_005ed210(in_ECX, param_1) {
 // Size: 48 bytes
 // ============================================================
 
-export function FUN_005ed250(in_ECX) {
+export function FUN_005ed250(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -9288,7 +9315,7 @@ export function FUN_005ed250(in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed290(in_ECX) {
+export function FUN_005ed290(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9306,7 +9333,7 @@ export function FUN_005ed290(in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed2c0(in_ECX) {
+export function FUN_005ed2c0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9324,7 +9351,7 @@ export function FUN_005ed2c0(in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed2f0(in_ECX) {
+export function FUN_005ed2f0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9342,7 +9369,7 @@ export function FUN_005ed2f0(in_ECX) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed320(in_ECX, param_1) {
+export function FUN_005ed320(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9360,7 +9387,7 @@ export function FUN_005ed320(in_ECX, param_1) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed360(in_ECX, param_1, param_2) {
+export function FUN_005ed360(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9378,7 +9405,7 @@ export function FUN_005ed360(in_ECX, param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed3a0(in_ECX, param_1) {
+export function FUN_005ed3a0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9396,7 +9423,7 @@ export function FUN_005ed3a0(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed3e0(in_ECX, param_1) {
+export function FUN_005ed3e0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9414,7 +9441,7 @@ export function FUN_005ed3e0(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed420(in_ECX, param_1) {
+export function FUN_005ed420(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9432,7 +9459,7 @@ export function FUN_005ed420(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed460(in_ECX, param_1) {
+export function FUN_005ed460(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9450,7 +9477,7 @@ export function FUN_005ed460(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed4a0(in_ECX, param_1) {
+export function FUN_005ed4a0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9468,7 +9495,7 @@ export function FUN_005ed4a0(in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed4e0(in_ECX, param_1) {
+export function FUN_005ed4e0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9486,7 +9513,7 @@ export function FUN_005ed4e0(in_ECX, param_1) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed520(in_ECX) {
+export function FUN_005ed520(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9504,7 +9531,7 @@ export function FUN_005ed520(in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed550(in_ECX) {
+export function FUN_005ed550(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9535,7 +9562,7 @@ export function FUN_005ed580() {
 // Size: 69 bytes
 // ============================================================
 
-export function FUN_005ed5a0(in_ECX, param_1, param_2) {
+export function FUN_005ed5a0(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9555,7 +9582,7 @@ export function FUN_005ed5a0(in_ECX, param_1, param_2) {
 // Size: 65 bytes
 // ============================================================
 
-export function FUN_005ed5f0(in_ECX, param_1) {
+export function FUN_005ed5f0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9665,7 +9692,7 @@ export function IsTracking_005ED6C0(_this) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005ed6e0(in_ECX) {
+export function FUN_005ed6e0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10513,7 +10540,7 @@ export function FUN_005ee591(param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ee6b1(in_ECX) {
+export function FUN_005ee6b1(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10532,7 +10559,7 @@ export function FUN_005ee6b1(in_ECX) {
 // Size: 116 bytes
 // ============================================================
 
-export function FUN_005ee6e3(in_ECX, param_1, param_2) {
+export function FUN_005ee6e3(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -10556,7 +10583,7 @@ export function FUN_005ee6e3(in_ECX, param_1, param_2) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_005ee757(in_ECX) {
+export function FUN_005ee757(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -10579,7 +10606,7 @@ export function FUN_005ee757(in_ECX) {
 // Size: 116 bytes
 // ============================================================
 
-export function FUN_005ee7b1(in_ECX, param_1, param_2) {
+export function FUN_005ee7b1(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -10593,7 +10620,7 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
   }
   uVar3 = 0x4000010a;
   uVar2 = G.DAT_006e4ff0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(param_1);');
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,param_2);
   w32(in_ECX, 0, iVar1);
   SendMessageA(s32(in_ECX, 0),0x477,0,0x639d4c);
@@ -10607,7 +10634,7 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_005ee825(in_ECX, param_1) {
+export function FUN_005ee825(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -10623,7 +10650,7 @@ export function FUN_005ee825(in_ECX, param_1) {
   uVar4 = 0;
   uVar3 = 0x4000010a;
   uVar2 = G.DAT_006e4ff0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(param_1);');
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,uVar4);
   w32(in_ECX, 0, iVar1);
   return;
@@ -10636,7 +10663,7 @@ export function FUN_005ee825(in_ECX, param_1) {
 // Size: 71 bytes
 // ============================================================
 
-export function FUN_005ee87f(in_ECX, param_1) {
+export function FUN_005ee87f(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10653,7 +10680,7 @@ export function FUN_005ee87f(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee8c6(in_ECX) {
+export function FUN_005ee8c6(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10669,7 +10696,7 @@ export function FUN_005ee8c6(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee8f1(in_ECX) {
+export function FUN_005ee8f1(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10685,7 +10712,7 @@ export function FUN_005ee8f1(in_ECX) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005ee91c(in_ECX, param_1) {
+export function FUN_005ee91c(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10701,7 +10728,7 @@ export function FUN_005ee91c(in_ECX, param_1) {
 // Size: 70 bytes
 // ============================================================
 
-export function FUN_005ee94b(in_ECX) {
+export function FUN_005ee94b(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10719,7 +10746,7 @@ export function FUN_005ee94b(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee991(in_ECX) {
+export function FUN_005ee991(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10735,7 +10762,7 @@ export function FUN_005ee991(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee9bc(in_ECX) {
+export function FUN_005ee9bc(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10751,7 +10778,7 @@ export function FUN_005ee9bc(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee9e7(in_ECX) {
+export function FUN_005ee9e7(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10767,7 +10794,7 @@ export function FUN_005ee9e7(in_ECX) {
 // Size: 40 bytes
 // ============================================================
 
-export function FUN_005eea12(in_ECX, param_1) {
+export function FUN_005eea12(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10783,7 +10810,7 @@ export function FUN_005eea12(in_ECX, param_1) {
 // Size: 163 bytes
 // ============================================================
 
-export function FUN_005eea3a(in_ECX) {
+export function FUN_005eea3a(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -10813,7 +10840,7 @@ export function FUN_005eea3a(in_ECX) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeadd(in_ECX, param_1, param_2) {
+export function FUN_005eeadd(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -10829,7 +10856,7 @@ export function FUN_005eeadd(in_ECX, param_1, param_2) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeb11(in_ECX, param_1, param_2) {
+export function FUN_005eeb11(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -10845,7 +10872,7 @@ export function FUN_005eeb11(in_ECX, param_1, param_2) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005eeb45(in_ECX) {
+export function FUN_005eeb45(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10862,7 +10889,7 @@ export function FUN_005eeb45(in_ECX) {
 // Size: 36 bytes
 // ============================================================
 
-export function FUN_005eeb7e(in_ECX) {
+export function FUN_005eeb7e(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10878,7 +10905,7 @@ export function FUN_005eeb7e(in_ECX) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeba2(in_ECX, param_1) {
+export function FUN_005eeba2(in_ECX = G.in_ECX, param_1) {
 
 
   let wParam;
@@ -10886,7 +10913,7 @@ export function FUN_005eeba2(in_ECX, param_1) {
   let lParam;
   
   lParam = 0;
-  // DEVIATION: MFC — wParam = CSplitterWnd::IsTracking(param_1);
+  devLog('MFC', 'wParam = CSplitterWnd::IsTracking(param_1);');
   SendMessageA(s32(in_ECX, 0),0x47f,wParam,lParam);
   return;
 }
@@ -10898,7 +10925,7 @@ export function FUN_005eeba2(in_ECX, param_1) {
 // Size: 159 bytes
 // ============================================================
 
-export function FUN_005eebd6(in_ECX) {
+export function FUN_005eebd6(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10942,7 +10969,7 @@ export function IsTracking_005EEC80(_this) {
 // Size: 35 bytes
 // ============================================================
 
-export function FUN_005eeca0(in_ECX) {
+export function FUN_005eeca0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10958,7 +10985,7 @@ export function FUN_005eeca0(in_ECX) {
 // Size: 88 bytes
 // ============================================================
 
-export function FUN_005eecc3(in_ECX, param_1) {
+export function FUN_005eecc3(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -10983,7 +11010,7 @@ export function FUN_005eecc3(in_ECX, param_1) {
 // Size: 40 bytes
 // ============================================================
 
-export function FUN_005eed1b(in_ECX) {
+export function FUN_005eed1b(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11001,7 +11028,7 @@ export function FUN_005eed1b(in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eed43(in_ECX) {
+export function FUN_005eed43(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11016,7 +11043,7 @@ export function FUN_005eed43(in_ECX) {
 // Size: 91 bytes
 // ============================================================
 
-export function FUN_005eed76(in_ECX, param_1) {
+export function FUN_005eed76(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -11054,7 +11081,7 @@ export function FUN_005eedd1() {
 // Size: 99 bytes
 // ============================================================
 
-export function FUN_005eedec(in_ECX, param_1, param_2) {
+export function FUN_005eedec(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -11316,7 +11343,7 @@ export function FUN_005ef356(param_1, param_2, param_3, param_4) {
 // Size: 192 bytes
 // ============================================================
 
-export function FUN_005ef41e(in_EAX, param_1, param_2) {
+export function FUN_005ef41e(in_EAX = G.in_EAX, param_1, param_2) {
 
 
   // in_EAX → promoted to parameter
@@ -11388,7 +11415,7 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
 // Size: 77 bytes
 // ============================================================
 
-export function FUN_005ef58e(in_EAX) {
+export function FUN_005ef58e(in_EAX = G.in_EAX) {
 
 
   // in_EAX → promoted to parameter
@@ -11655,7 +11682,7 @@ export function FUN_005efcde(param_1, param_2) {
 // Size: 56 bytes
 // ============================================================
 
-export function FUN_005efd70(in_ECX, param_1) {
+export function FUN_005efd70(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -11673,22 +11700,22 @@ export function FUN_005efd70(in_ECX, param_1) {
 // Size: 194 bytes
 // ============================================================
 
-export function FUN_005efdc0(in_ECX) {
+export function FUN_005efdc0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005e5ea0();
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString((in_ECX + 0x44)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = ((local_8) << 8 | (1));
   FUN_005f0520();
   w32(in_ECX, 0xb0, 0);
@@ -11697,7 +11724,7 @@ export function FUN_005efdc0(in_ECX) {
   w32(in_ECX, 0xac, 0);
   w32(in_ECX, 0xcc, 0);
   w32(in_ECX, 0xbc, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -11708,19 +11735,19 @@ export function FUN_005efdc0(in_ECX) {
 // Size: 123 bytes
 // ============================================================
 
-export function FUN_005efeb0(in_ECX) {
+export function FUN_005efeb0(in_ECX = G.in_ECX) {
 
 
   let uVar1;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   local_8 = 2;
   uVar1 = FUN_005ef5db(s32(in_ECX, 0xb0));
@@ -11730,7 +11757,7 @@ export function FUN_005efeb0(in_ECX) {
   FUN_005eff2b();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_005eff3a();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_005eff62();
   FUN_005eff75();
   return;
@@ -11797,9 +11824,9 @@ export function FUN_005eff75(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -11810,7 +11837,7 @@ export function FUN_005eff75(unaff_EBP) {
 // Size: 105 bytes
 // ============================================================
 
-export function FUN_005eff83(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005eff83(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -11833,7 +11860,7 @@ export function FUN_005eff83(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 106 bytes
 // ============================================================
 
-export function FUN_005effec(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005effec(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -12281,7 +12308,7 @@ if (true) {
       }
       sVar1 = ((param_3 >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12300,7 +12327,7 @@ if (true) {
           FUN_005ed3e0(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12309,7 +12336,7 @@ if (true) {
           FUN_005ed3e0(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12333,7 +12360,7 @@ if (true) {
         }
       }
       if (param_2 === 0x115) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12352,7 +12379,7 @@ if (true) {
           FUN_005ed460(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12361,7 +12388,7 @@ if (true) {
           FUN_005ed460(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12457,7 +12484,7 @@ if (true) {
       switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_24, local_34, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
     }
   // switchD_005ecda6_caseD_6:
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    devLog('MFC', 'local_10 = CSplitterWnd::IsTracking(local_14);');
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -12469,7 +12496,7 @@ if (true) {
 }
 
 function switchD_005ecda6_caseD_6_helper(local_10, local_14, local_34, param_1, param_2, param_3, param_4, uVar2) {
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    devLog('MFC', 'local_10 = CSplitterWnd::IsTracking(local_14);');
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -12577,7 +12604,7 @@ if (true) {
       }
       sVar1 = ((param_3 >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12596,7 +12623,7 @@ if (true) {
           FUN_005ed3e0(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12605,7 +12632,7 @@ if (true) {
           FUN_005ed3e0(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12629,7 +12656,7 @@ if (true) {
         }
       }
       if (param_2 === 0x115) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12648,7 +12675,7 @@ if (true) {
           FUN_005ed460(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12657,7 +12684,7 @@ if (true) {
           FUN_005ed460(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12753,7 +12780,7 @@ if (true) {
       switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
     }
   // switchD_005ecda6_caseD_6:
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    devLog('MFC', 'local_10 = CSplitterWnd::IsTracking(local_14);');
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;

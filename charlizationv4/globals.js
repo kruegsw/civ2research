@@ -19,6 +19,12 @@ export const G = {
   _tileData: null,
   _MEM,  // exposed for debugging
 
+  // CPU register globals (set by caller, read by callee)
+  // Default to empty Uint8Arrays so headless in_ECX[offset] doesn't crash
+  in_ECX: new Uint8Array(8192),
+  in_EAX: 0,
+  in_EDX: 0,
+
   // ═══ Array views into flat memory ═══
   DAT_0061c068: new Uint8Array(_BUF, 0),  // 0x61c068
   DAT_0061c06c: new Uint8Array(_BUF, 4),  // 0x61c06c

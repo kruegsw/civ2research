@@ -9,6 +9,12 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { CCommandLineInfo, CharUpperA, CopyRect, DEVIATION, GetActiveView, HELPERS } from '../extern-stubs.js';
+import { InflateRect, IsTracking, MessageBoxA, OffsetRect, Realloc, SetRect } from '../extern-stubs.js';
+import { __strcmpi, _eh_vector_destructor_iterator_, _fgetc, _fputc, _rand, _sprintf } from '../extern-stubs.js';
+import { _strcmp, _strlen, exe, lstrlenA, operator_delete, operator_new } from '../extern-stubs.js';
+import { send_msg_2DC6, send_msg_2F47, send_msg_3035, thunk_init_tile } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408130, FUN_004083b0, FUN_00408420, FUN_00408460 } from './block_00400000.js';
 import { FUN_00408490, FUN_004085f0, FUN_00408650, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';
 import { FUN_0040ef70, FUN_0040efd0, FUN_0040f380, FUN_0040f3e0, FUN_0040f570, FUN_0040f680 } from './block_00400000.js';
@@ -112,7 +118,7 @@ export function IsTracking_00490560(_this) {
 // Size: 365 bytes
 // ============================================================
 
-export function FUN_00490590(in_ECX) {
+export function FUN_00490590(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -149,7 +155,7 @@ export function FUN_00490590(in_ECX) {
 // Size: 5344 bytes
 // ============================================================
 
-export function FUN_004906fd(in_ECX) {
+export function FUN_004906fd(in_ECX = G.in_ECX) {
 
 
   let cVar1;
@@ -292,7 +298,7 @@ export function FUN_004906fd(in_ECX) {
     uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
     FUN_005f22d0(G.DAT_00679640,uVar3);
     local_38 = FUN_0040efd0(G.DAT_00679640);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX);
     FUN_00452c14(local_70,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right, local_34[0].bottom);
                        /*JOINED*/
@@ -492,7 +498,7 @@ export function FUN_004906fd(in_ECX) {
         uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
         FUN_005f22d0(G.DAT_00679640,uVar3);
         local_38 = FUN_0040efd0(G.DAT_00679640);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         SetRect(local_34[0],local_50,local_5c,local_38 + local_50 + 5,local_5c + extraout_EAX_00);
         FUN_00452c14(s8(G.DAT_00627cce[local_7c * 0x18 + local_68]),local_50,local_5c, 4,local_34[0].left,local_34[0].top,local_34[0].right,local_34[0].bottom);
                            /*JOINED*/
@@ -536,7 +542,7 @@ export function FUN_004906fd(in_ECX) {
       uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
       FUN_005f22d0(G.DAT_00679640,uVar3);
       local_38 = FUN_0040efd0(G.DAT_00679640);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_01);
       FUN_00452c14(s8(G.DAT_00627ccd[local_7c * 0x18]),local_58,local_5c,4, local_34[0].left,local_34[0].top,local_34[0].right,local_34[0].bottom);
                          /*JOINED*/
@@ -584,7 +590,7 @@ export function FUN_004906fd(in_ECX) {
     uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
     FUN_005f22d0(G.DAT_00679640,uVar3);
     local_38 = FUN_0040efd0(G.DAT_00679640);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_02);
     FUN_00452c14(local_7c + 0xb,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right, local_34[0].bottom);
                        /*JOINED*/
@@ -595,7 +601,7 @@ export function FUN_004906fd(in_ECX) {
       uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
       FUN_005f22d0(G.DAT_00679640,uVar3);
       local_38 = FUN_0040efd0(G.DAT_00679640);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_03);
       FUN_00452c14(local_7c + 0x16,local_58,local_5c,4,local_34[0].left,local_34[0].top, local_34[0].right,local_34[0].bottom);
                          /*JOINED*/
@@ -614,7 +620,7 @@ export function FUN_004906fd(in_ECX) {
 // Size: 321 bytes
 // ============================================================
 
-export function FUN_00491c20(in_ECX, param_1) {
+export function FUN_00491c20(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -640,9 +646,9 @@ export function FUN_00491c20(in_ECX, param_1) {
       FUN_004906fd();
       FUN_00408460();
       FUN_004518d0();
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0x401843); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       FUN_005c61b0();
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(DAT_006a66b0,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     }
   }
   return;
@@ -678,7 +684,7 @@ export function FUN_00491d61(param_1) {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_004923c0(in_ECX) {
+export function FUN_004923c0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -798,21 +804,21 @@ export function FUN_0049275a(param_1, param_2) {
 
   let iVar1;
   let sVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005d7c00();
   local_8 = 0;
   iVar1 = Realloc(param_1);
   if (iVar1 === 0) {
     w32(param_2, 0, 0);
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00492868();
     FUN_0049287e();
     return;
@@ -825,7 +831,7 @@ export function FUN_0049275a(param_1, param_2) {
   if (iVar1 === 0) {
     w32(param_2, 0, 0);
     FUN_00421c30();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00492868();
     FUN_0049287e();
     return;
@@ -834,7 +840,7 @@ export function FUN_0049275a(param_1, param_2) {
   FUN_00421c30();
   sVar2 = _strlen(G.DAT_00679640);
   w32(param_2, 0, s32(param_2, 0) + sVar2 + 2);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00492868();
   FUN_0049287e();
   return;
@@ -865,9 +871,9 @@ export function FUN_0049287e(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -948,7 +954,7 @@ export function FUN_00492a80() {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_00492ab0(in_ECX) {
+export function FUN_00492ab0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -964,7 +970,7 @@ export function FUN_00492ab0(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00492ae0(in_ECX, param_1) {
+export function FUN_00492ae0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -980,7 +986,7 @@ export function FUN_00492ae0(in_ECX, param_1) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_00492b20(in_ECX, param_1, param_2) {
+export function FUN_00492b20(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -1416,22 +1422,22 @@ export function FUN_00493e83() {
 
 
   let iVar1;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0049621d();
   local_8 = 0;
   iVar1 = FUN_00496402();
   if (iVar1 !== 0) {
     FUN_004965ff();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00493eeb();
   FUN_00493f01();
   return;
@@ -1449,7 +1455,7 @@ export function FUN_00493eeb(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CCommandLineInfo::~CCommandLineInfo((unaff_EBP + -500)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -1464,9 +1470,9 @@ export function FUN_00493f01(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -1482,7 +1488,7 @@ export function FUN_00493f0f(param_1, param_2) {
 
   let pvVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_2c;
   let local_28;
   let local_24;
@@ -1491,10 +1497,10 @@ export function FUN_00493f0f(param_1, param_2) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   G.DAT_0062ca38 = 0;
   G.DAT_0062ca44 = (((G.DAT_006d1168) >>> 0) + param_2 & 7) + 0x53;
   if (s16(G.DAT_0064c6a6, param_2 * 0x594) < 1) {
@@ -1522,7 +1528,7 @@ export function FUN_00493f0f(param_1, param_2) {
   else {
     local_24 = FUN_004942a3();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   G.DAT_0062ca34 = local_24;
   if (((local_24 !== 0) && ((G.DAT_00655aea & 4) !== 0)) && (iVar2 = thunk_init_tile(param_1,param_2), iVar2 !== 0)) {
      /*JOINED*/
@@ -1537,7 +1543,7 @@ export function FUN_00493f0f(param_1, param_2) {
     FUN_0059d3b1(G.DAT_0062ca34 + 0x224);
     FUN_00494704();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -1597,19 +1603,19 @@ export function FUN_004941ee(param_1) {
 // Size: 200 bytes
 // ============================================================
 
-export function FUN_004942a3(in_ECX) {
+export function FUN_004942a3(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0044c730();
   local_8 = 0;
   FUN_0044c5a0();
@@ -1624,7 +1630,7 @@ export function FUN_004942a3(in_ECX) {
   local_8 = ((local_8) << 8 | (5));
   FUN_005bcaa7(in_ECX + 0xb8);
   in_ECX[0x1088] = 0;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -1638,14 +1644,14 @@ export function FUN_004942a3(in_ECX) {
 export function FUN_004943c9() {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   G.DAT_0062ca40 = 0;
   local_8 = 4;
@@ -1658,7 +1664,7 @@ export function FUN_004943c9() {
   FUN_0049447c();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_0049448b();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0049449a();
   FUN_004944ad();
   return;
@@ -1690,7 +1696,7 @@ export function FUN_0049445e(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((s32(unaff_EBP, -0x10) + 0x658)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -1761,9 +1767,9 @@ export function FUN_004944ad(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -1774,7 +1780,7 @@ export function FUN_004944ad(unaff_EBP) {
 // Size: 585 bytes
 // ============================================================
 
-export function init_tile_004944BB(in_ECX, param_1, param_2) {
+export function init_tile_004944BB(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let uVar1;
@@ -1857,7 +1863,7 @@ export function init_tile_004944BB(in_ECX, param_1, param_2) {
 // Size: 236 bytes
 // ============================================================
 
-export function FUN_00494704(in_ECX) {
+export function FUN_00494704(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -1931,7 +1937,7 @@ export function FUN_0049488e() {
 // Size: 99 bytes
 // ============================================================
 
-export function FUN_004948e6(in_ECX) {
+export function FUN_004948e6(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -1949,13 +1955,13 @@ export function FUN_004948e6(in_ECX) {
 // Size: 497 bytes
 // ============================================================
 
-export function FUN_00494949(in_ECX) {
+export function FUN_00494949(in_ECX = G.in_ECX) {
 
 
   let iVar1;
   let uVar2;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let puVar3;
   let puVar4;
   let puVar5;
@@ -1970,10 +1976,10 @@ export function FUN_00494949(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005c64da();
   local_8 = 0;
   local_454 = (s32(in_ECX, 0xc0) + -0x280) / 3;
@@ -1982,7 +1988,7 @@ export function FUN_00494949(in_ECX) {
   iVar1 = FUN_005bf5e1(u8(G.DAT_0064c6b5[u8(in_ECX[0x1085]) * 0x594]) + 200,10,0xec ,local_44c);
                        /*JOINED*/
   if (iVar1 === 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00494b3a();
     FUN_00494b50();
     return;
@@ -1996,7 +2002,7 @@ export function FUN_00494949(in_ECX) {
   FUN_005c6b63(local_4d0,0x6a,0x28);
   FUN_005c6da8(0x6a,0x28,local_4d0);
   FUN_005c0cc5(in_ECX + 0x224);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00494b3a();
   FUN_00494b50();
   return;
@@ -2027,9 +2033,9 @@ export function FUN_00494b50(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2040,12 +2046,12 @@ export function FUN_00494b50(unaff_EBP) {
 // Size: 530 bytes
 // ============================================================
 
-export function FUN_00494b5f(in_ECX) {
+export function FUN_00494b5f(in_ECX = G.in_ECX) {
 
 
   let iVar1;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_4f4 = new Array(16).fill(0);
   let local_4e4;
   let local_4e0;
@@ -2061,11 +2067,11 @@ export function FUN_00494b5f(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = 0;
   FUN_005c64da();
   local_8 = 1;
@@ -2078,7 +2084,7 @@ export function FUN_00494b5f(in_ECX) {
     FUN_00494d71();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00494d7d();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00494d89();
     FUN_00494d9f();
     return;
@@ -2090,7 +2096,7 @@ export function FUN_00494b5f(in_ECX) {
     FUN_00494d71();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00494d7d();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00494d89();
     FUN_00494d9f();
     return;
@@ -2109,7 +2115,7 @@ export function FUN_00494b5f(in_ECX) {
   FUN_00494d71();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00494d7d();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00494d89();
   FUN_00494d9f();
   return;
@@ -2168,9 +2174,9 @@ export function FUN_00494d9f(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2204,14 +2210,14 @@ export function FUN_00494dae(param_1) {
 // Size: 3512 bytes
 // ============================================================
 
-export function FUN_00494e2a(in_ECX) {
+export function FUN_00494e2a(in_ECX = G.in_ECX) {
 
 
   let iVar1;
   let uVar2;
   // in_ECX → promoted to parameter
   let iVar3;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_7d0 = new Array(16).fill(0);
   let local_7c0;
   let local_7bc;
@@ -2248,13 +2254,13 @@ export function FUN_00494e2a(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0043c460(0,0xb);
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _eh_vector_constructor_iterator_(local_604,0x3c,5,CString::CString,FUN_005cde4d); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = 1;
   FUN_005c64da();
   local_8 = 2;
@@ -2328,7 +2334,7 @@ export function FUN_00494e2a(in_ECX) {
     FUN_00495bee();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00495bfa();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00495c10();
     FUN_00495c26();
     return;
@@ -2342,7 +2348,7 @@ export function FUN_00494e2a(in_ECX) {
     FUN_00495bee();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00495bfa();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00495c10();
     FUN_00495c26();
     return;
@@ -2374,7 +2380,7 @@ export function FUN_00494e2a(in_ECX) {
       FUN_00495bee();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00495bfa();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_00495c10();
       FUN_00495c26();
       return;
@@ -2573,9 +2579,9 @@ export function FUN_00495c26(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2586,12 +2592,12 @@ export function FUN_00495c26(unaff_EBP) {
 // Size: 410 bytes
 // ============================================================
 
-export function FUN_00495c35(in_ECX) {
+export function FUN_00495c35(in_ECX = G.in_ECX) {
 
 
   let iVar1;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_59c = new Array(16).fill(0);
   let local_58c;
   let local_588 = new Array(192).fill(0);
@@ -2602,11 +2608,11 @@ export function FUN_00495c35(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = 0;
   FUN_005c64da();
   local_8 = 1;
@@ -2620,7 +2626,7 @@ export function FUN_00495c35(in_ECX) {
     FUN_00495dcf();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00495ddb();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00495de7();
     FUN_00495dfd();
     return;
@@ -2634,7 +2640,7 @@ export function FUN_00495c35(in_ECX) {
   FUN_00495dcf();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00495ddb();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00495de7();
   FUN_00495dfd();
   return;
@@ -2693,9 +2699,9 @@ export function FUN_00495dfd(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2706,12 +2712,12 @@ export function FUN_00495dfd(unaff_EBP) {
 // Size: 756 bytes
 // ============================================================
 
-export function FUN_00495e0c(in_ECX) {
+export function FUN_00495e0c(in_ECX = G.in_ECX) {
 
 
   let iVar1;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_608 = new Array(7).fill(0);
   let local_601;
   let local_5f4 = new Array(300).fill(0);
@@ -2721,10 +2727,10 @@ export function FUN_00495e0c(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005c64da();
   local_8 = 0;
   // DEVIATION: C pointer write — *(undefined *)(in_ECX + 0x1084) = (&DAT_0064c6a6)[(uint)*(byte *)(in_ECX + 0x1085) * 0x594];
@@ -2740,7 +2746,7 @@ export function FUN_00495e0c(in_ECX) {
   FUN_0043c840(local_4c8,G.DAT_0062cba8);
   iVar1 = FUN_00564713(local_4c8);
   if (iVar1 === 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00496100();
     FUN_00496116();
     return;
@@ -2753,12 +2759,12 @@ export function FUN_00495e0c(in_ECX) {
     if (local_14 === -0x7ffbfeac) {
       FUN_00421ea0(s_VFWNOTREGISTERED_0062cbb4);
     }
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00496100();
     FUN_00496116();
     return;
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs((in_ECX + 0x65c),0x402441); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_005dd761(1);
   FUN_005c65f9(u8(in_ECX[0x1084]) + 1000);
   FUN_005c6b63(local_5f4,0x92,100);
@@ -2766,7 +2772,7 @@ export function FUN_00495e0c(in_ECX) {
   FUN_005dd561(in_ECX + 0x224);
   FUN_00450390(in_ECX + 0x224);
   FUN_005dd45d(0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00496100();
   FUN_00496116();
   return;
@@ -2797,9 +2803,9 @@ export function FUN_00496116(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -2842,19 +2848,19 @@ export function FUN_00496125() {
 // Size: 190 bytes
 // ============================================================
 
-export function FUN_0049621d(in_ECX) {
+export function FUN_0049621d(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0044c5a0();
   local_8 = 0;
   FUN_005bd630();
@@ -2867,7 +2873,7 @@ export function FUN_0049621d(in_ECX) {
   w32(in_ECX, 0, PTR_FUN_0061d6c0);
   in_ECX[0x77] = 0;
   in_ECX[0x78] = 0;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -2886,14 +2892,14 @@ export function FUN_0049621d(in_ECX) {
 export function _CCommandLineInfo_0049632A(_this) {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   // DEVIATION: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6c0;
   local_8 = 0;
   local_8 = 3;
@@ -2904,7 +2910,7 @@ export function _CCommandLineInfo_0049632A(_this) {
   FUN_004963c3();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_004963d2();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004963e1();
   FUN_004963f4();
   return;
@@ -2922,7 +2928,7 @@ export function FUN_004963a5(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((s32(unaff_EBP, -0x10) + 0x1d4)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -2993,9 +2999,9 @@ export function FUN_004963f4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3028,7 +3034,7 @@ export function FUN_00496402() {
 // Size: 332 bytes
 // ============================================================
 
-export function FUN_004964b3(in_ECX) {
+export function FUN_004964b3(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3066,7 +3072,7 @@ export function FUN_004964b3(in_ECX) {
 // Size: 197 bytes
 // ============================================================
 
-export function FUN_004965ff(in_ECX) {
+export function FUN_004965ff(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3075,10 +3081,10 @@ export function FUN_004965ff(in_ECX) {
   FUN_0040f380();
   FUN_004085f0();
   if (2 < G.DAT_00655b02) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs((in_ECX + 0x48),0x403585); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   FUN_005c61b0();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs((in_ECX + 0x48),0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_004503d0();
   FUN_00419b80();
   FUN_0043c5f0();
@@ -3094,7 +3100,7 @@ export function FUN_004965ff(in_ECX) {
 // Size: 1400 bytes
 // ============================================================
 
-export function FUN_004966c4(in_ECX) {
+export function FUN_004966c4(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -3121,9 +3127,9 @@ export function FUN_004966c4(in_ECX) {
   if (iVar1 !== 0) {
     FUN_00450340();
     iVar1 = G.DAT_00633598 + G.DAT_00633588 * -2;
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
     FUN_005a9b5d(in_ECX,G.DAT_0063357c,0,G.DAT_00633588,pCVar2,iVar1,0,G.DAT_00633588);
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
     iVar1 = G.DAT_0063359c + G.DAT_00633588 * -2;
     local_30 = G.DAT_00633588;
     iVar3 = G.DAT_00633598 - G.DAT_00633588;
@@ -3133,7 +3139,7 @@ export function FUN_004966c4(in_ECX) {
     }
     iVar4 = G.DAT_0063359c + G.DAT_00633588 * -2;
     local_38 = G.DAT_00633588 + G.DAT_00633598 + 0x6e;
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
     iVar3 = G.DAT_00633588;
     iVar1 = G.DAT_00633588 * -2;
     for (local_34 = 0; local_34 < 2; local_34 = local_34 + 1) {
@@ -3141,10 +3147,10 @@ export function FUN_004966c4(in_ECX) {
       local_38 = local_38 + G.DAT_0063359c + 0x6e;
     }
     iVar1 = G.DAT_0063359c * 2;
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
     iVar4 = G.DAT_00633588;
     iVar3 = G.DAT_00633588 * -2;
-    // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(in_ECX);');
     FUN_005a9b5d(in_ECX,G.DAT_0063357c,iVar4,pCVar5 + G.DAT_00633588 + G.DAT_0063359c * -2 + -0x24, pCVar2 + iVar3,iVar1 + 0x24,iVar4, pCVar5 + G.DAT_00633588 + G.DAT_0063359c * -2 + -0x24);
                        /*JOINED*/
                        /*JOINED*/
@@ -3179,7 +3185,7 @@ export function FUN_004966c4(in_ECX) {
       FUN_005a99fc(in_ECX,local_28[0],0x5e,0x5e);
       InflateRect(local_28[0],-1,-1);
     }
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
     iVar3 = FUN_0040efd0(local_8);
     iVar1 = G.DAT_00633588;
     iVar4 = (pCVar2 >> 1) - (iVar3 + 4 >> 1);
@@ -3223,7 +3229,7 @@ export function FUN_00496c3c(param_1, param_2) {
     local_8 = (iVar1 + -0x48);
   }
   local_14 = s32(local_8, 0x1e0);
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(local_8);
+  devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(local_8);');
   if (param_2 <= pCVar2 + G.DAT_0063359c * -2 + -0x24) {
     iVar1 = (param_2 - G.DAT_00633598) / (G.DAT_0063359c + 0x6e);
     // DEVIATION: C pointer write — *(int *)(local_8 + 0x1e0) =
@@ -3271,7 +3277,7 @@ export function FUN_00496e5d(param_1, param_2) {
     local_8 = (iVar1 + -0x48);
   }
   FUN_00496c3c(param_1,param_2);
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(local_8);
+  devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(local_8);');
   if (param_2 < pCVar2 + G.DAT_0063359c * -2 + -0x24) {
     FUN_00496ecf(100);
   }
@@ -3303,7 +3309,7 @@ export function FUN_00496ecf(param_1) {
   {
     w32(local_8, 0x1e4, s32(local_8, 0x1e4) + 0x15);
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((local_8 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -3314,7 +3320,7 @@ export function FUN_00496ecf(param_1) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_00497bf0(in_ECX, param_1) {
+export function FUN_00497bf0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3347,7 +3353,7 @@ export function FUN_00497c40() {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_00497c90(in_ECX) {
+export function FUN_00497c90(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3362,7 +3368,7 @@ export function FUN_00497c90(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00497cc0(in_ECX, param_1) {
+export function FUN_00497cc0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3378,7 +3384,7 @@ export function FUN_00497cc0(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00497d00(in_ECX, param_1) {
+export function FUN_00497d00(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -3394,7 +3400,7 @@ export function FUN_00497d00(in_ECX, param_1) {
 // Size: 68 bytes
 // ============================================================
 
-export function FUN_00497d40(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_00497d40(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -3665,7 +3671,7 @@ export function FUN_00498310(param_1) {
 export function FUN_0049836a(param_1) {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_348 = new Array(32).fill(0);
   let local_328 = new Array(756).fill(0);
   let local_34 = new Array(32).fill(0);
@@ -3674,10 +3680,10 @@ export function FUN_0049836a(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_0055ae80(1);
@@ -3716,7 +3722,7 @@ export function FUN_0049836a(param_1) {
   FUN_0049882b();
   w32(G.DAT_00673d18, param_1 * 4, 0);
   FUN_0055b046(1);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004985d0();
   FUN_004985e6();
   return;
@@ -3747,9 +3753,9 @@ export function FUN_004985e6(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3763,7 +3769,7 @@ export function FUN_004985e6(unaff_EBP) {
 export function FUN_004985f4(param_1) {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_328 = new Array(32).fill(0);
   let local_308 = new Array(756).fill(0);
   let local_14;
@@ -3771,10 +3777,10 @@ export function FUN_004985f4(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_005a632a(G.DAT_006359d4,s_PASSWORD1_0062cc94,0x1f,G.DAT_0062cc90,0,0,0,1);
@@ -3783,7 +3789,7 @@ export function FUN_004985f4(param_1) {
   G.DAT_00635a3c = 0 /* ADDR:LAB_00402c3e */;
   local_14 = FUN_005a5f34(local_328,0);
   if (local_14 < 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0049875f();
     FUN_00498775();
     return;
@@ -3792,14 +3798,14 @@ export function FUN_004985f4(param_1) {
   local_14 = _strcmp(local_328,G.DAT_00654b74 + param_1 * 0x20);
   FUN_004988b8();
   if (local_14 === 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0049875f();
     FUN_00498775();
     return;
   }
   G.DAT_00635a3c = 0 /* ADDR:LAB_00402c3e */;
   FUN_00421ea0(s_PASSWORD0_0062cca0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0049875f();
   FUN_00498775();
   return;
@@ -3830,9 +3836,9 @@ export function FUN_00498775(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6180,7 +6186,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
     uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
     FUN_005f22d0(G.DAT_00679640,uVar3);
     local_38 = FUN_0040efd0(G.DAT_00679640);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX);
     FUN_00452c14(local_70,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right, local_34[0].bottom);
                        /*JOINED*/
@@ -6380,7 +6386,7 @@ if (true) {
         uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
         FUN_005f22d0(G.DAT_00679640,uVar3);
         local_38 = FUN_0040efd0(G.DAT_00679640);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         SetRect(local_34[0],local_50,local_5c,local_38 + local_50 + 5,local_5c + extraout_EAX_00);
         FUN_00452c14(s8(G.DAT_00627cce[local_7c * 0x18 + local_68]),local_50,local_5c, 4,local_34[0].left,local_34[0].top,local_34[0].right,local_34[0].bottom);
                            /*JOINED*/
@@ -6424,7 +6430,7 @@ if (true) {
       uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
       FUN_005f22d0(G.DAT_00679640,uVar3);
       local_38 = FUN_0040efd0(G.DAT_00679640);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_01);
       FUN_00452c14(s8(G.DAT_00627ccd[local_7c * 0x18]),local_58,local_5c,4, local_34[0].left,local_34[0].top,local_34[0].right,local_34[0].bottom);
                          /*JOINED*/
@@ -6472,7 +6478,7 @@ if (true) {
     uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
     FUN_005f22d0(G.DAT_00679640,uVar3);
     local_38 = FUN_0040efd0(G.DAT_00679640);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_02);
     FUN_00452c14(local_7c + 0xb,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right, local_34[0].bottom);
                        /*JOINED*/
@@ -6483,7 +6489,7 @@ if (true) {
       uVar3 = FUN_004f8a9b(G.DAT_006a7d58,uVar3);
       FUN_005f22d0(G.DAT_00679640,uVar3);
       local_38 = FUN_0040efd0(G.DAT_00679640);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_03);
       FUN_00452c14(local_7c + 0x16,local_58,local_5c,4,local_34[0].left,local_34[0].top, local_34[0].right,local_34[0].bottom);
                          /*JOINED*/
@@ -6507,7 +6513,7 @@ function LAB_004985a2_helper(param_1) {
   FUN_0049882b();
   w32(G.DAT_00673d18, param_1 * 4, 0);
   FUN_0055b046(1);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004985d0();
   FUN_004985e6();
   return;

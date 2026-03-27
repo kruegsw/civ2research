@@ -18,6 +18,16 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { BringWindowToTop, Create, DEVIATION, GetActiveView, GetSystemMetrics, HELPERS } from '../extern-stubs.js';
+import { IsTracking, OnClose, XD_InFlushSendBuffer, __strcmpi, _atexit, block } from '../extern-stubs.js';
+import { citywin_70B8, citywin_70C1, citywin_70D7, citywin_A1B2, citywin_A1C8, citywin_B638 } from '../extern-stubs.js';
+import { citywin_B644, citywin_B650, citywin_B666, debug_log, exe, operator_new } from '../extern-stubs.js';
+import { thunk_city_mouse, thunk_citywin_70E5, thunk_citywin_7B69, thunk_citywin_7F31, thunk_citywin_8177, thunk_citywin_8552 } from '../extern-stubs.js';
+import { thunk_citywin_8ADC, thunk_citywin_8BC5, thunk_citywin_8C84, thunk_citywin_8D24, thunk_citywin_8EC6, thunk_citywin_9028 } from '../extern-stubs.js';
+import { thunk_citywin_92AF, thunk_citywin_9429, thunk_citywin_994F, thunk_citywin_998F, thunk_citywin_9A49, thunk_citywin_9AC0 } from '../extern-stubs.js';
+import { thunk_citywin_BC4F, thunk_citywin_C7A3, thunk_citywin_C859, thunk_citywin_CA8D, thunk_citywin_CCB3, thunk_citywin_CF06 } from '../extern-stubs.js';
+import { thunk_handle_city_disorder_00509590, thunk_load_city_preferences, tie } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_004080f0, FUN_00408130, FUN_00408170 } from './block_00400000.js';
 import { FUN_00408230, FUN_00408270, FUN_004082b0, FUN_004082f0, FUN_00408330, FUN_004083b0 } from './block_00400000.js';
 import { FUN_004083f0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_004086c0, FUN_00408780 } from './block_00400000.js';
@@ -389,7 +399,7 @@ export function FUN_0050101f() {
 
   let uVar1;
   let uVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_4d8 = new Array(16).fill(0);
   let local_4c8 = new Array(72).fill(0);
   let local_480 = new Array(1076).fill(0);
@@ -398,13 +408,13 @@ export function FUN_0050101f() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005bd630();
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = 1;
   FUN_005c64da();
   local_8 = 2;
@@ -413,7 +423,7 @@ export function FUN_0050101f() {
     FUN_0050117b();
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00501187();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00501190();
     FUN_005011a6();
     return;
@@ -433,7 +443,7 @@ export function FUN_0050101f() {
   FUN_0050117b();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00501187();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00501190();
   FUN_005011a6();
   return;
@@ -492,9 +502,9 @@ export function FUN_005011a6(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -598,12 +608,12 @@ export function FUN_005013bc() {
 // Size: 127 bytes
 // ============================================================
 
-export function FUN_00501440(in_ECX) {
+export function FUN_00501440(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((in_ECX + 0x2d8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   w32(in_ECX, 0x15a4, 1);
   w32(in_ECX, 0x15a0, 0);
   w32(in_ECX, 0x15a8, 0);
@@ -656,13 +666,13 @@ export function FUN_005014e5() {
 // Size: 38 bytes
 // ============================================================
 
-export function FUN_0050152b(in_ECX) {
+export function FUN_0050152b(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
   
   FUN_005014e5();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CMiniDockFrameWnd::OnClose(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -673,19 +683,19 @@ export function FUN_0050152b(in_ECX) {
 // Size: 136 bytes
 // ============================================================
 
-export function FUN_00501551(in_ECX) {
+export function FUN_00501551(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0055339f();
   local_8 = 0;
   FUN_0046ab30();
@@ -694,7 +704,7 @@ export function FUN_00501551(in_ECX) {
   local_8 = ((local_8) << 8 | (2));
   w32(in_ECX, 0, PTR_FUN_0061d6d4);
   FUN_00501440();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -705,18 +715,18 @@ export function FUN_00501551(in_ECX) {
 // Size: 105 bytes
 // ============================================================
 
-export function FUN_0050160a(in_ECX) {
+export function FUN_0050160a(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   w32(in_ECX, 0, PTR_FUN_0061d6d4);
   local_8 = 0;
   local_8 = 2;
@@ -725,7 +735,7 @@ export function FUN_0050160a(in_ECX) {
   FUN_00501673();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00501682();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00501691();
   FUN_005016a4();
   return;
@@ -771,7 +781,7 @@ export function FUN_00501691(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(unaff_EBP, -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -786,9 +796,9 @@ export function FUN_005016a4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -799,7 +809,7 @@ export function FUN_005016a4(unaff_EBP) {
 // Size: 129 bytes
 // ============================================================
 
-export function FUN_005016b2(in_ECX, param_1) {
+export function FUN_005016b2(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -821,7 +831,7 @@ export function FUN_005016b2(in_ECX, param_1) {
 // Size: 77 bytes
 // ============================================================
 
-export function FUN_00501733(in_ECX, param_1) {
+export function FUN_00501733(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -840,7 +850,7 @@ export function FUN_00501733(in_ECX, param_1) {
 // Size: 153 bytes
 // ============================================================
 
-export function FUN_00501780(in_ECX, param_1) {
+export function FUN_00501780(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -871,25 +881,25 @@ export function FUN_00501819(param_1) {
   let uVar4;
   let local_10;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (G.DAT_00655b07 !== 0)) {
     uVar4 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar4);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSplitterWnd::IsTracking(DAT_006a91b8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (s8(G.DAT_0064f349[iVar1 * 0x58]) - G.DAT_006a6604 <= param_1) {
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       param_1 = param_1 - (((s8(G.DAT_0064f349[iVar1 * 0x58])) << 16 >> 16) - ((G.DAT_006a6604) << 16 >> 16));
       if (param_1 < G.DAT_006a6604) {
         iVar2 = param_1;
         iVar1 = iVar2;
-        // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         local_10 = FUN_004e75a6(iVar3,iVar1);
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         if (s8(G.DAT_0064f349[iVar1 * 0x58]) < 0x05) {
           if (local_10 === 1) {
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             FUN_00414dd0(s_ELVISERR_00630d84,iVar1);
             return;
           }
@@ -901,7 +911,7 @@ export function FUN_00501819(param_1) {
             local_10 = 1;
           }
         }
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         FUN_004e7549(iVar1,iVar2,local_10);
         FUN_00501780(1);
       }
@@ -917,7 +927,7 @@ export function FUN_00501819(param_1) {
 // Size: 1186 bytes
 // ============================================================
 
-export function FUN_005019c1(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005019c1(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
   let iVar1;
@@ -1043,7 +1053,7 @@ export function FUN_005019c1(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 540 bytes
 // ============================================================
 
-export function FUN_00501e63(in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_00501e63(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -1112,7 +1122,7 @@ export function FUN_00501e63(in_ECX, param_1, param_2, param_3, param_4, param_5
 // Size: 577 bytes
 // ============================================================
 
-export function FUN_0050207f(in_ECX, param_1) {
+export function FUN_0050207f(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -1195,10 +1205,10 @@ export function FUN_005022c0(param_1, param_2) {
   let local_c;
   
   local_1c = -1;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (G.DAT_00655b07 !== 0)) {
     uVar5 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar5);
     iVar1 = FUN_00472cf0(0x40,G.DAT_006aa790);
     iVar2 = FUN_00472cf0(0x20,G.DAT_006aa790);
@@ -1230,36 +1240,36 @@ export function FUN_005022c0(param_1, param_2) {
       }
       if (-1 < local_1c) {
         if (local_1c === 0x14) {
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           w32(G.DAT_0064f370, iVar1 * 0x58, 0);
         }
         else {
           iVar1 = local_1c;
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           iVar1 = FUN_004e78ce(iVar2,iVar1);
           if (iVar1 === 0) {
             if (G.DAT_006a6530[local_1c] !== 0) {
               return;
             }
             if (G.DAT_006a6604 === 0) {
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+              devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               w32(G.DAT_0064f370, iVar1 * 0x58, 0);
             }
             else {
               uVar5 = 1;
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+              devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               FUN_004e790c(iVar1,local_1c,uVar5);
               uVar5 = 0xffffffff;
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+              devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               FUN_004e9719(iVar1,uVar5);
             }
           }
           else {
             uVar5 = 0;
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             FUN_004e790c(iVar1,local_1c,uVar5);
             uVar5 = 1;
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             FUN_004e9719(iVar1,uVar5);
           }
         }
@@ -1277,7 +1287,7 @@ export function FUN_005022c0(param_1, param_2) {
 // Size: 9761 bytes
 // ============================================================
 
-export function FUN_005025d5(in_ECX, param_1) {
+export function FUN_005025d5(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -2180,7 +2190,7 @@ export function FUN_005025d5(in_ECX, param_1) {
 // Size: 1081 bytes
 // ============================================================
 
-export function FUN_00504c05(in_ECX, param_1) {
+export function FUN_00504c05(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2284,7 +2294,7 @@ export function FUN_00504c05(in_ECX, param_1) {
 // Size: 1434 bytes
 // ============================================================
 
-export function FUN_0050503e(in_ECX, param_1) {
+export function FUN_0050503e(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -2439,7 +2449,7 @@ export function FUN_0050503e(in_ECX, param_1) {
 // Size: 137 bytes
 // ============================================================
 
-export function FUN_005055dd(in_ECX, param_1) {
+export function FUN_005055dd(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -2459,7 +2469,7 @@ export function FUN_005055dd(in_ECX, param_1) {
 // Size: 1751 bytes
 // ============================================================
 
-export function FUN_00505666(in_ECX, param_1) {
+export function FUN_00505666(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -2667,18 +2677,18 @@ export function FUN_00505d3d(param_1) {
   
   local_c = 0;
   local_10 = -1;
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((s8(G.DAT_0064f348[iVar3 * 0x58]) === G.DAT_006d1da0) || (G.DAT_00655b07 !== 0)) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (((G.DAT_0064f344[iVar3 * 0x58] & 4) === 0) || ((G.DAT_00655b07 !== 0 && ((G.DAT_00655af0 & 0x80) !== 0)))) {
        /*JOINED*/
       uVar6 = 0;
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004eb4ed(iVar3,uVar6);
       sVar2 = ((G.DAT_006aa76c) << 16 >> 16);
       for (local_14 = 1; local_14 < 0x27; local_14 = local_14 + 1) {
         iVar3 = local_14;
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         iVar3 = FUN_0043d20a(iVar4,iVar3);
         if ((iVar3 !== 0) && (local_c = local_c + 1, ((sVar2 + param_1 + 1) << 16 >> 16) === local_c)) {
           local_10 = local_14;
@@ -2699,13 +2709,13 @@ export function FUN_00505d3d(param_1) {
           if (iVar3 === 0) {
             FUN_0046e020(0x6e,0,0,0);
             uVar6 = 0;
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             FUN_0043d289(iVar3,local_10,uVar6);
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6a2 + (char)(&DAT_0064f348)[iVar3 * 0x58] * 0x594) =
                  // DEVIATION(cont): *(int *)(&DAT_0064c6a2 + (char)(&DAT_0064f348)[iVar3 * 0x58] * 0x594) + bVar1 * uVar5;
                  /*JOINED*/
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             w32(G.DAT_0064f344, iVar3 * 0x58, u32(G.DAT_0064f344, iVar3 * 0x58) | 4);
             thunk_citywin_9429();
             FUN_00569363(1);
@@ -2718,7 +2728,7 @@ export function FUN_00505d3d(param_1) {
     }
     else {
       FUN_0046e020(0x69,0,0,0);
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_00414dd0(s_ALREADYSOLD_00630d94,iVar3);
     }
   }
@@ -2734,7 +2744,7 @@ export function FUN_00505d3d(param_1) {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_00505ffa(in_ECX, param_1) {
+export function FUN_00505ffa(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2923,7 +2933,7 @@ export function FUN_00506637(param_1) {
 
   let iVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar3;
   let uVar4;
   let uVar5;
@@ -2933,27 +2943,27 @@ export function FUN_00506637(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = ((local_8) << 8 | (1));
   if (G.DAT_00630d2c === 0) {
     G.DAT_00630d2c = 1;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if ((s8(G.DAT_0064f348[iVar1 * 0x58]) === G.DAT_006d1da0) || (G.DAT_00655b07 !== 0)) {
       uVar4 = 0;
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004eb4ed(iVar1,uVar4);
       G.DAT_0063605c = 8;
       FUN_005cdea1(0x40,0x20,0);
       FUN_00506448(param_1);
       FUN_0040ffa0(s_CHILDCLICK_00630dbc,1);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340,0x402059); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340,8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       FUN_0059ec88(local_4c,param_1,0);
       uVar5 = 0;
       uVar3 = 4;
@@ -2963,10 +2973,10 @@ export function FUN_00506637(param_1) {
       if (0 < iVar1) {
         if (iVar1 === 3) {
           G.DAT_006560ff[param_1 * 0x20] = 0xb;
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           // DEVIATION: C pointer write — *(undefined2 *)(&DAT_00656102 + param_1 * 0x20) =
                // DEVIATION(cont): *(undefined2 *)(&DAT_0064f340 + iVar1 * 0x58);
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           // DEVIATION: C pointer write — *(undefined2 *)(&DAT_00656104 + param_1 * 0x20) =
                // DEVIATION(cont): *(undefined2 *)(&DAT_0064f342 + iVar1 * 0x58);
         }
@@ -2978,9 +2988,9 @@ export function FUN_00506637(param_1) {
                  // DEVIATION(cont): (short)((int)((int)(char)(&DAT_0064b1c8) [(uint)(byte)(&DAT_006560f6)[param_1 * 0x20] * 0x14] * (uint)DAT_0064bccc) / 2) + *(short *)(&DAT_0064f35c + iVar1 * 0x58);
                                           /*JOINED*/
                               /*JOINED*/
-            // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             if (iVar2 === iVar1) {
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+              devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               FUN_004e7492(iVar1);
             }
           }
@@ -3015,14 +3025,14 @@ export function FUN_00506637(param_1) {
     G.DAT_00630d2c = 0;
     local_8 = local_8 & 0xffffff00;
     FUN_00506a15();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_00506a1e();
     FUN_00506a34();
     return;
   }
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00506a15();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00506a1e();
   FUN_00506a34();
   return;
@@ -3067,9 +3077,9 @@ export function FUN_00506a34(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3087,7 +3097,7 @@ export function FUN_00506a42(param_1) {
   let iVar2;
   let iVar3;
   let uVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar5;
   let uVar6;
   let uVar7;
@@ -3097,43 +3107,43 @@ export function FUN_00506a42(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = ((local_8) << 8 | (1));
   if (G.DAT_00630d2c !== 0) {
     local_8 = ((local_8) >>> 0) << 8;
     citywin_70B8();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_70C1();
     citywin_70D7();
     return;
   }
   G.DAT_00630d2c = 1;
   FUN_005cdea1(0x40,0x20,0);
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((s8(G.DAT_0064f348[iVar1 * 0x58]) !== G.DAT_006d1da0) && (G.DAT_00655b07 === 0))
   LAB_0050708f_helper(local_8); return;
   uVar6 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar1,uVar6);
   if (G.DAT_006aa768 !== 0) LAB_0050708f_helper(local_8); return;
   iVar1 = param_1;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar2 = s16(G.DAT_0064f342, iVar2 * 0x58);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   uVar6 = FUN_005b2e69(s16(G.DAT_0064f340, iVar3 * 0x58),iVar2,iVar1);
   iVar1 = FUN_005b2f92(uVar6);
   if (iVar1 < 0) LAB_0050708f_helper(local_8); return;
   FUN_00506448(iVar1);
   FUN_0040ffa0(s_UNITOPTIONS_00630dc8,1);
   G.DAT_0063605c = 8;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340,0x402059); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340,8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_0059ec88(local_4c,iVar1,0);
   uVar7 = 0;
   uVar5 = 0;
@@ -3158,7 +3168,7 @@ export function FUN_00506a42(param_1) {
     uVar6 = FUN_00428b0c(s32(G.DAT_00628420, 0x150),3,0);
     FUN_0059edf0(uVar6,uVar5,uVar7);
   }
-  // DEVIATION: MFC — uVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'uVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (uVar4 !== u8(G.DAT_00656100[iVar1 * 0x20])) {
     uVar7 = 0;
     uVar5 = 5;
@@ -3202,7 +3212,7 @@ export function FUN_00506a42(param_1) {
     FUN_005b3863(iVar1,1);
     break;
   case 5:
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     G.DAT_00656100[iVar1 * 0x20] = s8(iVar2);
     thunk_citywin_9429();
     LAB_0050708f_helper(local_8); return;
@@ -3210,11 +3220,11 @@ export function FUN_00506a42(param_1) {
     thunk_handle_city_disorder_00509590(G.DAT_00656100[iVar1 * 0x20]);
     LAB_0050708f_helper(local_8); return;
   case 7:
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     // DEVIATION: C pointer write — *(short *)(&DAT_0064f35c + iVar2 * 0x58) =
          // DEVIATION(cont): (short)((int)((int)(char)(&DAT_0064b1c8)[(uint)(byte)(&DAT_006560f6)[iVar1 * 0x20] * 0x14] * (uint)DAT_0064bccc) / 2) + *(short *)(&DAT_0064f35c + iVar2 * 0x58);
                       /*JOINED*/
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004e7492(iVar2);
     FUN_005b6042(iVar1,1);
     thunk_citywin_9429();
@@ -3234,14 +3244,14 @@ export function FUN_00506a42(param_1) {
     LAB_0050708f_helper(local_8); return;
   }
   uVar6 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar1,uVar6);
   thunk_citywin_8ADC(1);
 // LAB_0050708f: (code below also in LAB_0050708f_helper, kept for 1:1 audit)
   G.DAT_00630d2c = 0;
   local_8 = local_8 & 0xffffff00;
   citywin_70B8();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_70C1();
   citywin_70D7();
   return;
@@ -3286,9 +3296,9 @@ export function citywin_70D7_005070D7(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3299,7 +3309,7 @@ export function citywin_70D7_005070D7(unaff_EBP) {
 // Size: 2692 bytes
 // ============================================================
 
-export function citywin_70E5_005070E5(in_ECX) {
+export function citywin_70E5_005070E5(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -3459,7 +3469,7 @@ export function citywin_70E5_005070E5(in_ECX) {
   local_44 = local_70;
   local_74 = FUN_00511690(0x85);
   local_74 = local_58 + local_74;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_24 = extraout_EAX + -2;
   FUN_005baee0(0x79,0x12,1,1);
   iVar1 = FUN_004bd9f0(s8(G.DAT_0064f348[s32(in_ECX, 0x159c) * 0x58]),0x54);
@@ -3564,7 +3574,7 @@ export function citywin_70E5_005070E5(in_ECX) {
 // Size: 968 bytes
 // ============================================================
 
-export function citywin_7B69_00507B69(in_ECX) {
+export function citywin_7B69_00507B69(in_ECX = G.in_ECX) {
 
 
   let cVar1;
@@ -3633,7 +3643,7 @@ export function citywin_7B69_00507B69(in_ECX) {
 // Size: 561 bytes
 // ============================================================
 
-export function citywin_7F31_00507F31(in_ECX, param_1, param_2, param_3) {
+export function citywin_7F31_00507F31(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -3712,7 +3722,7 @@ export function citywin_7F31_00507F31(in_ECX, param_1, param_2, param_3) {
 // Size: 987 bytes
 // ============================================================
 
-export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4) {
+export function citywin_8177_00508177(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let bVar1;
@@ -3741,7 +3751,7 @@ export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4
   local_8 = FUN_00472cf0(0x30,local_c);
   param_3 = param_3 >> 1;
   if (bVar1 === 4) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     FUN_005baee0(0x29,10,1,0);
     uVar5 = FUN_00428b0c(uRam0064b9b0,s32(param_1, 0),(param_3 + param_2) - (extraout_EAX >> 1),0);
     iVar3 = FUN_0043c950(uVar5);
@@ -3823,7 +3833,7 @@ export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4
 // Size: 1393 bytes
 // ============================================================
 
-export function citywin_8552_00508552(in_ECX) {
+export function citywin_8552_00508552(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -3924,7 +3934,7 @@ export function citywin_8552_00508552(in_ECX) {
       if (((G.DAT_006a6623) >>> 0) - ((G.DAT_006a65f3) >>> 0) === ((G.DAT_006a6624) >>> 0) - ((G.DAT_006a65f4) >>> 0))
       LAB_00508678_helper(local_18); return;
       iVar2 = (local_10 >> 1) + local_40;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       local_1c = iVar2 - (extraout_EAX >> 1);
       FUN_005baee0(0x29,10,1,0);
       uVar1 = FUN_00428b0c(s32(G.DAT_00628420, 0x160),local_2c[0],local_1c,0);
@@ -3940,7 +3950,7 @@ export function citywin_8552_00508552(in_ECX) {
     local_c = iVar2;
     if ((local_18 === 2) && (G.DAT_0064c6b5[local_44 * 0x594] === 0x04)) {
       iVar2 = (local_10 >> 1) + local_40;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       local_1c = iVar2 - (extraout_EAX_00 >> 1);
       FUN_005baee0(0x29,10,1,0);
       FUN_0040bbb0();
@@ -3973,7 +3983,7 @@ export function citywin_8552_00508552(in_ECX) {
 // Size: 228 bytes
 // ============================================================
 
-export function citywin_8ADC_00508ADC(in_ECX, param_1) {
+export function citywin_8ADC_00508ADC(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -4006,7 +4016,7 @@ export function citywin_8ADC_00508ADC(in_ECX, param_1) {
 // Size: 191 bytes
 // ============================================================
 
-export function citywin_8BC5_00508BC5(in_ECX, param_1) {
+export function citywin_8BC5_00508BC5(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4032,7 +4042,7 @@ export function citywin_8BC5_00508BC5(in_ECX, param_1) {
 // Size: 160 bytes
 // ============================================================
 
-export function citywin_8C84_00508C84(in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function citywin_8C84_00508C84(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
   // in_ECX → promoted to parameter
@@ -4053,7 +4063,7 @@ export function citywin_8C84_00508C84(in_ECX, param_1, param_2, param_3, param_4
 // Size: 418 bytes
 // ============================================================
 
-export function citywin_8D24_00508D24(in_ECX) {
+export function citywin_8D24_00508D24(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4080,7 +4090,7 @@ export function citywin_8D24_00508D24(in_ECX) {
 // Size: 354 bytes
 // ============================================================
 
-export function citywin_8EC6_00508EC6(in_ECX) {
+export function citywin_8EC6_00508EC6(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4128,7 +4138,7 @@ export function citywin_8EC6_00508EC6(in_ECX) {
 // Size: 647 bytes
 // ============================================================
 
-export function citywin_9028_00509028(in_ECX) {
+export function citywin_9028_00509028(in_ECX = G.in_ECX) {
 
 
   let pCVar1;
@@ -4141,8 +4151,8 @@ export function citywin_9028_00509028(in_ECX) {
   let local_10;
   
   iVar4 = s32(in_ECX, 0x11c);
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+  devLog('MFC', 'pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);');
+  devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);');
   w32(in_ECX, 0x15d4, 2);
   if ((iVar4 + 0x297 <= pCVar1) && (iVar4 * 2 + 0x3b6 <= pCVar2)) {
     w32(in_ECX, 0x15d4, 3);
@@ -4203,7 +4213,7 @@ export function citywin_9028_00509028(in_ECX) {
 // Size: 378 bytes
 // ============================================================
 
-export function citywin_92AF_005092AF(in_ECX) {
+export function citywin_92AF_005092AF(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4251,7 +4261,7 @@ export function citywin_92AF_005092AF(in_ECX) {
 // Size: 246 bytes
 // ============================================================
 
-export function citywin_9429_00509429(in_ECX) {
+export function citywin_9429_00509429(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4299,7 +4309,7 @@ export function citywin_951F_0050951F() {
 // Size: 75 bytes
 // ============================================================
 
-export function citywin_9545_00509545(in_ECX) {
+export function citywin_9545_00509545(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -4319,7 +4329,7 @@ export function citywin_9545_00509545(in_ECX) {
 // Size: 933 bytes
 // ============================================================
 
-export function handle_city_disorder_00509590_00509590(in_ECX, param_1) {
+export function handle_city_disorder_00509590_00509590(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -4541,7 +4551,7 @@ export function city_button_buy_00509B48(param_1) {
   let iVar4;
   let iVar5;
   let uVar6;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar7;
   let uVar8;
   let local_368;
@@ -4553,15 +4563,15 @@ export function city_button_buy_00509B48(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar2 === -1) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
     return;
@@ -4576,43 +4586,43 @@ export function city_button_buy_00509B48(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_buy___block_00630e0c);
     G.DAT_006c31ac = 7;
-    // DEVIATION: MFC — _DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', '_DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     _DAT_006c31b4 = s8(G.DAT_0064f348[iVar2 * 0x58]);
     _DAT_006c31b8 = param_1;
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
     return;
   }
   uVar7 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar2,uVar7);
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar2 = s8(G.DAT_0064f348[iVar2 * 0x58]);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar3 = s8(G.DAT_0064f379[iVar3 * 0x58]);
-  // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar4 = s8(G.DAT_0064f379[iVar4 * 0x58]);
   if ((G.DAT_006d1da0 !== iVar2) && (G.DAT_00655b07 === 0)) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
     return;
   }
   if (-iVar4 === 0x26) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
     return;
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (s8(G.DAT_0064f379[iVar5 * 0x58]) < 0) {
     local_368 = u8(G.DAT_0064c48c[iVar4 * -8]);
     uVar8 = 999;
     uVar7 = 0;
     uVar6 = ((G.DAT_0064bccc) >>> 0);
-    // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     iVar5 = FUN_005adfa0(uVar6 * local_368 - s16(G.DAT_0064f35c, iVar5 * 0x58), uVar7,uVar8);
                                /*JOINED*/
     local_35c = iVar5 * 2;
@@ -4626,13 +4636,13 @@ export function city_button_buy_00509B48(param_1) {
     uVar8 = 999;
     uVar7 = 0;
     uVar6 = ((G.DAT_0064bccc) >>> 0);
-    // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     iVar5 = FUN_005adfa0(uVar6 * local_368 - s16(G.DAT_0064f35c, iVar5 * 0x58), uVar7,uVar8);
                                /*JOINED*/
     local_35c = (iVar5 * iVar5) / 0x14 + iVar5 * 2;
     FUN_004271e8(0,s32(G.DAT_0064b1b8, iVar3 * 0x14));
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (s16(G.DAT_0064f35c, iVar5 * 0x58) === 0) {
     local_35c = local_35c << 1;
   }
@@ -4643,22 +4653,22 @@ export function city_button_buy_00509B48(param_1) {
   if (bVar1) {
     local_58 = 0x31;
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((-1 < s8(DAT_0064f379[iVar5 * 0x58])) && (iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8), (DAT_0064f344[iVar5 * 0x58] & 1) !== 0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+  if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
      /*JOINED*/
     local_58 = 0x32;
     bVar1 = false;
   }
   FUN_0043c9d0(local_60);
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (s8(G.DAT_0064f379[iVar5 * 0x58]) < 0) {
     FUN_0059ec88(G.DAT_00645160 + iVar4 * -0x3c,0,0);
   }
   else {
     FUN_0059ec88(G.DAT_00641848 + iVar3 * 0x3c,0,0);
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_354,8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   if (bVar1) {
     FUN_0059ea99(1);
   }
@@ -4666,24 +4676,24 @@ export function city_button_buy_00509B48(param_1) {
   if (bVar1) {
     if ((iVar3 === 0) && (G.DAT_006aa75c !== 1)) {
       w32(G.DAT_0064c6a2, iVar2 * 0x594, s32(G.DAT_0064c6a2, iVar2 * 0x594) - local_35c);
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       w16(G.DAT_0064f35c, iVar2 * 0x58, ((G.DAT_0064bccc) & 0xFFFF) * ((local_368) << 16 >> 16));
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004e7492(iVar2);
       FUN_0046e020(0x68,1,0,0);
       uVar7 = 1;
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004eb4ed(iVar2,uVar7);
       FUN_0050503e(1);
       thunk_citywin_92AF();
       FUN_00569363(1);
     }
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
     return;
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_A1B2();
   citywin_A1C8();
   return;
@@ -4714,9 +4724,9 @@ export function citywin_A1C8_0050A1C8(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4837,7 +4847,7 @@ export function city_button_change_0050A473(param_1) {
   let iVar2;
   let iVar3;
   let iVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let piVar5;
   let uVar6;
   let piVar7;
@@ -4858,23 +4868,23 @@ export function city_button_change_0050A473(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x8000);
   local_8 = 0;
   FUN_0059db08(0x4000);
   local_8 = 1;
   FUN_0059db08(0x4000);
   local_8 = 2;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar2 === -1) {
     local_8 = 1;
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
     citywin_B644();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_B650();
     citywin_B666();
     return;
@@ -4889,23 +4899,23 @@ export function city_button_change_0050A473(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_change___bl_00630e60);
     G.DAT_006c31ac = 8;
-    // DEVIATION: MFC — _DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', '_DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     _DAT_006c31b4 = s8(G.DAT_0064f348[iVar2 * 0x58]);
     _DAT_006c31b8 = param_1;
     local_8 = 1;
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
     citywin_B644();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_B650();
     citywin_B666();
     return;
   }
   uVar6 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar2,uVar6);
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   bVar1 = G.DAT_0064f348[iVar2 * 0x58];
   iVar2 = s8(bVar1);
   if ((G.DAT_006d1da0 !== iVar2) && (G.DAT_00655b07 === 0)) {
@@ -4913,15 +4923,15 @@ export function city_button_change_0050A473(param_1) {
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
     citywin_B644();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     citywin_B650();
     citywin_B666();
     return;
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   local_658 = s8(G.DAT_0064f379[iVar3 * 0x58]);
   while( true ) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (iVar3 === -1) {
       FUN_0059db65();
       FUN_0059db65();
@@ -4930,7 +4940,7 @@ export function city_button_change_0050A473(param_1) {
       citywin_B638();
       local_8 = ((local_8) >>> 0) << 8;
       citywin_B644();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       citywin_B650();
       citywin_B666();
       return;
@@ -4938,25 +4948,25 @@ export function city_button_change_0050A473(param_1) {
     if ((G.DAT_00655aea & 2) !== 0) {
       piVar7 = local_95c[0];
       piVar5 = local_660[0];
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_00498e8b(iVar3,piVar5,piVar7);
       if (local_660[0] !== 999) {
         FUN_004271e8(0,s32(G.DAT_0064b1b8, local_660[0] * 0x14));
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_954,0x630eb8,0x630eac,0x8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         FUN_004aef20(local_64);
         FUN_0043c840(local_64,G.DAT_00630ec0);
         FUN_004af122(local_64,s32(G.DAT_0064b1b8, local_660[0] * 0x14));
         FUN_0059ec88(G.DAT_00641848 + local_660[0] * 0x3c,0,0);
-        // DEVIATION: MFC — iVar3 = CSocket::Create(local_954,0x630ec4,local_64,0x8000);
+        devLog('MFC', 'iVar3 = CSocket::Create(local_954,0x630ec4,local_64,0x8000);');
         if (iVar3 !== 0) {
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_954,0x630ed8,0x630ecc,0x8000); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         }
         FUN_005a5f34(0,300);
       }
       if (local_95c[0] !== 999) {
         FUN_004aef20(local_64);
         FUN_0043c840(local_64,G.DAT_00630ee0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_360,0x630ef0,0x630ee4,0x8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         if (local_95c[0] < 0) {
           iVar3 = local_95c[0] * -8;
           local_95c[0] = -local_95c[0];
@@ -4977,22 +4987,22 @@ export function city_button_change_0050A473(param_1) {
           FUN_004af122(local_64,s32(G.DAT_0064b1b8, local_660[0] * 0x14));
           FUN_0059ec88(G.DAT_00641848 + local_660[0] * 0x3c,0,0);
         }
-        // DEVIATION: MFC — iVar3 = CSocket::Create(local_360,0x630f00,local_64,0x8000);
+        devLog('MFC', 'iVar3 = CSocket::Create(local_360,0x630f00,local_64,0x8000);');
         if (iVar3 !== 0) {
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_360,0x630f14,0x630f08,0x8000); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
         }
         FUN_005a5f34(0,300);
       }
     }
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_0040ff60(0,G.DAT_0064f360 + iVar3 * 0x58);
     FUN_0043c9d0(s_PRODUCTION_00630f1c);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_654,0x401537); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     FUN_0043c990(0x4b,0);
     local_65c = 0;
     for (local_660[0] = 0; local_660[0] < 0x3e; local_660[0] = local_660[0] + 1) {
       iVar3 = local_660[0];
-      // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       iVar3 = FUN_004bfe5a(iVar2,iVar4,iVar3);
       if (iVar3 !== 0) {
         FUN_0040bbb0();
@@ -5001,7 +5011,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(G.DAT_00630f28);
         FUN_0040fea0();
         iVar3 = local_660[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         uVar6 = FUN_004e74df(iVar4,iVar3);
         thunk_citywin_9AC0(s8(G.DAT_0064b1c8[local_660[0] * 0x14]),uVar6);
         FUN_00421d30();
@@ -5031,7 +5041,7 @@ export function city_button_change_0050A473(param_1) {
     }
     for (local_95c[0] = 1; local_95c[0] < 0x27; local_95c[0] = local_95c[0] + 1) {
       iVar3 = local_95c[0];
-      // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       iVar3 = FUN_004c03ae(iVar2,iVar4,iVar3);
       if (iVar3 !== 0) {
         FUN_0040bbb0();
@@ -5040,7 +5050,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(G.DAT_00630f3c);
         FUN_0040fea0();
         iVar3 = -local_95c[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         uVar6 = FUN_004e74df(iVar4,iVar3);
         thunk_citywin_9AC0(G.DAT_0064c48c[local_95c[0] * 8],uVar6);
         FUN_0040fed0();
@@ -5065,7 +5075,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(G.DAT_00630f44);
         FUN_0040fea0();
         iVar3 = -local_95c[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         uVar6 = FUN_004e74df(iVar4,iVar3);
         thunk_citywin_9AC0(G.DAT_0064c48c[local_95c[0] * 8],uVar6);
         FUN_0040fed0();
@@ -5097,7 +5107,7 @@ export function city_button_change_0050A473(param_1) {
     G.DAT_00635a3c = 0 /* ADDR:LAB_00402815 */;
     local_958 = FUN_005a5f34(0,300);
     G.DAT_00630d30 = 0;
-    if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((local_958 < 0) || (iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar3 === -1)) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) */)
+    if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ('))
        /*JOINED*/
     /* DEVIATION(cont): goto LAB_0050b609 */;
     if ((G.DAT_00655aea & 2) !== 0) {
@@ -5105,30 +5115,30 @@ export function city_button_change_0050A473(param_1) {
       FUN_0059db65();
       FUN_00484d52();
     }
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     w32(G.DAT_0064f344, iVar3 * 0x58, u32(G.DAT_0064f344, iVar3 * 0x58) & 0xfcffffef);
     if (local_578 === 0) break;
     if (local_578 === 1) {
       if ((1 << (bVar1 & 0x1f) & ((G.DAT_00655b0b) >>> 0)) !== 0) {
         thunk_load_city_preferences();
-        // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         local_958 = FUN_00511520(s_AUTOMODE_00630f48,1,iVar2);
         if (local_958 < 0) LAB_0050b609_helper(local_8); return;
-        // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         w32(G.DAT_0064f344, iVar2 * 0x58, u32(G.DAT_0064f344, iVar2 * 0x58) | 0x10);
         if (local_958 === 1) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           // DEVIATION: C pointer write — *(uint *)(&DAT_0064f344 + iVar2 * 0x58) =
                // DEVIATION(cont): *(uint *)(&DAT_0064f344 + iVar2 * 0x58) | 0x1000000;
         }
         if (local_958 === 2) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           // DEVIATION: C pointer write — *(uint *)(&DAT_0064f344 + iVar2 * 0x58) =
                // DEVIATION(cont): *(uint *)(&DAT_0064f344 + iVar2 * 0x58) | 0x2000000;
         }
       }
       uVar6 = 99;
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_00441b11(iVar2,uVar6);
       FUN_0050503e(1);
       LAB_0050b609_helper(local_8); return;
@@ -5136,11 +5146,11 @@ export function city_button_change_0050A473(param_1) {
     if (local_578 !== 2) {
       if (local_578 === 3) {
         if (local_958 < 0x3e) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           iVar2 = s16(G.DAT_0064f342, iVar2 * 0x58);
-          // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           iVar3 = s16(G.DAT_0064f340, iVar3 * 0x58);
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
           FUN_005b3d06(local_958,s8(G.DAT_0064f348[iVar4 * 0x58]),iVar3,iVar2);
           iVar2 = local_958;
         }
@@ -5149,7 +5159,7 @@ export function city_button_change_0050A473(param_1) {
           if (iVar2 < 0x23) {
             uVar6 = 1;
             local_958 = iVar2;
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             FUN_0043d289(iVar3,iVar2,uVar6);
             iVar2 = local_958;
           }
@@ -5157,14 +5167,14 @@ export function city_button_change_0050A473(param_1) {
             if ((0x22 < iVar2) && (iVar2 < 0x26)) {
               iVar3 = local_958 + -0x61;
               local_958 = iVar2;
-              // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+              devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               FUN_00598197(s8(G.DAT_0064f348[iVar2 * 0x58]),iVar3);
               iVar2 = local_958;
             }
           }
           else {
             local_958 = local_958 + -0x65;
-            // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+            devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
             w16(G.DAT_00655be6, local_958 * 2, ((iVar2) << 16 >> 16));
             iVar2 = local_958;
           }
@@ -5192,19 +5202,19 @@ export function city_button_change_0050A473(param_1) {
     local_14 = -(local_958 + -0x3e);
   }
   iVar3 = local_14;
-  // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   local_68 = FUN_004e74df(iVar4,iVar3);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((local_68 < s16(G.DAT_0064f35c, iVar3 * 0x58)) && ((G.DAT_00655af2 & 0x200) === 0)) {
     FUN_004c4210(0,G.DAT_0064bcda);
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (s8(G.DAT_0064f379[iVar3 * 0x58]) < 0) {
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004271e8(0,s32(G.DAT_0064c488, s8(G.DAT_0064f379[iVar3 * 0x58]) * -8) );
                         /*JOINED*/
     }
     else {
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004271e8(0,s32(G.DAT_0064b1b8, s8(G.DAT_0064f379[iVar3 * 0x58]) * 0x14));
                             /*JOINED*/
     }
@@ -5217,27 +5227,27 @@ export function city_button_change_0050A473(param_1) {
     iVar3 = FUN_00421ea0(s_PRODCHANGE_00630f5c);
     if (iVar3 === 0) LAB_0050b5dc_helper(iVar2, local_8, uVar6); return;
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (-1 < s8(G.DAT_0064f379[iVar3 * 0x58])) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     G.DAT_0064c7f4[iVar2 * 0x594 + s8(G.DAT_0064f379[iVar3 * 0x58])] =
          G.DAT_0064c7f4[iVar2 * 0x594 + s8(G.DAT_0064f379[iVar3 * 0x58])] + -1;
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   G.DAT_0064f379[iVar3 * 0x58] = u8(local_14);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (-1 < s8(G.DAT_0064f379[iVar3 * 0x58])) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     G.DAT_0064c7f4[iVar2 * 0x594 + s8(G.DAT_0064f379[iVar3 * 0x58])] =
          G.DAT_0064c7f4[iVar2 * 0x594 + s8(G.DAT_0064f379[iVar3 * 0x58])] + 0x01;
   }
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   w16(G.DAT_0064f35c, iVar2 * 0x58, ((local_68) << 16 >> 16));
   FUN_00436287(1);
   FUN_00436287(2);
 // LAB_0050b5dc: (code below also in LAB_0050b5dc_helper, kept for 1:1 audit)
   uVar6 = 1;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar2,uVar6);
   FUN_0050503e(1);
   FUN_005025d5(1);
@@ -5247,7 +5257,7 @@ export function city_button_change_0050A473(param_1) {
   citywin_B638();
   local_8 = ((local_8) >>> 0) << 8;
   citywin_B644();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_B650();
   citywin_B666();
   return;
@@ -5306,9 +5316,9 @@ export function citywin_B666_0050B666(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -5324,11 +5334,11 @@ export function citywin_B674_0050B674() {
 
   let iVar1;
   
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (((DAT_00633a74 !== 0) && (DAT_00633a78 < 1)) || (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 === -1)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
     if (G.DAT_006ad2f7 === 0) {
       G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     }
     else if (G.DAT_00630d30 === 0) {
       G.DAT_00630d30 = 0x01;
@@ -5339,7 +5349,7 @@ export function citywin_B674_0050B674() {
       if (G.DAT_00630d68 + 0x4b0 < iVar1) {
         G.DAT_00630d30 = 0;
         G.DAT_006ad678[0xf] = G.DAT_006ad678[0xf] | 0x400;
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
       }
     }
   }
@@ -5363,8 +5373,8 @@ export function city_button_rename_0050B74E(param_1) {
   let puVar2;
   let local_108 = new Array(260).fill(0);
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+  if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
      /*JOINED*/
     iVar1 = XD_InFlushSendBuffer();
@@ -5380,13 +5390,13 @@ export function city_button_rename_0050B74E(param_1) {
       G.DAT_00630d30 = 0;
       G.DAT_00635a3c = 0 /* ADDR:LAB_00402815 */;
       puVar2 = local_108;
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       iVar1 = FUN_00421ed0(s_RENAMECITY_00630fb4,0xf,G.DAT_0064f360 + iVar1 * 0x58,puVar2);
-      if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 === 0) && (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 !== -1)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+      if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
          /*JOINED*/
         FUN_0046e020(0x68,0,0,0);
         puVar2 = local_108;
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+        devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
         FUN_005f22d0(G.DAT_0064f360 + iVar1 * 0x58,puVar2);
         thunk_citywin_9429();
         FUN_0047cf9e(G.DAT_006d1da0,1);
@@ -5396,8 +5406,8 @@ export function city_button_rename_0050B74E(param_1) {
     else {
       debug_log(s_Citywin__city_button_rename___bl_00630f68);
       G.DAT_006c31ac = 10;
-      // DEVIATION: MFC — _DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', '_DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       _DAT_006c31b4 = s8(G.DAT_0064f348[iVar1 * 0x58]);
       _DAT_006c31b8 = param_1;
     }
@@ -5418,11 +5428,11 @@ export function citywin_B9A4_0050B9A4() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     G.DAT_006aa768 = 0;
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar2);
     thunk_citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5443,11 +5453,11 @@ export function citywin_BA07_0050BA07() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     G.DAT_006aa768 = 1;
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar2);
     thunk_citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5468,11 +5478,11 @@ export function citywin_BA6A_0050BA6A() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     G.DAT_006aa768 = 2;
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar2);
     thunk_citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5494,7 +5504,7 @@ export function city_button_view_0050BACD(param_1) {
 
   let iVar1;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     iVar1 = XD_InFlushSendBuffer();
     if (((((((iVar1 === 0) && (G.DAT_006ad8bc === 0)) && (G.DAT_006ad8c0 === 0)) && ((G.DAT_006ad8c4 === 0 && (G.DAT_006ad8c8 === 0)))) && ((G.DAT_006ad8cc === 0 && ((G.DAT_006ad8d0 === 0 && (G.DAT_006ad8d8 === 0)))))) && (G.DAT_006ad8dc === 0)) && (((((G.DAT_006ad8e0 === 0 && (G.DAT_006ad8e4 === 0)) && (G.DAT_006ad8e8 === 0)) && (((G.DAT_006ad8ec === 0 && (G.DAT_006ad8f0 === 0)) && ((G.DAT_006ad8f4 === 0 && ((G.DAT_006ad8f8 === 0 && (G.DAT_006ad8fc === 0)))))))) && ((G.DAT_006ad900 === 0 && (G.DAT_006ad904 === 0)))))) {
@@ -5505,14 +5515,14 @@ export function city_button_view_0050BACD(param_1) {
          /*JOINED*/
           /*JOINED*/
         /*JOINED*/
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_00454260(iVar1);
     }
     else {
       debug_log(s_Citywin__city_button_view___bloc_00630fc0);
       G.DAT_006c31ac = 9;
-      // DEVIATION: MFC — _DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', '_DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+      devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       _DAT_006c31b4 = s8(G.DAT_0064f348[iVar1 * 0x58]);
       _DAT_006c31b8 = param_1;
     }
@@ -5532,7 +5542,7 @@ export function citywin_BC4F_0050BC4F() {
 
   let iVar1;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     FUN_0046e020(99,0,0,0);
     if (G.DAT_006aa764 === 2) {
@@ -5565,7 +5575,7 @@ export function citywin_BCDA_0050BCDA(param_1) {
   
   G.DAT_006aa76c = param_1;
   uVar2 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar1,uVar2);
   FUN_00505ffa(1);
   return;
@@ -5589,12 +5599,12 @@ export function citywin_BD13_0050BD13() {
   let local_c;
   let local_8;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0 || (DAT_00655b07 !== 0)))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+  if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
       /*JOINED*/
     if (G.DAT_0062edf8 === 0) {
-      // DEVIATION: MFC — local_c = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'local_c = CSplitterWnd::IsTracking(DAT_006a91b8);');
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s__00631008);
@@ -5650,12 +5660,12 @@ export function citywin_BF72_0050BF72() {
   let local_c;
   let local_8;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0 || (DAT_00655b07 !== 0)))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+  if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
       /*JOINED*/
     if (G.DAT_0062edf8 === 0) {
-      // DEVIATION: MFC — local_c = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'local_c = CSplitterWnd::IsTracking(DAT_006a91b8);');
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024);
@@ -5743,8 +5753,8 @@ export function city_mouse_0050C1D1(param_1, param_2, param_3) {
   else {
     debug_log(s_Citywin__city_mouse___blocked_by_00631040);
     G.DAT_006c31ac = 6;
-    // DEVIATION: MFC — _DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', '_DAT_006c31b0 = CSplitterWnd::IsTracking(DAT_006a91b8);');
+    devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     _DAT_006c31b4 = s8(G.DAT_0064f348[iVar1 * 0x58]);
     _DAT_006c31b8 = param_1;
     _DAT_006c31bc = param_2;
@@ -5788,7 +5798,7 @@ export function citywin_C427_0050C427(param_1, param_2) {
 // Size: 75 bytes
 // ============================================================
 
-export function citywin_C449_0050C449(in_ECX, param_1) {
+export function citywin_C449_0050C449(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5806,7 +5816,7 @@ export function citywin_C449_0050C449(in_ECX, param_1) {
 // Size: 485 bytes
 // ============================================================
 
-export function citywin_C494_0050C494(in_ECX, param_1, param_2, param_3) {
+export function citywin_C494_0050C494(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5847,7 +5857,7 @@ export function citywin_C494_0050C494(in_ECX, param_1, param_2, param_3) {
 // Size: 118 bytes
 // ============================================================
 
-export function citywin_C679_0050C679(in_ECX, param_1) {
+export function citywin_C679_0050C679(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5867,7 +5877,7 @@ export function citywin_C679_0050C679(in_ECX, param_1) {
 // Size: 180 bytes
 // ============================================================
 
-export function citywin_C6EF_0050C6EF(in_ECX, param_1, param_2) {
+export function citywin_C6EF_0050C6EF(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -5892,7 +5902,7 @@ export function citywin_C6EF_0050C6EF(in_ECX, param_1, param_2) {
 // Size: 182 bytes
 // ============================================================
 
-export function citywin_C7A3_0050C7A3(in_ECX) {
+export function citywin_C7A3_0050C7A3(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5917,7 +5927,7 @@ export function citywin_C7A3_0050C7A3(in_ECX) {
 // Size: 564 bytes
 // ============================================================
 
-export function citywin_C859_0050C859(in_ECX) {
+export function citywin_C859_0050C859(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5974,7 +5984,7 @@ export function citywin_C859_0050C859(in_ECX) {
 
 // /* WARNING: Removing unreachable block (ram,0x0050cc02) */
 
-export function citywin_CA8D_0050CA8D(in_ECX, param_1) {
+export function citywin_CA8D_0050CA8D(in_ECX = G.in_ECX, param_1) {
 
 
   let pvVar1;
@@ -5983,17 +5993,17 @@ export function citywin_CA8D_0050CA8D(in_ECX, param_1) {
   let iVar4;
   // in_ECX → promoted to parameter
   let iVar5;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_30;
   let local_20 = new Array(16).fill(0);
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   if (s32(in_ECX, 0x16bc) !== 0) {
     if (s32(in_ECX, 0x16bc) !== 0) {
       FUN_004bb3b0(1);
@@ -6008,7 +6018,7 @@ export function citywin_CA8D_0050CA8D(in_ECX, param_1) {
   else {
     local_30 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16bc, local_30);
   FUN_005d8236(in_ECX + 0x16ac);
   uVar2 = FUN_00511690(0x18);
@@ -6031,7 +6041,7 @@ export function citywin_CA8D_0050CA8D(in_ECX, param_1) {
   if (param_1 !== 0) {
     FUN_0040f380();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6044,7 +6054,7 @@ export function citywin_CA8D_0050CA8D(in_ECX, param_1) {
 
 // /* WARNING: Removing unreachable block (ram,0x0050ce6a) */
 
-export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
+export function citywin_CCB3_0050CCB3(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -6056,7 +6066,7 @@ export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
   let iVar7;
   let iVar8;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_3c;
   let local_24 = new Array(16).fill(0);
   let local_14;
@@ -6064,10 +6074,10 @@ export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_14 = (G.DAT_0064f344[s32(in_ECX, 0x159c) * 0x58] & 0x10) !== 0;
   if (G.DAT_00630d24 !== local_14) {
     G.DAT_00630d24 = local_14;
@@ -6085,7 +6095,7 @@ export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
     else {
       local_3c = FUN_0040f3e0();
     }
-    // DEVIATION: SEH
+    devLog('SEH', '');
     w32(in_ECX, 0x16b8, local_3c);
     FUN_005d8236(in_ECX + 0x16ac);
     iVar1 = s32(in_ECX, 0x15c4);
@@ -6110,7 +6120,7 @@ export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
       FUN_0040f380();
     }
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6131,7 +6141,7 @@ export function citywin_CCB3_0050CCB3(in_ECX, param_1) {
 // /* WARNING: Removing unreachable block (ram,0x0050d6f6) */
 // /* WARNING: Removing unreachable block (ram,0x0050d871) */
 
-export function citywin_CF06_0050CF06(in_ECX) {
+export function citywin_CF06_0050CF06(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -6142,7 +6152,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   let iVar6;
   // in_ECX → promoted to parameter
   let iVar7;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_90 = new Array(16).fill(0);
   let local_80;
   let local_7c;
@@ -6174,10 +6184,10 @@ export function citywin_CF06_0050CF06(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f350(0);
   thunk_citywin_C859();
   local_34 = operator_new(0x3c);
@@ -6188,7 +6198,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_38 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16b4, local_38);
   local_3c = operator_new(0x3c);
   local_8 = 1;
@@ -6198,7 +6208,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_40 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16b8, local_40);
   local_44 = operator_new(0x3c);
   local_8 = 2;
@@ -6208,7 +6218,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_48 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16c4, local_48);
   local_4c = operator_new(0x3c);
   local_8 = 3;
@@ -6218,7 +6228,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_50 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16cc, local_50);
   local_54 = operator_new(0x3c);
   local_8 = 4;
@@ -6228,7 +6238,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_58 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16d0, local_58);
   local_5c = operator_new(0x3c);
   local_8 = 5;
@@ -6238,7 +6248,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_60 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16c8, local_60);
   local_64 = operator_new(0x3c);
   local_8 = 6;
@@ -6248,7 +6258,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_68 = FUN_0040f3e0();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16c0, local_68);
   local_6c = operator_new(0xcc);
   local_8 = 7;
@@ -6258,7 +6268,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_70 = FUN_00511720();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16d4, local_70);
   local_74 = operator_new(0xcc);
   local_8 = 8;
@@ -6268,7 +6278,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_78 = FUN_00511720();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16d8, local_78);
   local_7c = operator_new(0x40);
   local_8 = 9;
@@ -6278,7 +6288,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
   else {
     local_80 = FUN_0040fb00();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   w32(in_ECX, 0x16dc, local_80);
   local_28 = s32(in_ECX, 0x15c4) + s32(in_ECX, 0x124);
   local_2c = s32(in_ECX, 0x128) + s32(in_ECX, 0x15c8);
@@ -6379,7 +6389,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
     FUN_005cef31(local_90,G.DAT_006a9120,0,0);
     FUN_0047df50();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6390,7 +6400,7 @@ export function citywin_CF06_0050CF06(in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function citywin_DADA_0050DADA(in_ECX) {
+export function citywin_DADA_0050DADA(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6414,7 +6424,7 @@ export function citywin_DADA_0050DADA(in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function citywin_DB36_0050DB36(in_ECX) {
+export function citywin_DB36_0050DB36(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -6492,7 +6502,7 @@ export function citywin_DBDE_0050DBDE(param_1) {
 // Size: 498 bytes
 // ============================================================
 
-export function citywin_DCB6_0050DCB6(in_ECX) {
+export function citywin_DCB6_0050DCB6(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -6529,20 +6539,20 @@ export function citywin_DCB6_0050DCB6(in_ECX) {
   uVar3 = FUN_00428b0c(s32(G.DAT_00628420, 0x1c),2,G.DAT_00655344,G.DAT_00655348,iVar2)
   ;
   FUN_005534bc(uVar3,uVar4,uVar5,uVar6,iVar2,iVar1,uVar7,uVar8,uVar9);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x6aa898); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x6a9168); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_0055318c(G.DAT_00645120,1);
   FUN_0055318c(G.DAT_00648820,2);
   FUN_0055318c(G.DAT_00647788,3);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x40205e); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   thunk_citywin_C7A3();
   FUN_00408230(thunk_citywin_994F);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402abd); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_00408270(0 /* ADDR:LAB_004014ec */);
   FUN_004082b0(0 /* ADDR:LAB_00401780 */);
   FUN_00408130(0 /* ADDR:LAB_004031ac */);
   FUN_00408170(0 /* ADDR:LAB_004021c6 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   tie(thunk_map_ascii);
   FUN_004082f0(0 /* ADDR:LAB_00401d7a */);
   FUN_00408330(0 /* ADDR:LAB_00403bbb */);
@@ -6556,7 +6566,7 @@ export function citywin_DCB6_0050DCB6(in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function citywin_DEA8_0050DEA8(in_ECX) {
+export function citywin_DEA8_0050DEA8(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6575,7 +6585,7 @@ function LAB_0050708f_helper(local_8) {
   G.DAT_00630d2c = 0;
   local_8 = local_8 & 0xffffff00;
   citywin_70B8();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_70C1();
   citywin_70D7();
   return;
@@ -6597,7 +6607,7 @@ function LAB_0050b609_helper(local_8) {
   citywin_B638();
   local_8 = ((local_8) >>> 0) << 8;
   citywin_B644();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_B650();
   citywin_B666();
   return;
@@ -6605,7 +6615,7 @@ function LAB_0050b609_helper(local_8) {
 
 function LAB_0050b5dc_helper(iVar2, local_8, uVar6) {
   uVar6 = 1;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar2,uVar6);
   FUN_0050503e(1);
   FUN_005025d5(1);
@@ -6615,7 +6625,7 @@ function LAB_0050b5dc_helper(iVar2, local_8, uVar6) {
   citywin_B638();
   local_8 = ((local_8) >>> 0) << 8;
   citywin_B644();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   citywin_B650();
   citywin_B666();
   return;

@@ -15,6 +15,7 @@ import { s8, u8, s16, u16, s32, u32, getTileOffset, tileRead } from './mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
+import { printLog, resetLog } from './devlog.js';
 
 // ── Parse CLI args ──
 const args = process.argv.slice(2);
@@ -252,6 +253,12 @@ if (outPath && turns > 0) {
   const outBuf = saveSav(savBuf);
   writeFileSync(outPath, outBuf);
   console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${G.DAT_00655af8})`);
+}
+
+// ═══ DevLog Summary ═══
+if (turns > 0) {
+  console.log('\n═══ DevLog Summary ═══');
+  printLog();
 }
 
 console.log('\nDone.');

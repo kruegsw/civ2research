@@ -9,6 +9,21 @@
 
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { devLog } from '../devlog.js';
+import { Create, DEVIATION, EnableStackedTabs, GetAsyncKeyState, GetPrivateProfileIntA, HELPERS } from '../extern-stubs.js';
+import { IsTracking, MessageBoxA, Realloc, SetFocus, WritePrivateProfileStringA, XD_FlushSendBuffer } from '../extern-stubs.js';
+import { XD_GetXDaemonVersion, XD_InFlushSendBuffer, XD_LaunchedByLobby, XD_LobbySendMessage, __chdir, __filelength } from '../extern-stubs.js';
+import { __getcwd, __toupper_lk, _atexit, _atoi, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_ } from '../extern-stubs.js';
+import { _fclose, _fopen, _fputs, _isalpha, _memset, _rand } from '../extern-stubs.js';
+import { _sprintf, _strlen, _strncpy, create_font_8200, debug_log, exe } from '../extern-stubs.js';
+import { gdi_847F, operator_new, register_wndclass_2740, register_wndclass_3130, register_wndclass_37A0, send_msg_2D4D } from '../extern-stubs.js';
+import { send_msg_2D7F, send_msg_2DA1, send_msg_357E, send_msg_35C8, send_msg_360A, send_msg_36B1 } from '../extern-stubs.js';
+import { send_msg_36F6, send_msg_3C50, send_msg_3C9A, send_msg_3CDC, thunk_city_button_buy, thunk_city_button_change } from '../extern-stubs.js';
+import { thunk_city_button_rename, thunk_city_button_view, thunk_citywin_9545, thunk_citywin_994F, thunk_citywin_B9A4, thunk_citywin_BA07 } from '../extern-stubs.js';
+import { thunk_citywin_BA6A, thunk_citywin_BC4F, thunk_citywin_BD13, thunk_citywin_BF72, thunk_citywin_DCB6, thunk_citywin_DEA8 } from '../extern-stubs.js';
+import { thunk_handle_city_disorder_00509590, thunk_load_city_preferences, thunk_load_civ2_art_005681c9, thunk_load_labels_txt, thunk_load_verify_units, thunk_map_window_click } from '../extern-stubs.js';
+import { thunk_save_game, thunk_set_city_shields, thunk_show_messagebox_CF2D, thunk_show_open_dialog_31D2, thunk_wait_production_005aa0e5, thunk_wait_production_005ab2d5 } from '../extern-stubs.js';
+import { tie, timeBeginPeriod, timeEndPeriod, update_palette_C280 } from '../extern-stubs.js';
 import { FUN_004079a6, FUN_00407b31, FUN_00407f90, FUN_00407fc0, FUN_00408090, FUN_004080c0 } from './block_00400000.js';
 import { FUN_004080f0, FUN_00408130, FUN_00408170, FUN_00408230, FUN_004082f0, FUN_00408330 } from './block_00400000.js';
 import { FUN_00408370, FUN_004083b0, FUN_00408460, FUN_004085f0, FUN_004086c0, FUN_00408d33 } from './block_00400000.js';
@@ -133,7 +148,7 @@ export function FUN_004100cf(param_1) {
 
   let uVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_350;
   let local_34c;
   let local_50 = new Array(60).fill(0);
@@ -142,11 +157,11 @@ export function FUN_004100cf(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_50); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = 0;
   FUN_0059db08(0x4000);
   local_8 = ((local_8) << 8 | (1));
@@ -188,7 +203,7 @@ export function FUN_004100cf(param_1) {
   FUN_00414dd0(s_CITYINFO_00624f6c,param_1);
   local_8 = local_8 & 0xffffff00;
   FUN_004102d5();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004102e1();
   FUN_004102f4();
   return;
@@ -233,9 +248,9 @@ export function FUN_004102f4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -296,7 +311,7 @@ export function FUN_004103ae() {
 // Size: 98 bytes
 // ============================================================
 
-export function FUN_00410402(in_ECX, param_1, param_2) {
+export function FUN_00410402(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let uVar1;
@@ -320,7 +335,7 @@ export function FUN_00410402(in_ECX, param_1, param_2) {
 // Size: 404 bytes
 // ============================================================
 
-export function FUN_00410464(in_ECX, param_1, param_2) {
+export function FUN_00410464(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -408,7 +423,7 @@ export function FUN_004105f8(param_1, param_2, param_3) {
 // Size: 312 bytes
 // ============================================================
 
-export function FUN_004106fd(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_004106fd(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -1241,7 +1256,7 @@ export function map_ascii_00411F91(param_1) {
     G.DAT_006ad8d4 = 0;
     return;
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((iVar3 === 0) && ((u8(G.DAT_00655aea) & 0x40) !== 0)) {
     switch(param_1) {
     case 0xd:
@@ -1396,7 +1411,7 @@ export function map_key_004125C6(param_1) {
     return;
   }
   if (((G.DAT_00655b02 !== 0) && (G.DAT_0062edf8 !== 0)) && ((param_1 === 0xd2 || (param_1 === 0xd0)))) {
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (iVar2 === 0) {
       thunk_citywin_BC4F(0);
       return;
@@ -1429,7 +1444,7 @@ export function map_key_004125C6(param_1) {
       G.DAT_006ad8d4 = 0;
       return;
     }
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+    devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     if (iVar2 !== 0) {
       G.DAT_006ad8d4 = 0;
       return;
@@ -1448,7 +1463,7 @@ export function map_key_004125C6(param_1) {
   }
   FUN_00410a64();
   FUN_00410ed8();
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+  devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if ((iVar2 === 0) && ((G.DAT_00655aea & 0x40) !== 0)) {
     switch(param_1) {
     case 0xa2:
@@ -1469,7 +1484,7 @@ export function map_key_004125C6(param_1) {
   }
   if (param_1 < 0xd3) {
     if (param_1 === 0xd2) {
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);
+      devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       if (iVar2 === 0) {
         thunk_citywin_994F();
       }
@@ -1901,7 +1916,7 @@ export function FUN_0041341c() {
 // Size: 304 bytes
 // ============================================================
 
-export function FUN_00413476(in_ECX) {
+export function FUN_00413476(in_ECX = G.in_ECX) {
 
 
   let bVar1;
@@ -2001,7 +2016,7 @@ export function FUN_004135ab(param_1) {
 // Size: 889 bytes
 // ============================================================
 
-export function FUN_00413717(in_ECX) {
+export function FUN_00413717(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -2056,7 +2071,7 @@ export function FUN_00413717(in_ECX) {
                              /*JOINED*/
   FUN_005534bc(uVar1,uVar2,local_8,local_c,local_10,local_14,uVar3,uVar4,uVar5);
   FUN_00408370(0x100,0x80);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402315); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_00408130(0 /* ADDR:LAB_004030c6 */);
   FUN_00408170(0 /* ADDR:LAB_004018d9 */);
   FUN_00414c20(0 /* ADDR:LAB_00402d9c */);
@@ -2064,7 +2079,7 @@ export function FUN_00413717(in_ECX) {
   FUN_00414be0(0 /* ADDR:LAB_004014e7 */);
   FUN_00414ca0(thunk_map_double_click);
   tie(thunk_map_ascii);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_00408230(0 /* ADDR:LAB_0040235b */);
   FUN_004082f0(0 /* ADDR:LAB_00403b43 */);
   FUN_00408330(0 /* ADDR:LAB_00402653 */);
@@ -2077,7 +2092,7 @@ export function FUN_00413717(in_ECX) {
   if (s32(in_ECX, 0x2d8) !== 0) {
     FUN_0055318c(G.DAT_00647348,4);
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x403cd8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_005bb574();
   if (G.DAT_00655b02 !== 0x01) {
     FUN_004085f0();
@@ -2159,7 +2174,7 @@ export function FUN_00413bd1() {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_00414b70(in_ECX, param_1, param_2) {
+export function FUN_00414b70(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -2175,7 +2190,7 @@ export function FUN_00414b70(in_ECX, param_1, param_2) {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_00414bb0(in_ECX) {
+export function FUN_00414bb0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2191,7 +2206,7 @@ export function FUN_00414bb0(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00414be0(in_ECX, param_1) {
+export function FUN_00414be0(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2209,7 +2224,7 @@ export function FUN_00414be0(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00414c20(in_ECX, param_1) {
+export function FUN_00414c20(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2227,7 +2242,7 @@ export function FUN_00414c20(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00414c60(in_ECX, param_1) {
+export function FUN_00414c60(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2245,7 +2260,7 @@ export function FUN_00414c60(in_ECX, param_1) {
 // Size: 45 bytes
 // ============================================================
 
-export function FUN_00414ca0(in_ECX, param_1) {
+export function FUN_00414ca0(in_ECX = G.in_ECX, param_1) {
 
 
   let uVar1;
@@ -2280,7 +2295,7 @@ export function FUN_00414ce0() {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_00414d10(in_ECX) {
+export function FUN_00414d10(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2777,7 +2792,7 @@ export function show_messagebox_5A40_00415A40() {
       MessageBoxA(s32(iVar1, 4),lpText,lpCaption,uType);
     }
     G.DAT_006a1d7c = 0;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006a4f88 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     FUN_004e4ceb();
   }
   else {
@@ -2978,7 +2993,7 @@ export function FUN_0041618d() {
 
 
   G.DAT_006a1d7c = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((DAT_006a4f88 + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -3058,7 +3073,7 @@ export function FUN_0041623d(param_1) {
 // Size: 962 bytes
 // ============================================================
 
-export function FUN_00416354(in_ECX, param_1) {
+export function FUN_00416354(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -3132,7 +3147,7 @@ export function FUN_00416354(in_ECX, param_1) {
 // Size: 244 bytes
 // ============================================================
 
-export function FUN_00416734(in_ECX, param_1) {
+export function FUN_00416734(in_ECX = G.in_ECX, param_1) {
 
 
   let iVar1;
@@ -3166,7 +3181,7 @@ export function FUN_00416734(in_ECX, param_1) {
 
 // /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-export function FUN_00416828(in_ECX) {
+export function FUN_00416828(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -3249,7 +3264,7 @@ export function FUN_00416828(in_ECX) {
 // Size: 2186 bytes
 // ============================================================
 
-export function FUN_00416c9e(in_ECX) {
+export function FUN_00416c9e(in_ECX = G.in_ECX) {
 
 
   let iVar1;
@@ -3260,7 +3275,7 @@ export function FUN_00416c9e(in_ECX) {
   let iVar5;
   let extraout_EAX_00;
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar6;
   let uVar7;
   let uVar8;
@@ -3282,10 +3297,10 @@ export function FUN_00416c9e(in_ECX) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_005c64da();
   local_8 = 0;
   G.DAT_006a1d7c = 1;
@@ -3343,7 +3358,7 @@ export function FUN_00416c9e(in_ECX) {
   }
   FUN_00418f40(local_478,iVar1,local_454);
   FUN_00418fe0(G.DAT_006a4f90);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   w32(in_ECX, 0x2e4, extraout_EAX + 8);
   // DEVIATION: C pointer write — *(int *)(in_ECX + 0x2e0) =
        // DEVIATION(cont): (int)(*(int *)(in_ECX + 300) + -10 + (*(int *)(in_ECX + 300) + -10 >> 0x1f & 3U)) >> 2;
@@ -3397,7 +3412,7 @@ export function FUN_00416c9e(in_ECX) {
   FUN_0040f880(0 /* ADDR:LAB_0040394a */);
   FUN_0040f840();
   w32(in_ECX, 0x2e0, 0x55);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   w32(in_ECX, 0x2e4, extraout_EAX_00 + 8);
   FUN_004086c0(local_454,s32(in_ECX, 0x124) + 0x19,s32(in_ECX, 0x128) + 0x50, s32(in_ECX, 0x2e0),s32(in_ECX, 0x2e4));
                      /*JOINED*/
@@ -3416,7 +3431,7 @@ export function FUN_00416c9e(in_ECX) {
   FUN_0041541a();
   w32(in_ECX, 0x2f8, 5);
   FUN_00408330(0 /* ADDR:LAB_004019d8 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402a68); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   FUN_0041623d(0xc9);
   FUN_005bb574();
   FUN_004085f0();
@@ -3429,7 +3444,7 @@ export function FUN_00416c9e(in_ECX) {
   }
   G.DAT_0062e018 = 0;
   w32(in_ECX, 0x2f8, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00417542();
   FUN_00417558();
   return;
@@ -3460,9 +3475,9 @@ export function FUN_00417558(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3476,20 +3491,20 @@ export function FUN_00417558(unaff_EBP) {
 export function FUN_00417566() {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_00417fa0();
   local_8 = 0;
   FUN_00416c9e();
   FUN_005bb574();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004175bf();
   FUN_004175d5();
   return;
@@ -3520,9 +3535,9 @@ export function FUN_004175d5(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -3533,7 +3548,7 @@ export function FUN_004175d5(unaff_EBP) {
 // Size: 93 bytes
 // ============================================================
 
-export function FUN_00417ef0(in_ECX, param_1, param_2) {
+export function FUN_00417ef0(in_ECX = G.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -3556,7 +3571,7 @@ export function FUN_00417ef0(in_ECX, param_1, param_2) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_00417f70(in_ECX) {
+export function FUN_00417f70(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -3571,19 +3586,19 @@ export function FUN_00417f70(in_ECX) {
 // Size: 498 bytes
 // ============================================================
 
-export function FUN_00417fa0(in_ECX) {
+export function FUN_00417fa0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0055339f();
   local_8 = 0;
   _eh_vector_constructor_iterator_
@@ -3630,7 +3645,7 @@ export function FUN_00417fa0(in_ECX) {
   local_8 = ((local_8) << 8 | (0x14));
   FUN_00418e00();
   w32(in_ECX, 0, PTR_FUN_0061c058);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -3644,14 +3659,14 @@ export function FUN_00417fa0(in_ECX) {
 export function FUN_004183d0() {
 
 
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   local_8 = 0x14;
   FUN_0041851f();
@@ -3695,7 +3710,7 @@ export function FUN_004183d0() {
   FUN_0041863c();
   local_8 = ((local_8) >>> 0) << 8;
   FUN_00418654();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041866c();
   FUN_0041867f();
   return;
@@ -4014,7 +4029,7 @@ export function FUN_0041866c(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(unaff_EBP, -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
 
@@ -4029,9 +4044,9 @@ export function FUN_0041867f(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4042,7 +4057,7 @@ export function FUN_0041867f(unaff_EBP) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_00418740(in_ECX) {
+export function FUN_00418740(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4057,7 +4072,7 @@ export function FUN_00418740(in_ECX) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_00418770(in_ECX) {
+export function FUN_00418770(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4072,19 +4087,19 @@ export function FUN_00418770(in_ECX) {
 // Size: 137 bytes
 // ============================================================
 
-export function FUN_004187a0(in_ECX) {
+export function FUN_004187a0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   w32(in_ECX, 0x30, 0);
   w32(in_ECX, 0x2c, 0);
@@ -4092,7 +4107,7 @@ export function FUN_004187a0(in_ECX) {
   w32(in_ECX, 0x34, 0);
   in_ECX[0x38] = 0;
   in_ECX[0x39] = 0;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4103,23 +4118,23 @@ export function FUN_004187a0(in_ECX) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_00418870(in_ECX) {
+export function FUN_00418870(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_005d2d3d(s32(in_ECX, 0x1c));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_004188ca();
   FUN_004188dd();
   return;
@@ -4150,9 +4165,9 @@ export function FUN_004188dd(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4163,7 +4178,7 @@ export function FUN_004188dd(unaff_EBP) {
 // Size: 130 bytes
 // ============================================================
 
-export function FUN_00418910(in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_00418910(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -4187,7 +4202,7 @@ export function FUN_00418910(in_ECX, param_1, param_2, param_3, param_4) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_004189c0(in_ECX, param_1) {
+export function FUN_004189c0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4203,7 +4218,7 @@ export function FUN_004189c0(in_ECX, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_00418a00(in_ECX, param_1) {
+export function FUN_00418a00(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4219,7 +4234,7 @@ export function FUN_00418a00(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00418a30(in_ECX, param_1) {
+export function FUN_00418a30(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4235,7 +4250,7 @@ export function FUN_00418a30(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00418a70(in_ECX, param_1) {
+export function FUN_00418a70(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4251,23 +4266,23 @@ export function FUN_00418a70(in_ECX, param_1) {
 // Size: 103 bytes
 // ============================================================
 
-export function FUN_00418ab0(in_ECX) {
+export function FUN_00418ab0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   w32(in_ECX, 0x30, 0);
   w32(in_ECX, 0x34, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4278,23 +4293,23 @@ export function FUN_00418ab0(in_ECX) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_00418b50(in_ECX) {
+export function FUN_00418b50(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_005d356e(s32(in_ECX, 0x1c));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00418baa();
   FUN_00418bbd();
   return;
@@ -4325,9 +4340,9 @@ export function FUN_00418bbd(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4338,7 +4353,7 @@ export function FUN_00418bbd(unaff_EBP) {
 // Size: 101 bytes
 // ============================================================
 
-export function FUN_00418bf0(in_ECX, param_1, param_2, param_3) {
+export function FUN_00418bf0(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -4361,7 +4376,7 @@ export function FUN_00418bf0(in_ECX, param_1, param_2, param_3) {
 // Size: 48 bytes
 // ============================================================
 
-export function FUN_00418c70(in_ECX) {
+export function FUN_00418c70(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -4379,7 +4394,7 @@ export function FUN_00418c70(in_ECX) {
 // Size: 27 bytes
 // ============================================================
 
-export function FUN_00418cb0(in_ECX) {
+export function FUN_00418cb0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4394,7 +4409,7 @@ export function FUN_00418cb0(in_ECX) {
 // Size: 49 bytes
 // ============================================================
 
-export function FUN_00418ce0(in_ECX, param_1) {
+export function FUN_00418ce0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4411,7 +4426,7 @@ export function FUN_00418ce0(in_ECX, param_1) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_00418d20(in_ECX) {
+export function FUN_00418d20(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4428,7 +4443,7 @@ export function FUN_00418d20(in_ECX) {
 // Size: 37 bytes
 // ============================================================
 
-export function FUN_00418d60(in_ECX) {
+export function FUN_00418d60(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4444,7 +4459,7 @@ export function FUN_00418d60(in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00418d90(in_ECX, param_1) {
+export function FUN_00418d90(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4460,7 +4475,7 @@ export function FUN_00418d90(in_ECX, param_1) {
 // Size: 33 bytes
 // ============================================================
 
-export function FUN_00418dd0(in_ECX, param_1) {
+export function FUN_00418dd0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4476,23 +4491,23 @@ export function FUN_00418dd0(in_ECX, param_1) {
 // Size: 103 bytes
 // ============================================================
 
-export function FUN_00418e00(in_ECX) {
+export function FUN_00418e00(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_10 = [0];
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0040f480();
   w32(in_ECX, 0x30, 0);
   w32(in_ECX, 0x34, 0);
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return in_ECX;
 }
 
@@ -4503,23 +4518,23 @@ export function FUN_00418e00(in_ECX) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_00418ea0(in_ECX) {
+export function FUN_00418ea0(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_8 = 0;
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_005d3c40(s32(in_ECX, 0x1c));
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00418efa();
   FUN_00418f0d();
   return;
@@ -4550,9 +4565,9 @@ export function FUN_00418f0d(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4563,7 +4578,7 @@ export function FUN_00418f0d(unaff_EBP) {
 // Size: 121 bytes
 // ============================================================
 
-export function FUN_00418f40(in_ECX, param_1, param_2, param_3) {
+export function FUN_00418f40(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -4587,7 +4602,7 @@ export function FUN_00418f40(in_ECX, param_1, param_2, param_3) {
 // Size: 48 bytes
 // ============================================================
 
-export function FUN_00418fe0(in_ECX) {
+export function FUN_00418fe0(in_ECX = G.in_ECX) {
 
 
   let uVar1;
@@ -4605,7 +4620,7 @@ export function FUN_00418fe0(in_ECX) {
 // Size: 49 bytes
 // ============================================================
 
-export function FUN_00419020(in_ECX, param_1) {
+export function FUN_00419020(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4622,7 +4637,7 @@ export function FUN_00419020(in_ECX, param_1) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_00419060(in_ECX) {
+export function FUN_00419060(in_ECX = G.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4700,7 +4715,7 @@ export function FUN_00419170() {
 
   let iVar1;
   let uVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_744 = new Array(1076).fill(0);
   let local_310;
   let local_18;
@@ -4709,10 +4724,10 @@ export function FUN_00419170() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_005c64da();
@@ -4741,7 +4756,7 @@ export function FUN_00419170() {
   if (iVar1 < 0) {
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00419940();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0041994c();
     FUN_00419962();
     return;
@@ -4827,7 +4842,7 @@ export function FUN_00419170() {
           FUN_00419b80();
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -4877,7 +4892,7 @@ export function FUN_00419170() {
           FUN_00578c12(1,0x1f2,G.DAT_00679640,0);
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -4906,7 +4921,7 @@ export function FUN_00419170() {
       FUN_00419b80();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00419940();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041994c();
       FUN_00419962();
       return;
@@ -4961,9 +4976,9 @@ export function FUN_00419962(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -4988,7 +5003,7 @@ export function FUN_00419b80() {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00419ba0(in_ECX, param_1) {
+export function FUN_00419ba0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5004,7 +5019,7 @@ export function FUN_00419ba0(in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_00419be0(in_ECX, param_1) {
+export function FUN_00419be0(in_ECX = G.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5698,7 +5713,7 @@ export function FUN_0041b177() {
 
   let iVar1;
   let UVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_330;
   let local_32c;
   let local_328;
@@ -5709,10 +5724,10 @@ export function FUN_0041b177() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_328 = 1;
   local_2c = 1;
   local_32c = 1;
@@ -5776,7 +5791,7 @@ export function FUN_0041b177() {
   }
   G.DAT_00628064 = local_330;
   if (local_330 < 0) {
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0041b46a();
     FUN_0041b480();
     return;
@@ -5787,7 +5802,7 @@ export function FUN_0041b177() {
   if (local_330 === 2) {
     FUN_005f22d0(G.DAT_0062cd24,G.DAT_006253e4);
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041b46a();
   FUN_0041b480();
   return;
@@ -5818,9 +5833,9 @@ export function FUN_0041b480(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6046,7 +6061,7 @@ export function FUN_0041ba52(param_1) {
   let iVar2;
   let uVar3;
   let uVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let iVar5;
   let uVar6;
   let local_458;
@@ -6077,10 +6092,10 @@ export function FUN_0041ba52(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_330 = 1;
   local_28 = 0;
   local_328 = 0;
@@ -6102,7 +6117,7 @@ export function FUN_0041ba52(param_1) {
       FUN_0055a567();
       if (local_18 < 0) {
 // LAB_0041d3cf: (code below also in LAB_0041d3cf_helper, kept for 1:1 audit)
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0041d3f2();
         FUN_0041d408();
         return;
@@ -6310,7 +6325,7 @@ export function FUN_0041ba52(param_1) {
     if (iVar2 < 0) LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
     G.DAT_0064bc18 = ((iVar2) << 16 >> 16);
     FUN_0055a41d(2,6,7);
-    // DEVIATION: MFC — local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);
+    devLog('MFC', 'local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);');
     if (local_14 !== 0) {
       FUN_0055a567();
       LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
@@ -6563,9 +6578,9 @@ export function FUN_0041d408(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6580,16 +6595,16 @@ export function FUN_0041d417() {
 
 
   let iVar1;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_22c;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   G.DAT_00655af0 = 0;
@@ -6612,7 +6627,7 @@ export function FUN_0041d417() {
         G.DAT_00655af0 = G.DAT_00655af0 | 8;
       }
       G.DAT_006d1160 = G.DAT_006d1160 * 2;
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041d7c5();
       FUN_0041d7db();
       return;
@@ -6684,9 +6699,9 @@ export function FUN_0041d7db(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6702,16 +6717,16 @@ export function FUN_0041d7ea() {
 
   let bVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_228;
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   bVar1 = true;
   FUN_0059db08(0x4000);
   local_8 = 0;
@@ -6817,7 +6832,7 @@ export function FUN_0041d7ea() {
   if (!bVar1) {
     FUN_004a73d9();
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041dc9e();
   FUN_0041dcb4();
   return;
@@ -6848,9 +6863,9 @@ export function FUN_0041dcb4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -6973,7 +6988,7 @@ export function FUN_0041dfe1() {
 
   let uVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_97c;
   let local_974;
   let local_970;
@@ -6990,10 +7005,10 @@ export function FUN_0041dfe1() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_005c64da();
@@ -7018,7 +7033,7 @@ export function FUN_0041dfe1() {
       FUN_00419ba0(0x9e);
       local_8 = local_8 & 0xffffff00;
       FUN_0041e7b2();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041e7be();
       FUN_0041e7d4();
       return;
@@ -7048,7 +7063,7 @@ export function FUN_0041dfe1() {
       FUN_00419c8b();
     }
     FUN_00421dd0();
-    // DEVIATION: MFC — iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);
+    devLog('MFC', 'iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);');
     if (iVar2 === 0) code_r0x0041e1e4_helper(iVar2, local_138, local_13c, local_34, local_434, local_96c, local_970, local_974, local_97c, uVar1); return;
     iVar2 = FUN_00421e70(s_SCENARIOLOADED_006255ec,1);
   } while (iVar2 < 0);
@@ -7184,9 +7199,9 @@ export function FUN_0041e7d4(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -7258,7 +7273,7 @@ export function FUN_0041e8fb(param_1) {
 
   let uVar1;
   let iVar2;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let uVar3;
   let uVar4;
   let uVar5;
@@ -7279,10 +7294,10 @@ export function FUN_0041e8fb(param_1) {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   while( true ) {
@@ -7369,7 +7384,7 @@ export function FUN_0041e8fb(param_1) {
           iVar2 = FUN_005a5f34(local_438,0);
           if (iVar2 === 0) {
             FUN_005f22d0(G.DAT_0064bcfa + s8(G.DAT_00655b03) * 0xf2,local_438);
-            // DEVIATION: SEH
+            devLog('SEH', '');
             FUN_0041eec6();
             FUN_0041eedc();
             return;
@@ -7378,7 +7393,7 @@ export function FUN_0041e8fb(param_1) {
       }
     }
   }
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041eec6();
   FUN_0041eedc();
   return;
@@ -7409,9 +7424,9 @@ export function FUN_0041eedc(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -7426,7 +7441,7 @@ export function FUN_0041eeeb() {
 
 
   let iVar1;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let local_758;
   let local_754;
   let local_750 = new Array(270).fill(0);
@@ -7439,10 +7454,10 @@ export function FUN_0041eeeb() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   local_318 = 1;
   local_18 = 1;
   FUN_0059db08(0x4000);
@@ -7622,7 +7637,7 @@ export function FUN_0041eeeb() {
   FUN_0055a64a();
   local_8 = local_8 & 0xffffff00;
   FUN_0041f66e();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041f67a();
   FUN_0041f690();
   return;
@@ -7667,9 +7682,9 @@ export function FUN_0041f690(unaff_EBP) {
 
 
   // unaff_EBP → promoted to parameter
-  // DEVIATION: SEH
+  devLog('SEH', '');
   
-  // DEVIATION: SEH
+  devLog('SEH', '');
   return;
 }
 
@@ -7762,7 +7777,7 @@ export function FUN_0041f8d9() {
   let iVar2;
   let UVar3;
   let sVar4;
-  // DEVIATION: SEH
+  devLog('SEH', '');
   let pLVar5;
   let local_7e8;
   let local_748;
@@ -7773,10 +7788,10 @@ export function FUN_0041f8d9() {
   // DEVIATION: SEH local
   let local_8;
   
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
-  // DEVIATION: SEH
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
+  devLog('SEH', '');
   FUN_0059db08(0x4000);
   local_8 = 0;
   FUN_005c64da();
@@ -7808,7 +7823,7 @@ export function FUN_0041f8d9() {
         }
         local_8 = local_8 & 0xffffff00;
         FUN_004201fb();
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_00420207();
         FUN_0042021d();
         return;
@@ -7977,7 +7992,7 @@ export function FUN_0041f8d9() {
       if (G.DAT_0062c5b0 !== 0) {
         local_8 = local_8 & 0xffffff00;
         FUN_004201fb();
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_00420207();
         FUN_0042021d();
         return;
@@ -7986,7 +8001,7 @@ export function FUN_0041f8d9() {
       if (G.DAT_006ad228 !== -1) {
         local_8 = local_8 & 0xffffff00;
         FUN_004201fb();
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_00420207();
         FUN_0042021d();
         return;
@@ -7996,7 +8011,7 @@ export function FUN_0041f8d9() {
   FUN_0041b8b0();
   local_8 = local_8 & 0xffffff00;
   FUN_004201fb();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_00420207();
   FUN_0042021d();
   return;
@@ -8214,7 +8229,7 @@ function LAB_004191ff_helper(iVar1, local_14, local_18, local_310, local_744, lo
   if (iVar1 < 0) {
     local_8 = ((local_8) >>> 0) << 8;
     FUN_00419940();
-    // DEVIATION: SEH
+    devLog('SEH', '');
     FUN_0041994c();
     FUN_00419962();
     return;
@@ -8300,7 +8315,7 @@ if (true) {
           FUN_00419b80();
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -8350,7 +8365,7 @@ if (true) {
           FUN_00578c12(1,0x1f2,G.DAT_00679640,0);
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -8379,7 +8394,7 @@ if (true) {
       FUN_00419b80();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00419940();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041994c();
       FUN_00419962();
       return;
@@ -8410,7 +8425,7 @@ function switchD_004197af_caseD_4_helper(iVar1, local_744, local_8) {
       FUN_00419b80();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00419940();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041994c();
       FUN_00419962();
       return;
@@ -8458,7 +8473,7 @@ function switchD_004197af_default_helper(iVar1, local_14, local_18, local_310, l
           FUN_00578c12(1,0x1f2,G.DAT_00679640,0);
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -8487,7 +8502,7 @@ function switchD_004197af_default_helper(iVar1, local_14, local_18, local_310, l
       FUN_00419b80();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00419940();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041994c();
       FUN_00419962();
       return;
@@ -8533,7 +8548,7 @@ function LAB_004197d3_helper(iVar1, local_14, local_18, local_310, local_744, lo
           FUN_00578c12(1,0x1f2,G.DAT_00679640,0);
           local_8 = ((local_8) >>> 0) << 8;
           FUN_00419940();
-          // DEVIATION: SEH
+          devLog('SEH', '');
           FUN_0041994c();
           FUN_00419962();
           return;
@@ -8562,7 +8577,7 @@ function LAB_004197d3_helper(iVar1, local_14, local_18, local_310, local_744, lo
       FUN_00419b80();
       local_8 = ((local_8) >>> 0) << 8;
       FUN_00419940();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041994c();
       FUN_00419962();
       return;
@@ -8579,7 +8594,7 @@ if (true) {
 }
 
 function LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6) {
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0041d3f2();
         FUN_0041d408();
         return;
@@ -8787,7 +8802,7 @@ if (true) {
     if (iVar2 < 0) LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
     G.DAT_0064bc18 = ((iVar2) << 16 >> 16);
     FUN_0055a41d(2,6,7);
-    // DEVIATION: MFC — local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);
+    devLog('MFC', 'local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);');
     if (local_14 !== 0) {
       FUN_0055a567();
       LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
@@ -9053,7 +9068,7 @@ function LAB_0041c35d_helper(iVar2, iVar5, local_14, local_1c, local_20, local_2
     if (iVar2 < 0) LAB_0041bab3_helper(iVar2, iVar5, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_324, local_328, local_330, local_434, local_43c, local_444, local_448, local_fc, param_1, uVar4, uVar6); return;
     G.DAT_0064bc18 = ((iVar2) << 16 >> 16);
     FUN_0055a41d(2,6,7);
-    // DEVIATION: MFC — local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);
+    devLog('MFC', 'local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);');
     if (local_14 !== 0) {
       FUN_0055a567();
       LAB_0041d3cf_helper(iVar2, iVar5, local_14, local_1c, local_20, local_24, local_248, local_28, local_2c, local_324, local_328, local_330, local_434, local_43c, local_444, local_448, local_fc, param_1, uVar4, uVar6); return;
@@ -9295,7 +9310,7 @@ function LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
       FUN_0055a567();
       if (local_18 < 0) {
   // LAB_0041d3cf:
-        // DEVIATION: SEH
+        devLog('SEH', '');
         FUN_0041d3f2();
         FUN_0041d408();
         return;
@@ -9503,7 +9518,7 @@ if (true) {
     if (iVar2 < 0) LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
     G.DAT_0064bc18 = ((iVar2) << 16 >> 16);
     FUN_0055a41d(2,6,7);
-    // DEVIATION: MFC — local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);
+    devLog('MFC', 'local_14 = CSocket::Create(local_324,0x6254f8,0x6254f0,0x1);');
     if (local_14 !== 0) {
       FUN_0055a567();
       LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, local_20, local_24, local_248, local_28, local_2c, local_2e8, local_2fc, local_30, local_324, local_328, local_32c, local_330, local_434, local_438, local_43c, local_444, local_448, local_450, local_454, local_458, local_fc, param_1, uVar3, uVar4, uVar6); return;
@@ -9826,7 +9841,7 @@ function LAB_0041d739_helper(iVar1, local_22c) {
         G.DAT_00655af0 = G.DAT_00655af0 | 8;
       }
       G.DAT_006d1160 = G.DAT_006d1160 * 2;
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041d7c5();
       FUN_0041d7db();
       return;
@@ -10058,7 +10073,7 @@ function LAB_0041e731_helper(iVar2, local_134, local_138, local_13c, local_34, l
       FUN_00419ba0(0x9e);
       local_8 = local_8 & 0xffffff00;
       FUN_0041e7b2();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041e7be();
       FUN_0041e7d4();
       return;
@@ -10088,7 +10103,7 @@ if (true) {
       FUN_00419c8b();
     }
     FUN_00421dd0();
-    // DEVIATION: MFC — iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);
+    devLog('MFC', 'iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);');
     if (iVar2 === 0) code_r0x0041e1e4_helper(iVar2, local_134, local_138, local_13c, local_34, local_430, local_434, local_8, local_868, local_96c, local_970, local_974, local_97c, uVar1); return;
     iVar2 = FUN_00421e70(s_SCENARIOLOADED_006255ec,1);
   // (outer block close)
@@ -10205,7 +10220,7 @@ function LAB_0041e028_helper(iVar2, local_134, local_138, local_13c, local_34, l
       FUN_00419ba0(0x9e);
       local_8 = local_8 & 0xffffff00;
       FUN_0041e7b2();
-      // DEVIATION: SEH
+      devLog('SEH', '');
       FUN_0041e7be();
       FUN_0041e7d4();
       return;
@@ -10235,7 +10250,7 @@ if (true) {
       FUN_00419c8b();
     }
     FUN_00421dd0();
-    // DEVIATION: MFC — iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);
+    devLog('MFC', 'iVar2 = CSocket::Create(local_430,((local_134) >>> 0),0x6255e0,0x4008001);');
     if (iVar2 === 0) code_r0x0041e1e4_helper(iVar2, local_134, local_138, local_13c, local_34, local_430, local_434, local_8, local_868, local_96c, local_970, local_974, local_97c, uVar1); return;
     iVar2 = FUN_00421e70(s_SCENARIOLOADED_006255ec,1);
   } while (iVar2 < 0);
@@ -10342,7 +10357,7 @@ function LAB_0041f5ea_helper(local_318, local_8) {
   FUN_0055a64a();
   local_8 = local_8 & 0xffffff00;
   FUN_0041f66e();
-  // DEVIATION: SEH
+  devLog('SEH', '');
   FUN_0041f67a();
   FUN_0041f690();
   return;

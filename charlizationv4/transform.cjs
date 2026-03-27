@@ -222,6 +222,9 @@ const fnRe = /^export function (\w+)\s*\(/gm;
 let fm;
 while ((fm = fnRe.exec(fnUtilsSrc)) !== null) fnUtilsExports.add(fm[1]);
 
+// Track all external stubs needed across all blocks
+const allExternStubs = new Set();
+
 for (const blockFile of blockFiles) {
   const src = fs.readFileSync(path.join(srcDir, blockFile), 'utf8');
   const lines = src.split('\n');
@@ -312,49 +315,95 @@ for (const blockFile of blockFiles) {
     outLines.push(line);
   }
 
-  // Phase 2: Prefix DAT_ with G. in code lines (not comments/DEVIATION/JOINED)
+  // Phase 2: Transform code lines
   const finalLines = [];
   for (const line of outLines) {
     const trimmed = line.trim();
     let processed = line;
-    // Only prefix in code lines, not comments or JOINED markers
+    const indent = line.match(/^(\s*)/)[1];
+
+    // 2a: Replace DEVIATION lines with devLog() calls
+    // Line comment style: // DEVIATION: category — description
+    if (/^\s*\/\/ DEVIATION:\s/.test(processed)) {
+      const dm = trimmed.match(/^\/\/ DEVIATION:\s*(\w+)(?:\s*—\s*(.*))?$/);
+      if (dm) {
+        const cat = dm[1] || 'unknown';
+        const desc = (dm[2] || '').replace(/'/g, "\\'").substring(0, 120);
+        processed = indent + "devLog('" + cat + "', '" + desc + "');";
+      }
+    }
+    // Block comment style: true /* DEVIATION: category — description */
+    else if (/true\s*\/\* DEVIATION:/.test(processed)) {
+      // Replace `true /* DEVIATION: ... */` with `devLog('...', '...')`
+      processed = processed.replace(
+        /true\s*\/\* DEVIATION:\s*(\w+)(?:\s*—\s*(.*?))?\s*\*\//g,
+        (m, cat, desc) => {
+          const d = (desc || '').replace(/'/g, "\\'").substring(0, 120);
+          return "devLog('" + cat + "', '" + d + "')";
+        }
+      );
+    }
+
     if (!trimmed.startsWith('//') && trimmed !== '/*JOINED*/' && !/^\/\*/.test(trimmed)) {
-      // Replace DAT_ with G.DAT_ but not inside /* */ block comments on this line
-      // Split at block comments, process only code parts
+      // 2b: Prefix DAT_ with G. (not inside block comments)
       processed = processed.replace(
         /^([^]*?)(?=\/\*|$)/,
         (codePart) => codePart.replace(/(?<!G\.)(?<![a-zA-Z_.])(DAT_[0-9a-fA-F]+)/g, 'G.$1')
       );
+
+      // 2c: Add default values for register parameters in function signatures
+      if (/^export function \w+\(/.test(trimmed)) {
+        processed = processed.replace(/\b(in_ECX)(?=[\s,)])/g, '$1 = G.in_ECX');
+        processed = processed.replace(/\b(in_EAX)(?=[\s,)])/g, '$1 = G.in_EAX');
+        processed = processed.replace(/\b(in_EDX)(?=[\s,)])/g, '$1 = G.in_EDX');
+      }
     }
     finalLines.push(processed);
   }
 
   // Phase 3: Build imports and insert at top (before first export function)
-  // 3a: Find which functions this block exports
+  // 3a: Find which functions this block defines (exported + local helpers)
   const localFns = new Set();
   for (const line of finalLines) {
-    const m = line.match(/^export function (\w+)\s*\(/);
+    const m = line.match(/^(?:export )?function (\w+)\s*\(/);
     if (m) localFns.add(m[1]);
   }
 
-  // 3b: Find all FUN_ identifiers called/referenced in this block
+  // 3b: Find all function identifiers called/referenced in this block
   const refsNeeded = new Map(); // fnName → source block
+  const externNeeded = new Set(); // functions not in any block (Win32, CRT, etc.)
   const allText = finalLines.join('\n');
-  const funRefs = allText.matchAll(/\b(FUN_[0-9a-fA-F]+)\b/g);
-  for (const m of funRefs) {
+
+  // Find all function-call-like identifiers
+  const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|fill)$/;
+  for (const m of allText.matchAll(/\b([a-zA-Z_]\w+)\s*\(/g)) {
     const fn = m[1];
-    if (localFns.has(fn)) continue;           // defined locally
-    if (fnUtilsExports.has(fn)) continue;     // in fn_utils
+    if (skip.test(fn)) continue;
+    if (localFns.has(fn)) continue;
+    if (fnUtilsExports.has(fn)) continue;
     const srcBlock = fnRegistry.get(fn);
     if (srcBlock && srcBlock !== blockFile) {
       refsNeeded.set(fn, srcBlock);
+    } else if (!srcBlock) {
+      externNeeded.add(fn);
     }
   }
+  // Track extern stubs needed globally
+  for (const fn of externNeeded) allExternStubs.add(fn);
 
   // 3c: Build import lines
   const imports = [];
   imports.push("import { G } from '../globals.js';");
   imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';");
+  imports.push("import { devLog } from '../devlog.js';");
+
+  // Import extern stubs
+  if (externNeeded.size > 0) {
+    const sorted = [...externNeeded].sort();
+    for (let k = 0; k < sorted.length; k += 6) {
+      imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from '../extern-stubs.js';`);
+    }
+  }
 
   // Group cross-block imports by source
   const importsByBlock = new Map();
@@ -387,6 +436,40 @@ for (const blockFile of blockFiles) {
 }
 
 console.log(`Transformed ${totalTransformed} block files`);
+
+// ═══════════════════════════════════════════════════════════════════
+// Step 4b: Generate extern-stubs.js
+// ═══════════════════════════════════════════════════════════════════
+
+{
+  // Filter out JS reserved words that can't be function names
+  const reserved = new Set(['delete', 'new', 'class', 'super', 'this', 'import', 'export',
+    'default', 'return', 'throw', 'try', 'catch', 'finally', 'switch', 'case', 'break',
+    'continue', 'for', 'while', 'do', 'if', 'else', 'var', 'let', 'const', 'function',
+    'void', 'typeof', 'instanceof', 'in', 'of', 'with', 'yield', 'await', 'async',
+    'static', 'get', 'set', 'enum', 'implements', 'interface', 'package', 'private',
+    'protected', 'public', 'arguments', 'eval', 'NaN', 'undefined', 'Infinity']);
+  const sorted = [...allExternStubs].filter(n => !reserved.has(n)).sort();
+  const lines = [
+    '// ═══════════════════════════════════════════════════════════════════',
+    '// extern-stubs.js — Stub implementations for external functions',
+    '//',
+    '// Win32 API, C runtime, MFC, and Ghidra-named functions that',
+    '// exist in the binary but have no JS equivalent.',
+    '// Each stub logs when called so we can see what the binary wanted.',
+    '//',
+    `// Generated by transform.cjs — ${sorted.length} stubs`,
+    '// ═══════════════════════════════════════════════════════════════════',
+    '',
+    "import { stubCall } from './devlog.js';",
+    '',
+  ];
+  for (const fn of sorted) {
+    lines.push(`export function ${fn}(...args) { return stubCall('${fn}', args); }`);
+  }
+  fs.writeFileSync(path.join(dstDir, 'extern-stubs.js'), lines.join('\n'));
+  console.log(`Generated extern-stubs.js: ${sorted.length} stubs`);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Step 5: Generate fn_utils.js
