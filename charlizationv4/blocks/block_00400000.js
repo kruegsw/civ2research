@@ -16,7 +16,7 @@
    // Library: Visual Studio 1998 Debug */
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset, setWidths } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4, FUN_005b8ee1 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, _atexit, _memcpy, _rand, gdi_BA4F } from '../crt.js';

@@ -8,7 +8,7 @@
 // ============================================================
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset, setWidths } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { GetSystemMetrics, SendMessageA, SetRect, _memcpy, _memset, _rand } from '../crt.js';
 import { _sprintf, _strcmp, _strlen, _strncat, operator_delete, operator_new } from '../crt.js';

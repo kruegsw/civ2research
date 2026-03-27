@@ -13,7 +13,7 @@
    // Library: Visual Studio 1998 Debug */
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset, setWidths } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { __calloc_dbg, __free_dbg, __malloc_dbg, __realloc_dbg, _atexit, _atol } from '../crt.js';
 import { _fclose, _memcpy, _memset, _strchr, _strcmp, _strlen } from '../crt.js';

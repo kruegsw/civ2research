@@ -18,12 +18,21 @@ export const _MEM = G._MEM;
 // ── Value read/write: what C does when you use DAT_xxx as a value ──
 // In C, writing DAT_xxx reads/writes the bytes at that address.
 // v() makes this explicit in JS.
+// Width-aware: reads 1, 2, or 4 bytes based on the address's declared width.
+const _widths = {};
+export function setWidths(w) { Object.assign(_widths, w); }
 export function v(addr) {
+  const w = _widths[addr];
+  if (w === 1) return _MEM[addr];
+  if (w === 2) { const val = (_MEM[addr+1] << 8) | _MEM[addr]; return (val & 0x8000) ? (val | 0xFFFF0000) : val; }
   return _MEM[addr] | (_MEM[addr+1] << 8) | (_MEM[addr+2] << 16) | (_MEM[addr+3] << 24);
 }
 export function wv(addr, val) {
+  const w = _widths[addr];
   _MEM[addr] = val & 0xFF;
+  if (w === 1) return val;
   _MEM[addr+1] = (val >> 8) & 0xFF;
+  if (w === 2) return val;
   _MEM[addr+2] = (val >> 16) & 0xFF;
   _MEM[addr+3] = (val >> 24) & 0xFF;
   return val;
@@ -82,15 +91,19 @@ export function w32r(addr, off, val) { w32(addr, off, val); return val; }
 export function ptrAdd(addr, off) { return addr + off; }
 
 // ── Loop guard: prevents infinite loops, logs diagnostic info ──
-let _loopCount = 0;
-const _LOOP_LIMIT = 5000000;
+// Per-loop guard using a Map keyed by function+line
+const _loopCounts = new Map();
+const _PER_LOOP_LIMIT = 100000;
 export function loopGuard(fnName, line) {
-  if (++_loopCount > _LOOP_LIMIT) {
-    _loopCount = 0;
-    throw new Error('LOOP_GUARD: ' + fnName + ' line ' + line + ' exceeded ' + _LOOP_LIMIT + ' iterations');
+  const key = fnName + ':' + line;
+  const count = (_loopCounts.get(key) || 0) + 1;
+  _loopCounts.set(key, count);
+  if (count > _PER_LOOP_LIMIT) {
+    _loopCounts.set(key, 0);
+    throw new Error('LOOP_GUARD: ' + fnName + ' line ' + line + ' exceeded ' + _PER_LOOP_LIMIT + ' iterations');
   }
 }
-export function loopReset() { _loopCount = 0; }
+export function loopReset() { _loopCounts.clear(); }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

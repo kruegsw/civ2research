@@ -8,7 +8,7 @@
 // ============================================================
 
 import '../globals-init.js';
-import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, ptrAdd, _MEM, loopGuard, loopReset, setWidths } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { SetRect, __calloc_dbg, __expand_base, __expand_dbg, __free_base, __free_dbg } from '../crt.js';
 import { __heap_alloc_base, __heap_alloc_dbg, __malloc_base, __malloc_dbg, __msize_dbg, __nh_malloc } from '../crt.js';

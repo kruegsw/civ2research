@@ -10,6 +10,10 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { G } from './globals.js';
+import { setWidths } from './mem.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 // The base address and _MEM buffer
 const _BASE = parseInt(Object.keys(G).find(k => k.startsWith('DAT_'))?.replace('DAT_', '') || '0', 16);
@@ -20,6 +24,23 @@ for (const key of Object.keys(G)) {
   const addr = parseInt(key.replace('DAT_', ''), 16);
   const offset = addr - _BASE;
   globalThis[key] = offset;
+}
+
+// Load address widths from dat-classify.json and register with v()/wv()
+try {
+  const __dir = dirname(fileURLToPath(import.meta.url));
+  const classify = JSON.parse(readFileSync(join(__dir, 'dat-classify.json'), 'utf8'));
+  if (classify.widths) {
+    // Convert DAT_ names to offsets for the _widths lookup
+    const offsetWidths = {};
+    for (const [name, width] of Object.entries(classify.widths)) {
+      const addr = parseInt(name.replace('DAT_', ''), 16);
+      offsetWidths[addr - _BASE] = width;
+    }
+    setWidths(offsetWidths);
+  }
+} catch (e) {
+  // No width data — v() defaults to 32-bit reads
 }
 
 // Also expose G and _MEM for infrastructure
