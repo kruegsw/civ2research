@@ -70,12 +70,14 @@ export function u32(arrOrAddr, off) {
 // ── Memory write helpers ──
 export function w16(arrOrAddr, off, val) {
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
+  if (!buf || typeof buf === 'string') return; // guard against bad args
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   buf[i] = val & 0xFF;
   buf[i + 1] = (val >> 8) & 0xFF;
 }
 export function w32(arrOrAddr, off, val) {
   const buf = typeof arrOrAddr === 'number' ? _MEM : arrOrAddr;
+  if (!buf || typeof buf === 'string') return;
   const i = (typeof arrOrAddr === 'number' ? arrOrAddr : 0) + off;
   buf[i] = val & 0xFF;
   buf[i + 1] = (val >> 8) & 0xFF;
