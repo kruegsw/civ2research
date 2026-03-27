@@ -62,17 +62,18 @@ export function loadSav(buf) {
   const mw        = mw2 >>> 1;
 
   // ── Set map dimensions in globals ──
-  G.DAT_006d1160 = mw2;                            // map width doubled-X
-  G.DAT_006d1162 = mh;                              // map height
-  G.DAT_00655ae8 = flatEarth ? 0x8000 : mapShape;  // map shape (bit 15 = flat)
-  G.DAT_006d1168 = mapSeed;                         // resource seed
+  // Write scalar globals via w32 (G.DAT_xxx is a Uint8Array, not a number)
+  w32(G.DAT_006d1160, 0, mw2);                     // map width doubled-X
+  w32(G.DAT_006d1162, 0, mh);                       // map height
+  w32(G.DAT_00655ae8, 0, flatEarth ? 0x8000 : mapShape); // map shape
+  w32(G.DAT_006d1168, 0, mapSeed);                  // resource seed
 
   // ── Set game state globals ──
-  G.DAT_00655af8 = turnsPassed;   // turn counter (best guess address)
-  G.DAT_00655b0b = 0;             // human player bitmask — set to 0 for all-AI
-  G.DAT_00655b16 = totalUnits;    // total unit count
-  G.DAT_00655b18 = totalCities;   // total city count
-  G.DAT_0064bcc8 = 3;             // movement multiplier (default)
+  w32(G.DAT_00655af8, 0, turnsPassed);   // turn counter
+  w32(G.DAT_00655b0b, 0, 0);             // human player bitmask — 0 for all-AI
+  w32(G.DAT_00655b16, 0, totalUnits);    // total unit count
+  w32(G.DAT_00655b18, 0, totalCities);   // total city count
+  w32(G.DAT_0064bcc8, 0, 3);             // movement multiplier (default)
 
   // ── Compute section offsets ──
   const block1Off   = MAP_HEADER + 14;               // known improvements
