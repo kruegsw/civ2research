@@ -63,14 +63,8 @@ for (const file of fs.readdirSync(srcDir).filter(f => f.startsWith('block_') && 
   for (const m of src.matchAll(/\b(DAT_[0-9a-fA-F]+)\b/g)) {
     if (!arrayDats.has(m[1])) scalarDats.add(m[1]);
   }
-  // PTR_ references (pointer labels — also memory addresses)
-  for (const m of src.matchAll(/\b(PTR_\w+_([0-9a-fA-F]{8}))\b/g)) {
-    scalarDats.add(m[1]);
-  }
-  // s_ string labels (string data at memory addresses)
-  for (const m of src.matchAll(/\b(s_\w+_([0-9a-fA-F]{8}))\b/g)) {
-    scalarDats.add(m[1]);
-  }
+  // PTR_ and s_ references are handled by globals-init.js (not here)
+  // Including them here would shift BASE and break all DAT_ offsets
 
   // Also handle old-style declarations if present (mem.js)
   for (const line of src.split('\n')) {

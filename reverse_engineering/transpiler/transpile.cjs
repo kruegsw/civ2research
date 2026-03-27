@@ -385,6 +385,11 @@ function transformLine(line, ctx) {
     // ── Drop FID_conflict_ prefix ──
     out = out.replace(/\bFID_conflict_(\w+)/g, '$1');
 
+    // ── Ghidra 0xffffffff → -1 (signed sentinel) ──
+    // In C, 0xFFFFFFFF as signed int = -1. Ghidra decompiles -1 as 0xffffffff.
+    // JS treats 0xffffffff as unsigned (4294967295), breaking signed comparisons.
+    out = out.replace(/\b0xffffffff\b/g, '-1');
+
     // ── Byte array read: (&DAT_XXX)[expr] → DAT_XXX[expr] ──
     out = out.replace(/\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[/g, '$1[');
 
@@ -490,8 +495,15 @@ function transformLine(line, ctx) {
         }
         if (commaPos > 0) {
           const a = content.substring(0, commaPos).trim();
-          const b = content.substring(commaPos + 1).trim();
-          if (shift <= 24) {
+          let b = content.substring(commaPos + 1).trim();
+          const xSize = parseInt(cm[1]), ySize = parseInt(cm[2]);
+          if (xSize === 3 && ySize === 1) {
+            // CONCAT31: upper 3 bytes are register noise in Ghidra.
+            // The meaningful value is the lower 1 byte (second arg).
+            // Convert *var dereference to byte read: *var → _MEM[var]
+            b = b.replace(/^\*([a-zA-Z_]\w*)$/, '_MEM[$1]');
+            newOut2 += '((' + b + ') & 0xFF)';
+          } else if (shift <= 24) {
             newOut2 += '((' + a + ') << ' + shift + ' | (' + b + '))';
           } else {
             // 64-bit — approximate with just the lower part
@@ -777,7 +789,7 @@ function transformLine(line, ctx) {
           if (name === '_MEM' || name === 'G') return m;     // flat memory / globals object
           if (/^(in_ECX|in_EAX|in_EDX)$/.test(name)) return m; // register buffers
           if (/^(Math|Array|String|Object|console)$/.test(name)) return m; // JS builtins
-          if (/^(acStack|auStack|abStack)/.test(name)) return m; // stack arrays
+          if (/^(acStack|auStack|abStack|aiStack|asStack)/.test(name)) return m; // stack arrays
           if (/^s_/.test(name)) return m;                    // string labels (Uint8Array)
           // Everything else: pointer dereference → _MEM[var + idx]
           return '_MEM[' + name + ' + ';
@@ -1059,9 +1071,9 @@ function processFunction(headerLines, bodyLines, ctx) {
         }
       }
 
-      // Also join lines that end with trailing operators (&&, ||, +, -, *, ,)
+      // Also join lines that end with trailing operators (&&, ||, +, -, *, ,, =)
       // or with a C type cast (TYPE *) which means expression continues
-      else if ((/[+\-*/,&|]\s*$/.test(t) || /\(\s*\w+\s*\*+\s*\)\s*$/.test(t)) && depth === 0) {
+      else if ((/[+\-*/,&|=]\s*$/.test(t) || /\(\s*\w+\s*\*+\s*\)\s*$/.test(t)) && depth === 0) {
         const indent = bodyLines[i].match(/^(\s*)/)[1];
         let joined = t;
         let j = i + 1;
@@ -1079,11 +1091,33 @@ function processFunction(headerLines, bodyLines, ctx) {
           j++;
           // Stop when we hit ; or { or depth returns to 0 after closing
           if (/;\s*$/.test(nextT) || /\{\s*$/.test(nextT)) break;
-          if (runningDepth <= 0 && !/[+\-*/,&|]\s*$/.test(nextT)) break;
+          if (runningDepth <= 0 && !/[+\-*/,&|=]\s*$/.test(nextT)) {
+            // But if the next line is just ";", grab it too
+            if (j < bodyLines.length && bodyLines[j].trim() === ';') {
+              const semiIndent = bodyLines[j].match(/^(\s*)/)[1];
+              joined += ';';
+              bodyLines[j] = semiIndent + '/*JOINED*/';
+              j++;
+            }
+            break;
+          }
         }
         if (j > i + 1) {
           bodyLines[i] = indent + joined;
         }
+      }
+    }
+
+    // ── Stray semicolons: if next line is just ";", merge it ──
+    // Ghidra sometimes places the semicolon on its own line
+    for (let i = 0; i < bodyLines.length - 1; i++) {
+      const t = bodyLines[i].trim();
+      if (t === '' || t.startsWith('//') || t.startsWith('/*') || t === '/*JOINED*/') continue;
+      if (/;\s*$/.test(t) || /\{\s*$/.test(t) || /\}\s*$/.test(t)) continue;
+      if (bodyLines[i + 1].trim() === ';') {
+        bodyLines[i] = bodyLines[i] + ';';
+        const semiIndent = bodyLines[i + 1].match(/^(\s*)/)[1];
+        bodyLines[i + 1] = semiIndent + '/*JOINED*/';
       }
     }
   }
@@ -1245,7 +1279,7 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
 
     // ── SEH: local_8 = 0xffffffff ──
-    if (/^\s*local_8\s*=\s*0xffffffff\s*;/.test(line) && /FS_OFFSET/.test(bodyText)) {
+    if (/^\s*local_8\s*=\s*(0xffffffff|-1)\s*;/.test(line) && /FS_OFFSET/.test(bodyText)) {
       result.push(line.replace(trimmed, '// DEVIATION: SEH'));
       continue;
     }
@@ -1265,24 +1299,27 @@ function processFunction(headerLines, bodyLines, ctx) {
       let val = writeMatch[3].trim();
       val = transformLine('  ' + val, ctx).trim();
       const parts = splitBaseOffset(inner);
+      // Strip v() from base — it's an ADDRESS, not a value read.
+      // transformLine converts &DAT_xxx → v(DAT_xxx) because & is stripped before v() runs.
+      const stripV = (s) => s.replace(/^v\(([^)]+)\)$/, '$1');
       if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
         // Byte write → _MEM[base + offset] = value
         if (parts) {
-          const base = transformLine('  ' + parts.base, ctx).trim();
+          const base = stripV(transformLine('  ' + parts.base, ctx).trim());
           const offset = transformLine('  ' + parts.offset, ctx).trim();
           result.push(line.replace(trimmed, '_MEM[' + base + ' + ' + offset + '] = ' + val + ';'));
         } else {
-          const base = transformLine('  ' + inner, ctx).trim();
+          const base = stripV(transformLine('  ' + inner, ctx).trim());
           result.push(line.replace(trimmed, '_MEM[' + base + '] = ' + val + ';'));
         }
       } else {
         const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
         if (parts) {
-          const base = transformLine('  ' + parts.base, ctx).trim();
+          const base = stripV(transformLine('  ' + parts.base, ctx).trim());
           const offset = transformLine('  ' + parts.offset, ctx).trim();
           result.push(line.replace(trimmed, wHelper + '(' + base + ', ' + offset + ', ' + val + ');'));
         } else {
-          const base = transformLine('  ' + inner, ctx).trim();
+          const base = stripV(transformLine('  ' + inner, ctx).trim());
           result.push(line.replace(trimmed, wHelper + '(' + base + ', 0, ' + val + ');'));
         }
       }
@@ -1648,6 +1685,17 @@ function processGotos(lines) {
     if (lines[i].trim() === '}') { funcEnd = i; break; }
   }
 
+  // Pre-compute ALL variables used anywhere in the function body.
+  // Every goto helper gets the FULL variable list — this prevents scope bugs
+  // when helpers call other helpers that reference variables not in the
+  // immediate helper body.
+  const allFuncVars = new Set();
+  const allFuncText = lines.join('\n');
+  for (const m of allFuncText.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|[a-z]{2}Stack_[0-9a-fA-F]+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
+    allFuncVars.add(m[1]);
+  }
+  const allVarList = [...allFuncVars].sort().join(', ');
+
   // For each label that is a goto target, extract helper
   for (const label of gotoTargets) {
     const labelIdx = labelPositions[label];
@@ -1660,21 +1708,8 @@ function processGotos(lines) {
     }
 
     // Collect variables referenced in the helper body
-    // Ghidra uses many prefixes: iVar, uVar, cVar, bVar, sVar, puVar, pcVar,
-    // piVar, pbVar, pvVar, pCVar, BVar, UVar, lVar, etc.
-    // Match any wordVar\d+ pattern plus param_, local_, in_E*, unaff_E*, extraout_*
-    const vars = new Set();
-    const helperText = helperBody.join('\n');
-    for (const m of helperText.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
-      vars.add(m[1]);
-    }
-    // Also check for variables used in the label line itself
-    const labelLine = lines[labelIdx];
-    for (const m of labelLine.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
-      vars.add(m[1]);
-    }
-
-    const varList = [...vars].sort().join(', ');
+    // Use ALL function variables — ensures no scope bugs when helpers call helpers
+    const varList = allVarList;
     const helperName = label + '_helper';
 
     // Build helper function
@@ -1776,17 +1811,16 @@ function processGotos(lines) {
       if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {
         hl = hl.replace(
           new RegExp('\\bgoto\\s+' + label + '\\s*;'),
-          helperName + '(' + varList + '); return;'
+          'return ' + helperName + '(' + varList + ');'
         );
       }
       // Replace goto to OTHER labels with their helper calls
       for (const otherLabel of gotoTargets) {
         if (otherLabel === label) continue;
         if (new RegExp('\\bgoto\\s+' + otherLabel + '\\b').test(hl)) {
-          const otherVars = [...vars].sort().join(', '); // approximate — use same vars
           hl = hl.replace(
             new RegExp('\\bgoto\\s+' + otherLabel + '\\s*;'),
-            otherLabel + '_helper(' + otherVars + '); return;'
+            'return ' + otherLabel + '_helper(' + allVarList + ');'
           );
         }
       }
@@ -1830,17 +1864,8 @@ function processGotos(lines) {
       const label = gm[1];
       // Collect vars for this helper (same as above)
       const labelIdx = labelPositions[label];
-      const helperBody = [];
-      if (labelIdx !== undefined) {
-        for (let j = labelIdx + 1; j < funcEnd; j++) helperBody.push(lines[j]);
-      }
-      const vars = new Set();
-      const ht = helperBody.join('\n');
-      for (const m of ht.matchAll(/\b(param_\d+|local_[0-9a-fA-F]+|[a-zA-Z]{1,4}Var\d+|in_E[A-Z]{2}|unaff_E[A-Z]{2}|extraout_\w+)\b/g)) {
-        vars.add(m[1]);
-      }
-      const varList = [...vars].sort().join(', ');
-      line = line.replace(gotoRe, label + '_helper(' + varList + '); return;');
+      // Use ALL function variables — consistent with helper definition
+      line = line.replace(gotoRe, 'return ' + label + '_helper(' + allVarList + ');');
     }
 
     // Mark label sites with comment (code stays in place for audit)

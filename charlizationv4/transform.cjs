@@ -402,8 +402,8 @@ for (const blockFile of blockFiles) {
         (m, name) => `globalThis.${name} =`
       );
 
-      // 2f: Stub headless functions (message pumps + MFC window callbacks)
-      if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76|citywin_CA8D_\w+|citywin_DB36_\w+|citywin_DADA_\w+)/.test(trimmed)) {
+      // 2f: Stub headless functions (message pumps + MFC window callbacks + network message dispatcher)
+      if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76|citywin_CA8D_\w+|citywin_DB36_\w+|citywin_DADA_\w+|FUN_0046b14d)/.test(trimmed)) {
         processed = processed.replace(
           /^(export function \w+\([^)]*\))\s*\{/,
           '$1 { return 0; /* HEADLESS: message pump stub */'
@@ -646,9 +646,14 @@ let fnSrc = fs.readFileSync(path.join(srcDir, 'fn_utils.js'), 'utf8');
 // Remove ALL old imports
 fnSrc = fnSrc.replace(/^import\s*\{[\s\S]*?\}\s*from\s*'\.\/mem\.js'\s*;?\s*\n?/gm, '');
 
-// Replace DAT_ references
-fnSrc = fnSrc.replace(DAT_REPLACE_RE, 'G.DAT_$1');
-fnSrc = fnSrc.replace(/G\.G\.DAT_/g, 'G.DAT_');
+// Collect all DAT_ identifiers used in fn_utils
+const fnDats = new Set();
+for (const m of fnSrc.matchAll(/\bDAT_([0-9a-fA-F]+)\b/g)) {
+  fnDats.add('DAT_' + m[1]);
+}
+
+// Do NOT replace DAT_ → G.DAT_ (old pattern). Instead, add const bindings from globalThis
+// and use v()/wv() wrapping like the block files.
 
 // Find end of header comment
 const fnLines = fnSrc.split('\n');
@@ -658,7 +663,13 @@ for (const line of fnLines) {
   const t = line.trim();
   if (!fnImportsAdded && t !== '' && !t.startsWith('//') && !t.startsWith('*') && !t.startsWith('/*')) {
     fnOut.push(`import { G } from './globals.js';`);
-    fnOut.push(`import { s8, u8, getTileOffset, tileRead } from './mem.js';`);
+    fnOut.push(`import { v, wv, s8, s16, u8, _MEM, getTileOffset, tileRead } from './mem.js';`);
+    // Add const bindings for each DAT_ address
+    if (fnDats.size > 0) {
+      const sorted = [...fnDats].sort();
+      const bindings = sorted.map(d => `${d} = globalThis.${d}`).join(', ');
+      fnOut.push(`const ${bindings};`);
+    }
     fnOut.push('');
     fnImportsAdded = true;
   }

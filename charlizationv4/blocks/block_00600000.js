@@ -509,7 +509,7 @@ export function ___crtMessageBoxA_00600930(_LpText, _LpCaption, _UType) {
       if (v(DAT_0063b260) !== 0x0) {
         wv(DAT_0063b264, GetProcAddress(hModule,"GetActiveWindow"));
         wv(DAT_0063b268, GetProcAddress(hModule,"GetLastActivePopup"));
-        LAB_006009b5_helper(iVar1, local_8); return;
+        return LAB_006009b5_helper(iVar1, local_8);
       }
     }
     iVar1 = 0;
@@ -1362,7 +1362,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
   if (uVar1 < 0x101) {
     if (uVar1 === 0x100) {
       local_1c = 4;
-      LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c); return;
+      return LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
     }
     if (uVar1 !== 0) {
       wv(DAT_00639f14, 0x16);
@@ -1371,12 +1371,12 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
     }
 // LAB_00601912: (code below also in LAB_00601912_helper, kept for 1:1 audit)
     local_1c = 3;
-    LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c); return;
+    return LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
   }
   if (uVar1 < 0x301) {
     if (uVar1 === 0x300) {
       local_1c = 2;
-      LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c); return;
+      return LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
     }
     if (uVar1 !== 0x200) {
       wv(DAT_00639f14, 0x16);
@@ -1394,11 +1394,11 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
           wv(DAT_00639f18, 0);
           return -1;
         }
-        LAB_00601912_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+        return LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       }
     }
     else {
-      if (uVar1 === 0x600) LAB_00601936_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+      if (uVar1 === 0x600) return LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       if (uVar1 !== 0x700) {
         wv(DAT_00639f14, 0x16);
         wv(DAT_00639f18, 0);
@@ -1432,17 +1432,17 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
-  if (local_18 === 0xffffffff) {
+  if (local_18 === -1) {
     wv(DAT_00639f14, 0x18);
     wv(DAT_00639f18, 0);
-    local_18 = 0xffffffff;
+    local_18 = -1;
   }
   else {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
-    if (local_8 === 0xffffffff) {
+    if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
-      local_18 = 0xffffffff;
+      local_18 = -1;
     }
     else {
       local_10 = GetFileType(local_8);
@@ -1450,7 +1450,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
         CloseHandle(local_8);
         DVar2 = GetLastError();
         __dosmaperr(DVar2);
-        local_18 = 0xffffffff;
+        local_18 = -1;
       }
       else {
         if (local_10 === 2) {
@@ -1533,7 +1533,7 @@ export function __alloc_osfhnd_00601CF0() {
       for (; local_8 < (_MEM[DAT_006e69f0 + local_10] + 0x100); local_8 = local_8 + 2) {
         loopGuard('__alloc_osfhnd_00601CF0', 1433);
         _MEM[local_8 + 1] = 0;
-        w32(local_8, 0, 0xffffffff);
+        w32(local_8, 0, -1);
         // DEVIATION: C pointer write — *(undefined1 *)((int)local_8 + 5) = 10;
       }
       return local_10 << 5;
@@ -1542,7 +1542,7 @@ export function __alloc_osfhnd_00601CF0() {
       loopGuard('__alloc_osfhnd_00601CF0', 1440);
         /*JOINED*/
       if ((u8(_MEM[local_8 + 1]) & 1) === 0) {
-        w32(local_8, 0, 0xffffffff);
+        w32(local_8, 0, -1);
         local_c = (local_8 - _MEM[DAT_006e69f0 + local_10] >> 3) + local_10 * 0x20;
         break;
       }
@@ -1585,9 +1585,9 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
         SetStdHandle(0xfffffff4,param_2);
       }
     }
-    // DEVIATION: C pointer write — *(intptr_t *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) =
+    // DEVIATION: C pointer write — *(intptr_t *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = param_2;
      /*JOINED*/
-         // DEVIATION(cont): param_2;
+         /*JOINED*/
     iVar1 = 0;
   }
   else {
@@ -1631,9 +1631,9 @@ export function __free_osfhnd_00601F40(param_1) {
         SetStdHandle(0xfffffff4,0x0);
       }
     }
-    // DEVIATION: C pointer write — *(undefined4 *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) =
+    // DEVIATION: C pointer write — *(undefined4 *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = 0xffffffff;
      /*JOINED*/
-         // DEVIATION(cont): 0xffffffff;
+         /*JOINED*/
     iVar1 = 0;
   }
   else {
@@ -1706,7 +1706,7 @@ export function __open_osfhandle_006020E0(_OSFileHandle, _Flags) {
   if (DVar1 === 0) {
     DVar1 = GetLastError();
     __dosmaperr(DVar1);
-    uVar2 = 0xffffffff;
+    uVar2 = -1;
   }
   else {
     if (DVar1 === 2) {
@@ -1716,10 +1716,10 @@ export function __open_osfhandle_006020E0(_OSFileHandle, _Flags) {
       local_10 = local_10 | 8;
     }
     uVar2 = __alloc_osfhnd();
-    if (uVar2 === 0xffffffff) {
+    if (uVar2 === -1) {
       wv(DAT_00639f14, 0x18);
       wv(DAT_00639f18, 0);
-      uVar2 = 0xffffffff;
+      uVar2 = -1;
     }
     else {
       __set_osfhnd(uVar2,_OSFileHandle);
@@ -1887,7 +1887,7 @@ export function __aulldiv_006023E0(param_1, param_2, param_3, param_4) {
     } while (uVar5 !== 0);
     uVar1 = (uVar3) / uVar9;
     iVar4 = uVar1;
-    lVar2 = param_3 * (uVar1 & 0xffffffff);
+    lVar2 = param_3 * (uVar1 & -1);
     uVar3 = ((lVar2 >> 0x20) >>> 0);
     uVar8 = uVar3 + iVar4 * param_4;
     if (((CARRY4(uVar3,iVar4 * param_4)) || (param_2 < uVar8)) || ((param_2 <= uVar8 && (param_1 < ((lVar2) >>> 0))))) {
@@ -1947,7 +1947,7 @@ export function __aullrem_00602450(param_1, param_2, param_3, param_4) {
     } while (uVar5 !== 0);
     uVar1 = (uVar3) / uVar10;
     uVar3 = uVar1 * param_4;
-    lVar2 = (uVar1 & 0xffffffff) * param_3;
+    lVar2 = (uVar1 & -1) * param_3;
     uVar9 = ((lVar2 >> 0x20) >>> 0);
     uVar4 = ((lVar2) >>> 0);
     uVar10 = uVar9 + uVar3;
@@ -1994,7 +1994,7 @@ export function __fcloseall_006024D0() {
       }
       if (0x13 < local_c) {
         __free_dbg(s32(DAT_006e5694, local_c * 4),2);
-        w32(v(DAT_006e5694), local_c * 4, 0);
+        w32(DAT_006e5694, local_c * 4, 0);
       }
     }
   }
@@ -2993,8 +2993,8 @@ export function __tzset_00603650() {
   let local_c;
   
   wv(DAT_006e55e0, 0);
-  wv(DAT_0063b360, 0xffffffff);
-  wv(DAT_0063b350, 0xffffffff);
+  wv(DAT_0063b360, -1);
+  wv(DAT_0063b350, -1);
   _Str1 = _getenv("TZ");
   if (_Str1 === 0x0) {
     DVar2 = GetTimeZoneInformation(v(DAT_006e55e8));
@@ -3927,7 +3927,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         else {
           local_90 = __isctype(((local_40) >>> 0),4);
         }
-        if (local_90 === 0) LAB_00604dcb_helper(local_18, local_40, local_50, local_68, local_78, local_8, local_80, local_94, pbVar1); return;
+        if (local_90 === 0) return LAB_00604dcb_helper(bVar2, local_10, local_14, local_18, local_1c, local_20, local_25, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5a, local_5e, local_62, local_64, local_68, local_6c, local_70, local_74, local_78, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_c, pbVar1);
         local_80 = s8(local_40) + -0x30 + local_80 * 10;
         if (0x1450 < local_80) break;
         local_40 = s32(local_8, 0);
@@ -4251,7 +4251,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
                                    /*JOINED*/
         if ((iVar2 === 0) || (local_18[0] !== 0)) {
           wv(DAT_00639f14, 0x2a);
-          local_8 = 0xffffffff;
+          local_8 = -1;
         }
         else {
           local_8 = iVar2 - 1;
@@ -4263,7 +4263,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
         loopGuard('_wcstombs_006056E0', 4124);
         if (0xff < ((s32(_Source, 0)) & 0xFFFF)) {
           wv(DAT_00639f14, 0x2a);
-          return 0xffffffff;
+          return -1;
         }
         _MEM[_Dest + local_8] = s8(s32(_Source, 0));
         if (s32(_Source, 0) === L0) {
@@ -4280,7 +4280,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
                                     /*JOINED*/
       if ((local_8 === 0) || (local_18[0] !== 0)) {
         wv(DAT_00639f14, 0x2a);
-        local_8 = 0xffffffff;
+        local_8 = -1;
       }
       else if (_MEM[_Dest + local_8 - 1] === 0) {
         local_8 = local_8 - 1;
@@ -4297,7 +4297,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
                                            /*JOINED*/
             if ((local_14 === 0) || (local_18[0] !== 0)) {
               wv(DAT_00639f14, 0x2a);
-              return 0xffffffff;
+              return -1;
             }
             if (_MaxCount < local_14 + local_8) {
               return local_8;
@@ -4315,7 +4315,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
         }
         else {
           wv(DAT_00639f14, 0x2a);
-          local_8 = 0xffffffff;
+          local_8 = -1;
         }
       }
       else {
@@ -5400,9 +5400,9 @@ export function __strupr_006076C0(unaff_ESI, unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String, -1,0,0x0,0,unaff_EDI,unaff_ESI);
                                            /*JOINED*/
-    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strupr.c",0x61), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
+    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strupr.c",0x61), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String,-1, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
         /*JOINED*/
        /*JOINED*/
                                    /*JOINED*/
@@ -5445,9 +5445,9 @@ export function __strlwr_006077F0(unaff_ESI, unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String, -1,0,0x0,0,unaff_EDI,unaff_ESI);
                                            /*JOINED*/
-    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strlwr.c",100), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
+    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strlwr.c",100), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String,-1, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
         /*JOINED*/
        /*JOINED*/
                                    /*JOINED*/
@@ -5511,7 +5511,7 @@ function LAB_006009b5_helper(iVar1, local_8) {
   return iVar1;
 }
 
-function LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c) {
+function LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
   local_2c = 0x80;
   if ((_OpenFlag & 0x100) !== 0) {
     local_14 = in_stack_00000010;
@@ -5536,17 +5536,17 @@ if (true) {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
-  if (local_18 === 0xffffffff) {
+  if (local_18 === -1) {
     wv(DAT_00639f14, 0x18);
     wv(DAT_00639f18, 0);
-    local_18 = 0xffffffff;
+    local_18 = -1;
   }
 if (true) {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
-    if (local_8 === 0xffffffff) {
+    if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
-      local_18 = 0xffffffff;
+      local_18 = -1;
     }
 if (true) {
       local_10 = GetFileType(local_8);
@@ -5554,7 +5554,7 @@ if (true) {
         CloseHandle(local_8);
         DVar2 = GetLastError();
         __dosmaperr(DVar2);
-        local_18 = 0xffffffff;
+        local_18 = -1;
       }
 if (true) {
         if (local_10 === 2) {
@@ -5601,14 +5601,14 @@ if (true) {
   return local_18;
 }
 
-function LAB_00601912_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
+function LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
     local_1c = 3;
-    LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+    return LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
   // (outer block close)
   if (uVar1 < 0x301) {
     if (uVar1 === 0x300) {
       local_1c = 2;
-      LAB_006019fc_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+      return LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
     }
     if (uVar1 !== 0x200) {
       wv(DAT_00639f14, 0x16);
@@ -5626,11 +5626,11 @@ if (true) {
           wv(DAT_00639f18, 0);
           return -1;
         }
-        LAB_00601912_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+        return LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       }
     }
 if (true) {
-      if (uVar1 === 0x600) LAB_00601936_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+      if (uVar1 === 0x600) return LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       if (uVar1 !== 0x700) {
         wv(DAT_00639f14, 0x16);
         wv(DAT_00639f18, 0);
@@ -5664,17 +5664,17 @@ if (true) {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
-  if (local_18 === 0xffffffff) {
+  if (local_18 === -1) {
     wv(DAT_00639f14, 0x18);
     wv(DAT_00639f18, 0);
-    local_18 = 0xffffffff;
+    local_18 = -1;
   }
 if (true) {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
-    if (local_8 === 0xffffffff) {
+    if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
-      local_18 = 0xffffffff;
+      local_18 = -1;
     }
 if (true) {
       local_10 = GetFileType(local_8);
@@ -5682,7 +5682,7 @@ if (true) {
         CloseHandle(local_8);
         DVar2 = GetLastError();
         __dosmaperr(DVar2);
-        local_18 = 0xffffffff;
+        local_18 = -1;
       }
 if (true) {
         if (local_10 === 2) {
@@ -5729,7 +5729,7 @@ if (true) {
   return local_18;
 }
 
-function LAB_00601936_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
+function LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1) {
     local_1c = 5;
   // (outer block close)
 if (true) {
@@ -5740,11 +5740,11 @@ if (true) {
           wv(DAT_00639f18, 0);
           return -1;
         }
-        LAB_00601912_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+        return LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       }
     }
 if (true) {
-      if (uVar1 === 0x600) LAB_00601936_helper(DVar2, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1); return;
+      if (uVar1 === 0x600) return LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, local_18, local_1c, local_28, local_2c, local_30, local_34, local_38, local_3c, local_8, local_c, uVar1);
       if (uVar1 !== 0x700) {
         wv(DAT_00639f14, 0x16);
         wv(DAT_00639f18, 0);
@@ -5778,17 +5778,17 @@ if (true) {
     local_2c = local_2c | 0x8000000;
   }
   local_18 = __alloc_osfhnd();
-  if (local_18 === 0xffffffff) {
+  if (local_18 === -1) {
     wv(DAT_00639f14, 0x18);
     wv(DAT_00639f18, 0);
-    local_18 = 0xffffffff;
+    local_18 = -1;
   }
 if (true) {
     local_8 = CreateFileA(_Filename,local_38,local_c,local_28[0],local_1c,local_2c,0x0);
-    if (local_8 === 0xffffffff) {
+    if (local_8 === -1) {
       DVar2 = GetLastError();
       __dosmaperr(DVar2);
-      local_18 = 0xffffffff;
+      local_18 = -1;
     }
 if (true) {
       local_10 = GetFileType(local_8);
@@ -5796,7 +5796,7 @@ if (true) {
         CloseHandle(local_8);
         DVar2 = GetLastError();
         __dosmaperr(DVar2);
-        local_18 = 0xffffffff;
+        local_18 = -1;
       }
 if (true) {
         if (local_10 === 2) {
@@ -5843,7 +5843,7 @@ if (true) {
   return local_18;
 }
 
-function LAB_00604dcb_helper(local_18, local_40, local_50, local_68, local_78, local_8, local_80, local_94, pbVar1) {
+function LAB_00604dcb_helper(bVar2, local_10, local_14, local_18, local_1c, local_20, local_25, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5a, local_5e, local_62, local_64, local_68, local_6c, local_70, local_74, local_78, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_c, pbVar1) {
   // HELPER_SYNTAX_ERROR: Illegal break statement
   // Original code had structural issues from DEVIATION lines
 }

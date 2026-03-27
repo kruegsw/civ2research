@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { G } from './globals.js';
-import { s8, s32, w32 } from './mem.js';
+import { s8, s32, w32, _MEM } from './mem.js';
 
 // ── Random number generator (MSVC-compatible) ──
 // Binary uses MSVC's rand(): seed = seed * 214013 + 2531011
@@ -30,19 +30,26 @@ export function _rand() {
 // These operate on G._MEM — the shared flat memory buffer
 
 export function _memset(dest, val, count) {
-  // dest is a Uint8Array subview, val is the byte value, count is number of bytes
-  if (!dest || typeof dest === 'number') return dest;
+  if (dest == null) return dest;
   const v = val & 0xFF;
-  for (let i = 0; i < count; i++) {
-    dest[i] = v;
+  if (typeof dest === 'number') {
+    // dest is an offset into flat memory (_MEM)
+    for (let i = 0; i < count; i++) _MEM[dest + i] = v;
+  } else {
+    // dest is a Uint8Array
+    for (let i = 0; i < count; i++) dest[i] = v;
   }
   return dest;
 }
 
 export function _memcpy(dest, src, count) {
-  if (!dest || !src || typeof dest === 'number' || typeof src === 'number') return dest;
+  if (dest == null || src == null) return dest;
+  const dNum = typeof dest === 'number';
+  const sNum = typeof src === 'number';
   for (let i = 0; i < count; i++) {
-    dest[i] = src[i];
+    const val = sNum ? _MEM[src + i] : src[i];
+    if (dNum) _MEM[dest + i] = val;
+    else dest[i] = val;
   }
   return dest;
 }

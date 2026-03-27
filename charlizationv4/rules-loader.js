@@ -9,6 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { G } from './globals.js';
+import { _MEM } from './mem.js';
 
 // ── Tech abbreviation → index mapping ──
 // Order matches @CIVILIZE section in RULES.TXT (0-based, 89 standard techs)
@@ -598,12 +599,14 @@ export function loadRules(text) {
   ];
 
   for (let i = 0; i < Math.min(cosmicValues.length, cosmicAddrs.length); i++) {
-    G[cosmicAddrs[i]] = cosmicValues[i];
+    // Write to flat memory — cosmicAddrs are 1-byte values stored sequentially
+    const offset = globalThis[cosmicAddrs[i]];
+    if (offset !== undefined) _MEM[offset] = cosmicValues[i] & 0xFF;
   }
 
   // Force food box rows even (per binary: if odd, add 1)
-  if (cosmicValues.length > 3 && (G.DAT_0064bccb & 1) !== 0) {
-    G.DAT_0064bccb = G.DAT_0064bccb + 1;
+  if (cosmicValues.length > 3 && (_MEM[globalThis.DAT_0064bccb] & 1) !== 0) {
+    _MEM[globalThis.DAT_0064bccb] = _MEM[globalThis.DAT_0064bccb] + 1;
   }
 
   // Count enabled techs (per binary: DAT_00655b1a)
@@ -611,7 +614,7 @@ export function loadRules(text) {
   for (let i = 0; i < civIdx; i++) {
     if (G.DAT_00627680[i * 0x10 + 0x09] !== 0) enabledTechs++;
   }
-  G.DAT_00655b1a = enabledTechs;
+  if (globalThis.DAT_00655b1a !== undefined) _MEM[globalThis.DAT_00655b1a] = enabledTechs & 0xFF;
 
   return {
     govCount: govIdx,
