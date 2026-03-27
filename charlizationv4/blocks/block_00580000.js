@@ -12,12 +12,12 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b94d5 } from '../fn_utils.js';
-import { DEVIATION, DebugBreak, GetFileAttributesA, GetSystemMetrics, HELPERS, IsTracking } from '../extern-stubs.js';
-import { MessageBoxA, OutputDebugStringA, SetFocus, SetRect, WritePrivateProfileStringA, __itoa } from '../extern-stubs.js';
-import { __ltoa, _atexit, _atoi, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _exit } from '../extern-stubs.js';
-import { _fclose, _fgets, _fopen, _fputs, _fread, _fwrite } from '../extern-stubs.js';
-import { _rand, _remove, _sprintf, _strchr, _strcmp, _strlen } from '../extern-stubs.js';
-import { _strncmp, block, debug_log, exe, operator_delete, operator_new } from '../extern-stubs.js';
+import { GetSystemMetrics, SetRect, _atexit, _atoi, _exit, _fclose } from '../crt.js';
+import { _fgets, _fopen, _fputs, _fread, _fwrite, _rand } from '../crt.js';
+import { _remove, _sprintf, _strchr, _strcmp, _strlen, _strncmp } from '../crt.js';
+import { DEVIATION, DebugBreak, GetFileAttributesA, HELPERS, IsTracking, MessageBoxA } from '../extern-stubs.js';
+import { OutputDebugStringA, SetFocus, WritePrivateProfileStringA, __itoa, __ltoa, _eh_vector_constructor_iterator_ } from '../extern-stubs.js';
+import { _eh_vector_destructor_iterator_, block, debug_log, exe, operator_delete, operator_new } from '../extern-stubs.js';
 import { thunk_citywin_9429, thunk_citywin_C494, thunk_citywin_C679, thunk_citywin_DADA, thunk_citywin_DB36, thunk_create_city } from '../extern-stubs.js';
 import { thunk_delete_city, thunk_handle_city_disorder_00509590, thunk_kill_civ, thunk_load_civ2_art_0046da40, thunk_show_messagebox_A80D, thunk_show_messagebox_CF2D } from '../extern-stubs.js';
 import { thunk_show_open_dialog_31D2, tie } from '../extern-stubs.js';

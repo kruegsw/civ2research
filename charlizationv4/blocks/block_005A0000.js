@@ -10,12 +10,13 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { SetRect, __chdir, __toupper_lk, _atoi, _fputs, _isalpha } from '../crt.js';
+import { _isdigit, _memset, _rand, _sprintf, _strchr, _strcmp } from '../crt.js';
+import { _strlen, _strncpy } from '../crt.js';
 import { DEVIATION, GetActiveView, GetAsyncKeyState, GetCheckStyle, HELPERS, IsIconic } from '../extern-stubs.js';
-import { MessageBoxA, SetFocus, SetRect, XD_FlushSendBuffer, __chdir, __strcmpi } from '../extern-stubs.js';
-import { __strnicmp, __toupper_lk, _atoi, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _fputs } from '../extern-stubs.js';
-import { _isalpha, _isdigit, _memset, _rand, _sprintf, _strchr } from '../extern-stubs.js';
-import { _strcmp, _strlen, _strncpy, exe, operator_delete, operator_new } from '../extern-stubs.js';
-import { send_msg_3CFF, send_msg_3D62, thunk_load_verify_units, thunk_show_messagebox_CF2D, tie, width } from '../extern-stubs.js';
+import { MessageBoxA, SetFocus, XD_FlushSendBuffer, __strcmpi, __strnicmp, _eh_vector_constructor_iterator_ } from '../extern-stubs.js';
+import { _eh_vector_destructor_iterator_, exe, operator_delete, operator_new, send_msg_3CFF, send_msg_3D62 } from '../extern-stubs.js';
+import { thunk_load_verify_units, thunk_show_messagebox_CF2D, tie, width } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408330, FUN_00408460, FUN_00408490 } from './block_00400000.js';
 import { FUN_004085f0, FUN_00408680, FUN_004086c0, FUN_00408d33, FUN_0040bbb0, FUN_0040bc10 } from './block_00400000.js';
 import { FUN_0040bc80, FUN_0040ef50, FUN_0040ef70, FUN_0040efd0, FUN_0040f380, FUN_0040f570 } from './block_00400000.js';

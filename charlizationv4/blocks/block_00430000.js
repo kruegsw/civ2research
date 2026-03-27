@@ -12,11 +12,12 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
+import { __chdir, _atoi, _fclose, _fopen, _fread, _fwrite } from '../crt.js';
+import { _memcpy, _memset, _strlen, _strncpy } from '../crt.js';
 import { BringWindowToTop, CDaoFieldInfo, CString, Create, DEVIATION, GetActiveView } from '../extern-stubs.js';
-import { HELPERS, OffsetRect, XD_FlushSendBuffer, _Timevec, __chdir, __strnicmp } from '../extern-stubs.js';
-import { _atoi, _fclose, _fopen, _fread, _fwrite, _memcpy } from '../extern-stubs.js';
-import { _memset, _strlen, _strncpy, block, create_font_8200, debug_log } from '../extern-stubs.js';
-import { exe, gdi_847F, manage_window_8B58, operator_delete, operator_new, thunk_show_credits } from '../extern-stubs.js';
+import { HELPERS, OffsetRect, XD_FlushSendBuffer, _Timevec, __strnicmp, block } from '../extern-stubs.js';
+import { create_font_8200, debug_log, exe, gdi_847F, manage_window_8B58, operator_delete } from '../extern-stubs.js';
+import { operator_new, thunk_show_credits } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_00408680 } from './block_00400000.js';
 import { FUN_004086c0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040efd0 } from './block_00400000.js';
 import { FUN_0040f010, FUN_0040f380, FUN_0040f3e0, FUN_0040f570, FUN_0040f680, FUN_0040f7d0 } from './block_00400000.js';

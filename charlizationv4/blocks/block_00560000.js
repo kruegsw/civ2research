@@ -12,12 +12,12 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
+import { SetRect, __chdir, __getcwd, __toupper_lk, _atexit, _atoi } from '../crt.js';
+import { _memcpy, _rand, _remove, _strcmp, _strlen, _strrchr } from '../crt.js';
 import { CopyRect, DEVIATION, GetActiveView, GetDriveTypeA, GetLogicalDriveStringsA, GetLogicalDrives } from '../extern-stubs.js';
 import { GetModuleFileNameA, GlobalAlloc, GlobalFree, GlobalHandle, GlobalLock, GlobalUnlock } from '../extern-stubs.js';
-import { HELPERS, MessageBoxA, OpenFile, SetErrorMode, SetRect, XD_FlushSendBuffer } from '../extern-stubs.js';
-import { XD_LobbySendMessage, XD_ServerCloseConnection, XD_StopConnections, __chdir, __getcwd, __itoa } from '../extern-stubs.js';
-import { __toupper_lk, _atexit, _atoi, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _memcmp } from '../extern-stubs.js';
-import { _memcpy, _rand, _remove, _strcmp, _strlen, _strrchr } from '../extern-stubs.js';
+import { HELPERS, MessageBoxA, OpenFile, SetErrorMode, XD_FlushSendBuffer, XD_LobbySendMessage } from '../extern-stubs.js';
+import { XD_ServerCloseConnection, XD_StopConnections, __itoa, _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator_, _memcmp } from '../extern-stubs.js';
 import { debug_log, exe, lstrlenA, operator_delete, operator_new, thunk_citywin_9545 } from '../extern-stubs.js';
 import { thunk_handle_palette, thunk_load_bitmap, thunk_write_bitmap_data, tie, timeGetTime } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408050, FUN_00408090, FUN_004080f0 } from './block_00400000.js';

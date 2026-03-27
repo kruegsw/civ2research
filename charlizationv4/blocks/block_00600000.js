@@ -15,6 +15,8 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
+import { _atexit, _atol, _fclose, _memcpy, _memset, _strchr } from '../crt.js';
+import { _strcmp, _strlen, _strncpy, _wcslen, _wcstombs } from '../crt.js';
 import { CARRY4, CONCAT12, CONCAT13, CONCAT22, CloseHandle, CompareStringA } from '../extern-stubs.js';
 import { CompareStringW, CreateDirectoryA, CreateFileA, DEVIATION, FlushFileBuffers, GetCPInfo } from '../extern-stubs.js';
 import { GetFileType, GetLastError, GetModuleFileNameA, GetProcAddress, GetStdHandle, GetStringTypeA } from '../extern-stubs.js';
@@ -31,11 +33,10 @@ import { __control87, __dosmaperr, __exit, __flsbuf, __flush, __free_dbg } from 
 import { __freebuf, __ftbuf, __get_osfhandle, __hw_cw, __isctype, __isindst } from '../extern-stubs.js';
 import { __ld12cvt, __ld12tod, __ld12told, __lseek, __malloc_dbg, __mbschr } from '../extern-stubs.js';
 import { __mbsnbicoll, __output, __read, __realloc_dbg, __set_osfhnd, __setdefaultprecision } from '../extern-stubs.js';
-import { __setmode, __sopen, __stbuf, __tzset, __write, _atexit } from '../extern-stubs.js';
-import { _atol, _fclose, _getenv, _memcpy, _memset, _raise } from '../extern-stubs.js';
-import { _strchr, _strcmp, _strlen, _strncnt, _strncpy, _wcslen } from '../extern-stubs.js';
-import { _wcstombs, copy_environ, cvtdate, exe, findenv, int } from '../extern-stubs.js';
-import { siglookup, swi, terminate, wcsncnt, x64toa, xtoa } from '../extern-stubs.js';
+import { __setmode, __sopen, __stbuf, __tzset, __write, _getenv } from '../extern-stubs.js';
+import { _raise, _strncnt, copy_environ, cvtdate, exe, findenv } from '../extern-stubs.js';
+import { int, siglookup, swi, terminate, wcsncnt, x64toa } from '../extern-stubs.js';
+import { xtoa } from '../extern-stubs.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_005F0000.js';
 
 export function __NMSG_WRITE_00600040(param_1) {

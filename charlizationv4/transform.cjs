@@ -227,6 +227,17 @@ for (const file of blockFiles) {
 }
 console.log(`Registry: ${fnRegistry.size} functions across ${blockFiles.length} blocks`);
 
+// ── Build crt.js export set (C runtime functions with real implementations) ──
+const crtExports = new Set();
+const crtPath = path.join(__dirname, 'crt.js');
+if (fs.existsSync(crtPath)) {
+  const crtSrc = fs.readFileSync(crtPath, 'utf8');
+  for (const m of crtSrc.matchAll(/^export function (\w+)\s*\(/gm)) {
+    crtExports.add(m[1]);
+  }
+  console.log(`CRT functions: ${crtExports.size}`);
+}
+
 // ── Build fn_utils export set (skip these from cross-block wiring) ──
 const fnUtilsExports = new Set();
 const fnUtilsSrc = fs.readFileSync(path.join(srcDir, 'fn_utils.js'), 'utf8');
@@ -434,7 +445,8 @@ for (const blockFile of blockFiles) {
 
   // 3b: Find all function identifiers called/referenced in this block
   const refsNeeded = new Map(); // fnName → source block
-  const externNeeded = new Set(); // functions not in any block (Win32, CRT, etc.)
+  const externNeeded = new Set(); // functions not in any block (Win32, etc.)
+  let crtNeeded = null; // C runtime functions (real implementations in crt.js)
   const allText = finalLines.join('\n');
 
   // Find all function-call-like identifiers
@@ -446,6 +458,11 @@ for (const blockFile of blockFiles) {
     if (localFns.has(fn)) continue;
     if (fnUtilsExports.has(fn)) {
       fnUtilsNeeded.add(fn);
+      continue;
+    }
+    if (crtExports.has(fn)) {
+      if (!crtNeeded) crtNeeded = new Set();
+      crtNeeded.add(fn);
       continue;
     }
     const srcBlock = fnRegistry.get(fn);
@@ -469,6 +486,14 @@ for (const blockFile of blockFiles) {
     const sorted = [...fnUtilsNeeded].sort();
     for (let k = 0; k < sorted.length; k += 6) {
       imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from '../fn_utils.js';`);
+    }
+  }
+
+  // Import C runtime functions from crt.js
+  if (crtNeeded && crtNeeded.size > 0) {
+    const sorted = [...crtNeeded].sort();
+    for (let k = 0; k < sorted.length; k += 6) {
+      imports.push(`import { ${sorted.slice(k, k + 6).join(', ')} } from '../crt.js';`);
     }
   }
 

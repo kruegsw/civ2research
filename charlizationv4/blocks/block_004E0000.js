@@ -12,10 +12,11 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_0058c56c, FUN_005ae052, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
 import { FUN_005b89e4, FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
-import { DEVIATION, GetActiveView, GetAsyncKeyState, HELPERS, SetRect, Sleep } from '../extern-stubs.js';
-import { XD_FlushSendBuffer, XD_InFlushSendBuffer, _atexit, _rand, _strcmp, debug_log } from '../extern-stubs.js';
-import { exe, manage_window_C692, operator_new, thunk_citywin_8ADC, thunk_citywin_994F, thunk_citywin_9A49 } from '../extern-stubs.js';
-import { thunk_delete_city, thunk_kill_civ, thunk_load_verify_units, thunk_new_civ, thunk_save_game, thunk_set_city_shields } from '../extern-stubs.js';
+import { SetRect, _atexit, _rand, _strcmp } from '../crt.js';
+import { DEVIATION, GetActiveView, GetAsyncKeyState, HELPERS, Sleep, XD_FlushSendBuffer } from '../extern-stubs.js';
+import { XD_InFlushSendBuffer, debug_log, exe, manage_window_C692, operator_new, thunk_citywin_8ADC } from '../extern-stubs.js';
+import { thunk_citywin_994F, thunk_citywin_9A49, thunk_delete_city, thunk_kill_civ, thunk_load_verify_units, thunk_new_civ } from '../extern-stubs.js';
+import { thunk_save_game, thunk_set_city_shields } from '../extern-stubs.js';
 import { FUN_0040785b, FUN_004080c0, FUN_004083b0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';
 import { FUN_0040bc40, FUN_0040bc80, FUN_0040bcb0, FUN_0040ddc6, FUN_0040e017, FUN_0040e3b1 } from './block_00400000.js';
 import { FUN_0040ef70, FUN_0040ff60, FUN_0040ffa0 } from './block_00400000.js';

@@ -12,10 +12,10 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b68f6, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
 import { FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
+import { SetRect, _fputc, _rand, _sprintf, _strcmp, _strlen } from '../crt.js';
 import { CCommandLineInfo, CharUpperA, CopyRect, DEVIATION, GetActiveView, HELPERS } from '../extern-stubs.js';
-import { InflateRect, IsTracking, MessageBoxA, OffsetRect, Realloc, SetRect } from '../extern-stubs.js';
-import { __strcmpi, _eh_vector_destructor_iterator_, _fgetc, _fputc, _rand, _sprintf } from '../extern-stubs.js';
-import { _strcmp, _strlen, exe, lstrlenA, operator_delete, operator_new } from '../extern-stubs.js';
+import { InflateRect, IsTracking, MessageBoxA, OffsetRect, Realloc, __strcmpi } from '../extern-stubs.js';
+import { _eh_vector_destructor_iterator_, _fgetc, exe, lstrlenA, operator_delete, operator_new } from '../extern-stubs.js';
 import { send_msg_2DC6, send_msg_2F47, send_msg_3035, thunk_init_tile } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408130, FUN_004083b0, FUN_00408420, FUN_00408460 } from './block_00400000.js';
 import { FUN_00408490, FUN_004085f0, FUN_00408650, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';

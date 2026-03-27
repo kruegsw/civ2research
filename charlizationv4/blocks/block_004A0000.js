@@ -12,11 +12,11 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
-import { DEVIATION, GetSystemMetrics, HELPERS, MessageBoxA, SetRect, __chdir } from '../extern-stubs.js';
-import { __getcwd, __itoa, __ltoa, __strcmpi, __strupr, _fclose } from '../extern-stubs.js';
-import { _fgets, _fopen, _fputs, _fread, _fseek, _fwrite } from '../extern-stubs.js';
-import { _memset, _rand, _remove, _rewind, _sprintf, _strlen } from '../extern-stubs.js';
-import { _strncpy, debug_log, exe, operator_new, thunk_create_city, thunk_new_civ } from '../extern-stubs.js';
+import { GetSystemMetrics, SetRect, __chdir, __getcwd, _fclose, _fgets } from '../crt.js';
+import { _fopen, _fputs, _fread, _fseek, _fwrite, _memset } from '../crt.js';
+import { _rand, _remove, _rewind, _sprintf, _strlen, _strncpy } from '../crt.js';
+import { DEVIATION, HELPERS, MessageBoxA, __itoa, __ltoa, __strcmpi } from '../extern-stubs.js';
+import { __strupr, debug_log, exe, operator_new, thunk_create_city, thunk_new_civ } from '../extern-stubs.js';
 import { thunk_show_messagebox_CF2D } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408330, FUN_00408460, FUN_004085f0, FUN_004086c0 } from './block_00400000.js';
 import { FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040bcb0, FUN_0040ef50 } from './block_00400000.js';

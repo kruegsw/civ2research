@@ -12,10 +12,11 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_0058c56c, FUN_005ae052, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
 import { FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
+import { __chdir, _memcpy, _memset, _rand, _remove, _strcmp } from '../crt.js';
+import { _strlen } from '../crt.js';
 import { DEVIATION, GetAsyncKeyState, HELPERS, IsTracking, XD_CloseConnection, XD_FlushSendBuffer } from '../extern-stubs.js';
-import { XD_OpenConnection, __chdir, __wrename, _memcpy, _memset, _rand } from '../extern-stubs.js';
-import { _remove, _strcmp, _strlen, debug_log, exe, thunk_citywin_9429 } from '../extern-stubs.js';
-import { thunk_citywin_994F, thunk_citywin_DADA, thunk_citywin_DB36, thunk_save_game } from '../extern-stubs.js';
+import { XD_OpenConnection, __wrename, debug_log, exe, thunk_citywin_9429, thunk_citywin_994F } from '../extern-stubs.js';
+import { thunk_citywin_DADA, thunk_citywin_DB36, thunk_save_game } from '../extern-stubs.js';
 import { FUN_00407ff0, FUN_00408490, FUN_004085f0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';
 import { FUN_0040bc80, FUN_0040ddc6, FUN_0040ef50, FUN_0040fe10, FUN_0040ff60, FUN_0040ffa0 } from './block_00400000.js';
 import { FUN_00410030, FUN_00410070, FUN_0041033a, FUN_00410402, FUN_004105f8, FUN_00413476 } from './block_00410000.js';

@@ -12,10 +12,10 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, FUN_005b8ca6 } from '../fn_utils.js';
 import { FUN_005b94d5 } from '../fn_utils.js';
-import { CControlBarInfo, DEVIATION, GetSystemMetrics, HELPERS, IsTracking, OffsetRect } from '../extern-stubs.js';
-import { SetRect, __chdir, __strcmpi, __strnicmp, __toupper_lk, _atexit } from '../extern-stubs.js';
-import { _memcpy, _memset, _printf, _rand, _scalar_deleting_destructor_, _strcmp } from '../extern-stubs.js';
-import { _strlen, _strncpy, exe, operator_delete, operator_new, thunk_citywin_9429 } from '../extern-stubs.js';
+import { GetSystemMetrics, SetRect, __chdir, __toupper_lk, _atexit, _memcpy } from '../crt.js';
+import { _memset, _printf, _rand, _strcmp, _strlen, _strncpy } from '../crt.js';
+import { CControlBarInfo, DEVIATION, HELPERS, IsTracking, OffsetRect, __strcmpi } from '../extern-stubs.js';
+import { __strnicmp, _scalar_deleting_destructor_, exe, operator_delete, operator_new, thunk_citywin_9429 } from '../extern-stubs.js';
 import { thunk_delete_city, thunk_handle_city_disorder_004ef578, thunk_handle_city_disorder_00509590, thunk_new_civ } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_00408230, FUN_004083b0, FUN_00408460 } from './block_00400000.js';
 import { FUN_004085f0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
