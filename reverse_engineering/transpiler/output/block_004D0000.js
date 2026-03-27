@@ -3831,20 +3831,20 @@ export function FUN_004d570b(in_ECX) {
   SetRect(local_14[0],0,0x14,xRight,yBottom);
   FUN_005c0333(local_14[0],10);
   for (local_20 = 0; local_20 < 0x50; local_20 = local_20 + 1) {
-    local_18 = s32(in_ECX, 0x1db8 + local_20 * 0xc) /
-               s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0x140;
-    local_1c = s32(in_ECX, 0x1dbc + local_20 * 0xc) /
-               s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0xf0;
+    local_18 = s32(in_ECX, 0x1db8 + local_20 * 0xc) / s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0x140;
+               /*JOINED*/
+    local_1c = s32(in_ECX, 0x1dbc + local_20 * 0xc) / s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0xf0;
+               /*JOINED*/
     if ((((0x280 < local_18) || (local_18 < 0)) || (0x1e0 < local_1c)) || (local_1c < 0)) {
       uVar1 = FUN_0059a791(0xffff8300,32000);
       w32(in_ECX, 0x1db8 + local_20 * 0xc, uVar1);
       uVar1 = FUN_0059a791(0xffffa240,24000);
       w32(in_ECX, 0x1dbc + local_20 * 0xc, uVar1);
       w32(in_ECX, 0x1dc0 + local_20 * 0xc, 100);
-      local_18 = s32(in_ECX, 0x1db8 + local_20 * 0xc) /
-                 s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0x140;
-      local_1c = s32(in_ECX, 0x1dbc + local_20 * 0xc) /
-                 s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0xf0;
+      local_18 = s32(in_ECX, 0x1db8 + local_20 * 0xc) / s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0x140;
+                 /*JOINED*/
+      local_1c = s32(in_ECX, 0x1dbc + local_20 * 0xc) / s32(in_ECX, 0x1dc0 + local_20 * 0xc) + 0xf0;
+                 /*JOINED*/
     }
     FUN_005c0c5d(local_18,local_1c,0x29);
   }
@@ -4229,10 +4229,10 @@ export function FUN_004d63fb() {
       w32(iVar2, 0x1dbc + local_1c * 0xc, uVar5);
       uVar5 = FUN_0059a791(0x32,100);
       w32(iVar2, 0x1dc0 + local_1c * 0xc, uVar5);
-      local_14 = s32(iVar2, 0x1db8 + local_1c * 0xc) /
-                 s32(iVar2, 0x1dc0 + local_1c * 0xc) + 0x140;
-      local_18 = s32(iVar2, 0x1dbc + local_1c * 0xc) /
-                 s32(iVar2, 0x1dc0 + local_1c * 0xc) + 0xf0;
+      local_14 = s32(iVar2, 0x1db8 + local_1c * 0xc) / s32(iVar2, 0x1dc0 + local_1c * 0xc) + 0x140;
+                 /*JOINED*/
+      local_18 = s32(iVar2, 0x1dbc + local_1c * 0xc) / s32(iVar2, 0x1dc0 + local_1c * 0xc) + 0xf0;
+                 /*JOINED*/
     }
     if (((iVar3 < 0x280) && (0 < iVar3)) && ((iVar4 < 0x1e0 && (0 < iVar4)))) {
       iVar6 = FUN_005c0bf2(iVar3,iVar4);
@@ -6875,8 +6875,8 @@ export function FUN_004de0e2(param_1, param_2) {
   for (local_28 = 0x3e; -1 < local_28; local_28 = local_28 + -1) {
     if ((DAT_0064b1ca[local_28 * 0x14] === 0x01) && (iVar2 = FUN_004bfe5a(param_2,param_1,local_28), iVar2 !== 0)) {
        /*JOINED*/
-      local_8 = (s8(DAT_0064b1c5[local_28 * 0x14]) << 3) /
-                s8(DAT_0064b1c8[local_28 * 0x14]);
+      local_8 = (s8(DAT_0064b1c5[local_28 * 0x14]) << 3) / s8(DAT_0064b1c8[local_28 * 0x14]);
+                /*JOINED*/
       if ((DAT_0064b1bd[local_28 * 0x14] & 4) !== 0) {
         local_8 = local_8 + 1;
       }

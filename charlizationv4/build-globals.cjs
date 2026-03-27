@@ -116,29 +116,24 @@ for (const name of scalarDats) {
 
 let minAddr = Infinity, maxAddr = 0;
 const arrayNames = [];
-const scalarNames = [];
 
+// ALL DAT_ addresses become Uint8Array views — no scalars.
+// In the binary, every address is just a location in flat memory.
 for (const [name, info] of allRefs) {
   const addrStr = name.replace('DAT_', '').replace('_val', '');
   const addr = parseInt(addrStr, 16);
-  if (isNaN(addr)) { scalarNames.push(name); continue; }
+  if (isNaN(addr)) continue;
 
-  if (info.isArray) {
-    arrayNames.push({ name, addr });
-    if (addr < minAddr) minAddr = addr;
-    if (addr > maxAddr) maxAddr = addr;
-  }
-  if (info.isScalar && !info.isArray) {
-    scalarNames.push(name);
-  }
-  // "both" addresses get array views AND scalar access via getter/setter
+  arrayNames.push({ name, addr });
+  if (addr < minAddr) minAddr = addr;
+  if (addr > maxAddr) maxAddr = addr;
 }
 
 // Add generous padding to the max address (largest known structure is units at 64KB)
 const BASE = minAddr;
 const SIZE = (maxAddr - BASE) + 0x20000; // +128KB padding for largest arrays
 console.log(`Flat memory: BASE=0x${BASE.toString(16)}, SIZE=${SIZE} (${(SIZE/1024).toFixed(0)} KB)`);
-console.log(`Array addresses: ${arrayNames.length}, Scalar addresses: ${scalarNames.length}`);
+console.log(`Array addresses: ${arrayNames.length} (all addresses — no scalars)`);
 
 // ═══════════════════════════════════════════════════════════════════
 // Step 3: Generate globals.js
@@ -181,16 +176,9 @@ for (const { name, addr } of sortedArrays) {
   out += `  ${name}: new Uint8Array(_BUF, ${offset}),  // 0x${addr.toString(16)}\n`;
 }
 
-// Write scalar globals
-out += `\n  // ═══ Scalar globals ═══\n`;
-const sortedScalars = scalarNames.sort();
-for (const name of sortedScalars) {
-  out += `  ${name}: 0,\n`;
-}
-
 out += `};\n\n`;
 out += `// Memory base offset for debugging: 0x${BASE.toString(16)}\n`;
 out += `// To read raw memory: G._MEM[address - 0x${BASE.toString(16)}]\n`;
 
 fs.writeFileSync(path.join(__dirname, 'globals.js'), out);
-console.log(`Generated globals.js: ${sortedArrays.length} array views + ${sortedScalars.length} scalars`);
+console.log(`Generated globals.js: ${sortedArrays.length} array views (all addresses, no scalars)`);

@@ -3672,8 +3672,8 @@ export function FUN_0045705e(param_1, param_2) {
       }
     }
     else {
-      DAT_0064b118 = u8(DAT_0064c7a5[param_2 * 0x594]) * (DAT_0064b118 / 2) /
-                     u8(DAT_0064c7a5[param_1 * 0x594]);
+      DAT_0064b118 = u8(DAT_0064c7a5[param_2 * 0x594]) * (DAT_0064b118 / 2) / u8(DAT_0064c7a5[param_1 * 0x594]);
+                     /*JOINED*/
     }
   }
   DAT_0064b0ec = DAT_0064b0ec / (u8(DAT_0064c6be[param_1 * 0x594]) - 1 / 2 + 1);

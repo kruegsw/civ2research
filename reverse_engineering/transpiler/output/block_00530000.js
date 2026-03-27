@@ -5123,8 +5123,8 @@ export function FUN_00538a29() {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -10323,8 +10323,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -13182,8 +13182,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -15494,8 +15494,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -16419,8 +16419,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -19205,8 +19205,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -21864,8 +21864,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -24603,8 +24603,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -25754,8 +25754,8 @@ if (true) {
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);
@@ -26911,8 +26911,8 @@ function LAB_005429fe_helper(bVar22, bVar23, bVar3, bVar4, bVar7, cVar1, iVar10,
                              /*JOINED*/
                           local_10 = FUN_00580341(local_168,local_60,0);
                           iVar11 = FUN_005b50ad(local_54,0);
-                          local_10 = ((iVar11 + 1) * local_10) /
-                                     s8(DAT_0064b1c8)
+                          local_10 = ((iVar11 + 1) * local_10) / s8(DAT_0064b1c8)
+                                     /*JOINED*/
                                                 [u8(DAT_006560f6[local_168 * 0x20]) * 0x14];
                                                  /*JOINED*/
                           iVar11 = FUN_005b8ca6(uVar9,local_74);

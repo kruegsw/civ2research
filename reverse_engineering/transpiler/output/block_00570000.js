@@ -5069,8 +5069,8 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
       if ((DAT_0064b1ca[local_3b0 * 0x14] === 0x01) && (iVar6 = FUN_004bfe5a(param_2,param_1,local_3b0), iVar6 !== 0)) {
          /*JOINED*/
-        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) /
-                   s8(DAT_0064b1c8[local_3b0 * 0x14]);
+        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) / s8(DAT_0064b1c8[local_3b0 * 0x14]);
+                   /*JOINED*/
         if ((DAT_0064b1bd[local_3b0 * 0x14] & 4) !== 0) {
           local_14 = local_14 + 1;
         }
@@ -6369,8 +6369,8 @@ if (true) {
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
       if ((DAT_0064b1ca[local_3b0 * 0x14] === 0x01) && (iVar6 = FUN_004bfe5a(param_2,param_1,local_3b0), iVar6 !== 0)) {
          /*JOINED*/
-        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) /
-                   s8(DAT_0064b1c8[local_3b0 * 0x14]);
+        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) / s8(DAT_0064b1c8[local_3b0 * 0x14]);
+                   /*JOINED*/
         if ((DAT_0064b1bd[local_3b0 * 0x14] & 4) !== 0) {
           local_14 = local_14 + 1;
         }
@@ -6789,8 +6789,8 @@ if (true) {
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
       if ((DAT_0064b1ca[local_3b0 * 0x14] === 0x01) && (iVar6 = FUN_004bfe5a(param_2,param_1,local_3b0), iVar6 !== 0)) {
          /*JOINED*/
-        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) /
-                   s8(DAT_0064b1c8[local_3b0 * 0x14]);
+        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) / s8(DAT_0064b1c8[local_3b0 * 0x14]);
+                   /*JOINED*/
         if ((DAT_0064b1bd[local_3b0 * 0x14] & 4) !== 0) {
           local_14 = local_14 + 1;
         }
@@ -6986,8 +6986,8 @@ function LAB_0057d7a9_helper(bVar3, iVar4, iVar5, iVar6, iVar7, local_14, local_
     for (local_3b0 = 0x3e; -1 < local_3b0; local_3b0 = local_3b0 + -1) {
       if ((DAT_0064b1ca[local_3b0 * 0x14] === 0x01) && (iVar6 = FUN_004bfe5a(param_2,param_1,local_3b0), iVar6 !== 0)) {
          /*JOINED*/
-        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) /
-                   s8(DAT_0064b1c8[local_3b0 * 0x14]);
+        local_14 = (s8(DAT_0064b1c5[local_3b0 * 0x14]) << 3) / s8(DAT_0064b1c8[local_3b0 * 0x14]);
+                   /*JOINED*/
         if ((DAT_0064b1bd[local_3b0 * 0x14] & 4) !== 0) {
           local_14 = local_14 + 1;
         }

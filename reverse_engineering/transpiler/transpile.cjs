@@ -978,7 +978,7 @@ function processFunction(headerLines, bodyLines, ctx) {
 
       // Also join lines that end with trailing operators (&&, ||, +, -, *, ,)
       // or with a C type cast (TYPE *) which means expression continues
-      else if ((/[+\-*,&|]\s*$/.test(t) || /\(\s*\w+\s*\*+\s*\)\s*$/.test(t)) && depth === 0) {
+      else if ((/[+\-*/,&|]\s*$/.test(t) || /\(\s*\w+\s*\*+\s*\)\s*$/.test(t)) && depth === 0) {
         const indent = bodyLines[i].match(/^(\s*)/)[1];
         let joined = t;
         let j = i + 1;

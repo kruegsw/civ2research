@@ -3918,13 +3918,13 @@ export function FUN_005d57b1(param_1) {
     if ((u32(true /* DEVIATION: C pointer — s32(DAT_006385d0, 0x98) */ + 0xc, 0) >> 3 & 1) === 0) {
       if (((u32(true /* DEVIATION: C pointer — s32(DAT_006385d0, 0x98) */ + 0xc, 0) >> 7) - (u32(DAT_006385c8, 0xc) >> 7) & 7) === 0) {
            /*JOINED*/
-        param_1 = ((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0) /
-                  u16(DAT_006385d0, 0x80);
+        param_1 = ((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0) / u16(DAT_006385d0, 0x80);
+                  /*JOINED*/
         _DAT_00638594 = _DAT_00638594 + 1;
       }
       local_c = s32(DAT_006385d0, 0x98);
-      uVar3 = (s32(DAT_006385d0, 0x3c) - s32(DAT_006385d0, 0x34)) /
-              u16(DAT_006385d0, 0x80);
+      uVar3 = (s32(DAT_006385d0, 0x3c) - s32(DAT_006385d0, 0x34)) / u16(DAT_006385d0, 0x80);
+              /*JOINED*/
       if (uVar3 < param_1) {
         param_1 = uVar3;
       }

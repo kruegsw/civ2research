@@ -203,6 +203,18 @@ const DAT_REPLACE_RE = /(?<![.'_a-zA-Z])DAT_([0-9a-fA-F]+(?:_val)?)\b/g;
 fs.mkdirSync(blocksDir, { recursive: true });
 let totalTransformed = 0;
 
+// ── Load scalar-only DAT_ classification ──
+// These addresses are never used as arrays in the transpiler output,
+// so transform.cjs wraps them: G.DAT_xxx → s32(G.DAT_xxx, 0) reads,
+// G.DAT_xxx = val → w32(G.DAT_xxx, 0, val) writes.
+const classifyPath = path.join(__dirname, 'dat-classify.json');
+const scalarOnlySet = new Set();
+if (fs.existsSync(classifyPath)) {
+  const classify = JSON.parse(fs.readFileSync(classifyPath, 'utf8'));
+  if (classify.scalarOnly) classify.scalarOnly.forEach(d => scalarOnlySet.add(d));
+  console.log(`Scalar-only DAT_ addresses: ${scalarOnlySet.size}`);
+}
+
 // ── Build function registry: FUN_xxx → which block file exports it ──
 const fnRegistry = new Map();
 for (const file of blockFiles) {
@@ -351,7 +363,58 @@ for (const blockFile of blockFiles) {
         (codePart) => codePart.replace(/(?<!G\.)(?<![a-zA-Z_.])(DAT_[0-9a-fA-F]+)/g, 'G.$1')
       );
 
-      // 2c: Add default values for register parameters in function signatures
+      // 2c: Wrap scalar-only DAT_ access with s32/w32
+      // All DAT_ are now Uint8Array views in globals.js.
+      // Scalar-only addresses need s32() for reads and w32() for writes.
+      if (scalarOnlySet.size > 0) {
+        // Step 1: Scalar writes. Find G.DAT_xxx = expr patterns.
+        // Replace: G.DAT_xxx = expr  →  w32(G.DAT_xxx, 0, expr)
+        // Must find the end of the value expression (up to ; or , at depth 0)
+        {
+          const writeRe = /\bG\.(DAT_[0-9a-fA-F]+)\s*=(?!=)/g;
+          let wm;
+          let newLine = '';
+          let lastIdx = 0;
+          while ((wm = writeRe.exec(processed)) !== null) {
+            if (!scalarOnlySet.has(wm[1])) continue;
+            const valStart = wm.index + wm[0].length;
+            // Find end of value: scan for ; or , at paren depth 0
+            let depth = 0;
+            let valEnd = valStart;
+            for (let ci = valStart; ci < processed.length; ci++) {
+              if (processed[ci] === '(' || processed[ci] === '[') depth++;
+              if (processed[ci] === ')' || processed[ci] === ']') depth--;
+              if (depth < 0) { valEnd = ci; break; } // hit outer )
+              if ((processed[ci] === ';' || processed[ci] === ',') && depth === 0) { valEnd = ci; break; }
+              valEnd = ci + 1;
+            }
+            const valExpr = processed.substring(valStart, valEnd).trim();
+            newLine += processed.substring(lastIdx, wm.index);
+            newLine += `w32(G.${wm[1]}, 0, ${valExpr})`;
+            lastIdx = valEnd;
+            writeRe.lastIndex = lastIdx;
+          }
+          if (lastIdx > 0) {
+            newLine += processed.substring(lastIdx);
+            processed = newLine;
+          }
+        }
+
+        // Step 2: Scalar reads. Replace G.DAT_xxx with s32(G.DAT_xxx, 0)
+        // when the address is scalar-only AND not already the first arg to a helper.
+        processed = processed.replace(
+          /\bG\.(DAT_[0-9a-fA-F]+)\b(?!\s*\[)/g,
+          (m, name, matchOffset) => {
+            if (!scalarOnlySet.has(name)) return m;
+            // Check: is this the array arg to s32/w32/ptrAdd? Look at preceding text.
+            const before = processed.substring(Math.max(0, matchOffset - 40), matchOffset);
+            if (/(?:s32|u32|s16|u16|w32|w16|w32r|w16r|ptrAdd)\(\s*$/.test(before)) return m;
+            return `s32(G.${name}, 0)`;
+          }
+        );
+      }
+
+      // 2d: Add default values for register parameters in function signatures
       if (/^export function \w+\(/.test(trimmed)) {
         processed = processed.replace(/\b(in_ECX)(?=[\s,)])/g, '$1 = G.in_ECX');
         processed = processed.replace(/\b(in_EAX)(?=[\s,)])/g, '$1 = G.in_EAX');

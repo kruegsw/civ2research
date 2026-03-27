@@ -975,8 +975,8 @@ export function FUN_00431d22() {
       local_62c = 0;
       for (local_3c = 0; (local_3c < local_30 && (local_3c < 0x96)); local_3c = local_3c + 1) {
         local_40 = local_3c * 4;
-        local_44 = u8(DAT_00655c38[local_3c * 8 + local_640]) * 0x168 /
-                   local_1c;
+        local_44 = u8(DAT_00655c38[local_3c * 8 + local_640]) * 0x168 / local_1c;
+                   /*JOINED*/
         FUN_005a9798(local_620,local_628 + local_630 + 9,(local_38 - local_62c) + 0x171, local_40 + local_630 + 9,(local_38 - local_44) + 0x171,0x12);
                            /*JOINED*/
         local_628 = local_40;
@@ -1000,8 +1000,8 @@ export function FUN_00431d22() {
       for (local_3c = 0; (local_63c = iVar1, local_3c < local_30 && (local_3c < 0x96)); local_3c = local_3c + 1) {
           /*JOINED*/
         local_40 = local_3c * 4;
-        local_44 = u8(DAT_00655c38[local_3c * 8 + local_640]) * 0x168 /
-                   local_1c;
+        local_44 = u8(DAT_00655c38[local_3c * 8 + local_640]) * 0x168 / local_1c;
+                   /*JOINED*/
         FUN_005a9798(local_620,local_628 + local_630 + 8,(local_38 + 0x170) - local_62c, local_40 + local_630 + 8,(local_38 + 0x170) - local_44,local_48);
                            /*JOINED*/
         local_628 = local_40;
@@ -1879,8 +1879,8 @@ export function FUN_00433434() {
     if (aiStack_12c[local_e8] < 30000 / (u8(DAT_0064c6b0[local_e8 * 0x594]) + 1)) {
         /*JOINED*/
       local_e4[local_e8] =
-           u8(DAT_0064c6b0[local_e8 * 0x594]) * aiStack_12c[local_e8] /
-           aiStack_6c[local_e8];
+           u8(DAT_0064c6b0[local_e8 * 0x594]) * aiStack_12c[local_e8] / aiStack_6c[local_e8];
+           /*JOINED*/
     }
     else {
       local_e4[local_e8] =
@@ -5648,8 +5648,8 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
     for (local_24 = 2; local_24 < 0x3e; local_24 = local_24 + 1) {
       if ((DAT_0064b1ca[local_24 * 0x14] === 0x01) && (iVar4 = FUN_004bfe5a(param_3,local_28,local_24), iVar4 !== 0)) {
          /*JOINED*/
-        local_c = (s8(DAT_0064b1c5[local_24 * 0x14]) << 3) /
-                  s8(DAT_0064b1c8[local_24 * 0x14]);
+        local_c = (s8(DAT_0064b1c5[local_24 * 0x14]) << 3) / s8(DAT_0064b1c8[local_24 * 0x14]);
+                  /*JOINED*/
         if ((DAT_0064b1bd[local_24 * 0x14] & 4) !== 0) {
           local_c = local_c + 1;
         }
