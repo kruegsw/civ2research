@@ -15,8 +15,9 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
-import { _atexit, _atol, _fclose, _memcpy, _memset, _strchr } from '../crt.js';
-import { _strcmp, _strlen, _strncpy, _wcslen, _wcstombs } from '../crt.js';
+import { __calloc_dbg, __free_dbg, __malloc_dbg, __realloc_dbg, _atexit, _atol } from '../crt.js';
+import { _fclose, _memcpy, _memset, _strchr, _strcmp, _strlen } from '../crt.js';
+import { _strncpy, _wcslen, _wcstombs } from '../crt.js';
 import { CARRY4, CONCAT12, CONCAT13, CONCAT22, CloseHandle, CompareStringA } from '../extern-stubs.js';
 import { CompareStringW, CreateDirectoryA, CreateFileA, DEVIATION, FlushFileBuffers, GetCPInfo } from '../extern-stubs.js';
 import { GetFileType, GetLastError, GetModuleFileNameA, GetProcAddress, GetStdHandle, GetStringTypeA } from '../extern-stubs.js';
@@ -25,10 +26,9 @@ import { LoadLibraryA, MultiByteToWideChar, SetConsoleCtrlHandler, SetEndOfFile,
 import { SetUnhandledExceptionFilter, WideCharToMultiByte, WriteFile, __ld12tod, exe, int } from '../extern-stubs.js';
 import { swi } from '../extern-stubs.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __CrtDbgReport_005F8B70 as __CrtDbgReport, ___crtLCMapStringA_005F96E0 as ___crtLCMapStringA, __amsg_exit_005F70E0 as __amsg_exit } from './block_005F0000.js';
-import { __calloc_dbg_005F4890 as __calloc_dbg, __close_005FA010 as __close, __dosmaperr_005FBFD0 as __dosmaperr, __exit_005F41D0 as __exit, __flsbuf_005FA410 as __flsbuf, __flush_005FA230 as __flush } from './block_005F0000.js';
-import { __free_dbg_005F4F90 as __free_dbg, __freebuf_005FA120 as __freebuf, __ftbuf_005FB770 as __ftbuf, __isctype_005F9A70 as __isctype, __lseek_005FDF90 as __lseek, __malloc_dbg_005F4420 as __malloc_dbg } from './block_005F0000.js';
-import { __output_005FA6B0 as __output, __read_005FB830 as __read, __realloc_dbg_005F4930 as __realloc_dbg, __setdefaultprecision_005FE240 as __setdefaultprecision, __stbuf_005FB620 as __stbuf, __write_005FBCD0 as __write } from './block_005F0000.js';
-import { terminate_005F8880 as terminate } from './block_005F0000.js';
+import { __close_005FA010 as __close, __dosmaperr_005FBFD0 as __dosmaperr, __exit_005F41D0 as __exit, __flsbuf_005FA410 as __flsbuf, __flush_005FA230 as __flush, __freebuf_005FA120 as __freebuf } from './block_005F0000.js';
+import { __ftbuf_005FB770 as __ftbuf, __isctype_005F9A70 as __isctype, __lseek_005FDF90 as __lseek, __output_005FA6B0 as __output, __read_005FB830 as __read, __setdefaultprecision_005FE240 as __setdefaultprecision } from './block_005F0000.js';
+import { __stbuf_005FB620 as __stbuf, __write_005FBCD0 as __write, terminate_005F8880 as terminate } from './block_005F0000.js';
 const ___crtMessageBoxA = ___crtMessageBoxA_00600930;
 const ___tzset = ___tzset_00603620;
 const __isindst = __isindst_006039B0;

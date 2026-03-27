@@ -11,10 +11,10 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
-import { SetRect, _atexit, _atoi, _memcpy, _memset, _rand } from '../crt.js';
-import { _strcmp, _strlen } from '../crt.js';
+import { SetRect, __expand, __msize, _atexit, _atoi, _memcpy } from '../crt.js';
+import { _memset, _rand, _strcmp, _strlen, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, GlobalCompact, HELPERS, InflateRect, MessageBoxA, OffsetRect } from '../extern-stubs.js';
-import { WritePrivateProfileStringA, XD_FlushSendBuffer, __expand, block, exe } from '../extern-stubs.js';
+import { WritePrivateProfileStringA, XD_FlushSendBuffer, block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_004080f0, FUN_00408130, FUN_00408230 } from './block_00400000.js';
 import { FUN_00408330, FUN_004083b0, FUN_004083f0, FUN_00408460, FUN_004085f0, FUN_00408830 } from './block_00400000.js';
 import { FUN_0040894c, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
@@ -59,8 +59,7 @@ import { FUN_005d268e, FUN_005d2f7e, FUN_005d6a2c, FUN_005d7c00, FUN_005d7c6e, F
 import { FUN_005d84f6, FUN_005dae6b, FUN_005dce29, FUN_005dce4f, FUN_005dd010, FUN_005dd1a0 } from './block_005D0000.js';
 import { FUN_005dd2e3, FUN_005dd377, FUN_005dd3c2, FUN_005dd561, FUN_005dfb61, FUN_005dfd8f } from './block_005D0000.js';
 import { Realloc_005DCCC1 as Realloc, debug_log_005D225B as debug_log, manage_window_99F4_005D99F4 as manage_window_99F4, register_wndclass_2740_005D2740 as register_wndclass_2740, send_msg_2D7F_005D2D7F as send_msg_2D7F, send_msg_2F0D_005D2F0D as send_msg_2F0D } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __msize_005F53C0 as __msize, __strcmpi_005F6E00 as __strcmpi, operator_delete_005F23C0 as operator_delete } from './block_005F0000.js';
-import { operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { _E1_00600F70 as _E1, __itoa_00600A10 as __itoa } from './block_00600000.js';
 const thunk_load_civ2_art_004bbb3f = load_civ2_art_004bbb3f_004BBB3F;
 

@@ -13,7 +13,7 @@ import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b94d5 } from '../fn_utils.js';
 import { GetSystemMetrics, _atexit, _memset, _rand, _strcmp, _strlen } from '../crt.js';
-import { _strncpy } from '../crt.js';
+import { _strncpy, operator_delete, operator_new } from '../crt.js';
 import { BringWindowToTop, CMiniFrameWnd, COleCntrFrameWnd, CreateMutexA, DEVIATION, FindWindowA } from '../extern-stubs.js';
 import { GetAsyncKeyState, GetFileAttributesA, GetLastError, HELPERS, PostMessageA, SetWindowsHookExA } from '../extern-stubs.js';
 import { UnhookWindowsHookEx, XD_FlushSendBuffer, __mkdir, exe } from '../extern-stubs.js';
@@ -59,7 +59,7 @@ import { FUN_005c0034, FUN_005c0073, FUN_005c0f57, FUN_005c19ad, FUN_005c62ee, F
 import { FUN_005c656b, FUN_005cd775, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d1f50, FUN_005d2004, FUN_005dbb20, FUN_005dbb4f, debug_log_005D225B as debug_log, send_msg_3DBF_005D3DBF as send_msg_3DBF } from './block_005D0000.js';
 import { send_msg_3E92_005D3E92 as send_msg_3E92 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, __ftol_005F6C60 as __ftol, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, __ftol_005F6C60 as __ftol } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
 const egptr = egptr_00551D20;
 

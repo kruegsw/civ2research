@@ -13,7 +13,7 @@ import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { __chdir, _atoi, _fclose, _fopen, _fread, _fwrite } from '../crt.js';
-import { _memcpy, _memset, _strlen, _strncpy } from '../crt.js';
+import { _memcpy, _memset, _strlen, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { BringWindowToTop, CDaoFieldInfo, DEVIATION, HELPERS, OffsetRect, XD_FlushSendBuffer } from '../extern-stubs.js';
 import { _Timevec, block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_00408680 } from './block_00400000.js';
@@ -53,7 +53,7 @@ import { CString_005CDE2C as CString, FUN_005c0073, FUN_005c041f, FUN_005c0cc5, 
 import { FUN_005c656b, FUN_005c841d, FUN_005cde4d, FUN_005cedad, FUN_005cef31, create_font_8200_005C8200 as create_font_8200 } from './block_005C0000.js';
 import { gdi_847F_005C847F as gdi_847F, manage_window_8B58_005C8B58 as manage_window_8B58 } from './block_005C0000.js';
 import { FUN_005d1f50, FUN_005d2004, FUN_005db0d0, FUN_005db140, FUN_005db55b, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, __strnicmp_005F40B0 as __strnicmp, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, __strnicmp_005F40B0 as __strnicmp } from './block_005F0000.js';
 
 export function FUN_00430267(param_1) {
 

@@ -12,7 +12,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_0058c56c, FUN_005ae052, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
 import { FUN_005b89e4, FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
-import { SetRect, _atexit, _rand, _strcmp } from '../crt.js';
+import { SetRect, _atexit, _rand, _strcmp, operator_new } from '../crt.js';
 import { DEVIATION, GetAsyncKeyState, HELPERS, Sleep, XD_FlushSendBuffer, XD_InFlushSendBuffer } from '../extern-stubs.js';
 import { exe } from '../extern-stubs.js';
 import { FUN_0040785b, FUN_004080c0, FUN_004083b0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10 } from './block_00400000.js';
@@ -71,7 +71,7 @@ import { FUN_005b94fc, FUN_005b976d, FUN_005b98b7, FUN_005b99e8, FUN_005b9c49, F
 import { FUN_005b9f1c, FUN_005bb574, FUN_005bf5e1, manage_window_C692_005BC692 as manage_window_C692 } from './block_005B0000.js';
 import { FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cedad } from './block_005C0000.js';
 import { FUN_005d2004, FUN_005ddd4e, FUN_005dde57, FUN_005dde9d, FUN_005ddeff, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
 
 export function FUN_004e0140() {
 

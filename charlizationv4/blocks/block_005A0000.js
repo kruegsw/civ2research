@@ -12,7 +12,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { SetRect, __chdir, __toupper_lk, _atoi, _fputs, _isalpha } from '../crt.js';
 import { _isdigit, _memset, _rand, _sprintf, _strchr, _strcmp } from '../crt.js';
-import { _strlen, _strncpy } from '../crt.js';
+import { _strlen, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, GetAsyncKeyState, HELPERS, IsIconic, MessageBoxA, SetFocus } from '../extern-stubs.js';
 import { XD_FlushSendBuffer, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408330, FUN_00408460, FUN_00408490 } from './block_00400000.js';
@@ -70,7 +70,6 @@ import { FUN_005cd775, FUN_005cda06, FUN_005cef31, GetCheckStyle_005C55F0 as Get
 import { FUN_005d23bb, FUN_005d25a8, FUN_005d25c0, FUN_005d268e, FUN_005d4014, FUN_005d4167 } from './block_005D0000.js';
 import { FUN_005d8236, FUN_005dae6b, FUN_005db0d0, send_msg_3CFF_005D3CFF as send_msg_3CFF, send_msg_3D62_005D3D62 as send_msg_3D62 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, __strcmpi_005F6E00 as __strcmpi, __strnicmp_005F40B0 as __strnicmp, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
-import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
 
 export function FUN_005a0fea(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 

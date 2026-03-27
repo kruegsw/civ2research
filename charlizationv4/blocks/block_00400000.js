@@ -19,7 +19,8 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4, FUN_005b8ee1 } from '../fn_utils.js';
-import { GetSystemMetrics, SetRect, _atexit, _memcpy, _rand } from '../crt.js';
+import { GetSystemMetrics, SetRect, _atexit, _memcpy, _rand, operator_delete } from '../crt.js';
+import { operator_new } from '../crt.js';
 import { DEVIATION, _Timevec, exe } from '../extern-stubs.js';
 import { FUN_00410030, FUN_00410070, FUN_00410402, FUN_00413717 } from './block_00410000.js';
 import { FUN_004271e8, FUN_00428b0c } from './block_00420000.js';
@@ -53,7 +54,7 @@ import { FUN_005c656b, FUN_005cc248, FUN_005cd139, FUN_005cd4c7, FUN_005cd559, c
 import { draw_text_9740_005C9740 as draw_text_9740, gdi_8514_005C8514 as gdi_8514, invalidate_8B00_005C8B00 as invalidate_8B00, manage_window_8B2D_005C8B2D as manage_window_8B2D, manage_window_944B_005C944B as manage_window_944B, measure_text_858E_005C858E as measure_text_858E } from './block_005C0000.js';
 import { measure_text_BF40_005CBF40 as measure_text_BF40, register_wndclass_CF17_005CCF17 as register_wndclass_CF17 } from './block_005C0000.js';
 import { EnableStackedTabs_005DB035 as EnableStackedTabs } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
 const SetDlgCtrlID = SetDlgCtrlID_004081B0;
 
 export function FID_conflict___E31_00406A80() {

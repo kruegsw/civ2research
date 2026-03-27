@@ -14,6 +14,7 @@ import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, F
 import { FUN_005b94d5 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __chdir, __toupper_lk, _atexit, _memcpy } from '../crt.js';
 import { _memset, _printf, _rand, _strcmp, _strlen, _strncpy } from '../crt.js';
+import { operator_delete, operator_new } from '../crt.js';
 import { CControlBarInfo, DEVIATION, HELPERS, OffsetRect, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_004080c0, FUN_00408230, FUN_004083b0, FUN_00408460 } from './block_00400000.js';
 import { FUN_004085f0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
@@ -51,7 +52,6 @@ import { FUN_005c0034, FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, F
 import { FUN_005c64da, FUN_005c656b, FUN_005cd775, FUN_005cda06, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d268e, FUN_005d6038, FUN_005d8236, FUN_005db0d0, FUN_005dde57, FUN_005ddeff } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, __strcmpi_005F6E00 as __strcmpi, __strnicmp_005F40B0 as __strnicmp, _scalar_deleting_destructor__005F0EB0 as _scalar_deleting_destructor_ } from './block_005F0000.js';
-import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
 
 export function FUN_004f00f0(param_1, param_2) {
 

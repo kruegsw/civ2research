@@ -12,7 +12,8 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004bd9f0 } from '../fn_utils.js';
 import { SetRect, _atexit, _atoi, _atol, _fputs, _memcpy } from '../crt.js';
-import { _memset, _rand, _sprintf, _strlen, _strncpy } from '../crt.js';
+import { _memset, _rand, _sprintf, _strlen, _strncpy, operator_delete } from '../crt.js';
+import { operator_new } from '../crt.js';
 import { CopyRect, DEVIATION, GetPrivateProfileIntA, HELPERS, InflateRect, MessageBoxA } from '../extern-stubs.js';
 import { OffsetRect, SetFocus, WritePrivateProfileStringA, block, exe, timeGetTime } from '../extern-stubs.js';
 import { FUN_00407ff0, FUN_00408130, FUN_00408330, FUN_00408460, FUN_00408490, FUN_004085f0 } from './block_00400000.js';
@@ -71,7 +72,7 @@ import { GetCheckStyle_005C55F0 as GetCheckStyle } from './block_005C0000.js';
 import { EnableStackedTabs_005DB035 as EnableStackedTabs, FUN_005d22b7, FUN_005d268e, FUN_005d6a2c, FUN_005d8236, FUN_005dae6b } from './block_005D0000.js';
 import { FUN_005dd010, FUN_005dd1a0, FUN_005dd2e3, FUN_005dd377, FUN_005dd3c2, FUN_005dd3f1 } from './block_005D0000.js';
 import { FUN_005dd45d, FUN_005dd51d, FUN_005dd561, FUN_005dd64c } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
 
 export function FUN_00511320(in_ECX = G.in_ECX) {

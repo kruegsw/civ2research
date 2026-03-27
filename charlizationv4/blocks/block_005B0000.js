@@ -12,7 +12,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_0058c56c, FUN_005ae052 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __toupper_lk, _fread, _fwrite, _memcpy } from '../crt.js';
-import { _memset, _rand, _strcmp, _strncmp } from '../crt.js';
+import { _memset, _rand, _strcmp, _strncmp, operator_new } from '../crt.js';
 import { BitBlt, BringWindowToTop, ClientToScreen, CreateSolidBrush, CreateWindowExA, DEVIATION } from '../extern-stubs.js';
 import { DeleteObject, DestroyCursor, DestroyIcon, DestroyWindow, DispatchMessageA, EnableWindow } from '../extern-stubs.js';
 import { GdiFlush, GetAsyncKeyState, GetClientRect, GetCursorPos, GetDC, GetKeyState } from '../extern-stubs.js';
@@ -60,7 +60,7 @@ import { FUN_005dcdf9, FUN_005dce29, FUN_005dce4f, FUN_005dce96, FUN_005dced3, R
 import { debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005e1880, FUN_005e1c70, FUN_005e388f, FUN_005e392a, FUN_005e395a, FUN_005e3988 } from './block_005E0000.js';
 import { FUN_005e4d60, create_dib_35B0_005E35B0 as create_dib_35B0 } from './block_005E0000.js';
-import { FUN_005f22d0, FUN_005f22e0, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
 import { __strupr_006076C0 as __strupr } from './block_00600000.js';
 const thunk_pick_up_unit_005b319e = pick_up_unit_005b319e_005B319E;
 const gdi_BA4F = gdi_BA4F_005BBA4F;

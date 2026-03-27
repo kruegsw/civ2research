@@ -13,7 +13,7 @@ import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __toupper_lk, _atexit, _fclose, _fputc } from '../crt.js';
 import { _fread, _fwrite, _isdigit, _memcpy, _memset, _rand } from '../crt.js';
-import { _strcmp, _strlen, _strncpy } from '../crt.js';
+import { _strcmp, _strlen, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { CreatePalette, DEVIATION, DeleteObject, GetNearestPaletteIndex, HELPERS, MessageBoxA } from '../extern-stubs.js';
 import { XD_SendBroadcastData, XD_SendSecureData, block, exe, sndPlaySoundA, timeGetTime } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408130, FUN_00408460, FUN_00408490 } from './block_00400000.js';
@@ -57,7 +57,7 @@ import { FUN_005dae6b, FUN_005db0d0, FUN_005dba95, FUN_005dbab8, FUN_005dcc10, F
 import { FUN_005dce29, FUN_005dce4f, FUN_005dce96, FUN_005dd010, FUN_005dd1a0, FUN_005dd27e } from './block_005D0000.js';
 import { FUN_005dd377, FUN_005dd3c2, FUN_005dd51d, FUN_005dd71e, FUN_005ddbc7, FUN_005dde9d } from './block_005D0000.js';
 import { FUN_005ddeff, FUN_005de6fc, FUN_005dea9e, FUN_005deb12 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, __filbuf_005F3D70 as __filbuf, __fsopen_005F2D00 as __fsopen, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, __filbuf_005F3D70 as __filbuf, __fsopen_005F2D00 as __fsopen } from './block_005F0000.js';
 
 export function FUN_00460104() {
 

@@ -12,7 +12,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
 import { SetRect, __chdir, _atexit, _memset, _rand, _strlen } from '../crt.js';
-import { _strncpy } from '../crt.js';
+import { _strncpy, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, HELPERS, OffsetRect, XD_FlushSendBuffer, XD_GetCurrentProtoAddr, exe } from '../extern-stubs.js';
 import { FUN_00407ff0, FUN_00408130, FUN_004083f0, FUN_00408460, FUN_004085f0, FUN_00408650 } from './block_00400000.js';
 import { FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc40, FUN_0040bc80, FUN_0040fe10 } from './block_00400000.js';
@@ -54,7 +54,7 @@ import { CString_005CDE2C as CString, FUN_005c0593, FUN_005c0bf2, FUN_005c1020, 
 import { FUN_005c5fc4, FUN_005c61b0, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdf50 } from './block_005C0000.js';
 import { FUN_005cedad, FUN_005cef31, FUN_005cef66, FUN_005cf467, GetCheckStyle_005C55F0 as GetCheckStyle } from './block_005C0000.js';
 import { FUN_005dae6b, FUN_005db610, FUN_005db650, debug_log_005D225B as debug_log, invalidate_ABC7_005DABC7 as invalidate_ABC7 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
 
 export function FUN_00440325(param_1, param_2) {
 

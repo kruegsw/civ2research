@@ -669,18 +669,22 @@ export function s16(arr, off) {
 }
 export function u16(arr, off) { return (arr[off + 1] << 8) | arr[off]; }
 export function s32(arr, off) {
+  if (typeof arr === 'number') return arr; // scalar fallback
   return arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24);
 }
 export function u32(arr, off) {
+  if (typeof arr === 'number') return arr >>> 0;
   return (arr[off] | (arr[off+1] << 8) | (arr[off+2] << 16) | (arr[off+3] << 24)) >>> 0;
 }
 
 // ── Write helpers ──
 export function w16(arr, off, val) {
+  if (typeof arr !== 'object' || !arr) return;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
 }
 export function w32(arr, off, val) {
+  if (typeof arr !== 'object' || !arr) return;
   arr[off] = val & 0xFF;
   arr[off + 1] = (val >> 8) & 0xFF;
   arr[off + 2] = (val >> 16) & 0xFF;

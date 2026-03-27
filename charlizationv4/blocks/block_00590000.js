@@ -12,13 +12,14 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b89e4 } from '../fn_utils.js';
 import { FUN_005b8ca6 } from '../fn_utils.js';
-import { GetSystemMetrics, SetRect, _atexit, _memcpy, _memset, _rand } from '../crt.js';
-import { _sprintf, _strchr, _strcmp, _strlen, _strncmp, _strncpy } from '../crt.js';
+import { GetSystemMetrics, SetRect, __expand, __msize, _atexit, _memcpy } from '../crt.js';
+import { _memset, _rand, _sprintf, _strchr, _strcmp, _strlen } from '../crt.js';
+import { _strncmp, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, GetAsyncKeyState, GetPrivateProfileIntA, HELPERS, WritePrivateProfileStringA, XD_ActivateServer } from '../extern-stubs.js';
 import { XD_CloseConnection, XD_FlushSendBuffer, XD_InitializeModem, XD_InitializeSerial, XD_InitializeSocketsIPXSPX, XD_InitializeSocketsTCP } from '../extern-stubs.js';
 import { XD_ResetLibrary, XD_SetBroadcastReceive, XD_SetNewClientConnection, XD_SetOnClientConnectionToServer, XD_SetOnConnectionLost, XD_SetOversizedMessageCB } from '../extern-stubs.js';
-import { XD_SetSecureReceive, XD_ShutdownModem, XD_ShutdownSockets, XD_ShutdownTEN, __expand, _vector_deleting_destructor_ } from '../extern-stubs.js';
-import { block, exe } from '../extern-stubs.js';
+import { XD_SetSecureReceive, XD_ShutdownModem, XD_ShutdownSockets, XD_ShutdownTEN, _vector_deleting_destructor_, block } from '../extern-stubs.js';
+import { exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408460, FUN_00408490, FUN_004085f0 } from './block_00400000.js';
 import { FUN_004086c0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
 import { FUN_0040efd0, FUN_0040fcf0, FUN_0040fd40, FUN_0040fe10, FUN_0040fe40, FUN_0040fe70 } from './block_00400000.js';
@@ -59,8 +60,7 @@ import { FUN_005bb574, FUN_005bcaa7 } from './block_005B0000.js';
 import { FUN_005c0073, FUN_005c00ce, FUN_005c0f57, FUN_005c1167, FUN_005c19ad, FUN_005c61b0 } from './block_005C0000.js';
 import { FUN_005cd775, FUN_005cda06, FUN_005cef31, delbuf_005C9710 as delbuf } from './block_005C0000.js';
 import { EnableStackedTabs_005DB035 as EnableStackedTabs, FUN_005d2279, FUN_005d237d, FUN_005dae6b, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __ftol_005F6C60 as __ftol, __msize_005F53C0 as __msize, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
-import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __ftol_005F6C60 as __ftol, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __strupr_006076C0 as __strupr, __ultoa_00600B90 as __ultoa } from './block_00600000.js';
 const SetObjectSchema = SetObjectSchema_0059E4A4;
 

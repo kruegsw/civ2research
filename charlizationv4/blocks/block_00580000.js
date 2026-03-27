@@ -15,6 +15,7 @@ import { FUN_005b8ca6, FUN_005b94d5 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, _atexit, _atoi, _exit, _fclose } from '../crt.js';
 import { _fgets, _fopen, _fputs, _fread, _fwrite, _rand } from '../crt.js';
 import { _remove, _sprintf, _strchr, _strcmp, _strlen, _strncmp } from '../crt.js';
+import { operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, DebugBreak, GetFileAttributesA, HELPERS, MessageBoxA, OutputDebugStringA } from '../extern-stubs.js';
 import { SetFocus, WritePrivateProfileStringA, block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408050, FUN_00408230, FUN_00408420, FUN_00408460 } from './block_00400000.js';
@@ -69,8 +70,7 @@ import { FUN_005c61b0, FUN_005c62ee, FUN_005c6480, FUN_005c64da, FUN_005c656b, F
 import { FUN_005c6da8 } from './block_005C0000.js';
 import { FUN_005d2550, FUN_005d2568, FUN_005d2590, FUN_005d25a8, FUN_005d268e, FUN_005d48f0 } from './block_005D0000.js';
 import { FUN_005d6038, FUN_005db0d0, FUN_005dba95, FUN_005dbab8, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, operator_delete_005F23C0 as operator_delete } from './block_005F0000.js';
-import { operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __ltoa_00600B30 as __ltoa } from './block_00600000.js';
 const thunk_show_messagebox_A80D = show_messagebox_A80D_0058A80D;
 

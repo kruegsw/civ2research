@@ -11,7 +11,7 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { SetRect, _atexit, _memcpy, _rand, _strcmp, _strlen } from '../crt.js';
-import { _strncmp, _strncpy } from '../crt.js';
+import { _strncmp, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { AddFontResourceA, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreateFontIndirectA } from '../extern-stubs.js';
 import { CreatePen, CreateWindowExA, DEVIATION, DefWindowProcA, DeleteDC, DeleteObject } from '../extern-stubs.js';
 import { DestroyWindow, DrawTextA, EnableWindow, EndPaint, EnumFontFamiliesA, FillRect } from '../extern-stubs.js';
@@ -57,7 +57,7 @@ import { FUN_005e511c, FUN_005e5869, FUN_005e58e7, FUN_005e6188, FUN_005e7028, F
 import { FUN_005ea7a0, FUN_005eabcc, FUN_005eb393, FUN_005ed710, blit_9838_005E9838 as blit_9838, create_dib_35B0_005E35B0 as create_dib_35B0 } from './block_005E0000.js';
 import { create_dib_41BA_005E41BA as create_dib_41BA, create_dib_43C5_005E43C5 as create_dib_43C5, create_dib_45B5_005E45B5 as create_dib_45B5, handle_colortable_3ECA_005E3ECA as handle_colortable_3ECA, handle_colortable_3FEB_005E3FEB as handle_colortable_3FEB, handle_colortable_40FB_005E40FB as handle_colortable_40FB } from './block_005E0000.js';
 import { stretch_blit_98BA_005E98BA as stretch_blit_98BA } from './block_005E0000.js';
-import { FUN_005f22d0, FUN_005f7120, IsTracking_005F1B50 as IsTracking, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f7120, IsTracking_005F1B50 as IsTracking } from './block_005F0000.js';
 import { __strlwr_006077F0 as __strlwr } from './block_00600000.js';
 const GetCheckStyle = GetCheckStyle_005C55F0;
 const gdi_847F = gdi_847F_005C847F;

@@ -11,7 +11,7 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { GetSystemMetrics, SetRect, _memcpy, _memset, _rand, _sprintf } from '../crt.js';
-import { _strcmp, _strlen, _strncat } from '../crt.js';
+import { _strcmp, _strlen, _strncat, operator_delete, operator_new } from '../crt.js';
 import { AVIFileExit, AVIFileGetStream, AVIFileInit, AVIFileOpenA, AVIFileRelease, AVIStreamFindSample } from '../extern-stubs.js';
 import { AVIStreamInfoA, AVIStreamLength, AVIStreamRead, AVIStreamReadFormat, AVIStreamRelease, AVIStreamSampleToTime } from '../extern-stubs.js';
 import { AVIStreamStart, AVIStreamTimeToSample, AppendMenuA, BeginPaint, BitBlt, BringWindowToTop } from '../extern-stubs.js';
@@ -60,7 +60,7 @@ import { FUN_005d5b88, FUN_005d5d11, FUN_005d5f91, FUN_005d6c99, FUN_005d8236, F
 import { FUN_005dabe5, FUN_005dac39, FUN_005dae6b, FUN_005db2f8, FUN_005dcdf9, FUN_005dce29 } from './block_005D0000.js';
 import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d, create_window_931B_005D931B as create_window_931B, debug_log_005D225B as debug_log, fill_rect_BE88_005DBE88 as fill_rect_BE88 } from './block_005D0000.js';
 import { FUN_005f01ad, FUN_005f029e, FUN_005f0391, FUN_005f04c0, FUN_005f0520, FUN_005f22d0 } from './block_005F0000.js';
-import { FUN_005f22e0, IsTracking_005F1B50 as IsTracking, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22e0, IsTracking_005F1B50 as IsTracking } from './block_005F0000.js';
 const show_messagebox_EEB0 = show_messagebox_EEB0_005EEEB0;
 const show_messagebox_F0B9 = show_messagebox_F0B9_005EF0B9;
 const show_messagebox_2997 = show_messagebox_2997_005E2997;

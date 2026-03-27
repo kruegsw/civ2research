@@ -14,6 +14,7 @@ import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, F
 import { FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { SetRect, __chdir, __getcwd, __toupper_lk, _atexit, _atoi } from '../crt.js';
 import { _memcpy, _rand, _remove, _strcmp, _strlen, _strrchr } from '../crt.js';
+import { operator_delete, operator_new } from '../crt.js';
 import { CopyRect, DEVIATION, GetDriveTypeA, GetLogicalDriveStringsA, GetLogicalDrives, GetModuleFileNameA } from '../extern-stubs.js';
 import { GlobalAlloc, GlobalFree, GlobalHandle, GlobalLock, GlobalUnlock, HELPERS } from '../extern-stubs.js';
 import { MessageBoxA, OpenFile, SetErrorMode, XD_FlushSendBuffer, XD_LobbySendMessage, XD_ServerCloseConnection } from '../extern-stubs.js';
@@ -67,8 +68,7 @@ import { FUN_005c0034, FUN_005c0073, FUN_005c00ce, FUN_005c041f, FUN_005c0479, F
 import { FUN_005c0f57, FUN_005c11b2, FUN_005c19ad, FUN_005c61b0, FUN_005c64da, FUN_005c656b } from './block_005C0000.js';
 import { FUN_005cde4d, FUN_005cdf50, FUN_005cedad, FUN_005cef31, FUN_005cf126 } from './block_005C0000.js';
 import { FUN_005d2279, FUN_005dae6b, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, _memcmp_005F6D50 as _memcmp, operator_delete_005F23C0 as operator_delete } from './block_005F0000.js';
-import { operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, _memcmp_005F6D50 as _memcmp } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
 
 export function FUN_00560084(param_1) {

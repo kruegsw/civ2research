@@ -12,7 +12,8 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, FUN_005b8ca6 } from '../fn_utils.js';
 import { SetRect, __getcwd, _atoi, _fclose, _fgets, _fputs } from '../crt.js';
-import { _ftell, _sprintf, _strlen, _strncpy, _strstr } from '../crt.js';
+import { _ftell, _sprintf, _strlen, _strncpy, _strstr, operator_delete } from '../crt.js';
+import { operator_new } from '../crt.js';
 import { DEVIATION, HELPERS, MessageBoxA, OffsetRect, SetFocus, XD_FlushSendBuffer } from '../extern-stubs.js';
 import { exe } from '../extern-stubs.js';
 import { FUN_00407ff0, FUN_00408010, FUN_00408130, FUN_00408330, FUN_00408460, FUN_00408490 } from './block_00400000.js';
@@ -62,7 +63,7 @@ import { FUN_005cd775, FUN_005cde4d, FUN_005cedad, FUN_005cef31, gdi_847F_005C84
 import { FUN_005d1f50, FUN_005d2004, FUN_005d2279, FUN_005d2550, FUN_005d2568, FUN_005d2590 } from './block_005D0000.js';
 import { FUN_005d25a8, FUN_005d268e, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0, FUN_005dd27e } from './block_005D0000.js';
 import { FUN_005dd377, FUN_005dd3c2, FUN_005dd71e, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strcmpi_005F6E00 as __strcmpi, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
 
 export function FUN_004d007e(param_1) {

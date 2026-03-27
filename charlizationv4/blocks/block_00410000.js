@@ -14,7 +14,7 @@ import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, F
 import { FUN_005b8ee1 } from '../fn_utils.js';
 import { __chdir, __getcwd, __toupper_lk, _atexit, _atoi, _fclose } from '../crt.js';
 import { _fopen, _fputs, _isalpha, _memset, _rand, _sprintf } from '../crt.js';
-import { _strlen, _strncpy } from '../crt.js';
+import { _strlen, _strncpy, operator_new } from '../crt.js';
 import { DEVIATION, GetAsyncKeyState, GetPrivateProfileIntA, HELPERS, MessageBoxA, SetFocus } from '../extern-stubs.js';
 import { WritePrivateProfileStringA, XD_FlushSendBuffer, XD_GetXDaemonVersion, XD_InFlushSendBuffer, XD_LaunchedByLobby, XD_LobbySendMessage } from '../extern-stubs.js';
 import { exe, timeBeginPeriod, timeEndPeriod } from '../extern-stubs.js';
@@ -98,7 +98,6 @@ import { FUN_005d7c00, FUN_005d8236, Realloc_005DCCC1 as Realloc, debug_log_005D
 import { register_wndclass_37A0_005D37A0 as register_wndclass_37A0, send_msg_2D4D_005D2D4D as send_msg_2D4D, send_msg_2D7F_005D2D7F as send_msg_2D7F, send_msg_2DA1_005D2DA1 as send_msg_2DA1, send_msg_357E_005D357E as send_msg_357E, send_msg_35C8_005D35C8 as send_msg_35C8 } from './block_005D0000.js';
 import { send_msg_360A_005D360A as send_msg_360A, send_msg_36B1_005D36B1 as send_msg_36B1, send_msg_36F6_005D36F6 as send_msg_36F6, send_msg_3C50_005D3C50 as send_msg_3C50, send_msg_3C9A_005D3C9A as send_msg_3C9A, send_msg_3CDC_005D3CDC as send_msg_3CDC } from './block_005D0000.js';
 import { FUN_005f2260, FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
-import { operator_new_005F2470 as operator_new } from './block_005F0000.js';
 import { FUN_006076a0, __filelength_006075E0 as __filelength } from './block_00600000.js';
 const thunk_map_window_click = map_window_click_00410F77;
 

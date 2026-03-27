@@ -251,7 +251,7 @@ export function _setvbuf() { return 0; }
 
 // ── Win32 API stubs (UI operations — log and return safe defaults) ──
 export function SetRect(rect, l, t, r, b) {
-  if (rect && rect.length >= 16) {
+  if (rect && typeof rect !== 'number' && typeof rect !== 'string' && rect.length >= 16) {
     w32(rect, 0, l); w32(rect, 4, t); w32(rect, 8, r); w32(rect, 12, b);
   }
   return 1;
@@ -266,3 +266,25 @@ export function GetSystemMetrics(idx) {
 }
 
 export function GetTickCount() { return Date.now() & 0x7FFFFFFF; }
+
+
+// ── C++ memory management ──
+export function operator_new(size) { return new Uint8Array(size || 1024); }
+export function operator_delete() {}
+export function __nh_malloc(size) { return new Uint8Array(size || 1024); }
+export function __nh_malloc_dbg(size) { return new Uint8Array(size || 1024); }
+export function __nh_malloc_base(size) { return new Uint8Array(size || 1024); }
+export function __malloc_dbg(size) { return new Uint8Array(size || 1024); }
+export function __malloc_base(size) { return new Uint8Array(size || 1024); }
+export function __calloc_dbg(num, size) { return new Uint8Array((num * size) || 1024); }
+export function __heap_alloc_dbg(size) { return new Uint8Array(size || 1024); }
+export function __heap_alloc_base(size) { return new Uint8Array(size || 1024); }
+export function __realloc_dbg(ptr, size) { return new Uint8Array(size || 1024); }
+export function __realloc_base(ptr, size) { return new Uint8Array(size || 1024); }
+export function __free_dbg() {}
+export function __free_base() {}
+export function __expand() { return 0; }
+export function __expand_dbg() { return 0; }
+export function __expand_base() { return 0; }
+export function __msize() { return 1024; }
+export function __msize_dbg() { return 1024; }

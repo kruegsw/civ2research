@@ -12,14 +12,13 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89bb, FUN_005b8a1d } from '../fn_utils.js';
 import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
-import { SetRect, __chdir, _atexit, _fclose, _fopen, _fputc } from '../crt.js';
-import { _fputs, _fread, _fwrite, _memcpy, _memset, _rand } from '../crt.js';
-import { _strchr, _strcmp, _strlen, _strncmp, _strncpy, _strrchr } from '../crt.js';
-import { _strstr } from '../crt.js';
+import { SetRect, __chdir, __expand, _atexit, _fclose, _fopen } from '../crt.js';
+import { _fputc, _fputs, _fread, _fwrite, _memcpy, _memset } from '../crt.js';
+import { _rand, _strchr, _strcmp, _strlen, _strncmp, _strncpy } from '../crt.js';
+import { _strrchr, _strstr, operator_delete, operator_new } from '../crt.js';
 import { CBitmapButton, CharLowerA, CharUpperA, CommDlgExtendedError, DEVIATION, FindFirstFileA } from '../extern-stubs.js';
 import { FindNextFileA, GetLocalTime, GetOpenFileNameA, GetSaveFileNameA, HELPERS, InflateRect } from '../extern-stubs.js';
-import { IntersectRect, OffsetRect, OpenFile, XD_FlushSendBuffer, XD_InFlushSendBuffer, __expand } from '../extern-stubs.js';
-import { exe } from '../extern-stubs.js';
+import { IntersectRect, OffsetRect, OpenFile, XD_FlushSendBuffer, XD_InFlushSendBuffer, exe } from '../extern-stubs.js';
 import { FUN_0040733c, FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_004083b0, FUN_00408460 } from './block_00400000.js';
 import { FUN_00408490, FUN_004085f0, FUN_00408650, FUN_004086c0, FUN_0040bbb0, FUN_0040bbe0 } from './block_00400000.js';
 import { FUN_0040bc80, FUN_0040bcb0, FUN_0040ddc6, FUN_0040decc, FUN_0040ef70, FUN_0040efd0 } from './block_00400000.js';
@@ -78,7 +77,6 @@ import { FUN_005c64da, FUN_005c656b, FUN_005cd775, FUN_005cef31 } from './block_
 import { FUN_005d22b7, FUN_005d22f9, FUN_005d687b, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0 } from './block_005D0000.js';
 import { FUN_005dd27e, FUN_005dd377, FUN_005dd3c2, FUN_005dd64c, FUN_005dd71e, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, __strnicmp_005F40B0 as __strnicmp, _eh_vector_constructor_iterator__005F2620 as _eh_vector_constructor_iterator_, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, _fgetc_005F4010 as _fgetc } from './block_005F0000.js';
-import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __strlwr_006077F0 as __strlwr, __strupr_006076C0 as __strupr } from './block_00600000.js';
 const thunk_load_civ2_art_004705d7 = load_civ2_art_004705d7_004705D7;
 const GetActiveView = GetActiveView_004710A0;

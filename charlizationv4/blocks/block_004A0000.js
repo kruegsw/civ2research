@@ -15,6 +15,7 @@ import { FUN_005b8ca6, FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __chdir, __getcwd, _fclose, _fgets } from '../crt.js';
 import { _fopen, _fputs, _fread, _fseek, _fwrite, _memset } from '../crt.js';
 import { _rand, _remove, _rewind, _sprintf, _strlen, _strncpy } from '../crt.js';
+import { operator_new } from '../crt.js';
 import { DEVIATION, HELPERS, MessageBoxA, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408330, FUN_00408460, FUN_004085f0, FUN_004086c0 } from './block_00400000.js';
 import { FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040bcb0, FUN_0040ef50 } from './block_00400000.js';
@@ -59,7 +60,7 @@ import { FUN_005bf071 } from './block_005B0000.js';
 import { FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, FUN_005c19ad, FUN_005c61b0 } from './block_005C0000.js';
 import { FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdea1, FUN_005cef66 } from './block_005C0000.js';
 import { FUN_005d268e, FUN_005db0d0, FUN_005dba95, FUN_005dbab8, debug_log_005D225B as debug_log } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, __strcmpi_005F6E00 as __strcmpi, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, __strcmpi_005F6E00 as __strcmpi } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa, __ltoa_00600B30 as __ltoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
 const thunk_new_civ = new_civ_004A7CE9;
 

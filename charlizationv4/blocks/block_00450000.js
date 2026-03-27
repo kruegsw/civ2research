@@ -12,7 +12,8 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4 } from '../fn_utils.js';
 import { GetSystemMetrics, SetRect, __chdir, _fgets, _memset, _rand } from '../crt.js';
-import { _sprintf, _strcmp, _strlen, _strncpy, _strrchr } from '../crt.js';
+import { _sprintf, _strcmp, _strlen, _strncpy, _strrchr, operator_delete } from '../crt.js';
+import { operator_new } from '../crt.js';
 import { CreateWindowExA, DEVIATION, GetAsyncKeyState, GetCursorPos, HELPERS, LoadCursorA } from '../extern-stubs.js';
 import { OffsetRect, RegCloseKey, RegCreateKeyExA, RegOpenKeyExA, RegQueryValueExA, RegSetValueExA } from '../extern-stubs.js';
 import { RegisterClassA, SetWindowLongA, exe } from '../extern-stubs.js';
@@ -57,7 +58,7 @@ import { FUN_005c11b2, FUN_005c19ad, FUN_005c5b7f, FUN_005c5fc4, FUN_005c61b0, F
 import { FUN_005c64da, FUN_005c656b, FUN_005c8c83, FUN_005c9499, FUN_005cedad, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005cf467, create_window_8BE1_005C8BE1 as create_window_8BE1, invalidate_8B00_005C8B00 as invalidate_8B00 } from './block_005C0000.js';
 import { FUN_005db0d0, FUN_005db140, FUN_005db55b, FUN_005dba95, FUN_005dbab8, FUN_005dcb8c } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_ } from './block_005F0000.js';
 const SetHelpID = SetHelpID_00453D70;
 const thunk_register_wndclass_29DF = register_wndclass_29DF_004529DF;
 const tie = tie_00456EE0;

@@ -13,6 +13,7 @@ import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b68f6, FUN_005b8931, FUN_005b89bb } from '../fn_utils.js';
 import { FUN_005b8ee1, FUN_005b94d5 } from '../fn_utils.js';
 import { SetRect, _fputc, _rand, _sprintf, _strcmp, _strlen } from '../crt.js';
+import { operator_delete, operator_new } from '../crt.js';
 import { CCommandLineInfo, CharUpperA, CopyRect, DEVIATION, HELPERS, InflateRect } from '../extern-stubs.js';
 import { MessageBoxA, OffsetRect, exe, lstrlenA } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408130, FUN_004083b0, FUN_00408420, FUN_00408460 } from './block_00400000.js';
@@ -58,7 +59,6 @@ import { FUN_005dcdf9, FUN_005dce29, FUN_005dce4f, FUN_005dce96, FUN_005dd010, F
 import { FUN_005dd2e3, FUN_005dd377, FUN_005dd3f1, FUN_005dd45d, FUN_005dd4c2, FUN_005dd561 } from './block_005D0000.js';
 import { FUN_005dd761, FUN_005dea9e, Realloc_005DCCC1 as Realloc, send_msg_2DC6_005D2DC6 as send_msg_2DC6, send_msg_2F47_005D2F47 as send_msg_2F47, send_msg_3035_005D3035 as send_msg_3035 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, IsTracking_005F1B50 as IsTracking, __strcmpi_005F6E00 as __strcmpi, _eh_vector_destructor_iterator__005F2490 as _eh_vector_destructor_iterator_, _fgetc_005F4010 as _fgetc } from './block_005F0000.js';
-import { operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
 const thunk_init_tile = init_tile_004944BB;
 
 export function FUN_004904c0(param_1, param_2, param_3, param_4) {

@@ -12,7 +12,7 @@ import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b8931, FUN_005b89e4, FUN_005b8ca6 } from '../fn_utils.js';
 import { GetSystemMetrics, __chdir, _atexit, _atoi, _memset, _strchr } from '../crt.js';
-import { _strcmp, _strlen, _strncmp, _strncpy } from '../crt.js';
+import { _strcmp, _strlen, _strncmp, _strncpy, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, HELPERS, XD_CloseConnection, XD_FlushSendBuffer, XD_LobbySendMessage, XD_OpenConnection } from '../extern-stubs.js';
 import { block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408130, FUN_00408330, FUN_004083f0 } from './block_00400000.js';
@@ -66,7 +66,7 @@ import { FUN_005d1f50, FUN_005d2004, FUN_005d2279, FUN_005d2550, FUN_005d2568, F
 import { FUN_005d25a8, FUN_005d268e, FUN_005d41e0, FUN_005d7c6e, FUN_005d8236, FUN_005d83d6 } from './block_005D0000.js';
 import { FUN_005d8476, FUN_005d8721, FUN_005dae6b, FUN_005db0d0, Realloc_005DCCC1 as Realloc, debug_log_005D225B as debug_log } from './block_005D0000.js';
 import { invalidate_ABC7_005DABC7 as invalidate_ABC7 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strnicmp_005F40B0 as __strnicmp, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __strnicmp_005F40B0 as __strnicmp } from './block_005F0000.js';
 import { __ltoa_00600B30 as __ltoa, __strupr_006076C0 as __strupr } from './block_00600000.js';
 const Create = Create_00421E00;
 const thunk_show_credits = show_credits_0042A7BC;

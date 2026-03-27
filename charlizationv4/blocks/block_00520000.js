@@ -11,7 +11,7 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { FUN_004087c0, FUN_004bd9f0, FUN_005ae052, FUN_005b89e4 } from '../fn_utils.js';
-import { SetRect, _rand, _sprintf, _strlen } from '../crt.js';
+import { SetRect, _rand, _sprintf, _strlen, operator_delete, operator_new } from '../crt.js';
 import { DEVIATION, HELPERS, block, exe } from '../extern-stubs.js';
 import { FUN_00407f90, FUN_00407fc0, FUN_00408460, FUN_00408490, FUN_004085f0, FUN_00408700 } from './block_00400000.js';
 import { FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc40, FUN_0040bc80, FUN_0040ef70 } from './block_00400000.js';
@@ -49,7 +49,7 @@ import { FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, FUN_005c1167, F
 import { FUN_005c61b0, FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cd775, FUN_005cda06 } from './block_005C0000.js';
 import { FUN_005cef31, GetCheckStyle_005C55F0 as GetCheckStyle } from './block_005C0000.js';
 import { FUN_005d25a8, FUN_005d268e, FUN_005d4167, FUN_005dae6b } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, operator_delete_005F23C0 as operator_delete, operator_new_005F2470 as operator_new } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0 } from './block_005F0000.js';
 import { __itoa_00600A10 as __itoa } from './block_00600000.js';
 
 export function FUN_00521807() {
