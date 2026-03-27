@@ -203,17 +203,7 @@ const DAT_REPLACE_RE = /(?<![.'_a-zA-Z])DAT_([0-9a-fA-F]+(?:_val)?)\b/g;
 fs.mkdirSync(blocksDir, { recursive: true });
 let totalTransformed = 0;
 
-// ── Load scalar-only DAT_ classification ──
-// These addresses are never used as arrays in the transpiler output,
-// so transform.cjs wraps them: G.DAT_xxx → s32(G.DAT_xxx, 0) reads,
-// G.DAT_xxx = val → w32(G.DAT_xxx, 0, val) writes.
-const classifyPath = path.join(__dirname, 'dat-classify.json');
-const scalarOnlySet = new Set();
-if (fs.existsSync(classifyPath)) {
-  const classify = JSON.parse(fs.readFileSync(classifyPath, 'utf8'));
-  if (classify.scalarOnly) classify.scalarOnly.forEach(d => scalarOnlySet.add(d));
-  console.log(`Scalar-only DAT_ addresses: ${scalarOnlySet.size}`);
-}
+// Scalar classification no longer needed — globalThis handles all DAT_ access
 
 // ── Build function registry: FUN_xxx → which block file exports it ──
 const fnRegistry = new Map();
@@ -352,6 +342,8 @@ for (const blockFile of blockFiles) {
   }
 
   // Phase 2: Transform code lines
+  // With globalThis approach, DAT_ identifiers resolve automatically.
+  // Only transform: DEVIATION → devLog(), and _DAT_ → DAT_ fixup.
   const finalLines = [];
   for (const line of outLines) {
     const trimmed = line.trim();
@@ -359,7 +351,6 @@ for (const blockFile of blockFiles) {
     const indent = line.match(/^(\s*)/)[1];
 
     // 2a: Replace DEVIATION lines with devLog() calls
-    // Line comment style: // DEVIATION: category — description
     if (/^\s*\/\/ DEVIATION:\s/.test(processed)) {
       const dm = trimmed.match(/^\/\/ DEVIATION:\s*(\w+)(?:\s*—\s*(.*))?$/);
       if (dm) {
@@ -368,9 +359,7 @@ for (const blockFile of blockFiles) {
         processed = indent + "devLog('" + cat + "', '" + desc + "');";
       }
     }
-    // Block comment style: true /* DEVIATION: category — description */
     else if (/true\s*\/\* DEVIATION:/.test(processed)) {
-      // Replace `true /* DEVIATION: ... */` with `devLog('...', '...')`
       processed = processed.replace(
         /true\s*\/\* DEVIATION:\s*(\w+)(?:\s*—\s*(.*?))?\s*\*\//g,
         (m, cat, desc) => {
@@ -381,71 +370,26 @@ for (const blockFile of blockFiles) {
     }
 
     if (!trimmed.startsWith('//') && trimmed !== '/*JOINED*/' && !/^\/\*/.test(trimmed)) {
-      // 2b: Prefix DAT_ with G. (not inside block comments)
-      // Process all code segments between /* */ comments
-      processed = processed.replace(
-        /(?:^|(?<=\*\/))([^]*?)(?=\/\*|$)/g,
-        (codePart) => codePart.replace(/(?<!G\.)(?<![a-zA-Z_.])(DAT_[0-9a-fA-F]+)/g, 'G.$1')
-      );
+      // 2b: Fix _DAT_ references (transpiler artifact from &DAT_ → DAT_ conversion)
+      processed = processed.replace(/\b_DAT_([0-9a-fA-F]+)\b/g, 'DAT_$1');
 
-      // 2c: Wrap scalar-only DAT_ access with s32/w32
-      // All DAT_ are now Uint8Array views in globals.js.
-      // Scalar-only addresses need s32() for reads and w32() for writes.
-      if (scalarOnlySet.size > 0) {
-        // Step 1: Scalar writes. Find G.DAT_xxx = expr patterns.
-        // Replace: G.DAT_xxx = expr  →  w32(G.DAT_xxx, 0, expr)
-        // Must find the end of the value expression (up to ; or , at depth 0)
-        {
-          const writeRe = /\bG\.(DAT_[0-9a-fA-F]+)\s*=(?!=)/g;
-          let wm;
-          let newLine = '';
-          let lastIdx = 0;
-          while ((wm = writeRe.exec(processed)) !== null) {
-            const valStart = wm.index + wm[0].length;
-            // Find end of value: scan for ; or , at paren depth 0
-            let depth = 0;
-            let valEnd = valStart;
-            for (let ci = valStart; ci < processed.length; ci++) {
-              if (processed[ci] === '(' || processed[ci] === '[') depth++;
-              if (processed[ci] === ')' || processed[ci] === ']') depth--;
-              if (depth < 0) { valEnd = ci; break; } // hit outer )
-              if ((processed[ci] === ';' || processed[ci] === ',') && depth === 0) { valEnd = ci; break; }
-              valEnd = ci + 1;
-            }
-            const valExpr = processed.substring(valStart, valEnd).trim();
-            newLine += processed.substring(lastIdx, wm.index);
-            newLine += `w32(G.${wm[1]}, 0, ${valExpr})`;
-            lastIdx = valEnd;
-            writeRe.lastIndex = lastIdx;
-          }
-          if (lastIdx > 0) {
-            newLine += processed.substring(lastIdx);
-            processed = newLine;
-          }
-        }
-
-        // Step 2: Scalar reads. Replace G.DAT_xxx with s32(G.DAT_xxx, 0)
-        // when NOT used as an array (first arg to helper, bracket access, or .set/.subarray).
-        processed = processed.replace(
-          /\bG\.(DAT_[0-9a-fA-F]+)\b(?!\s*[\[.])/g,
-          (m, name, matchOffset) => {
-            // Check: is this the array arg to s32/w32/ptrAdd/w32r? Look at preceding text.
-            const before = processed.substring(Math.max(0, matchOffset - 40), matchOffset);
-            if (/(?:s32|u32|s16|u16|w32|w16|w32r|w16r|ptrAdd)\(\s*$/.test(before)) return m;
-            // Also skip if inside a w32() we just created (the first arg)
-            if (/w32\(\s*$/.test(before)) return m;
-            return `s32(G.${name}, 0)`;
-          }
-        );
-      }
-
-      // 2d: Add default values for register parameters in function signatures
+      // 2c: Register parameter defaults in function signatures
       if (/^export function \w+\(/.test(trimmed)) {
-        processed = processed.replace(/\b(in_ECX)(?=[\s,)])/g, '$1 = G.in_ECX');
-        processed = processed.replace(/\b(in_EAX)(?=[\s,)])/g, '$1 = G.in_EAX');
-        processed = processed.replace(/\b(in_EDX)(?=[\s,)])/g, '$1 = G.in_EDX');
+        processed = processed.replace(/\b(in_ECX)(?=[\s,)])/g, '$1 = globalThis.in_ECX');
+        processed = processed.replace(/\b(in_EAX)(?=[\s,)])/g, '$1 = globalThis.in_EAX');
+        processed = processed.replace(/\b(in_EDX)(?=[\s,)])/g, '$1 = globalThis.in_EDX');
       }
+
+      // 2d: Scalar writes: DAT_xxx = expr → globalThis.DAT_xxx = expr
+      // This triggers the setter on globalThis which writes to flat memory.
+      // The const binding prevents direct reassignment, so we route through globalThis.
+      // Only match assignment =, not === or !== or <=
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*=(?!=)/g,
+        (m, name) => `globalThis.${name} =`
+      );
     }
+
     finalLines.push(processed);
   }
 
@@ -511,7 +455,7 @@ for (const blockFile of blockFiles) {
 
   // 3c: Build import lines
   const imports = [];
-  imports.push("import { G } from '../globals.js';");
+  imports.push("import '../globals-init.js';");  // populates globalThis with DAT_ addresses
   imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';");
   imports.push("import { devLog } from '../devlog.js';");
 
@@ -571,7 +515,25 @@ for (const blockFile of blockFiles) {
     }
   }
 
-  // 3e: Add local aliases for same-block renamed functions
+  // 3e: Bind DAT_ globals from globalThis into module scope
+  // ESM strict mode requires explicit declarations. Use const bindings
+  // that reference the globalThis Uint8Array views.
+  // Scalar writes (DAT_xxx = 5) are converted to globalThis.DAT_xxx = 5
+  // in Phase 2 so the setter fires.
+  const datRefs = new Set();
+  for (const m of allText.matchAll(/\b(DAT_[0-9a-fA-F]+)\b/g)) {
+    datRefs.add(m[1]);
+  }
+  if (datRefs.size > 0) {
+    const sorted = [...datRefs].sort();
+    for (let k = 0; k < sorted.length; k += 6) {
+      const chunk = sorted.slice(k, k + 6);
+      const decls = chunk.map(d => `${d} = globalThis.${d}`).join(', ');
+      imports.push(`const ${decls};`);
+    }
+  }
+
+  // 3f: Add local aliases for same-block renamed functions
   if (localAliases && localAliases.size > 0) {
     for (const [callerName, actualName] of localAliases) {
       imports.push(`const ${callerName} = ${actualName};`);

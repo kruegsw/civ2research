@@ -10,12 +10,19 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { readFileSync, existsSync } from 'fs';
+import './globals-init.js';
 import { G } from './globals.js';
 import { s8, u8, s16, u16, s32, u32, w32, getTileOffset, tileRead, memStats } from './mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
 import { printLog, resetLog } from './devlog.js';
+
+// Bind DAT_ globals from globalThis for this module
+const { DAT_006d1160, DAT_006d1162, DAT_006d1168, DAT_00655b16, DAT_00655b18,
+        DAT_00655b0b, DAT_00655b05, DAT_00655af8, DAT_006d1da0,
+        DAT_006560f0, DAT_0064f340, DAT_0064f394, DAT_0064f348, DAT_0064f349,
+        DAT_0064c600 } = globalThis;
 
 // ── Parse CLI args ──
 const args = process.argv.slice(2);
@@ -77,15 +84,15 @@ console.log(`\n═══ Units (from flat memory) ═══`);
 const maxShow = Math.min(info.totalUnits, 10);
 for (let i = 0; i < maxShow; i++) {
   const base = i * 0x20;
-  const ux = s16(G.DAT_006560f0, base);
-  const uy = s16(G.DAT_006560f0, base + 2);
-  const utype = G.DAT_006560f0[base + 6];
-  const uowner = G.DAT_006560f0[base + 7];
-  const umoves = G.DAT_006560f0[base + 10];
-  const uorder = G.DAT_006560f0[base + 15];
-  const uhome = u16(G.DAT_006560f0, base + 16);
-  const uid = u32(G.DAT_006560f0, base + 26);
-  const dead = G.DAT_006560f0[base + 14] !== 0;
+  const ux = s16(DAT_006560f0, base);
+  const uy = s16(DAT_006560f0, base + 2);
+  const utype = DAT_006560f0[base + 6];
+  const uowner = DAT_006560f0[base + 7];
+  const umoves = DAT_006560f0[base + 10];
+  const uorder = DAT_006560f0[base + 15];
+  const uhome = u16(DAT_006560f0, base + 16);
+  const uid = u32(DAT_006560f0, base + 26);
+  const dead = DAT_006560f0[base + 14] !== 0;
   console.log(`  [${i}] type=${utype} owner=${uowner} pos=(${ux},${uy}) moves=${umoves} order=${uorder} home=${uhome} id=${uid}${dead ? ' DEAD' : ''}`);
 }
 if (info.totalUnits > maxShow) console.log(`  ... (${info.totalUnits - maxShow} more)`);
@@ -95,19 +102,19 @@ console.log(`\n═══ Cities (from flat memory) ═══`);
 const maxCities = Math.min(info.totalCities, 10);
 for (let i = 0; i < maxCities; i++) {
   const base = i * 0x58;
-  const cx = u16(G.DAT_0064f340, base);
-  const cy = u16(G.DAT_0064f340, base + 2);
-  const cowner = G.DAT_0064f340[base + 8];
-  const csize = G.DAT_0064f340[base + 9];
+  const cx = u16(DAT_0064f340, base);
+  const cy = u16(DAT_0064f340, base + 2);
+  const cowner = DAT_0064f340[base + 8];
+  const csize = DAT_0064f340[base + 9];
   // Read city name (16 bytes at +32)
   let cname = '';
   for (let j = 0; j < 16; j++) {
-    const ch = G.DAT_0064f340[base + 32 + j];
+    const ch = DAT_0064f340[base + 32 + j];
     if (ch === 0) break;
     cname += String.fromCharCode(ch);
   }
-  const food = s16(G.DAT_0064f340, base + 26);
-  const shields = s16(G.DAT_0064f340, base + 28);
+  const food = s16(DAT_0064f340, base + 26);
+  const shields = s16(DAT_0064f340, base + 28);
   console.log(`  [${i}] "${cname}" owner=${cowner} size=${csize} pos=(${cx},${cy}) food=${food} shields=${shields}`);
 }
 
@@ -139,12 +146,12 @@ for (const [tx, ty] of sampleTiles) {
 
 // ── Verify globals ──
 console.log(`\n═══ Globals Verification ═══`);
-console.log(`  G.DAT_006d1160 (mw2): ${s32(G.DAT_006d1160, 0)} (expected ${info.mw2})`);
-console.log(`  G.DAT_006d1162 (mh):  ${s32(G.DAT_006d1162, 0)} (expected ${info.mh})`);
-console.log(`  G.DAT_006d1168 (seed): ${s32(G.DAT_006d1168, 0)} (expected ${info.mapSeed})`);
-console.log(`  G.DAT_00655b16 (units): ${s32(G.DAT_00655b16, 0)} (expected ${info.totalUnits})`);
-console.log(`  G.DAT_00655b18 (cities): ${s32(G.DAT_00655b18, 0)} (expected ${info.totalCities})`);
-console.log(`  G.DAT_00655b0b (human): ${s32(G.DAT_00655b0b, 0)} (set to 0 for all-AI)`);
+console.log(`  DAT_006d1160 (mw2): ${s32(DAT_006d1160, 0)} (expected ${info.mw2})`);
+console.log(`  DAT_006d1162 (mh):  ${s32(DAT_006d1162, 0)} (expected ${info.mh})`);
+console.log(`  DAT_006d1168 (seed): ${s32(DAT_006d1168, 0)} (expected ${info.mapSeed})`);
+console.log(`  DAT_00655b16 (units): ${s32(DAT_00655b16, 0)} (expected ${info.totalUnits})`);
+console.log(`  DAT_00655b18 (cities): ${s32(DAT_00655b18, 0)} (expected ${info.totalCities})`);
+console.log(`  DAT_00655b0b (human): ${s32(DAT_00655b0b, 0)} (set to 0 for all-AI)`);
 
 if (turns > 0) {
   // ── Phase 4: Run AI turns ──
@@ -160,27 +167,27 @@ if (turns > 0) {
   // Snapshot initial state for comparison
   const snap = () => {
     const cities = [];
-    for (let i = 0; i < s32(G.DAT_00655b18, 0); i++) {
+    for (let i = 0; i < s32(DAT_00655b18, 0); i++) {
       const b = i * 0x58;
-      const owner = G.DAT_0064f340[b + 8];
-      const size = G.DAT_0064f340[b + 9];
-      const food = s16(G.DAT_0064f340, b + 26);
-      const shields = s16(G.DAT_0064f340, b + 28);
+      const owner = DAT_0064f340[b + 8];
+      const size = DAT_0064f340[b + 9];
+      const food = s16(DAT_0064f340, b + 26);
+      const shields = s16(DAT_0064f340, b + 28);
       let name = '';
       for (let j = 0; j < 16; j++) {
-        const ch = G.DAT_0064f340[b + 32 + j];
+        const ch = DAT_0064f340[b + 32 + j];
         if (ch === 0) break;
         name += String.fromCharCode(ch);
       }
       cities.push({ name, owner, size, food, shields });
     }
     const units = [];
-    for (let i = 0; i < s32(G.DAT_00655b16, 0); i++) {
+    for (let i = 0; i < s32(DAT_00655b16, 0); i++) {
       const b = i * 0x20;
-      const alive = G.DAT_006560f0[b + 14] === 0 && u32(G.DAT_006560f0, b + 26) !== 0;
-      if (alive) units.push({ idx: i, owner: G.DAT_006560f0[b + 7] });
+      const alive = DAT_006560f0[b + 14] === 0 && u32(DAT_006560f0, b + 26) !== 0;
+      if (alive) units.push({ idx: i, owner: DAT_006560f0[b + 7] });
     }
-    return { cities, units, turn: s32(G.DAT_00655af8, 0) };
+    return { cities, units, turn: s32(DAT_00655af8, 0) };
   };
 
   const before = snap();
@@ -189,10 +196,10 @@ if (turns > 0) {
     for (let civ = 1; civ < 8; civ++) {
       if (!(info.civsAlive & (1 << civ))) continue;
       try {
-        w32(G.DAT_00655b05, 0, civ);
-        w32(G.DAT_006d1da0, 0, civ);  // active civ — set by outer game loop in binary
+        w32(globalThis.DAT_00655b05, 0, civ);
+        w32(globalThis.DAT_006d1da0, 0, civ);  // active civ — set by outer game loop in binary
         FUN_00489553(civ);
-        if (((1 << (civ & 0x1f)) & s32(G.DAT_00655b0b, 0)) === 0) {
+        if (((1 << (civ & 0x1f)) & s32(DAT_00655b0b, 0)) === 0) {
           FUN_00543cd6();
         }
       } catch (e) {
@@ -200,7 +207,7 @@ if (turns > 0) {
         if (e.stack) console.error(e.stack.split('\n').slice(1,5).join('\n'));
       }
     }
-    w32(G.DAT_00655af8, 0, s32(G.DAT_00655af8, 0) + 1);
+    w32(globalThis.DAT_00655af8, 0, s32(DAT_00655af8, 0) + 1);
   }
 
   const after = snap();
@@ -227,7 +234,7 @@ if (turns > 0) {
   // Treasury changes
   console.log(`\n  Treasury:`);
   for (let civ = 1; civ < 8; civ++) {
-    const treasB = s16(G.DAT_0064c600, civ * 0x594 + 0x50);
+    const treasB = s16(DAT_0064c600, civ * 0x594 + 0x50);
     console.log(`    Civ ${civ}: ${treasB}g`);
   }
 
@@ -252,7 +259,7 @@ if (outPath && turns > 0) {
   const { writeFileSync } = await import('fs');
   const outBuf = saveSav(savBuf);
   writeFileSync(outPath, outBuf);
-  console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${s32(G.DAT_00655af8, 0)})`);
+  console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${s32(DAT_00655af8, 0)})`);
 }
 
 // ═══ DevLog Summary ═══

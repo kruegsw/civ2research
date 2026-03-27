@@ -7,7 +7,7 @@
 // Size: 79 bytes
 // ============================================================
 
-import { G } from '../globals.js';
+import '../globals-init.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { GetSystemMetrics, SetRect, _memcpy, _memset, _rand, _sprintf } from '../crt.js';
@@ -162,6 +162,19 @@ const s_smeds_log_00639bec = new Uint8Array(256);
 const s_smeds_log_00639c44 = new Uint8Array(256);
 const s_smeds_log_00639c84 = new Uint8Array(256);
 const s_smeds_log_00639ccc = new Uint8Array(256);
+const DAT_00637e78 = globalThis.DAT_00637e78, DAT_00637ea4 = globalThis.DAT_00637ea4, DAT_00637efc = globalThis.DAT_00637efc, DAT_00638b40 = globalThis.DAT_00638b40, DAT_00638d7c = globalThis.DAT_00638d7c, DAT_00638d80 = globalThis.DAT_00638d80;
+const DAT_00638d84 = globalThis.DAT_00638d84, DAT_00638d90 = globalThis.DAT_00638d90, DAT_00638d9c = globalThis.DAT_00638d9c, DAT_00638da0 = globalThis.DAT_00638da0, DAT_00638da8 = globalThis.DAT_00638da8, DAT_00638dac = globalThis.DAT_00638dac;
+const DAT_00638db0 = globalThis.DAT_00638db0, DAT_00638db4 = globalThis.DAT_00638db4, DAT_00638db8 = globalThis.DAT_00638db8, DAT_00638dbc = globalThis.DAT_00638dbc, DAT_00638dc0 = globalThis.DAT_00638dc0, DAT_00638dc4 = globalThis.DAT_00638dc4;
+const DAT_00638dc8 = globalThis.DAT_00638dc8, DAT_00638dcc = globalThis.DAT_00638dcc, DAT_00638dd0 = globalThis.DAT_00638dd0, DAT_00638dd4 = globalThis.DAT_00638dd4, DAT_00638dd8 = globalThis.DAT_00638dd8, DAT_00638ddc = globalThis.DAT_00638ddc;
+const DAT_00638de0 = globalThis.DAT_00638de0, DAT_00638de4 = globalThis.DAT_00638de4, DAT_00638de8 = globalThis.DAT_00638de8, DAT_00638dec = globalThis.DAT_00638dec, DAT_00638e18 = globalThis.DAT_00638e18, DAT_00638e1c = globalThis.DAT_00638e1c;
+const DAT_00639218 = globalThis.DAT_00639218, DAT_006394c0 = globalThis.DAT_006394c0, DAT_006397e8 = globalThis.DAT_006397e8, DAT_00639be8 = globalThis.DAT_00639be8, DAT_00639c50 = globalThis.DAT_00639c50, DAT_00639c7c = globalThis.DAT_00639c7c;
+const DAT_00639cd8 = globalThis.DAT_00639cd8, DAT_00639cdc = globalThis.DAT_00639cdc, DAT_00639d0c = globalThis.DAT_00639d0c, DAT_00639d74 = globalThis.DAT_00639d74, DAT_00639dc4 = globalThis.DAT_00639dc4, DAT_006e4ff0 = globalThis.DAT_006e4ff0;
+const DAT_006e5018 = globalThis.DAT_006e5018, DAT_006e5020 = globalThis.DAT_006e5020, DAT_006e5028 = globalThis.DAT_006e5028, DAT_006e502c = globalThis.DAT_006e502c, DAT_006e5030 = globalThis.DAT_006e5030, DAT_006e5034 = globalThis.DAT_006e5034;
+const DAT_006e5038 = globalThis.DAT_006e5038, DAT_006e503c = globalThis.DAT_006e503c, DAT_006e5064 = globalThis.DAT_006e5064, DAT_006e5098 = globalThis.DAT_006e5098, DAT_006e509c = globalThis.DAT_006e509c, DAT_006e50a0 = globalThis.DAT_006e50a0;
+const DAT_006e50a4 = globalThis.DAT_006e50a4, DAT_006e50a8 = globalThis.DAT_006e50a8, DAT_006e50ac = globalThis.DAT_006e50ac, DAT_006e50bc = globalThis.DAT_006e50bc, DAT_006e50c4 = globalThis.DAT_006e50c4, DAT_006e50c8 = globalThis.DAT_006e50c8;
+const DAT_006e50cc = globalThis.DAT_006e50cc, DAT_006e50d0 = globalThis.DAT_006e50d0, DAT_006e50d4 = globalThis.DAT_006e50d4, DAT_006e50d8 = globalThis.DAT_006e50d8, DAT_006e50dc = globalThis.DAT_006e50dc, DAT_006e50e8 = globalThis.DAT_006e50e8;
+const DAT_006e50ec = globalThis.DAT_006e50ec, DAT_006e50ee = globalThis.DAT_006e50ee, DAT_006e50ef = globalThis.DAT_006e50ef, DAT_006e5224 = globalThis.DAT_006e5224, DAT_006e5225 = globalThis.DAT_006e5225, DAT_006e5226 = globalThis.DAT_006e5226;
+const DAT_006e5228 = globalThis.DAT_006e5228, DAT_006e5368 = globalThis.DAT_006e5368;
 const show_messagebox_EEB0 = show_messagebox_EEB0_005EEEB0;
 const show_messagebox_F0B9 = show_messagebox_F0B9_005EF0B9;
 const show_messagebox_2997 = show_messagebox_2997_005E2997;
@@ -175,7 +188,7 @@ export function FUN_005e00bb(param_1) {
     devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   else if (param_1 === 0x66) {
-    w32(G.DAT_006e5018, 0, 0xffffffff);
+    globalThis.DAT_006e5018 = 0xffffffff;
     devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   }
   return;
@@ -191,7 +204,7 @@ export function FUN_005e00bb(param_1) {
 export function FUN_005e010a(param_1, param_2) {
 
 
-  w32(G.DAT_006e5018, 0, param_2);
+  globalThis.DAT_006e5018 = param_2;
   return;
 }
 
@@ -205,7 +218,7 @@ export function FUN_005e010a(param_1, param_2) {
 export function FUN_005e0122(param_1, param_2) {
 
 
-  w32(G.DAT_006e5018, 0, param_2);
+  globalThis.DAT_006e5018 = param_2;
   devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   return;
 }
@@ -348,18 +361,18 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   iVar2 = local_684[0] + 0x66;
   local_684[0] = local_684[0] + 0x20;
   local_63c = FUN_005e0215(local_5ac,iVar2,local_680);
-  w32(G.DAT_006e5018, 0, 0);
+  globalThis.DAT_006e5018 = 0;
   local_5c0 = 0x18;
   uVar3 = FUN_004d8af0();
   local_628 = gdi_8514(uVar3);
   SetRect(local_134[0],0,0,local_684[0] + 0x5a,local_628 * local_63c + local_5c0 * local_5c4 + 0x1e);
   if (param_3 === 0) {
-    FUN_005bb3f0(s32(G.DAT_00638d7c, 0),0x442,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8);
+    FUN_005bb3f0(DAT_00638d7c,0x442,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8);
                  /*JOINED*/
     FUN_00450400();
   }
   else {
-    FUN_005bb4ae(s32(G.DAT_00638d80, 0),0xc01,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8,param_3);
+    FUN_005bb4ae(DAT_00638d80,0xc01,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8,param_3);
                  /*JOINED*/
     FUN_005a9600(local_5bc[0]);
     iVar2 = FUN_00407fc0(local_5bc[0]);
@@ -371,8 +384,8 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   }
   FUN_005c041f(7);
   FUN_005dfa4d(local_124,local_134[0],0xfffffffd,0xff,0);
-  w32(G.DAT_006e5020, 0, local_124);
-  FUN_005c19ad(((((((s32(G.DAT_006e5020, 0)) >>> 0) >> 8) & 0xFFFFFF)) << 8 | (s32(G.DAT_00638b40, 0))));
+  globalThis.DAT_006e5020 = local_124;
+  FUN_005c19ad(((((((DAT_006e5020) >>> 0) >> 8) & 0xFFFFFF)) << 8 | (DAT_00638b40)));
   iVar2 = local_628 * local_63c + 10;
   devLog('MFC', 'pCVar5 = CRichEditCntrItem::GetActiveView(local_124);');
   SetRect(local_638[0],10,10,pCVar5 + -10,iVar2);
@@ -388,7 +401,7 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   pCVar5 = pCVar5 + -0x23;
   devLog('MFC', 'pCVar6 = CRichEditCntrItem::GetActiveView(local_124);');
   OffsetRect(local_134[0],pCVar6 + -0x46,pCVar5);
-  FUN_0040f680(local_dc,0x65,local_134[0],s32(G.DAT_00638d84, 0));
+  FUN_0040f680(local_dc,0x65,local_134[0],DAT_00638d84);
   FUN_0040f880(FUN_005e00bb);
   OffsetRect(local_134[0],0,-0x23);
   FUN_0040f680(local_dc,0x66,local_134[0],s_Cancel_00638d88);
@@ -559,7 +572,7 @@ export function FUN_005e0863() {
   pCVar1 = pCVar1 + -0x23;
   devLog('MFC', 'pCVar2 = CRichEditCntrItem::GetActiveView(local_1b8);');
   OffsetRect(local_20[0],pCVar2 + -0x46,pCVar1);
-  FUN_0040f680(local_170,0x65,local_20[0],s32(G.DAT_00638d90, 0));
+  FUN_0040f680(local_170,0x65,local_20[0],DAT_00638d90);
   FUN_0040f880(FUN_005e00bb);
   OffsetRect(local_20[0],0,-0x23);
   FUN_0040f680(local_170,0x66,local_20[0],s_Cancel_00638d94);
@@ -781,7 +794,7 @@ export function FUN_005e0b80(param_1) {
 // Size: 28 bytes
 // ============================================================
 
-export function FUN_005e0ba0(in_ECX = G.in_ECX) {
+export function FUN_005e0ba0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -796,7 +809,7 @@ export function FUN_005e0ba0(in_ECX = G.in_ECX) {
 // Size: 194 bytes
 // ============================================================
 
-export function FUN_005e0bc0(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005e0bc0(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -845,7 +858,7 @@ export function FUN_005e0c90(param_1) {
 // Size: 27 bytes
 // ============================================================
 
-export function FUN_005e0cc0(in_ECX = G.in_ECX) {
+export function FUN_005e0cc0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -904,7 +917,7 @@ export function FUN_005e0ce0(param_1, param_2) {
       if (s32(param_2, 0) === 125) {
         bVar1 = true;
       }
-      local_14 = s32(G.DAT_00638d9c, 0);
+      local_14 = DAT_00638d9c;
       // DEVIATION: C struct — DAT_00638d9c = (DAT_00638d9c->unused + 1);
       do {
         param_2 = param_2 + 1;
@@ -926,7 +939,7 @@ export function FUN_005e0ce0(param_1, param_2) {
       local_1c = 0;
       local_10 = local_10 | 0x40;
     }
-    iVar2 = _strcmp(_Dest,s32(G.DAT_00638da0, 0));
+    iVar2 = _strcmp(_Dest,DAT_00638da0);
     if (iVar2 === 0) {
       local_10 = 0x800;
       w32(_Dest, 0, 0);
@@ -963,7 +976,7 @@ export function FUN_005e0f2a(param_1) {
   
   local_14 = param_1;
   hMenu = CreateMenu();
-  iVar2 = s32(G.DAT_00638d9c, 0);
+  iVar2 = DAT_00638d9c;
   uBytes = _strlen(param_1);
   hMem = LocalAlloc(2,uBytes);
   _Dest = LocalLock(hMem);
@@ -994,7 +1007,7 @@ export function FUN_005e0f2a(param_1) {
     }
     w32(_Dest, 0, 0);
   }
-  w32(G.DAT_00638d9c, 0, iVar2 + 100);
+  globalThis.DAT_00638d9c = iVar2 + 100;
   LocalUnlock(hMem);
   LocalFree(hMem);
   return hMenu;
@@ -1010,7 +1023,7 @@ export function FUN_005e0f2a(param_1) {
 export function FUN_005e10a2(param_1) {
 
 
-  LoadMenuA(s32(G.DAT_006e4ff0, 0),(param_1 & 0xffff));
+  LoadMenuA(DAT_006e4ff0,(param_1 & 0xffff));
   return;
 }
 
@@ -1158,7 +1171,7 @@ export function build_menu_128C_005E128C(param_1, param_2, param_3, param_4) {
     if (((pHVar1 !== 0x0) && (param_3 !== -1)) && (param_2 !== -1)) {
       local_c = GetMenuItemCount(pHVar1);
     }
-    uIDNewItem = s32(G.DAT_00638d9c, 0);
+    uIDNewItem = DAT_00638d9c;
     if ((local_c % 0x16 === 0) && (local_c !== 0)) {
       local_8 = 0x440;
     }
@@ -1175,7 +1188,7 @@ export function build_menu_128C_005E128C(param_1, param_2, param_3, param_4) {
       }
     }
     else {
-      w32(G.DAT_00638d9c, 0, s32(G.DAT_00638d9c, 0) + 1);
+      globalThis.DAT_00638d9c = DAT_00638d9c + 1;
       InsertMenuA(pHVar1,param_3 - 1,local_8,uIDNewItem,param_4);
     }
   }
@@ -1573,10 +1586,10 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
   }
   else if (param_2 === 5) {
     if (local_74 === 0x0) {
-      w32(G.DAT_00637ea4, 0, 0x0);
+      globalThis.DAT_00637ea4 = 0x0;
     }
     else {
-      w32(G.DAT_00637ea4, 0, local_74 + 0x48);
+      globalThis.DAT_00637ea4 = local_74 + 0x48;
     }
     BVar2 = IsIconic(param_1);
     if (BVar2 === 0) {
@@ -1668,7 +1681,7 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
 export function FUN_005e1c70() {
 
 
-  FUN_005e2cd1(s32(G.DAT_00638dd4, 0));
+  FUN_005e2cd1(DAT_00638dd4);
   return;
 }
 
@@ -1699,39 +1712,39 @@ export function FUN_005e1c8e(param_1, param_2) {
   let local_c = [0];
   let local_8;
   
-  if (s32(G.DAT_006e50c4, 0) === 0) {
+  if (DAT_006e50c4 === 0) {
     AVIFileInit();
-    w32(G.DAT_006e50c4, 0, 1);
+    globalThis.DAT_006e50c4 = 1;
   }
-  w32(G.DAT_00638dd4, 0, param_1);
-  _DAT_006e5098 = 0x2c;
-  _DAT_006e509c = 0x31345649;
-  _DAT_006e50a8 = 2;
-  _DAT_006e50a0 = 0x10002;
-  _DAT_006e50a4 = 4;
-  _DAT_006e50ac = 0;
-  _DAT_006e50bc = 0;
-  _DAT_006e5028 = 0x70;
-  _DAT_006e502c = 0x31345649;
-  _DAT_006e5038 = 2;
-  _DAT_006e5030 = 0x10002;
-  _DAT_006e5034 = 2;
-  _DAT_006e5064 = s32(G.DAT_006e50c8, 0);
-  _DAT_006e503c = 0x80000008;
-  w32(G.DAT_006e50c8, 0, 0);
-  w32(G.DAT_006e50cc, 0, 0);
-  _DAT_006e50d0 = 0;
-  _DAT_006e50d4 = 0;
-  local_8 = AVIFileOpenA(s32(G.DAT_00638dc0, 0),param_2,0,0);
+  globalThis.DAT_00638dd4 = param_1;
+  globalThis.DAT_006e5098 = 0x2c;
+  globalThis.DAT_006e509c = 0x31345649;
+  globalThis.DAT_006e50a8 = 2;
+  globalThis.DAT_006e50a0 = 0x10002;
+  globalThis.DAT_006e50a4 = 4;
+  globalThis.DAT_006e50ac = 0;
+  globalThis.DAT_006e50bc = 0;
+  globalThis.DAT_006e5028 = 0x70;
+  globalThis.DAT_006e502c = 0x31345649;
+  globalThis.DAT_006e5038 = 2;
+  globalThis.DAT_006e5030 = 0x10002;
+  globalThis.DAT_006e5034 = 2;
+  globalThis.DAT_006e5064 = DAT_006e50c8;
+  globalThis.DAT_006e503c = 0x80000008;
+  globalThis.DAT_006e50c8 = 0;
+  globalThis.DAT_006e50cc = 0;
+  globalThis.DAT_006e50d0 = 0;
+  globalThis.DAT_006e50d4 = 0;
+  local_8 = AVIFileOpenA(DAT_00638dc0,param_2,0,0);
   if (local_8 === 0) {
-    local_8 = AVIFileGetStream(s32(G.DAT_00638dc0, 0),s32(G.DAT_00638dc4, 0),0x73646976,0);
+    local_8 = AVIFileGetStream(DAT_00638dc0,DAT_00638dc4,0x73646976,0);
     if (local_8 === 0) {
       iVar3 = 0;
       if (s32(param_1, 0x5a8) !== 0) {
-        local_8 = AVIFileGetStream(s32(G.DAT_00638dc0, 0),s32(G.DAT_00638dc8, 0),0x73647561,0);
+        local_8 = AVIFileGetStream(DAT_00638dc0,DAT_00638dc8,0x73647561,0);
         if (local_8 === 0) {
           w32(param_1, 0x5b0, 0);
-          iVar1 = FUN_005eed76(s32(G.DAT_00638dc8, 0));
+          iVar1 = FUN_005eed76(DAT_00638dc8);
           iVar3 = local_8;
           if (iVar1 === 0) {
             w32(param_1, 0x5a8, 1);
@@ -1747,19 +1760,19 @@ export function FUN_005e1c8e(param_1, param_2) {
       }
       local_8 = iVar3;
       local_c[0] = 0x28;
-      AVIStreamReadFormat(s32(G.DAT_00638dc4, 0),1,param_1 + 0x5c0,local_c[0]);
-      AVIStreamInfoA(s32(G.DAT_00638dc4, 0),local_9c,0x8c);
+      AVIStreamReadFormat(DAT_00638dc4,1,param_1 + 0x5c0,local_c[0]);
+      AVIStreamInfoA(DAT_00638dc4,local_9c,0x8c);
       // DEVIATION: C pointer write — *(SIZE_T *)(param_1 + 0x5d4) = local_74;
-      _DAT_006e50d8 = local_84 / local_88;
-      w32(G.DAT_00638db0, 0, ICLocate(0x63646976,local_98,param_1 + 0x5c0,0,2));
-      if (s32(G.DAT_00638db0, 0) === 0) {
+      globalThis.DAT_006e50d8 = local_84 / local_88;
+      globalThis.DAT_00638db0 = ICLocate(0x63646976,local_98,param_1 + 0x5c0,0,2);
+      if (DAT_00638db0 === 0) {
         FUN_005e2799(param_1);
         local_8 = 0;
       }
       else {
-        uVar2 = AVIStreamStart(s32(G.DAT_00638dc4, 0));
+        uVar2 = AVIStreamStart(DAT_00638dc4);
         w32(param_1, 0xa10, uVar2);
-        iVar3 = AVIStreamLength(s32(G.DAT_00638dc4, 0));
+        iVar3 = AVIStreamLength(DAT_00638dc4);
         w32(param_1, 0xa14, s32(param_1, 0xa10) + iVar3 + -1);
         w32(param_1, 0xa18, s32(param_1, 0xa10));
         _memcpy(param_1 + 0x5e8,param_1 + 0x5c0,0x28);
@@ -1767,54 +1780,54 @@ export function FUN_005e1c8e(param_1, param_2) {
         w16(param_1, 0x5f6, 8);
         w32(param_1, 0x5fc, 0);
         w32(param_1, 0x608, 0x100);
-        w32(G.DAT_00638db4, 0, s32(param_1, 0x5c4));
-        w32(G.DAT_00638db8, 0, s32(param_1, 0x5c8));
+        globalThis.DAT_00638db4 = s32(param_1, 0x5c4);
+        globalThis.DAT_00638db8 = s32(param_1, 0x5c8);
         devLog('MFC', 'uVar4 = CCheckListBox::GetCheckStyle(param_1);');
         iVar3 = FUN_005e395a(uVar4);
         if (iVar3 !== 0) {
           w32(param_1, 0x5f0, -s32(param_1, 0x5f0));
         }
         if (s32(param_1, 0x5a0) === 0) {
-          FUN_005bb6c7(s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0));
+          FUN_005bb6c7(DAT_00638db4,DAT_00638db8);
         }
         else {
-          FUN_005bb6c7(s32(G.DAT_00638db4, 0) * 2,s32(G.DAT_00638db8, 0) * 2);
+          FUN_005bb6c7(DAT_00638db4 * 2,DAT_00638db8 * 2);
         }
         if (local_74 === 0) {
           iVar3 = u16(param_1, 0x5ce) * s32(param_1, 0x5c4) * s32(param_1, 0x5c8);
                   /*JOINED*/
           pvVar5 = GlobalAlloc(0x40,iVar3 + (iVar3 >> 0x1f & 7) >> 3);
-          w32(G.DAT_00638da8, 0, GlobalLock(pvVar5));
+          globalThis.DAT_00638da8 = GlobalLock(pvVar5);
         }
         else {
           pvVar5 = GlobalAlloc(0x40,local_74);
-          w32(G.DAT_00638da8, 0, GlobalLock(pvVar5));
+          globalThis.DAT_00638da8 = GlobalLock(pvVar5);
         }
-        if (s32(G.DAT_00638da8, 0) === 0x0) {
+        if (DAT_00638da8 === 0x0) {
           FUN_005e2799(param_1);
           local_8 = 0;
         }
         else {
-          local_8 = FUN_005e2583(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8), param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
+          local_8 = FUN_005e2583(DAT_00638db0,0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8), param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
                                  /*JOINED*/
                                  /*JOINED*/
                                  /*JOINED*/
           if (local_8 === 0) {
-            ICSendMessage(s32(G.DAT_00638db0, 0),0x401e,param_1 + 0x5c0,param_1 + 0x5e8);
+            ICSendMessage(DAT_00638db0,0x401e,param_1 + 0x5c0,param_1 + 0x5e8);
             for (local_10 = 0; local_10 < 0xec; local_10 = local_10 + 1) {
               local_360[local_10 * 3] = param_1[local_10 * 4 + 0x63a];
               local_360[local_10 * 3 + 1] = param_1[local_10 * 4 + 0x639];
               local_360[local_10 * 3 + 2] = param_1[local_10 * 4 + 0x638];
             }
             FUN_005c6da8(10,0xec,local_360);
-            ICSendMessage(s32(G.DAT_00638db0, 0),0x401d,param_1 + 0x5e8,0);
-            local_8 = FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8) ,param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
+            ICSendMessage(DAT_00638db0,0x401d,param_1 + 0x5e8,0);
+            local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8) ,param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
                                    /*JOINED*/
                                    /*JOINED*/
                                    /*JOINED*/
             if (local_8 === 0) {
-              w32(G.DAT_00638dcc, 0, 1);
-              w32(G.DAT_00638dd0, 0, 0);
+              globalThis.DAT_00638dcc = 1;
+              globalThis.DAT_00638dd0 = 0;
               if (s32(param_1, 0x5a4) === 0) {
                 FUN_005e32b2(param_1,0);
               }
@@ -1823,9 +1836,9 @@ export function FUN_005e1c8e(param_1, param_2) {
               }
               iVar3 = u16(param_1, 0x5ce) * s32(param_1, 0x5c4) * s32(param_1, 0x5c8);
                       /*JOINED*/
-              w32(G.DAT_00638dac, 0, iVar3 + (iVar3 >> 0x1f & 7) >> 3);
-              _DAT_00638dec = 0;
-              _DAT_006e50dc = 0;
+              globalThis.DAT_00638dac = iVar3 + (iVar3 >> 0x1f & 7) >> 3;
+              globalThis.DAT_00638dec = 0;
+              globalThis.DAT_006e50dc = 0;
               local_8 = 0;
             }
             else {
@@ -1863,41 +1876,41 @@ export function FUN_005e22ed(param_1) {
   let uVar1;
   let uVar2;
   
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    if (s32(G.DAT_00638dd0, 0) !== 0) {
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+    if (DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     if (s32(param_1, 0x5a0) !== 0) {
-      ICSendMessage(s32(G.DAT_00638db0, 0),0x403f,0,0);
-      _DAT_006e50ac = 8;
+      ICSendMessage(DAT_00638db0,0x403f,0,0);
+      globalThis.DAT_006e50ac = 8;
       if (s32(param_1, 0x5a4) !== 0) {
-        _DAT_006e50ac = 0x8000000c;
+        globalThis.DAT_006e50ac = 0x8000000c;
       }
-      _DAT_006e503c = 0x80000008;
-      ICSendMessage(s32(G.DAT_00638db0, 0),0x5001,s32(G.DAT_006e5098, 0),0x2c);
-      ICSendMessage(s32(G.DAT_00638db0, 0),0x5001,s32(G.DAT_006e5028, 0),0x70);
+      globalThis.DAT_006e503c = 0x80000008;
+      ICSendMessage(DAT_00638db0,0x5001,DAT_006e5098,0x2c);
+      ICSendMessage(DAT_00638db0,0x5001,DAT_006e5028,0x70);
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
+      FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
                    /*JOINED*/
                    /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
     }
     if (s32(param_1, 0x5a8) !== 0) {
-      uVar1 = AVIStreamSampleToTime(s32(G.DAT_00638dc4, 0),s32(param_1, 0xa14));
-      uVar2 = AVIStreamSampleToTime(s32(G.DAT_00638dc4, 0),s32(param_1, 0xa18));
+      uVar1 = AVIStreamSampleToTime(DAT_00638dc4,s32(param_1, 0xa14));
+      uVar2 = AVIStreamSampleToTime(DAT_00638dc4,s32(param_1, 0xa18));
       FUN_005eedec(uVar2,uVar1);
     }
-    if (s32(G.DAT_00638dcc, 0) !== 0) {
+    if (DAT_00638dcc !== 0) {
       if (s32(param_1, 0x5a4) === 0) {
         FUN_005e2cd1(param_1);
       }
-      w32(G.DAT_00637efc, 0, 1);
-      w32(G.DAT_00638dd0, 0, 1);
-      _DAT_00638dec = 0;
+      globalThis.DAT_00637efc = 1;
+      globalThis.DAT_00638dd0 = 1;
+      globalThis.DAT_00638dec = 0;
       if (s32(param_1, 0x5a8) === 0) {
-        _DAT_00638dbc = timeGetTime();
+        globalThis.DAT_00638dbc = timeGetTime();
       }
       else {
         FUN_005eee4f();
@@ -2006,8 +2019,8 @@ export function FUN_005e2583(param_1, param_2, param_3, param_4, param_5, param_
 export function FUN_005e25fa(param_1, param_2, param_3) {
 
 
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    if (s32(G.DAT_00638dd0, 0) !== 0) {
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+    if (DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     FUN_005e28cd(param_1,param_2,0);
@@ -2028,15 +2041,15 @@ export function FUN_005e25fa(param_1, param_2, param_3) {
 export function FUN_005e2675(param_1) {
 
 
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
     if (s32(param_1, 0x5a8) !== 0) {
       w32(param_1, 0x5b0, 0);
     }
     w32(param_1, 0x5ac, 1);
-    if (s32(G.DAT_00638dd0, 0) !== 0) {
-      w32(G.DAT_00637efc, 0, 0);
-      w32(G.DAT_00638de8, 0, 0);
-      w32(G.DAT_00638dd0, 0, 0);
+    if (DAT_00638dd0 !== 0) {
+      globalThis.DAT_00637efc = 0;
+      globalThis.DAT_00638de8 = 0;
+      globalThis.DAT_00638dd0 = 0;
     }
   }
   return;
@@ -2055,13 +2068,13 @@ export function FUN_005e26f6(param_1) {
   let uVar1;
   let iVar2;
   
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    if (s32(G.DAT_00638dd0, 0) !== 0) {
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+    if (DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
-    uVar1 = AVIStreamStart(s32(G.DAT_00638dc4, 0));
+    uVar1 = AVIStreamStart(DAT_00638dc4);
     w32(param_1, 0xa10, uVar1);
-    iVar2 = AVIStreamLength(s32(G.DAT_00638dc4, 0));
+    iVar2 = AVIStreamLength(DAT_00638dc4);
     w32(param_1, 0xa14, s32(param_1, 0xa10) + iVar2 + -1);
     w32(param_1, 0xa18, s32(param_1, 0xa10));
     FUN_005e28cd(param_1,s32(param_1, 0xa10),0);
@@ -2083,37 +2096,37 @@ export function FUN_005e2799(param_1) {
   
   if (param_1 !== 0) {
     FUN_005e2675(param_1);
-    if (s32(G.DAT_00638db0, 0) !== 0) {
-      ICClose(s32(G.DAT_00638db0, 0));
-      w32(G.DAT_00638db0, 0, 0);
+    if (DAT_00638db0 !== 0) {
+      ICClose(DAT_00638db0);
+      globalThis.DAT_00638db0 = 0;
     }
-    if (s32(G.DAT_00638dc8, 0) !== 0) {
-      AVIStreamRelease(s32(G.DAT_00638dc8, 0));
-      w32(G.DAT_00638dc8, 0, 0);
+    if (DAT_00638dc8 !== 0) {
+      AVIStreamRelease(DAT_00638dc8);
+      globalThis.DAT_00638dc8 = 0;
     }
-    if (s32(G.DAT_00638dc4, 0) !== 0) {
-      AVIStreamRelease(s32(G.DAT_00638dc4, 0));
-      w32(G.DAT_00638dc4, 0, 0);
+    if (DAT_00638dc4 !== 0) {
+      AVIStreamRelease(DAT_00638dc4);
+      globalThis.DAT_00638dc4 = 0;
     }
-    if (s32(G.DAT_00638dc0, 0) !== 0) {
-      AVIFileRelease(s32(G.DAT_00638dc0, 0));
-      w32(G.DAT_00638dc0, 0, 0);
+    if (DAT_00638dc0 !== 0) {
+      AVIFileRelease(DAT_00638dc0);
+      globalThis.DAT_00638dc0 = 0;
     }
-    if (s32(G.DAT_006e50c4, 0) !== 0) {
+    if (DAT_006e50c4 !== 0) {
       AVIFileExit();
-      w32(G.DAT_006e50c4, 0, 0);
+      globalThis.DAT_006e50c4 = 0;
     }
-    if (s32(G.DAT_00638da8, 0) !== 0x0) {
-      pvVar1 = GlobalHandle(s32(G.DAT_00638da8, 0));
+    if (DAT_00638da8 !== 0x0) {
+      pvVar1 = GlobalHandle(DAT_00638da8);
       GlobalUnlock(pvVar1);
-      pvVar1 = GlobalHandle(s32(G.DAT_00638da8, 0));
+      pvVar1 = GlobalHandle(DAT_00638da8);
       GlobalFree(pvVar1);
-      w32(G.DAT_00638da8, 0, 0x0);
+      globalThis.DAT_00638da8 = 0x0;
     }
-    w32(G.DAT_00638dac, 0, 0);
-    w32(G.DAT_00638db4, 0, 0);
-    w32(G.DAT_00638db8, 0, 0);
-    w32(G.DAT_00638dd4, 0, 0);
+    globalThis.DAT_00638dac = 0;
+    globalThis.DAT_00638db4 = 0;
+    globalThis.DAT_00638db8 = 0;
+    globalThis.DAT_00638dd4 = 0;
   }
   return;
 }
@@ -2131,11 +2144,11 @@ export function FUN_005e28cd(param_1, param_2, param_3) {
   let uVar1;
   let local_8;
   
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    if (s32(G.DAT_00638dd0, 0) !== 0) {
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+    if (DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
-    uVar1 = AVIStreamFindSample(s32(G.DAT_00638dc4, 0),param_2,0x14);
+    uVar1 = AVIStreamFindSample(DAT_00638dc4,param_2,0x14);
     w32(param_1, 0xa18, uVar1);
     while( true ) {
       if (param_2 < 0) {
@@ -2176,35 +2189,35 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
   
   local_8 = 0;
   local_c[0] = 0;
-  if ((param_1 === 0) || (s32(G.DAT_00638dcc, 0) === 0)) {
+  if ((param_1 === 0) || (DAT_00638dcc === 0)) {
     local_8 = 1;
   }
   else {
     if ((s32(param_1, 0x5a4) !== 0) && (param_2 === 0)) {
-      FUN_005c0593(param_1,s32(G.DAT_00638dd8, 0),s32(G.DAT_00638dd8, 0));
+      FUN_005c0593(param_1,DAT_00638dd8,DAT_00638dd8);
     }
-    local_8 = AVIStreamRead(s32(G.DAT_00638dc4, 0),s32(param_1, 0xa18),1,s32(G.DAT_00638da8, 0), s32(G.DAT_00638dac, 0),local_c[0],0);
+    local_8 = AVIStreamRead(DAT_00638dc4,s32(param_1, 0xa18),1,DAT_00638da8, DAT_00638dac,local_c[0],0);
                             /*JOINED*/
     if (local_8 === 0) {
       w32(param_1, 0x5d4, local_c);
       if (s32(param_1, 0x5a0) === 0) {
         uVar3 = 0;
         uVar2 = 0;
-        iVar5 = s32(G.DAT_00638db4, 0);
-        iVar4 = s32(G.DAT_00638db8, 0);
-        uVar1 = FUN_005c5640(0,0,s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0));
-        local_8 = FUN_005e2c5a(s32(G.DAT_00638db0, 0),param_2,param_1 + 0x5c0,s32(G.DAT_00638da8, 0),0,0,s32(G.DAT_00638db4, 0), s32(G.DAT_00638db8, 0),param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar5,iVar4);
+        iVar5 = DAT_00638db4;
+        iVar4 = DAT_00638db8;
+        uVar1 = FUN_005c5640(0,0,DAT_00638db4,DAT_00638db8);
+        local_8 = FUN_005e2c5a(DAT_00638db0,param_2,param_1 + 0x5c0,DAT_00638da8,0,0,DAT_00638db4, DAT_00638db8,param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar5,iVar4);
                                /*JOINED*/
       }
       else {
         w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
         w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-        iVar5 = s32(G.DAT_00638db8, 0) * 2;
-        iVar4 = s32(G.DAT_00638db4, 0) * 2;
+        iVar5 = DAT_00638db8 * 2;
+        iVar4 = DAT_00638db4 * 2;
         uVar3 = 0;
         uVar2 = 0;
         uVar1 = FUN_005c5640(0,0,iVar4,iVar5);
-        local_8 = FUN_005e2c5a(s32(G.DAT_00638db0, 0),param_2,param_1 + 0x5c0,s32(G.DAT_00638da8, 0),0,0,s32(G.DAT_00638db4, 0), s32(G.DAT_00638db8, 0),param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar4,iVar5);
+        local_8 = FUN_005e2c5a(DAT_00638db0,param_2,param_1 + 0x5c0,DAT_00638da8,0,0,DAT_00638db4, DAT_00638db8,param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar4,iVar5);
                                /*JOINED*/
         w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
         w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
@@ -2218,7 +2231,7 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
         w32(param_1, 0xa20, 0);
         FUN_005e3580();
       }
-      if ((u32(param_1, 0xa14) < u32(param_1, 0xa18)) && (s32(G.DAT_00638dd0, 0) !== 0)) {
+      if ((u32(param_1, 0xa14) < u32(param_1, 0xa18)) && (DAT_00638dd0 !== 0)) {
         if (s32(param_1, 0xa24) === 0) {
           FUN_005e2675(param_1);
           FUN_005e3550();
@@ -2307,13 +2320,13 @@ export function FUN_005e2cd1(param_1) {
   if (param_1 === 0) {
     return;
   }
-  if (s32(G.DAT_00638dcc, 0) === 0) {
+  if (DAT_00638dcc === 0) {
     return;
   }
-  if (s32(G.DAT_00638dd0, 0) !== 0) {
+  if (DAT_00638dd0 !== 0) {
     if (s32(param_1, 0x5a8) === 0) {
       local_8 = timeGetTime();
-      iVar1 = AVIStreamTimeToSample(s32(G.DAT_00638dc4, 0),local_8 - _DAT_00638dbc);
+      iVar1 = AVIStreamTimeToSample(DAT_00638dc4,local_8 - DAT_00638dbc);
       local_20 = s32(param_1, 0xa10) + iVar1;
       if (local_20 < u32(param_1, 0xa18)) {
         return;
@@ -2342,29 +2355,29 @@ export function FUN_005e2cd1(param_1) {
         return;
       }
       uVar2 = FUN_005eedd1();
-      iVar1 = AVIStreamTimeToSample(s32(G.DAT_00638dc4, 0),uVar2);
+      iVar1 = AVIStreamTimeToSample(DAT_00638dc4,uVar2);
       local_20 = s32(param_1, 0xa10) + iVar1;
       if ((s32(param_1, 0x5ac) === 0) || (local_20 < u32(param_1, 0xa18))) {
         FUN_005d57b1(0x40);
-        _DAT_00638dec = _DAT_00638dec + 1;
+        globalThis.DAT_00638dec = DAT_00638dec + 1;
         return;
       }
     }
-    if (s32(G.DAT_00638de8, 0) !== 0) {
+    if (DAT_00638de8 !== 0) {
       if (s32(param_1, 0x5a4) === 0) {
         FUN_00408460();
       }
       else {
-        local_1c[0].left = s32(G.DAT_006e50c8, 0);
-        local_1c[0].top = s32(G.DAT_006e50cc, 0);
-        local_1c[0].right = s32(G.DAT_006e50c8, 0) + _DAT_006e50d0;
-        local_1c[0].bottom = s32(G.DAT_006e50cc, 0) + _DAT_006e50d4;
-        UnionRect(local_1c[0],local_1c[0],s32(G.DAT_00638dd8, 0));
+        local_1c[0].left = DAT_006e50c8;
+        local_1c[0].top = DAT_006e50cc;
+        local_1c[0].right = DAT_006e50c8 + DAT_006e50d0;
+        local_1c[0].bottom = DAT_006e50cc + DAT_006e50d4;
+        UnionRect(local_1c[0],local_1c[0],DAT_00638dd8);
         FUN_00408490(local_1c[0]);
-        w32(G.DAT_00638dd8, 0, local_1c[0].left);
-        w32(G.DAT_00638ddc, 0, local_1c[0].top);
-        w32(G.DAT_00638de0, 0, local_1c[0].right);
-        w32(G.DAT_00638de4, 0, local_1c[0].bottom);
+        globalThis.DAT_00638dd8 = local_1c[0].left;
+        globalThis.DAT_00638ddc = local_1c[0].top;
+        globalThis.DAT_00638de0 = local_1c[0].right;
+        globalThis.DAT_00638de4 = local_1c[0].bottom;
       }
     }
     if (u32(param_1, 0xa18) < local_20) {
@@ -2372,7 +2385,7 @@ export function FUN_005e2cd1(param_1) {
       do {
         iVar1 = local_c;
         local_c = local_c + 1;
-        local_c = AVIStreamFindSample(s32(G.DAT_00638dc4, 0),local_c,0x11);
+        local_c = AVIStreamFindSample(DAT_00638dc4,local_c,0x11);
         if (local_20 <= local_c) break;
       } while (local_c !== -1);
       if (s32(param_1, 0xa18) === iVar1) {
@@ -2394,12 +2407,12 @@ export function FUN_005e2cd1(param_1) {
       }
     }
   }
-  if ((s32(G.DAT_00638dd0, 0) !== 0) && (s32(param_1, 0x5a8) !== 0)) {
+  if ((DAT_00638dd0 !== 0) && (s32(param_1, 0x5a8) !== 0)) {
     FUN_005d57b1(0x40);
-    _DAT_00638dec = _DAT_00638dec + 1;
+    globalThis.DAT_00638dec = DAT_00638dec + 1;
   }
   iVar1 = show_messagebox_2997(param_1,0);
-  w32(G.DAT_00638de8, 0, ((iVar1 === 0) >>> 0));
+  globalThis.DAT_00638de8 = ((iVar1 === 0) >>> 0);
   return;
 }
 
@@ -2417,8 +2430,8 @@ export function FUN_005e30a1(param_1) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    ICSendMessage(s32(G.DAT_00638db0, 0),0x403f,0,0);
+  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+    ICSendMessage(DAT_00638db0,0x403f,0,0);
     FUN_005c6b63(local_2d0,0,0xec);
     for (local_c = 0; local_c < 0xec; local_c = local_c + 1) {
       param_1[0x610 + local_c * 4] = local_2d0[local_c * 3 + 2];
@@ -2426,23 +2439,23 @@ export function FUN_005e30a1(param_1) {
       param_1[0x612 + local_c * 4] = local_2d0[local_c * 3];
       param_1[0x613 + local_c * 4] = 0;
     }
-    ICSendMessage(s32(G.DAT_00638db0, 0),0x401d,param_1 + 0x5e8,0);
+    ICSendMessage(DAT_00638db0,0x401d,param_1 + 0x5e8,0);
     if (s32(param_1, 0x5a0) === 0) {
-      local_8 = FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8));
+      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8));
                              /*JOINED*/
                              /*JOINED*/
     }
     else {
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      local_8 = FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
+      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
                              /*JOINED*/
                              /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) / 2);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) / 2);
     }
     if (local_8 !== 0) {
-      w32(G.DAT_00638dcc, 0, 0);
+      globalThis.DAT_00638dcc = 0;
     }
   }
   return;
@@ -2467,37 +2480,37 @@ export function FUN_005e32b2(param_1, param_2) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0x0) && (s32(G.DAT_00638dcc, 0) !== 0)) {
-    ICSendMessage(s32(G.DAT_00638db0, 0),0x403f,0,0);
+  if ((param_1 !== 0x0) && (DAT_00638dcc !== 0)) {
+    ICSendMessage(DAT_00638db0,0x403f,0,0);
     if (param_2 === 0) {
-      _DAT_006e50ac = 0;
+      globalThis.DAT_006e50ac = 0;
     }
     else {
-      _DAT_006e50ac = 0x80000004;
+      globalThis.DAT_006e50ac = 0x80000004;
     }
-    _DAT_006e503c = 0x80000008;
-    ICSendMessage(s32(G.DAT_00638db0, 0),0x5001,s32(G.DAT_006e5098, 0),0x2c);
-    ICSendMessage(s32(G.DAT_00638db0, 0),0x5001,s32(G.DAT_006e5028, 0),0x70);
+    globalThis.DAT_006e503c = 0x80000008;
+    ICSendMessage(DAT_00638db0,0x5001,DAT_006e5098,0x2c);
+    ICSendMessage(DAT_00638db0,0x5001,DAT_006e5028,0x70);
     if (s32(param_1, 0x5a0) === 0) {
-      local_8 = FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0,s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0), param_1 + 0x5e8,0,0,0,s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0));
+      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,DAT_00638db4,DAT_00638db8, param_1 + 0x5e8,0,0,0,DAT_00638db4,DAT_00638db8);
                              /*JOINED*/
     }
     else {
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      local_8 = FUN_005e250c(s32(G.DAT_00638db0, 0),0,param_1 + 0x5c0,0,0,0,s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0), param_1 + 0x5e8,0,0,0,s32(G.DAT_00638db4, 0) * 2,s32(G.DAT_00638db8, 0) * 2);
+      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,DAT_00638db4,DAT_00638db8, param_1 + 0x5e8,0,0,0,DAT_00638db4 * 2,DAT_00638db8 * 2);
                              /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
     }
     if (local_8 !== 0) {
-      w32(G.DAT_00638dcc, 0, 0);
+      globalThis.DAT_00638dcc = 0;
     }
     if (param_2 === 0) {
       FUN_005bd65c(0,0);
     }
     else {
-      FUN_005bd65c(s32(G.DAT_00638db4, 0),s32(G.DAT_00638db8, 0));
+      FUN_005bd65c(DAT_00638db4,DAT_00638db8);
       devLog('MFC', 'yBottom = CRichEditCntrItem::GetActiveView(param_1);');
       devLog('MFC', 'xRight = CRichEditCntrItem::GetActiveView(param_1);');
       SetRect(local_1c[0],0,0,xRight,yBottom);
@@ -2509,7 +2522,7 @@ export function FUN_005e32b2(param_1, param_2) {
       if (s32(param_1, 0x5b4) !== 0) {
         FUN_005c0593(param_1 + 0x558,local_2c[0],local_1c[0]);
       }
-      if (s32(G.DAT_00638dcc, 0) !== 0) {
+      if (DAT_00638dcc !== 0) {
         FUN_005c0593(param_1,local_1c[0],local_1c[0]);
         local_c = s32(param_1, 0xa18);
         FUN_005e28cd(param_1,local_c,0);
@@ -2527,7 +2540,7 @@ export function FUN_005e32b2(param_1, param_2) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005e3550(in_ECX = G.in_ECX) {
+export function FUN_005e3550(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2545,7 +2558,7 @@ export function FUN_005e3550(in_ECX = G.in_ECX) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005e3580(in_ECX = G.in_ECX) {
+export function FUN_005e3580(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -2595,15 +2608,15 @@ export function create_dib_35B0_005E35B0(param_1) {
       local_434[0].bmiHeader.biHeight = 1;
       local_434[0].bmiHeader.biWidth = FUN_005c55a0(iVar1);
       if (0 < local_434[0].bmiHeader.biHeight) {
-        if (s32(G.DAT_00638e1c, 0) === 0) {
+        if (DAT_00638e1c === 0) {
           debug_log(s_Bottom_up_orientation_recommende_00638e20);
         }
-        w32(G.DAT_00638e1c, 0, 1);
+        globalThis.DAT_00638e1c = 1;
       }
-      if (s32(G.DAT_00638e18, 0) === -1) {
+      if (DAT_00638e18 === -1) {
         local_434[0].bmiHeader.biHeight = local_c;
       }
-      else if (s32(G.DAT_00638e18, 0) === 1) {
+      else if (DAT_00638e18 === 1) {
         local_434[0].bmiHeader.biHeight = -local_c;
       }
       else {
@@ -2651,7 +2664,7 @@ export function create_dib_35B0_005E35B0(param_1) {
 export function FUN_005e3877(param_1) {
 
 
-  w32(G.DAT_00638e18, 0, param_1);
+  globalThis.DAT_00638e18 = param_1;
   return;
 }
 
@@ -2899,7 +2912,7 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
     iVar2 = measure_text_858E(param_2,param_3);
     SetRect(local_18[0],param_4,param_5,param_4 + iVar2,iVar1);
     local_20 = SelectObject(s32(param_1, 4),s32(local_8, 0));
-    GetDIBColorTable(s32(param_1, 4),((s32(G.DAT_00637e78, 0)) >>> 0),1,local_24[0]);
+    GetDIBColorTable(s32(param_1, 4),((DAT_00637e78) >>> 0),1,local_24[0]);
     SetTextColor(s32(param_1, 4), ((((local_24[0].rgbBlue) << 16 | (((local_24[0].rgbGreen) << 8 | (local_24[0].rgbRed))))) >>> 0));
                  /*JOINED*/
     iVar1 = FUN_00407fc0(local_18[0]);
@@ -2956,7 +2969,7 @@ export function handle_colortable_3ECA_005E3ECA(param_1, param_2, param_3, param
   else if (param_1 !== 0) {
     local_8 = FUN_005dcdf9(param_2);
     local_c = SelectObject(s32(param_1, 4),s32(local_8, 0));
-    GetDIBColorTable(s32(param_1, 4),((s32(G.DAT_00637e78, 0)) >>> 0),1,local_10[0]);
+    GetDIBColorTable(s32(param_1, 4),((DAT_00637e78) >>> 0),1,local_10[0]);
     SetTextColor(s32(param_1, 4), ((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
                  /*JOINED*/
     local_14 = 0;
@@ -3001,7 +3014,7 @@ export function handle_colortable_3FEB_005E3FEB(param_1, param_2, param_3, param
   else if (param_1 !== 0) {
     local_8 = FUN_005dcdf9(param_2);
     local_c = SelectObject(s32(param_1, 4),s32(local_8, 0));
-    GetDIBColorTable(s32(param_1, 4),((s32(G.DAT_00637e78, 0)) >>> 0),1,local_10[0]);
+    GetDIBColorTable(s32(param_1, 4),((DAT_00637e78) >>> 0),1,local_10[0]);
     SetTextColor(s32(param_1, 4), ((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
                  /*JOINED*/
     local_14 = 0x10;
@@ -3034,7 +3047,7 @@ export function handle_colortable_40FB_005E40FB(param_1, param_2, param_3, param
   let local_8;
   
   if (param_1 !== 0) {
-    GetDIBColorTable(s32(param_1, 4),((s32(G.DAT_00637e78, 0)) >>> 0),1,local_10[0]);
+    GetDIBColorTable(s32(param_1, 4),((DAT_00637e78) >>> 0),1,local_10[0]);
     local_c = CreatePen(0,1,((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
                                            /*JOINED*/
     local_8 = SelectObject(s32(param_1, 4),local_c);
@@ -3095,8 +3108,8 @@ export function create_dib_41BA_005E41BA(param_1) {
       local_c = 0x1f;
       local_3c[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (s32(G.DAT_00638e18, 0) !== -1) {
-        if (s32(G.DAT_00638e18, 0) === 1) {
+      if (DAT_00638e18 !== -1) {
+        if (DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -3175,8 +3188,8 @@ export function create_dib_43C5_005E43C5(param_1) {
       local_34[0].bmiHeader.biHeight = 1;
       local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (s32(G.DAT_00638e18, 0) !== -1) {
-        if (s32(G.DAT_00638e18, 0) === 1) {
+      if (DAT_00638e18 !== -1) {
+        if (DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -3255,8 +3268,8 @@ export function create_dib_45B5_005E45B5(param_1) {
       local_34[0].bmiHeader.biHeight = 1;
       local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (s32(G.DAT_00638e18, 0) !== -1) {
-        if (s32(G.DAT_00638e18, 0) === 1) {
+      if (DAT_00638e18 !== -1) {
+        if (DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -4534,7 +4547,7 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 64 bytes
 // ============================================================
 
-export function FUN_005e5ea0(in_ECX = G.in_ECX) {
+export function FUN_005e5ea0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4566,7 +4579,7 @@ export function FUN_005e5ee0() {
 // Size: 130 bytes
 // ============================================================
 
-export function FUN_005e5ef6(in_ECX = G.in_ECX) {
+export function FUN_005e5ef6(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -4640,7 +4653,7 @@ export function FUN_005e5fda(param_1, param_2, param_3) {
 // Size: 368 bytes
 // ============================================================
 
-export function FUN_005e6018(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005e6018(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4668,7 +4681,7 @@ export function FUN_005e6018(in_ECX = G.in_ECX, param_1, param_2) {
     else {
       iVar1 = FUN_005e910b(s32(in_ECX, 0));
       in_ECX[3] = iVar1;
-      FUN_005e9783(s32(in_ECX, 0),param_1,s32(G.DAT_00638b40, 0));
+      FUN_005e9783(s32(in_ECX, 0),param_1,DAT_00638b40);
       iVar1 = FUN_005e9150(s32(in_ECX, 0));
       in_ECX[0xe] = iVar1;
       pvVar2 = operator_new(in_ECX[1] << 2);
@@ -4689,7 +4702,7 @@ export function FUN_005e6018(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 97 bytes
 // ============================================================
 
-export function FUN_005e6188(in_ECX = G.in_ECX) {
+export function FUN_005e6188(in_ECX = globalThis.in_ECX) {
 
 
   let cVar1;
@@ -4714,7 +4727,7 @@ export function FUN_005e6188(in_ECX = G.in_ECX) {
 // Size: 92 bytes
 // ============================================================
 
-export function FUN_005e61e9(in_ECX = G.in_ECX) {
+export function FUN_005e61e9(in_ECX = globalThis.in_ECX) {
 
 
   let iVar1;
@@ -4765,7 +4778,7 @@ export function FUN_005e626c(param_1, param_2, param_3) {
 // Size: 200 bytes
 // ============================================================
 
-export function FUN_005e6297(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005e6297(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4787,7 +4800,7 @@ export function FUN_005e6297(in_ECX = G.in_ECX, param_1, param_2) {
     in_ECX[3] = iVar2;
     iVar2 = FUN_005e9150(s32(in_ECX, 0));
     in_ECX[0xe] = iVar2;
-    FUN_005e9783(s32(in_ECX, 0),param_1,s32(G.DAT_00638b40, 0));
+    FUN_005e9783(s32(in_ECX, 0),param_1,DAT_00638b40);
   }
   return iVar1 !== 0;
 }
@@ -4799,7 +4812,7 @@ export function FUN_005e6297(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 241 bytes
 // ============================================================
 
-export function FUN_005e635f(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e635f(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -4815,7 +4828,7 @@ export function FUN_005e635f(in_ECX = G.in_ECX, param_1, param_2, param_3) {
     in_ECX[3] = iVar1;
     iVar1 = FUN_005e9150(s32(in_ECX, 0));
     in_ECX[0xe] = iVar1;
-    FUN_005e9783(s32(in_ECX, 0),param_2,s32(G.DAT_00638b40, 0));
+    FUN_005e9783(s32(in_ECX, 0),param_2,DAT_00638b40);
     in_ECX[0xc] = 1;
     pvVar2 = operator_new(in_ECX[1] << 2);
     in_ECX[0xf] = pvVar2;
@@ -4834,7 +4847,7 @@ export function FUN_005e635f(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 278 bytes
 // ============================================================
 
-export function FUN_005e6450(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e6450(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -4882,7 +4895,7 @@ export function FUN_005e6566(param_1) {
 // Size: 103 bytes
 // ============================================================
 
-export function FUN_005e658a(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005e658a(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -4907,7 +4920,7 @@ export function FUN_005e658a(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 96 bytes
 // ============================================================
 
-export function FUN_005e65f1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e65f1(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -4930,7 +4943,7 @@ export function FUN_005e65f1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 578 bytes
 // ============================================================
 
-export function FUN_005e6651(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6651(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -5014,7 +5027,7 @@ export function FUN_005e6651(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 818 bytes
 // ============================================================
 
-export function FUN_005e6893(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6893(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let uVar1;
@@ -5047,7 +5060,7 @@ export function FUN_005e6893(in_ECX = G.in_ECX, param_1, param_2, param_3, param
   }
   else {
     local_14 = FUN_005c5560(local_28);
-    iVar2 = _strcmp(local_14,s32(G.DAT_00639218, 0));
+    iVar2 = _strcmp(local_14,DAT_00639218);
     if (iVar2 === 0) {
       FUN_005d2279(s_Error__Resource_is_not_a_GIF___0063921c,param_1);
       FUN_005c5580(local_28);
@@ -5117,7 +5130,7 @@ export function FUN_005e6893(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 391 bytes
 // ============================================================
 
-export function FUN_005e6bc5(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e6bc5(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let bVar1;
@@ -5182,7 +5195,7 @@ export function FUN_005e6bc5(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 453 bytes
 // ============================================================
 
-export function FUN_005e6d4c(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e6d4c(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let sVar1;
@@ -5254,7 +5267,7 @@ export function FUN_005e6d4c(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005e6f25(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e6f25(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5270,7 +5283,7 @@ export function FUN_005e6f25(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 63 bytes
 // ============================================================
 
-export function FUN_005e6f57(in_ECX = G.in_ECX) {
+export function FUN_005e6f57(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -5287,7 +5300,7 @@ export function FUN_005e6f57(in_ECX = G.in_ECX) {
 // Size: 91 bytes
 // ============================================================
 
-export function FUN_005e6f96(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e6f96(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5304,7 +5317,7 @@ export function FUN_005e6f96(in_ECX = G.in_ECX, param_1) {
 // Size: 55 bytes
 // ============================================================
 
-export function FUN_005e6ff1(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e6ff1(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5323,7 +5336,7 @@ export function FUN_005e6ff1(in_ECX = G.in_ECX, param_1) {
 // Size: 42 bytes
 // ============================================================
 
-export function FUN_005e7028(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7028(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5338,7 +5351,7 @@ export function FUN_005e7028(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 133 bytes
 // ============================================================
 
-export function FUN_005e7052(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005e7052(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -5362,7 +5375,7 @@ export function FUN_005e7052(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005e70d7(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e70d7(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -5378,7 +5391,7 @@ export function FUN_005e70d7(in_ECX = G.in_ECX, param_1) {
 // Size: 308 bytes
 // ============================================================
 
-export function FUN_005e7102(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7102(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5420,7 +5433,7 @@ export function FUN_005e7102(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005e7257(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7257(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -5436,7 +5449,7 @@ export function FUN_005e7257(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 198 bytes
 // ============================================================
 
-export function FUN_005e728a(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e728a(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5474,7 +5487,7 @@ export function FUN_005e728a(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 290 bytes
 // ============================================================
 
-export function FUN_005e7355(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7355(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5524,7 +5537,7 @@ export function FUN_005e7355(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 76 bytes
 // ============================================================
 
-export function FUN_005e747c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e747c(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5546,7 +5559,7 @@ export function FUN_005e747c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 198 bytes
 // ============================================================
 
-export function FUN_005e74c8(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e74c8(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5584,7 +5597,7 @@ export function FUN_005e74c8(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 76 bytes
 // ============================================================
 
-export function FUN_005e7593(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e7593(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -5606,7 +5619,7 @@ export function FUN_005e7593(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 254 bytes
 // ============================================================
 
-export function FUN_005e75df(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e75df(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5641,7 +5654,7 @@ export function FUN_005e75df(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 272 bytes
 // ============================================================
 
-export function FUN_005e76dd(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e76dd(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -5682,7 +5695,7 @@ export function FUN_005e76dd(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 217 bytes
 // ============================================================
 
-export function FUN_005e77ed(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005e77ed(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
   let iVar1;
@@ -5713,7 +5726,7 @@ export function FUN_005e77ed(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 235 bytes
 // ============================================================
 
-export function FUN_005e78c6(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e78c6(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5750,7 +5763,7 @@ export function FUN_005e78c6(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 127 bytes
 // ============================================================
 
-export function FUN_005e79b1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e79b1(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let iVar1;
@@ -5774,7 +5787,7 @@ export function FUN_005e79b1(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 94 bytes
 // ============================================================
 
-export function FUN_005e7a30(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7a30(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -5794,7 +5807,7 @@ export function FUN_005e7a30(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 266 bytes
 // ============================================================
 
-export function FUN_005e7a8e(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7a8e(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5830,7 +5843,7 @@ export function FUN_005e7a8e(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 284 bytes
 // ============================================================
 
-export function FUN_005e7b98(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e7b98(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -5873,7 +5886,7 @@ export function FUN_005e7b98(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 229 bytes
 // ============================================================
 
-export function FUN_005e7cb4(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+export function FUN_005e7cb4(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
 
 
 
@@ -5906,7 +5919,7 @@ export function FUN_005e7cb4(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 247 bytes
 // ============================================================
 
-export function FUN_005e7d99(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7d99(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5944,7 +5957,7 @@ export function FUN_005e7d99(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 139 bytes
 // ============================================================
 
-export function FUN_005e7e90(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e7e90(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -5969,7 +5982,7 @@ export function FUN_005e7e90(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 106 bytes
 // ============================================================
 
-export function FUN_005e7f1b(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e7f1b(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -5991,7 +6004,7 @@ export function FUN_005e7f1b(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 232 bytes
 // ============================================================
 
-export function FUN_005e7f85(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e7f85(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   let iVar1;
@@ -6015,7 +6028,7 @@ export function FUN_005e7f85(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 181 bytes
 // ============================================================
 
-export function FUN_005e806d(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e806d(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -6036,7 +6049,7 @@ export function FUN_005e806d(in_ECX = G.in_ECX, param_1) {
 // Size: 244 bytes
 // ============================================================
 
-export function FUN_005e8122(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+export function FUN_005e8122(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
 
 
 
@@ -6062,7 +6075,7 @@ export function FUN_005e8122(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 229 bytes
 // ============================================================
 
-export function FUN_005e8216(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4) {
+export function FUN_005e8216(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4) {
 
 
   // in_ECX → promoted to parameter
@@ -6105,7 +6118,7 @@ export function CReObject_005E82FB(_this) {
 // Size: 141 bytes
 // ============================================================
 
-export function FUN_005e833b(in_ECX = G.in_ECX) {
+export function FUN_005e833b(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6133,7 +6146,7 @@ export function FUN_005e833b(in_ECX = G.in_ECX) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005e83c8(in_ECX = G.in_ECX) {
+export function FUN_005e83c8(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -6152,7 +6165,7 @@ export function FUN_005e83c8(in_ECX = G.in_ECX) {
 // Size: 619 bytes
 // ============================================================
 
-export function FUN_005e8401(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e8401(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -6223,7 +6236,7 @@ export function FUN_005e8401(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 134 bytes
 // ============================================================
 
-export function FUN_005e866c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e866c(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   let uVar1;
@@ -6247,7 +6260,7 @@ export function FUN_005e866c(in_ECX = G.in_ECX, param_1, param_2, param_3) {
 // Size: 71 bytes
 // ============================================================
 
-export function FUN_005e86f2(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005e86f2(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -6267,7 +6280,7 @@ export function FUN_005e86f2(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 105 bytes
 // ============================================================
 
-export function FUN_005e8739(in_ECX = G.in_ECX) {
+export function FUN_005e8739(in_ECX = globalThis.in_ECX) {
 
 
   let uVar1;
@@ -6288,7 +6301,7 @@ export function FUN_005e8739(in_ECX = G.in_ECX) {
 // Size: 484 bytes
 // ============================================================
 
-export function FUN_005e87a2(in_ECX = G.in_ECX, param_1) {
+export function FUN_005e87a2(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let cVar1;
@@ -6346,7 +6359,7 @@ export function FUN_005e87a2(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005e8990(in_ECX = G.in_ECX, param_1, param_2, param_3) {
+export function FUN_005e8990(in_ECX = globalThis.in_ECX, param_1, param_2, param_3) {
 
 
   // in_ECX → promoted to parameter
@@ -6375,28 +6388,28 @@ export function register_wndclass_89D0_005E89D0() {
   local_2c[0].lpfnWndProc = FUN_005ef6cb;
   local_2c[0].cbClsExtra = 8;
   local_2c[0].cbWndExtra = 0;
-  local_2c[0].hInstance = s32(G.DAT_006e4ff0, 0);
+  local_2c[0].hInstance = DAT_006e4ff0;
   local_2c[0].hIcon = 0x0;
   local_2c[0].hCursor = LoadCursorA(0x0,0x7f00);
   local_2c[0].hbrBackground = 0x0;
   local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSDirectWindow_006394c4;
   RegisterClassA(local_2c[0]);
-  iVar1 = DirectDrawCreate(0,s32(G.DAT_006394c0, 0),0);
+  iVar1 = DirectDrawCreate(0,DAT_006394c0,0);
   if (iVar1 === 0) {
-    _DAT_006e50e8 = 0x13c;
-    _DAT_006e5228 = 0x13c;
+    globalThis.DAT_006e50e8 = 0x13c;
+    globalThis.DAT_006e5228 = 0x13c;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x2c))(DAT_006394c0,&DAT_006e50e8,&DAT_006e5228); */;
-    if ((s32(G.DAT_006e50ec, 0) & 0x40) === 0) {
+    if ((DAT_006e50ec & 0x40) === 0) {
       debug_log(s_Direct_Draw__Doesn_t_Supports_Ha_006394f8);
     }
-    if ((s32(G.DAT_006e50ee, 0) & 0x40) === 0) {
+    if ((DAT_006e50ee & 0x40) === 0) {
       debug_log(s_Direct_Draw__Doesn_t_Supports_Co_00639524);
     }
-    if ((s32(G.DAT_006e50ef, 0) & 4) === 0) {
+    if ((DAT_006e50ef & 4) === 0) {
       debug_log(s_Direct_Draw__Doesn_t_Supports_Co_0063954c);
     }
-    if ((s32(G.DAT_006e50ef, 0) & 8) !== 0) {
+    if ((DAT_006e50ef & 8) !== 0) {
       debug_log(s_Direct_Draw__Device_is_Bank_Swit_00639578);
     }
     uVar2 = 1;
@@ -6418,10 +6431,10 @@ export function register_wndclass_89D0_005E89D0() {
 export function FUN_005e8b04() {
 
 
-  if (s32(G.DAT_006394c0, 0) !== 0x0) {
+  if (DAT_006394c0 !== 0x0) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
-    w32(G.DAT_006394c0, 0, 0x0);
-    UnregisterClassA(s_MSDirectWindow_006395a0,s32(G.DAT_006e4ff0, 0));
+    globalThis.DAT_006394c0 = 0x0;
+    UnregisterClassA(s_MSDirectWindow_006395a0,DAT_006e4ff0);
   }
   return;
 }
@@ -6441,7 +6454,7 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
   let local_c;
   let local_8 = [0];
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -6451,7 +6464,7 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
       local_410[(param_1 + local_c) * 4 + 2] = param_3[2];
       param_3 = param_3 + 3;
     }
-    local_10 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x14) */)(s32(G.DAT_006394c0, 0),0x44,local_410,local_8[0],0);
+    local_10 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x14) */)(DAT_006394c0,0x44,local_410,local_8[0],0);
     if (local_10 !== 0) {
       FUN_005d2279(s_DD__CreatePalette_error_006395b0,local_10 & 0xffff);
       local_8[0] = 0;
@@ -6490,14 +6503,14 @@ export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0x0) && (s32(G.DAT_006394c0, 0) !== 0x0)) {
+  if ((param_1 !== 0x0) && (DAT_006394c0 !== 0x0)) {
     for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
       local_40c[local_8 * 4] = s32(param_4, 0);
       local_40c[local_8 * 4 + 1] = param_4[1];
       local_40c[local_8 * 4 + 2] = param_4[2];
       param_4 = param_4 + 3;
     }
-    local_c = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x58) */)(s32(G.DAT_006394c0, 0),1,0);
+    local_c = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x58) */)(DAT_006394c0,1,0);
     if (local_c !== 0) {
       FUN_005d2279(s_DD__SetPalette_WaitForBlank_erro_006395c8,local_c & 0xffff);
     }
@@ -6594,7 +6607,7 @@ export function FUN_005e8eb0(param_1) {
   let local_5c;
   let local_8;
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6606,7 +6619,7 @@ export function FUN_005e8eb0(param_1) {
       local_8 = 0x218;
     }
     local_5c = param_1;
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(s32(G.DAT_006394c0, 0),local_70[0],local_74[0],0);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(DAT_006394c0,local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__CreatePrimarySurface_failed_00639618,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -6661,7 +6674,7 @@ export function FUN_005e8fb7(param_1, param_2) {
   let local_64;
   let local_8;
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6673,7 +6686,7 @@ export function FUN_005e8fb7(param_1, param_2) {
     }
     local_64 = FUN_00407f90(param_1);
     local_68 = FUN_00407fc0(param_1);
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(s32(G.DAT_006394c0, 0),local_70[0],local_74[0],0);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(DAT_006394c0,local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__CreateOffscreenSurface_faile_00639658,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -7180,7 +7193,7 @@ export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_
     if (iVar2 === 0) {
       h = SelectObject(local_20[0],s32(local_8, 0));
       SetBkMode(local_20[0],1);
-      SetTextColor(local_20[0],((((s32(G.DAT_006e5226, 0)) << 16 | (((s32(G.DAT_006e5225, 0)) << 8 | (s32(G.DAT_006e5224, 0)))))) >>> 0));
+      SetTextColor(local_20[0],((((DAT_006e5226) << 16 | (((DAT_006e5225) << 8 | (DAT_006e5224))))) >>> 0));
       iVar2 = FUN_00407fc0(local_18[0]);
       iVar2 = iVar2 / 2;
       iVar3 = FUN_00407f90(local_18[0]);
@@ -7253,7 +7266,7 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
     if (iVar2 === 0) {
       h = SelectObject(local_c[0],s32(local_8, 0));
       SetBkMode(local_c[0],1);
-      SetTextColor(local_c[0],((((s32(G.DAT_006e5226, 0)) << 16 | (((s32(G.DAT_006e5225, 0)) << 8 | (s32(G.DAT_006e5224, 0)))))) >>> 0));
+      SetTextColor(local_c[0],((((DAT_006e5226) << 16 | (((DAT_006e5225) << 8 | (DAT_006e5224))))) >>> 0));
       local_18 = 0;
       if (param_5 === 0) {
         local_18 = 0x25;
@@ -7314,7 +7327,7 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
     if (iVar2 === 0) {
       h = SelectObject(local_c[0],s32(local_8, 0));
       SetBkMode(local_c[0],1);
-      SetTextColor(local_c[0],((((s32(G.DAT_006e5226, 0)) << 16 | (((s32(G.DAT_006e5225, 0)) << 8 | (s32(G.DAT_006e5224, 0)))))) >>> 0));
+      SetTextColor(local_c[0],((((DAT_006e5226) << 16 | (((DAT_006e5225) << 8 | (DAT_006e5224))))) >>> 0));
       local_18 = 0x10;
       if (param_5 === 0) {
         local_18 = 0x11;
@@ -7362,7 +7375,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
     iVar2 = (true /* DEVIATION: C pointer — **(code **)(s32(param_1, 0) + 0x44) */)(param_1,local_10[0]);
     if (iVar2 === 0) {
       SetBkMode(local_10[0],1);
-      local_c = CreatePen(0,1,((((s32(G.DAT_006e5226, 0)) << 16 | (((s32(G.DAT_006e5225, 0)) << 8 | (s32(G.DAT_006e5224, 0)))))) >>> 0));
+      local_c = CreatePen(0,1,((((DAT_006e5226) << 16 | (((DAT_006e5225) << 8 | (DAT_006e5224))))) >>> 0));
       local_8 = SelectObject(local_10[0],local_c);
       MoveToEx(local_10[0],param_2,param_3,0x0);
       LineTo(local_10[0],param_4,param_5);
@@ -7633,7 +7646,7 @@ export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_
 // Size: 72 bytes
 // ============================================================
 
-export function FUN_005ea578(in_EAX = G.in_EAX, param_1) {
+export function FUN_005ea578(in_EAX = globalThis.in_EAX, param_1) {
 
 
   // in_EAX → promoted to parameter
@@ -7694,7 +7707,7 @@ export function FUN_005ea610(param_1) {
 
   let local_8;
   
-  if (s32(G.DAT_006394c0, 0) !== 0x0) {
+  if (DAT_006394c0 !== 0x0) {
     if (param_1 === 0) {
       local_8 = 4;
     }
@@ -7713,18 +7726,18 @@ export function FUN_005ea610(param_1) {
 // Size: 77 bytes
 // ============================================================
 
-export function FUN_005ea677(in_EAX = G.in_EAX) {
+export function FUN_005ea677(in_EAX = globalThis.in_EAX) {
 
 
   // in_EAX → promoted to parameter
   let uVar1;
   let local_8 = new Array(4).fill(0);
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x44) */)(s32(G.DAT_006394c0, 0),local_8);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x44) */)(DAT_006394c0,local_8);
     if (uVar1 === 0) {
       uVar1 = ((local_8[0]) >>> 0);
     }
@@ -7748,11 +7761,11 @@ export function FUN_005ea6c4() {
   let iVar1;
   let local_8 = [0];
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
-    iVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x40) */)(s32(G.DAT_006394c0, 0),local_8[0]);
+    iVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x40) */)(DAT_006394c0,local_8[0]);
     if (iVar1 !== 0) {
       local_8[0] = 0;
     }
@@ -7773,11 +7786,11 @@ export function FUN_005ea711() {
   let uVar1;
   let local_8 = [0];
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x3c) */)(s32(G.DAT_006394c0, 0),local_8[0]);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x3c) */)(DAT_006394c0,local_8[0]);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__GetMonitorFrequency_failed_006397c8,uVar1 & 0xffff);
       local_8[0] = 0;
@@ -8275,7 +8288,7 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eb2f0(in_ECX = G.in_ECX) {
+export function FUN_005eb2f0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -8293,7 +8306,7 @@ export function FUN_005eb2f0(in_ECX = G.in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eb330(in_ECX = G.in_ECX) {
+export function FUN_005eb330(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -8360,7 +8373,7 @@ export function FUN_005eb3ed(param_1) {
   let iVar1;
   let local_8;
   
-  local_8 = u32(G.DAT_006397e8, (param_1 & 0xff) * 4);
+  local_8 = u32(DAT_006397e8, (param_1 & 0xff) * 4);
   if (local_8 !== 0) {
     iVar1 = FUN_005ecf20();
     if (iVar1 !== 0) {
@@ -8407,7 +8420,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
   sVar1 = ((param_4 >> 0x10) << 16 >> 16);
   if (param_2 < 0x11) {
     if (param_2 === 0x10) {
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       iVar5 = FUN_005ed250();
       if (iVar5 !== 0) {
         uVar2 = fill_rect_BE88(param_1,0x10,param_3,param_4);
@@ -8421,14 +8434,14 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
         return uVar2;
       case 3:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed360((param_4) << 16 >> 16,sVar1);
         uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
         return uVar2;
       default:
         switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
       case 5:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         BVar6 = IsIconic(param_1);
         if (BVar6 === 0) {
           FUN_005ed580((param_4) << 16 >> 16,sVar1);
@@ -8437,14 +8450,14 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
         return uVar2;
       case 7:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed2f0();
       }
     }
   }
   else if (param_2 < 0x45) {
     if (param_2 === 0x44) {
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       FUN_005ed3a0(param_4 & 0xffff);
       return 1;
     }
@@ -8462,48 +8475,48 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
   }
   else if (param_2 < 0x112) {
     if (param_2 === 0x111) {
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       if (((param_4) << 16 >> 16) === 0) {
         FUN_005ec1a1(param_1,param_3);
       }
     }
     else if (param_2 === 0x100) {
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       uVar3 = FUN_005eb3ed(param_3);
       FUN_005ed150(uVar3);
       uVar3 = FUN_005eb3ed(param_3);
       FUN_005ed1d0(uVar3);
     }
     else if (param_2 === 0x101) {
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       uVar3 = FUN_005eb3ed(param_3);
       FUN_005ed190(uVar3);
     }
     else {
       if (param_2 !== 0x102) switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
-      w32(G.DAT_00637ea4, 0, local_14);
+      globalThis.DAT_00637ea4 = local_14;
       FUN_005ed210(((param_3) >>> 0) & 0xff);
     }
   }
   else if (param_2 < 0x120) {
     if (param_2 === 0x11f) {
       if ((((param_3) >>> 0) >> 0x10 === 0xffff) && (param_4 === 0)) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005c63af(0xffffffff);
       }
       else {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005c63af(((param_3) >>> 0) & 0xffff);
       }
     }
     else {
       if (param_2 === 0x112) {
         if (param_3 === 0xf020) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
         else {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
           }
@@ -8519,7 +8532,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + -1;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_1c);
           FUN_005ed3e0(local_1c);
           break;
@@ -8527,7 +8540,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + 1;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_1c);
           FUN_005ed3e0(local_1c);
           break;
@@ -8536,7 +8549,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_1c);
           FUN_005ed3e0(local_1c);
           break;
@@ -8545,19 +8558,19 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_1c);
           FUN_005ed3e0(local_1c);
           break;
         case 0x4:
           local_1c = sVar1;
           SetScrollPos(param_1,0,local_1c,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_1c);
           FUN_005ed3e0(s32(local_14, 0xb0));
           break;
         case 0x5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed420(sVar1);
         }
       }
@@ -8569,7 +8582,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + -1;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_1c);
           FUN_005ed460(local_1c);
           break;
@@ -8577,7 +8590,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + 1;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_1c);
           FUN_005ed460(local_1c);
           break;
@@ -8586,7 +8599,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_1c);
           FUN_005ed460(local_1c);
           break;
@@ -8595,19 +8608,19 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_1c);
           FUN_005ed460(local_1c);
           break;
         case 0x4:
           local_1c = sVar1;
           SetScrollPos(param_1,1,local_1c,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_1c);
           FUN_005ed460(s32(local_14, 0xb4));
           break;
         case 0x5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed4a0(sVar1);
         }
       }
@@ -8633,7 +8646,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         if (param_2 === 0x231) {
           GetWindowLongA(param_1,0);
           FUN_00414d10();
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed520();
           uVar2 = fill_rect_BE88(param_1,0x231,param_3,param_4);
           return uVar2;
@@ -8641,7 +8654,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         if (param_2 === 0x232) {
           GetWindowLongA(param_1,0);
           FUN_00414d10();
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed550();
           uVar2 = fill_rect_BE88(param_1,0x232,param_3,param_4);
           return uVar2;
@@ -8673,24 +8686,24 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
     }
     if (param_2 === 0x210) {
       if ((((param_3) >>> 0) & 0xffff) === 0x201) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
       }
       else if ((((param_3) >>> 0) & 0xffff) === 0x204) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
     else {
       switch(param_2) {
       case 0x200:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50((param_4) << 16 >> 16,sVar1);
         break;
       case 0x201:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(iVar5[0x49]) & 2) !== 0) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
@@ -8699,7 +8712,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         FUN_005ecf90((param_4) << 16 >> 16,sVar1);
         break;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010((param_4) << 16 >> 16,sVar1);
@@ -8707,7 +8720,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         break;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110((param_4) << 16 >> 16,sVar1);
         break;
       case 0x204:
@@ -8717,12 +8730,12 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050((param_4) << 16 >> 16,sVar1);
         break;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0((param_4) << 16 >> 16,sVar1);
@@ -8754,7 +8767,7 @@ export function FUN_005ec1a1(param_1, param_2) {
   GetWindowLongA(param_1,4);
   cVar1 = FUN_005ed5f0(param_2);
   if (cVar1 === 0) {
-    w32(G.DAT_006e5368, 0, 0);
+    globalThis.DAT_006e5368 = 0;
     pHVar2 = GetMenu(param_1);
     if (pHVar2 !== 0x0) {
       uVar3 = FUN_005ec23a(pHVar2,param_2);
@@ -8781,7 +8794,7 @@ export function FUN_005ec23a(param_1, param_2) {
   let local_8;
   
   local_c = 0;
-  w32(G.DAT_006e5368, 0, s32(G.DAT_006e5368, 0) + 1);
+  globalThis.DAT_006e5368 = DAT_006e5368 + 1;
   iVar1 = GetMenuItemCount(param_1);
   for (local_8 = 0; local_8 < iVar1; local_8 = local_8 + 1) {
     UVar2 = GetMenuItemID(param_1,local_8);
@@ -8795,7 +8808,7 @@ export function FUN_005ec23a(param_1, param_2) {
     else {
       UVar2 = GetMenuItemID(param_1,local_8);
       if (param_2 === UVar2) {
-        local_c = (local_8 + 1) * 0x10000 | s32(G.DAT_006e5368, 0) - 1;
+        local_c = (local_8 + 1) * 0x10000 | DAT_006e5368 - 1;
         local_8 = iVar1 + 1;
       }
     }
@@ -8839,7 +8852,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
     if (param_2 !== 0x10) {
       switch(param_2) {
       case 3:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed360(param_4 & 0xffff,param_4 >> 0x10);
         uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
         return uVar2;
@@ -8847,7 +8860,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_24, local_34, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
       case 5:
 // switchD_005ecda6_caseD_5: (code below also in switchD_005ecda6_caseD_5_helper, kept for 1:1 audit)
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         BVar3 = IsIconic(param_1);
         if (BVar3 === 0) {
           FUN_005ed580(param_4 & 0xffff,param_4 >> 0x10);
@@ -8858,12 +8871,12 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       case 6:
         switchD_005ecda6_caseD_6_helper(local_10, local_14, local_34, param_1, param_2, param_3, param_4, uVar2); return;
       case 7:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed2f0();
         return 0;
       }
     }
-    w32(G.DAT_00637ea4, 0, local_14);
+    globalThis.DAT_00637ea4 = local_14;
     iVar4 = FUN_005ed250();
     if (iVar4 !== 0) {
       uVar2 = fill_rect_BE88(param_1,0x10,param_3,param_4);
@@ -8873,7 +8886,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
   else {
     if (param_2 < 0x45) {
       if (param_2 === 0x44) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed3a0(param_4 & 0xffff);
         return 1;
       }
@@ -8897,11 +8910,11 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
     }
     if (param_2 < 0x112) {
       if (param_2 === 0x111) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         return 0;
       }
       if (param_2 === 0x100) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed150(uVar2);
         uVar2 = FUN_005eb3ed(param_3);
@@ -8909,13 +8922,13 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         return 0;
       }
       if (param_2 === 0x101) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed190(uVar2);
         return 0;
       }
       if (param_2 === 0x102) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed210(param_3 & 0xff);
         return 0;
       }
@@ -8923,17 +8936,17 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
     }
     if (param_2 < 0x201) {
       if (param_2 === 0x200) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
       if (param_2 === 0x112) {
         if (param_3 === 0xf020) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
         else {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
           }
@@ -8949,7 +8962,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -8957,7 +8970,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -8966,7 +8979,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -8975,19 +8988,19 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,0,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(s32(local_14, 0xb0));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed420(sVar1);
           return 0;
         default:
@@ -9001,7 +9014,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -9009,7 +9022,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -9018,7 +9031,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -9027,19 +9040,19 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,1,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(s32(local_14, 0xb4));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed4a0(sVar1);
           return 0;
         default:
@@ -9051,14 +9064,14 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
     if (param_2 < 0x211) {
       if (param_2 === 0x210) {
         if (param_3 === 0x201) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
           return 0;
         }
         if (param_3 !== 0x204) {
           return 0;
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
@@ -9066,7 +9079,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       case 0x201:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(local_24[0x49]) & 2) !== 0) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
@@ -9075,7 +9088,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010(param_4 & 0xffff,param_4 >> 0x10);
@@ -9083,7 +9096,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x204:
@@ -9093,12 +9106,12 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0(param_4 & 0xffff,param_4 >> 0x10);
@@ -9182,7 +9195,7 @@ export function FUN_005ecf20() {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005ecf50(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ecf50(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9200,7 +9213,7 @@ export function FUN_005ecf50(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ecf90(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ecf90(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9218,7 +9231,7 @@ export function FUN_005ecf90(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ecfd0(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ecfd0(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9236,7 +9249,7 @@ export function FUN_005ecfd0(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed010(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed010(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9254,7 +9267,7 @@ export function FUN_005ed010(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed050(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed050(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9272,7 +9285,7 @@ export function FUN_005ed050(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed090(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed090(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9290,7 +9303,7 @@ export function FUN_005ed090(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed0d0(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed0d0(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9308,7 +9321,7 @@ export function FUN_005ed0d0(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed110(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed110(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9326,7 +9339,7 @@ export function FUN_005ed110(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed150(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed150(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9344,7 +9357,7 @@ export function FUN_005ed150(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed190(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed190(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9362,7 +9375,7 @@ export function FUN_005ed190(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed1d0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed1d0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9380,7 +9393,7 @@ export function FUN_005ed1d0(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed210(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed210(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9398,7 +9411,7 @@ export function FUN_005ed210(in_ECX = G.in_ECX, param_1) {
 // Size: 48 bytes
 // ============================================================
 
-export function FUN_005ed250(in_ECX = G.in_ECX) {
+export function FUN_005ed250(in_ECX = globalThis.in_ECX) {
 
 
   let uVar1;
@@ -9420,7 +9433,7 @@ export function FUN_005ed250(in_ECX = G.in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed290(in_ECX = G.in_ECX) {
+export function FUN_005ed290(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9438,7 +9451,7 @@ export function FUN_005ed290(in_ECX = G.in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed2c0(in_ECX = G.in_ECX) {
+export function FUN_005ed2c0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9456,7 +9469,7 @@ export function FUN_005ed2c0(in_ECX = G.in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed2f0(in_ECX = G.in_ECX) {
+export function FUN_005ed2f0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9474,7 +9487,7 @@ export function FUN_005ed2f0(in_ECX = G.in_ECX) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed320(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed320(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9492,7 +9505,7 @@ export function FUN_005ed320(in_ECX = G.in_ECX, param_1) {
 // Size: 54 bytes
 // ============================================================
 
-export function FUN_005ed360(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed360(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9510,7 +9523,7 @@ export function FUN_005ed360(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed3a0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed3a0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9528,7 +9541,7 @@ export function FUN_005ed3a0(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed3e0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed3e0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9546,7 +9559,7 @@ export function FUN_005ed3e0(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed420(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed420(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9564,7 +9577,7 @@ export function FUN_005ed420(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed460(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed460(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9582,7 +9595,7 @@ export function FUN_005ed460(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed4a0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed4a0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9600,7 +9613,7 @@ export function FUN_005ed4a0(in_ECX = G.in_ECX, param_1) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ed4e0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed4e0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9618,7 +9631,7 @@ export function FUN_005ed4e0(in_ECX = G.in_ECX, param_1) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed520(in_ECX = G.in_ECX) {
+export function FUN_005ed520(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9636,7 +9649,7 @@ export function FUN_005ed520(in_ECX = G.in_ECX) {
 // Size: 41 bytes
 // ============================================================
 
-export function FUN_005ed550(in_ECX = G.in_ECX) {
+export function FUN_005ed550(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9667,7 +9680,7 @@ export function FUN_005ed580() {
 // Size: 69 bytes
 // ============================================================
 
-export function FUN_005ed5a0(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ed5a0(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -9687,7 +9700,7 @@ export function FUN_005ed5a0(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 65 bytes
 // ============================================================
 
-export function FUN_005ed5f0(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ed5f0(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -9797,7 +9810,7 @@ export function IsTracking_005ED6C0(_this) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005ed6e0(in_ECX = G.in_ECX) {
+export function FUN_005ed6e0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -9878,17 +9891,17 @@ export function FUN_005ed920() {
   local_c = CreateFileA(s_smeds_log_00639bec,0xc0000000,0,0x0,2,0x80, 0x0);
                         /*JOINED*/
   if (local_c !== 0xffffffff) {
-    w32(G.DAT_00639be8, 0, 0x01);
+    globalThis.DAT_00639be8 = 0x01;
   }
   FUN_005f22d0(local_40c,s______________________SMEDS_LOG___00639bf8);
   FUN_005f22e0(local_40c,s_File_Output_to__00639c30);
   FUN_005f22e0(local_40c,s_smeds_log_00639c44);
-  FUN_005f22e0(local_40c,s32(G.DAT_00639c50, 0));
+  FUN_005f22e0(local_40c,DAT_00639c50);
   FUN_005f22e0(local_40c,s_SMEDS32_Version__00639c54);
   _sprintf(local_42c,s__d__d__d_00639c68,2,0,0);
   FUN_005f22e0(local_40c,local_42c);
-  FUN_005f22e0(local_40c,s32(G.DAT_00639c7c, 0));
-  if (s32(G.DAT_00639be8, 0) !== 0) {
+  FUN_005f22e0(local_40c,DAT_00639c7c);
+  if (DAT_00639be8 !== 0) {
     lpOverlapped = 0x0;
     lpNumberOfBytesWritten = local_8[0];
     nNumberOfBytesToWrite = _strlen(local_40c);
@@ -9917,7 +9930,7 @@ export function FUN_005eda65() {
   let local_8 = [0];
   
   local_c = 0x0;
-  if (s32(G.DAT_00639be8, 0) !== 0) {
+  if (DAT_00639be8 !== 0) {
     local_c = CreateFileA(s_smeds_log_00639c84,0xc0000000,0,0x0,3,0x80, 0x0);
                           /*JOINED*/
     SetFilePointer(local_c,0,0x0,2);
@@ -9948,7 +9961,7 @@ export function FUN_005edb15(param_1) {
   let lpOverlapped;
   let local_8 = [0];
   
-  if (s32(G.DAT_00639be8, 0) !== 0) {
+  if (DAT_00639be8 !== 0) {
     hFile = CreateFileA(s_smeds_log_00639ccc,0xc0000000,0,0x0,3,0x80, 0x0);
                         /*JOINED*/
     SetFilePointer(hFile,0,0x0,2);
@@ -9956,7 +9969,7 @@ export function FUN_005edb15(param_1) {
     lpNumberOfBytesWritten = local_8[0];
     nNumberOfBytesToWrite = _strlen(param_1);
     WriteFile(hFile,param_1,nNumberOfBytesToWrite,lpNumberOfBytesWritten,lpOverlapped);
-    WriteFile(hFile,s32(G.DAT_00639cd8, 0),2,local_8[0],0x0);
+    WriteFile(hFile,DAT_00639cd8,2,local_8[0],0x0);
     CloseHandle(hFile);
   }
   return 1;
@@ -9973,7 +9986,7 @@ export function FUN_005edbb2(param_1) {
 
 
   OutputDebugStringA(param_1);
-  OutputDebugStringA(s32(G.DAT_00639cdc, 0));
+  OutputDebugStringA(DAT_00639cdc);
   return 1;
 }
 
@@ -10192,9 +10205,9 @@ export function FUN_005ede3b() {
   
   local_8 = mciGetDeviceIDA(s_avivideo_00639d1c);
   mciSendCommandA(local_8,0x804,0,local_c);
-  if (s32(G.DAT_00639d0c, 0) !== 0x0) {
-    DeleteObject(s32(G.DAT_00639d0c, 0));
-    w32(G.DAT_00639d0c, 0, 0x0);
+  if (DAT_00639d0c !== 0x0) {
+    DeleteObject(DAT_00639d0c);
+    globalThis.DAT_00639d0c = 0x0;
   }
   return;
 }
@@ -10483,7 +10496,7 @@ export function FUN_005ee0b1(param_1, param_2, param_3, param_4, param_5, param_
   else {
     local_30 = param_3;
   }
-  pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28, local_24,local_20,0x0,s32(G.DAT_006e4ff0, 0),0x0);
+  pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28, local_24,local_20,0x0,DAT_006e4ff0,0x0);
                            /*JOINED*/
   puVar2[1] = pHVar4;
   FUN_005bc1b5(puVar2[1]);
@@ -10624,12 +10637,12 @@ export function FUN_005ee591(param_1, param_2) {
   for (local_3c = 0; local_3c < 0xec; local_3c = local_3c + 1) {
     // DEVIATION: C struct — plpal->palPalEntry[local_3c].peFlags = 0x04;
   }
-  w32(G.DAT_00639d0c, 0, CreatePalette(plpal));
+  globalThis.DAT_00639d0c = CreatePalette(plpal);
   pvVar1 = GlobalHandle(plpal);
   GlobalUnlock(pvVar1);
   pvVar1 = GlobalHandle(plpal);
   GlobalFree(pvVar1);
-  local_30 = s32(G.DAT_00639d0c, 0);
+  local_30 = DAT_00639d0c;
   mciSendCommandA(s32(param_1, 8),0x876,0x4007,local_38);
   local_14 = 0x4004;
   mciSendCommandA(s32(param_1, 8),0x814,0x100,local_1c);
@@ -10645,7 +10658,7 @@ export function FUN_005ee591(param_1, param_2) {
 // Size: 50 bytes
 // ============================================================
 
-export function FUN_005ee6b1(in_ECX = G.in_ECX) {
+export function FUN_005ee6b1(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10664,7 +10677,7 @@ export function FUN_005ee6b1(in_ECX = G.in_ECX) {
 // Size: 116 bytes
 // ============================================================
 
-export function FUN_005ee6e3(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ee6e3(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -10674,7 +10687,7 @@ export function FUN_005ee6e3(in_ECX = G.in_ECX, param_1, param_2) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
-  iVar1 = FUN_00414d10(s32(G.DAT_006e4ff0, 0),0x4000010a,param_2);
+  iVar1 = FUN_00414d10(DAT_006e4ff0,0x4000010a,param_2);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
   w32(in_ECX, 0, iVar1);
   SendMessageA(s32(in_ECX, 0),0x477,0,0x639d44);
@@ -10688,7 +10701,7 @@ export function FUN_005ee6e3(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_005ee757(in_ECX = G.in_ECX) {
+export function FUN_005ee757(in_ECX = globalThis.in_ECX) {
 
 
   let iVar1;
@@ -10698,7 +10711,7 @@ export function FUN_005ee757(in_ECX = G.in_ECX) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
-  iVar1 = FUN_00414d10(s32(G.DAT_006e4ff0, 0),0x4000010a,0);
+  iVar1 = FUN_00414d10(DAT_006e4ff0,0x4000010a,0);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
   w32(in_ECX, 0, iVar1);
   return;
@@ -10711,7 +10724,7 @@ export function FUN_005ee757(in_ECX = G.in_ECX) {
 // Size: 116 bytes
 // ============================================================
 
-export function FUN_005ee7b1(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005ee7b1(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -10724,7 +10737,7 @@ export function FUN_005ee7b1(in_ECX = G.in_ECX, param_1, param_2) {
     FUN_005ee94b();
   }
   uVar3 = 0x4000010a;
-  uVar2 = s32(G.DAT_006e4ff0, 0);
+  uVar2 = DAT_006e4ff0;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(param_1);');
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,param_2);
   w32(in_ECX, 0, iVar1);
@@ -10739,7 +10752,7 @@ export function FUN_005ee7b1(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 90 bytes
 // ============================================================
 
-export function FUN_005ee825(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ee825(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let iVar1;
@@ -10754,7 +10767,7 @@ export function FUN_005ee825(in_ECX = G.in_ECX, param_1) {
   }
   uVar4 = 0;
   uVar3 = 0x4000010a;
-  uVar2 = s32(G.DAT_006e4ff0, 0);
+  uVar2 = DAT_006e4ff0;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(param_1);');
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,uVar4);
   w32(in_ECX, 0, iVar1);
@@ -10768,7 +10781,7 @@ export function FUN_005ee825(in_ECX = G.in_ECX, param_1) {
 // Size: 71 bytes
 // ============================================================
 
-export function FUN_005ee87f(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ee87f(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10785,7 +10798,7 @@ export function FUN_005ee87f(in_ECX = G.in_ECX, param_1) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee8c6(in_ECX = G.in_ECX) {
+export function FUN_005ee8c6(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10801,7 +10814,7 @@ export function FUN_005ee8c6(in_ECX = G.in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee8f1(in_ECX = G.in_ECX) {
+export function FUN_005ee8f1(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10817,7 +10830,7 @@ export function FUN_005ee8f1(in_ECX = G.in_ECX) {
 // Size: 47 bytes
 // ============================================================
 
-export function FUN_005ee91c(in_ECX = G.in_ECX, param_1) {
+export function FUN_005ee91c(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10833,7 +10846,7 @@ export function FUN_005ee91c(in_ECX = G.in_ECX, param_1) {
 // Size: 70 bytes
 // ============================================================
 
-export function FUN_005ee94b(in_ECX = G.in_ECX) {
+export function FUN_005ee94b(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10851,7 +10864,7 @@ export function FUN_005ee94b(in_ECX = G.in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee991(in_ECX = G.in_ECX) {
+export function FUN_005ee991(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10867,7 +10880,7 @@ export function FUN_005ee991(in_ECX = G.in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee9bc(in_ECX = G.in_ECX) {
+export function FUN_005ee9bc(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10883,7 +10896,7 @@ export function FUN_005ee9bc(in_ECX = G.in_ECX) {
 // Size: 43 bytes
 // ============================================================
 
-export function FUN_005ee9e7(in_ECX = G.in_ECX) {
+export function FUN_005ee9e7(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10899,7 +10912,7 @@ export function FUN_005ee9e7(in_ECX = G.in_ECX) {
 // Size: 40 bytes
 // ============================================================
 
-export function FUN_005eea12(in_ECX = G.in_ECX, param_1) {
+export function FUN_005eea12(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -10915,7 +10928,7 @@ export function FUN_005eea12(in_ECX = G.in_ECX, param_1) {
 // Size: 163 bytes
 // ============================================================
 
-export function FUN_005eea3a(in_ECX = G.in_ECX) {
+export function FUN_005eea3a(in_ECX = globalThis.in_ECX) {
 
 
   let iVar1;
@@ -10945,7 +10958,7 @@ export function FUN_005eea3a(in_ECX = G.in_ECX) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeadd(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005eeadd(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -10961,7 +10974,7 @@ export function FUN_005eeadd(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeb11(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005eeb11(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   // in_ECX → promoted to parameter
@@ -10977,7 +10990,7 @@ export function FUN_005eeb11(in_ECX = G.in_ECX, param_1, param_2) {
 // Size: 57 bytes
 // ============================================================
 
-export function FUN_005eeb45(in_ECX = G.in_ECX) {
+export function FUN_005eeb45(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -10994,7 +11007,7 @@ export function FUN_005eeb45(in_ECX = G.in_ECX) {
 // Size: 36 bytes
 // ============================================================
 
-export function FUN_005eeb7e(in_ECX = G.in_ECX) {
+export function FUN_005eeb7e(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11010,7 +11023,7 @@ export function FUN_005eeb7e(in_ECX = G.in_ECX) {
 // Size: 52 bytes
 // ============================================================
 
-export function FUN_005eeba2(in_ECX = G.in_ECX, param_1) {
+export function FUN_005eeba2(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let wParam;
@@ -11030,7 +11043,7 @@ export function FUN_005eeba2(in_ECX = G.in_ECX, param_1) {
 // Size: 159 bytes
 // ============================================================
 
-export function FUN_005eebd6(in_ECX = G.in_ECX) {
+export function FUN_005eebd6(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11074,7 +11087,7 @@ export function IsTracking_005EEC80(_this) {
 // Size: 35 bytes
 // ============================================================
 
-export function FUN_005eeca0(in_ECX = G.in_ECX) {
+export function FUN_005eeca0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11090,7 +11103,7 @@ export function FUN_005eeca0(in_ECX = G.in_ECX) {
 // Size: 88 bytes
 // ============================================================
 
-export function FUN_005eecc3(in_ECX = G.in_ECX, param_1) {
+export function FUN_005eecc3(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let iVar1;
@@ -11115,7 +11128,7 @@ export function FUN_005eecc3(in_ECX = G.in_ECX, param_1) {
 // Size: 40 bytes
 // ============================================================
 
-export function FUN_005eed1b(in_ECX = G.in_ECX) {
+export function FUN_005eed1b(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11133,7 +11146,7 @@ export function FUN_005eed1b(in_ECX = G.in_ECX) {
 // Size: 51 bytes
 // ============================================================
 
-export function FUN_005eed43(in_ECX = G.in_ECX) {
+export function FUN_005eed43(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11148,7 +11161,7 @@ export function FUN_005eed43(in_ECX = G.in_ECX) {
 // Size: 91 bytes
 // ============================================================
 
-export function FUN_005eed76(in_ECX = G.in_ECX, param_1) {
+export function FUN_005eed76(in_ECX = globalThis.in_ECX, param_1) {
 
 
   let iVar1;
@@ -11186,7 +11199,7 @@ export function FUN_005eedd1() {
 // Size: 99 bytes
 // ============================================================
 
-export function FUN_005eedec(in_ECX = G.in_ECX, param_1, param_2) {
+export function FUN_005eedec(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
 
   let iVar1;
@@ -11435,7 +11448,7 @@ export function FUN_005ef356(param_1, param_2, param_3, param_4) {
   else {
     local_14 = param_3;
   }
-  pHVar3 = CreateWindowExA(4,s_MSDirectWindow_00639d78,param_1,0x80000000,-0x80000000,-0x80000000, local_14,local_10,0x0,0x0,s32(G.DAT_006e4ff0, 0),0x0);
+  pHVar3 = CreateWindowExA(4,s_MSDirectWindow_00639d78,param_1,0x80000000,-0x80000000,-0x80000000, local_14,local_10,0x0,0x0,DAT_006e4ff0,0x0);
                            /*JOINED*/
   puVar2[1] = pHVar3;
   return puVar2;
@@ -11448,14 +11461,14 @@ export function FUN_005ef356(param_1, param_2, param_3, param_4) {
 // Size: 192 bytes
 // ============================================================
 
-export function FUN_005ef41e(in_EAX = G.in_EAX, param_1, param_2) {
+export function FUN_005ef41e(in_EAX = globalThis.in_EAX, param_1, param_2) {
 
 
   // in_EAX → promoted to parameter
   let uVar1;
   let local_c;
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11468,7 +11481,7 @@ export function FUN_005ef41e(in_EAX = G.in_EAX, param_1, param_2) {
     else if (param_2 === 2) {
       local_c = 0x51;
     }
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x50) */)(s32(G.DAT_006394c0, 0),s32(param_1, 4),local_c);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x50) */)(DAT_006394c0,s32(param_1, 4),local_c);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -11493,14 +11506,14 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
   let uVar1;
   let uVar2;
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     uVar1 = 0;
   }
   else {
     w32(param_1, 0xc, param_2);
     w32(param_1, 8, param_3);
     w32(param_1, 0x10, param_4);
-    uVar2 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x54) */)(s32(G.DAT_006394c0, 0),param_2,param_3,param_4);
+    uVar2 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x54) */)(DAT_006394c0,param_2,param_3,param_4);
     if (uVar2 === 0) {
       MoveWindow(s32(param_1, 4),0,0,s32(param_1, 0xc),s32(param_1, 8),1);
       uVar1 = 1;
@@ -11520,17 +11533,17 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
 // Size: 77 bytes
 // ============================================================
 
-export function FUN_005ef58e(in_EAX = G.in_EAX) {
+export function FUN_005ef58e(in_EAX = globalThis.in_EAX) {
 
 
   // in_EAX → promoted to parameter
   let uVar1;
   
-  if (s32(G.DAT_006394c0, 0) === 0x0) {
+  if (DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x4c) */)(s32(G.DAT_006394c0, 0));
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x4c) */)(DAT_006394c0);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -11642,9 +11655,9 @@ export function FUN_005ef6cb(param_1, param_2, param_3, param_4) {
   else if (param_2 < 0x45) {
     if (param_2 !== 0x44) {
       if (param_2 !== 0x1c) switchD_005efc68_default_helper(param_1, param_2, param_3, param_4); return;
-      if (param_3 !== s32(G.DAT_00639d74, 0)) {
+      if (param_3 !== DAT_00639d74) {
         FUN_005efd70(param_3);
-        w32(G.DAT_00639d74, 0, param_3);
+        globalThis.DAT_00639d74 = param_3;
       }
     }
   }
@@ -11772,7 +11785,7 @@ export function FUN_005efca3(param_1, param_2) {
 export function FUN_005efcde(param_1, param_2) {
 
 
-  if (((s32(G.DAT_006394c0, 0) !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
+  if (((DAT_006394c0 !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
@@ -11787,7 +11800,7 @@ export function FUN_005efcde(param_1, param_2) {
 // Size: 56 bytes
 // ============================================================
 
-export function FUN_005efd70(in_ECX = G.in_ECX, param_1) {
+export function FUN_005efd70(in_ECX = globalThis.in_ECX, param_1) {
 
 
   // in_ECX → promoted to parameter
@@ -11805,7 +11818,7 @@ export function FUN_005efd70(in_ECX = G.in_ECX, param_1) {
 // Size: 194 bytes
 // ============================================================
 
-export function FUN_005efdc0(in_ECX = G.in_ECX) {
+export function FUN_005efdc0(in_ECX = globalThis.in_ECX) {
 
 
   // in_ECX → promoted to parameter
@@ -11840,7 +11853,7 @@ export function FUN_005efdc0(in_ECX = G.in_ECX) {
 // Size: 123 bytes
 // ============================================================
 
-export function FUN_005efeb0(in_ECX = G.in_ECX) {
+export function FUN_005efeb0(in_ECX = globalThis.in_ECX) {
 
 
   let uVar1;
@@ -11942,7 +11955,7 @@ export function FUN_005eff75(unaff_EBP) {
 // Size: 105 bytes
 // ============================================================
 
-export function FUN_005eff83(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
+export function FUN_005eff83(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5, param_6) {
 
 
 
@@ -11965,7 +11978,7 @@ export function FUN_005eff83(in_ECX = G.in_ECX, param_1, param_2, param_3, param
 // Size: 106 bytes
 // ============================================================
 
-export function FUN_005effec(in_ECX = G.in_ECX, param_1, param_2, param_3, param_4, param_5) {
+export function FUN_005effec(in_ECX = globalThis.in_ECX, param_1, param_2, param_3, param_4, param_5) {
 
 
 
@@ -11973,7 +11986,7 @@ export function FUN_005effec(in_ECX = G.in_ECX, param_1, param_2, param_3, param
   let uVar1;
   // in_ECX → promoted to parameter
   
-  uVar1 = FUN_005ef356(s32(G.DAT_00639dc4, 0),param_1,param_2,param_3);
+  uVar1 = FUN_005ef356(DAT_00639dc4,param_1,param_2,param_3);
   w32(in_ECX, 0xb0, uVar1);
   FUN_005ef320(in_ECX,s32(in_ECX, 0xb0));
   w32(in_ECX, 0xb4, param_4);
@@ -12177,24 +12190,24 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
   // (outer block close)
     if (param_2 === 0x210) {
       if ((((param_3) >>> 0) & 0xffff) === 0x201) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
       }
       else if ((((param_3) >>> 0) & 0xffff) === 0x204) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
 if (true) {
       switch(param_2) {
       case 0x200:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50((param_4) << 16 >> 16,sVar1);
         break;
       case 0x201:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(iVar5[0x49]) & 2) !== 0) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
@@ -12203,7 +12216,7 @@ if (true) {
         FUN_005ecf90((param_4) << 16 >> 16,sVar1);
         break;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010((param_4) << 16 >> 16,sVar1);
@@ -12211,7 +12224,7 @@ if (true) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         break;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110((param_4) << 16 >> 16,sVar1);
         break;
       case 0x204:
@@ -12221,12 +12234,12 @@ if (true) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050((param_4) << 16 >> 16,sVar1);
         break;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0((param_4) << 16 >> 16,sVar1);
@@ -12257,7 +12270,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
         if (param_2 === 0x231) {
           GetWindowLongA(param_1,0);
           FUN_00414d10();
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed520();
           uVar2 = fill_rect_BE88(param_1,0x231,param_3,param_4);
           return uVar2;
@@ -12265,7 +12278,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
         if (param_2 === 0x232) {
           GetWindowLongA(param_1,0);
           FUN_00414d10();
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed550();
           uVar2 = fill_rect_BE88(param_1,0x232,param_3,param_4);
           return uVar2;
@@ -12297,24 +12310,24 @@ if (true) {
   // (outer block close)
     if (param_2 === 0x210) {
       if ((((param_3) >>> 0) & 0xffff) === 0x201) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
       }
       else if ((((param_3) >>> 0) & 0xffff) === 0x204) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
 if (true) {
       switch(param_2) {
       case 0x200:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50((param_4) << 16 >> 16,sVar1);
         break;
       case 0x201:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(iVar5[0x49]) & 2) !== 0) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
@@ -12323,7 +12336,7 @@ if (true) {
         FUN_005ecf90((param_4) << 16 >> 16,sVar1);
         break;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010((param_4) << 16 >> 16,sVar1);
@@ -12331,7 +12344,7 @@ if (true) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         break;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110((param_4) << 16 >> 16,sVar1);
         break;
       case 0x204:
@@ -12341,12 +12354,12 @@ if (true) {
           SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050((param_4) << 16 >> 16,sVar1);
         break;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0((param_4) << 16 >> 16,sVar1);
@@ -12367,11 +12380,11 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
   // (outer block close)
     if (param_2 < 0x112) {
       if (param_2 === 0x111) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         return 0;
       }
       if (param_2 === 0x100) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed150(uVar2);
         uVar2 = FUN_005eb3ed(param_3);
@@ -12379,13 +12392,13 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
         return 0;
       }
       if (param_2 === 0x101) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed190(uVar2);
         return 0;
       }
       if (param_2 === 0x102) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed210(param_3 & 0xff);
         return 0;
       }
@@ -12393,17 +12406,17 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
     }
     if (param_2 < 0x201) {
       if (param_2 === 0x200) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
       if (param_2 === 0x112) {
         if (param_3 === 0xf020) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
 if (true) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
           }
@@ -12419,7 +12432,7 @@ if (true) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12427,7 +12440,7 @@ if (true) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12436,7 +12449,7 @@ if (true) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12445,19 +12458,19 @@ if (true) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,0,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(s32(local_14, 0xb0));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed420(sVar1);
           return 0;
         default:
@@ -12471,7 +12484,7 @@ if (true) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12479,7 +12492,7 @@ if (true) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12488,7 +12501,7 @@ if (true) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12497,19 +12510,19 @@ if (true) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,1,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(s32(local_14, 0xb4));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed4a0(sVar1);
           return 0;
         default:
@@ -12521,14 +12534,14 @@ if (true) {
     if (param_2 < 0x211) {
       if (param_2 === 0x210) {
         if (param_3 === 0x201) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
           return 0;
         }
         if (param_3 !== 0x204) {
           return 0;
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
@@ -12536,7 +12549,7 @@ if (true) {
       case 0x201:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(local_24[0x49]) & 2) !== 0) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
@@ -12545,7 +12558,7 @@ if (true) {
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010(param_4 & 0xffff,param_4 >> 0x10);
@@ -12553,7 +12566,7 @@ if (true) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x204:
@@ -12563,12 +12576,12 @@ if (true) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0(param_4 & 0xffff,param_4 >> 0x10);
@@ -12613,7 +12626,7 @@ function switchD_005ecda6_caseD_6_helper(local_10, local_14, local_34, param_1, 
 }
 
 function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         BVar3 = IsIconic(param_1);
         if (BVar3 === 0) {
           FUN_005ed580(param_4 & 0xffff,param_4 >> 0x10);
@@ -12624,12 +12637,12 @@ function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, lo
   // (orphan case) case 6:
         switchD_005ecda6_caseD_6_helper(iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
   // (orphan case) case 7:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed2f0();
         return 0;
   // (outer block close)
   // (outer block close)
-    w32(G.DAT_00637ea4, 0, local_14);
+    globalThis.DAT_00637ea4 = local_14;
     iVar4 = FUN_005ed250();
     if (iVar4 !== 0) {
       uVar2 = fill_rect_BE88(param_1,0x10,param_3,param_4);
@@ -12639,7 +12652,7 @@ function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, lo
 if (true) {
     if (param_2 < 0x45) {
       if (param_2 === 0x44) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed3a0(param_4 & 0xffff);
         return 1;
       }
@@ -12663,11 +12676,11 @@ if (true) {
     }
     if (param_2 < 0x112) {
       if (param_2 === 0x111) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         return 0;
       }
       if (param_2 === 0x100) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed150(uVar2);
         uVar2 = FUN_005eb3ed(param_3);
@@ -12675,13 +12688,13 @@ if (true) {
         return 0;
       }
       if (param_2 === 0x101) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         uVar2 = FUN_005eb3ed(param_3);
         FUN_005ed190(uVar2);
         return 0;
       }
       if (param_2 === 0x102) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed210(param_3 & 0xff);
         return 0;
       }
@@ -12689,17 +12702,17 @@ if (true) {
     }
     if (param_2 < 0x201) {
       if (param_2 === 0x200) {
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ecf50(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
       if (param_2 === 0x112) {
         if (param_3 === 0xf020) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
 if (true) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
           }
@@ -12715,7 +12728,7 @@ if (true) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12723,7 +12736,7 @@ if (true) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12732,7 +12745,7 @@ if (true) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
@@ -12741,19 +12754,19 @@ if (true) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,0,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb0, local_18);
           FUN_005ed3e0(s32(local_14, 0xb0));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed420(sVar1);
           return 0;
         default:
@@ -12767,7 +12780,7 @@ if (true) {
           local_18 = local_18 + -1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12775,7 +12788,7 @@ if (true) {
           local_18 = local_18 + 1;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12784,7 +12797,7 @@ if (true) {
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
@@ -12793,19 +12806,19 @@ if (true) {
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(local_18);
           return 0;
         case 4:
           local_18 = sVar1;
           SetScrollPos(param_1,1,local_18,1);
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           w32(local_14, 0xb4, local_18);
           FUN_005ed460(s32(local_14, 0xb4));
           return 0;
         case 5:
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ed4a0(sVar1);
           return 0;
         default:
@@ -12817,14 +12830,14 @@ if (true) {
     if (param_2 < 0x211) {
       if (param_2 === 0x210) {
         if (param_3 === 0x201) {
-          w32(G.DAT_00637ea4, 0, local_14);
+          globalThis.DAT_00637ea4 = local_14;
           FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
           return 0;
         }
         if (param_3 !== 0x204) {
           return 0;
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       }
@@ -12832,7 +12845,7 @@ if (true) {
       case 0x201:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if ((u8(local_24[0x49]) & 2) !== 0) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
@@ -12841,7 +12854,7 @@ if (true) {
         FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x202:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xa8) === 1) {
           w32(local_14, 0xa8, 0);
           FUN_005ed010(param_4 & 0xffff,param_4 >> 0x10);
@@ -12849,7 +12862,7 @@ if (true) {
         FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x203:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         FUN_005ed110(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x204:
@@ -12859,12 +12872,12 @@ if (true) {
           SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         w32(local_14, 0xac, 1);
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
         return 0;
       case 0x205:
-        w32(G.DAT_00637ea4, 0, local_14);
+        globalThis.DAT_00637ea4 = local_14;
         if (s32(local_14, 0xac) === 1) {
           w32(local_14, 0xac, 0);
           FUN_005ed0d0(param_4 & 0xffff,param_4 >> 0x10);
