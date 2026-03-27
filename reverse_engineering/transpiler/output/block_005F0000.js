@@ -4512,7 +4512,7 @@ export function __filbuf_005F3D70(_File) {
           local_c = DAT_0063a420;
         }
         else {
-          // DEVIATION: C struct — local_c = (s32(DAT_006e69f0 + (_File->_file & 0xffffffe0 >> 3), 0) + (_File->_file & 0x1f) * 8);
+          // DEVIATION: C struct — local_c = (s32(ptrAdd(DAT_006e69f0, (_File->_file & 0xffffffe0 >> 3)), 0) + (_File->_file & 0x1f) * 8);
                     /*JOINED*/
                     /*JOINED*/
         }
@@ -6913,7 +6913,7 @@ export function _rewind_005F6730(_File) {
     local_10 = DAT_0063a420;
   }
   else {
-    local_10 = (s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8);
+    local_10 = (s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8);
                /*JOINED*/
                /*JOINED*/
   }
@@ -7032,7 +7032,7 @@ export function _ftell_005F6920(_File) {
         return -1;
       }
     }
-    else if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
+    else if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
                        /*JOINED*/
       for (;;) { /* DEVIATION: C struct — for (local_8 = _File->_base; local_8 < _File->_ptr; local_8 = local_8 + 1) { */
         if (s32(local_8, 0) === 0xa) {
@@ -7047,7 +7047,7 @@ export function _ftell_005F6920(_File) {
         }
         else {
           // DEVIATION: C struct — local_14 = _File->_ptr + (_File->_cnt - _File->_base);
-          if ((s8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
+          if ((s8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
                               /*JOINED*/
             lVar3 = __lseek(_FileHandle,0,2);
             if (lVar3 === local_20) {
@@ -7070,7 +7070,7 @@ export function _ftell_005F6920(_File) {
               else {
                 // DEVIATION: C struct — local_14 = _File->_bufsiz;
               }
-              if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 4) !== 0) {
+              if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 4) !== 0) {
                              /*JOINED*/
                 local_14 = local_14 + 1;
               }
@@ -8837,7 +8837,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
         lpOverlapped = 0x0;
         lpNumberOfBytesWritten = local_3014[0];
         nNumberOfBytesToWrite = _strlen(local_200c[0]);
-        WriteFile(s32(DAT_0063a048, param_1 * 4),local_200c[0],nNumberOfBytesToWrite, lpNumberOfBytesWritten,lpOverlapped);
+        WriteFile(s32(ptrAdd(DAT_0063a048, param_1 * 4), 0),local_200c[0],nNumberOfBytesToWrite, lpNumberOfBytesWritten,lpOverlapped);
                   /*JOINED*/
       }
       if ((DAT_0063a038[param_1 * 4] & 2) !== 0) {
@@ -9478,7 +9478,7 @@ export function __close_005FA010(_FileHandle) {
   let iVar4;
   let local_8;
   
-  if ((DAT_006e6b2c <= ((_FileHandle) >>> 0)) || ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) === 0)) {
+  if ((DAT_006e6b2c <= ((_FileHandle) >>> 0)) || ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) === 0)) {
      /*JOINED*/
                 /*JOINED*/
     DAT_00639f14 = 9;
@@ -9772,7 +9772,7 @@ export function __flsbuf_005FA410(_Ch, _File) {
           local_1c = DAT_0063a420;
         }
         else {
-          local_1c = (s32(DAT_006e69f0 + (uVar3 & 0xffffffe0 >> 3), 0) + (uVar3 & 0x1f) * 8);
+          local_1c = (s32(ptrAdd(DAT_006e69f0, (uVar3 & 0xffffffe0 >> 3)), 0) + (uVar3 & 0x1f) * 8);
                      /*JOINED*/
                      /*JOINED*/
         }
@@ -10461,7 +10461,7 @@ export function __stbuf_005FB620(_File) {
           return 0;
         }
       }
-      // DEVIATION: C struct — _File->_base = *(char **)(DAT_0063a2b0 + local_c * 4);
+      // DEVIATION: C struct — _File->_base = *(char **)(ptrAdd(DAT_0063a2b0, local_c * 4));
       // DEVIATION: C struct — _File->_ptr = _File->_base;
       // DEVIATION: C struct — _File->_bufsiz = 0x1000;
       // DEVIATION: C struct — _File->_cnt = _File->_bufsiz;
@@ -10538,18 +10538,18 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
   let local_c;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
     local_1c = 0;
     local_18 = _DstBuf;
-    if ((_MaxCharCount === 0) || ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 2) !== 0)) {
+    if ((_MaxCharCount === 0) || ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 2) !== 0)) {
        /*JOINED*/
                   /*JOINED*/
       local_1c = 0;
     }
     else {
-      if (((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x48) !== 0) && (s8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 5 + (_FileHandle & 0x1f) * 8)[0]) !== 0xa)) {
+      if (((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x48) !== 0) && (s8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 5 + (_FileHandle & 0x1f) * 8)[0]) !== 0xa)) {
                      /*JOINED*/
          /*JOINED*/
                    /*JOINED*/
@@ -10564,7 +10564,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
          /*JOINED*/
          /*JOINED*/
       }
-      BVar1 = ReadFile(s32(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8, 0),local_18,_MaxCharCount,local_14[0], 0x0);
+      BVar1 = ReadFile(s32(s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8, 0),local_18,_MaxCharCount,local_14[0], 0x0);
                         /*JOINED*/
                         /*JOINED*/
                        /*JOINED*/
@@ -10585,7 +10585,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
       }
       else {
         local_1c = local_1c + local_14[0];
-        if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
+        if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) !== 0) {
                       /*JOINED*/
           if ((local_14[0] === 0) || (s8(_DstBuf[0]) !== 0xa)) {
             // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) =
@@ -10603,7 +10603,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
           local_8 = _DstBuf;
           while (local_8 < (local_1c + _DstBuf)) {
             if (s32(local_8, 0) === 0x1a) {
-              if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40) === 0) {
+              if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40) === 0) {
                              /*JOINED*/
                 // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) =
                          /*JOINED*/
@@ -10627,7 +10627,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
               else {
                 local_8 = local_8 + 1;
                 local_c = 0;
-                BVar1 = ReadFile(s32(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8, 0),local_20,1,local_14[0],0x0)
+                BVar1 = ReadFile(s32(s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8, 0),local_20,1,local_14[0],0x0)
                                   /*JOINED*/
                                            /*JOINED*/
                                   /*JOINED*/
@@ -10636,7 +10636,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
                   local_c = GetLastError();
                 }
                 if ((local_c === 0) && (local_14[0] !== 0)) {
-                  if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x48) === 0) {
+                  if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x48) === 0) {
                                          /*JOINED*/
                                 /*JOINED*/
                     if ((_DstBuf === local_10) && (local_20[0] === 0xa)) {
@@ -10714,7 +10714,7 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
   let local_c;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
     local_14 = 0;
@@ -10723,13 +10723,13 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
       local_424 = 0;
     }
     else {
-      if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x20) !== 0) {
+      if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x20) !== 0) {
                     /*JOINED*/
         __lseek(_FileHandle,0,2);
       }
-      if ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) === 0) {
+      if ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x80) === 0) {
                     /*JOINED*/
-        BVar2 = WriteFile(s32(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8, 0),_Buf,_MaxCharCount,local_41c[0], 0x0);
+        BVar2 = WriteFile(s32(s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8, 0),_Buf,_MaxCharCount,local_41c[0], 0x0);
                            /*JOINED*/
                            /*JOINED*/
                           /*JOINED*/
@@ -10759,7 +10759,7 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
             w32(local_c, 0, cVar1);
             local_c = local_c + 1;
           }
-          BVar2 = WriteFile(s32(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8, 0),local_418,local_c - local_418, local_41c[0],0x0);
+          BVar2 = WriteFile(s32(s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8, 0),local_418,local_c - local_418, local_41c[0],0x0);
                              /*JOINED*/
                              /*JOINED*/
                             /*JOINED*/
@@ -10772,7 +10772,7 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
       }
       if (local_14 === 0) {
         if (local_10 === 0) {
-          if (((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40) === 0) || (s8(_Buf[0]) !== 0x1a)) {
+          if (((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40) === 0) || (s8(_Buf[0]) !== 0x1a)) {
                          /*JOINED*/
             DAT_00639f14 = 0x1c;
             DAT_00639f18 = 0;
@@ -10840,7 +10840,7 @@ export function __dosmaperr_005FBFD0(param_1) {
       }
       return;
     }
-    if (true /* DEVIATION: C pointer — *(ulong *)(DAT_0063a2b8 + local_8 * 8) */ === param_1) break;
+    if (true /* DEVIATION: C pointer — *(ulong *)(ptrAdd(DAT_0063a2b8, local_8 * 8)) */ === param_1) break;
     local_8 = local_8 + 1;
   }
   DAT_00639f14 = s32(DAT_0063a2bc, local_8 * 8);
@@ -10957,7 +10957,7 @@ export function __ioinit_005FC160() {
     for (local_5c = 0; local_5c < local_68; local_5c = local_5c + 1) {
       if (((s32(local_64, 0) !== -1) && ((s32(local_8, 0) & 1) !== 0)) && (((s32(local_8, 0) & 8) !== 0 || (DVar2 = GetFileType(s32(local_64, 0)), DVar2 !== 0)))) {
          /*JOINED*/
-        puVar1 = (s32(DAT_006e69f0 + (local_5c & 0xffffffe0 >> 3), 0) + (local_5c & 0x1f) * 8);
+        puVar1 = (s32(ptrAdd(DAT_006e69f0, (local_5c & 0xffffffe0 >> 3)), 0) + (local_5c & 0x1f) * 8);
                  /*JOINED*/
                  /*JOINED*/
         w32(puVar1, 0, s32(local_64, 0));
@@ -12299,7 +12299,7 @@ export function __lseek_005FDF90(_FileHandle, _Offset, _Origin) {
   let hFile;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
     hFile = __get_osfhandle(_FileHandle);
@@ -12370,7 +12370,7 @@ export function ___initstdio_005FE0B0() {
     // DEVIATION: C pointer write — *(undefined ***)(DAT_006e5694 + local_8 * 4) = &PTR_DAT_0063ac58 + local_8 * 8;
   }
   for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    if ((s32(true /* DEVIATION: C pointer — s32(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)) */ + (local_8 & 0x1f) * 8, 0) === -1) || (s32(true /* DEVIATION: C pointer — s32(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)) */ + (local_8 & 0x1f) * 8, 0) === 0)) {
+    if ((s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)), 0) */ + (local_8 & 0x1f) * 8, 0) === -1) || (s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (local_8 & 0xffffffe0 >> 3)), 0) */ + (local_8 & 0x1f) * 8, 0) === 0)) {
                  /*JOINED*/
        /*JOINED*/
                 /*JOINED*/
@@ -12973,7 +12973,7 @@ export function xcptlookup_005FED20(param_1) {
   do {
     if (s32(local_8, 0) === param_1) break;
     local_8 = local_8 + 3;
-  } while (local_8 < DAT_0063af08 + DAT_0063af88 * 3);
+  } while (local_8 < ptrAdd(DAT_0063af08, DAT_0063af88 * 3));
   if (s32(local_8, 0) !== param_1) {
     local_8 = 0x0;
   }
@@ -13747,12 +13747,12 @@ export function __setmbcp_005FFAC0(_CodePage) {
   }
   else {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if (s32(DAT_0063b0c8, local_8 * 0x30) === CodePage) {
+      if (s32(ptrAdd(DAT_0063b0c8, local_8 * 0x30), 0) === CodePage) {
         for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
           DAT_0063afa0[local_28] = 0;
         }
         for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-          for (local_c = DAT_0063b0d8 + local_8 * 0x30 + local_10 * 8; (s32(local_c, 0) !== 0 && (local_c[1] !== 0)); local_c = local_c + 2) {
+          for (local_c = ptrAdd(DAT_0063b0d8, local_8 * 0x30 + local_10 * 8); (s32(local_c, 0) !== 0 && (local_c[1] !== 0)); local_c = local_c + 2) {
               /*JOINED*/
             for (local_28 = ((s32(local_c, 0)) >>> 0); local_28 <= local_c[1]; local_28 = local_28 + 1) {
               DAT_0063afa1[local_28] = DAT_0063afa1[local_28] | DAT_0063b0c0[local_10];

@@ -345,7 +345,7 @@ export function FUN_00548e23(param_1, param_2) {
         if (iVar1 === -1) {
           return;
         }
-        _sprintf(local_54,s_veteran__s_00632640, DAT_00632638 + ((s32(param_2, 0x138) !== 0) - 1 & 4));
+        _sprintf(local_54,s_veteran__s_00632640, ptrAdd(DAT_00632638, ((s32(param_2, 0x138) !== 0) - 1 & 4)));
                  /*JOINED*/
         iVar1 = _fputs(local_54,param_1);
         if (iVar1 === -1) {
@@ -2028,7 +2028,7 @@ export function FUN_0054bc1a() {
             _sprintf(local_104,s_CREATEUNIT_00632f20);
           }
           else {
-            _sprintf(local_104,s_CREATEUNIT___s_owner__s_veteran__00632ef0, s32(local_10c, 0xdc),s32(local_10c, 0xd4), DAT_00632ee8 + ((s32(local_10c, 0x138) !== 0) - 1 & 4), s32(local_10c, 0x13c));
+            _sprintf(local_104,s_CREATEUNIT___s_owner__s_veteran__00632ef0, s32(local_10c, 0xdc),s32(local_10c, 0xd4), ptrAdd(DAT_00632ee8, ((s32(local_10c, 0x138) !== 0) - 1 & 4)), s32(local_10c, 0x13c));
                      /*JOINED*/
                      /*JOINED*/
                      /*JOINED*/

@@ -8,7 +8,7 @@
 // ============================================================
 
 import { G } from '../globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { AVIFileExit, AVIFileGetStream, AVIFileInit, AVIFileOpenA, AVIFileRelease, AVIStreamFindSample } from '../extern-stubs.js';
 import { AVIStreamInfoA, AVIStreamLength, AVIStreamRead, AVIStreamReadFormat, AVIStreamRelease, AVIStreamSampleToTime } from '../extern-stubs.js';

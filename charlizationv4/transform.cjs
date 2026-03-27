@@ -375,7 +375,7 @@ for (const blockFile of blockFiles) {
   const allText = finalLines.join('\n');
 
   // Find all function-call-like identifiers
-  const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|fill)$/;
+  const skip = /^(if|for|while|do|switch|return|function|export|import|let|var|const|new|typeof|catch|delete|class|super|this|void|yield|await|async|static|enum|implements|interface|arguments|eval|undefined|Array|Math|true|false|Number|String|parseInt|parseFloat|devLog|stubCall|s8|u8|s16|u16|s32|u32|w16|w32|w16r|w32r|ptrAdd|fill)$/;
   const fnUtilsNeeded = new Set(); // functions needed from fn_utils.js
   for (const m of allText.matchAll(/\b([a-zA-Z_]\w+)\s*\(/g)) {
     const fn = m[1];
@@ -398,7 +398,7 @@ for (const blockFile of blockFiles) {
   // 3c: Build import lines
   const imports = [];
   imports.push("import { G } from '../globals.js';");
-  imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';");
+  imports.push("import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';");
   imports.push("import { devLog } from '../devlog.js';");
 
   // Import fn_utils functions used by this block
@@ -557,6 +557,8 @@ export function w32(arr, off, val) {
 // ── Write-and-return helpers (for comma-operator expressions) ──
 export function w16r(arr, off, val) { w16(arr, off, val); return val; }
 export function w32r(arr, off, val) { w32(arr, off, val); return val; }
+// ── Pointer arithmetic: &DAT_xxx + offset → subarray view ──
+export function ptrAdd(arr, off) { return arr.subarray(off); }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

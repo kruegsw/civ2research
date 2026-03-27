@@ -8,7 +8,7 @@
 // ============================================================
 
 import { G } from '../globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { AVIStreamInfoA, AVIStreamRead, AVIStreamReadFormat, AVIStreamTimeToSample, AnimatePalette, BeginPaint } from '../extern-stubs.js';
 import { BringWindowToTop, CallWindowProcA, CloseHandle, CommDlgExtendedError, CopyRect, CreateCompatibleDC } from '../extern-stubs.js';
@@ -7543,7 +7543,7 @@ export function FUN_005db1fa(param_1, param_2) {
   local_10 = FindResourceA(G.DAT_006e4ff0,param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < G.DAT_006387cc && (local_10 = FindResourceA(s32(G.DAT_006e4f60, local_14 * 4),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < G.DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(G.DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;
@@ -7557,7 +7557,7 @@ export function FUN_005db1fa(param_1, param_2) {
       local_1c = G.DAT_006e4ff0;
     }
     else {
-      local_1c = s32(G.DAT_006e4f60, local_14 * 4);
+      local_1c = s32(ptrAdd(G.DAT_006e4f60, local_14 * 4), 0);
     }
     pvVar1 = LoadResource(local_1c,local_10);
   }
@@ -7583,7 +7583,7 @@ export function FUN_005db2f8(param_1) {
   local_8 = FindResourceA(G.DAT_006e4ff0,param_1,0x2);
   if (local_8 === 0x0) {
     local_c = 0;
-    while ((local_c < G.DAT_006387cc && (local_8 = FindResourceA(s32(G.DAT_006e4f60, local_c * 4),param_1,0x2), local_8 === 0x0))) {
+    while ((local_c < G.DAT_006387cc && (local_8 = FindResourceA(s32(ptrAdd(G.DAT_006e4f60, local_c * 4), 0),param_1,0x2), local_8 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_c = local_c + 1;
@@ -7597,7 +7597,7 @@ export function FUN_005db2f8(param_1) {
       local_14 = G.DAT_006e4ff0;
     }
     else {
-      local_14 = s32(G.DAT_006e4f60, local_c * 4);
+      local_14 = s32(ptrAdd(G.DAT_006e4f60, local_c * 4), 0);
     }
     pvVar1 = LoadResource(local_14,local_8);
   }
@@ -7639,7 +7639,7 @@ export function FUN_005db3ca(param_1, param_2) {
   local_10 = FindResourceA(G.DAT_006e4ff0,param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < G.DAT_006387cc && (local_10 = FindResourceA(s32(G.DAT_006e4f60, local_14 * 4),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < G.DAT_006387cc && (local_10 = FindResourceA(s32(ptrAdd(G.DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;
@@ -7653,7 +7653,7 @@ export function FUN_005db3ca(param_1, param_2) {
       local_18 = G.DAT_006e4ff0;
     }
     else {
-      local_18 = s32(G.DAT_006e4f60, local_14 * 4);
+      local_18 = s32(ptrAdd(G.DAT_006e4f60, local_14 * 4), 0);
     }
     pvVar2 = LoadResource(local_18,local_10);
   }
@@ -7699,7 +7699,7 @@ export function FUN_005db55b(param_1) {
 
   let local_8;
   
-  for (local_8 = 0; (s32(G.DAT_006e4f60, local_8 * 4) !== param_1 && (local_8 < G.DAT_006387cc)); local_8 = local_8 + 1) {
+  for (local_8 = 0; (s32(ptrAdd(G.DAT_006e4f60, local_8 * 4), 0) !== param_1 && (local_8 < G.DAT_006387cc)); local_8 = local_8 + 1) {
       /*JOINED*/
       /*JOINED*/
   }

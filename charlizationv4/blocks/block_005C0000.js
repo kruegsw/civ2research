@@ -8,7 +8,7 @@
 // ============================================================
 
 import { G } from '../globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r, ptrAdd } from '../mem.js';
 import { devLog } from '../devlog.js';
 import { AddFontResourceA, BeginPaint, BitBlt, CString, CreateCompatibleBitmap, CreateCompatibleDC } from '../extern-stubs.js';
 import { CreateFontIndirectA, CreatePen, CreateWindowExA, DEVIATION, DefWindowProcA, DeleteDC } from '../extern-stubs.js';
@@ -9045,7 +9045,7 @@ export function FUN_005cd775(param_1, param_2) {
         }
       }
 // LAB_005cda01: (code below also in LAB_005cda01_helper, kept for 1:1 audit)
-      G.DAT_006e47c8 = G.DAT_006d470c + local_18 * 0x100c;
+      G.DAT_006e47c8 = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
       return;
     }
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === G.DAT_00637f98) && (s32(G.DAT_006d4704, local_14 * 0x100c) === G.DAT_00637f9c)) {
@@ -9127,7 +9127,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
   }
   FUN_005cdcdb(local_8,G.DAT_00637fa0,G.DAT_00637fa4);
 // LAB_005cdbab: (code below also in LAB_005cdbab_helper, kept for 1:1 audit)
-  G.DAT_006e47c0 = G.DAT_006d470c + local_8 * 0x100c;
+  G.DAT_006e47c0 = ptrAdd(G.DAT_006d470c, local_8 * 0x100c);
   local_10 = FUN_00421bb0();
   local_c = -1;
   local_14 = 0;
@@ -9136,7 +9136,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
       FUN_005cdcdb(local_c,G.DAT_00637fa8,G.DAT_00637fac);
       local_14 = local_c;
 // LAB_005cdcd6: (code below also in LAB_005cdcd6_helper, kept for 1:1 audit)
-      G.DAT_006e47c4 = G.DAT_006d470c + local_14 * 0x100c;
+      G.DAT_006e47c4 = ptrAdd(G.DAT_006d470c, local_14 * 0x100c);
       return;
     }
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === G.DAT_00637fa8) && (s32(G.DAT_006d4704, local_14 * 0x100c) === G.DAT_00637fac)) {
@@ -11333,7 +11333,7 @@ if (true) {
 }
 
 function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
-      G.DAT_006e47c8 = G.DAT_006d470c + local_18 * 0x100c;
+      G.DAT_006e47c8 = ptrAdd(G.DAT_006d470c, local_18 * 0x100c);
       return;
   // (outer block close)
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === G.DAT_00637f98) && (s32(G.DAT_006d4704, local_14 * 0x100c) === G.DAT_00637f9c)) {
@@ -11352,7 +11352,7 @@ function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
 }
 
 function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
-  G.DAT_006e47c0 = G.DAT_006d470c + local_8 * 0x100c;
+  G.DAT_006e47c0 = ptrAdd(G.DAT_006d470c, local_8 * 0x100c);
   local_10 = FUN_00421bb0();
   local_c = -1;
   local_14 = 0;
@@ -11361,7 +11361,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
       FUN_005cdcdb(local_c,G.DAT_00637fa8,G.DAT_00637fac);
       local_14 = local_c;
   // LAB_005cdcd6:
-      G.DAT_006e47c4 = G.DAT_006d470c + local_14 * 0x100c;
+      G.DAT_006e47c4 = ptrAdd(G.DAT_006d470c, local_14 * 0x100c);
       return;
     }
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === G.DAT_00637fa8) && (s32(G.DAT_006d4704, local_14 * 0x100c) === G.DAT_00637fac)) {
@@ -11379,7 +11379,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
 }
 
 function LAB_005cdcd6_helper(local_10, local_14, local_8, local_c, uVar1) {
-      G.DAT_006e47c4 = G.DAT_006d470c + local_14 * 0x100c;
+      G.DAT_006e47c4 = ptrAdd(G.DAT_006d470c, local_14 * 0x100c);
       return;
   // (outer block close)
     if ((s32(G.DAT_006d4700, local_14 * 0x100c) === G.DAT_00637fa8) && (s32(G.DAT_006d4704, local_14 * 0x100c) === G.DAT_00637fac)) {

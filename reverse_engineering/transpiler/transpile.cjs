@@ -521,6 +521,44 @@ function transformLine(line, ctx) {
     // ── &local_XX → local_XX (drop &) ──
     out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
 
+    // ── &DAT_xxx + expr → ptrAdd(DAT_xxx, expr) — pointer arithmetic ──
+    // Must run BEFORE the blanket & drop. Converts address+offset to subarray helper.
+    // Capture the full offset expression including * / + - operators
+    {
+      const ptrRe = /&(DAT_[0-9a-fA-F]+)\s*\+\s*/g;
+      let pm;
+      let newOut5 = '';
+      let lastIdx5 = 0;
+      while ((pm = ptrRe.exec(out)) !== null) {
+        const afterPlus = pm.index + pm[0].length;
+        // Consume offset expression: everything up to ), ,, ;, or unbalanced ) at depth 0
+        let depth = 0;
+        let end = afterPlus;
+        for (let ci = afterPlus; ci < out.length; ci++) {
+          const ch = out[ci];
+          if (ch === '(' || ch === '[') depth++;
+          if (ch === ')' || ch === ']') {
+            if (depth === 0) break; // unbalanced close — stop before it
+            depth--;
+          }
+          if (ch === ',' && depth === 0) break;
+          if (ch === ';' && depth === 0) break;
+          end = ci + 1;
+        }
+        if (end > afterPlus) {
+          const offsetExpr = out.substring(afterPlus, end).trim();
+          newOut5 += out.substring(lastIdx5, pm.index);
+          newOut5 += 'ptrAdd(' + pm[1] + ', ' + offsetExpr + ')';
+          lastIdx5 = end;
+          ptrRe.lastIndex = lastIdx5;
+        }
+      }
+      if (lastIdx5 > 0) {
+        newOut5 += out.substring(lastIdx5);
+        out = newOut5;
+      }
+    }
+
     // ── & (address-of) → drop or placeholder ──
     out = out.replace(/&(DAT_[0-9a-fA-F]+)/g, '$1');
     out = out.replace(/&(s_\w+)/g, '$1');

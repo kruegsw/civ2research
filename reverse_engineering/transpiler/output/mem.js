@@ -45,6 +45,8 @@ export function w32(arr, off, val) {
 // Write-and-return variants for comma-operator expressions
 export function w16r(arr, off, val) { w16(arr, off, val); return val; }
 export function w32r(arr, off, val) { w32(arr, off, val); return val; }
+// Pointer arithmetic: &DAT_xxx + offset → subarray view at offset
+export function ptrAdd(arr, off) { return arr.subarray(off); }
 
 // ═══════════════════════════════════════════════════════════════════
 // MEMORY REGIONS

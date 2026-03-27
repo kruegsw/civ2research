@@ -195,8 +195,8 @@ if (turns > 0) {
           FUN_00543cd6();
         }
       } catch (e) {
-        console.error(`  Turn ${t+1}, civ ${civ}: ERROR — ${e.message}`);
-        if (e.stack) console.error(e.stack.split('\n').slice(0,5).join('\n'));
+        console.error(`  Turn ${t+1}, civ ${civ}: ERROR — ${e.message.substring(0, 120)}`);
+        if (e.stack) console.error(e.stack.split('\n').slice(1,5).join('\n'));
       }
     }
     G.DAT_00655af8++;

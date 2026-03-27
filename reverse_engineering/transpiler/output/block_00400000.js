@@ -3498,7 +3498,7 @@ export function FUN_0040ddc6(param_1) {
     thunk_citywin_9429();
   }
   else {
-    FUN_0046b14d(0x9d,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(DAT_006ad558, param_1 * 4) */ * 0x54),0,0,0,0, 0,0,0,0);
+    FUN_0046b14d(0x9d,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, param_1 * 4), 0) */ * 0x54),0,0,0,0, 0,0,0,0);
                              /*JOINED*/
                        /*JOINED*/
   }
@@ -3566,7 +3566,7 @@ export function FUN_0040decc(param_1) {
       }
     }
     else {
-      FUN_0046b14d(0x9e,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(DAT_006ad558, param_1 * 4) */ * 0x54),0,0,0, 0,0,0,0,0);
+      FUN_0046b14d(0x9e,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, param_1 * 4), 0) */ * 0x54),0,0,0, 0,0,0,0,0);
                                /*JOINED*/
                          /*JOINED*/
     }
@@ -3624,7 +3624,7 @@ export function FUN_0040e017() {
       }
       if (bVar1) {
         FUN_0040bbb0();
-        FUN_0040bbe0(DAT_0064f360 + local_318 * 0x58);
+        FUN_0040bbe0(ptrAdd(DAT_0064f360, local_318 * 0x58));
         if (uVar3 !== uVar2) {
           FUN_0040fe10();
           FUN_0040fea0();
@@ -3726,7 +3726,7 @@ export function FUN_0040e3b1() {
         FUN_0040ff60(0,uVar2);
         FUN_004271e8(1,s32(DAT_0064b9a0, u8(DAT_0064c6b5[iVar1 * 0x594]) * 4));
                               /*JOINED*/
-        iVar3 = FUN_00410030(s_REVOLUTION_00624f34, DAT_00646878 + u8(DAT_0064c6b5[iVar1 * 0x594]) * 0x3c ,(DAT_00633584 === 0) - 1 & 8);
+        iVar3 = FUN_00410030(s_REVOLUTION_00624f34, ptrAdd(DAT_00646878, u8(DAT_0064c6b5[iVar1 * 0x594]) * 0x3c),(DAT_00633584 === 0) - 1 & 8);
                                    /*JOINED*/
                                    /*JOINED*/
         if (iVar3 === 0) {
@@ -4763,7 +4763,7 @@ export function FUN_0040ff30(param_1) {
 export function FUN_0040ff60(param_1, param_2) {
 
 
-  FUN_005f22d0(DAT_0063cc48 + param_1 * 0x104,param_2);
+  FUN_005f22d0(ptrAdd(DAT_0063cc48, param_1 * 0x104),param_2);
   return;
 }
 

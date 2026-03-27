@@ -380,7 +380,7 @@ export function siglookup_006008C0(param_1) {
   do {
     if (local_8[1] === param_1) break;
     local_8 = local_8 + 3;
-  } while (local_8 < DAT_0063af08 + DAT_0063af88 * 3);
+  } while (local_8 < ptrAdd(DAT_0063af08, DAT_0063af88 * 3));
   if (local_8[1] !== param_1) {
     local_8 = 0x0;
   }
@@ -1469,7 +1469,7 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
 
   let iVar1;
   
-  if ((((param_1) >>> 0) < DAT_006e6b2c) && (s32(true /* DEVIATION: C pointer — s32(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)) */ + (param_1 & 0x1f) * 8, 0) === -1)) {
+  if ((((param_1) >>> 0) < DAT_006e6b2c) && (s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)), 0) */ + (param_1 & 0x1f) * 8, 0) === -1)) {
      /*JOINED*/
               /*JOINED*/
     if (DAT_00639fd0 === 1) {
@@ -1513,7 +1513,7 @@ export function __free_osfhnd_00601F40(param_1) {
 
   let iVar1;
   
-  if (((((param_1) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)) */ + 4 + (param_1 & 0x1f) * 8)[0]) & 1) !== 0)) && (s32(true /* DEVIATION: C pointer — s32(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)) */ + (param_1 & 0x1f) * 8, 0) !== -1)) {
+  if (((((param_1) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)), 0) */ + 4 + (param_1 & 0x1f) * 8)[0]) & 1) !== 0)) && (s32(true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (param_1 & 0xffffffe0 >> 3)), 0) */ + (param_1 & 0x1f) * 8, 0) !== -1)) {
       /*JOINED*/
                  /*JOINED*/
      /*JOINED*/
@@ -1559,10 +1559,10 @@ export function __get_osfhandle_00602060(_FileHandle) {
 
   let iVar1;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
-    iVar1 = true /* DEVIATION: C pointer — *(intptr_t *) (s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + (_FileHandle & 0x1f) * 8) */;
+    iVar1 = true /* DEVIATION: C pointer — *(intptr_t *) (s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) + (_FileHandle & 0x1f) * 8) */;
              /*JOINED*/
              /*JOINED*/
   }
@@ -1647,7 +1647,7 @@ export function __commit_006021E0(_FileHandle) {
   let BVar1;
   let local_8;
   
-  if (((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if (((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
       /*JOINED*/
                  /*JOINED*/
      /*JOINED*/
@@ -1687,7 +1687,7 @@ export function __isatty_006022C0(_FileHandle) {
   let uVar1;
   
   if (((_FileHandle) >>> 0) < DAT_006e6b2c) {
-    uVar1 = s8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40;
+    uVar1 = s8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 0x40;
                            /*JOINED*/
   }
   else {
@@ -3140,7 +3140,7 @@ export function __chsize_00603F30(_FileHandle, _Size) {
   
   FUN_005f35f0();
   local_1020 = 0;
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
     if (_Size < 0) {
@@ -4276,10 +4276,10 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
   let cVar1;
   let iVar2;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
-    cVar1 = s8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]);
+    cVar1 = s8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]);
                      /*JOINED*/
     if (_Mode === 0x8000) {
       // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) =
@@ -5175,7 +5175,7 @@ export function __filelength_006075E0(_FileHandle) {
   let _Offset;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && ((u8((true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006e69f0, (_FileHandle & 0xffffffe0 >> 3)), 0) */ + 4 + (_FileHandle & 0x1f) * 8)[0]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
     _Offset = __lseek(_FileHandle,0,1);

@@ -224,7 +224,7 @@ export function FUN_005b09dc(in_ECX) {
   }
   local_8 = s32(in_ECX, 0x124) + 0x20;
   local_c = s32(in_ECX, 0x128) + 0x20;
-  local_18 = DAT_00641848 + s32(in_ECX, 0x2ec) * 0x3c;
+  local_18 = ptrAdd(DAT_00641848, s32(in_ECX, 0x2ec) * 0x3c);
   uVar1 = FUN_00417f70();
   FUN_005a9abf(in_ECX,local_8,local_c,0x40,0x40,uVar1);
   FUN_005cef66(local_28,in_ECX,0,local_8,local_c + 8);
@@ -651,7 +651,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656106, local_24 * 0x20)) {
       iVar3 = s16(DAT_00656106, local_24 * 0x20);
-      if (s32(DAT_0065610a, true /* DEVIATION: C pointer — s16(DAT_00656106, local_24 * 0x20) */ * 0x20) === 0) {
+      if (s32(DAT_0065610a, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) === 0) {
         FUN_005d2279(s_Dead_unit_in_unit_stack__id____d_006360c8,local_24);
         local_8 = 0;
         w16(DAT_00656106, local_24 * 0x20, 0xffff);
@@ -677,7 +677,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656106, local_24 * 0x20)) {
       iVar3 = s16(DAT_00656106, local_24 * 0x20);
-      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(DAT_00656106, local_24 * 0x20) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(DAT_00656106, local_24 * 0x20) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
+      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
            /*JOINED*/
          /*JOINED*/
           /*JOINED*/
@@ -693,7 +693,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656108, local_24 * 0x20)) {
       iVar3 = s16(DAT_00656108, local_24 * 0x20);
-      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(DAT_00656108, local_24 * 0x20) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(DAT_00656108, local_24 * 0x20) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
+      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656108, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656108, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
            /*JOINED*/
          /*JOINED*/
           /*JOINED*/
@@ -2704,7 +2704,7 @@ export function FUN_005b6898(param_1) {
     puVar1 = FUN_00428b0c(s32(DAT_00628420, 0x38));
   }
   else {
-    puVar1 = DAT_0064f360 + u8(DAT_00656100[param_1 * 0x20]) * 0x58;
+    puVar1 = ptrAdd(DAT_0064f360, u8(DAT_00656100[param_1 * 0x20]) * 0x58);
   }
   return puVar1;
 }
@@ -2980,7 +2980,7 @@ export function FUN_005b7fe0() {
     if (s32(DAT_006365c0, local_18 * 4) === 0) {
       FUN_00589ef8(0xfffffff6,5,0,0xea,local_18);
     }
-    _memset(true /* DEVIATION: C pointer — *(void **)(DAT_006365c0 + local_18 * 4) */,0,DAT_006d1164);
+    _memset(true /* DEVIATION: C pointer — *(void **)(ptrAdd(DAT_006365c0, local_18 * 4)) */,0,DAT_006d1164);
   }
   local_8 = DAT_006d116a * DAT_006d116c;
   if ((local_8 & 3) !== 0) {
@@ -3120,7 +3120,7 @@ export function FUN_005b8635(param_1, param_2) {
   if (sVar1 !== 0) {
     if (param_2 === 0) {
       for (local_10 = 1; local_10 < 8; local_10 = local_10 + 1) {
-        sVar1 = _fwrite(true /* DEVIATION: C pointer — *(void **)(DAT_006365c0 + local_10 * 4) */,DAT_006d1164,1,param_1);
+        sVar1 = _fwrite(true /* DEVIATION: C pointer — *(void **)(ptrAdd(DAT_006365c0, local_10 * 4)) */,DAT_006d1164,1,param_1);
         if (sVar1 === 0) {
           return 1;
         }
@@ -3183,7 +3183,7 @@ export function FUN_005b8783(param_1, param_2) {
     FUN_005b7fe0();
     if (param_2 === 0) {
       for (local_34 = 1; local_34 < 8; local_34 = local_34 + 1) {
-        sVar1 = _fread(true /* DEVIATION: C pointer — *(void **)(DAT_006365c0 + local_34 * 4) */,DAT_006d1164,1,param_1);
+        sVar1 = _fread(true /* DEVIATION: C pointer — *(void **)(ptrAdd(DAT_006365c0, local_34 * 4)) */,DAT_006d1164,1,param_1);
         if (sVar1 === 0) {
           return 1;
         }

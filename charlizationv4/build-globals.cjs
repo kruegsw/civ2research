@@ -91,6 +91,16 @@ for (const file of v4Files) {
   }
 }
 
+// Also load authoritative classification from dat-classify.json if it exists
+const classifyPath = path.join(__dirname, 'dat-classify.json');
+if (fs.existsSync(classifyPath)) {
+  const classify = JSON.parse(fs.readFileSync(classifyPath, 'utf8'));
+  for (const name of classify.arrays) {
+    arrayDats.add(name);
+  }
+  console.log(`Loaded ${classify.arrays.length} array classifications from dat-classify.json`);
+}
+
 // Build allRefs from discovered classifications — always upgrade scalar → array
 for (const name of arrayDats) {
   if (!allRefs.has(name)) allRefs.set(name, { isArray: true, isScalar: false });

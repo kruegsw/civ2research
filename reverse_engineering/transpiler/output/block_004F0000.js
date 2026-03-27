@@ -71,7 +71,7 @@ export function FUN_004f0221(param_1) {
           if (DAT_00654fa8 === 0) {
             FUN_004271e8(1,s32(DAT_0064c488, local_8 * 8));
             FUN_00421da0(0,u8(DAT_0064c48c[local_8 * 8]) * DAT_006a657c);
-            FUN_004f3f30(s_INHOCK_0062ef7c,param_1,DAT_00645160 + local_8 * 0x3c);
+            FUN_004f3f30(s_INHOCK_0062ef7c,param_1,ptrAdd(DAT_00645160, local_8 * 0x3c));
           }
           // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6a2 + iVar1 * 0x594) =
                // DEVIATION(cont): *(int *)(&DAT_0064c6a2 + iVar1 * 0x594) + (uint)(byte)(&DAT_0064c48c)[local_8 * 8] * DAT_006a657c;
@@ -2016,24 +2016,24 @@ export function FUN_004f66c6(in_ECX) {
         FUN_005cda06(local_68[0],local_54[0]);
         switch(s32(in_ECX, 0x118)) {
         case 1:
-          local_38 = DAT_00646cb8 + s8(DAT_0062768d[local_78 * 0x10]) * 0x3c + s8(DAT_0062768c[local_78 * 0x10]) * 0xf0;
+          local_38 = ptrAdd(DAT_00646cb8, s8(DAT_0062768d[local_78 * 0x10]) * 0x3c + s8(DAT_0062768c[local_78 * 0x10]) * 0xf0);
                      /*JOINED*/
                      /*JOINED*/
           FUN_005cd775(3,2);
           local_3c = 3;
           break;
         case 2:
-          local_38 = DAT_00645160 + local_78 * 0x3c;
+          local_38 = ptrAdd(DAT_00645160, local_78 * 0x3c);
           FUN_005cd775(3,2);
           local_3c = 3;
           break;
         case 3:
-          local_38 = DAT_00645160 + local_78 * 0x3c;
+          local_38 = ptrAdd(DAT_00645160, local_78 * 0x3c);
           FUN_005cd775(3,2);
           local_3c = 3;
           break;
         case 4:
-          local_38 = DAT_00641848 + local_78 * 0x3c;
+          local_38 = ptrAdd(DAT_00641848, local_78 * 0x3c);
           break;
         case 5:
           local_3c = -5;
@@ -2850,7 +2850,7 @@ export function FUN_004f7c99(in_ECX) {
         FUN_0040bbb0();
         uVar6 = FUN_00428b0c(s32(DAT_00627cc4, local_1c * 0x18));
         FUN_0040bbe0(uVar6);
-        if ((0xc < local_1c) && (iVar2 = _strcmp(DAT_00627cc0 + local_1c * 0x18,DAT_0062f104), iVar2 === 0)) {
+        if ((0xc < local_1c) && (iVar2 = _strcmp(ptrAdd(DAT_00627cc0, local_1c * 0x18),DAT_0062f104), iVar2 === 0)) {
            /*JOINED*/
           FUN_0040fe10();
           uVar6 = FUN_00428b0c(s32(DAT_00628420, 0xb00));
@@ -3658,7 +3658,7 @@ export function FUN_004faab0(param_1) {
       FUN_0059e18b(s32(param_1, 0x38 + local_c * 4),0xffffffff,0xffffffff, 0xffffffff,0);
                          /*JOINED*/
       if (2 < DAT_00655b02) {
-        FUN_005f22d0(DAT_0063cc48 + local_8 * 0x104,s32(param_1, 0x38 + local_c * 4));
+        FUN_005f22d0(ptrAdd(DAT_0063cc48, local_8 * 0x104),s32(param_1, 0x38 + local_c * 4));
         local_8 = local_8 + 1;
       }
     }
@@ -3888,7 +3888,7 @@ export function FUN_004faed4(param_1) {
         DAT_00656100[iVar3 * 0x20] = 0xff;
         if (s32(param_1, 0x13c) !== 0) {
           for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
-            if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) && (iVar4 = __strcmpi(DAT_0064f360 + local_8 * 0x58,true /* DEVIATION: C pointer — *(char **)(param_1 + 0x13c) */), iVar4 === 0)) {
+            if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) && (iVar4 = __strcmpi(ptrAdd(DAT_0064f360, local_8 * 0x58),true /* DEVIATION: C pointer — *(char **)(param_1 + 0x13c) */), iVar4 === 0)) {
                /*JOINED*/
                /*JOINED*/
               if (s8(DAT_0064f348[local_8 * 0x58]) === local_c) {
@@ -6110,7 +6110,7 @@ if (true) {
         DAT_00656100[iVar3 * 0x20] = 0xff;
         if (s32(param_1, 0x13c) !== 0) {
           for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
-            if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) && (iVar4 = __strcmpi(DAT_0064f360 + local_8 * 0x58,true /* DEVIATION: C pointer — *(char **)(param_1 + 0x13c) */), iVar4 === 0)) {
+            if ((s32(DAT_0064f394, local_8 * 0x58) !== 0) && (iVar4 = __strcmpi(ptrAdd(DAT_0064f360, local_8 * 0x58),true /* DEVIATION: C pointer — *(char **)(param_1 + 0x13c) */), iVar4 === 0)) {
                /*JOINED*/
                /*JOINED*/
               if (s8(DAT_0064f348[local_8 * 0x58]) === local_c) {
