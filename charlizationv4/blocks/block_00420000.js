@@ -560,7 +560,7 @@ export function FUN_00421fcd(param_1) {
     _MEM[extraout_ECX + 0x5c] = PTR_DAT_00635a48;
     FUN_004aef20();
     FUN_004af14b();
-    PTR_DAT_00635a48 = (extraout_ECX + 0x54);
+    globalThis.PTR_DAT_00635a48 = (extraout_ECX + 0x54);
     FUN_0040bc40();
     FUN_0059e6ff();
     devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
@@ -594,7 +594,7 @@ export function FUN_00421fcd(param_1) {
             FUN_00425650();
             iVar1 = v(DAT_006c31d4);
             if (iVar5 < 0) {
-              PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+              globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
               FUN_004253ef();
               if (s32(extraout_ECX, 0) !== 0) {
                 FUN_00426f30();
@@ -644,12 +644,12 @@ export function FUN_00421fcd(param_1) {
         if ((sVar4 === sVar2) && (iVar5 = _strcmp((iVar1 + 0x30),PTR_s_5_4_0f_Multiplayer_26_March_99_0062765c), iVar5 === 0)) break;
            /*JOINED*/
            /*JOINED*/
-        PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+        globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
         FUN_005f22d0();
         FUN_005f22d0();
         pcStackY_2c = 0x422b23;
         FUN_00410030();
-        PTR_DAT_00635a48 = (extraout_ECX + 0x54);
+        globalThis.PTR_DAT_00635a48 = (extraout_ECX + 0x54);
       }
       if ((param_1 === 2) || (param_1 === 3)) {
         _MEM[extraout_ECX + 0x22] = 0;
@@ -678,7 +678,7 @@ export function FUN_00421fcd(param_1) {
       FUN_00410030();
     }
     FUN_0059db65();
-    PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+    globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
     FUN_004253ef();
     if (s32(extraout_ECX, 0) !== 0) {
       FUN_00426f30();
@@ -7683,7 +7683,7 @@ if (true) {
     _MEM[extraout_ECX + 0x5c] = PTR_DAT_00635a48;
     FUN_004aef20();
     FUN_004af14b();
-    PTR_DAT_00635a48 = (extraout_ECX + 0x54);
+    globalThis.PTR_DAT_00635a48 = (extraout_ECX + 0x54);
     FUN_0040bc40();
     FUN_0059e6ff();
     devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
@@ -7717,7 +7717,7 @@ if (true) {
             FUN_00425650();
             iVar1 = v(DAT_006c31d4);
             if (iVar5 < 0) {
-              PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+              globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
               FUN_004253ef();
               if (s32(extraout_ECX, 0) !== 0) {
                 FUN_00426f30();
@@ -7767,12 +7767,12 @@ if (true) {
         if ((sVar4 === sVar2) && (iVar5 = _strcmp((iVar1 + 0x30),PTR_s_5_4_0f_Multiplayer_26_March_99_0062765c), iVar5 === 0)) break;
            /*JOINED*/
            /*JOINED*/
-        PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+        globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
         FUN_005f22d0();
         FUN_005f22d0();
         pcStackY_2c = 0x422b23;
         FUN_00410030();
-        PTR_DAT_00635a48 = (extraout_ECX + 0x54);
+        globalThis.PTR_DAT_00635a48 = (extraout_ECX + 0x54);
       }
       if ((param_1 === 2) || (param_1 === 3)) {
         _MEM[extraout_ECX + 0x22] = 0;
@@ -7801,7 +7801,7 @@ if (true) {
       FUN_00410030();
     }
     FUN_0059db65();
-    PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
+    globalThis.PTR_DAT_00635a48 = _MEM[extraout_ECX + 0x5c];
     FUN_004253ef();
     if (s32(extraout_ECX, 0) !== 0) {
       FUN_00426f30();

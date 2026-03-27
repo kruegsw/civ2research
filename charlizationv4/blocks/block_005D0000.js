@@ -1541,7 +1541,7 @@ export function FUN_005d2590(param_1) {
 export function FUN_005d25a8(param_1) {
 
 
-  PTR_DAT_00637e68 = param_1;
+  globalThis.PTR_DAT_00637e68 = param_1;
   return;
 }
 
@@ -1597,7 +1597,7 @@ export function FUN_005d2625(in_ECX = globalThis.in_ECX, param_1, param_2, param
 export function FUN_005d268e(param_1) {
 
 
-  PTR_DAT_00637e6c = param_1;
+  globalThis.PTR_DAT_00637e6c = param_1;
   return;
 }
 
@@ -3031,7 +3031,7 @@ export function FUN_005d4122(in_ECX = globalThis.in_ECX) {
 export function FUN_005d4167(param_1) {
 
 
-  PTR_DAT_00637e64 = param_1;
+  globalThis.PTR_DAT_00637e64 = param_1;
   return;
 }
 
@@ -5603,7 +5603,7 @@ export function FUN_005d7f72(in_ECX = globalThis.in_ECX, param_1, param_2, param
 export function FUN_005d8236(param_1) {
 
 
-  PTR_DAT_00637e60 = param_1;
+  globalThis.PTR_DAT_00637e60 = param_1;
   return;
 }
 

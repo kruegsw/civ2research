@@ -263,7 +263,7 @@ export function FUN_00531210(param_1) {
 
   if ((-1 < param_1) && (param_1 < 9)) {
     wv(DAT_0062803c, param_1);
-    PTR_DAT_00628040 = ptrAdd(DAT_0064c6a0, param_1 * 0x594);
+    globalThis.PTR_DAT_00628040 = ptrAdd(DAT_0064c6a0, param_1 * 0x594);
   }
   return;
 }

@@ -99,7 +99,7 @@ export function ptrAdd(addr, off) { return addr + off; }
 // ── Loop guard: prevents infinite loops, logs diagnostic info ──
 // Per-loop guard using a Map keyed by function+line
 const _loopCounts = new Map();
-const _PER_LOOP_LIMIT = 100000;
+const _PER_LOOP_LIMIT = 1000000;
 export function loopGuard(fnName, line) {
   const key = fnName + ':' + line;
   const count = (_loopCounts.get(key) || 0) + 1;

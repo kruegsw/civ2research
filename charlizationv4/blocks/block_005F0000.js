@@ -6157,7 +6157,7 @@ export function FUN_005f5620(param_1) {
   let puVar1;
   
   puVar1 = PTR_FUN_0063a42c;
-  PTR_FUN_0063a42c = param_1;
+  globalThis.PTR_FUN_0063a42c = param_1;
   return puVar1;
 }
 
@@ -7450,12 +7450,12 @@ export function FUN_005f6cc0() {
 export function __cfltcvt_init_005F6CD0() {
 
 
-  PTR___fptrap_0063aee0 = __cfltcvt;
-  PTR___fptrap_0063aee4 = __cropzeros;
-  PTR___fptrap_0063aee8 = __fassign;
-  PTR___fptrap_0063aeec = __forcdecpt;
-  PTR___fptrap_0063aef0 = __positive;
-  PTR___fptrap_0063aef4 = __cfltcvt;
+  globalThis.PTR___fptrap_0063aee0 = __cfltcvt;
+  globalThis.PTR___fptrap_0063aee4 = __cropzeros;
+  globalThis.PTR___fptrap_0063aee8 = __fassign;
+  globalThis.PTR___fptrap_0063aeec = __forcdecpt;
+  globalThis.PTR___fptrap_0063aef0 = __positive;
+  globalThis.PTR___fptrap_0063aef4 = __cfltcvt;
   return;
 }
 
@@ -11978,16 +11978,16 @@ export function ___sbh_new_region_005FCE30() {
     if (pvVar1 !== 0x0) {
       if (local_10 === PTR_LOOP_0063a438) {
         if (PTR_LOOP_0063a438 === 0x0) {
-          PTR_LOOP_0063a438 = PTR_LOOP_0063a438;
+          globalThis.PTR_LOOP_0063a438 = PTR_LOOP_0063a438;
         }
         if (PTR_LOOP_0063a43c === 0x0) {
-          PTR_LOOP_0063a43c = PTR_LOOP_0063a438;
+          globalThis.PTR_LOOP_0063a43c = PTR_LOOP_0063a438;
         }
       }
       else {
         w32(local_10, 0, PTR_LOOP_0063a438);
         _MEM[local_10 + 1] = PTR_LOOP_0063a43c;
-        PTR_LOOP_0063a43c = local_10;
+        globalThis.PTR_LOOP_0063a43c = local_10;
         // DEVIATION: C pointer write — *(undefined ***)local_10[1] = local_10;
       }
       _MEM[local_10 + 0x204] = local_8;
@@ -12037,7 +12037,7 @@ export function ___sbh_release_region_005FD040(param_1) {
 
   VirtualFree(_MEM[param_1 + 0x204],0,0x8000);
   if (param_1 === PTR_LOOP_0063ac4c) {
-    PTR_LOOP_0063ac4c = _MEM[param_1 + 1];
+    globalThis.PTR_LOOP_0063ac4c = _MEM[param_1 + 1];
   }
   if (param_1 === PTR_LOOP_0063a438) {
     wv(DAT_0063ac48, 0);
@@ -12216,7 +12216,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
                              (_MEM[local_18 + 0x204] + local_10 * 0x1000, _MEM[local_10 + 0x10 + local_18],param_1);
                               /*JOINED*/
           if (puVar2 !== 0x0) {
-            PTR_LOOP_0063ac4c = local_18;
+            globalThis.PTR_LOOP_0063ac4c = local_18;
             // DEVIATION: C pointer write — *(char *)((int)local_10 + 0x10 + (int)local_18) =
                  // DEVIATION(cont): *(char *)((int)local_10 + 0x10 + (int)local_18) - (char)param_1;
             _MEM[local_18 + 2] = local_10;
@@ -12236,7 +12236,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
                              (_MEM[local_18 + 0x204] + local_10 * 0x1000, _MEM[local_10 + 0x10 + local_18],param_1);
                               /*JOINED*/
           if (puVar2 !== 0x0) {
-            PTR_LOOP_0063ac4c = local_18;
+            globalThis.PTR_LOOP_0063ac4c = local_18;
             // DEVIATION: C pointer write — *(char *)((int)local_10 + 0x10 + (int)local_18) =
                  // DEVIATION(cont): *(char *)((int)local_10 + 0x10 + (int)local_18) - (char)param_1;
             _MEM[local_18 + 2] = local_10;
@@ -12257,7 +12257,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
       if (puVar2 !== 0x0) {
         piVar1 = true /* DEVIATION: C pointer — *(int **)(puVar2 + 0x810) */;
         _MEM[piVar1 + 2] = s8(param_1);
-        PTR_LOOP_0063ac4c = puVar2;
+        globalThis.PTR_LOOP_0063ac4c = puVar2;
         w32(piVar1, 0, piVar1 + param_1 + 8);
         _MEM[piVar1 + 1] = 0xf0 - param_1;
         _MEM[puVar2 + 0x10] = _MEM[puVar2 + 0x10] - s8(param_1);
@@ -12295,7 +12295,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
       (local_14 + 0x410)[local_18] = 0xf1;
       local_8 = local_8 + 0x400;
     }
-    PTR_LOOP_0063ac4c = local_18;
+    globalThis.PTR_LOOP_0063ac4c = local_18;
     for (; (local_10 < 0x400 && ((local_10 + 0x10)[local_18] !== -1)); local_10 = local_10 + 1) {
       loopGuard('___sbh_alloc_block_005FD390', 11976);
         /*JOINED*/

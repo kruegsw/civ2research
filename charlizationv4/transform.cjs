@@ -396,6 +396,12 @@ for (const blockFile of blockFiles) {
         );
       }
 
+      // 2e.5: Route PTR_/s_ writes through globalThis (const bindings prevent direct assignment)
+      processed = processed.replace(
+        /\b(PTR_\w+_[0-9a-fA-F]{8})\s*=(?!=)/g,
+        (m, name) => `globalThis.${name} =`
+      );
+
       // 2f: Stub message pump functions (headless: infinite loop otherwise)
       if (/^export function (FUN_005bbb0a|FUN_005bbbce|FUN_00407ff0|gdi_BA4F_005BBA4F|gdi_BB76_005BBB76)\b/.test(trimmed)) {
         processed = processed.replace(
@@ -767,7 +773,7 @@ export function ptrAdd(addr, off) { return addr + off; }
 // ── Loop guard: prevents infinite loops, logs diagnostic info ──
 // Per-loop guard using a Map keyed by function+line
 const _loopCounts = new Map();
-const _PER_LOOP_LIMIT = 100000;
+const _PER_LOOP_LIMIT = 1000000;
 export function loopGuard(fnName, line) {
   const key = fnName + ':' + line;
   const count = (_loopCounts.get(key) || 0) + 1;

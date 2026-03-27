@@ -4737,7 +4737,7 @@ export function FUN_0056e2e9(in_ECX = globalThis.in_ECX, param_1, param_2) {
     in_ECX[0x13] = PTR_DAT_00635a48;
     FUN_004aef20(in_ECX + 0xb);
     FUN_004af14b(in_ECX + 0xb,0x28b);
-    PTR_DAT_00635a48 = (in_ECX + 0xb);
+    globalThis.PTR_DAT_00635a48 = (in_ECX + 0xb);
     FUN_0040bc40(0x81801);
     FUN_0040bbb0();
     FUN_0040bc10(0x288);
@@ -4789,7 +4789,7 @@ export function FUN_0056e2e9(in_ECX = globalThis.in_ECX, param_1, param_2) {
     }
     if (iVar2 < 0) {
       FUN_0046b14d(0xb,0xff,0,0,0,0,0,0,0,0);
-      PTR_DAT_00635a48 = in_ECX[0x13];
+      globalThis.PTR_DAT_00635a48 = in_ECX[0x13];
       FUN_0056ee2c();
       if (s32(in_ECX, 0) !== 0) {
         FUN_00426f30(1);
@@ -4804,7 +4804,7 @@ export function FUN_0056e2e9(in_ECX = globalThis.in_ECX, param_1, param_2) {
     FUN_005f22d0(v(DAT_006ad5bc),v(DAT_00666570));
     FUN_005f22d0(v(DAT_006ad5dc),v(DAT_00666570));
     FUN_0059db65();
-    PTR_DAT_00635a48 = in_ECX[0x13];
+    globalThis.PTR_DAT_00635a48 = in_ECX[0x13];
     FUN_0056ee2c();
     if (s32(in_ECX, 0) !== 0) {
       FUN_00426f30(1);

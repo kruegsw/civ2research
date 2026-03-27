@@ -11,7 +11,7 @@
 
 import { G } from './globals.js';
 import { setWidths } from './mem.js';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -27,16 +27,46 @@ for (const key of Object.keys(G)) {
 }
 if (_BASE === Infinity) _BASE = 0;
 
-// Set every DAT_ address on globalThis as a number (offset into _MEM)
-// Set ALL addresses on globalThis: DAT_, PTR_, s_ — everything in G
+// Set DAT_ addresses on globalThis from G (these have Uint8Array views in the buffer)
 for (const key of Object.keys(G)) {
-  if (!(G[key] instanceof Uint8Array)) continue; // skip non-address properties
-  // Extract hex address from end of key
+  if (!(G[key] instanceof Uint8Array)) continue;
   const addrMatch = key.match(/([0-9a-fA-F]{8})$/);
   if (!addrMatch) continue;
   const addr = parseInt(addrMatch[1], 16);
-  const offset = addr - _BASE;
-  globalThis[key] = offset;
+  globalThis[key] = addr - _BASE;
+}
+
+// Also set PTR_ and s_ addresses on globalThis
+// These aren't in globals.js but ARE in the transpiler output.
+// Compute offsets from the known BASE. Addresses outside the buffer
+// range get offset anyway — they'll access _MEM harmlessly (out-of-bounds
+// reads return undefined, which the null guards handle).
+{
+  const __dir = dirname(fileURLToPath(import.meta.url));
+  const srcDir = join(__dir, '..', 'reverse_engineering', 'transpiler', 'output');
+  try {
+    const files = readdirSync(srcDir).filter(f => f.startsWith('block_') && f.endsWith('.js'));
+    const seen = new Set();
+    for (const f of files) {
+      const src = readFileSync(join(srcDir, f), 'utf8');
+      // PTR_ identifiers
+      for (const m of src.matchAll(/\b(PTR_\w+_([0-9a-fA-F]{8}))\b/g)) {
+        if (!seen.has(m[1])) {
+          seen.add(m[1]);
+          globalThis[m[1]] = parseInt(m[2], 16) - _BASE;
+        }
+      }
+      // s_ string label identifiers
+      for (const m of src.matchAll(/\b(s_\w+_([0-9a-fA-F]{8}))\b/g)) {
+        if (!seen.has(m[1])) {
+          seen.add(m[1]);
+          globalThis[m[1]] = parseInt(m[2], 16) - _BASE;
+        }
+      }
+    }
+  } catch(e) {
+    // If transpiler output not available, PTR_/s_ stay undefined
+  }
 }
 
 // Load address widths from dat-classify.json and register with v()/wv()
