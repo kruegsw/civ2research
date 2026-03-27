@@ -16,7 +16,16 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 // The base address and _MEM buffer
-const _BASE = parseInt(Object.keys(G).find(k => k.startsWith('DAT_'))?.replace('DAT_', '') || '0', 16);
+// Compute BASE from the actual minimum address across all keys
+let _BASE = Infinity;
+for (const key of Object.keys(G)) {
+  const m = key.match(/([0-9a-fA-F]{8})$/);
+  if (m) {
+    const addr = parseInt(m[1], 16);
+    if (addr < _BASE) _BASE = addr;
+  }
+}
+if (_BASE === Infinity) _BASE = 0;
 
 // Set every DAT_ address on globalThis as a number (offset into _MEM)
 // Set ALL addresses on globalThis: DAT_, PTR_, s_ — everything in G
