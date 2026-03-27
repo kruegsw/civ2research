@@ -282,8 +282,7 @@ def main():
             with open(log_file, 'a', encoding='utf-8') as f:
                 f.write(text + '\n')
 
-    log("Civ2 Memory Sniffer")
-    log(f"Polling every {interval}s")
+    log("Civ2 Memory Sniffer (continuous mode)")
     if log_file:
         log(f"Logging to: {log_file}")
 
@@ -307,6 +306,7 @@ def main():
 
     # Read initial state
     prev = read_state(handle)
+    t0 = time.perf_counter()
     log(f"\nInitial state: Turn {prev['turn']} | Map {prev['mapW']}x{prev['mapH']}")
     log(f"Cities: {len(prev['cities'])} | Units: {len(prev['units'])}")
     for c in prev['cities'][:5]:
@@ -314,27 +314,70 @@ def main():
     if len(prev['cities']) > 5:
         log(f"  ... +{len(prev['cities'])-5} more")
 
-    log(f"\nWatching for changes (Ctrl+C to stop)...")
+    log(f"\nContinuous monitoring — every state change logged with ms timestamp")
+    log(f"Press Ctrl+C to stop.\n")
+
+    polls = 0
+    changes = 0
+    last_status = time.perf_counter()
+
+    # Batch file writes for performance
+    log_buffer = []
+    def flush_log():
+        nonlocal log_buffer
+        if log_buffer and log_file:
+            with open(log_file, 'a', encoding='utf-8') as f:
+                f.write('\n'.join(log_buffer) + '\n')
+            log_buffer = []
+
+    def log_fast(text):
+        nonlocal log_buffer
+        print(text)
+        if log_file:
+            log_buffer.append(text)
 
     try:
         while True:
-            time.sleep(interval)
+            # No sleep — spin as fast as possible
             try:
                 curr = read_state(handle)
             except Exception:
+                flush_log()
                 log("\nProcess closed or inaccessible")
                 break
 
+            polls += 1
+
             if curr['turn'] is None:
-                continue  # process might be loading
+                time.sleep(0.1)  # process loading, back off briefly
+                continue
 
             lines = diff_states(prev, curr)
             if lines:
+                elapsed_ms = (time.perf_counter() - t0) * 1000
                 for line in lines:
-                    log(line)
+                    # Add ms timestamp to change lines (not headers)
+                    if line.startswith('  '):
+                        log_fast(f"[{elapsed_ms:10.1f}ms]{line}")
+                    else:
+                        log_fast(line)
                 prev = curr
+                changes += 1
+                flush_log()
+
+            # Periodic status (every 5 seconds)
+            now = time.perf_counter()
+            if now - last_status > 5.0:
+                rate = polls / (now - last_status)
+                log_fast(f"  [{(now-t0)*1000:10.1f}ms] -- polling at {rate:.0f} Hz, {changes} changes --")
+                flush_log()
+                polls = 0
+                last_status = now
+
     except KeyboardInterrupt:
-        log("\nStopped.")
+        flush_log()
+        elapsed = time.perf_counter() - t0
+        log(f"\nStopped after {elapsed:.1f}s, {changes} state changes detected.")
 
     kernel32.CloseHandle(handle)
 
