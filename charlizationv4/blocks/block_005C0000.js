@@ -4390,11 +4390,11 @@ export function FUN_005c61b0(in_ECX = globalThis.in_ECX) {
   let local_c;
   let local_8;
   
-  if (DAT_00637ea8 !== 0xf) {
+  if (+DAT_00637ea8 !== 0xf) {
     w32(in_ECX, 0x8c, 1);
     globalThis.DAT_00637ea8 = DAT_00637ea8 + 1;
     DAT_00637eb0[DAT_00637ea8] = in_ECX;
-    if (DAT_00637ea8 === 0) {
+    if (+DAT_00637ea8 === 0) {
       local_8 = 0;
     }
     else {
@@ -4408,7 +4408,7 @@ export function FUN_005c61b0(in_ECX = globalThis.in_ECX) {
         true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xa4))(); */;
       }
     }
-    if (DAT_00637ea8 === 0) {
+    if (+DAT_00637ea8 === 0) {
       local_c = 0;
     }
     else {
@@ -6448,8 +6448,8 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
   iVar1 = s32(iVar1, 4);
   switch(param_2) {
   case 0x200:
-    if (DAT_00637c9c === 0) {
-      if (DAT_00637ca0 === 0) {
+    if (+DAT_00637c9c === 0) {
+      if (+DAT_00637ca0 === 0) {
         globalThis.DAT_00637c9c = 1;
         SetCapture(param_1);
         if (iVar1 !== 0) {
@@ -6468,7 +6468,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
       local_14[0].bottom = piVar2[3];
       OffsetRect(local_14[0],-local_14[0].left,-local_14[0].top);
       BVar3 = PtInRect(local_14[0],((param_4) & 0xffffffff0000ffff));
-      if (((BVar3 === 0) && (globalThis.DAT_00637c9c = 0, DAT_00637ca0 === 0)) && (ReleaseCapture(), iVar1 !== 0))
+      if (((BVar3 === 0) && (globalThis.DAT_00637c9c = 0, +DAT_00637ca0 === 0)) && (ReleaseCapture(), iVar1 !== 0))
       {
         uVar4 = FUN_0040f810();
         FUN_005c6303(uVar4);
@@ -6478,7 +6478,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
     }
     break;
   case 0x201:
-    if (DAT_00637c9c !== 0) {
+    if (+DAT_00637c9c !== 0) {
       globalThis.DAT_00637ca0 = 1;
       uVar4 = FUN_0040f810();
       FUN_005c6303(uVar4);
@@ -6487,9 +6487,9 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
     }
     break;
   case 0x202:
-    if (DAT_00637ca0 !== 0) {
+    if (+DAT_00637ca0 !== 0) {
       globalThis.DAT_00637ca0 = 0;
-      if (DAT_00637c9c === 0) {
+      if (+DAT_00637c9c === 0) {
         ReleaseCapture();
         if (iVar1 !== 0) {
           uVar4 = FUN_0040f810();
@@ -6507,7 +6507,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
     }
     break;
   case 0x203:
-    if (DAT_00637c9c !== 0) {
+    if (+DAT_00637c9c !== 0) {
       uVar4 = FUN_0040f810();
       FUN_005c6303(uVar4);
       uVar4 = FUN_00418740();
@@ -6678,7 +6678,7 @@ export function update_palette_90CA_005C90CA(param_1, param_2) {
     local_14[0].x = param_1[2];
     local_14[0].y = param_1[3];
     MapWindowPoints(param_2,s32(iVar2, 4),local_14[0],1);
-    if ((s32(iVar2, 0x18) !== 0) && (DAT_00638b48 === 1)) {
+    if ((s32(iVar2, 0x18) !== 0) && (+DAT_00638b48 === 1)) {
       SelectPalette(s32(param_1, 0),s32(iVar2, 0x18),0);
       RealizePalette(s32(param_1, 0));
     }
@@ -7060,7 +7060,7 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
           local_18 = GetStockObject(1);
         }
         else {
-          if (DAT_00638b48 === 1) {
+          if (+DAT_00638b48 === 1) {
             bForceBkgd = 0;
             FUN_0040f810();
             _this = FUN_00511320();
@@ -7844,7 +7844,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
       ValidateRect(pHVar5,lpRect);
       OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
       ValidateRect(param_1,local_20[0]);
-      if (DAT_00638b48 === 1) {
+      if (+DAT_00638b48 === 1) {
         BVar12 = 0;
         FUN_0040f810();
         _this = FUN_00511320();
@@ -7856,7 +7856,7 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
         FUN_0040f810();
         uVar9 = FUN_00511320();
         FUN_005c0d12(uVar9);
-        if (DAT_00638b48 === 1) {
+        if (+DAT_00638b48 === 1) {
           RealizePalette(local_24);
         }
         DVar13 = 0xcc0020;
@@ -8456,7 +8456,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
       local_130 = local_1b0[0].top;
       local_12c = local_1b0[0].right;
       local_128 = local_1b0[0].bottom;
-      if (DAT_00637f08 !== 0) {
+      if (+DAT_00637f08 !== 0) {
         local_12c = local_1b0[0].left + 0x20;
         iVar2 = FUN_00407fc0(local_1b0[0]);
         local_130 = iVar2 + -0x14 + local_1b0[0].top >> 1;
@@ -8474,7 +8474,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
       FUN_005ed710(local_144,local_1a0,local_1b0[0].left,local_1b0[0].bottom + -0x14 >> 1,0x20,0x14,0,7);
       local_1b0[0].left = local_1b0[0].left + 0x25;
       local_140 = true /* DEVIATION: C pointer — *(char **)(local_19c + 0x24) */;
-      if ((DAT_00637e98 !== 0) || (DAT_00637e9c !== 0)) {
+      if ((+DAT_00637e98 !== 0) || (+DAT_00637e9c !== 0)) {
         OffsetRect(local_1b0[0],((DAT_00637e98) >>> 0),((DAT_00637e9c) >>> 0));
         puVar11 = local_120;
         puVar9 = local_148;
@@ -8495,7 +8495,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
         FUN_0040f810();
         iVar2 = FUN_00414d10();
         if (s32(iVar2, 0x40) === 8) {
-          if (DAT_00637e90 === 0) {
+          if (+DAT_00637e90 === 0) {
             SetTextColor(local_144,0);
           }
           else {
@@ -8507,7 +8507,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
             ;
           }
         }
-        else if (DAT_00637f03 === 0) {
+        else if (+DAT_00637f03 === 0) {
           SetTextColor(local_144,0);
         }
         else {
@@ -8520,7 +8520,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
           FUN_0040f810();
           iVar2 = FUN_00414d10();
           if (s32(iVar2, 0x40) === 8) {
-            if (DAT_00637ea0 === 0) {
+            if (+DAT_00637ea0 === 0) {
               SetTextColor(local_144,0x404040);
             }
             else {
@@ -8532,7 +8532,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
                            /*JOINED*/
             }
           }
-          else if (DAT_00637f07 === 0) {
+          else if (+DAT_00637f07 === 0) {
             SetTextColor(local_144,0x404040);
           }
           else {
@@ -8634,7 +8634,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
   }
   else if (param_2 === 0x201) {
     iVar2 = FUN_005c5ec0();
-    if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
+    if ((iVar2 !== 0) && (+DAT_00637f08 === 0)) {
       SetFocus(param_1);
       devLog('MFC', 'iVar2 = ios::width(local_198);');
       if (iVar2 === 0) {
@@ -8769,7 +8769,7 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
   if (param_4 !== 0) {
     param_3 = param_3 | 0x10000000;
   }
-  if (DAT_00637f58 === 0) {
+  if (+DAT_00637f58 === 0) {
     pvVar6 = 0x0;
     pHVar4 = 0x0;
     pHVar5 = DAT_006e4ff0;
@@ -9196,7 +9196,7 @@ export function FUN_005cd775(param_1, param_2) {
       globalThis.DAT_006e47c8 = ptrAdd(DAT_006d470c, local_18 * 0x100c);
       return;
     }
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637f98) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637f9c)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637f98) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637f9c)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);
@@ -9261,7 +9261,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
   local_10 = FUN_00421bb0();
   local_8 = -1;
   for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa0) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637fa4)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637fa0) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637fa4)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);
@@ -9287,7 +9287,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
       globalThis.DAT_006e47c4 = ptrAdd(DAT_006d470c, local_14 * 0x100c);
       return;
     }
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637fac)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637fac)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);
@@ -11450,7 +11450,7 @@ if (true) {
   }
 if (true) {
     iVar2 = FUN_005c5ec0();
-    if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
+    if ((iVar2 !== 0) && (+DAT_00637f08 === 0)) {
       SetFocus(param_1);
       devLog('MFC', 'iVar2 = ios::width(local_198);');
       if (iVar2 === 0) {
@@ -11484,7 +11484,7 @@ function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
       globalThis.DAT_006e47c8 = ptrAdd(DAT_006d470c, local_18 * 0x100c);
       return;
   // (outer block close)
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637f98) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637f9c)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637f98) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637f9c)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);
@@ -11512,7 +11512,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
       globalThis.DAT_006e47c4 = ptrAdd(DAT_006d470c, local_14 * 0x100c);
       return;
     }
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637fac)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637fac)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);
@@ -11530,7 +11530,7 @@ function LAB_005cdcd6_helper(local_10, local_14, local_8, local_c, uVar1) {
       globalThis.DAT_006e47c4 = ptrAdd(DAT_006d470c, local_14 * 0x100c);
       return;
   // (outer block close)
-    if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === DAT_00637fac)) {
+    if ((s32(DAT_006d4700, local_14 * 0x100c) === +DAT_00637fa8) && (s32(DAT_006d4704, local_14 * 0x100c) === +DAT_00637fac)) {
        /*JOINED*/
       uVar1 = FUN_00421bb0();
       w32(DAT_006d4708, local_14 * 0x100c, uVar1);

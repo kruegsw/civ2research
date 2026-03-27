@@ -388,6 +388,27 @@ for (const blockFile of blockFiles) {
         /\b(DAT_[0-9a-fA-F]+)\s*=(?!=)/g,
         (m, name) => `globalThis.${name} =`
       );
+
+      // 2e: Force numeric coercion for === and !== on DAT_ globals
+      // DAT_xxx is a Uint8Array. Strict equality (===) doesn't call valueOf().
+      // +DAT_xxx forces valueOf() → returns int32 from first 4 bytes.
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*===\s*/g,
+        (m, name) => `+${name} === `
+      );
+      processed = processed.replace(
+        /\b(DAT_[0-9a-fA-F]+)\s*!==\s*/g,
+        (m, name) => `+${name} !== `
+      );
+      // Also handle reverse: expr === DAT_xxx
+      processed = processed.replace(
+        /===\s*(DAT_[0-9a-fA-F]+)\b/g,
+        (m, name) => `=== +${name}`
+      );
+      processed = processed.replace(
+        /!==\s*(DAT_[0-9a-fA-F]+)\b/g,
+        (m, name) => `!== +${name}`
+      );
     }
 
     finalLines.push(processed);

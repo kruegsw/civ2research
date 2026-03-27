@@ -507,7 +507,7 @@ export function FUN_0050101f() {
   local_8 = 1;
   FUN_005c64da();
   local_8 = 2;
-  if (DAT_006aa78c === DAT_00630d34) {
+  if (+DAT_006aa78c === +DAT_00630d34) {
     local_8 = 1;
     FUN_0050117b();
     local_8 = ((local_8) >>> 0) << 8;
@@ -676,13 +676,13 @@ export function FUN_005011b4(param_1, param_2, param_3, param_4, param_5) {
 export function FUN_005013bc() {
 
 
-  if (DAT_00630d1c === 0) {
+  if (+DAT_00630d1c === 0) {
     globalThis.DAT_00630d1c = 1;
     FUN_0040bbb0();
     FUN_0040bbe0(s_CITYMODAL_00630d78);
-    FUN_0040ff30((DAT_006aa764 === 2) + 0x01);
+    FUN_0040ff30((+DAT_006aa764 === 2) + 0x01);
     FUN_00421ea0(DAT_00679640);
-    if (DAT_00631edc !== 0) {
+    if (+DAT_00631edc !== 0) {
       thunk_citywin_BC4F(0);
     }
     globalThis.DAT_00630d1c = 0;
@@ -971,7 +971,7 @@ export function FUN_00501819(param_1) {
   let local_10;
   
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0) || (DAT_00655b07 !== 0)) {
+  if ((s8(DAT_0064f348[iVar1 * 0x58]) === +DAT_006d1da0) || (+DAT_00655b07 !== 0)) {
     uVar4 = 0;
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar4);
@@ -1295,7 +1295,7 @@ export function FUN_005022c0(param_1, param_2) {
   
   local_1c = -1;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0) || (DAT_00655b07 !== 0)) {
+  if ((s8(DAT_0064f348[iVar1 * 0x58]) === +DAT_006d1da0) || (+DAT_00655b07 !== 0)) {
     uVar5 = 0;
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
     FUN_004eb4ed(iVar1,uVar5);
@@ -1340,7 +1340,7 @@ export function FUN_005022c0(param_1, param_2) {
             if (DAT_006a6530[local_1c] !== 0) {
               return;
             }
-            if (DAT_006a6604 === 0) {
+            if (+DAT_006a6604 === 0) {
               devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
               w32(DAT_0064f370, iVar1 * 0x58, 0);
             }
@@ -1498,7 +1498,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
       local_9c = local_e4 - local_50;
       local_94 = 0;
       for (local_5c = 0; local_5c < 0x15; local_5c = local_5c + 1) {
-        if ((DAT_00628370[local_5c] === DAT_00630d38[local_3c]) && (DAT_006283a0[local_5c] === DAT_00630d50[local_3c])) {
+        if ((DAT_00628370[local_5c] === +DAT_00630d38[local_3c]) && (DAT_006283a0[local_5c] === +DAT_00630d50[local_3c])) {
            /*JOINED*/
           local_94 = local_5c;
           break;
@@ -1554,7 +1554,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
       local_9c = local_e4 - local_50;
       local_94 = 0;
       for (local_5c = 0; local_5c < 0x15; local_5c = local_5c + 1) {
-        if ((DAT_00628370[local_5c] === DAT_00630d38[local_3c]) && (DAT_006283a0[local_5c] === DAT_00630d50[local_3c])) {
+        if ((DAT_00628370[local_5c] === +DAT_00630d38[local_3c]) && (DAT_006283a0[local_5c] === +DAT_00630d50[local_3c])) {
            /*JOINED*/
           local_94 = local_5c;
           break;
@@ -1756,7 +1756,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     FUN_005baee0(0x2a,10,1,1);
     FUN_0040fe40();
     FUN_0040ff30(DAT_006a65b0 + local_98);
-    if (DAT_006a6558 !== DAT_006a65b0) {
+    if (+DAT_006a6558 !== +DAT_006a65b0) {
       FUN_0040fe10();
       FUN_0040fea0();
       FUN_0040ff30(DAT_006a6558 - DAT_006a65b0);
@@ -1799,12 +1799,12 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     local_2c = iVar1 - local_2c;
     local_c8 = FUN_00511690(0xe);
     local_c8 = local_c8 + 1;
-    if (((local_c < 0) && (local_48 !== 0)) || ((0 < local_c && (DAT_006a6568 !== 0)))) {
+    if (((local_c < 0) && (local_48 !== 0)) || ((0 < local_c && (+DAT_006a6568 !== 0)))) {
       iVar1 = FUN_00511690(4);
       local_2c = (local_2c - iVar1) - local_c8;
       local_54 = local_54 + -1;
     }
-    if (DAT_006a656c !== 0) {
+    if (+DAT_006a656c !== 0) {
       iVar1 = FUN_00511690(4);
       local_2c = (local_2c - iVar1) - local_c8;
       local_54 = local_54 + -1;
@@ -1816,8 +1816,8 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
         local_b8 = local_b8 + -1;
       }
       else {
-        if (local_48 === DAT_006a656c) break;
-        if (local_48 - DAT_006a656c === local_b8) {
+        if (local_48 === +DAT_006a656c) break;
+        if (local_48 - +DAT_006a656c === local_b8) {
           local_48 = local_48 + -1;
           local_b8 = local_b8 + -1;
           local_28 = local_28 + -1;
@@ -1829,13 +1829,13 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
       }
     }
     local_d8 = 0;
-    if (DAT_006a656c !== 0) {
+    if (+DAT_006a656c !== 0) {
       local_d8 = (DAT_006a656c + -1) * local_70 + local_c8;
       if (local_c !== 0) {
         iVar1 = FUN_00511690(4);
         local_d8 = local_d8 + (iVar1 >> 1);
       }
-      if (local_48 !== DAT_006a656c) {
+      if (local_48 !== +DAT_006a656c) {
         iVar1 = FUN_00511690(4);
         local_d8 = local_d8 + (iVar1 >> 1);
       }
@@ -1862,7 +1862,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     local_f4 = FUN_00511690(0xe2);
     local_f4 = local_f4 - (local_d8 + local_68);
     if (local_d8 !== 0) {
-      if (DAT_006a6568 === 0) {
+      if (+DAT_006a6568 === 0) {
         local_f4 = 0;
       }
       else {
@@ -1970,7 +1970,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     FUN_0040ff30(iVar1);
     FUN_005baee0(0x54,10,1,1);
     FUN_0043c8d0(DAT_00679640,local_84,local_4c);
-    if (DAT_006a656c !== 0) {
+    if (+DAT_006a656c !== 0) {
       FUN_0040bbb0();
       FUN_0040bc10(0x43);
       FUN_0040fe40();
@@ -2004,7 +2004,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     local_2c = iVar1 - local_2c;
     local_c8 = FUN_00511690(0xe);
     local_c8 = local_c8 + 1;
-    if (DAT_006a6580 !== 0) {
+    if (+DAT_006a6580 !== 0) {
       iVar1 = FUN_00511690(4);
       local_2c = (local_2c - iVar1) - local_c8;
       local_54 = local_54 + -1;
@@ -2014,7 +2014,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
       local_48 = local_48 + -1;
     }
     local_68 = 0;
-    if (DAT_006a6580 !== 0) {
+    if (+DAT_006a6580 !== 0) {
       if (DAT_006a6580 < 1) {
         local_20c = ~DAT_006a6580 + 1;
       }
@@ -2054,7 +2054,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
         local_fc = local_fc + local_70;
       }
     }
-    if (DAT_006a6580 !== 0) {
+    if (+DAT_006a6580 !== 0) {
       local_fc = local_a4;
       iVar1 = FUN_00511690(4);
       local_fc = local_fc + (iVar1 >> 1);
@@ -2077,7 +2077,7 @@ export function FUN_005025d5(in_ECX = globalThis.in_ECX, param_1) {
     FUN_0040fe40();
     FUN_0040ff30(DAT_006a65d0 - DAT_006a6580);
     local_d0 = FUN_0043c8d0(DAT_00679640,local_84,local_4c);
-    if ((DAT_0064c6b5[s8(DAT_0064f348[s32(in_ECX, 0x159c) * 0x58]) * 0x594] === 0x04) && (DAT_006a6618 !== 0)) {
+    if ((DAT_0064c6b5[s8(DAT_0064f348[s32(in_ECX, 0x159c) * 0x58]) * 0x594] === 0x04) && (+DAT_006a6618 !== 0)) {
        /*JOINED*/
       iVar1 = FUN_00511690(4);
       local_d0 = local_d0 + iVar1;
@@ -2767,9 +2767,9 @@ export function FUN_00505d3d(param_1) {
   local_c = 0;
   local_10 = -1;
   devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(DAT_0064f348[iVar3 * 0x58]) === DAT_006d1da0) || (DAT_00655b07 !== 0)) {
+  if ((s8(DAT_0064f348[iVar3 * 0x58]) === +DAT_006d1da0) || (+DAT_00655b07 !== 0)) {
     devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-    if (((DAT_0064f344[iVar3 * 0x58] & 4) === 0) || ((DAT_00655b07 !== 0 && ((DAT_00655af0 & 0x80) !== 0)))) {
+    if (((DAT_0064f344[iVar3 * 0x58] & 4) === 0) || ((+DAT_00655b07 !== 0 && ((DAT_00655af0 & 0x80) !== 0)))) {
        /*JOINED*/
       uVar6 = 0;
       devLog('MFC', 'iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8);');
@@ -2785,7 +2785,7 @@ export function FUN_00505d3d(param_1) {
         }
       }
       if (-1 < local_10) {
-        if ((local_14 === 1) && ((DAT_00655b07 === 0 || ((DAT_00655af0 & 0x80) === 0)))) {
+        if ((local_14 === 1) && ((+DAT_00655b07 === 0 || ((DAT_00655af0 & 0x80) === 0)))) {
           FUN_0046e020(0x69,0,0,0);
           FUN_004cc870(s_CANTHOCKTHIS_00630da0,1,8);
         }
@@ -3040,10 +3040,10 @@ export function FUN_00506637(param_1) {
   local_8 = 0;
   devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = ((local_8) << 8 | (1));
-  if (DAT_00630d2c === 0) {
+  if (+DAT_00630d2c === 0) {
     globalThis.DAT_00630d2c = 1;
     devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-    if ((s8(DAT_0064f348[iVar1 * 0x58]) === DAT_006d1da0) || (DAT_00655b07 !== 0)) {
+    if ((s8(DAT_0064f348[iVar1 * 0x58]) === +DAT_006d1da0) || (+DAT_00655b07 !== 0)) {
       uVar4 = 0;
       devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       FUN_004eb4ed(iVar1,uVar4);
@@ -3204,7 +3204,7 @@ export function FUN_00506a42(param_1) {
   local_8 = 0;
   devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
   local_8 = ((local_8) << 8 | (1));
-  if (DAT_00630d2c !== 0) {
+  if (+DAT_00630d2c !== 0) {
     local_8 = ((local_8) >>> 0) << 8;
     citywin_70B8();
     devLog('SEH', '');
@@ -3215,12 +3215,12 @@ export function FUN_00506a42(param_1) {
   globalThis.DAT_00630d2c = 1;
   FUN_005cdea1(0x40,0x20,0);
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
-  if ((s8(DAT_0064f348[iVar1 * 0x58]) !== DAT_006d1da0) && (DAT_00655b07 === 0))
+  if ((s8(DAT_0064f348[iVar1 * 0x58]) !== +DAT_006d1da0) && (+DAT_00655b07 === 0))
   LAB_0050708f_helper(local_8); return;
   uVar6 = 0;
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   FUN_004eb4ed(iVar1,uVar6);
-  if (DAT_006aa768 !== 0) LAB_0050708f_helper(local_8); return;
+  if (+DAT_006aa768 !== 0) LAB_0050708f_helper(local_8); return;
   iVar1 = param_1;
   devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar2 = s16(DAT_0064f342, iVar2 * 0x58);
@@ -3274,7 +3274,7 @@ export function FUN_00506a42(param_1) {
   uVar5 = 7;
   uVar6 = FUN_00428b0c(s32(DAT_00628420, 0x2d0),7,0);
   FUN_0059edf0(uVar6,uVar5,uVar7);
-  if ((((((DAT_00655b0b) >>> 0) & 1 << (DAT_006560f7[iVar1 * 0x20] & 0x1f)) !== 0) && (DAT_00655b05 !== 0)) && (iVar2 = FUN_005b2c3d(iVar1), iVar2 !== 0)) {
+  if ((((((DAT_00655b0b) >>> 0) & 1 << (DAT_006560f7[iVar1 * 0x20] & 0x1f)) !== 0) && (+DAT_00655b05 !== 0)) && (iVar2 = FUN_005b2c3d(iVar1), iVar2 !== 0)) {
       /*JOINED*/
     uVar7 = 0;
     uVar5 = 8;
@@ -3539,7 +3539,7 @@ export function citywin_70E5_005070E5(in_ECX = globalThis.in_ECX) {
       else if (local_38 === 4) break;
     }
   }
-  if (DAT_006a6584 !== 0) {
+  if (+DAT_006a6584 !== 0) {
     FUN_0047df20(s32(in_ECX, 0x15d4) * 4 + -8);
     iVar3 = FUN_00407f90(in_ECX + 0x164c,0);
     iVar1 = FUN_00511690(0xe);
@@ -3699,7 +3699,7 @@ export function citywin_7B69_00507B69(in_ECX = globalThis.in_ECX) {
     for (local_20 = 0; local_20 < DAT_006d1160; local_20 = local_20 + 1) {
       uVar2 = FUN_005ae052(local_20 + local_8);
       iVar6 = FUN_004087c0(uVar2,local_30);
-      if ((iVar6 !== 0) && ((iVar6 = FUN_005b8b65(uVar2,local_30,cVar1), iVar6 !== 0 || (DAT_00655b07 !== 0)))) {
+      if ((iVar6 !== 0) && ((iVar6 = FUN_005b8b65(uVar2,local_30,cVar1), iVar6 !== 0 || (+DAT_00655b07 !== 0)))) {
          /*JOINED*/
           /*JOINED*/
         iVar6 = FUN_005b89e4(uVar2,local_30);
@@ -3887,7 +3887,7 @@ export function citywin_8177_00508177(in_ECX = globalThis.in_ECX, param_1, param
     }
     if (local_18 !== 0) {
       local_20 = DAT_006a65e4;
-      if ((DAT_006a65e4 !== 0) && (DAT_0064c6b5[iVar3 * 0x594] === 0x05)) {
+      if ((+DAT_006a65e4 !== 0) && (DAT_0064c6b5[iVar3 * 0x594] === 0x05)) {
         local_20 = DAT_006a65e4 + -1;
       }
       local_14[0] = local_20 * local_18;
@@ -4355,7 +4355,7 @@ export function citywin_9429_00509429(in_ECX = globalThis.in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  if ((((-1 < s32(in_ECX, 0x159c)) && (s32(in_ECX, 0x159c) < DAT_00655b18)) && (s32(DAT_0064f394, true /* DEVIATION: C pointer — s32(in_ECX, 0x159c) */ * 0x58) !== 0)) && (DAT_00628044 !== 0))
+  if ((((-1 < s32(in_ECX, 0x159c)) && (s32(in_ECX, 0x159c) < DAT_00655b18)) && (s32(DAT_0064f394, true /* DEVIATION: C pointer — s32(in_ECX, 0x159c) */ * 0x58) !== 0)) && (+DAT_00628044 !== 0))
       /*JOINED*/
   {
     if ((s32(in_ECX, 0x15a0) === 0) && (s32(in_ECX, 0x15a4) === 0)) {
@@ -4424,7 +4424,7 @@ export function handle_city_disorder_00509590_00509590(in_ECX = globalThis.in_EC
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if ((DAT_0062edf8 === 0) || ((((((iVar1 = XD_InFlushSendBuffer(), iVar1 === 0 && (DAT_006ad8bc === 0)) && (DAT_006ad8c0 === 0) ) && (((DAT_006ad8c4 === 0 && (DAT_006ad8c8 === 0)) && ((DAT_006ad8cc === 0 && ((DAT_006ad8d0 === 0 && (DAT_006ad8d8 === 0)))))))) && ((DAT_006ad8dc === 0 && (((DAT_006ad8e0 === 0 && (DAT_006ad8e4 === 0)) && (DAT_006ad8e8 === 0)))) )) && (((DAT_006ad8ec === 0 && (DAT_006ad8f0 === 0)) && ((((DAT_006ad8f4 === 0 && ((DAT_006ad8f8 === 0 && (DAT_006ad8fc === 0)))) && (DAT_006ad900 === 0)) && (DAT_006ad904 === 0)))))))) {
+  if ((+DAT_0062edf8 === 0) || ((((((iVar1 = XD_InFlushSendBuffer(), iVar1 === 0 && (+DAT_006ad8bc === 0)) && (+DAT_006ad8c0 === 0) ) && (((+DAT_006ad8c4 === 0 && (+DAT_006ad8c8 === 0)) && ((+DAT_006ad8cc === 0 && ((+DAT_006ad8d0 === 0 && (+DAT_006ad8d8 === 0)))))))) && ((+DAT_006ad8dc === 0 && (((+DAT_006ad8e0 === 0 && (+DAT_006ad8e4 === 0)) && (+DAT_006ad8e8 === 0)))) )) && (((+DAT_006ad8ec === 0 && (+DAT_006ad8f0 === 0)) && ((((+DAT_006ad8f4 === 0 && ((+DAT_006ad8f8 === 0 && (+DAT_006ad8fc === 0)))) && (+DAT_006ad900 === 0)) && (+DAT_006ad904 === 0)))))))) {
      /*JOINED*/
          /*JOINED*/
                /*JOINED*/
@@ -4452,28 +4452,28 @@ export function handle_city_disorder_00509590_00509590(in_ECX = globalThis.in_EC
     else {
       FUN_004e7240();
     }
-    if (DAT_00630d20 !== 0) {
+    if (+DAT_00630d20 !== 0) {
       thunk_citywin_CA8D(1);
       globalThis.DAT_00630d20 = 0;
     }
     thunk_citywin_CCB3(1);
     globalThis.DAT_00630d18 = 0;
-    if (DAT_0062edf8 === 0) {
-      if (((((DAT_00655aea & 1) !== 0) && (0x03 < s8(DAT_0064f349[param_1 * 0x58]))) && ((DAT_00655af4 & 1) === 0)) && (s8(DAT_0064f348[param_1 * 0x58]) !== DAT_006d1da0)) {
+    if (+DAT_0062edf8 === 0) {
+      if (((((DAT_00655aea & 1) !== 0) && (0x03 < s8(DAT_0064f349[param_1 * 0x58]))) && ((DAT_00655af4 & 1) === 0)) && (s8(DAT_0064f348[param_1 * 0x58]) !== +DAT_006d1da0)) {
           /*JOINED*/
         FUN_004190d0(PTR_s_TUTORIAL_00627678,s_CITYSTUFF_00630e00);
         globalThis.DAT_00655af4 = DAT_00655af4 | 1;
       }
     }
     else {
-      if ((((((DAT_00655aea & 1) !== 0) && ((DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (DAT_00655b08 < 3)))) && ((s8(DAT_0064f348[param_1 * 0x58]) === DAT_006d1da0 && (DAT_00654fa8 === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), DAT_00631edc !== 0)) {
+      if ((((((DAT_00655aea & 1) !== 0) && ((DAT_0064f344[param_1 * 0x58] & 1) !== 0)) || (((DAT_0064f346[param_1 * 0x58] & 0x10) !== 0 && (DAT_00655b08 < 3)))) && ((s8(DAT_0064f348[param_1 * 0x58]) === +DAT_006d1da0 && (+DAT_00654fa8 === 0)))) && (FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER_00630ddc), +DAT_00631edc !== 0)) {
            /*JOINED*/
           /*JOINED*/
          /*JOINED*/
         FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER2_00630de8);
         FUN_004190d0(PTR_s_TUTORIAL_00627678,s_DISORDER3_00630df4);
       }
-      while (((s32(in_ECX, 0x15a0) === 0 && (s32(in_ECX, 0x15a4) === 0)) && (DAT_00630d18 === 0))) {
+      while (((s32(in_ECX, 0x15a0) === 0 && (s32(in_ECX, 0x15a4) === 0)) && (+DAT_00630d18 === 0))) {
              /*JOINED*/
         FUN_0040ef50();
       }
@@ -4666,7 +4666,7 @@ export function city_button_buy_00509B48(param_1) {
     return;
   }
   iVar2 = XD_InFlushSendBuffer();
-  if (((((((iVar2 !== 0) || (DAT_006ad8bc !== 0)) || (DAT_006ad8c0 !== 0)) || ((DAT_006ad8c4 !== 0 || (DAT_006ad8c8 !== 0)))) || (((DAT_006ad8cc !== 0 || ((DAT_006ad8d0 !== 0 || (DAT_006ad8d8 !== 0)))) || (DAT_006ad8dc !== 0)) )) || ((((DAT_006ad8e0 !== 0 || (DAT_006ad8e4 !== 0)) || (DAT_006ad8e8 !== 0)) || (((DAT_006ad8ec !== 0 || (DAT_006ad8f0 !== 0)) || ((DAT_006ad8f4 !== 0 || ((DAT_006ad8f8 !== 0 || (DAT_006ad8fc !== 0)))))))))) || ((DAT_006ad900 !== 0 || (DAT_006ad904 !== 0)))) {
+  if (((((((iVar2 !== 0) || (+DAT_006ad8bc !== 0)) || (+DAT_006ad8c0 !== 0)) || ((+DAT_006ad8c4 !== 0 || (+DAT_006ad8c8 !== 0)))) || (((+DAT_006ad8cc !== 0 || ((+DAT_006ad8d0 !== 0 || (+DAT_006ad8d8 !== 0)))) || (+DAT_006ad8dc !== 0)) )) || ((((+DAT_006ad8e0 !== 0 || (+DAT_006ad8e4 !== 0)) || (+DAT_006ad8e8 !== 0)) || (((+DAT_006ad8ec !== 0 || (+DAT_006ad8f0 !== 0)) || ((+DAT_006ad8f4 !== 0 || ((+DAT_006ad8f8 !== 0 || (+DAT_006ad8fc !== 0)))))))))) || ((+DAT_006ad900 !== 0 || (+DAT_006ad904 !== 0)))) {
         /*JOINED*/
        /*JOINED*/
        /*JOINED*/
@@ -4693,7 +4693,7 @@ export function city_button_buy_00509B48(param_1) {
   iVar3 = s8(DAT_0064f379[iVar3 * 0x58]);
   devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   iVar4 = s8(DAT_0064f379[iVar4 * 0x58]);
-  if ((DAT_006d1da0 !== iVar2) && (DAT_00655b07 === 0)) {
+  if ((+DAT_006d1da0 !== iVar2) && (+DAT_00655b07 === 0)) {
     devLog('SEH', '');
     citywin_A1B2();
     citywin_A1C8();
@@ -4763,7 +4763,7 @@ export function city_button_buy_00509B48(param_1) {
   }
   iVar3 = FUN_0040bc80(0);
   if (bVar1) {
-    if ((iVar3 === 0) && (DAT_006aa75c !== 1)) {
+    if ((iVar3 === 0) && (+DAT_006aa75c !== 1)) {
       w32(DAT_0064c6a2, iVar2 * 0x594, s32(DAT_0064c6a2, iVar2 * 0x594) - local_35c);
       devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
       w16(DAT_0064f35c, iVar2 * 0x58, ((DAT_0064bccc) & 0xFFFF) * ((local_368) << 16 >> 16));
@@ -4979,7 +4979,7 @@ export function city_button_change_0050A473(param_1) {
     return;
   }
   iVar2 = XD_InFlushSendBuffer();
-  if (((((((iVar2 !== 0) || (DAT_006ad8bc !== 0)) || (DAT_006ad8c0 !== 0)) || ((DAT_006ad8c4 !== 0 || (DAT_006ad8c8 !== 0)))) || (((DAT_006ad8cc !== 0 || ((DAT_006ad8d0 !== 0 || (DAT_006ad8d8 !== 0)))) || (DAT_006ad8dc !== 0)) )) || ((((DAT_006ad8e0 !== 0 || (DAT_006ad8e4 !== 0)) || (DAT_006ad8e8 !== 0)) || (((DAT_006ad8ec !== 0 || (DAT_006ad8f0 !== 0)) || ((DAT_006ad8f4 !== 0 || ((DAT_006ad8f8 !== 0 || (DAT_006ad8fc !== 0)))))))))) || ((DAT_006ad900 !== 0 || (DAT_006ad904 !== 0)))) {
+  if (((((((iVar2 !== 0) || (+DAT_006ad8bc !== 0)) || (+DAT_006ad8c0 !== 0)) || ((+DAT_006ad8c4 !== 0 || (+DAT_006ad8c8 !== 0)))) || (((+DAT_006ad8cc !== 0 || ((+DAT_006ad8d0 !== 0 || (+DAT_006ad8d8 !== 0)))) || (+DAT_006ad8dc !== 0)) )) || ((((+DAT_006ad8e0 !== 0 || (+DAT_006ad8e4 !== 0)) || (+DAT_006ad8e8 !== 0)) || (((+DAT_006ad8ec !== 0 || (+DAT_006ad8f0 !== 0)) || ((+DAT_006ad8f4 !== 0 || ((+DAT_006ad8f8 !== 0 || (+DAT_006ad8fc !== 0)))))))))) || ((+DAT_006ad900 !== 0 || (+DAT_006ad904 !== 0)))) {
         /*JOINED*/
        /*JOINED*/
        /*JOINED*/
@@ -5007,7 +5007,7 @@ export function city_button_change_0050A473(param_1) {
   devLog('MFC', 'iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   bVar1 = DAT_0064f348[iVar2 * 0x58];
   iVar2 = s8(bVar1);
-  if ((DAT_006d1da0 !== iVar2) && (DAT_00655b07 === 0)) {
+  if ((+DAT_006d1da0 !== iVar2) && (+DAT_00655b07 === 0)) {
     local_8 = 1;
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
@@ -5062,11 +5062,11 @@ export function city_button_change_0050A473(param_1) {
           FUN_004271e8(0,s32(DAT_0064c488, iVar3));
           if (local_95c[0] < 0x27) {
             FUN_004af122(local_64,s32(DAT_0064c488, local_95c[0] * 8));
-            FUN_0059ec88(ptrAdd(DAT_00645160, local_95c[0] * 0x3c),(DAT_00633584 === 0) - 1 & 8,0);
+            FUN_0059ec88(ptrAdd(DAT_00645160, local_95c[0] * 0x3c),(+DAT_00633584 === 0) - 1 & 8,0);
           }
           else {
             FUN_0043c840(local_64,s_WONDER_00630ef8);
-            FUN_0059ec88(ptrAdd(DAT_00645a84, (local_95c[0] * 4 + -0x9c) * 0xf), (DAT_00633584 === 0) - 1 & 8,0);
+            FUN_0059ec88(ptrAdd(DAT_00645a84, (local_95c[0] * 4 + -0x9c) * 0xf), (+DAT_00633584 === 0) - 1 & 8,0);
                                /*JOINED*/
           }
         }
@@ -5175,7 +5175,7 @@ export function city_button_change_0050A473(param_1) {
         local_65c = local_65c + 1;
       }
     }
-    if (((DAT_00655aea & 0x80) !== 0) && (DAT_00655b02 === 0)) {
+    if (((DAT_00655aea & 0x80) !== 0) && (+DAT_00655b02 === 0)) {
       uVar6 = FUN_00428b0c(s32(DAT_00628420, 0x130));
       FUN_0059f2a3(uVar6);
     }
@@ -5425,11 +5425,11 @@ export function citywin_B674_0050B674() {
   
   if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
-    if (DAT_006ad2f7 === 0) {
+    if (+DAT_006ad2f7 === 0) {
       DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
       devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
     }
-    else if (DAT_00630d30 === 0) {
+    else if (+DAT_00630d30 === 0) {
       globalThis.DAT_00630d30 = 0x01;
       globalThis.DAT_00630d68 = FUN_00421bb0();
     }
@@ -5467,7 +5467,7 @@ export function city_button_rename_0050B74E(param_1) {
      /*JOINED*/
      /*JOINED*/
     iVar1 = XD_InFlushSendBuffer();
-    if (((((iVar1 === 0) && ((((DAT_006ad8bc === 0 && (DAT_006ad8c0 === 0)) && (DAT_006ad8c4 === 0)) && ((DAT_006ad8c8 === 0 && (DAT_006ad8cc === 0)))))) && ((DAT_006ad8d0 === 0 && ((((DAT_006ad8d8 === 0 && (DAT_006ad8dc === 0)) && ((DAT_006ad8e0 === 0 && (((DAT_006ad8e4 === 0 && (DAT_006ad8e8 === 0)) && (DAT_006ad8ec === 0)))))) && ((DAT_006ad8f0 === 0 && (DAT_006ad8f4 === 0)))))))) && (DAT_006ad8f8 === 0)) && (((DAT_006ad8fc === 0 && (DAT_006ad900 === 0)) && (DAT_006ad904 === 0)))) {
+    if (((((iVar1 === 0) && ((((+DAT_006ad8bc === 0 && (+DAT_006ad8c0 === 0)) && (+DAT_006ad8c4 === 0)) && ((+DAT_006ad8c8 === 0 && (+DAT_006ad8cc === 0)))))) && ((+DAT_006ad8d0 === 0 && ((((+DAT_006ad8d8 === 0 && (+DAT_006ad8dc === 0)) && ((+DAT_006ad8e0 === 0 && (((+DAT_006ad8e4 === 0 && (+DAT_006ad8e8 === 0)) && (+DAT_006ad8ec === 0)))))) && ((+DAT_006ad8f0 === 0 && (+DAT_006ad8f4 === 0)))))))) && (+DAT_006ad8f8 === 0)) && (((+DAT_006ad8fc === 0 && (+DAT_006ad900 === 0)) && (+DAT_006ad904 === 0)))) {
           /*JOINED*/
            /*JOINED*/
          /*JOINED*/
@@ -5596,7 +5596,7 @@ export function city_button_view_0050BACD(param_1) {
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     iVar1 = XD_InFlushSendBuffer();
-    if (((((((iVar1 === 0) && (DAT_006ad8bc === 0)) && (DAT_006ad8c0 === 0)) && ((DAT_006ad8c4 === 0 && (DAT_006ad8c8 === 0)))) && ((DAT_006ad8cc === 0 && ((DAT_006ad8d0 === 0 && (DAT_006ad8d8 === 0)))))) && (DAT_006ad8dc === 0)) && (((((DAT_006ad8e0 === 0 && (DAT_006ad8e4 === 0)) && (DAT_006ad8e8 === 0)) && (((DAT_006ad8ec === 0 && (DAT_006ad8f0 === 0)) && ((DAT_006ad8f4 === 0 && ((DAT_006ad8f8 === 0 && (DAT_006ad8fc === 0)))))))) && ((DAT_006ad900 === 0 && (DAT_006ad904 === 0)))))) {
+    if (((((((iVar1 === 0) && (+DAT_006ad8bc === 0)) && (+DAT_006ad8c0 === 0)) && ((+DAT_006ad8c4 === 0 && (+DAT_006ad8c8 === 0)))) && ((+DAT_006ad8cc === 0 && ((+DAT_006ad8d0 === 0 && (+DAT_006ad8d8 === 0)))))) && (+DAT_006ad8dc === 0)) && (((((+DAT_006ad8e0 === 0 && (+DAT_006ad8e4 === 0)) && (+DAT_006ad8e8 === 0)) && (((+DAT_006ad8ec === 0 && (+DAT_006ad8f0 === 0)) && ((+DAT_006ad8f4 === 0 && ((+DAT_006ad8f8 === 0 && (+DAT_006ad8fc === 0)))))))) && ((+DAT_006ad900 === 0 && (+DAT_006ad904 === 0)))))) {
           /*JOINED*/
          /*JOINED*/
         /*JOINED*/
@@ -5634,7 +5634,7 @@ export function citywin_BC4F_0050BC4F() {
   devLog('MFC', 'iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);');
   if (iVar1 !== -1) {
     FUN_0046e020(99,0,0,0);
-    if (DAT_006aa764 === 2) {
+    if (+DAT_006aa764 === 2) {
       globalThis.DAT_00630d18 = 1;
     }
     else {
@@ -5692,14 +5692,14 @@ export function citywin_BD13_0050BD13() {
   if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
       /*JOINED*/
-    if (DAT_0062edf8 === 0) {
+    if (+DAT_0062edf8 === 0) {
       devLog('MFC', 'local_c = CSplitterWnd::IsTracking(DAT_006a91b8);');
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s__00631008);
       FUN_005f22d0(local_b4,ptrAdd(DAT_0064f360, local_8 * 0x58));
       for (local_64 = 0; local_64 < DAT_00655b18; local_64 = local_64 + 1) {
-        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) && (DAT_0064f348[local_8 * 0x58] === DAT_0064f348[local_64 * 0x58])) {
+        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) && (DAT_0064f348[local_8 * 0x58] === +DAT_0064f348[local_64 * 0x58])) {
            /*JOINED*/
           iVar1 = __strcmpi(ptrAdd(DAT_0064f360, local_64 * 0x58),local_60);
           if ((0 < iVar1) && (iVar1 = __strcmpi(ptrAdd(DAT_0064f360, local_64 * 0x58),ptrAdd(DAT_0064f360, local_8 * 0x58)), iVar1 < 0)) {
@@ -5753,14 +5753,14 @@ export function citywin_BF72_0050BF72() {
   if (devLog('MFC', 'if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (')) {
      /*JOINED*/
       /*JOINED*/
-    if (DAT_0062edf8 === 0) {
+    if (+DAT_0062edf8 === 0) {
       devLog('MFC', 'local_c = CSplitterWnd::IsTracking(DAT_006a91b8);');
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60,s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024);
       FUN_005f22d0(local_b4,ptrAdd(DAT_0064f360, local_8 * 0x58));
       for (local_64 = 0; local_64 < DAT_00655b18; local_64 = local_64 + 1) {
-        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) && (DAT_0064f348[local_8 * 0x58] === DAT_0064f348[local_64 * 0x58])) {
+        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) && (DAT_0064f348[local_8 * 0x58] === +DAT_0064f348[local_64 * 0x58])) {
            /*JOINED*/
           iVar1 = __strcmpi(ptrAdd(DAT_0064f360, local_64 * 0x58),local_60);
           if ((iVar1 < 0) && (iVar1 = __strcmpi(ptrAdd(DAT_0064f360, local_64 * 0x58),ptrAdd(DAT_0064f360, local_8 * 0x58)), 0 < iVar1)) {
@@ -5810,7 +5810,7 @@ export function city_mouse_0050C1D1(param_1, param_2, param_3) {
   let local_8 = [0];
   
   iVar1 = XD_InFlushSendBuffer();
-  if (((((((iVar1 === 0) && (DAT_006ad8bc === 0)) && (DAT_006ad8c0 === 0)) && ((DAT_006ad8c4 === 0 && (DAT_006ad8c8 === 0)))) && ((DAT_006ad8cc === 0 && ((DAT_006ad8d0 === 0 && (DAT_006ad8d8 === 0)))))) && (DAT_006ad8dc === 0) ) && (((((DAT_006ad8e0 === 0 && (DAT_006ad8e4 === 0)) && (DAT_006ad8e8 === 0)) && (((DAT_006ad8ec === 0 && (DAT_006ad8f0 === 0)) && ((DAT_006ad8f4 === 0 && ((DAT_006ad8f8 === 0 && (DAT_006ad8fc === 0)))))))) && ((DAT_006ad900 === 0 && (DAT_006ad904 === 0)))))) {
+  if (((((((iVar1 === 0) && (+DAT_006ad8bc === 0)) && (+DAT_006ad8c0 === 0)) && ((+DAT_006ad8c4 === 0 && (+DAT_006ad8c8 === 0)))) && ((+DAT_006ad8cc === 0 && ((+DAT_006ad8d0 === 0 && (+DAT_006ad8d8 === 0)))))) && (+DAT_006ad8dc === 0) ) && (((((+DAT_006ad8e0 === 0 && (+DAT_006ad8e4 === 0)) && (+DAT_006ad8e8 === 0)) && (((+DAT_006ad8ec === 0 && (+DAT_006ad8f0 === 0)) && ((+DAT_006ad8f4 === 0 && ((+DAT_006ad8f8 === 0 && (+DAT_006ad8fc === 0)))))))) && ((+DAT_006ad900 === 0 && (+DAT_006ad904 === 0)))))) {
         /*JOINED*/
        /*JOINED*/
       /*JOINED*/
@@ -6168,7 +6168,7 @@ export function citywin_CCB3_0050CCB3(in_ECX = globalThis.in_ECX, param_1) {
   devLog('SEH', '');
   devLog('SEH', '');
   local_14 = (DAT_0064f344[s32(in_ECX, 0x159c) * 0x58] & 0x10) !== 0;
-  if (DAT_00630d24 !== local_14) {
+  if (+DAT_00630d24 !== local_14) {
     globalThis.DAT_00630d24 = local_14;
     if (s32(in_ECX, 0x16b8) !== 0) {
       if (s32(in_ECX, 0x16b8) !== 0) {
@@ -6469,7 +6469,7 @@ export function citywin_CF06_0050CF06(in_ECX = globalThis.in_ECX) {
   else if (iVar3 === 3) {
     w32(in_ECX, 0x15d8, 1);
   }
-  if (s32(in_ECX, 0x15d8) !== DAT_00630d28) {
+  if (s32(in_ECX, 0x15d8) !== +DAT_00630d28) {
     globalThis.DAT_00630d28 = s32(in_ECX, 0x15d8);
     uVar1 = FUN_00472cf0(0x20,s32(in_ECX, 0x15d8));
     uVar2 = FUN_00472cf0(0x40,s32(in_ECX, 0x15d8),uVar1);
@@ -6612,7 +6612,7 @@ export function citywin_DCB6_0050DCB6(in_ECX = globalThis.in_ECX) {
   w32(in_ECX, 0x15d0, 0xffffffff);
   w32(in_ECX, 0x15cc, s32(in_ECX, 0x15d0));
   w32(in_ECX, 0x15a0, 0);
-  if ((DAT_00628048 === 0) || (DAT_00655280 === 0)) {
+  if ((+DAT_00628048 === 0) || (+DAT_00655280 === 0)) {
     thunk_citywin_9A49();
   }
   uVar9 = 8;

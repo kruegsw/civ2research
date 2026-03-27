@@ -12,7 +12,7 @@
 import { readFileSync, existsSync } from 'fs';
 import './globals-init.js';
 import { G } from './globals.js';
-import { s8, u8, s16, u16, s32, u32, w32, getTileOffset, tileRead, memStats } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, memStats } from './mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
@@ -146,11 +146,11 @@ for (const [tx, ty] of sampleTiles) {
 
 // ── Verify globals ──
 console.log(`\n═══ Globals Verification ═══`);
-console.log(`  DAT_006d1160 (mw2): ${s32(DAT_006d1160, 0)} (expected ${info.mw2})`);
-console.log(`  DAT_006d1162 (mh):  ${s32(DAT_006d1162, 0)} (expected ${info.mh})`);
+console.log(`  DAT_006d1160 (mw2): ${s16(DAT_006d1160, 0)} (expected ${info.mw2})`);
+console.log(`  DAT_006d1162 (mh):  ${s16(DAT_006d1162, 0)} (expected ${info.mh})`);
 console.log(`  DAT_006d1168 (seed): ${s32(DAT_006d1168, 0)} (expected ${info.mapSeed})`);
-console.log(`  DAT_00655b16 (units): ${s32(DAT_00655b16, 0)} (expected ${info.totalUnits})`);
-console.log(`  DAT_00655b18 (cities): ${s32(DAT_00655b18, 0)} (expected ${info.totalCities})`);
+console.log(`  DAT_00655b16 (units): ${s16(DAT_00655b16, 0)} (expected ${info.totalUnits})`);
+console.log(`  DAT_00655b18 (cities): ${s16(DAT_00655b18, 0)} (expected ${info.totalCities})`);
 console.log(`  DAT_00655b0b (human): ${s32(DAT_00655b0b, 0)} (set to 0 for all-AI)`);
 
 if (turns > 0) {
@@ -167,7 +167,7 @@ if (turns > 0) {
   // Snapshot initial state for comparison
   const snap = () => {
     const cities = [];
-    for (let i = 0; i < s32(DAT_00655b18, 0); i++) {
+    for (let i = 0; i < s16(DAT_00655b18, 0); i++) {
       const b = i * 0x58;
       const owner = DAT_0064f340[b + 8];
       const size = DAT_0064f340[b + 9];
@@ -182,12 +182,12 @@ if (turns > 0) {
       cities.push({ name, owner, size, food, shields });
     }
     const units = [];
-    for (let i = 0; i < s32(DAT_00655b16, 0); i++) {
+    for (let i = 0; i < s16(DAT_00655b16, 0); i++) {
       const b = i * 0x20;
       const alive = DAT_006560f0[b + 14] === 0 && u32(DAT_006560f0, b + 26) !== 0;
       if (alive) units.push({ idx: i, owner: DAT_006560f0[b + 7] });
     }
-    return { cities, units, turn: s32(DAT_00655af8, 0) };
+    return { cities, units, turn: s16(DAT_00655af8, 0) };
   };
 
   const before = snap();
@@ -207,7 +207,7 @@ if (turns > 0) {
         if (e.stack) console.error(e.stack.split('\n').slice(1,5).join('\n'));
       }
     }
-    w32(globalThis.DAT_00655af8, 0, s32(DAT_00655af8, 0) + 1);
+    w16(globalThis.DAT_00655af8, 0, s16(DAT_00655af8, 0) + 1);
   }
 
   const after = snap();
@@ -259,7 +259,7 @@ if (outPath && turns > 0) {
   const { writeFileSync } = await import('fs');
   const outBuf = saveSav(savBuf);
   writeFileSync(outPath, outBuf);
-  console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${s32(DAT_00655af8, 0)})`);
+  console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${s16(DAT_00655af8, 0)})`);
 }
 
 // ═══ DevLog Summary ═══

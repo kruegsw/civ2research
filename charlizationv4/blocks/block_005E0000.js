@@ -1712,7 +1712,7 @@ export function FUN_005e1c8e(param_1, param_2) {
   let local_c = [0];
   let local_8;
   
-  if (DAT_006e50c4 === 0) {
+  if (+DAT_006e50c4 === 0) {
     AVIFileInit();
     globalThis.DAT_006e50c4 = 1;
   }
@@ -1765,7 +1765,7 @@ export function FUN_005e1c8e(param_1, param_2) {
       // DEVIATION: C pointer write — *(SIZE_T *)(param_1 + 0x5d4) = local_74;
       globalThis.DAT_006e50d8 = local_84 / local_88;
       globalThis.DAT_00638db0 = ICLocate(0x63646976,local_98,param_1 + 0x5c0,0,2);
-      if (DAT_00638db0 === 0) {
+      if (+DAT_00638db0 === 0) {
         FUN_005e2799(param_1);
         local_8 = 0;
       }
@@ -1803,7 +1803,7 @@ export function FUN_005e1c8e(param_1, param_2) {
           pvVar5 = GlobalAlloc(0x40,local_74);
           globalThis.DAT_00638da8 = GlobalLock(pvVar5);
         }
-        if (DAT_00638da8 === 0x0) {
+        if (+DAT_00638da8 === 0x0) {
           FUN_005e2799(param_1);
           local_8 = 0;
         }
@@ -1876,8 +1876,8 @@ export function FUN_005e22ed(param_1) {
   let uVar1;
   let uVar2;
   
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
-    if (DAT_00638dd0 !== 0) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
+    if (+DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     if (s32(param_1, 0x5a0) !== 0) {
@@ -1902,7 +1902,7 @@ export function FUN_005e22ed(param_1) {
       uVar2 = AVIStreamSampleToTime(DAT_00638dc4,s32(param_1, 0xa18));
       FUN_005eedec(uVar2,uVar1);
     }
-    if (DAT_00638dcc !== 0) {
+    if (+DAT_00638dcc !== 0) {
       if (s32(param_1, 0x5a4) === 0) {
         FUN_005e2cd1(param_1);
       }
@@ -2019,8 +2019,8 @@ export function FUN_005e2583(param_1, param_2, param_3, param_4, param_5, param_
 export function FUN_005e25fa(param_1, param_2, param_3) {
 
 
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
-    if (DAT_00638dd0 !== 0) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
+    if (+DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     FUN_005e28cd(param_1,param_2,0);
@@ -2041,12 +2041,12 @@ export function FUN_005e25fa(param_1, param_2, param_3) {
 export function FUN_005e2675(param_1) {
 
 
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
     if (s32(param_1, 0x5a8) !== 0) {
       w32(param_1, 0x5b0, 0);
     }
     w32(param_1, 0x5ac, 1);
-    if (DAT_00638dd0 !== 0) {
+    if (+DAT_00638dd0 !== 0) {
       globalThis.DAT_00637efc = 0;
       globalThis.DAT_00638de8 = 0;
       globalThis.DAT_00638dd0 = 0;
@@ -2068,8 +2068,8 @@ export function FUN_005e26f6(param_1) {
   let uVar1;
   let iVar2;
   
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
-    if (DAT_00638dd0 !== 0) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
+    if (+DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     uVar1 = AVIStreamStart(DAT_00638dc4);
@@ -2096,27 +2096,27 @@ export function FUN_005e2799(param_1) {
   
   if (param_1 !== 0) {
     FUN_005e2675(param_1);
-    if (DAT_00638db0 !== 0) {
+    if (+DAT_00638db0 !== 0) {
       ICClose(DAT_00638db0);
       globalThis.DAT_00638db0 = 0;
     }
-    if (DAT_00638dc8 !== 0) {
+    if (+DAT_00638dc8 !== 0) {
       AVIStreamRelease(DAT_00638dc8);
       globalThis.DAT_00638dc8 = 0;
     }
-    if (DAT_00638dc4 !== 0) {
+    if (+DAT_00638dc4 !== 0) {
       AVIStreamRelease(DAT_00638dc4);
       globalThis.DAT_00638dc4 = 0;
     }
-    if (DAT_00638dc0 !== 0) {
+    if (+DAT_00638dc0 !== 0) {
       AVIFileRelease(DAT_00638dc0);
       globalThis.DAT_00638dc0 = 0;
     }
-    if (DAT_006e50c4 !== 0) {
+    if (+DAT_006e50c4 !== 0) {
       AVIFileExit();
       globalThis.DAT_006e50c4 = 0;
     }
-    if (DAT_00638da8 !== 0x0) {
+    if (+DAT_00638da8 !== 0x0) {
       pvVar1 = GlobalHandle(DAT_00638da8);
       GlobalUnlock(pvVar1);
       pvVar1 = GlobalHandle(DAT_00638da8);
@@ -2144,8 +2144,8 @@ export function FUN_005e28cd(param_1, param_2, param_3) {
   let uVar1;
   let local_8;
   
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
-    if (DAT_00638dd0 !== 0) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
+    if (+DAT_00638dd0 !== 0) {
       FUN_005e2675(param_1);
     }
     uVar1 = AVIStreamFindSample(DAT_00638dc4,param_2,0x14);
@@ -2189,7 +2189,7 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
   
   local_8 = 0;
   local_c[0] = 0;
-  if ((param_1 === 0) || (DAT_00638dcc === 0)) {
+  if ((param_1 === 0) || (+DAT_00638dcc === 0)) {
     local_8 = 1;
   }
   else {
@@ -2231,7 +2231,7 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
         w32(param_1, 0xa20, 0);
         FUN_005e3580();
       }
-      if ((u32(param_1, 0xa14) < u32(param_1, 0xa18)) && (DAT_00638dd0 !== 0)) {
+      if ((u32(param_1, 0xa14) < u32(param_1, 0xa18)) && (+DAT_00638dd0 !== 0)) {
         if (s32(param_1, 0xa24) === 0) {
           FUN_005e2675(param_1);
           FUN_005e3550();
@@ -2320,10 +2320,10 @@ export function FUN_005e2cd1(param_1) {
   if (param_1 === 0) {
     return;
   }
-  if (DAT_00638dcc === 0) {
+  if (+DAT_00638dcc === 0) {
     return;
   }
-  if (DAT_00638dd0 !== 0) {
+  if (+DAT_00638dd0 !== 0) {
     if (s32(param_1, 0x5a8) === 0) {
       local_8 = timeGetTime();
       iVar1 = AVIStreamTimeToSample(DAT_00638dc4,local_8 - DAT_00638dbc);
@@ -2363,7 +2363,7 @@ export function FUN_005e2cd1(param_1) {
         return;
       }
     }
-    if (DAT_00638de8 !== 0) {
+    if (+DAT_00638de8 !== 0) {
       if (s32(param_1, 0x5a4) === 0) {
         FUN_00408460();
       }
@@ -2407,7 +2407,7 @@ export function FUN_005e2cd1(param_1) {
       }
     }
   }
-  if ((DAT_00638dd0 !== 0) && (s32(param_1, 0x5a8) !== 0)) {
+  if ((+DAT_00638dd0 !== 0) && (s32(param_1, 0x5a8) !== 0)) {
     FUN_005d57b1(0x40);
     globalThis.DAT_00638dec = DAT_00638dec + 1;
   }
@@ -2430,7 +2430,7 @@ export function FUN_005e30a1(param_1) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0) && (DAT_00638dcc !== 0)) {
+  if ((param_1 !== 0) && (+DAT_00638dcc !== 0)) {
     ICSendMessage(DAT_00638db0,0x403f,0,0);
     FUN_005c6b63(local_2d0,0,0xec);
     for (local_c = 0; local_c < 0xec; local_c = local_c + 1) {
@@ -2480,7 +2480,7 @@ export function FUN_005e32b2(param_1, param_2) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0x0) && (DAT_00638dcc !== 0)) {
+  if ((param_1 !== 0x0) && (+DAT_00638dcc !== 0)) {
     ICSendMessage(DAT_00638db0,0x403f,0,0);
     if (param_2 === 0) {
       globalThis.DAT_006e50ac = 0;
@@ -2522,7 +2522,7 @@ export function FUN_005e32b2(param_1, param_2) {
       if (s32(param_1, 0x5b4) !== 0) {
         FUN_005c0593(param_1 + 0x558,local_2c[0],local_1c[0]);
       }
-      if (DAT_00638dcc !== 0) {
+      if (+DAT_00638dcc !== 0) {
         FUN_005c0593(param_1,local_1c[0],local_1c[0]);
         local_c = s32(param_1, 0xa18);
         FUN_005e28cd(param_1,local_c,0);
@@ -2608,15 +2608,15 @@ export function create_dib_35B0_005E35B0(param_1) {
       local_434[0].bmiHeader.biHeight = 1;
       local_434[0].bmiHeader.biWidth = FUN_005c55a0(iVar1);
       if (0 < local_434[0].bmiHeader.biHeight) {
-        if (DAT_00638e1c === 0) {
+        if (+DAT_00638e1c === 0) {
           debug_log(s_Bottom_up_orientation_recommende_00638e20);
         }
         globalThis.DAT_00638e1c = 1;
       }
-      if (DAT_00638e18 === -1) {
+      if (+DAT_00638e18 === -1) {
         local_434[0].bmiHeader.biHeight = local_c;
       }
-      else if (DAT_00638e18 === 1) {
+      else if (+DAT_00638e18 === 1) {
         local_434[0].bmiHeader.biHeight = -local_c;
       }
       else {
@@ -3108,8 +3108,8 @@ export function create_dib_41BA_005E41BA(param_1) {
       local_c = 0x1f;
       local_3c[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (DAT_00638e18 !== -1) {
-        if (DAT_00638e18 === 1) {
+      if (+DAT_00638e18 !== -1) {
+        if (+DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -3188,8 +3188,8 @@ export function create_dib_43C5_005E43C5(param_1) {
       local_34[0].bmiHeader.biHeight = 1;
       local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (DAT_00638e18 !== -1) {
-        if (DAT_00638e18 === 1) {
+      if (+DAT_00638e18 !== -1) {
+        if (+DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -3268,8 +3268,8 @@ export function create_dib_45B5_005E45B5(param_1) {
       local_34[0].bmiHeader.biHeight = 1;
       local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
       iVar1 = iVar3;
-      if (DAT_00638e18 !== -1) {
-        if (DAT_00638e18 === 1) {
+      if (+DAT_00638e18 !== -1) {
+        if (+DAT_00638e18 === 1) {
           iVar1 = -iVar3;
         }
         else {
@@ -6431,7 +6431,7 @@ export function register_wndclass_89D0_005E89D0() {
 export function FUN_005e8b04() {
 
 
-  if (DAT_006394c0 !== 0x0) {
+  if (+DAT_006394c0 !== 0x0) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
     globalThis.DAT_006394c0 = 0x0;
     UnregisterClassA(s_MSDirectWindow_006395a0,DAT_006e4ff0);
@@ -6454,7 +6454,7 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
   let local_c;
   let local_8 = [0];
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -6503,7 +6503,7 @@ export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  if ((param_1 !== 0x0) && (DAT_006394c0 !== 0x0)) {
+  if ((param_1 !== 0x0) && (+DAT_006394c0 !== 0x0)) {
     for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
       local_40c[local_8 * 4] = s32(param_4, 0);
       local_40c[local_8 * 4 + 1] = param_4[1];
@@ -6607,7 +6607,7 @@ export function FUN_005e8eb0(param_1) {
   let local_5c;
   let local_8;
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -6674,7 +6674,7 @@ export function FUN_005e8fb7(param_1, param_2) {
   let local_64;
   let local_8;
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     local_74[0] = 0;
   }
   else {
@@ -7707,7 +7707,7 @@ export function FUN_005ea610(param_1) {
 
   let local_8;
   
-  if (DAT_006394c0 !== 0x0) {
+  if (+DAT_006394c0 !== 0x0) {
     if (param_1 === 0) {
       local_8 = 4;
     }
@@ -7733,7 +7733,7 @@ export function FUN_005ea677(in_EAX = globalThis.in_EAX) {
   let uVar1;
   let local_8 = new Array(4).fill(0);
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -7761,7 +7761,7 @@ export function FUN_005ea6c4() {
   let iVar1;
   let local_8 = [0];
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -7786,7 +7786,7 @@ export function FUN_005ea711() {
   let uVar1;
   let local_8 = [0];
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     local_8[0] = 0;
   }
   else {
@@ -9901,7 +9901,7 @@ export function FUN_005ed920() {
   _sprintf(local_42c,s__d__d__d_00639c68,2,0,0);
   FUN_005f22e0(local_40c,local_42c);
   FUN_005f22e0(local_40c,DAT_00639c7c);
-  if (DAT_00639be8 !== 0) {
+  if (+DAT_00639be8 !== 0) {
     lpOverlapped = 0x0;
     lpNumberOfBytesWritten = local_8[0];
     nNumberOfBytesToWrite = _strlen(local_40c);
@@ -9930,7 +9930,7 @@ export function FUN_005eda65() {
   let local_8 = [0];
   
   local_c = 0x0;
-  if (DAT_00639be8 !== 0) {
+  if (+DAT_00639be8 !== 0) {
     local_c = CreateFileA(s_smeds_log_00639c84,0xc0000000,0,0x0,3,0x80, 0x0);
                           /*JOINED*/
     SetFilePointer(local_c,0,0x0,2);
@@ -9961,7 +9961,7 @@ export function FUN_005edb15(param_1) {
   let lpOverlapped;
   let local_8 = [0];
   
-  if (DAT_00639be8 !== 0) {
+  if (+DAT_00639be8 !== 0) {
     hFile = CreateFileA(s_smeds_log_00639ccc,0xc0000000,0,0x0,3,0x80, 0x0);
                         /*JOINED*/
     SetFilePointer(hFile,0,0x0,2);
@@ -10205,7 +10205,7 @@ export function FUN_005ede3b() {
   
   local_8 = mciGetDeviceIDA(s_avivideo_00639d1c);
   mciSendCommandA(local_8,0x804,0,local_c);
-  if (DAT_00639d0c !== 0x0) {
+  if (+DAT_00639d0c !== 0x0) {
     DeleteObject(DAT_00639d0c);
     globalThis.DAT_00639d0c = 0x0;
   }
@@ -11468,7 +11468,7 @@ export function FUN_005ef41e(in_EAX = globalThis.in_EAX, param_1, param_2) {
   let uVar1;
   let local_c;
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11506,7 +11506,7 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
   let uVar1;
   let uVar2;
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     uVar1 = 0;
   }
   else {
@@ -11539,7 +11539,7 @@ export function FUN_005ef58e(in_EAX = globalThis.in_EAX) {
   // in_EAX → promoted to parameter
   let uVar1;
   
-  if (DAT_006394c0 === 0x0) {
+  if (+DAT_006394c0 === 0x0) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
@@ -11655,7 +11655,7 @@ export function FUN_005ef6cb(param_1, param_2, param_3, param_4) {
   else if (param_2 < 0x45) {
     if (param_2 !== 0x44) {
       if (param_2 !== 0x1c) switchD_005efc68_default_helper(param_1, param_2, param_3, param_4); return;
-      if (param_3 !== DAT_00639d74) {
+      if (param_3 !== +DAT_00639d74) {
         FUN_005efd70(param_3);
         globalThis.DAT_00639d74 = param_3;
       }
@@ -11785,7 +11785,7 @@ export function FUN_005efca3(param_1, param_2) {
 export function FUN_005efcde(param_1, param_2) {
 
 
-  if (((DAT_006394c0 !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
+  if (((+DAT_006394c0 !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
     true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
