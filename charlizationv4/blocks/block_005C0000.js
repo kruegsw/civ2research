@@ -6481,7 +6481,7 @@ export function create_window_8BE1_005C8BE1(param_1, param_2) {
   pHVar2 = s32(iVar1, 4);
   iVar1 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
-  pHVar2 = CreateWindowExA(4,s_MSControlClass_00637ca8,DAT_00637ca4,0x50000000,s32(param_1, 0),_MEM[param_1 + 1], nWidth,iVar1,pHVar2,hMenu,hInstance,lpParam);
+  pHVar2 = CreateWindowExA(4,s_MSControlClass_00637ca8,v(DAT_00637ca4),0x50000000,s32(param_1, 0),_MEM[param_1 + 1], nWidth,iVar1,pHVar2,hMenu,hInstance,lpParam);
                            /*JOINED*/
   iVar1 = FUN_005c9499(pHVar2,param_2);
   w32(iVar1, 0x2c, 1);
@@ -7094,7 +7094,7 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
   hWndParent = s32(iVar1, 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
-  local_154 = CreateWindowExA(4,s_MSControlClass_00637d70,DAT_00637d6c,local_2a0,s32(param_1, 0), _MEM[param_1 + 1],iVar2,iVar1,hWndParent,hMenu,hInstance,lpParam);
+  local_154 = CreateWindowExA(4,s_MSControlClass_00637d70,v(DAT_00637d6c),local_2a0,s32(param_1, 0), _MEM[param_1 + 1],iVar2,iVar1,hWndParent,hMenu,hInstance,lpParam);
                               /*JOINED*/
   FUN_005c9222(local_170,local_278);
   local_150[0].left = s32(param_1, 0);
@@ -7811,7 +7811,7 @@ export function create_window_B319_005CB319(param_1, param_2, param_3, param_4, 
   hWndParent = s32(iVar4, 4);
   iVar4 = FUN_00407fc0(local_3c[0]);
   nWidth = FUN_00407f90(local_3c[0]);
-  local_28 = CreateWindowExA(4,s_MSControlClass_00637e34,DAT_00637e30,local_44,param_1,param_2, nWidth,iVar4,hWndParent,hMenu,hInstance,lpParam);
+  local_28 = CreateWindowExA(4,s_MSControlClass_00637e34,v(DAT_00637e30),local_44,param_1,param_2, nWidth,iVar4,hWndParent,hMenu,hInstance,lpParam);
                              /*JOINED*/
   iVar4 = FUN_005c9499(local_28,param_3);
   w32(iVar4, 0x2c, 5);
@@ -7854,7 +7854,7 @@ export function create_window_B601_005CB601(param_1, param_2, param_3, param_4, 
   hWndParent = s32(iVar1, 4);
   iVar1 = FUN_00407fc0(local_1c[0]);
   nWidth = FUN_00407f90(local_1c[0]);
-  local_8 = CreateWindowExA(4,s_MSControlClass_00637e48,DAT_00637e44,local_24,param_1,param_2, nWidth,iVar1,hWndParent,hMenu,hInstance,lpParam);
+  local_8 = CreateWindowExA(4,s_MSControlClass_00637e48,v(DAT_00637e44),local_24,param_1,param_2, nWidth,iVar1,hWndParent,hMenu,hInstance,lpParam);
                             /*JOINED*/
   iVar1 = FUN_005c9499(local_8,param_5);
   w32(iVar1, 0x2c, 5);
@@ -8397,12 +8397,12 @@ export function create_window_C0F0_005CC0F0(param_1, param_2, param_3, param_4) 
   pHVar4 = s32(iVar3, 4);
   iVar3 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
-  pHVar4 = CreateWindowExA(4,s_MSControlClass_00637f10,DAT_00637f0c,local_24,s32(param_1, 0),_MEM[param_1 + 1], nWidth,iVar3,pHVar4,hMenu,hInstance,lpParam);
+  pHVar4 = CreateWindowExA(4,s_MSControlClass_00637f10,v(DAT_00637f0c),local_24,s32(param_1, 0),_MEM[param_1 + 1], nWidth,iVar3,pHVar4,hMenu,hInstance,lpParam);
                            /*JOINED*/
   FUN_005c9222(param_2,pvVar2);
-  pHVar5 = LoadBitmapA(DAT_006e4ff0,0x132);
-  pHVar6 = LoadBitmapA(DAT_006e4ff0,0x131);
-  pHVar7 = LoadBitmapA(DAT_006e4ff0,0x130);
+  pHVar5 = LoadBitmapA(v(DAT_006e4ff0),0x132);
+  pHVar6 = LoadBitmapA(v(DAT_006e4ff0),0x131);
+  pHVar7 = LoadBitmapA(v(DAT_006e4ff0),0x130);
   iVar3 = FUN_005c9499(pHVar4,param_2);
   // DEVIATION: C pointer write — *(HBITMAP *)(iVar3 + 0xc) = pHVar5;
   // DEVIATION: C pointer write — *(HBITMAP *)(iVar3 + 0x10) = pHVar6;
@@ -8583,7 +8583,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
             SetTextColor(local_144,0);
           }
           else {
-            FUN_0040f810(DAT_00637e90,local_124,local_148,local_120);
+            FUN_0040f810(v(DAT_00637e90),local_124,local_148,local_120);
             FUN_00511320();
             uVar7 = FUN_0046f440();
             FUN_005dea9e(uVar7);
@@ -8608,7 +8608,7 @@ export function draw_text_C320_005CC320(param_1, param_2, param_3, param_4) {
               SetTextColor(local_144,0x404040);
             }
             else {
-              FUN_0040f810(DAT_00637ea0,local_124,local_148,local_120);
+              FUN_0040f810(v(DAT_00637ea0),local_124,local_148,local_120);
               FUN_00511320();
               uVar7 = FUN_0046f440();
               FUN_005dea9e(uVar7);
@@ -8862,7 +8862,7 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
     pHVar3 = s32(iVar1, 4);
     iVar1 = FUN_00407fc0(param_1);
     iVar2 = FUN_00407f90(param_1);
-    local_8 = CreateWindowExA(4,s_SCROLLBAR_00637f60,DAT_00637f5c,param_3 | 0x40000000,s32(param_1, 0), _MEM[param_1 + 1],iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
+    local_8 = CreateWindowExA(4,s_SCROLLBAR_00637f60,v(DAT_00637f5c),param_3 | 0x40000000,s32(param_1, 0), _MEM[param_1 + 1],iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
                               /*JOINED*/
     wv(DAT_006d46f8, GetWindowLongA(local_8,-4));
     local_34 = GetWindowLongA(local_8,-0x10);
@@ -8889,10 +8889,10 @@ export function register_wndclass_CF17_005CCF17(param_1, param_2, param_3, param
   pHVar3 = s32(iVar1, 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
-  local_8 = CreateWindowExA(4,s_MSScrollBarClass_00637f84,DAT_00637f80,local_34,s32(param_1, 0),_MEM[param_1 + 1] ,iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
+  local_8 = CreateWindowExA(4,s_MSScrollBarClass_00637f84,v(DAT_00637f80),local_34,s32(param_1, 0),_MEM[param_1 + 1] ,iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
                             /*JOINED*/
   SetWindowLongA(local_8,-4,0x5cce80);
-  SetWindowLongA(local_8,DAT_006d46f4,param_2);
+  SetWindowLongA(local_8,v(DAT_006d46f4),param_2);
   SetWindowLongA(local_8,v(DAT_006d46f4) + 4,v(DAT_006d46f8));
   ShowScrollBar(local_8,2,1);
   FUN_005cd4c7(local_8,1,100);
@@ -9364,7 +9364,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
       local_8 = local_14;
     }
   }
-  FUN_005cdcdb(local_8,DAT_00637fa0,v(DAT_00637fa4));
+  FUN_005cdcdb(local_8,v(DAT_00637fa0),v(DAT_00637fa4));
 // LAB_005cdbab: (code below also in LAB_005cdbab_helper, kept for 1:1 audit)
   wv(DAT_006e47c0, ptrAdd(DAT_006d470c, local_8 * 0x100c));
   local_10 = FUN_00421bb0();
@@ -9373,7 +9373,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
   do {
     loopGuard('FUN_005cda2a', 9082);
     if (0xf < local_14) {
-      FUN_005cdcdb(local_c,DAT_00637fa8,v(DAT_00637fac));
+      FUN_005cdcdb(local_c,v(DAT_00637fa8),v(DAT_00637fac));
       local_14 = local_c;
 // LAB_005cdcd6: (code below also in LAB_005cdcd6_helper, kept for 1:1 audit)
       wv(DAT_006e47c4, ptrAdd(DAT_006d470c, local_14 * 0x100c));
@@ -11627,7 +11627,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
   do {
     loopGuard('LAB_005cdbab_helper', 11307);
     if (0xf < local_14) {
-      FUN_005cdcdb(local_c,DAT_00637fa8,v(DAT_00637fac));
+      FUN_005cdcdb(local_c,v(DAT_00637fa8),v(DAT_00637fac));
       local_14 = local_c;
   // LAB_005cdcd6:
       wv(DAT_006e47c4, ptrAdd(DAT_006d470c, local_14 * 0x100c));

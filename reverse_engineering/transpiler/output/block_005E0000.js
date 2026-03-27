@@ -193,12 +193,12 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   local_628 = gdi_8514(uVar3);
   SetRect(local_134[0],0,0,local_684[0] + 0x5a,local_628 * local_63c + local_5c0 * local_5c4 + 0x1e);
   if (param_3 === 0) {
-    FUN_005bb3f0(DAT_00638d7c,0x442,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8);
+    FUN_005bb3f0(v(DAT_00638d7c),0x442,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8);
                  /*JOINED*/
     FUN_00450400();
   }
   else {
-    FUN_005bb4ae(DAT_00638d80,0xc01,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8,param_3);
+    FUN_005bb4ae(v(DAT_00638d80),0xc01,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8,param_3);
                  /*JOINED*/
     FUN_005a9600(local_5bc[0]);
     iVar2 = FUN_00407fc0(local_5bc[0]);
@@ -849,7 +849,7 @@ export function FUN_005e0f2a(param_1) {
 export function FUN_005e10a2(param_1) {
 
 
-  LoadMenuA(DAT_006e4ff0,(param_1 & 0xffff));
+  LoadMenuA(v(DAT_006e4ff0),(param_1 & 0xffff));
   return;
 }
 
@@ -1561,13 +1561,13 @@ export function FUN_005e1c8e(param_1, param_2) {
   wv(DAT_006e50cc, 0);
   wv(_DAT_006e50d0, 0);
   wv(_DAT_006e50d4, 0);
-  local_8 = AVIFileOpenA(DAT_00638dc0,param_2,0,0);
+  local_8 = AVIFileOpenA(v(DAT_00638dc0),param_2,0,0);
   if (local_8 === 0) {
-    local_8 = AVIFileGetStream(DAT_00638dc0,DAT_00638dc4,0x73646976,0);
+    local_8 = AVIFileGetStream(v(DAT_00638dc0),v(DAT_00638dc4),0x73646976,0);
     if (local_8 === 0) {
       iVar3 = 0;
       if (s32(param_1, 0x5a8) !== 0) {
-        local_8 = AVIFileGetStream(DAT_00638dc0,DAT_00638dc8,0x73647561,0);
+        local_8 = AVIFileGetStream(v(DAT_00638dc0),v(DAT_00638dc8),0x73647561,0);
         if (local_8 === 0) {
           w32(param_1, 0x5b0, 0);
           iVar1 = FUN_005eed76(v(DAT_00638dc8));
@@ -1586,8 +1586,8 @@ export function FUN_005e1c8e(param_1, param_2) {
       }
       local_8 = iVar3;
       local_c[0] = 0x28;
-      AVIStreamReadFormat(DAT_00638dc4,1,param_1 + 0x5c0,local_c[0]);
-      AVIStreamInfoA(DAT_00638dc4,local_9c,0x8c);
+      AVIStreamReadFormat(v(DAT_00638dc4),1,param_1 + 0x5c0,local_c[0]);
+      AVIStreamInfoA(v(DAT_00638dc4),local_9c,0x8c);
       // DEVIATION: C pointer write — *(SIZE_T *)(param_1 + 0x5d4) = local_74;
       wv(_DAT_006e50d8, local_84 / local_88);
       wv(DAT_00638db0, ICLocate(0x63646976,local_98,param_1 + 0x5c0,0,2));
@@ -1614,7 +1614,7 @@ export function FUN_005e1c8e(param_1, param_2) {
           w32(param_1, 0x5f0, -s32(param_1, 0x5f0));
         }
         if (s32(param_1, 0x5a0) === 0) {
-          FUN_005bb6c7(DAT_00638db4,v(DAT_00638db8));
+          FUN_005bb6c7(v(DAT_00638db4),v(DAT_00638db8));
         }
         else {
           FUN_005bb6c7(v(DAT_00638db4) * 2,v(DAT_00638db8) * 2);
@@ -1634,20 +1634,20 @@ export function FUN_005e1c8e(param_1, param_2) {
           local_8 = 0;
         }
         else {
-          local_8 = FUN_005e2583(DAT_00638db0,0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8), param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
+          local_8 = FUN_005e2583(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8), param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
                                  /*JOINED*/
                                  /*JOINED*/
                                  /*JOINED*/
           if (local_8 === 0) {
-            ICSendMessage(DAT_00638db0,0x401e,param_1 + 0x5c0,param_1 + 0x5e8);
+            ICSendMessage(v(DAT_00638db0),0x401e,param_1 + 0x5c0,param_1 + 0x5e8);
             for (local_10 = 0; local_10 < 0xec; local_10 = local_10 + 1) {
               _MEM[local_360 + local_10 * 3] = _MEM[param_1 + local_10 * 4 + 0x63a];
               _MEM[local_360 + local_10 * 3 + 1] = _MEM[param_1 + local_10 * 4 + 0x639];
               _MEM[local_360 + local_10 * 3 + 2] = _MEM[param_1 + local_10 * 4 + 0x638];
             }
             FUN_005c6da8(10,0xec,local_360);
-            ICSendMessage(DAT_00638db0,0x401d,param_1 + 0x5e8,0);
-            local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8) ,param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
+            ICSendMessage(v(DAT_00638db0),0x401d,param_1 + 0x5e8,0);
+            local_8 = FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8) ,param_1 + 0x5e8,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8));
                                    /*JOINED*/
                                    /*JOINED*/
                                    /*JOINED*/
@@ -1707,25 +1707,25 @@ export function FUN_005e22ed(param_1) {
       FUN_005e2675(param_1);
     }
     if (s32(param_1, 0x5a0) !== 0) {
-      ICSendMessage(DAT_00638db0,0x403f,0,0);
+      ICSendMessage(v(DAT_00638db0),0x403f,0,0);
       wv(_DAT_006e50ac, 8);
       if (s32(param_1, 0x5a4) !== 0) {
         wv(_DAT_006e50ac, 0x8000000c);
       }
       wv(_DAT_006e503c, 0x80000008);
-      ICSendMessage(DAT_00638db0,0x5001,DAT_006e5098,0x2c);
-      ICSendMessage(DAT_00638db0,0x5001,DAT_006e5028,0x70);
+      ICSendMessage(v(DAT_00638db0),0x5001,v(DAT_006e5098),0x2c);
+      ICSendMessage(v(DAT_00638db0),0x5001,v(DAT_006e5028),0x70);
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
+      FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
                    /*JOINED*/
                    /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
     }
     if (s32(param_1, 0x5a8) !== 0) {
-      uVar1 = AVIStreamSampleToTime(DAT_00638dc4,s32(param_1, 0xa14));
-      uVar2 = AVIStreamSampleToTime(DAT_00638dc4,s32(param_1, 0xa18));
+      uVar1 = AVIStreamSampleToTime(v(DAT_00638dc4),s32(param_1, 0xa14));
+      uVar2 = AVIStreamSampleToTime(v(DAT_00638dc4),s32(param_1, 0xa18));
       FUN_005eedec(uVar2,uVar1);
     }
     if (v(DAT_00638dcc) !== 0) {
@@ -1974,7 +1974,7 @@ export function FUN_005e28cd(param_1, param_2, param_3) {
     if (v(DAT_00638dd0) !== 0) {
       FUN_005e2675(param_1);
     }
-    uVar1 = AVIStreamFindSample(DAT_00638dc4,param_2,0x14);
+    uVar1 = AVIStreamFindSample(v(DAT_00638dc4),param_2,0x14);
     w32(param_1, 0xa18, uVar1);
     while( true ) {
       if (param_2 < 0) {
@@ -2020,9 +2020,9 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
   }
   else {
     if ((s32(param_1, 0x5a4) !== 0) && (param_2 === 0)) {
-      FUN_005c0593(param_1,DAT_00638dd8,v(DAT_00638dd8));
+      FUN_005c0593(param_1,v(DAT_00638dd8),v(DAT_00638dd8));
     }
-    local_8 = AVIStreamRead(DAT_00638dc4,s32(param_1, 0xa18),1,DAT_00638da8, DAT_00638dac,local_c[0],0);
+    local_8 = AVIStreamRead(v(DAT_00638dc4),s32(param_1, 0xa18),1,v(DAT_00638da8), v(DAT_00638dac),local_c[0],0);
                             /*JOINED*/
     if (local_8 === 0) {
       w32(param_1, 0x5d4, local_c);
@@ -2031,8 +2031,8 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
         uVar2 = 0;
         iVar5 = v(DAT_00638db4);
         iVar4 = v(DAT_00638db8);
-        uVar1 = FUN_005c5640(0,0,DAT_00638db4,v(DAT_00638db8));
-        local_8 = FUN_005e2c5a(DAT_00638db0,param_2,param_1 + 0x5c0,DAT_00638da8,0,0,DAT_00638db4, DAT_00638db8,param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar5,iVar4);
+        uVar1 = FUN_005c5640(0,0,v(DAT_00638db4),v(DAT_00638db8));
+        local_8 = FUN_005e2c5a(v(DAT_00638db0),param_2,param_1 + 0x5c0,v(DAT_00638da8),0,0,v(DAT_00638db4), v(DAT_00638db8),param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar5,iVar4);
                                /*JOINED*/
       }
       else {
@@ -2043,7 +2043,7 @@ export function show_messagebox_2997_005E2997(param_1, param_2) {
         uVar3 = 0;
         uVar2 = 0;
         uVar1 = FUN_005c5640(0,0,iVar4,iVar5);
-        local_8 = FUN_005e2c5a(DAT_00638db0,param_2,param_1 + 0x5c0,DAT_00638da8,0,0,DAT_00638db4, DAT_00638db8,param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar4,iVar5);
+        local_8 = FUN_005e2c5a(v(DAT_00638db0),param_2,param_1 + 0x5c0,v(DAT_00638da8),0,0,v(DAT_00638db4), v(DAT_00638db8),param_1 + 0x5e8,uVar1,uVar2,uVar3,iVar4,iVar5);
                                /*JOINED*/
         w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
         w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
@@ -2152,7 +2152,7 @@ export function FUN_005e2cd1(param_1) {
   if (v(DAT_00638dd0) !== 0) {
     if (s32(param_1, 0x5a8) === 0) {
       local_8 = timeGetTime();
-      iVar1 = AVIStreamTimeToSample(DAT_00638dc4,local_8 - v(_DAT_00638dbc));
+      iVar1 = AVIStreamTimeToSample(v(DAT_00638dc4),local_8 - v(_DAT_00638dbc));
       local_20 = s32(param_1, 0xa10) + iVar1;
       if (local_20 < u32(param_1, 0xa18)) {
         return;
@@ -2181,7 +2181,7 @@ export function FUN_005e2cd1(param_1) {
         return;
       }
       uVar2 = FUN_005eedd1();
-      iVar1 = AVIStreamTimeToSample(DAT_00638dc4,uVar2);
+      iVar1 = AVIStreamTimeToSample(v(DAT_00638dc4),uVar2);
       local_20 = s32(param_1, 0xa10) + iVar1;
       if ((s32(param_1, 0x5ac) === 0) || (local_20 < u32(param_1, 0xa18))) {
         FUN_005d57b1(0x40);
@@ -2211,7 +2211,7 @@ export function FUN_005e2cd1(param_1) {
       do {
         iVar1 = local_c;
         local_c = local_c + 1;
-        local_c = AVIStreamFindSample(DAT_00638dc4,local_c,0x11);
+        local_c = AVIStreamFindSample(v(DAT_00638dc4),local_c,0x11);
         if (local_20 <= local_c) break;
       } while (local_c !== -1);
       if (s32(param_1, 0xa18) === iVar1) {
@@ -2257,7 +2257,7 @@ export function FUN_005e30a1(param_1) {
   let local_8;
   
   if ((param_1 !== 0) && (v(DAT_00638dcc) !== 0)) {
-    ICSendMessage(DAT_00638db0,0x403f,0,0);
+    ICSendMessage(v(DAT_00638db0),0x403f,0,0);
     FUN_005c6b63(local_2d0,0,0xec);
     for (local_c = 0; local_c < 0xec; local_c = local_c + 1) {
       _MEM[param_1 + 0x610 + local_c * 4] = _MEM[local_2d0 + local_c * 3 + 2];
@@ -2265,16 +2265,16 @@ export function FUN_005e30a1(param_1) {
       _MEM[param_1 + 0x612 + local_c * 4] = _MEM[local_2d0 + local_c * 3];
       _MEM[param_1 + 0x613 + local_c * 4] = 0;
     }
-    ICSendMessage(DAT_00638db0,0x401d,param_1 + 0x5e8,0);
+    ICSendMessage(v(DAT_00638db0),0x401d,param_1 + 0x5e8,0);
     if (s32(param_1, 0x5a0) === 0) {
-      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8));
+      local_8 = FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4),s32(param_1, 0x5c8));
                              /*JOINED*/
                              /*JOINED*/
     }
     else {
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
+      local_8 = FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0,s32(param_1, 0x5c4), s32(param_1, 0x5c8),param_1 + 0x5e8,0,0,0, s32(param_1, 0x5c4) * 2,s32(param_1, 0x5c8) * 2);
                              /*JOINED*/
                              /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) / 2);
@@ -2307,7 +2307,7 @@ export function FUN_005e32b2(param_1, param_2) {
   let local_8;
   
   if ((param_1 !== 0x0) && (v(DAT_00638dcc) !== 0)) {
-    ICSendMessage(DAT_00638db0,0x403f,0,0);
+    ICSendMessage(v(DAT_00638db0),0x403f,0,0);
     if (param_2 === 0) {
       wv(_DAT_006e50ac, 0);
     }
@@ -2315,16 +2315,16 @@ export function FUN_005e32b2(param_1, param_2) {
       wv(_DAT_006e50ac, 0x80000004);
     }
     wv(_DAT_006e503c, 0x80000008);
-    ICSendMessage(DAT_00638db0,0x5001,DAT_006e5098,0x2c);
-    ICSendMessage(DAT_00638db0,0x5001,DAT_006e5028,0x70);
+    ICSendMessage(v(DAT_00638db0),0x5001,v(DAT_006e5098),0x2c);
+    ICSendMessage(v(DAT_00638db0),0x5001,v(DAT_006e5028),0x70);
     if (s32(param_1, 0x5a0) === 0) {
-      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,DAT_00638db4,DAT_00638db8, param_1 + 0x5e8,0,0,0,DAT_00638db4,v(DAT_00638db8));
+      local_8 = FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0,v(DAT_00638db4),v(DAT_00638db8), param_1 + 0x5e8,0,0,0,v(DAT_00638db4),v(DAT_00638db8));
                              /*JOINED*/
     }
     else {
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) << 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) << 1);
-      local_8 = FUN_005e250c(DAT_00638db0,0,param_1 + 0x5c0,0,0,0,DAT_00638db4,DAT_00638db8, param_1 + 0x5e8,0,0,0,v(DAT_00638db4) * 2,v(DAT_00638db8) * 2);
+      local_8 = FUN_005e250c(v(DAT_00638db0),0,param_1 + 0x5c0,0,0,0,v(DAT_00638db4),v(DAT_00638db8), param_1 + 0x5e8,0,0,0,v(DAT_00638db4) * 2,v(DAT_00638db8) * 2);
                              /*JOINED*/
       w32(param_1, 0x5f0, s32(param_1, 0x5f0) >> 1);
       w32(param_1, 0x5ec, s32(param_1, 0x5ec) >> 1);
@@ -2336,7 +2336,7 @@ export function FUN_005e32b2(param_1, param_2) {
       FUN_005bd65c(0,0);
     }
     else {
-      FUN_005bd65c(DAT_00638db4,v(DAT_00638db8));
+      FUN_005bd65c(v(DAT_00638db4),v(DAT_00638db8));
       // DEVIATION: MFC — yBottom = CRichEditCntrItem::GetActiveView(param_1);
       // DEVIATION: MFC — xRight = CRichEditCntrItem::GetActiveView(param_1);
       SetRect(local_1c[0],0,0,xRight,yBottom);
@@ -6221,7 +6221,7 @@ export function register_wndclass_89D0_005E89D0() {
   local_2c[0].lpszMenuName = 0x0;
   local_2c[0].lpszClassName = s_MSDirectWindow_006394c4;
   RegisterClassA(local_2c[0]);
-  iVar1 = DirectDrawCreate(0,DAT_006394c0,0);
+  iVar1 = DirectDrawCreate(0,v(DAT_006394c0),0);
   if (iVar1 === 0) {
     wv(_DAT_006e50e8, 0x13c);
     wv(_DAT_006e5228, 0x13c);
@@ -6290,7 +6290,7 @@ export function FUN_005e8b54(param_1, param_2, param_3) {
       _MEM[local_410 + (param_1 + local_c) * 4 + 2] = _MEM[param_3 + 2];
       param_3 = param_3 + 3;
     }
-    local_10 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x14) */)(DAT_006394c0,0x44,local_410,local_8[0],0);
+    local_10 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x14) */)(v(DAT_006394c0),0x44,local_410,local_8[0],0);
     if (local_10 !== 0) {
       FUN_005d2279(s_DD__CreatePalette_error_006395b0,local_10 & 0xffff);
       local_8[0] = 0;
@@ -6336,7 +6336,7 @@ export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
       _MEM[local_40c + local_8 * 4 + 2] = _MEM[param_4 + 2];
       param_4 = param_4 + 3;
     }
-    local_c = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x58) */)(DAT_006394c0,1,0);
+    local_c = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x58) */)(v(DAT_006394c0),1,0);
     if (local_c !== 0) {
       FUN_005d2279(s_DD__SetPalette_WaitForBlank_erro_006395c8,local_c & 0xffff);
     }
@@ -6445,7 +6445,7 @@ export function FUN_005e8eb0(param_1) {
       local_8 = 0x218;
     }
     local_5c = param_1;
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(DAT_006394c0,local_70[0],local_74[0],0);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(v(DAT_006394c0),local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__CreatePrimarySurface_failed_00639618,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -6512,7 +6512,7 @@ export function FUN_005e8fb7(param_1, param_2) {
     }
     local_64 = FUN_00407f90(param_1);
     local_68 = FUN_00407fc0(param_1);
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(DAT_006394c0,local_70[0],local_74[0],0);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x18) */)(v(DAT_006394c0),local_70[0],local_74[0],0);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__CreateOffscreenSurface_faile_00639658,uVar1 & 0xffff);
       local_74[0] = 0;
@@ -7563,7 +7563,7 @@ export function FUN_005ea677(in_EAX) {
     uVar1 = in_EAX & 0xffffff00;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x44) */)(DAT_006394c0,local_8);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x44) */)(v(DAT_006394c0),local_8);
     if (uVar1 === 0) {
       uVar1 = ((_MEM[local_8 + 0]) >>> 0);
     }
@@ -7591,7 +7591,7 @@ export function FUN_005ea6c4() {
     local_8[0] = 0;
   }
   else {
-    iVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x40) */)(DAT_006394c0,local_8[0]);
+    iVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x40) */)(v(DAT_006394c0),local_8[0]);
     if (iVar1 !== 0) {
       local_8[0] = 0;
     }
@@ -7616,7 +7616,7 @@ export function FUN_005ea711() {
     local_8[0] = 0;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x3c) */)(DAT_006394c0,local_8[0]);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x3c) */)(v(DAT_006394c0),local_8[0]);
     if (uVar1 !== 0) {
       FUN_005d2279(s_DD__GetMonitorFrequency_failed_006397c8,uVar1 & 0xffff);
       local_8[0] = 0;
@@ -9795,7 +9795,7 @@ export function FUN_005edb15(param_1) {
     lpNumberOfBytesWritten = local_8[0];
     nNumberOfBytesToWrite = _strlen(param_1);
     WriteFile(hFile,param_1,nNumberOfBytesToWrite,lpNumberOfBytesWritten,lpOverlapped);
-    WriteFile(hFile,DAT_00639cd8,2,local_8[0],0x0);
+    WriteFile(hFile,v(DAT_00639cd8),2,local_8[0],0x0);
     CloseHandle(hFile);
   }
   return 1;
@@ -10322,7 +10322,7 @@ export function FUN_005ee0b1(param_1, param_2, param_3, param_4, param_5, param_
   else {
     local_30 = param_3;
   }
-  pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28, local_24,local_20,0x0,DAT_006e4ff0,0x0);
+  pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28, local_24,local_20,0x0,v(DAT_006e4ff0),0x0);
                            /*JOINED*/
   _MEM[puVar2 + 1] = pHVar4;
   FUN_005bc1b5(_MEM[puVar2 + 1]);
@@ -10513,7 +10513,7 @@ export function FUN_005ee6e3(in_ECX, param_1, param_2) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
-  iVar1 = FUN_00414d10(DAT_006e4ff0,0x4000010a,param_2);
+  iVar1 = FUN_00414d10(v(DAT_006e4ff0),0x4000010a,param_2);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
   w32(in_ECX, 0, iVar1);
   SendMessageA(s32(in_ECX, 0),0x477,0,0x639d44);
@@ -10537,7 +10537,7 @@ export function FUN_005ee757(in_ECX) {
     FUN_005ee8f1();
     FUN_005ee94b();
   }
-  iVar1 = FUN_00414d10(DAT_006e4ff0,0x4000010a,0);
+  iVar1 = FUN_00414d10(v(DAT_006e4ff0),0x4000010a,0);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
   w32(in_ECX, 0, iVar1);
   return;
@@ -11274,7 +11274,7 @@ export function FUN_005ef356(param_1, param_2, param_3, param_4) {
   else {
     local_14 = param_3;
   }
-  pHVar3 = CreateWindowExA(4,s_MSDirectWindow_00639d78,param_1,0x80000000,-0x80000000,-0x80000000, local_14,local_10,0x0,0x0,DAT_006e4ff0,0x0);
+  pHVar3 = CreateWindowExA(4,s_MSDirectWindow_00639d78,param_1,0x80000000,-0x80000000,-0x80000000, local_14,local_10,0x0,0x0,v(DAT_006e4ff0),0x0);
                            /*JOINED*/
   _MEM[puVar2 + 1] = pHVar3;
   return puVar2;
@@ -11307,7 +11307,7 @@ export function FUN_005ef41e(in_EAX, param_1, param_2) {
     else if (param_2 === 2) {
       local_c = 0x51;
     }
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x50) */)(DAT_006394c0,s32(param_1, 4),local_c);
+    uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x50) */)(v(DAT_006394c0),s32(param_1, 4),local_c);
     if (uVar1 === 0) {
       uVar1 = 1;
     }
@@ -11339,7 +11339,7 @@ export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
     w32(param_1, 0xc, param_2);
     w32(param_1, 8, param_3);
     w32(param_1, 0x10, param_4);
-    uVar2 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x54) */)(DAT_006394c0,param_2,param_3,param_4);
+    uVar2 = (true /* DEVIATION: C pointer — **(code **)(s32(DAT_006394c0, 0) + 0x54) */)(v(DAT_006394c0),param_2,param_3,param_4);
     if (uVar2 === 0) {
       MoveWindow(s32(param_1, 4),0,0,s32(param_1, 0xc),s32(param_1, 8),1);
       uVar1 = 1;
@@ -11812,7 +11812,7 @@ export function FUN_005effec(in_ECX, param_1, param_2, param_3, param_4, param_5
   let uVar1;
   // in_ECX → promoted to parameter
   
-  uVar1 = FUN_005ef356(DAT_00639dc4,param_1,param_2,param_3);
+  uVar1 = FUN_005ef356(v(DAT_00639dc4),param_1,param_2,param_3);
   w32(in_ECX, 0xb0, uVar1);
   FUN_005ef320(in_ECX,s32(in_ECX, 0xb0));
   w32(in_ECX, 0xb4, param_4);

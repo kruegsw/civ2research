@@ -1730,7 +1730,7 @@ export function _wctomb_00602310(_MbCh, _WCh) {
   }
   else {
     _MEM[local_c + 0] = 0;
-    iVar1 = WideCharToMultiByte(DAT_0063a088,0x220,_WCh,1,_MbCh,DAT_0063a29c,0x0,local_c);
+    iVar1 = WideCharToMultiByte(v(DAT_0063a088),0x220,_WCh,1,_MbCh,v(DAT_0063a29c),0x0,local_c);
     if ((iVar1 === 0) || (_MEM[local_c + 0] !== 0)) {
       wv(DAT_00639f14, 0x2a);
       iVar1 = -1;
@@ -2895,22 +2895,22 @@ export function __tzset_00603650() {
         wv(DAT_0063b2b4, 1);
         wv(DAT_0063b2b8, (v(DAT_006e5690) - v(DAT_006e563c)) * 0x3c);
       }
-      _wcstombs(PTR_DAT_0063b340,DAT_006e55ec,0x40);
-      _wcstombs(PTR_DAT_0063b344,DAT_006e5640,0x40);
+      _wcstombs(PTR_DAT_0063b340,v(DAT_006e55ec),0x40);
+      _wcstombs(PTR_DAT_0063b344,v(DAT_006e5640),0x40);
       _MEM[PTR_DAT_0063b344 + 0x3f] = 0;
       _MEM[PTR_DAT_0063b340 + 0x3f] = _MEM[PTR_DAT_0063b344 + 0x3f];
     }
   }
   else if ((s32(_Str1, 0) !== 0) && ((v(DAT_0063b348) === 0x0 || (iVar3 = _strcmp(_Str1,v(DAT_0063b348)), iVar3 !== 0)))) {
           /*JOINED*/
-    __free_dbg(DAT_0063b348,2);
+    __free_dbg(v(DAT_0063b348),2);
     uVar8 = 0xec;
     pcVar7 = "tzset.c";
     uVar6 = 2;
     sVar4 = _strlen(_Str1);
     wv(DAT_0063b348, __malloc_dbg(sVar4 + 1,uVar6,pcVar7,uVar8));
     if (v(DAT_0063b348) !== 0x0) {
-      FUN_005f22d0(DAT_0063b348,_Str1);
+      FUN_005f22d0(v(DAT_0063b348),_Str1);
       _strncpy(PTR_DAT_0063b340,_Str1,3);
       _MEM[PTR_DAT_0063b340 + 3] = 0;
       local_c = _Str1 + 3;
@@ -2979,19 +2979,19 @@ export function __isindst_006039B0(_Time) {
     }
     else {
       if (v(DAT_006e5680) === 0) {
-        true /* DEVIATION: C struct — cvtdate(1,1,_Time->tm_year,DAT_006e5682,DAT_006e5686,DAT_006e5684,0,DAT_006e5688, DAT_006e568a,DAT_006e568c,v(DAT_006e568e)); */;
+        true /* DEVIATION: C struct — cvtdate(1,1,_Time->tm_year,v(DAT_006e5682),v(DAT_006e5686),v(DAT_006e5684),0,v(DAT_006e5688), v(DAT_006e568a),v(DAT_006e568c),v(DAT_006e568e)); */;
                 /*JOINED*/
       }
       else {
-        true /* DEVIATION: C struct — cvtdate(1,0,_Time->tm_year,DAT_006e5682,0,0,DAT_006e5686,DAT_006e5688,DAT_006e568a, DAT_006e568c,v(DAT_006e568e)); */;
+        true /* DEVIATION: C struct — cvtdate(1,0,_Time->tm_year,v(DAT_006e5682),0,0,v(DAT_006e5686),v(DAT_006e5688),v(DAT_006e568a), v(DAT_006e568c),v(DAT_006e568e)); */;
                 /*JOINED*/
       }
       if (v(DAT_006e562c) === 0) {
-        true /* DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,DAT_006e562e,DAT_006e5632,DAT_006e5630,0,DAT_006e5634, DAT_006e5636,DAT_006e5638,v(DAT_006e563a)); */;
+        true /* DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,v(DAT_006e562e),v(DAT_006e5632),v(DAT_006e5630),0,v(DAT_006e5634), v(DAT_006e5636),v(DAT_006e5638),v(DAT_006e563a)); */;
                 /*JOINED*/
       }
       else {
-        true /* DEVIATION: C struct — cvtdate(0,0,_Time->tm_year,DAT_006e562e,0,0,DAT_006e5632,DAT_006e5634,DAT_006e5636, DAT_006e5638,v(DAT_006e563a)); */;
+        true /* DEVIATION: C struct — cvtdate(0,0,_Time->tm_year,v(DAT_006e562e),0,0,v(DAT_006e5632),v(DAT_006e5634),v(DAT_006e5636), v(DAT_006e5638),v(DAT_006e563a)); */;
                 /*JOINED*/
       }
     }
@@ -4109,7 +4109,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
         local_8 = _wcslen(_Source);
       }
       else {
-        iVar2 = WideCharToMultiByte(DAT_0063a088,0x220,_Source,-1,0x0,0,0x0,local_18[0] );
+        iVar2 = WideCharToMultiByte(v(DAT_0063a088),0x220,_Source,-1,0x0,0,0x0,local_18[0] );
                                    /*JOINED*/
         if ((iVar2 === 0) || (local_18[0] !== 0)) {
           wv(DAT_00639f14, 0x2a);
@@ -4137,7 +4137,7 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
       if (_MaxCount !== 0) {
         _MaxCount = wcsncnt(_Source,_MaxCount);
       }
-      local_8 = WideCharToMultiByte(DAT_0063a088,0x220,_Source,_MaxCount,_Dest,_MaxCount,0x0 ,local_18[0]);
+      local_8 = WideCharToMultiByte(v(DAT_0063a088),0x220,_Source,_MaxCount,_Dest,_MaxCount,0x0 ,local_18[0]);
                                     /*JOINED*/
       if ((local_8 === 0) || (local_18[0] !== 0)) {
         wv(DAT_00639f14, 0x2a);
@@ -4148,12 +4148,12 @@ export function _wcstombs_006056E0(_Dest, _Source, _MaxCount) {
       }
     }
     else {
-      local_8 = WideCharToMultiByte(DAT_0063a088,0x220,_Source,-1,_Dest,_MaxCount,0x0, local_18[0]);
+      local_8 = WideCharToMultiByte(v(DAT_0063a088),0x220,_Source,-1,_Dest,_MaxCount,0x0, local_18[0]);
                                     /*JOINED*/
       if ((local_8 === 0) || (local_18[0] !== 0)) {
         if ((local_18[0] === 0) && (DVar4 = GetLastError(), DVar4 === 0x7a)) {
           while (local_8 < _MaxCount) {
-            local_14 = WideCharToMultiByte(DAT_0063a088,0,_Source,1,local_10,DAT_0063a29c, 0x0,local_18[0]);
+            local_14 = WideCharToMultiByte(v(DAT_0063a088),0,_Source,1,local_10,v(DAT_0063a29c), 0x0,local_18[0]);
                                            /*JOINED*/
             if ((local_14 === 0) || (local_18[0] !== 0)) {
               wv(DAT_00639f14, 0x2a);
@@ -4549,7 +4549,7 @@ export function __mbsnbicoll_006061F0(unaff_EDI, _Str1, _Str2, _MaxCount) {
   }
   else {
     iVar1 = ___crtCompareStringA
-                      (DAT_0063b0a8,0x1,_Str1,_MaxCount,_Str2, _MaxCount,DAT_0063b0a4,unaff_EDI);
+                      (v(DAT_0063b0a8),0x1,_Str1,_MaxCount,_Str2, _MaxCount,v(DAT_0063b0a4),unaff_EDI);
                        /*JOINED*/
     if (iVar1 === 0) {
       iVar1 = 0x7fffffff;
@@ -5241,9 +5241,9 @@ export function __strupr_006076C0(unaff_ESI, unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = ___crtLCMapStringA(DAT_0063a078,0x200,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
                                            /*JOINED*/
-    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strupr.c",0x61), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(DAT_0063a078,0x200,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
+    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strupr.c",0x61), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x200,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
         /*JOINED*/
        /*JOINED*/
                                    /*JOINED*/
@@ -5285,9 +5285,9 @@ export function __strlwr_006077F0(unaff_ESI, unaff_EDI, _String) {
     }
   }
   else {
-    _LpDestStr = ___crtLCMapStringA(DAT_0063a078,0x100,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
+    _LpDestStr = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String, 0xffffffff,0,0x0,0,unaff_EDI,unaff_ESI);
                                            /*JOINED*/
-    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strlwr.c",100), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(DAT_0063a078,0x100,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
+    if (((_LpDestStr !== 0x0) && (local_c = __malloc_dbg(_LpDestStr,2,"strlwr.c",100), local_c !== 0)) && (iVar1 = ___crtLCMapStringA(v(DAT_0063a078),0x100,_String,0xffffffff, local_c,_LpDestStr,0,unaff_EDI,unaff_ESI), iVar1 !== 0)) {
         /*JOINED*/
        /*JOINED*/
                                    /*JOINED*/

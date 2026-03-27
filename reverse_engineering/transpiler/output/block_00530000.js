@@ -1681,10 +1681,10 @@ export function FUN_005351aa() {
                     local_60 = FUN_0043cf76(uVar14,iVar13);
                     FUN_0040ff60(1,ptrAdd(DAT_0064f360, local_60 * 0x58));
                     __chdir(v(DAT_0064bb08));
-                    iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
+                    iVar18 = FUN_004a2379(v(DAT_00632544),s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
                       __chdir(v(DAT_00655020));
-                      iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
+                      iVar18 = FUN_004a2379(v(DAT_00632558),s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(iVar10, iVar11, iVar8); return;
                     }
                     __chdir(v(DAT_00655020));
@@ -2646,7 +2646,7 @@ export function FUN_00538a29() {
   uVar21 = u8(_MEM[DAT_0064ca32 + uVar8 * 0x594 + iVar10]);
   if (((local_158 !== 0) && (v(DAT_006ced4c) !== 0)) && ((local_40 === local_88 && ((_MEM[DAT_0064c6c0 + DAT_006ced4c * 4 + uVar8 * 0x594] & 4) !== 0)))) {
      /*JOINED*/
-    FUN_00456f20(uVar8,DAT_006ced4c,1);
+    FUN_00456f20(uVar8,v(DAT_006ced4c),1);
     if ((((1 << (u8(DAT_006ced4c) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) && (2 < v(DAT_00655b08))) && ((iVar11 = FUN_00467904(uVar8,v(DAT_006ced4c)), 0x3c < iVar11 && ((u8(_MEM[DAT_00655c22 + uVar8]) < u8(_MEM[DAT_00655c22 + DAT_006ced4c]) && (iVar11 = FUN_0059a791(0,3), iVar11 === 0)))))) {
        /*JOINED*/
         /*JOINED*/
@@ -7047,10 +7047,10 @@ if (true) {
                     local_60 = FUN_0043cf76(uVar14,iVar13);
                     FUN_0040ff60(1,ptrAdd(DAT_0064f360, local_60 * 0x58));
                     __chdir(v(DAT_0064bb08));
-                    iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
+                    iVar18 = FUN_004a2379(v(DAT_00632544),s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
                       __chdir(v(DAT_00655020));
-                      iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
+                      iVar18 = FUN_004a2379(v(DAT_00632558),s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar21, bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_64, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
                     }
                     __chdir(v(DAT_00655020));
@@ -7402,10 +7402,10 @@ if (true) {
                     local_60 = FUN_0043cf76(uVar14,iVar13);
                     FUN_0040ff60(1,ptrAdd(DAT_0064f360, local_60 * 0x58));
                     __chdir(v(DAT_0064bb08));
-                    iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
+                    iVar18 = FUN_004a2379(v(DAT_00632544),s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
                       __chdir(v(DAT_00655020));
-                      iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
+                      iVar18 = FUN_004a2379(v(DAT_00632558),s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
                     }
                     __chdir(v(DAT_00655020));
@@ -7673,10 +7673,10 @@ if (true) {
                     local_60 = FUN_0043cf76(uVar14,iVar13);
                     FUN_0040ff60(1,ptrAdd(DAT_0064f360, local_60 * 0x58));
                     __chdir(v(DAT_0064bb08));
-                    iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
+                    iVar18 = FUN_004a2379(v(DAT_00632544),s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
                       __chdir(v(DAT_00655020));
-                      iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
+                      iVar18 = FUN_004a2379(v(DAT_00632558),s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar20, uVar7); return;
                     }
                     __chdir(v(DAT_00655020));
@@ -7954,10 +7954,10 @@ if (true) {
                     local_60 = FUN_0043cf76(uVar14,iVar13);
                     FUN_0040ff60(1,ptrAdd(DAT_0064f360, local_60 * 0x58));
                     __chdir(v(DAT_0064bb08));
-                    iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
+                    iVar18 = FUN_004a2379(v(DAT_00632544),s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
                       __chdir(v(DAT_00655020));
-                      iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
+                      iVar18 = FUN_004a2379(v(DAT_00632558),s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar7); return;
                     }
                     __chdir(v(DAT_00655020));

@@ -790,11 +790,13 @@ function transformLine(line, ctx) {
     // In JS with the flat memory model, DAT_xxx is a number (offset).
     // v() reads the int32 value at that offset from _MEM.
     // Skip: first arg to memory helpers, bracket access, write targets, &DAT
+    // Skip: first arg to memory helpers (followed by ,), bracket access, assignments
+    // But DO wrap DAT_ in arithmetic even when followed by , (e.g., expr - DAT_xxx,0,99)
     out = out.replace(
-      /\b(_?DAT_[0-9a-fA-F]+)\b(?!\s*[\[,])(?!\s*=(?!=))/g,
+      /\b(_?DAT_[0-9a-fA-F]+)\b(?!\s*\[)(?!\s*=(?!=))/g,
       (m, name, matchOffset) => {
-        // Check preceding context: is this the first arg to a memory helper?
         const before = out.substring(Math.max(0, matchOffset - 40), matchOffset);
+        // Skip if first arg to a memory helper: s32(DAT_xxx, ...)
         if (/(?:s32|u32|s16|u16|s8|u8|w32|w16|w32r|w16r|ptrAdd|v|wv)\(\s*$/.test(before)) return m;
         if (/&\s*$/.test(before)) return m;
         if (/_MEM\[\s*$/.test(before)) return m;
