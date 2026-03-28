@@ -15,21 +15,35 @@ the title screen AND after starting games at different difficulty levels.
 Expected: 0=Chieftain, 1=Warlord, 2=Prince, 3=King, 4=Emperor, 5=Deity.
 If it's different, document the actual encoding.
 
-### 1B. Unit Type Cost Field
-Our Ghidra data says cost is at offset 0x0C in the 20-byte unit type record.
-But sniffing showed offset 12-15 = flags (e.g., `0x00000004` for Legion). The actual
-shield cost might be at offset 18-19.
+### 1B. Unit Type Cost Field — WHERE IS IT?
+**Status from session 1 analysis:** CONFIRMED WRONG. Our rules-loader puts cost at
+offset 0x0C from DAT_0064b1bc, but this maps to the MOVES field (sniffing byte[4]
+at +8 from our base). Cost coincidentally equals moves for many units (Warriors=1,
+Archers=3, Armor=8) but they are different fields.
 
-**Action:** Read the full 20 bytes for Warriors (unit 2) at `0x0064B1EC`.
-Cross-check: Warriors cost = 1 row (10 shields). Is `bytes[12]` = 1? Or `bytes[18]` = 1?
-Also check Settlers (unit 0) at `0x0064B1C4` — cost should be 4 rows.
+The C source reads unit production cost from `DAT_0064c48c[local_24 * 8]` — that's
+the BUILDING cost table (stride 8). For UNIT production, the cost might come from
+a completely different table or mechanism.
 
-The unit_type_stats.md already has the raw bytes. Looking at Warriors:
-`01 01 0A 01 01 00 01 FF 26 04 00 00 00 00 00 00 1D 00 03 00`
-- byte[12] = 0x00 (not cost)
-- byte[18] = 0x03 (could be cost=3? but RULES.TXT says 1)
+**Action:** Three approaches (try any):
+1. **Observe production:** Set a city to build Warriors. Watch `DAT_0064f35c`
+   (city shield store) accumulate. When it reaches the threshold and the unit is
+   built, the threshold value = cost × shield_rows. Divide by shield_rows to get cost.
+2. **Search for cost table:** The RULES.TXT costs are: Settlers=4, Warriors=1,
+   Phalanx=2, Archers=3, Legion=4, Armor=8. Search for the byte sequence
+   `04 04 01 02 03 04 02` (costs of units 0-6) in process memory.
+3. **Breakpoint approach:** If you can attach a debugger, set a read breakpoint
+   on the city's shield store during production completion. The call stack will
+   reveal which function reads the cost and from where.
 
-This needs verification against RULES.TXT cost values for several units.
+### 1C. Difficulty Byte Encoding
+**Status from session 1:** The snapshot filename said "chieftain" but Deity was
+selected. Analysis suggests this is a sniff-game.py display bug (DIFF_NAMES index
+off by one or wrong mapping), NOT a data encoding issue.
+
+**Action:** Quick verification — start games at Chieftain, Prince, and Deity.
+Read `0x00655B02` each time. Expected: 0, 2, 5. If different, document actual values.
+This is low priority — our engine handles it correctly already.
 
 ### 1C. Civ Struct Base Offset
 README.md says civ array at `0x0064C6A0` but our Ghidra says `0x0064C600`.
@@ -116,6 +130,18 @@ These are already in the findings folder:
 - LEADERS.TXT (21 lines — leader names)
 
 **No further action needed** unless they differ from the installed game files.
+
+---
+
+## Already Resolved (no sniffing needed)
+
+- **Civ struct base +0xA0:** CONSISTENT — fields start at +0xA0 within each
+  0x594-byte civ record. Government at +0xB5 = +0xA0+0x15. Our code is correct.
+- **Cosmic discrepancies (offsets 15,16):** LOW PRIORITY — only affects
+  Fundamentalism/Communism. Will investigate when those systems are tested.
+- **All DAT_ addresses:** Confirmed matching real process memory ✓
+- **Tile format (6 bytes, shared pairs):** Confirmed ✓
+- **Unit/city/civ struct strides:** Confirmed ✓
 
 ---
 
