@@ -1,154 +1,104 @@
 # Next Sniffing Session — Data Needed
 
-These are specific things missing from the first session that would help validate
-and fix our engine. Prioritized by impact.
+Updated after sessions 1 and 2. Items marked ✓ are resolved.
 
 ---
 
-## Priority 1: Verify Now (Quick Reads)
+## Resolved (sessions 1 & 2)
 
-### 1A. Difficulty Byte Encoding
-The snapshot filename said "chieftain" but Deity was selected. Read `0x00655B02` at
-the title screen AND after starting games at different difficulty levels.
-
-**Action:** Start 3 quick games (Chieftain, Prince, Deity), read `0x00655B02` each time.
-Expected: 0=Chieftain, 1=Warlord, 2=Prince, 3=King, 4=Emperor, 5=Deity.
-If it's different, document the actual encoding.
-
-### 1B. Unit Type Cost Field — WHERE IS IT?
-**Status from session 1 analysis:** CONFIRMED WRONG. Our rules-loader puts cost at
-offset 0x0C from DAT_0064b1bc, but this maps to the MOVES field (sniffing byte[4]
-at +8 from our base). Cost coincidentally equals moves for many units (Warriors=1,
-Archers=3, Armor=8) but they are different fields.
-
-The C source reads unit production cost from `DAT_0064c48c[local_24 * 8]` — that's
-the BUILDING cost table (stride 8). For UNIT production, the cost might come from
-a completely different table or mechanism.
-
-**Action:** Three approaches (try any):
-1. **Observe production:** Set a city to build Warriors. Watch `DAT_0064f35c`
-   (city shield store) accumulate. When it reaches the threshold and the unit is
-   built, the threshold value = cost × shield_rows. Divide by shield_rows to get cost.
-2. **Search for cost table:** The RULES.TXT costs are: Settlers=4, Warriors=1,
-   Phalanx=2, Archers=3, Legion=4, Armor=8. Search for the byte sequence
-   `04 04 01 02 03 04 02` (costs of units 0-6) in process memory.
-3. **Breakpoint approach:** If you can attach a debugger, set a read breakpoint
-   on the city's shield store during production completion. The call stack will
-   reveal which function reads the cost and from where.
-
-### 1C. Difficulty Byte Encoding
-**Status from session 1:** The snapshot filename said "chieftain" but Deity was
-selected. Analysis suggests this is a sniff-game.py display bug (DIFF_NAMES index
-off by one or wrong mapping), NOT a data encoding issue.
-
-**Action:** Quick verification — start games at Chieftain, Prince, and Deity.
-Read `0x00655B02` each time. Expected: 0, 2, 5. If different, document actual values.
-This is low priority — our engine handles it correctly already.
-
-### 1C. Civ Struct Base Offset
-README.md says civ array at `0x0064C6A0` but our Ghidra says `0x0064C600`.
-The difference (0xA0 = 160 bytes) could be civ 0 (barbarians) header.
-
-**Action:** Read bytes at `0x0064C600` through `0x0064C6A0` to see if the first
-160 bytes are a header or if they're civ 0 data. Check if gold for Civ 1
-(first non-barbarian) is at `0x0064C600 + 0x594 + 0xA2` OR at `0x0064C600 + 0xA2`.
+- ✓ **Difficulty byte encoding** — confirmed at `0x00655B04` (0=Chieftain..5=Deity)
+- ✓ **All DAT_ addresses** — confirmed matching real process memory
+- ✓ **Tile format (6 bytes, shared pairs)** — confirmed
+- ✓ **Unit/city/civ struct strides** — confirmed
+- ✓ **Civ struct base +0xA0** — consistent with our code
+- ✓ **Warriors cost = 10 shields** — RULES.TXT cost=1 × 10 rows = 10
+- ✓ **Beakers sentinel = 0xFFFF** — confirmed
+- ✓ **Unit transit (-1200,-1200)** — documented
+- ✓ **Shield overflow carries forward** — confirmed
+- ✓ **AI food box = 13 - difficulty** — confirmed, DAT_00655b08
 
 ---
 
-## Priority 2: Capture During Gameplay (Turn Processing)
+## Priority 1: Unit Cost Field (BLOCKING)
 
-### 2A. AI Turn Unit-by-Unit Processing
-During an AI turn, capture at maximum frequency:
-- DAT_00655afe (active unit index) changes
-- Each unit's position change
-- Each unit's order assignment
-- Timing between each unit being processed
+### Where does the game store unit shield cost?
+**Status:** Our rules-loader puts cost at offset 0x0C from DAT_0064b1bc, but this
+maps to the MOVES field. Cost coincidentally equals moves for many units but
+they are different fields.
 
-This tells us the exact order the AI processes units, what orders it assigns,
-and whether units actually move. Focus on the FIRST AI turn of a new game.
+The C source reads production cost from `DAT_0064c48c[local_24 * 8]` — the
+BUILDING cost table (stride 8). For UNIT production, the mechanism is unclear.
 
-### 2B. City Production Selection
-After a city is founded, what production item does the AI assign?
-- Read city struct byte 0x39 (production item) before and after the AI turn
-- Does the AI change it? What does it pick first?
+**Session 2 confirmed:** Warriors cost = 10 shields (1 × 10 rows). The threshold
+was reached when city shields hit 10. But WHERE in memory is the "1" stored?
 
-### 2C. Per-Civ Visibility/Exploration Arrays
-Read the pointer array at `0x006365C0` (8 entries × 4 bytes = 32 bytes).
-Then for the human player's civ, read the first 100 bytes of the pointed-to array.
-What encoding? 0=unexplored, non-zero=explored? Or bitmask per tile?
-
-Also read: `0x006365EC` — what pointer does this hold? Is it the same as one
-of the `0x006365C0` entries or different?
+**Actions (try any):**
+1. Search process memory for byte sequence `04 01 02 03 04` (costs of units 0-4:
+   Settlers=4, Warriors=1, Phalanx=2, Archers=3, Legion=4)
+2. Watch a city building Warriors — when shields hit 10 and reset, what address
+   was read to determine the threshold?
+3. Check if the building cost table at `DAT_0064c48c` (stride 8) also contains
+   unit costs at higher indices
 
 ---
 
-## Priority 3: Full Struct Dumps (One-Time)
+## Priority 2: AI Movement (why units don't move in our engine)
 
-### 3A. Full Unit Instance Struct (32 bytes)
-Dump the complete 32 bytes for a few units at different states:
-- A settler at (x,y) with order=none
-- A warrior with order=goto
+### 2A. Capture AI Turn Unit-by-Unit
+During an AI turn in a REAL game, observe at max frequency:
+- Which unit index is active (`DAT_00655afe`)
+- Each unit's order assignment and position change
+- The sequence and timing
+
+**Key question:** When the AI moves a warrior to explore, what order does it assign?
+(order=11 goto? order=27 goto_ai? something else?) And what is the goto destination?
+
+### 2B. AI Production Selection
+After an AI city is founded:
+- What production item appears in city byte 0x39?
+- How quickly does the AI assign production?
+- Does it change production mid-build?
+
+### 2C. Exploration Map Format
+Read the pointer at `DAT_006365C4` (civ 1 exploration map). Then read 100 bytes
+from that address. What encoding? 0=unexplored? 1=explored? Or per-tile bitmask?
+
+Also: does `DAT_006365EC` point to the same array or something different?
+
+---
+
+## Priority 3: Full Struct Verification
+
+### 3A. Unit Instance Full 32 Bytes
+Dump all 32 bytes for:
+- A settler with no orders
+- A warrior with a goto order
 - A warrior that just moved
 
-Document every byte with what it appears to be. Compare against our Ghidra
-unit struct (DAT_006560f0, stride 0x20):
-```
-+0x00: x (i16)       +0x02: y (i16)       +0x04: status (u16)
-+0x06: type (u8)     +0x07: owner (u8)    +0x08: ???
-+0x09: ???           +0x0A: moves (u8)    +0x0B: ???
-+0x0C: ???           +0x0D: ???           +0x0E: ???
-+0x0F: order (u8)    +0x10: home_city (u8)+0x11: ???
-+0x12: goto_x (i16)  +0x14: goto_y (i16)  +0x16: prev_stack (i16)
-+0x18: next_stack (i16) +0x1A: unit_id (i32) +0x1E: ???
-```
+Compare against our Ghidra layout byte-by-byte.
 
-### 3B. Full City Struct (88 bytes)
-Same — dump all 88 bytes for a city at different sizes/production states.
-Compare against our Ghidra city struct. Key unknowns:
-- Offsets 0x0A through 0x19 (between size and food stored)
-- Offset 0x34 through 0x38 (between tile bitmap and production item)
-- Offset 0x3A through 0x53 (between production item and exists flag)
+### 3B. City Full 88 Bytes
+Dump all 88 bytes for a city at size 1 producing Warriors.
+Document unknown fields at offsets 0x0A-0x19, 0x34-0x38, 0x3A-0x53.
 
-### 3C. Map Dimension Block
-Read the full 14-byte block `0x006D1160..0x006D116D`:
-```
-+0: mapWidth (i16)    +2: mapHeight (i16)
-+4: ms/totalTiles (i16 or i32?)   +6: mapShape (i16)
-+8: mapSeed (i32)     +C: qw (i16)    +E: qh (i16)
-```
-Verify each field against the selected map size.
-
----
-
-## Priority 4: Game Text Files (Already Captured ✓)
-
-These are already in the findings folder:
-- Game.txt (5230 lines — all dialog/popup text)
-- Labels.txt (903 lines — UI labels)
-- CITY.TXT (720 lines — city names by civ)
-- RULES.TXT (637 lines — game rules)
-- LEADERS.TXT (21 lines — leader names)
-
-**No further action needed** unless they differ from the installed game files.
-
----
-
-## Already Resolved (no sniffing needed)
-
-- **Civ struct base +0xA0:** CONSISTENT — fields start at +0xA0 within each
-  0x594-byte civ record. Government at +0xB5 = +0xA0+0x15. Our code is correct.
-- **Cosmic discrepancies (offsets 15,16):** LOW PRIORITY — only affects
-  Fundamentalism/Communism. Will investigate when those systems are tested.
-- **All DAT_ addresses:** Confirmed matching real process memory ✓
-- **Tile format (6 bytes, shared pairs):** Confirmed ✓
-- **Unit/city/civ struct strides:** Confirmed ✓
+### 3C. Building/Improvement Cost Table
+Read `DAT_0064c48c` with stride 8 for the first 40 entries.
+Does this table contain UNIT costs too (at higher indices)?
+Or is unit cost stored elsewhere?
 
 ---
 
 ## Notes for the Sniffing AI
 
 - Run `sniff-game.py --log game.log` for continuous monitoring
-- For one-shot reads, consider adding a `--dump` mode that reads specific
-  addresses and exits
-- The `read-snapshot.py` tool can parse the binary snapshot files afterward
-- All addresses are absolute virtual addresses — no base offset needed
+- The `read-snapshot.py` tool parses binary snapshot files
+- All addresses are absolute virtual addresses (no base offset needed)
+- For focused reads, add a `--dump` mode or use Python directly:
+  ```python
+  import ctypes
+  # Read 20 bytes of unit type table for Warriors (unit 2)
+  addr = 0x0064B1BC + 2 * 20
+  buf = (ctypes.c_uint8 * 20)()
+  kernel32.ReadProcessMemory(handle, addr, buf, 20, None)
+  print(bytes(buf).hex())
+  ```
