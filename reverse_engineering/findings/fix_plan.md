@@ -64,36 +64,37 @@ bit 6 = veteran flag.
 
 ---
 
-## Wait for Next Sniffing (needs verification)
+## Resolved from Analysis (no code change needed)
 
-### 7. Unit type cost field offset
-**Current:** Our rules-loader puts cost at struct offset 0x0C.
-**Question:** Sniffing shows 0x0C-0x0F = flags (4 bytes). Cost might be at 0x12-0x13 (bytes 18-19).
-**Why wait:** The raw bytes for Warriors show byte[18]=0x03 but RULES.TXT says cost=1.
-Need to cross-check more units to determine if this is cost × something or a different field.
-**Impact:** Affects city production timing. Currently works because we manually set production.
+### 8. Civ struct base offset (+0xA0) — RESOLVED ✓
+**Finding:** The +0xA0 offset is CONSISTENT with our code. Civ fields start at
++0xA0 within each 0x594-byte civ record. Government at +0xA0+0x15 = +0xB5 matches
+our `DAT_0064c600 + civ*0x594 + 0xB5`. No fix needed.
 
-### 8. Civ struct base offset (+0xA0)
-**Current:** We use DAT_0064c600 as the civ array base with stride 0x594.
-**Question:** Sniffing README says "0x0064C6A0" for civ array. Is +0xA0 a per-civ
-offset or a header?
-**Why wait:** Our existing civ field accesses (government at +0xB5, etc.) work in
-the engine, suggesting our layout is correct. But the gold/beakers offsets might
-need adjustment.
-**Impact:** Gold and beaker tracking. Low urgency since our test doesn't use these.
+### 9. Difficulty byte encoding — RESOLVED ✓
+**Finding:** The "chieftain" label in the snapshot was a sniff-game.py display bug
+(DIFF_NAMES array index issue). Our engine's difficulty encoding (0-5) is correct.
+Prince=3 works for food box calculation. Fix sniff-game.py display, not engine.
 
-### 9. Difficulty byte encoding
-**Current:** We assume 0=Chieftain through 5=Deity.
-**Question:** Snapshot said "chieftain" for a Deity game.
-**Why wait:** Might be a sniff-game.py display bug (wrong array index) rather than
-a data encoding issue. Easy to verify in next session.
-**Impact:** AI food box row calculation uses difficulty. Currently works for Prince (3).
+### 10. Cosmic parameter discrepancies — LOW PRIORITY
+**Finding:** Offsets 15 (Fundamentalism support) and 16 (Communism palace) differ
+from RULES.TXT. These only affect Fundamentalism/Communism government mechanics
+which we haven't reached yet. Will investigate when those systems are tested.
 
-### 10. Cosmic parameter discrepancies (offsets 15, 16)
-**Current:** We load from RULES.TXT (values 10, 0).
-**Question:** Memory shows 8, 1. Runtime modification?
-**Why wait:** These affect Fundamentalism and Communism mechanics which we
-haven't tested yet. Low priority.
+## Still Needs Next Sniffing Session
+
+### 7. Unit type cost field offset — CONFIRMED WRONG
+**Analysis:** Our rules-loader puts cost at offset 0x0C from DAT_0064b1bc. Cross-
+referencing sniffing data shows offset 0x0C maps to the MOVES field (sniffing byte[4]).
+Cost coincidentally equals moves for many units (Warriors: both 1, Archers: both 3)
+but they are different fields.
+**The actual cost location in the in-memory struct is unknown.** The C source at
+block_004E0000.c line 4870 reads cost from `DAT_0064c48c[local_24 * 8]` which is
+the BUILDING cost table, not the unit type table. For unit production, the cost
+might come from a different mechanism.
+**Next step:** In the next sniffing session, set a city to build Warriors and
+observe which memory address the game reads for the shield cost. Or search for
+the value 10 (Warriors cost × shield rows) near the unit/city structs.
 
 ---
 
