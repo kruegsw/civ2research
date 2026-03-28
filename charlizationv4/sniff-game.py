@@ -2,13 +2,16 @@
 """
 sniff-game.py — Read Civ2 game state from process memory in real-time
 
-Usage: python charlizationv4/sniff-game.py [--log game.log]
+Usage: python charlizationv4/sniff-game.py [--log game.log] [--hooks]
 
 Continuously reads civ2.exe process memory at known DAT_ addresses.
 Detects every state change with millisecond timestamps.
 
 Tracks: units, cities, civs, wonders, active unit, globals.
 Dumps binary snapshots on each turn change for offline analysis.
+
+--hooks: Log keyboard and mouse input events to correlate with memory changes.
+         Press F12 at any time to toggle hook logging on/off mid-session.
 
 Snapshots go to: charlizationv4/snapshots/<session>/
 Each file: turn_NNN_<map>_<difficulty>.bin
@@ -22,12 +25,15 @@ import struct
 import sys
 import time
 import os
+import threading
 
 # ═══════════════════════════════════════════════════════════════════
 # Win32 API
 # ═══════════════════════════════════════════════════════════════════
 
 kernel32 = ctypes.windll.kernel32
+user32   = ctypes.windll.user32
+
 PROCESS_VM_READ = 0x0010
 PROCESS_QUERY_INFORMATION = 0x0400
 TH32CS_SNAPPROCESS = 0x00000002
@@ -101,6 +107,7 @@ UNIT_BASE  = 0x006560f0;  UNIT_STRIDE  = 0x20
 CITY_BASE  = 0x0064f340;  CITY_STRIDE  = 0x58
 CIV_BASE   = 0x0064c600;  CIV_STRIDE   = 0x594
 WONDER_BASE = 0x00655be6   # 28 wonders × 2 bytes (city ID that built it, -1 = not built)
+TILE_PTR_ADDR = 0x00636598  # pointer to heap-allocated tile array (ms * 6 bytes)
 
 # Memory regions to dump in snapshots
 SNAPSHOT_REGIONS = [
@@ -234,25 +241,35 @@ def dump_snapshot(h, snap_dir, turn, map_w, map_h, difficulty):
     path = os.path.join(snap_dir, fname)
 
     with open(path, 'wb') as f:
-        # Header: region count + region table
         regions_data = []
+
+        # Static regions
         for name, addr, size in SNAPSHOT_REGIONS:
             data = read_mem(h, addr, size)
             if data:
                 regions_data.append((name, addr, data))
 
-        # Write header
-        f.write(b'CIV2SNAP')  # magic
-        f.write(struct.pack('<I', len(regions_data)))  # region count
+        # Tile array — heap-allocated, read via pointer at TILE_PTR_ADDR.
+        # Size = ms * 6, where ms = (mapWidth / 2) * mapHeight.
+        # The actual heap address is stored as the region's addr field so the
+        # reader can display it, but the data is the raw tile bytes.
+        ptr_data = read_mem(h, TILE_PTR_ADDR, 4)
+        if ptr_data:
+            tile_base = struct.unpack('<I', ptr_data)[0]
+            ms = (map_w // 2) * map_h
+            tile_data = read_mem(h, tile_base, ms * 6) if tile_base else None
+            if tile_data:
+                regions_data.append(('tiles', tile_base, tile_data))
 
-        # Write region table
+        f.write(b'CIV2SNAP')
+        f.write(struct.pack('<I', len(regions_data)))
+
         for name, addr, data in regions_data:
             name_bytes = name.encode('ascii')[:16].ljust(16, b'\x00')
-            f.write(name_bytes)                    # 16 bytes: region name
-            f.write(struct.pack('<I', addr))        # 4 bytes: address
-            f.write(struct.pack('<I', len(data)))   # 4 bytes: size
+            f.write(name_bytes)
+            f.write(struct.pack('<I', addr))
+            f.write(struct.pack('<I', len(data)))
 
-        # Write region data
         for name, addr, data in regions_data:
             f.write(data)
 
@@ -277,7 +294,6 @@ def diff_states(prev, curr, t0):
     # Active unit change (AI processing)
     if prev.get('activeUnit') != curr.get('activeUnit') and curr.get('activeUnit',0) >= 0:
         au = curr['activeUnit']
-        # Find this unit in current state
         u = next((u for u in curr['units'] if u['idx'] == au), None)
         if u:
             lines.append(f"[{ms:10.1f}ms]  >> Processing: {u['name']} #{au} (civ {u['owner']}) at ({u['x']},{u['y']})")
@@ -351,15 +367,130 @@ def diff_states(prev, curr, t0):
     return lines
 
 # ═══════════════════════════════════════════════════════════════════
+# Input hooks (--hooks, toggle with F12)
+# ═══════════════════════════════════════════════════════════════════
+
+WH_KEYBOARD_LL = 13
+WH_MOUSE_LL    = 14
+WM_KEYDOWN     = 0x0100
+WM_SYSKEYDOWN  = 0x0104
+WM_LBUTTONDOWN = 0x0201
+WM_LBUTTONUP   = 0x0202
+WM_RBUTTONDOWN = 0x0204
+WM_RBUTTONUP   = 0x0205
+WM_MBUTTONDOWN = 0x0207
+WM_MOUSEWHEEL  = 0x020A
+VK_F12         = 0x7B
+
+VKEY_NAMES = {
+    0x08:'Backspace', 0x09:'Tab', 0x0D:'Enter', 0x10:'Shift', 0x11:'Ctrl',
+    0x12:'Alt', 0x1B:'Esc', 0x20:'Space', 0x21:'PgUp', 0x22:'PgDn',
+    0x23:'End', 0x24:'Home', 0x25:'Left', 0x26:'Up', 0x27:'Right', 0x28:'Down',
+    0x2D:'Insert', 0x2E:'Delete',
+    0x60:'Num0', 0x61:'Num1', 0x62:'Num2', 0x63:'Num3', 0x64:'Num4',
+    0x65:'Num5', 0x66:'Num6', 0x67:'Num7', 0x68:'Num8', 0x69:'Num9',
+    0x70:'F1', 0x71:'F2', 0x72:'F3', 0x73:'F4', 0x74:'F5',
+    0x75:'F6', 0x76:'F7', 0x77:'F8', 0x78:'F9', 0x79:'F10',
+    0x7A:'F11', 0x7B:'F12',
+    0x90:'NumLock', 0x91:'ScrollLock',
+}
+
+MOUSE_NAMES = {
+    WM_LBUTTONDOWN: 'LCLICK',
+    WM_LBUTTONUP:   'LRELEASE',
+    WM_RBUTTONDOWN: 'RCLICK',
+    WM_RBUTTONUP:   'RRELEASE',
+    WM_MBUTTONDOWN: 'MCLICK',
+    WM_MOUSEWHEEL:  'WHEEL',
+}
+
+class KBDLLHOOKSTRUCT(ctypes.Structure):
+    _fields_ = [
+        ('vkCode',      wt.DWORD),
+        ('scanCode',    wt.DWORD),
+        ('flags',       wt.DWORD),
+        ('time',        wt.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(ctypes.c_ulong)),
+    ]
+
+class MSLLHOOKSTRUCT(ctypes.Structure):
+    _fields_ = [
+        ('pt_x',        ctypes.c_long),
+        ('pt_y',        ctypes.c_long),
+        ('mouseData',   wt.DWORD),
+        ('flags',       wt.DWORD),
+        ('time',        wt.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(ctypes.c_ulong)),
+    ]
+
+HOOKPROC = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_int, ctypes.c_uint, ctypes.POINTER(ctypes.c_long))
+
+def vkey_name(vk):
+    if vk in VKEY_NAMES:
+        return VKEY_NAMES[vk]
+    if 0x30 <= vk <= 0x39: return chr(vk)       # 0–9
+    if 0x41 <= vk <= 0x5A: return chr(vk)       # A–Z
+    return f'VK{vk:02X}'
+
+def start_hook_thread(log_fn, t0, hooks_active):
+    """
+    Install low-level keyboard and mouse hooks in a dedicated thread.
+    hooks_active is a single-element list [bool] shared with the main thread.
+    F12 toggles hooks_active[0] on/off. All other keys/clicks are logged
+    only when hooks_active[0] is True.
+    """
+    def kb_callback(nCode, wParam, lParam):
+        if nCode >= 0 and wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
+            kb = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT)).contents
+            vk = kb.vkCode
+            if vk == VK_F12:
+                hooks_active[0] = not hooks_active[0]
+                state = 'on' if hooks_active[0] else 'off'
+                log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  HOOKS: {state} (F12)")
+            elif hooks_active[0]:
+                log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  KEY: {vkey_name(vk)}")
+        return user32.CallNextHookEx(None, nCode, wParam, lParam)
+
+    def mouse_callback(nCode, wParam, lParam):
+        if nCode >= 0 and hooks_active[0] and wParam in MOUSE_NAMES:
+            ms = ctypes.cast(lParam, ctypes.POINTER(MSLLHOOKSTRUCT)).contents
+            label = MOUSE_NAMES[wParam]
+            log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  MOUSE: {label} ({ms.pt_x},{ms.pt_y})")
+        return user32.CallNextHookEx(None, nCode, wParam, lParam)
+
+    # Keep references alive for the duration of the thread
+    kb_fn = HOOKPROC(kb_callback)
+    ms_fn = HOOKPROC(mouse_callback)
+
+    def run():
+        kb_hook = user32.SetWindowsHookExW(WH_KEYBOARD_LL, kb_fn, None, 0)
+        ms_hook = user32.SetWindowsHookExW(WH_MOUSE_LL,    ms_fn, None, 0)
+        if not kb_hook or not ms_hook:
+            log_fn("WARNING: Failed to install input hooks (try running as Administrator)")
+            return
+        # Message loop — required for low-level hooks to fire
+        msg = wt.MSG()
+        while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) != 0:
+            user32.TranslateMessage(ctypes.byref(msg))
+            user32.DispatchMessageW(ctypes.byref(msg))
+        user32.UnhookWindowsHookEx(kb_hook)
+        user32.UnhookWindowsHookEx(ms_hook)
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    return t
+
+# ═══════════════════════════════════════════════════════════════════
 # Main
 # ═══════════════════════════════════════════════════════════════════
 
 def main():
-    log_file = None
     args = sys.argv[1:]
+    log_file = None
     if '--log' in args:
         i = args.index('--log')
         log_file = args[i + 1]
+    use_hooks = '--hooks' in args
 
     # Create snapshot directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -367,16 +498,22 @@ def main():
     snap_dir = os.path.join(script_dir, 'snapshots', f'game_{session_id}')
     os.makedirs(snap_dir, exist_ok=True)
 
+    log_lock = threading.Lock()
     log_buf = []
+
     def log(text):
         print(text)
-        if log_file: log_buf.append(text)
+        if log_file:
+            with log_lock:
+                log_buf.append(text)
+
     def flush():
-        nonlocal log_buf
-        if log_buf and log_file:
-            with open(log_file, 'a', encoding='utf-8') as f:
-                f.write('\n'.join(log_buf) + '\n')
-            log_buf = []
+        if log_file:
+            with log_lock:
+                if log_buf:
+                    with open(log_file, 'a', encoding='utf-8') as f:
+                        f.write('\n'.join(log_buf) + '\n')
+                    log_buf.clear()
 
     log("Civ2 Memory Sniffer (continuous + snapshots)")
     log(f"Snapshots → {snap_dir}")
@@ -385,6 +522,8 @@ def main():
             f.write(f"Civ2 Sniffer — {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"Snapshots: {snap_dir}\n\n")
         log(f"Log → {log_file}")
+    if use_hooks:
+        log("Hooks: ENABLED (F12 to toggle)")
 
     log("\nLooking for civ2.exe...")
     handle = None
@@ -402,6 +541,11 @@ def main():
     prev = read_state(handle)
     t0 = time.perf_counter()
 
+    # Start hook thread after t0 is established
+    if use_hooks:
+        hooks_active = [True]
+        start_hook_thread(log, t0, hooks_active)
+
     diff_name = DIFF_NAMES[prev['difficulty']] if prev['difficulty'] is not None and prev['difficulty'] < 6 else '?'
     log(f"\nTurn {prev['turn']} | {diff_name} | Map {prev['mapWidth']}x{prev['mapHeight']} | Seed {prev['mapSeed']}")
     log(f"Cities: {len(prev['cities'])} | Units: {len(prev['units'])}")
@@ -417,7 +561,6 @@ def main():
         wlist = [WONDER_NAMES[w] if w < len(WONDER_NAMES) else f'W{w}' for w in wonders]
         log(f"  Wonders: {', '.join(wlist)}")
 
-    # Initial snapshot
     fname = dump_snapshot(handle, snap_dir, prev['turn'] or 0,
                           prev['mapWidth'] or 0, prev['mapHeight'] or 0,
                           prev['difficulty'] or 0)
@@ -430,7 +573,6 @@ def main():
     last_status = time.perf_counter()
     last_turn = prev['turn']
 
-    # Also copy the log into the snapshot dir for easy pairing
     snap_log = os.path.join(snap_dir, 'game.log')
 
     try:
@@ -453,7 +595,6 @@ def main():
                 prev = curr
                 changes += 1
 
-                # Snapshot on turn change
                 if curr['turn'] != last_turn:
                     fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
                                           curr['mapWidth'] or 0, curr['mapHeight'] or 0,
@@ -462,14 +603,12 @@ def main():
                     last_turn = curr['turn']
 
                 flush()
-                # Also mirror to snapshot dir log
                 if log_file:
                     try:
                         with open(snap_log, 'a', encoding='utf-8') as f:
                             f.write('\n'.join(lines) + '\n')
                     except: pass
 
-            # Status every 10 seconds
             now = time.perf_counter()
             if now - last_status > 10.0:
                 rate = polls / (now - last_status)
