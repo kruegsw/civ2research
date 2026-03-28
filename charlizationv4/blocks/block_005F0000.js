@@ -14347,43 +14347,40 @@ function switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f21d9_caseD_1_helper', 13983);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_1_helper', 13992);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_1_helper', 13999);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f21d9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f21d9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f21d9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -14410,7 +14407,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -14457,43 +14454,40 @@ function switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f21d9_caseD_2_helper', 14086);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_2_helper', 14095);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_2_helper', 14102);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f21d9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f21d9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f21d9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -14520,7 +14514,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -14563,43 +14557,40 @@ function switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f21d9_caseD_3_helper', 14185);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_3_helper', 14194);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f21d9_caseD_3_helper', 14201);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f21d9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f21d9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f21d9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f21d9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f21d9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f21d9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -14626,7 +14617,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -14677,40 +14668,37 @@ function switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f2140_caseD_1_helper', 14291);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_1_helper', 14300);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_1_helper', 14305);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f2140_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f2140_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f2140_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -14724,40 +14712,37 @@ function switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f2140_caseD_2_helper', 14335);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_2_helper', 14344);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_2_helper', 14349);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f2140_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f2140_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f2140_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -14767,40 +14752,37 @@ function switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f2140_caseD_3_helper', 14375);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_3_helper', 14384);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f2140_caseD_3_helper', 14389);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f2140_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f2140_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f2140_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f2140_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f2140_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f2140_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -15239,32 +15221,31 @@ function LAB_005f410b_helper(bVar2, bVar6, cVar1, iVar4, uVar3, uVar5) {
         }
   // (outer block close)
   // (outer block close)
-if (true) {
-      uVar5 = 0;
-      _C = 0;
-      do {
-        loopGuard('LAB_005f410b_helper', 14825);
-        _C = ((_MEM[_Str1]) & 0xFF);
-        uVar5 = ((_MEM[_Str2]) & 0xFF);
-        if ((_C === 0) || (uVar5 === 0)) break;
-        _Str1 = _Str1 + 1;
-        _Str2 = _Str2 + 1;
-        uVar5 = _tolower(uVar5);
-        _C = _tolower(_C);
-        bVar6 = _C < uVar5;
-        if (_C !== uVar5) return LAB_005f414d_helper(bVar2, bVar6, cVar1, iVar4, uVar3, uVar5);
-        _MaxCount = _MaxCount - 1;
-      } while (_MaxCount !== 0);
-      iVar4 = 0;
-      bVar6 = _C < uVar5;
-      if (_C !== uVar5) {
-  // LAB_005f414d:
-        iVar4 = -1;
-        if (!bVar6) {
-          iVar4 = 1;
-        }
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) uVar5 = 0;
+  // (skipped else) _C = 0;
+  // (skipped else) do {
+  // (skipped else) _C = ((_MEM[_Str1]) & 0xFF);
+  // (skipped else) uVar5 = ((_MEM[_Str2]) & 0xFF);
+  // (skipped else) if ((_C === 0) || (uVar5 === 0)) break;
+  // (skipped else) _Str1 = _Str1 + 1;
+  // (skipped else) _Str2 = _Str2 + 1;
+  // (skipped else) uVar5 = _tolower(uVar5);
+  // (skipped else) _C = _tolower(_C);
+  // (skipped else) bVar6 = _C < uVar5;
+  // (skipped else) if (_C !== uVar5) goto LAB_005f414d;
+  // (skipped else) _MaxCount = _MaxCount - 1;
+  // (skipped else) } while (_MaxCount !== 0);
+  // (skipped else) iVar4 = 0;
+  // (skipped else) bVar6 = _C < uVar5;
+  // (skipped else) if (_C !== uVar5) {
+  // (skipped else) LAB_005f414d:
+  // (skipped else) iVar4 = -1;
+  // (skipped else) if (!bVar6) {
+  // (skipped else) iVar4 = 1;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) }
   // (outer block close)
   return iVar4;
 }
@@ -15307,43 +15288,40 @@ function switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f65c9_caseD_1_helper', 14893);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_1_helper', 14902);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_1_helper', 14909);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f65c9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f65c9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f65c9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -15370,7 +15348,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -15417,43 +15395,40 @@ function switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f65c9_caseD_2_helper', 14996);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_2_helper', 15005);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_2_helper', 15012);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f65c9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f65c9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f65c9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -15480,7 +15455,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -15523,43 +15498,40 @@ function switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
         return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-      puVar4 = (puVar3 + -1);
-      puVar6 = (puVar5 + -1);
-      if (_Size < 0xd) {
-        for (; _Size !== 0; _Size = _Size - 1) {
-          loopGuard('switchD_005f65c9_caseD_3_helper', 15095);
-          w32(puVar6, 0, s32(puVar4, 0));
-          puVar4 = puVar4 + -1;
-          puVar6 = puVar6 + -1;
-        }
-        return _Dst;
-      }
-      uVar2 = -in_EDX & 3;
-      uVar1 = _Size - uVar2;
-      for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_3_helper', 15104);
-        w32(puVar6, 0, s32(puVar4, 0));
-        puVar4 = puVar4 + -1;
-        puVar6 = puVar6 + -1;
-      }
-      puVar3 = (puVar4 + -3);
-      puVar5 = (puVar6 + -3);
-      for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-        loopGuard('switchD_005f65c9_caseD_3_helper', 15111);
-        w32(puVar5, 0, s32(puVar3, 0));
-        puVar3 = puVar3 + -1;
-        puVar5 = puVar5 + -1;
-      }
-      switch(uVar1 & 3) {
-      case 1:
-        return switchD_005f65c9_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 2:
-        return switchD_005f65c9_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      case 3:
-        return switchD_005f65c9_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = (puVar3 + -1);
+  // (skipped else) puVar6 = (puVar5 + -1);
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -in_EDX & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar6, 0, s32(puVar4, 0));
+  // (skipped else) puVar4 = puVar4 + -1;
+  // (skipped else) puVar6 = puVar6 + -1;
+  // (skipped else) }
+  // (skipped else) puVar3 = (puVar4 + -3);
+  // (skipped else) puVar5 = (puVar6 + -3);
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar5, 0, s32(puVar3, 0));
+  // (skipped else) puVar3 = puVar3 + -1;
+  // (skipped else) puVar5 = puVar5 + -1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f65c9_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f65c9_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f65c9_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
     return _Dst;
   // (outer block close)
   puVar3 = _Dst;
@@ -15586,7 +15558,7 @@ if (true) {
       return _Dst;
     }
   }
-if (true) {
+  else {
     puVar4 = _Dst;
     if (_Size < 0xd) {
       for (; _Size !== 0; _Size = _Size - 1) {
@@ -15637,40 +15609,37 @@ function switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f6530_caseD_1_helper', 15201);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_1_helper', 15210);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_1_helper', 15215);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f6530_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f6530_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f6530_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -15684,40 +15653,37 @@ function switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f6530_caseD_2_helper', 15245);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_2_helper', 15254);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_2_helper', 15259);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f6530_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f6530_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f6530_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -15727,40 +15693,37 @@ function switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6,
       return _Dst;
   // (outer block close)
   // (outer block close)
-if (true) {
-    puVar4 = _Dst;
-    if (_Size < 0xd) {
-      for (; _Size !== 0; _Size = _Size - 1) {
-        loopGuard('switchD_005f6530_caseD_3_helper', 15285);
-        w32(puVar4, 0, _MEM[_Src]);
-        _Src = (_Src + 1);
-        puVar4 = puVar4 + 1;
-      }
-      return _Dst;
-    }
-    uVar2 = -_Dst & 3;
-    uVar1 = _Size - uVar2;
-    for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_3_helper', 15294);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
-      _Src = (_Src + 1);
-      puVar3 = (puVar3 + 1);
-    }
-    for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
-      loopGuard('switchD_005f6530_caseD_3_helper', 15299);
-      w32(puVar3, 0, s32(_Src, 0));
-      _Src = (_Src + 4);
-      puVar3 = puVar3 + 1;
-    }
-    switch(uVar1 & 3) {
-    case 1:
-      return switchD_005f6530_caseD_1_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 2:
-      return switchD_005f6530_caseD_2_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    case 3:
-      return switchD_005f6530_caseD_3_helper(in_EDX, puVar3, puVar4, puVar5, puVar6, uVar1, uVar2);
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) puVar4 = _Dst;
+  // (skipped else) if (_Size < 0xd) {
+  // (skipped else) for (; _Size !== 0; _Size = _Size - 1) {
+  // (skipped else) w32(puVar4, 0, _MEM[_Src]);
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar4 = puVar4 + 1;
+  // (skipped else) }
+  // (skipped else) return _Dst;
+  // (skipped else) }
+  // (skipped else) uVar2 = -_Dst & 3;
+  // (skipped else) uVar1 = _Size - uVar2;
+  // (skipped else) for (; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) // DEVIATION: C pointer write — *(undefined1 *)puVar3 = *(undefined1 *)_Src;
+  // (skipped else) _Src = (_Src + 1);
+  // (skipped else) puVar3 = (puVar3 + 1);
+  // (skipped else) }
+  // (skipped else) for (uVar2 = uVar1 >> 2; uVar2 !== 0; uVar2 = uVar2 - 1) {
+  // (skipped else) w32(puVar3, 0, s32(_Src, 0));
+  // (skipped else) _Src = (_Src + 4);
+  // (skipped else) puVar3 = puVar3 + 1;
+  // (skipped else) }
+  // (skipped else) switch(uVar1 & 3) {
+  // (skipped else) case 1:
+  // (skipped else) goto switchD_005f6530_caseD_1;
+  // (skipped else) case 2:
+  // (skipped else) goto switchD_005f6530_caseD_2;
+  // (skipped else) case 3:
+  // (skipped else) goto switchD_005f6530_caseD_3;
+  // (skipped else) }
+  // (skipped else) }
   return _Dst;
 }
 
@@ -15783,23 +15746,22 @@ function LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, puVar7, puVar8, uVar1, 
         return iVar3;
   // (outer block close)
   // (outer block close)
-if (true) {
-      if ((_Size & 1) === 0) return LAB_005f6d7d_helper(bVar4, bVar6, bVar9, iVar3, puVar7, puVar8, uVar1, uVar2, uVar5);
-      bVar9 = u8(_MEM[_Buf1]) < u8(_MEM[_Buf2]);
-      if (u8(_MEM[_Buf1]) !== u8(_MEM[_Buf2])) return LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, puVar7, puVar8, uVar1, uVar2, uVar5);
-      _Buf1 = (_Buf1 + 1);
-      _Buf2 = (_Buf2 + 1);
-      for (_Size = _Size - 1; _Size !== 0; _Size = _Size - 2) {
-        loopGuard('LAB_005f6dca_helper', 15341);
-  // LAB_005f6d7d:
-        bVar9 = u8(_MEM[_Buf1]) < u8(_MEM[_Buf2]);
-        if ((u8(_MEM[_Buf1]) !== u8(_MEM[_Buf2])) || (bVar9 = u8(_MEM[_Buf1 + 1]) < u8(_MEM[_Buf2 + 1]), u8(_MEM[_Buf1 + 1]) !== u8(_MEM[_Buf2 + 1]))) return LAB_005f6dca_helper(bVar4, bVar6, bVar9, iVar3, puVar7, puVar8, uVar1, uVar2, uVar5);
-           /*JOINED*/
-           /*JOINED*/
-        _Buf2 = (_Buf2 + 2);
-        _Buf1 = (_Buf1 + 2);
-      }
-    }
+  // (skipped orphan else)
+  // (skipped else) if ((_Size & 1) === 0) goto LAB_005f6d7d;
+  // (skipped else) bVar9 = u8(_MEM[_Buf1]) < u8(_MEM[_Buf2]);
+  // (skipped else) if (u8(_MEM[_Buf1]) !== u8(_MEM[_Buf2])) goto LAB_005f6dca;
+  // (skipped else) _Buf1 = (_Buf1 + 1);
+  // (skipped else) _Buf2 = (_Buf2 + 1);
+  // (skipped else) for (_Size = _Size - 1; _Size !== 0; _Size = _Size - 2) {
+  // (skipped else) LAB_005f6d7d:
+  // (skipped else) bVar9 = u8(_MEM[_Buf1]) < u8(_MEM[_Buf2]);
+  // (skipped else) if ((u8(_MEM[_Buf1]) !== u8(_MEM[_Buf2])) || (bVar9 = u8(_MEM[_Buf1 + 1]) < u8(_MEM[_Buf2 + 1]), u8(_MEM[_Buf1 + 1]) !== u8(_MEM[_Buf2 + 1]))) goto LAB_005f6dca;
+  // (skipped else) /*JOINED*/
+  // (skipped else) /*JOINED*/
+  // (skipped else) _Buf2 = (_Buf2 + 2);
+  // (skipped else) _Buf1 = (_Buf1 + 2);
+  // (skipped else) }
+  // (skipped else) }
   // (outer block close)
   return 0;
 }
@@ -15820,29 +15782,27 @@ function LAB_005f6d7d_helper(bVar4, bVar6, bVar9, iVar3, puVar7, puVar8, uVar1, 
 function LAB_005f6e4e_helper(bVar3, bVar4, bVar5, cVar1, cVar6, iVar7, uVar2) {
     iVar7 = cVar6;
   // (outer block close)
-if (true) {
-    _C = 0;
-    iVar7 = 0xff;
-    do {
-      loopGuard('LAB_005f6e4e_helper', 15374);
-      do {
-        loopGuard('LAB_005f6e4e_helper', 15375);
-        if (s8(iVar7) === 0) {
-          return iVar7;
-        }
-        cVar6 = s32(_Str2, 0);
-        iVar7 = ((cVar6) & 0xFF);
-        _Str2 = _Str2 + 1;
-        cVar1 = s32(_Str1, 0);
-        _C = ((cVar1) & 0xFF);
-        _Str1 = _Str1 + 1;
-      } while (cVar6 === cVar1);
-      _C = _tolower(_C);
-      iVar7 = _tolower(iVar7);
-    } while (u8(_C) === u8(iVar7));
-    uVar2 = ((u8(_C) < u8(iVar7)) >>> 0);
-    iVar7 = (1 - uVar2) - ((uVar2 !== 0) >>> 0);
-  }
+  // (skipped orphan else)
+  // (skipped else) _C = 0;
+  // (skipped else) iVar7 = 0xff;
+  // (skipped else) do {
+  // (skipped else) do {
+  // (skipped else) if (s8(iVar7) === 0) {
+  // (skipped else) return iVar7;
+  // (skipped else) }
+  // (skipped else) cVar6 = s32(_Str2, 0);
+  // (skipped else) iVar7 = ((cVar6) & 0xFF);
+  // (skipped else) _Str2 = _Str2 + 1;
+  // (skipped else) cVar1 = s32(_Str1, 0);
+  // (skipped else) _C = ((cVar1) & 0xFF);
+  // (skipped else) _Str1 = _Str1 + 1;
+  // (skipped else) } while (cVar6 === cVar1);
+  // (skipped else) _C = _tolower(_C);
+  // (skipped else) iVar7 = _tolower(iVar7);
+  // (skipped else) } while (u8(_C) === u8(iVar7));
+  // (skipped else) uVar2 = ((u8(_C) < u8(iVar7)) >>> 0);
+  // (skipped else) iVar7 = (1 - uVar2) - ((uVar2 !== 0) >>> 0);
+  // (skipped else) }
   return iVar7;
 }
 
@@ -15865,7 +15825,7 @@ function LAB_005f74da_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4) {
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
-if (true) {
+  else {
     do {
       loopGuard('LAB_005f74da_helper', 15414);
       bVar1 = u8(u32(_Source, 0));
@@ -15931,7 +15891,7 @@ function LAB_005f750b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4) {
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
-if (true) {
+  else {
     do {
       loopGuard('LAB_005f750b_helper', 15477);
       bVar1 = u8(u32(_Source, 0));
@@ -15995,7 +15955,7 @@ function LAB_005f751b_helper(bVar1, puVar5, puVar6, uVar2, uVar3, uVar4) {
   if ((((_Source) >>> 0) & 3) === 0) {
     uVar3 = _Count >> 2;
   }
-if (true) {
+  else {
     do {
       loopGuard('LAB_005f751b_helper', 15538);
       bVar1 = u8(u32(_Source, 0));
@@ -16119,10 +16079,10 @@ function LAB_005f7c03_helper(iVar2, local_10, local_14, local_18, local_1c, loca
       DestructExceptionObject(param_1,0x01);
     }
   // (outer block close)
-if (true) {
-    FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_8,param_7,param_8);
-  }
-if (true) {
+  // (skipped orphan else)
+  // (skipped else) FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_8,param_7,param_8);
+  // (skipped else) }
+  else {
     terminate();
   }
   return;
@@ -16133,25 +16093,25 @@ function LAB_005f9640_helper(iVar1, iVar2, in_EAX, local_10, local_14) {
     __free_dbg(local_10,2);
     local_14 = 0;
   // (outer block close)
-if (true) {
-    if ((_DWMapFlag & 0x400) === 0) {
-      if (_CchDest === 0) {
-        local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,0x0,0);
-      }
-if (true) {
-        local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,_LpDestStr,_CchDest);
-      }
-      if (local_14 === 0) return LAB_005f9640_helper(iVar1, iVar2, in_EAX, local_10, local_14);
-    }
-if (true) {
-      if (local_14 <= _CchDest) {
-        _CchDest = local_14;
-      }
-      _strncpy(_LpDestStr,local_10,_CchDest);
-    }
-    __free_dbg(lpMultiByteStr,2);
-    __free_dbg(local_10,2);
-  }
+  // (skipped orphan else)
+  // (skipped else) if ((_DWMapFlag & 0x400) === 0) {
+  // (skipped else) if (_CchDest === 0) {
+  // (skipped else) local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,0x0,0);
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,_LpDestStr,_CchDest);
+  // (skipped else) }
+  // (skipped else) if (local_14 === 0) goto LAB_005f9640;
+  // (skipped else) }
+  // (skipped else) else if (_CchDest !== 0) {
+  // (skipped else) if (local_14 <= _CchDest) {
+  // (skipped else) _CchDest = local_14;
+  // (skipped else) }
+  // (skipped else) _strncpy(_LpDestStr,local_10,_CchDest);
+  // (skipped else) }
+  // (skipped else) __free_dbg(lpMultiByteStr,2);
+  // (skipped else) __free_dbg(local_10,2);
+  // (skipped else) }
   return local_14;
 }
 
@@ -16217,7 +16177,7 @@ function LAB_005fa099_helper(BVar3, iVar1, iVar2, iVar4, local_8) {
      /*JOINED*/
     iVar4 = 0;
   }
-if (true) {
+  else {
     __dosmaperr(local_8);
     iVar4 = -1;
   }
@@ -16232,7 +16192,7 @@ function LAB_005fa0c9_helper(BVar3, iVar1, iVar2, iVar4, local_8) {
      /*JOINED*/
     iVar4 = 0;
   }
-if (true) {
+  else {
     __dosmaperr(local_8);
     iVar4 = -1;
   }
@@ -16251,7 +16211,7 @@ function LAB_005faecc_helper(bVar10, iVar9, lVar12, local_10, local_14, local_18
               uVar8 = get_int_arg(param_3);
               uVar11 = uVar8;
             }
-if (true) {
+            else {
               iVar9 = get_int_arg(param_3);
               uVar11 = iVar9;
             }
@@ -16260,12 +16220,12 @@ if (true) {
             uVar8 = get_int_arg(param_3);
             uVar11 = (uVar8 & 0xffff);
           }
-if (true) {
+          else {
             sVar7 = get_int_arg(param_3);
             uVar11 = sVar7;
           }
         }
-if (true) {
+        else {
           uVar11 = get_int64_arg(param_3);
         }
         local_27c = uVar11 >> 0x20;
@@ -16285,7 +16245,7 @@ if (true) {
         if (local_238 < 0) {
           local_238 = 1;
         }
-if (true) {
+        else {
           local_8 = local_8 & 0xfffffff7;
         }
         if ((local_270 === 0) && (local_270 === 0)) {
@@ -16326,12 +16286,12 @@ if (true) {
                 local_14 = 1;
               }
             }
-if (true) {
+            else {
               local_244[0] = 0x2b;
               local_14 = 1;
             }
           }
-if (true) {
+          else {
             local_244[0] = 0x2d;
             local_14 = 1;
           }
@@ -16347,7 +16307,7 @@ if (true) {
         if ((local_20 === 0) || (local_28 < 1)) {
           write_string(local_24,local_28,param_1,local_230[0]);
         }
-if (true) {
+        else {
           local_284 = local_24;
           local_288 = local_28;
           while (sVar3 = local_288 - 1, bVar10 = local_288 !== 0, local_288 = sVar3, bVar10) {
@@ -16381,7 +16341,7 @@ function LAB_005fae7b_helper(bVar10, iVar9, lVar12, local_10, local_14, local_18
               uVar8 = get_int_arg(param_3);
               uVar11 = uVar8;
             }
-if (true) {
+            else {
               iVar9 = get_int_arg(param_3);
               uVar11 = iVar9;
             }
@@ -16390,12 +16350,12 @@ if (true) {
             uVar8 = get_int_arg(param_3);
             uVar11 = (uVar8 & 0xffff);
           }
-if (true) {
+          else {
             sVar7 = get_int_arg(param_3);
             uVar11 = sVar7;
           }
         }
-if (true) {
+        else {
           uVar11 = get_int64_arg(param_3);
         }
         local_27c = uVar11 >> 0x20;
@@ -16415,7 +16375,7 @@ if (true) {
         if (local_238 < 0) {
           local_238 = 1;
         }
-if (true) {
+        else {
           local_8 = local_8 & 0xfffffff7;
         }
         if ((local_270 === 0) && (local_270 === 0)) {
@@ -16456,12 +16416,12 @@ if (true) {
                 local_14 = 1;
               }
             }
-if (true) {
+            else {
               local_244[0] = 0x2b;
               local_14 = 1;
             }
           }
-if (true) {
+          else {
             local_244[0] = 0x2d;
             local_14 = 1;
           }
@@ -16477,7 +16437,7 @@ if (true) {
         if ((local_20 === 0) || (local_28 < 1)) {
           write_string(local_24,local_28,param_1,local_230[0]);
         }
-if (true) {
+        else {
           local_284 = local_24;
           local_288 = local_28;
           while (sVar3 = local_288 - 1, bVar10 = local_288 !== 0, local_288 = sVar3, bVar10) {

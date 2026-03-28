@@ -12089,7 +12089,7 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
           local_58 = puVar13;
         } while (local_4c !== 0xffff);
       }
-if (true) {
+      else {
         iVar8 = u16(iVar10, ((local_c) >>> 0)) + 1;
         local_24 = local_24 + iVar8;
         local_58 = local_24 + -1;
@@ -12172,16 +12172,16 @@ function LAB_005eb1df_helper(BVar7, DVar8, LVar3, SVar2, cVar1, iVar9, local_10,
           FUN_005eb2f0();
   // (outer block close)
   // (outer block close)
-if (true) {
-        iVar9 = FUN_00414d10();
-        if (((u8(_MEM[iVar9 + 0x48]) & 0x80) !== 0) || (iVar9 = FUN_00414d10(), (u8(_MEM[iVar9 + 0x49]) & 1) !== 0)) {
-           /*JOINED*/
-          LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
-          return LVar3;
-        }
-        local_c = param_4;
-        gdi_D149(param_4,param_2,param_3,param_4);
-      }
+  // (skipped orphan else)
+  // (skipped else) iVar9 = FUN_00414d10();
+  // (skipped else) if (((u8(_MEM[iVar9 + 0x48]) & 0x80) !== 0) || (iVar9 = FUN_00414d10(), (u8(_MEM[iVar9 + 0x49]) & 1) !== 0)) {
+  // (skipped else) /*JOINED*/
+  // (skipped else) LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
+  // (skipped else) return LVar3;
+  // (skipped else) }
+  // (skipped else) local_c = param_4;
+  // (skipped else) gdi_D149(param_4,param_2,param_3,param_4);
+  // (skipped else) }
       return 0;
   // (outer block close)
     if (param_2 === 0x216) {
@@ -12229,7 +12229,7 @@ function switchD_005ec033_caseD_4_helper(BVar6, iVar4, iVar5, local_10, local_14
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
-if (true) {
+    else {
       switch(param_2) {
       case 0x200:
         wv(DAT_00637ea4, local_14);
@@ -12315,26 +12315,26 @@ function LAB_005eb8a1_helper(BVar6, iVar4, iVar5, local_10, local_14, local_18, 
           return uVar2;
         }
   // (outer block close)
-if (true) {
-        if (param_2 === 0x311) {
-          if (param_3 === param_1) {
-            uVar2 = fill_rect_BE88(param_1,0x311,param_3,param_4);
-            return uVar2;
-          }
-          return LAB_005eb8a1_helper(BVar6, iVar4, iVar5, local_10, local_14, local_18, local_1c, local_20, local_24, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2, uVar3);
-        }
-        if (param_2 === 0x3bd) {
-          FUN_005d6c99(param_3,param_4);
-          return 0;
-        }
-        if (param_2 === 0x4c8) {
-          if (param_4 !== 0x20d) {
-            return 0;
-          }
-          FUN_005ed4e0(0);
-          return 0;
-        }
-      }
+  // (skipped orphan else)
+  // (skipped else) if (param_2 === 0x311) {
+  // (skipped else) if (param_3 === param_1) {
+  // (skipped else) uVar2 = fill_rect_BE88(param_1,0x311,param_3,param_4);
+  // (skipped else) return uVar2;
+  // (skipped else) }
+  // (skipped else) goto LAB_005eb8a1;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x3bd) {
+  // (skipped else) FUN_005d6c99(param_3,param_4);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x4c8) {
+  // (skipped else) if (param_4 !== 0x20d) {
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) FUN_005ed4e0(0);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) }
   // switchD_005ec033_caseD_4:
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -12349,7 +12349,7 @@ if (true) {
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
-if (true) {
+    else {
       switch(param_2) {
       case 0x200:
         wv(DAT_00637ea4, local_14);
@@ -12446,7 +12446,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
           wv(DAT_00637ea4, local_14);
           FUN_005ed290();
         }
-if (true) {
+        else {
           wv(DAT_00637ea4, local_14);
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
@@ -12680,263 +12680,263 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
       return uVar2;
     }
   // (outer block close)
-if (true) {
-    if (param_2 < 0x45) {
-      if (param_2 === 0x44) {
-        wv(DAT_00637ea4, local_14);
-        FUN_005ed3a0(param_4 & 0xffff);
-        return 1;
-      }
-      if (param_2 === 0x24) {
-        local_2c = param_4;
-        uVar2 = FUN_00414d10();
-        local_30 = FUN_005bca3d(uVar2);
-        uVar2 = FUN_00414d10();
-        local_28 = FUN_005bc9d3(uVar2);
-        FUN_005bb910(local_1c[0],local_20[0]);
-        FUN_005bb950(local_8[0],local_c[0]);
-        w32(local_2c, 0x20, local_28 + local_8);
-        w32(local_2c, 0x24, local_30 + local_c);
-        w32(local_2c, 0x18, local_28 + local_1c);
-        w32(local_2c, 0x1c, local_30 + local_20);
-        return 0;
-      }
-  // switchD_005ecda6_caseD_4:
-      uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
-      return uVar2;
-    }
-    if (param_2 < 0x112) {
-      if (param_2 === 0x111) {
-        wv(DAT_00637ea4, local_14);
-        return 0;
-      }
-      if (param_2 === 0x100) {
-        wv(DAT_00637ea4, local_14);
-        uVar2 = FUN_005eb3ed(param_3);
-        FUN_005ed150(uVar2);
-        uVar2 = FUN_005eb3ed(param_3);
-        FUN_005ed1d0(uVar2);
-        return 0;
-      }
-      if (param_2 === 0x101) {
-        wv(DAT_00637ea4, local_14);
-        uVar2 = FUN_005eb3ed(param_3);
-        FUN_005ed190(uVar2);
-        return 0;
-      }
-      if (param_2 === 0x102) {
-        wv(DAT_00637ea4, local_14);
-        FUN_005ed210(param_3 & 0xff);
-        return 0;
-      }
-      return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
-    }
-    if (param_2 < 0x201) {
-      if (param_2 === 0x200) {
-        wv(DAT_00637ea4, local_14);
-        FUN_005ecf50(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      }
-      if (param_2 === 0x112) {
-        if (param_3 === 0xf020) {
-          wv(DAT_00637ea4, local_14);
-          FUN_005ed290();
-        }
-if (true) {
-          wv(DAT_00637ea4, local_14);
-          if (param_3 === 0xf120) {
-            FUN_005ed2c0();
-          }
-        }
-        uVar2 = fill_rect_BE88(param_1,0x112,param_3,param_4);
-        return uVar2;
-      }
-      sVar1 = ((param_3 >> 0x10) << 16 >> 16);
-      if (param_2 === 0x114) {
-        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
-        switch(param_3) {
-        case 0:
-          local_18 = local_18 + -1;
-          SetScrollPos(param_1,0,local_18,1);
-          local_18 = GetScrollPos(param_1,0);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb0, local_18);
-          FUN_005ed3e0(local_18);
-          return 0;
-        case 1:
-          local_18 = local_18 + 1;
-          SetScrollPos(param_1,0,local_18,1);
-          local_18 = GetScrollPos(param_1,0);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb0, local_18);
-          FUN_005ed3e0(local_18);
-          return 0;
-        case 2:
-          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
-          local_18 = local_18 - iVar4;
-          SetScrollPos(param_1,0,local_18,1);
-          local_18 = GetScrollPos(param_1,0);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb0, local_18);
-          FUN_005ed3e0(local_18);
-          return 0;
-        case 3:
-          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
-          local_18 = local_18 + iVar4;
-          SetScrollPos(param_1,0,local_18,1);
-          local_18 = GetScrollPos(param_1,0);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb0, local_18);
-          FUN_005ed3e0(local_18);
-          return 0;
-        case 4:
-          local_18 = sVar1;
-          SetScrollPos(param_1,0,local_18,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb0, local_18);
-          FUN_005ed3e0(s32(local_14, 0xb0));
-          return 0;
-        case 5:
-          wv(DAT_00637ea4, local_14);
-          FUN_005ed420(sVar1);
-          return 0;
-        default:
-          return 0;
-        }
-      }
-      if (param_2 === 0x115) {
-        devLog('MFC', 'local_18 = CSplitterWnd::IsTracking(local_14);');
-        switch(param_3) {
-        case 0:
-          local_18 = local_18 + -1;
-          SetScrollPos(param_1,1,local_18,1);
-          local_18 = GetScrollPos(param_1,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb4, local_18);
-          FUN_005ed460(local_18);
-          return 0;
-        case 1:
-          local_18 = local_18 + 1;
-          SetScrollPos(param_1,1,local_18,1);
-          local_18 = GetScrollPos(param_1,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb4, local_18);
-          FUN_005ed460(local_18);
-          return 0;
-        case 2:
-          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
-          local_18 = local_18 - iVar4;
-          SetScrollPos(param_1,1,local_18,1);
-          local_18 = GetScrollPos(param_1,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb4, local_18);
-          FUN_005ed460(local_18);
-          return 0;
-        case 3:
-          devLog('MFC', 'iVar4 = CSplitterWnd::IsTracking(local_14);');
-          local_18 = local_18 + iVar4;
-          SetScrollPos(param_1,1,local_18,1);
-          local_18 = GetScrollPos(param_1,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb4, local_18);
-          FUN_005ed460(local_18);
-          return 0;
-        case 4:
-          local_18 = sVar1;
-          SetScrollPos(param_1,1,local_18,1);
-          wv(DAT_00637ea4, local_14);
-          w32(local_14, 0xb4, local_18);
-          FUN_005ed460(s32(local_14, 0xb4));
-          return 0;
-        case 5:
-          wv(DAT_00637ea4, local_14);
-          FUN_005ed4a0(sVar1);
-          return 0;
-        default:
-          return 0;
-        }
-      }
-      return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
-    }
-    if (param_2 < 0x211) {
-      if (param_2 === 0x210) {
-        if (param_3 === 0x201) {
-          wv(DAT_00637ea4, local_14);
-          FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
-          return 0;
-        }
-        if (param_3 !== 0x204) {
-          return 0;
-        }
-        wv(DAT_00637ea4, local_14);
-        FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      }
-      switch(param_2) {
-      case 0x201:
-        GetWindowLongA(param_1,0);
-        local_24 = FUN_00414d10();
-        wv(DAT_00637ea4, local_14);
-        if ((u8(_MEM[local_24 + 0x49]) & 2) !== 0) {
-          SetFocus(s32(local_24, 4));
-          BringWindowToTop(param_1);
-        }
-        w32(local_14, 0xa8, 1);
-        FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      case 0x202:
-        wv(DAT_00637ea4, local_14);
-        if (s32(local_14, 0xa8) === 1) {
-          w32(local_14, 0xa8, 0);
-          FUN_005ed010(param_4 & 0xffff,param_4 >> 0x10);
-        }
-        FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      case 0x203:
-        wv(DAT_00637ea4, local_14);
-        FUN_005ed110(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      case 0x204:
-        GetWindowLongA(param_1,0);
-        local_24 = FUN_00414d10();
-        if ((u8(_MEM[local_24 + 0x49]) & 2) !== 0) {
-          SetFocus(s32(local_24, 4));
-          BringWindowToTop(param_1);
-        }
-        wv(DAT_00637ea4, local_14);
-        w32(local_14, 0xac, 1);
-        FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      case 0x205:
-        wv(DAT_00637ea4, local_14);
-        if (s32(local_14, 0xac) === 1) {
-          w32(local_14, 0xac, 0);
-          FUN_005ed0d0(param_4 & 0xffff,param_4 >> 0x10);
-        }
-        FUN_005ed090(param_4 & 0xffff,param_4 >> 0x10);
-        return 0;
-      }
-      return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
-    }
-    if ((param_2 !== 0x30f) && (param_2 !== 0x311)) {
-      if (param_2 === 0x3b9) {
-        if (param_3 === 1) {
-          FUN_005ed6e0();
-          return 0;
-        }
-        return switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
-      }
-      return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
-    }
-  // switchD_005ecda6_caseD_6:
-    devLog('MFC', 'local_10 = CSplitterWnd::IsTracking(local_14);');
-    if (local_10 === 0) {
-      uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
-      return uVar2;
-    }
-    mciSendCommandA(s32(local_10, 8),0x840,s32(local_10, 0x10), local_34);
-                    /*JOINED*/
-  }
+  // (skipped orphan else)
+  // (skipped else) if (param_2 < 0x45) {
+  // (skipped else) if (param_2 === 0x44) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed3a0(param_4 & 0xffff);
+  // (skipped else) return 1;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x24) {
+  // (skipped else) local_2c = param_4;
+  // (skipped else) uVar2 = FUN_00414d10();
+  // (skipped else) local_30 = FUN_005bca3d(uVar2);
+  // (skipped else) uVar2 = FUN_00414d10();
+  // (skipped else) local_28 = FUN_005bc9d3(uVar2);
+  // (skipped else) FUN_005bb910(local_1c[0],local_20[0]);
+  // (skipped else) FUN_005bb950(local_8[0],local_c[0]);
+  // (skipped else) w32(local_2c, 0x20, local_28 + local_8);
+  // (skipped else) w32(local_2c, 0x24, local_30 + local_c);
+  // (skipped else) w32(local_2c, 0x18, local_28 + local_1c);
+  // (skipped else) w32(local_2c, 0x1c, local_30 + local_20);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) switchD_005ecda6_caseD_4:
+  // (skipped else) uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
+  // (skipped else) return uVar2;
+  // (skipped else) }
+  // (skipped else) if (param_2 < 0x112) {
+  // (skipped else) if (param_2 === 0x111) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x100) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) uVar2 = FUN_005eb3ed(param_3);
+  // (skipped else) FUN_005ed150(uVar2);
+  // (skipped else) uVar2 = FUN_005eb3ed(param_3);
+  // (skipped else) FUN_005ed1d0(uVar2);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x101) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) uVar2 = FUN_005eb3ed(param_3);
+  // (skipped else) FUN_005ed190(uVar2);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x102) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed210(param_3 & 0xff);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) goto switchD_005ecda6_caseD_4;
+  // (skipped else) }
+  // (skipped else) if (param_2 < 0x201) {
+  // (skipped else) if (param_2 === 0x200) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ecf50(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x112) {
+  // (skipped else) if (param_3 === 0xf020) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed290();
+  // (skipped else) }
+  // (skipped else) else {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) if (param_3 === 0xf120) {
+  // (skipped else) FUN_005ed2c0();
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) uVar2 = fill_rect_BE88(param_1,0x112,param_3,param_4);
+  // (skipped else) return uVar2;
+  // (skipped else) }
+  // (skipped else) sVar1 = ((param_3 >> 0x10) << 16 >> 16);
+  // (skipped else) if (param_2 === 0x114) {
+  // (skipped else) // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) switch(param_3) {
+  // (skipped else) case 0:
+  // (skipped else) local_18 = local_18 + -1;
+  // (skipped else) SetScrollPos(param_1,0,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,0);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb0, local_18);
+  // (skipped else) FUN_005ed3e0(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 1:
+  // (skipped else) local_18 = local_18 + 1;
+  // (skipped else) SetScrollPos(param_1,0,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,0);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb0, local_18);
+  // (skipped else) FUN_005ed3e0(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 2:
+  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = local_18 - iVar4;
+  // (skipped else) SetScrollPos(param_1,0,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,0);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb0, local_18);
+  // (skipped else) FUN_005ed3e0(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 3:
+  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = local_18 + iVar4;
+  // (skipped else) SetScrollPos(param_1,0,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,0);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb0, local_18);
+  // (skipped else) FUN_005ed3e0(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 4:
+  // (skipped else) local_18 = sVar1;
+  // (skipped else) SetScrollPos(param_1,0,local_18,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb0, local_18);
+  // (skipped else) FUN_005ed3e0(s32(local_14, 0xb0));
+  // (skipped else) return 0;
+  // (skipped else) case 5:
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed420(sVar1);
+  // (skipped else) return 0;
+  // (skipped else) default:
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) if (param_2 === 0x115) {
+  // (skipped else) // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) switch(param_3) {
+  // (skipped else) case 0:
+  // (skipped else) local_18 = local_18 + -1;
+  // (skipped else) SetScrollPos(param_1,1,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb4, local_18);
+  // (skipped else) FUN_005ed460(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 1:
+  // (skipped else) local_18 = local_18 + 1;
+  // (skipped else) SetScrollPos(param_1,1,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb4, local_18);
+  // (skipped else) FUN_005ed460(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 2:
+  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = local_18 - iVar4;
+  // (skipped else) SetScrollPos(param_1,1,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb4, local_18);
+  // (skipped else) FUN_005ed460(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 3:
+  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = local_18 + iVar4;
+  // (skipped else) SetScrollPos(param_1,1,local_18,1);
+  // (skipped else) local_18 = GetScrollPos(param_1,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb4, local_18);
+  // (skipped else) FUN_005ed460(local_18);
+  // (skipped else) return 0;
+  // (skipped else) case 4:
+  // (skipped else) local_18 = sVar1;
+  // (skipped else) SetScrollPos(param_1,1,local_18,1);
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xb4, local_18);
+  // (skipped else) FUN_005ed460(s32(local_14, 0xb4));
+  // (skipped else) return 0;
+  // (skipped else) case 5:
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed4a0(sVar1);
+  // (skipped else) return 0;
+  // (skipped else) default:
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) goto switchD_005ecda6_caseD_4;
+  // (skipped else) }
+  // (skipped else) if (param_2 < 0x211) {
+  // (skipped else) if (param_2 === 0x210) {
+  // (skipped else) if (param_3 === 0x201) {
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) if (param_3 !== 0x204) {
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) switch(param_2) {
+  // (skipped else) case 0x201:
+  // (skipped else) GetWindowLongA(param_1,0);
+  // (skipped else) local_24 = FUN_00414d10();
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) if ((u8(_MEM[local_24 + 0x49]) & 2) !== 0) {
+  // (skipped else) SetFocus(s32(local_24, 4));
+  // (skipped else) BringWindowToTop(param_1);
+  // (skipped else) }
+  // (skipped else) w32(local_14, 0xa8, 1);
+  // (skipped else) FUN_005ecf90(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) case 0x202:
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) if (s32(local_14, 0xa8) === 1) {
+  // (skipped else) w32(local_14, 0xa8, 0);
+  // (skipped else) FUN_005ed010(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) }
+  // (skipped else) FUN_005ecfd0(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) case 0x203:
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) FUN_005ed110(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) case 0x204:
+  // (skipped else) GetWindowLongA(param_1,0);
+  // (skipped else) local_24 = FUN_00414d10();
+  // (skipped else) if ((u8(_MEM[local_24 + 0x49]) & 2) !== 0) {
+  // (skipped else) SetFocus(s32(local_24, 4));
+  // (skipped else) BringWindowToTop(param_1);
+  // (skipped else) }
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) w32(local_14, 0xac, 1);
+  // (skipped else) FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) case 0x205:
+  // (skipped else) wv(DAT_00637ea4, local_14);
+  // (skipped else) if (s32(local_14, 0xac) === 1) {
+  // (skipped else) w32(local_14, 0xac, 0);
+  // (skipped else) FUN_005ed0d0(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) }
+  // (skipped else) FUN_005ed090(param_4 & 0xffff,param_4 >> 0x10);
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) goto switchD_005ecda6_caseD_4;
+  // (skipped else) }
+  // (skipped else) if ((param_2 !== 0x30f) && (param_2 !== 0x311)) {
+  // (skipped else) if (param_2 === 0x3b9) {
+  // (skipped else) if (param_3 === 1) {
+  // (skipped else) FUN_005ed6e0();
+  // (skipped else) return 0;
+  // (skipped else) }
+  // (skipped else) goto switchD_005ecda6_caseD_5;
+  // (skipped else) }
+  // (skipped else) goto switchD_005ecda6_caseD_4;
+  // (skipped else) }
+  // (skipped else) switchD_005ecda6_caseD_6:
+  // (skipped else) // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) if (local_10 === 0) {
+  // (skipped else) uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
+  // (skipped else) return uVar2;
+  // (skipped else) }
+  // (skipped else) mciSendCommandA(s32(local_10, 8),0x840,s32(local_10, 0x10), local_34);
+  // (skipped else) /*JOINED*/
+  // (skipped else) }
   return 0;
 }
 
@@ -12953,7 +12953,7 @@ function LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, param_3, par
     uVar4 = ((uVar5) & 0xFFFF);
     if (s8(uVar5 >> 8) === 0) return LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, param_3, param_4, param_5, uVar2, uVar4, uVar5);
   }
-if (true) {
+  else {
     bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
@@ -12983,7 +12983,7 @@ function LAB_005edc7f_helper(bVar1, cVar6, iVar3, param_1, param_2, param_3, par
     uVar4 = ((uVar5) & 0xFFFF);
     if (s8(uVar5 >> 8) === 0) return LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, param_3, param_4, param_5, uVar2, uVar4, uVar5);
   }
-if (true) {
+  else {
     bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
@@ -13020,7 +13020,7 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param
   if (cVar5 === 0) {
     if (s8(uVar7 >> 8) === 0) return LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_3, param_4, param_5, uVar3, uVar6, uVar7);
   }
-if (true) {
+  else if (cVar5 !== 0) {
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
@@ -13036,7 +13036,7 @@ if (true) {
       if (s32(param_1, 0) < 0) {
         w32(param_1, 0, 0x7f);
       }
-if (true) {
+      else {
         w32(param_1, 0, -0x80);
       }
     }
@@ -13060,7 +13060,7 @@ function LAB_005edcbf_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param
   if (cVar5 === 0) {
     if (s8(uVar7 >> 8) === 0) return LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_3, param_4, param_5, uVar3, uVar6, uVar7);
   }
-if (true) {
+  else if (cVar5 !== 0) {
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
@@ -13076,7 +13076,7 @@ if (true) {
       if (s32(param_1, 0) < 0) {
         w32(param_1, 0, 0x7f);
       }
-if (true) {
+      else {
         w32(param_1, 0, -0x80);
       }
     }

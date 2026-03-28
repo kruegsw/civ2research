@@ -11212,7 +11212,7 @@ function LAB_005c92ae_helper(local_10, local_8, local_c, param_1, param_2, sVar1
     __strlwr(local_8);
     _MEM[param_1 + 0x25] = _MEM[local_8 + 0];
   }
-if (true) {
+  else {
     w32(param_1, 0x28, -1);
   }
   return;
@@ -11282,7 +11282,7 @@ function switchD_005cbd7f_caseD_203_helper(BVar12, DVar13, cVar1, iVar11, iVar3,
       }
     }
   }
-if (true) {
+  else {
     switch(param_2) {
     case 0x201:
       w32(iVar3, 0x1c, 1);
@@ -11362,138 +11362,73 @@ function LAB_005cb749_helper(BVar12, DVar13, cVar1, iVar11, iVar3, local_10, loc
       }
     }
   // (outer block close)
-if (true) {
-    switch(param_2) {
-    case 0x201:
-      w32(iVar3, 0x1c, 1);
-      SetFocus(param_1);
-      SetCapture(param_1);
-      return LAB_005cb749_helper(BVar12, DVar13, cVar1, iVar11, iVar3, local_10, local_20, local_24, local_64, local_8, local_c, pCVar7, pCVar8, pHVar10, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar6, uVar9);
-    case 0x202:
-      if (s32(iVar3, 0x1c) !== 0) {
-        ReleaseCapture();
-        w32(iVar3, 0x1c, 0);
-        piVar4 = FUN_005c8f50();
-        local_20[0].left = s32(piVar4, 0);
-        local_20[0].top = _MEM[piVar4 + 1];
-        local_20[0].right = _MEM[piVar4 + 2];
-        local_20[0].bottom = _MEM[piVar4 + 3];
-        OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
-        InvalidateRect(param_1,local_20[0],0);
-        w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],((param_4) & 0xffffffff0000ffff));
-        /*JOINED*/
-        if (BVar12 !== 0) {
-          blit_B6EB(param_1,0xf,0,0);
-          uVar9 = FUN_0040f810();
-          FUN_005c6303(uVar9);
-          uVar9 = FUN_00418740();
-          FUN_005cbe30(uVar9);
-        }
-      }
-      break;
-    default:
-      return switchD_005cbd7f_caseD_203_helper(BVar12, DVar13, cVar1, iVar11, iVar3, local_10, local_20, local_24, local_64, local_8, local_c, pCVar7, pCVar8, pHVar10, pHVar5, param_1, param_2, param_3, param_4, piVar4, sVar2, uVar6, uVar9);
-    case 0x204:
-      w32(iVar3, 0x1c, 1);
-      SetFocus(param_1);
-      SetCapture(param_1);
-      break;
-    case 0x205:
-      if (s32(iVar3, 0x1c) !== 0) {
-        ReleaseCapture();
-        w32(iVar3, 0x1c, 0);
-        piVar4 = FUN_005c8f50();
-        local_20[0].left = s32(piVar4, 0);
-        local_20[0].top = _MEM[piVar4 + 1];
-        local_20[0].right = _MEM[piVar4 + 2];
-        local_20[0].bottom = _MEM[piVar4 + 3];
-        OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
-        InvalidateRect(param_1,local_20[0],0);
-        w32(iVar3, 0x18, 0);
-        BVar12 = PtInRect(local_20[0],((param_4) & 0xffffffff0000ffff));
-        /*JOINED*/
-        if (BVar12 !== 0) {
-          blit_B6EB(param_1,0xf,0,0);
-          uVar9 = FUN_0040f810();
-          FUN_005c6303(uVar9);
-          uVar9 = FUN_00418740();
-          FUN_005cbe70(uVar9);
-        }
-      }
-    }
-  }
+  // (skipped orphan else)
+  // (skipped else) switch(param_2) {
+  // (skipped else) case 0x201:
+  // (skipped else) w32(iVar3, 0x1c, 1);
+  // (skipped else) SetFocus(param_1);
+  // (skipped else) SetCapture(param_1);
+  // (skipped else) goto LAB_005cb749;
+  // (skipped else) case 0x202:
+  // (skipped else) if (s32(iVar3, 0x1c) !== 0) {
+  // (skipped else) ReleaseCapture();
+  // (skipped else) w32(iVar3, 0x1c, 0);
+  // (skipped else) piVar4 = FUN_005c8f50();
+  // (skipped else) local_20[0].left = s32(piVar4, 0);
+  // (skipped else) local_20[0].top = _MEM[piVar4 + 1];
+  // (skipped else) local_20[0].right = _MEM[piVar4 + 2];
+  // (skipped else) local_20[0].bottom = _MEM[piVar4 + 3];
+  // (skipped else) OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
+  // (skipped else) InvalidateRect(param_1,local_20[0],0);
+  // (skipped else) w32(iVar3, 0x18, 0);
+  // (skipped else) BVar12 = PtInRect(local_20[0],((param_4) & 0xffffffff0000ffff));
+  // (skipped else) /*JOINED*/
+  // (skipped else) if (BVar12 !== 0) {
+  // (skipped else) blit_B6EB(param_1,0xf,0,0);
+  // (skipped else) uVar9 = FUN_0040f810();
+  // (skipped else) FUN_005c6303(uVar9);
+  // (skipped else) uVar9 = FUN_00418740();
+  // (skipped else) FUN_005cbe30(uVar9);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) break;
+  // (skipped else) default:
+  // (skipped else) goto switchD_005cbd7f_caseD_203;
+  // (skipped else) case 0x204:
+  // (skipped else) w32(iVar3, 0x1c, 1);
+  // (skipped else) SetFocus(param_1);
+  // (skipped else) SetCapture(param_1);
+  // (skipped else) break;
+  // (skipped else) case 0x205:
+  // (skipped else) if (s32(iVar3, 0x1c) !== 0) {
+  // (skipped else) ReleaseCapture();
+  // (skipped else) w32(iVar3, 0x1c, 0);
+  // (skipped else) piVar4 = FUN_005c8f50();
+  // (skipped else) local_20[0].left = s32(piVar4, 0);
+  // (skipped else) local_20[0].top = _MEM[piVar4 + 1];
+  // (skipped else) local_20[0].right = _MEM[piVar4 + 2];
+  // (skipped else) local_20[0].bottom = _MEM[piVar4 + 3];
+  // (skipped else) OffsetRect(local_20[0],-local_20[0].left,-local_20[0].top);
+  // (skipped else) InvalidateRect(param_1,local_20[0],0);
+  // (skipped else) w32(iVar3, 0x18, 0);
+  // (skipped else) BVar12 = PtInRect(local_20[0],((param_4) & 0xffffffff0000ffff));
+  // (skipped else) /*JOINED*/
+  // (skipped else) if (BVar12 !== 0) {
+  // (skipped else) blit_B6EB(param_1,0xf,0,0);
+  // (skipped else) uVar9 = FUN_0040f810();
+  // (skipped else) FUN_005c6303(uVar9);
+  // (skipped else) uVar9 = FUN_00418740();
+  // (skipped else) FUN_005cbe70(uVar9);
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) }
+  // (skipped else) }
   return 0;
 }
 
 function LAB_005ccd4b_helper(UVar12, cVar1, iVar2, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, local_134, local_138, local_13c, local_14, local_140, local_144, local_148, local_150, local_154, local_194, local_198, local_19c, local_1a0, local_1b0, pHVar6, param_1, param_2, param_3, param_4, piVar3, ptVar10, puVar11, puVar8, puVar9, sVar5, uVar4, uVar7) {
-      uVar7 = send_msg_9307(param_1,param_2,param_3,param_4);
-      return uVar7;
-  // (outer block close)
-    FUN_0040f810();
-    cVar1 = FUN_005cbdd0();
-    if (cVar1 === 0) {
-      uVar7 = send_msg_9307(param_1,param_2,param_3,param_4);
-      return uVar7;
-    }
-    local_144 = GetDC(param_1);
-    local_11c = GetStockObject(3);
-    GetClientRect(param_1,local_1b0[0]);
-    SelectObject(local_144,local_11c);
-    local_1b0[0].left = local_1b0[0].left + 0x20;
-    FrameRect(local_144,local_1b0[0],local_11c);
-    DeleteObject(local_11c);
-    ReleaseDC(param_1,local_144);
-  // (outer block close)
-if (true) {
-    if (param_3 === 9) {
-      pHVar6 = GetParent(param_1);
-      SendMessageA(pHVar6,param_2,param_3,param_4);
-    }
-if (true) {
-      if (param_3 === 0x20) {
-        FUN_0040f810();
-        cVar1 = FUN_005cbdd0();
-        if (cVar1 !== 0) {
-          SendMessageA(param_1,0x201,0,0);
-          SendMessageA(param_1,0x202,0,0);
-          return 0;
-        }
-      }
-      pHVar6 = GetParent(param_1);
-      SendMessageA(pHVar6,param_2,param_3,param_4);
-    }
-  }
-if (true) {
-    iVar2 = FUN_005c5ec0();
-    if ((iVar2 !== 0) && (v(DAT_00637f08) === 0)) {
-      SetFocus(param_1);
-      devLog('MFC', 'iVar2 = ios::width(local_198);');
-      if (iVar2 === 0) {
-        FUN_0040fad0(1);
-      }
-if (true) {
-        FUN_0040fad0(0);
-      }
-      wv(DAT_00637f08, 1);
-      SetCapture(param_1);
-      InvalidateRect(param_1,0x0,0);
-      uVar7 = FUN_0040f810();
-      FUN_005c6303(uVar7);
-      devLog('MFC', 'iVar2 = ios::width(local_198);');
-      uVar7 = FUN_00418740(iVar2);
-      FUN_005cce40(uVar7,iVar2);
-    }
-  }
-if (true) {
-    if (param_2 !== 0x202) return LAB_005ccd4b_helper(UVar12, cVar1, iVar2, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, local_134, local_138, local_13c, local_14, local_140, local_144, local_148, local_150, local_154, local_194, local_198, local_19c, local_1a0, local_1b0, pHVar6, param_1, param_2, param_3, param_4, piVar3, ptVar10, puVar11, puVar8, puVar9, sVar5, uVar4, uVar7);
-    iVar2 = FUN_005c5ec0();
-    if (iVar2 !== 0) {
-      ReleaseCapture();
-      wv(DAT_00637f08, 0);
-    }
-  }
-  return 0;
+  // HELPER_SYNTAX_ERROR: Unexpected token 'else'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_005cda01_helper(local_10, local_14, local_18, local_8, local_c, param_1, param_2, uVar1) {
@@ -11521,7 +11456,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, param_1, para
   local_c = -1;
   local_14 = 0;
   do {
-    loopGuard('LAB_005cdbab_helper', 11307);
+    loopGuard('LAB_005cdbab_helper', 11242);
     if (0xf < local_14) {
       FUN_005cdcdb(local_c,v(DAT_00637fa8),v(DAT_00637fac));
       local_14 = local_c;

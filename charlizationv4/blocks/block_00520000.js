@@ -4841,7 +4841,7 @@ function LAB_00521beb_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
       if (s8(local_14) === 0) {
         wv(DAT_00655aea, v(DAT_00655aea) | 0x100);
       }
-if (true) {
+      else {
         wv(DAT_00655aea, v(DAT_00655aea) & 0xfffffeff);
       }
       while( true ) {
@@ -4860,7 +4860,7 @@ if (true) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
-if (true) {
+        else {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(v(DAT_00679640),6,0);
@@ -4922,7 +4922,7 @@ function LAB_00521c07_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
       if (s8(local_14) === 0) {
         wv(DAT_00655aea, v(DAT_00655aea) | 0x100);
       }
-if (true) {
+      else {
         wv(DAT_00655aea, v(DAT_00655aea) & 0xfffffeff);
       }
       while( true ) {
@@ -4941,7 +4941,7 @@ if (true) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
-if (true) {
+        else {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(v(DAT_00679640),6,0);
@@ -5030,7 +5030,7 @@ function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
     if (v(DAT_0064bcb8) === 0) {
       FUN_00421f10(2000);
     }
-if (true) {
+    else {
       uVar2 = FUN_00484fec(v(DAT_0064bcb8));
       FUN_00421f10(uVar2);
     }
@@ -5066,7 +5066,7 @@ if (true) {
       if (s8(local_14) === 0) {
         wv(DAT_00655aea, v(DAT_00655aea) | 0x100);
       }
-if (true) {
+      else {
         wv(DAT_00655aea, v(DAT_00655aea) & 0xfffffeff);
       }
       while( true ) {
@@ -5085,7 +5085,7 @@ if (true) {
           wv(DAT_006ad684, 0);
           wv(DAT_00654c7c, 0);
         }
-if (true) {
+        else {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(v(DAT_00679640),6,0);
@@ -5138,7 +5138,7 @@ function LAB_0052dcf1_helper(bVar1, iVar2, local_8) {
       /*JOINED*/
     FUN_0043060b(v(DAT_006d1da0),s32(local_8, 0x118));
   }
-if (true) {
+  else {
     FUN_00410030(s_NOINTEL_006324e8,v(DAT_0063fc58),0);
   }
   return;

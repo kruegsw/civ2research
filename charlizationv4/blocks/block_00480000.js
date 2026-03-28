@@ -4657,7 +4657,7 @@ function LAB_00485891_helper(aiStack_48, iVar2, local_10, local_14, local_18, lo
                 w32(DAT_0064c6c0, local_50 * 0x594 + local_10 * 4, u32(DAT_0064c6c0, local_50 * 0x594 + local_10 * 4) | 1);
                      /*JOINED*/
               }
-if (true) {
+              else {
                 uVar3 = _rand();
                 uVar4 = uVar3 >> 0x1f;
                 if ((((uVar3 ^ uVar4) - uVar4 & 0x1f ^ uVar4) - uVar4 <= ((v(DAT_00655b08)) >>> 0)) || (iVar2 = FUN_004a7577(local_50), iVar2 !== 0))
@@ -4668,7 +4668,7 @@ if (true) {
                 }
               }
             }
-if (true) {
+            else {
               iVar2 = FUN_004a7577(local_50);
               if ((iVar2 !== 0) && (3 < v(DAT_00655b08))) {
                 w32(DAT_0064c6c0, local_50 * 0x594 + local_10 * 4, u32(DAT_0064c6c0, local_50 * 0x594 + local_10 * 4) | 0x20);
@@ -4696,7 +4696,7 @@ function LAB_004862b4_helper(iVar2, iVar3, local_10, local_14, local_18, local_1
           if (local_8 === 1 || local_8 - 1 < 0) {
             local_34 = 0;
           }
-if (true) {
+          else {
             local_34 = _rand();
             local_34 = local_34 % local_8;
           }
@@ -4704,7 +4704,7 @@ if (true) {
             if (-((v(DAT_00655b08)) >>> 0) === -9 || -((v(DAT_00655b08)) >>> 0) + 9 < 0) {
               local_48 = 0;
             }
-if (true) {
+            else {
               local_48 = _rand();
               local_48 = local_48 % 10 - ((v(DAT_00655b08)) >>> 0);
             }
@@ -4712,7 +4712,7 @@ if (true) {
               if (local_8 / 2 === 1 || local_8 / 2 + -1 < 0) {
                 local_4c = 0;
               }
-if (true) {
+              else {
                 local_4c = _rand();
                 local_4c = local_4c % (local_8 / 2);
               }
@@ -4755,7 +4755,7 @@ if (true) {
                   local_14[0] = 0x15;
                   local_2c[0] = 9;
                 }
-if (true) {
+                else {
                   local_2c[0] = 8;
                   uVar5 = FUN_00428b0c(s32(DAT_00628420, 0x19c));
                   FUN_0040ff60(0,uVar5);
@@ -4769,7 +4769,7 @@ if (true) {
             if ((local_c & 4) === 0) {
               local_20 = local_2c[0];
             }
-if (true) {
+            else {
               local_20 = local_14[0];
             }
             if (local_c === uVar4) {
@@ -4826,20 +4826,20 @@ function LAB_00488ca7_helper(bVar1, bVar2, iVar3, iVar4, local_10, local_18, loc
       if (bVar1) {
         uVar5 = 0;
       }
-if (true) {
+      else if (bVar2) {
         uVar5 = 2;
       }
-if (true) {
+      else {
         uVar5 = 1;
       }
   // (outer block close)
-if (true) {
-      uVar5 = 0;
-    }
+  // (skipped orphan else)
+  // (skipped else) uVar5 = 0;
+  // (skipped else) }
   // (outer block close)
-if (true) {
-    uVar5 = 0;
-  }
+  // (skipped orphan else)
+  // (skipped else) uVar5 = 0;
+  // (skipped else) }
   return uVar5;
 }
 
@@ -4937,14 +4937,14 @@ function LAB_0048c326_helper(SVar2, bVar1, iVar4, local_14, local_18, local_1c, 
           FUN_0046e020(0x30,0,0,0);
           FUN_0040bc80(0);
         }
-if (true) {
+        else {
           w32(DAT_006af240, v(DAT_006d1da0) * 4, s32(DAT_006af220, v(DAT_006d1da0) * 4));
                /*JOINED*/
           FUN_00421da0(0,local_18);
           if (local_18 === 1) {
             FUN_0043ca10(v(DAT_006359d4),s_CASUALTY_0062c7a8);
           }
-if (true) {
+          else {
             FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_0062c7b4);
           }
           FUN_0059ec88(v(DAT_0063fc58),0,0);
@@ -4975,7 +4975,7 @@ if (true) {
         }
         FUN_0048a416();
       }
-if (true) {
+      else {
         wv(DAT_00673b08, ((v(DAT_00655b0b)) >>> 0));
         wv(DAT_00655b0b, 0);
         if ((v(DAT_00628048) === 0) || (v(DAT_0062c488) !== 0)) {
@@ -4992,7 +4992,7 @@ if (true) {
         }
       }
     }
-if (true) {
+    else {
       local_20 = 0;
     }
     FUN_0055ae80(1);
@@ -5124,7 +5124,7 @@ function LAB_0048ccea_helper(SVar2, bVar1, iVar4, local_14, local_18, local_1c, 
               if (local_14 === 1) {
                 FUN_0043ca10(v(DAT_006359d4),s_CASUALTY_0062c7f0);
               }
-if (true) {
+              else {
                 FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_0062c7fc);
               }
               FUN_0059ec88(v(DAT_0063fc58),0,0);
@@ -5136,7 +5136,7 @@ if (true) {
                 FUN_0043856b(v(DAT_006d1da0));
               }
             }
-if (true) {
+            else {
               FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_0062c808);
               FUN_0059ec88(v(DAT_0063fc58),0,0);
               devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
@@ -5163,7 +5163,7 @@ if (true) {
             }
             FUN_0048a416();
           }
-if (true) {
+          else {
             wv(DAT_00673b08, ((v(DAT_00655b0b)) >>> 0));
             wv(DAT_00655b0b, 0);
             if (((v(DAT_00628048) === 0) || (v(DAT_0062c488) !== 0)) || (param_1 !== 0)) {
@@ -5217,7 +5217,7 @@ if (true) {
           FUN_00543cd6();
           wv(DAT_006ad699, 1);
         }
-if (true) {
+        else {
           iVar4 = s32(DAT_006ad558, local_32c * 4);
           wv(DAT_006ad578, local_32c);
           FUN_004e4ceb();
@@ -5371,7 +5371,7 @@ function LAB_0048d957_helper(SVar2, bVar1, iVar4, local_14, local_18, local_1c, 
               if (local_14 === 1) {
                 FUN_0043ca10(v(DAT_006359d4),s_CASUALTY_0062c7f0);
               }
-if (true) {
+              else {
                 FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_0062c7fc);
               }
               FUN_0059ec88(v(DAT_0063fc58),0,0);
@@ -5383,7 +5383,7 @@ if (true) {
                 FUN_0043856b(v(DAT_006d1da0));
               }
             }
-if (true) {
+            else {
               FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_0062c808);
               FUN_0059ec88(v(DAT_0063fc58),0,0);
               devLog('MFC', 'true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: M');
@@ -5410,7 +5410,7 @@ if (true) {
             }
             FUN_0048a416();
           }
-if (true) {
+          else {
             wv(DAT_00673b08, ((v(DAT_00655b0b)) >>> 0));
             wv(DAT_00655b0b, 0);
             if (((v(DAT_00628048) === 0) || (v(DAT_0062c488) !== 0)) || (param_1 !== 0)) {
@@ -5464,7 +5464,7 @@ if (true) {
           FUN_00543cd6();
           wv(DAT_006ad699, 1);
         }
-if (true) {
+        else {
           iVar4 = s32(DAT_006ad558, local_32c * 4);
           wv(DAT_006ad578, local_32c);
           FUN_004e4ceb();
