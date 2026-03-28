@@ -37,7 +37,14 @@ const MW = 50, MH = 40, mw2 = MW * 2;
 w16(DAT_006d1160, 0, mw2);
 w16(DAT_006d1162, 0, MH);
 wv(DAT_006d1168, 42);      // seed
-wv(DAT_00655b02, 3);        // difficulty = prince
+// Difficulty — multiple addresses used:
+// DAT_00655b02: Ghidra C code checks (if DAT_00655b02 < 3, etc.)
+// DAT_00655b04: sniffing confirmed live difficulty selector (0=Chieftain..5=Deity)
+// DAT_00655b08: AI food box formula uses this (food_rows = 13 - difficulty)
+const DIFFICULTY = 3; // prince
+wv(DAT_00655b02, DIFFICULTY);
+_MEM[DAT_00655b02 + 2] = DIFFICULTY; // 0x00655B04
+_MEM[DAT_00655b02 + 6] = DIFFICULTY; // DAT_00655b08 — AI food box adjustment
 
 // [FIX 4] Set ALL map dimension derived values (confirmed by sniffing: tile_array.md)
 w16(DAT_006d1164, 0, (mw2 / 2) * MH);        // ms = total tiles (e.g. 2000 for 100×40)
