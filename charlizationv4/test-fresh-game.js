@@ -39,9 +39,11 @@ w16(DAT_006d1162, 0, MH);
 wv(DAT_006d1168, 42);      // seed
 wv(DAT_00655b02, 3);        // difficulty = prince
 
-// Set map dimension derived values (from C: FUN_005b7fe0)
-w16(DAT_006d116a, 0, (mw2 + 3) >> 2);        // exploration map stride
-w32(DAT_006d1164, 0, (mw2 / 2) * MH);        // total tiles count
+// [FIX 4] Set ALL map dimension derived values (confirmed by sniffing: tile_array.md)
+w16(DAT_006d1164, 0, (mw2 / 2) * MH);        // ms = total tiles (e.g. 2000 for 100×40)
+w16(DAT_006d1166, 0, 0);                       // mapShape (0 = cylindrical/round earth)
+w16(DAT_006d116a, 0, (mw2 + 3) >> 2);         // qw = quarter-width (exploration stride)
+w16(DAT_006d116c, 0, MH);                      // qh = quarter-height
 
 // Allocate tile data at end of _MEM (DAT_00636598 is a pointer to tile array)
 const TILE_DATA_BASE = _MEM.length - 100000;  // 100KB region at end of buffer
@@ -68,10 +70,10 @@ for (let y = 0; y < MH; y++) {
     const off = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
     _MEM[off] = 2;      // terrain = grassland (food=2, shields=1, trade=0)
     _MEM[off + 1] = 0;  // improvements
-    _MEM[off + 2] = 0;
-    _MEM[off + 3] = 0;
+    _MEM[off + 2] = 0;  // cityRadiusOwner (set per city below)
+    _MEM[off + 3] = 1;  // bodyId (continent 1 — all land)
     _MEM[off + 4] = 0;  // visibility: 0 = undiscovered (set near cities below)
-    _MEM[off + 5] = 0;
+    _MEM[off + 5] = 4;  // [FIX 3] fertility=4 in lower nibble (grassland baseline)
   }
 }
 
@@ -80,7 +82,11 @@ function placeUnit(idx, type, owner, x, y) {
   const u = DAT_006560f0 + idx * 0x20;
   w16(u, 0, x);         // doubled-X position
   w16(u, 2, y);
-  w16(u, 4, 0);         // status
+  // [FIX 6] Status word: bit 6 = veteran. Sniffing confirmed AI units are veteran at Deity.
+  const difficulty = v(DAT_00655b02);
+  const isAI = !(v(DAT_00655b0b) & (1 << owner));
+  const veteranBit = (isAI && difficulty >= 4) ? 0x40 : 0;
+  w16(u, 4, veteranBit); // status (with veteran flag if applicable)
   _MEM[u + 6] = type;   // unit type
   _MEM[u + 7] = owner;
   _MEM[u + 10] = 3;     // moves remain
@@ -106,10 +112,23 @@ function placeCity(idx, owner, name, x, y, size) {
   for (let i = 0; i < size; i++) tileBits |= (1 << i);
   w32(c, 0x30, tileBits);
   w32(c, 0x54, 1);       // exists flag
-  // Stamp city on tile data: byte 1 bit 1 = city flag, byte 5 upper nibble = city index
+
+  // Stamp city on tile data (confirmed by sniffing session 1)
   const tileOff = TILE_DATA_BASE + (s16(DAT_006d1160, 0) & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
-  _MEM[tileOff + 1] |= 0x02;           // city improvement flag
-  _MEM[tileOff + 5] = (_MEM[tileOff + 5] & 0x0F) | (idx << 4); // city index in upper nibble
+  _MEM[tileOff + 1] |= 0x02;           // byte 1: city improvement flag
+  _MEM[tileOff + 5] = (_MEM[tileOff + 5] & 0x0F) | (idx << 4); // byte 5 upper nibble: city index
+
+  // [FIX 2] Stamp cityRadiusOwner on fat-cross tiles (byte 2 bits [7:5])
+  // Confirmed by sniffing: tile byte 2 upper 3 bits = owning civ for city radius
+  const fatCrossDx = [1,2,1,0,-1,-2,-1,0, 2,2,-2,-2, 1,3,3,1,-1,-3,-3,-1, 0];
+  const fatCrossDy = [-1,0,1,2,1,0,-1,-2, -2,2,2,-2, -3,-1,1,3,3,1,-1,-3, 0];
+  for (let t = 0; t < 21; t++) {
+    const tx = x + fatCrossDx[t], ty = y + fatCrossDy[t];
+    if (tx >= 0 && tx < mw2 && ty >= 0 && ty < MH) {
+      const tOff = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * ty * 3 + (tx & 0xFFFFFFFE) * 3;
+      _MEM[tOff + 2] = (_MEM[tOff + 2] & 0x1F) | (owner << 5);
+    }
+  }
 }
 
 // Civ 1: city at (20,10), settler at (30,10)
@@ -151,9 +170,16 @@ revealAround(30, 10, 1, 2); // civ 1 sees around warrior
 revealAround(60, 30, 2, 3); // civ 2 sees around Beta
 revealAround(70, 30, 2, 2); // civ 2 sees around warrior
 
-// Set civ government to despotism
-_MEM[DAT_0064c600 + 1 * 0x594 + 0xB5] = 1;  // civ 1 = despotism
-_MEM[DAT_0064c600 + 2 * 0x594 + 0xB5] = 1;  // civ 2 = despotism
+// ── Civ initialization (confirmed by sniffing session 1) ──
+for (let civ = 1; civ <= 2; civ++) {
+  const cb = DAT_0064c600 + civ * 0x594;
+  _MEM[cb + 0xB5] = 1;     // government = despotism
+  // [FIX 1] beakers = 0xFFFF sentinel ("no research target") — sniffing confirmed all civs init this
+  w16(cb, 0xAA, 0xFFFF);
+  // [FIX 5] AI sci/tax rates — sniffing showed 40%/40% typical (stored as 4/4, ×10=%)
+  _MEM[cb + 0xB3] = 4;     // science rate = 40%
+  _MEM[cb + 0xB4] = 4;     // tax rate = 40%
+}
 
 console.log(`\n═══ Fresh Game: ${MW}x${MH} grassland, 2 civs, ${turns} turns ═══\n`);
 
