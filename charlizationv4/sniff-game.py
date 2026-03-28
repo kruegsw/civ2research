@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-sniff-game.py — Read Civ2 game state directly from process memory
+sniff-game.py — Read Civ2 game state directly from process memory in real-time
 
-Usage: python charlizationv4/sniff-game.py [--log game.log] [--interval 2]
+Usage: python charlizationv4/sniff-game.py [--log game.log]
 
-Reads civ2.exe process memory at known DAT_ addresses (from Ghidra
-decompilation). Polls every N seconds, diffs state, logs changes.
+Continuously reads civ2.exe process memory at known DAT_ addresses.
+Detects every state change with millisecond timestamps.
 
-Requires: Windows (uses ReadProcessMemory API)
-No dependencies beyond Python standard library.
+Tracks: units, cities, civs (gold/gov/research/rates), global state.
+Requires: Windows + Python 3.6+. No pip dependencies.
 """
 
 import ctypes
@@ -16,10 +16,9 @@ import ctypes.wintypes as wt
 import struct
 import sys
 import time
-import os
 
 # ═══════════════════════════════════════════════════════════════════
-# Win32 API setup
+# Win32 API
 # ═══════════════════════════════════════════════════════════════════
 
 kernel32 = ctypes.windll.kernel32
@@ -29,20 +28,14 @@ TH32CS_SNAPPROCESS = 0x00000002
 
 class PROCESSENTRY32(ctypes.Structure):
     _fields_ = [
-        ("dwSize", wt.DWORD),
-        ("cntUsage", wt.DWORD),
-        ("th32ProcessID", wt.DWORD),
-        ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
-        ("th32ModuleID", wt.DWORD),
-        ("cntThreads", wt.DWORD),
-        ("th32ParentProcessID", wt.DWORD),
-        ("pcPriClassBase", ctypes.c_long),
-        ("dwFlags", wt.DWORD),
-        ("szExeFile", ctypes.c_char * 260),
+        ("dwSize", wt.DWORD), ("cntUsage", wt.DWORD),
+        ("th32ProcessID", wt.DWORD), ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+        ("th32ModuleID", wt.DWORD), ("cntThreads", wt.DWORD),
+        ("th32ParentProcessID", wt.DWORD), ("pcPriClassBase", ctypes.c_long),
+        ("dwFlags", wt.DWORD), ("szExeFile", ctypes.c_char * 260),
     ]
 
 def find_process(name):
-    """Find a process by executable name, return PID or None."""
     snap = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
     entry = PROCESSENTRY32()
     entry.dwSize = ctypes.sizeof(PROCESSENTRY32)
@@ -58,60 +51,51 @@ def find_process(name):
     return None
 
 def open_process(pid):
-    """Open process for memory reading."""
     handle = kernel32.OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, pid)
     if not handle:
         raise RuntimeError(f"Cannot open process {pid} (try running as Administrator)")
     return handle
 
 def read_mem(handle, address, size):
-    """Read bytes from process memory."""
     buf = ctypes.create_string_buffer(size)
-    bytes_read = ctypes.c_size_t()
-    ok = kernel32.ReadProcessMemory(handle, ctypes.c_void_p(address), buf, size, ctypes.byref(bytes_read))
-    if not ok:
-        return None
-    return buf.raw[:bytes_read.value]
+    n = ctypes.c_size_t()
+    ok = kernel32.ReadProcessMemory(handle, ctypes.c_void_p(address), buf, size, ctypes.byref(n))
+    return buf.raw[:n.value] if ok and n.value == size else None
 
-def read_i32(handle, addr):
-    data = read_mem(handle, addr, 4)
-    return struct.unpack('<i', data)[0] if data and len(data) == 4 else None
-
-def read_i16(handle, addr):
-    data = read_mem(handle, addr, 2)
-    return struct.unpack('<h', data)[0] if data and len(data) == 2 else None
-
-def read_u8(handle, addr):
-    data = read_mem(handle, addr, 1)
-    return data[0] if data and len(data) == 1 else None
-
-def read_bytes(handle, addr, n):
-    return read_mem(handle, addr, n)
+def ri32(h, a):
+    d = read_mem(h, a, 4); return struct.unpack('<i', d)[0] if d else None
+def ri16(h, a):
+    d = read_mem(h, a, 2); return struct.unpack('<h', d)[0] if d else None
+def ru16(h, a):
+    d = read_mem(h, a, 2); return struct.unpack('<H', d)[0] if d else None
+def ru8(h, a):
+    d = read_mem(h, a, 1); return d[0] if d else None
+def ri8(h, a):
+    d = read_mem(h, a, 1); return struct.unpack('<b', d)[0] if d else None
 
 # ═══════════════════════════════════════════════════════════════════
-# Civ2 memory addresses (from Ghidra decompilation)
-# These are absolute virtual addresses in the civ2.exe process
+# Civ2 addresses (absolute virtual addresses from Ghidra)
 # ═══════════════════════════════════════════════════════════════════
 
-# Game state globals
-ADDR_TURN_COUNT    = 0x00655af8  # DAT_00655af8 — turns passed
-ADDR_DIFFICULTY    = 0x00655b02  # DAT_00655b02 — difficulty level
-ADDR_ACTIVE_CIV    = 0x00655b05  # DAT_00655b05 — current active civ
-ADDR_HUMAN_PLAYERS = 0x00655b0b  # DAT_00655b0b — human player bitmask
-ADDR_TOTAL_UNITS   = 0x00655b16  # DAT_00655b16 — total unit count
-ADDR_TOTAL_CITIES  = 0x00655b18  # DAT_00655b18 — total city count
-ADDR_MAP_WIDTH     = 0x006d1160  # DAT_006d1160 — map width (doubled-X)
-ADDR_MAP_HEIGHT    = 0x006d1162  # DAT_006d1162 — map height
-ADDR_MAP_SEED      = 0x006d1168  # DAT_006d1168 — map seed
+# Global state
+ADDR = {
+    'turn':         0x00655af8,  # i16 — turns passed
+    'difficulty':   0x00655b02,  # u8  — difficulty (0-5)
+    'activeCiv':    0x00655b05,  # u8  — whose turn
+    'humanPlayers': 0x00655b0b,  # u8  — bitmask
+    'totalUnits':   0x00655b16,  # i16
+    'totalCities':  0x00655b18,  # i16
+    'mapWidth':     0x006d1160,  # i16 — doubled-X
+    'mapHeight':    0x006d1162,  # i16
+    'mapSeed':      0x006d1168,  # i32
+    'pollution':    0x00655b04,  # u8  — global pollution count
+    'yearIncrement':0x00655afa,  # i16 — turns per year increment
+}
 
-# Array bases
-ADDR_CITY_ARRAY    = 0x0064f340  # DAT_0064f340 — city array (stride 0x58)
-ADDR_UNIT_ARRAY    = 0x006560f0  # DAT_006560f0 — unit array (stride 0x20)
-ADDR_CIV_ARRAY     = 0x0064c600  # DAT_0064c600 — civ array (stride 0x594)
-
-CITY_STRIDE = 0x58
-UNIT_STRIDE = 0x20
-CIV_STRIDE  = 0x594
+# Arrays
+UNIT_BASE  = 0x006560f0;  UNIT_STRIDE  = 0x20   # 32 bytes per unit
+CITY_BASE  = 0x0064f340;  CITY_STRIDE  = 0x58   # 88 bytes per city
+CIV_BASE   = 0x0064c600;  CIV_STRIDE   = 0x594  # 1428 bytes per civ
 
 UNIT_NAMES = [
     'Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen',
@@ -123,261 +107,264 @@ UNIT_NAMES = [
     'Cruiser','AEGIS','Battleship','Submarine','Carrier','Transport',
     'Cruise Msl','Nuclear Msl','Diplomat','Spy','Caravan','Freight','Explorer'
 ]
-
 ORDER_NAMES = {
-    0: 'fortify', 1: 'sentry', 2: 'fortress', 3: 'road', 4: 'irrigate',
-    5: 'mine', 6: 'transform', 7: 'clean', 8: 'fortress2', 9: 'airbase',
-    10: 'load', 11: 'goto', 12: 'no_orders', 27: 'goto_ai', 255: 'none'
+    0:'fortify', 1:'sentry', 2:'fortress', 3:'road', 4:'irrigate',
+    5:'mine', 6:'transform', 7:'clean', 8:'fortress2', 9:'airbase',
+    10:'load', 11:'goto', 12:'no_orders', 27:'goto_ai', 255:'none'
 }
-
-DIFF_KEYS = ['prince', 'king', 'emperor', 'deity']
+GOV_NAMES = ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy']
+DIFF_NAMES = ['Chieftain','Warlord','Prince','King','Emperor','Deity']
 
 # ═══════════════════════════════════════════════════════════════════
 # State reading
 # ═══════════════════════════════════════════════════════════════════
 
-def read_unit(handle, idx):
-    base = ADDR_UNIT_ARRAY + idx * UNIT_STRIDE
-    data = read_bytes(handle, base, UNIT_STRIDE)
-    if not data or len(data) < UNIT_STRIDE:
-        return None
-    x = struct.unpack_from('<h', data, 0)[0]
-    y = struct.unpack_from('<h', data, 2)[0]
-    unit_type = data[6]
-    owner = data[7]
-    moves = data[10]
-    order = data[15]
-    home_city = data[16]
-    unit_id = struct.unpack_from('<i', data, 0x1A)[0]
-    goto_x = struct.unpack_from('<h', data, 0x12)[0]
-    goto_y = struct.unpack_from('<h', data, 0x14)[0]
-    alive = unit_id != 0
-    name = UNIT_NAMES[unit_type] if unit_type < len(UNIT_NAMES) else f'Type{unit_type}'
-    order_name = ORDER_NAMES.get(order, f'ord_{order}')
-    return dict(idx=idx, x=x, y=y, type=unit_type, name=name, owner=owner,
-                moves=moves, order=order, orderName=order_name,
-                homeCity=home_city, alive=alive, id=unit_id,
-                gotoX=goto_x, gotoY=goto_y)
+def read_globals(h):
+    return {k: (ri16(h,a) if k in ('turn','totalUnits','totalCities','mapWidth','mapHeight','yearIncrement')
+                else ri32(h,a) if k == 'mapSeed'
+                else ru8(h,a))
+            for k,a in ADDR.items()}
 
-def read_city(handle, idx):
-    base = ADDR_CITY_ARRAY + idx * CITY_STRIDE
-    data = read_bytes(handle, base, CITY_STRIDE)
-    if not data or len(data) < CITY_STRIDE:
-        return None
-    x = struct.unpack_from('<h', data, 0)[0]
-    y = struct.unpack_from('<h', data, 2)[0]
-    owner = data[8]
-    size = data[9]
-    food = struct.unpack_from('<h', data, 0x1a)[0]
-    shields = struct.unpack_from('<h', data, 0x1c)[0]
-    prod_item = struct.unpack_from('<b', data, 0x39)[0]
-    exists = struct.unpack_from('<i', data, 0x54)[0]
-    name_bytes = data[0x20:0x30]
-    name = name_bytes.split(b'\x00')[0].decode('ascii', errors='replace')
+def read_unit(h, idx):
+    base = UNIT_BASE + idx * UNIT_STRIDE
+    d = read_mem(h, base, UNIT_STRIDE)
+    if not d or len(d) < UNIT_STRIDE: return None
+    x, y = struct.unpack_from('<hh', d, 0)
+    status = struct.unpack_from('<H', d, 4)[0]
+    utype, owner = d[6], d[7]
+    moves, order = d[10], d[15]
+    home = d[16]
+    goto_x, goto_y = struct.unpack_from('<hh', d, 0x12)
+    uid = struct.unpack_from('<i', d, 0x1A)[0]
+    veteran = (status >> 6) & 1
+    name = UNIT_NAMES[utype] if utype < len(UNIT_NAMES) else f'T{utype}'
+    return dict(idx=idx, x=x, y=y, type=utype, name=name, owner=owner,
+                moves=moves, order=order, orderName=ORDER_NAMES.get(order, f'o{order}'),
+                home=home, alive=uid!=0, id=uid, gotoX=goto_x, gotoY=goto_y,
+                veteran=veteran, status=status)
+
+def read_city(h, idx):
+    base = CITY_BASE + idx * CITY_STRIDE
+    d = read_mem(h, base, CITY_STRIDE)
+    if not d or len(d) < CITY_STRIDE: return None
+    x, y = struct.unpack_from('<hh', d, 0)
+    flags = struct.unpack_from('<I', d, 4)[0]
+    owner, size = d[8], d[9]
+    food = struct.unpack_from('<h', d, 0x1A)[0]
+    shields = struct.unpack_from('<h', d, 0x1C)[0]
+    trade = struct.unpack_from('<h', d, 0x1E)[0]
+    name = d[0x20:0x30].split(b'\x00')[0].decode('ascii', errors='replace')
+    tile_bitmap = struct.unpack_from('<I', d, 0x30)[0]
+    prod_item = struct.unpack_from('<b', d, 0x39)[0]
+    exists = struct.unpack_from('<i', d, 0x54)[0]
+    # Decode production item
+    if prod_item >= 0 and prod_item < len(UNIT_NAMES):
+        prod_name = UNIT_NAMES[prod_item]
+    elif prod_item < 0:
+        prod_name = f'Bldg{-prod_item-1}'
+    else:
+        prod_name = f'Item{prod_item}'
     return dict(idx=idx, x=x, y=y, owner=owner, size=size, name=name,
-                food=food, shields=shields, prodItem=prod_item, exists=exists)
+                food=food, shields=shields, trade=trade, prodItem=prod_item,
+                prodName=prod_name, exists=exists, flags=flags,
+                tileBitmap=tile_bitmap)
 
-def read_state(handle):
-    turn = read_i16(handle, ADDR_TURN_COUNT)
-    difficulty = read_u8(handle, ADDR_DIFFICULTY)
-    active_civ = read_u8(handle, ADDR_ACTIVE_CIV)
-    total_units = read_i16(handle, ADDR_TOTAL_UNITS)
-    total_cities = read_i16(handle, ADDR_TOTAL_CITIES)
-    map_w = read_i16(handle, ADDR_MAP_WIDTH)
-    map_h = read_i16(handle, ADDR_MAP_HEIGHT)
+def read_civ(h, idx):
+    base = CIV_BASE + idx * CIV_STRIDE
+    # Read key fields
+    gold = ru16(h, base + 0xA2)
+    beakers = ru16(h, base + 0xAA)
+    researching = ru8(h, base + 0xAC)
+    num_techs = ru8(h, base + 0xB0)
+    sci_rate = ru8(h, base + 0xB3)
+    tax_rate = ru8(h, base + 0xB4)
+    gov = ru8(h, base + 0xB5)
+    reputation = ru8(h, base + 0xBE)
+    gov_name = GOV_NAMES[gov] if gov is not None and gov < len(GOV_NAMES) else f'gov{gov}'
+    # Read civ name (at offset 0xA0, 2 bytes before gold)
+    name_data = read_mem(h, base + 0x00, 24)
+    # Actually the name might be elsewhere in the struct — use a fallback
+    return dict(idx=idx, gold=gold, beakers=beakers, researching=researching,
+                numTechs=num_techs, sciRate=(sci_rate or 0)*10,
+                taxRate=(tax_rate or 0)*10, gov=gov, govName=gov_name,
+                reputation=reputation)
 
-    units = []
-    for i in range(min(total_units or 0, 512)):
-        u = read_unit(handle, i)
-        if u and u['alive']:
-            units.append(u)
-
-    cities = []
-    for i in range(min(total_cities or 0, 256)):
-        c = read_city(handle, i)
-        if c and c['exists'] != 0:
-            cities.append(c)
-
-    return dict(turn=turn, difficulty=difficulty, activeCiv=active_civ,
-                totalUnits=total_units, totalCities=total_cities,
-                mapW=map_w, mapH=map_h, units=units, cities=cities)
+def read_state(h):
+    g = read_globals(h)
+    nu = min(g.get('totalUnits') or 0, 512)
+    nc = min(g.get('totalCities') or 0, 256)
+    units = [u for i in range(nu) if (u := read_unit(h, i)) and u['alive']]
+    cities = [c for i in range(nc) if (c := read_city(h, i)) and c['exists']]
+    civs = [read_civ(h, i) for i in range(8)]
+    return dict(**g, units=units, cities=cities, civs=civs)
 
 # ═══════════════════════════════════════════════════════════════════
 # Diffing
 # ═══════════════════════════════════════════════════════════════════
 
-def diff_states(prev, curr):
+def diff_states(prev, curr, t0):
     lines = []
-    if prev['turn'] != curr['turn']:
+    ms = (time.perf_counter() - t0) * 1000
+
+    # Turn / active civ change
+    if prev['turn'] != curr['turn'] or prev['activeCiv'] != curr['activeCiv']:
+        civ_type = 'human' if curr.get('humanPlayers',0) & (1 << (curr['activeCiv'] or 0)) else 'AI'
         lines.append(f"\n{'═'*60}")
-        lines.append(f"Turn {curr['turn']} | Active civ: {curr['activeCiv']}")
-        lines.append('═'*60)
+        lines.append(f"Turn {curr['turn']} | Civ {curr['activeCiv']} ({civ_type}) active")
+        lines.append('═' * 60)
+
+    # Civ changes (gold, gov, research, rates)
+    for i in range(8):
+        p, c = prev['civs'][i], curr['civs'][i]
+        ch = []
+        if p['gold'] != c['gold']: ch.append(f"gold {p['gold']}→{c['gold']}")
+        if p['gov'] != c['gov']: ch.append(f"gov {p['govName']}→{c['govName']}")
+        if p['beakers'] != c['beakers']: ch.append(f"beakers {p['beakers']}→{c['beakers']}")
+        if p['researching'] != c['researching']: ch.append(f"researching {p['researching']}→{c['researching']}")
+        if p['sciRate'] != c['sciRate']: ch.append(f"sci {p['sciRate']}%→{c['sciRate']}%")
+        if p['taxRate'] != c['taxRate']: ch.append(f"tax {p['taxRate']}%→{c['taxRate']}%")
+        if p['numTechs'] != c['numTechs']: ch.append(f"techs {p['numTechs']}→{c['numTechs']}")
+        if ch:
+            lines.append(f"[{ms:10.1f}ms]  Civ {i}: {', '.join(ch)}")
 
     # City changes
     pc = {c['idx']: c for c in prev['cities']}
     for c in curr['cities']:
-        p = pc.get(c['idx'])
+        p = pc.pop(c['idx'], None)
         if not p:
-            lines.append(f"  NEW CITY: {c['name']} (civ {c['owner']}) at ({c['x']},{c['y']})")
+            lines.append(f"[{ms:10.1f}ms]  NEW CITY: {c['name']} (civ {c['owner']}) at ({c['x']},{c['y']})")
             continue
         ch = []
         if p['size'] != c['size']: ch.append(f"size {p['size']}→{c['size']}")
         if p['food'] != c['food']: ch.append(f"food {p['food']}→{c['food']}")
         if p['shields'] != c['shields']: ch.append(f"shld {p['shields']}→{c['shields']}")
-        if p['prodItem'] != c['prodItem']: ch.append(f"prod {p['prodItem']}→{c['prodItem']}")
+        if p['trade'] != c['trade']: ch.append(f"trade {p['trade']}→{c['trade']}")
+        if p['prodItem'] != c['prodItem']: ch.append(f"build {p['prodName']}→{c['prodName']}")
         if ch:
-            lines.append(f"  {c['name']} (civ {c['owner']}): {', '.join(ch)}")
+            lines.append(f"[{ms:10.1f}ms]  {c['name']} (civ {c['owner']}): {', '.join(ch)}")
+    for c in pc.values():
+        lines.append(f"[{ms:10.1f}ms]  CITY DESTROYED: {c['name']} (civ {c['owner']})")
 
     # Unit changes
     pu = {u['id']: u for u in prev['units']}
-    moved, created, died = [], [], []
     for u in curr['units']:
         p = pu.pop(u['id'], None)
         if not p:
-            created.append(u)
-        elif p['x'] != u['x'] or p['y'] != u['y']:
-            moved.append((p, u))
-    for u in pu.values():
-        died.append(u)
-
-    if moved:
-        lines.append(f"  Moved ({len(moved)}):")
-        for p, u in moved[:15]:
+            lines.append(f"[{ms:10.1f}ms]  UNIT CREATED: {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']}) home={u['home']}")
+            continue
+        ch = []
+        if p['x'] != u['x'] or p['y'] != u['y']:
             goto = f" →({u['gotoX']},{u['gotoY']})" if u['order'] in (11, 27) else ""
-            lines.append(f"    {u['name']} (civ {u['owner']}) ({p['x']},{p['y']})→({u['x']},{u['y']}) [{u['orderName']}{goto}]")
-        if len(moved) > 15:
-            lines.append(f"    ... +{len(moved)-15} more")
-    if created:
-        lines.append(f"  Created ({len(created)}):")
-        for u in created[:5]:
-            lines.append(f"    {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']}) home={u['homeCity']}")
-    if died:
-        lines.append(f"  Died ({len(died)}):")
-        for u in died[:5]:
-            lines.append(f"    {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']})")
+            ch.append(f"({p['x']},{p['y']})→({u['x']},{u['y']}) [{u['orderName']}{goto}]")
+        if p['order'] != u['order'] and not ch:
+            ch.append(f"order {p['orderName']}→{u['orderName']}")
+        if p['moves'] != u['moves'] and not ch:
+            ch.append(f"moves {p['moves']}→{u['moves']}")
+        if p['veteran'] != u['veteran']:
+            ch.append(f"VETERAN!")
+        if p['home'] != u['home']:
+            ch.append(f"home {p['home']}→{u['home']}")
+        if ch:
+            lines.append(f"[{ms:10.1f}ms]  {u['name']} (civ {u['owner']}): {', '.join(ch)}")
+    for u in pu.values():
+        lines.append(f"[{ms:10.1f}ms]  UNIT KILLED: {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']})")
 
     return lines
 
 # ═══════════════════════════════════════════════════════════════════
-# Main loop
+# Main
 # ═══════════════════════════════════════════════════════════════════
 
 def main():
     log_file = None
-    interval = 1.0
-
     args = sys.argv[1:]
     if '--log' in args:
-        idx = args.index('--log')
-        log_file = args[idx + 1]
-        args = args[:idx] + args[idx+2:]
-    if '--interval' in args:
-        idx = args.index('--interval')
-        interval = float(args[idx + 1])
-        args = args[:idx] + args[idx+2:]
+        i = args.index('--log')
+        log_file = args[i + 1]
 
+    log_buf = []
     def log(text):
         print(text)
-        if log_file:
+        if log_file: log_buf.append(text)
+    def flush():
+        nonlocal log_buf
+        if log_buf and log_file:
             with open(log_file, 'a', encoding='utf-8') as f:
-                f.write(text + '\n')
+                f.write('\n'.join(log_buf) + '\n')
+            log_buf = []
 
-    log("Civ2 Memory Sniffer (continuous mode)")
+    log("Civ2 Memory Sniffer (continuous)")
     if log_file:
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write(f"Civ2 Sniffer — {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
         log(f"Logging to: {log_file}")
 
-    # Find Civ2 process
     log("\nLooking for civ2.exe...")
     handle = None
-    while handle is None:
+    while not handle:
         pid = find_process('civ2.exe')
         if pid:
             log(f"Found civ2.exe (PID {pid})")
-            try:
-                handle = open_process(pid)
-                log("Process opened for reading")
-            except RuntimeError as e:
-                log(f"Error: {e}")
-                sys.exit(1)
+            handle = open_process(pid)
+            log("Attached.")
         else:
             sys.stdout.write('.')
             sys.stdout.flush()
             time.sleep(2)
 
-    # Read initial state
     prev = read_state(handle)
     t0 = time.perf_counter()
-    log(f"\nInitial state: Turn {prev['turn']} | Map {prev['mapW']}x{prev['mapH']}")
+
+    diff_name = DIFF_NAMES[prev['difficulty']] if prev['difficulty'] is not None and prev['difficulty'] < 6 else '?'
+    log(f"\nTurn {prev['turn']} | {diff_name} | Map {prev['mapWidth']}x{prev['mapHeight']}")
     log(f"Cities: {len(prev['cities'])} | Units: {len(prev['units'])}")
-    for c in prev['cities'][:5]:
-        log(f"  {c['name']} (civ {c['owner']}) size={c['size']} food={c['food']} shld={c['shields']} prod={c['prodItem']}")
-    if len(prev['cities']) > 5:
-        log(f"  ... +{len(prev['cities'])-5} more")
+    for i, cv in enumerate(prev['civs']):
+        if cv['gold'] is not None and cv['gold'] > 0:
+            log(f"  Civ {i}: gold={cv['gold']} {cv['govName']} sci={cv['sciRate']}% tax={cv['taxRate']}% techs={cv['numTechs']}")
+    for c in prev['cities'][:8]:
+        log(f"  {c['name']} (civ {c['owner']}) sz={c['size']} food={c['food']} shld={c['shields']} build={c['prodName']}")
+    if len(prev['cities']) > 8:
+        log(f"  ... +{len(prev['cities'])-8} more")
+    flush()
 
-    log(f"\nContinuous monitoring — every state change logged with ms timestamp")
-    log(f"Press Ctrl+C to stop.\n")
-
+    log(f"\nMonitoring... (Ctrl+C to stop)\n")
     polls = 0
     changes = 0
     last_status = time.perf_counter()
 
-    # Batch file writes for performance
-    log_buffer = []
-    def flush_log():
-        nonlocal log_buffer
-        if log_buffer and log_file:
-            with open(log_file, 'a', encoding='utf-8') as f:
-                f.write('\n'.join(log_buffer) + '\n')
-            log_buffer = []
-
-    def log_fast(text):
-        nonlocal log_buffer
-        print(text)
-        if log_file:
-            log_buffer.append(text)
-
     try:
         while True:
-            # No sleep — spin as fast as possible
             try:
                 curr = read_state(handle)
             except Exception:
-                flush_log()
-                log("\nProcess closed or inaccessible")
+                flush()
+                log("\nProcess closed.")
                 break
 
             polls += 1
-
             if curr['turn'] is None:
-                time.sleep(0.1)  # process loading, back off briefly
+                time.sleep(0.1)
                 continue
 
-            lines = diff_states(prev, curr)
+            lines = diff_states(prev, curr, t0)
             if lines:
-                elapsed_ms = (time.perf_counter() - t0) * 1000
-                for line in lines:
-                    # Add ms timestamp to change lines (not headers)
-                    if line.startswith('  '):
-                        log_fast(f"[{elapsed_ms:10.1f}ms]{line}")
-                    else:
-                        log_fast(line)
+                for line in lines: log(line)
                 prev = curr
                 changes += 1
-                flush_log()
+                flush()
 
-            # Periodic status (every 5 seconds)
+            # Status every 10 seconds
             now = time.perf_counter()
-            if now - last_status > 5.0:
+            if now - last_status > 10.0:
                 rate = polls / (now - last_status)
-                log_fast(f"  [{(now-t0)*1000:10.1f}ms] -- polling at {rate:.0f} Hz, {changes} changes --")
-                flush_log()
+                log(f"[{(now-t0)*1000:10.1f}ms]  -- {rate:.0f} Hz, {changes} changes --")
+                flush()
                 polls = 0
                 last_status = now
 
     except KeyboardInterrupt:
-        flush_log()
-        elapsed = time.perf_counter() - t0
-        log(f"\nStopped after {elapsed:.1f}s, {changes} state changes detected.")
+        flush()
+        log(f"\nStopped. {changes} changes in {time.perf_counter()-t0:.1f}s")
 
     kernel32.CloseHandle(handle)
 
