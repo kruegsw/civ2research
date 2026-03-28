@@ -26,6 +26,7 @@ import sys
 import time
 import os
 import threading
+import subprocess
 
 # ═══════════════════════════════════════════════════════════════════
 # Win32 API
@@ -89,7 +90,7 @@ def ru8(h, a):
 
 ADDR = {
     'turn':         0x00655af8,  # i16
-    'difficulty':   0x00655b02,  # u8
+    'difficulty':   0x00655b04,  # u8 (0=Chieftain..5=Deity)
     'activeCiv':    0x00655b05,  # u8
     'activeUnit':   0x00655afe,  # i16 — which unit AI is processing
     'humanPlayers': 0x00655b0b,  # u8 bitmask
@@ -432,13 +433,32 @@ def vkey_name(vk):
     if 0x41 <= vk <= 0x5A: return chr(vk)       # A–Z
     return f'VK{vk:02X}'
 
-def start_hook_thread(log_fn, t0, hooks_active):
+VK_CAPTURE = 0x13  # Pause/Break key — triggers window capture
+
+def start_hook_thread(log_fn, t0, hooks_active, target_pid=None, capture_flag=None):
     """
     Install low-level keyboard and mouse hooks in a dedicated thread.
     hooks_active is a single-element list [bool] shared with the main thread.
-    F12 toggles hooks_active[0] on/off. All other keys/clicks are logged
-    only when hooks_active[0] is True.
+    F12 toggles hooks_active[0] on/off. F11 triggers a window capture.
+    All other keys/clicks are logged only when hooks_active[0] is True
+    AND the Civ2 window is in the foreground.
+    If target_pid is None, logs all events (old behavior).
+    capture_flag is a single-element list [bool] — set True on F11, main loop reads it.
     """
+    _GetForegroundWindow = user32.GetForegroundWindow
+    _GetForegroundWindow.restype = ctypes.c_void_p
+    _GetWindowThreadProcessId = user32.GetWindowThreadProcessId
+    _pid_buf = ctypes.c_ulong(0)
+
+    def is_target_foreground():
+        if target_pid is None:
+            return True
+        hwnd = _GetForegroundWindow()
+        if not hwnd:
+            return False
+        _GetWindowThreadProcessId(hwnd, ctypes.byref(_pid_buf))
+        return _pid_buf.value == target_pid
+
     def kb_callback(nCode, wParam, lParam):
         if nCode >= 0 and wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
             kb = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT)).contents
@@ -447,12 +467,15 @@ def start_hook_thread(log_fn, t0, hooks_active):
                 hooks_active[0] = not hooks_active[0]
                 state = 'on' if hooks_active[0] else 'off'
                 log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  HOOKS: {state} (F12)")
-            elif hooks_active[0]:
+            elif vk == VK_CAPTURE and capture_flag is not None:
+                capture_flag[0] = True
+                log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  CAPTURE: F11 pressed — capturing windows...")
+            elif hooks_active[0] and is_target_foreground():
                 log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  KEY: {vkey_name(vk)}")
         return user32.CallNextHookEx(None, nCode, wParam, lParam)
 
     def mouse_callback(nCode, wParam, lParam):
-        if nCode >= 0 and hooks_active[0] and wParam in MOUSE_NAMES:
+        if nCode >= 0 and hooks_active[0] and wParam in MOUSE_NAMES and is_target_foreground():
             ms = ctypes.cast(lParam, ctypes.POINTER(MSLLHOOKSTRUCT)).contents
             label = MOUSE_NAMES[wParam]
             log_fn(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  MOUSE: {label} ({ms.pt_x},{ms.pt_y})")
@@ -542,9 +565,10 @@ def main():
     t0 = time.perf_counter()
 
     # Start hook thread after t0 is established
+    capture_flag = [False]
     if use_hooks:
         hooks_active = [True]
-        start_hook_thread(log, t0, hooks_active)
+        start_hook_thread(log, t0, hooks_active, target_pid=pid, capture_flag=capture_flag)
 
     diff_name = DIFF_NAMES[prev['difficulty']] if prev['difficulty'] is not None and prev['difficulty'] < 6 else '?'
     log(f"\nTurn {prev['turn']} | {diff_name} | Map {prev['mapWidth']}x{prev['mapHeight']} | Seed {prev['mapSeed']}")
@@ -608,6 +632,32 @@ def main():
                         with open(snap_log, 'a', encoding='utf-8') as f:
                             f.write('\n'.join(lines) + '\n')
                     except: pass
+
+            # F11 window capture
+            if capture_flag[0]:
+                capture_flag[0] = False
+                try:
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    sniff_win = os.path.join(script_dir, 'sniff-windows.py')
+                    result = subprocess.run(
+                        [sys.executable, sniff_win],
+                        capture_output=True, text=True, timeout=10
+                    )
+                    # Find screenshot dir from output
+                    for line in result.stdout.splitlines():
+                        if 'Screenshots' in line and '->' in line:
+                            cap_dir = line.split('->')[-1].strip()
+                            log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  CAPTURE: saved to {cap_dir}")
+                            break
+                    # Save full output to snap_dir
+                    cap_file = os.path.join(snap_dir, f'windows_{time.strftime("%H%M%S")}.txt')
+                    with open(cap_file, 'w', encoding='utf-8') as f:
+                        f.write(result.stdout)
+                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  CAPTURE: window dump → {os.path.basename(cap_file)}")
+                    flush()
+                except Exception as e:
+                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  CAPTURE: error — {e}")
+                    flush()
 
             now = time.perf_counter()
             if now - last_status > 10.0:

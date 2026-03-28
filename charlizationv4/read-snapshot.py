@@ -97,9 +97,9 @@ def dump_globals(addr, data):
         turn         = struct.unpack_from('<h', data, 0x08)[0]
         year_inc     = struct.unpack_from('<h', data, 0x0a)[0]
         active_unit  = struct.unpack_from('<h', data, 0x0e)[0]
-        diff         = data[0x12]
+        diff         = data[0x14]
         gw           = data[0x13]
-        poll         = data[0x14]
+        poll         = data[0x12]
         active_civ   = data[0x15]
         human_mask   = data[0x1b] if len(data) > 0x1b else '?'
         diff_name    = DIFF_NAMES[diff] if diff < len(DIFF_NAMES) else f'?{diff}'

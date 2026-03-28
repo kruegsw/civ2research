@@ -41,7 +41,7 @@ Full details: `memory_map/tile_array.md`
 | 0x0064F340   | City array                                     | 88     | —     |
 | 0x0064C6A0   | Civilization array                             | 0x594  | —     |
 | 0x00655AF8   | Current turn number                            | —      | —     |
-| 0x00655B02   | Difficulty level                               | —      | —     |
+| 0x00655B04   | Difficulty level (0=Chieftain..5=Deity)        | —      | —     |
 | 0x00655BE6   | Wonders built array                            | —      | —     |
 
 ## Tools
