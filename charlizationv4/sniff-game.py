@@ -83,6 +83,8 @@ def ru16(h, a):
     d = read_mem(h, a, 2); return struct.unpack('<H', d)[0] if d else None
 def ru8(h, a):
     d = read_mem(h, a, 1); return d[0] if d else None
+def ri8(h, a):
+    d = read_mem(h, a, 1); return struct.unpack('<b', d)[0] if d else None
 
 # ═══════════════════════════════════════════════════════════════════
 # Civ2 addresses (absolute virtual addresses from Ghidra)
@@ -104,6 +106,7 @@ ADDR = {
     'yearIncrement':0x00655afa,  # i16
 }
 
+UNIT_TYPE_BASE = 0x0064B1B8;  UNIT_TYPE_STRIDE = 0x14  # unit type stats table
 UNIT_BASE  = 0x006560f0;  UNIT_STRIDE  = 0x20
 CITY_BASE  = 0x0064f340;  CITY_STRIDE  = 0x58
 CIV_BASE   = 0x0064c600;  CIV_STRIDE   = 0x594
@@ -131,13 +134,65 @@ UNIT_NAMES = [
     'Cruiser','AEGIS','Battleship','Submarine','Carrier','Transport',
     'Cruise Msl','Nuclear Msl','Diplomat','Spy','Caravan','Freight','Explorer'
 ]
+BUILDING_NAMES = [
+    'Nothing','Palace','Barracks','Granary','Temple','MarketPlace','Library',
+    'Courthouse','City Walls','Aqueduct','Bank','Cathedral','University',
+    'Mass Transit','Colosseum','Factory','Mfg Plant','SDI Defense',
+    'Recycling Ctr','Power Plant','Hydro Plant','Nuclear Plant','Stock Exchange',
+    'Sewer System','Supermarket','Superhighways','Research Lab','SAM Battery',
+    'Coastal Fort','Solar Plant','Harbor','Offshore Platform','Airport',
+    'Police Station','Port Facility','SS Structural','SS Component','SS Module',
+    'Capitalization',
+    'Pyramids','Hanging Gardens','Colossus','Lighthouse','Great Library',
+    'Oracle','Great Wall','Sun Tzu','King Richard','Marco Polo',
+    'Michelangelo','Copernicus','Magellan','Shakespeare','Da Vinci',
+    'J.S. Bach','Isaac Newton','Adam Smith','Darwin','Statue of Liberty',
+    'Eiffel Tower','Women Suffrage','Hoover Dam','Manhattan Project',
+    'United Nations','Apollo Program','SETI Program','Cure for Cancer',
+]
 ORDER_NAMES = {
-    0:'fortify', 1:'sentry', 2:'fortress', 3:'road', 4:'irrigate',
-    5:'mine', 6:'transform', 7:'clean', 8:'fortress2', 9:'airbase',
-    10:'load', 11:'goto', 12:'no_orders', 27:'goto_ai', 255:'none'
+    # From decompiled source (block_00580000.c, block_004C0000.c, block_005B0000.c):
+    # 1=FUN_0058cce6 (F key), 2=FUN_004c4ada (fortified state), 3=FUN_005b2f50 (S key)
+    # 4-10=FUN_004c42a0 settler work, 11=goto, 27=goto_ai
+    0:'o0', 1:'fortify', 2:'fortified', 3:'sleep',
+    4:'build_fortress', 5:'road', 6:'irrigate', 7:'mine',
+    8:'transform', 9:'clean_pollution', 10:'build_airbase',
+    11:'goto', 12:'no_orders', 16:'assault', 27:'goto_ai', 255:'none'
 }
 GOV_NAMES = ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy']
 DIFF_NAMES = ['Chieftain','Warlord','Prince','King','Emperor','Deity']
+LEADER_CIVS = [
+    'Romans','Babylonians','Germans','Egyptians','Americans','Greeks','Indians',
+    'Russians','Zulus','French','Aztecs','Chinese','English','Mongols',
+    'Celts','Japanese','Vikings','Spanish','Persians','Carthaginians','Sioux',
+    'Arabs','Incas',
+]
+TECH_NAMES = [
+    'Advanced Flight','Alphabet','Amphibious War','Astronomy','Atomic Theory',
+    'Automobile','Banking','Bridge Building','Bronze Working','Ceremonial Burial',
+    'Chemistry','Chivalry','Code of Laws','Combined Arms','Combustion',
+    'Communism','Computers','Conscription','Construction','The Corporation',
+    'Currency','Democracy','Economics','Electricity','Electronics',
+    'Engineering','Environmentalism','Espionage','Explosives','Feudalism',
+    'Flight','Fundamentalism','Fusion Power','Genetic Engineering','Guerrilla War',
+    'Gunpowder','Horseback Riding','Industrialization','Invention','Iron Working',
+    'Labor Union','The Laser','Leadership','Literacy','Machine Tools',
+    'Magnetism','Map Making','Masonry','Mass Production','Mathematics',
+    'Medicine','Metallurgy','Miniaturization','Mobile Warfare','Monarchy',
+    'Monotheism','Mysticism','Navigation','Nuclear Fission','Nuclear Power',
+    'Philosophy','Physics','Plastics','Plumbing','Polytheism',
+    'Pottery','Radio','Railroad','Recycling','Refining',
+    'Refrigeration','The Republic','Robotics','Rocketry','Sanitation',
+    'Seafaring','Space Flight','Stealth','Steam Engine','Steel',
+    'Superconductor','Tactics','Theology','Theory of Gravity','Trade',
+    'University','Warrior Code','The Wheel','Writing','Future Tech',
+]
+AI_ROLES = {
+    0x21:'attack!', 0x32:'defend2', 0x33:'defend3', 0x41:'attack_A',
+    0x44:'defend_D', 0x46:'fortify_F', 0x48:'home_H', 0x55:'unassigned_U',
+    0x62:'build_b', 0x64:'diplomat_d', 0x68:'explore_h', 0x74:'transport_t',
+    0x3F:'unknown_?', 0x37:'settler_7',
+}
 WONDER_NAMES = [
     'Pyramids','Hanging Gardens','Colossus','Lighthouse','Great Library',
     'Oracle','Great Wall','Sun Tzu','King Richard','Marco Polo',
@@ -162,6 +217,22 @@ def read_globals(h):
             g[k] = ru8(h, a)
     return g
 
+# Unit byte map — for raw diff labeling
+UNIT_BYTE_MAP = {
+    0x00:'x_lo', 0x01:'x_hi', 0x02:'y_lo', 0x03:'y_hi',
+    0x04:'status_lo', 0x05:'status_hi', 0x06:'type', 0x07:'owner',
+    0x08:'moves', 0x09:'visMask', 0x0A:'damage', 0x0B:'carrying',
+    0x0C:'aiRole', 0x0D:'home', 0x0E:'fuel', 0x0F:'order',
+    0x10:'gotoTurn', 0x11:'_pad11', 0x12:'gotoX_lo', 0x13:'gotoX_hi',
+    0x14:'gotoY_lo', 0x15:'gotoY_hi', 0x16:'prevStack_lo', 0x17:'prevStack_hi',
+    0x18:'nextStack_lo', 0x19:'nextStack_hi',
+    0x1A:'uid_0', 0x1B:'uid_1', 0x1C:'uid_2', 0x1D:'uid_3',
+    0x1E:'_pad1E', 0x1F:'_pad1F',
+}
+
+# Offsets explicitly diffed in unit change handler (skip in raw catch-all)
+UNIT_DIFFED_OFFSETS = {0,1,2,3, 4,5, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10}
+
 def read_unit(h, idx):
     base = UNIT_BASE + idx * UNIT_STRIDE
     d = read_mem(h, base, UNIT_STRIDE)
@@ -169,47 +240,232 @@ def read_unit(h, idx):
     x, y = struct.unpack_from('<hh', d, 0)
     status = struct.unpack_from('<H', d, 4)[0]
     utype, owner = d[6], d[7]
-    moves, order, home = d[10], d[15], d[16]
+    moves = d[8]
+    vis_mask = d[9]
+    hp = d[0x0A]
+    carrying = struct.unpack_from('<b', d, 0x0B)[0]
+    ai_role = d[0x0C]
+    home = struct.unpack_from('<b', d, 0x0D)[0]
+    fuel = d[0x0E]
+    order = d[0x0F]
+    goto_turn = d[0x10]
     goto_x, goto_y = struct.unpack_from('<hh', d, 0x12)
+    prev_stack = struct.unpack_from('<h', d, 0x16)[0]
+    next_stack = struct.unpack_from('<h', d, 0x18)[0]
     uid = struct.unpack_from('<i', d, 0x1A)[0]
     name = UNIT_NAMES[utype] if utype < len(UNIT_NAMES) else f'T{utype}'
-    return dict(idx=idx, x=x, y=y, type=utype, name=name, owner=owner,
+    return dict(idx=idx, raw=d, x=x, y=y, type=utype, name=name, owner=owner,
                 moves=moves, order=order, orderName=ORDER_NAMES.get(order, f'o{order}'),
                 home=home, alive=uid!=0, id=uid, gotoX=goto_x, gotoY=goto_y,
-                veteran=(status>>6)&1, status=status)
+                veteran=(status>>6)&1, status=status, visMask=vis_mask,
+                hp=hp, aiRole=ai_role, aiRoleName=AI_ROLES.get(ai_role, f'r{ai_role:02X}'),
+                carrying=carrying, fuel=fuel, gotoTurn=goto_turn,
+                prevStack=prev_stack, nextStack=next_stack)
+
+# City byte map — for raw diff labeling
+CITY_BYTE_MAP = {}
+for _o, _n in [(0x00,'x'),(0x02,'y'),(0x04,'flags'),(0x08,'owner'),(0x09,'size'),
+    (0x0A,'origOwner'),(0x0B,'turnFounded'),(0x0C,'civVis'),
+    (0x16,'workerTiles'),(0x1A,'foodBox'),(0x1C,'shieldBox'),(0x1E,'tradeRev'),
+    (0x30,'improvements'),(0x39,'production'),(0x3A,'numRoutes'),
+    (0x4A,'foodOut'),(0x4C,'shieldOut'),(0x4E,'tradeOut'),
+    (0x50,'foodSurplus'),(0x51,'shieldSurplus'),(0x52,'happy'),(0x53,'unhappy'),(0x54,'cityId')]:
+    CITY_BYTE_MAP[_o] = _n
+for _i in range(8): CITY_BYTE_MAP[0x0D+_i] = f'popKnowledge_civ{_i}'
+for _i in range(16): CITY_BYTE_MAP[0x20+_i] = f'name[{_i}]'
+for _i in range(5): CITY_BYTE_MAP[0x34+_i] = f'tileImpr[{_i}]'
+for _i in range(3): CITY_BYTE_MAP[0x3B+_i] = f'supply[{_i}]'
+for _i in range(3): CITY_BYTE_MAP[0x3E+_i] = f'demand[{_i}]'
+for _i in range(3): CITY_BYTE_MAP[0x41+_i] = f'routeType[{_i}]'
+for _i in range(6): CITY_BYTE_MAP[0x44+_i] = f'routePartner[{_i//2}]_{_i%2}'
+
+# Offsets explicitly diffed in city change handler
+CITY_DIFFED_OFFSETS = set()
+for _r in [(0x04,4),(0x09,1),(0x16,4),(0x1A,2),(0x1C,2),(0x1E,2),(0x30,4),(0x39,1),(0x3A,1),
+           (0x4A,2),(0x4C,2),(0x4E,2),(0x50,1),(0x51,1),(0x52,1),(0x53,1)]:
+    for _b in range(_r[0], _r[0]+_r[1]): CITY_DIFFED_OFFSETS.add(_b)
 
 def read_city(h, idx):
     base = CITY_BASE + idx * CITY_STRIDE
     d = read_mem(h, base, CITY_STRIDE)
     if not d or len(d) < CITY_STRIDE: return None
     x, y = struct.unpack_from('<hh', d, 0)
+    flags = struct.unpack_from('<I', d, 0x04)[0]
     owner, size = d[8], d[9]
+    original_owner = d[0x0A]
+    turn_founded = d[0x0B]
+    civ_vis = d[0x0C]
+    civ_pop_knowledge = list(d[0x0D:0x15])
+    worker_tiles = struct.unpack_from('<I', d, 0x16)[0]
     food = struct.unpack_from('<h', d, 0x1A)[0]
     shields = struct.unpack_from('<h', d, 0x1C)[0]
     trade = struct.unpack_from('<h', d, 0x1E)[0]
     name = d[0x20:0x30].split(b'\x00')[0].decode('ascii', errors='replace')
+    improvements = struct.unpack_from('<I', d, 0x30)[0]
     prod = struct.unpack_from('<b', d, 0x39)[0]
+    num_trade_routes = struct.unpack_from('<b', d, 0x3A)[0]
+    supply_commodities = [struct.unpack_from('<b', d, 0x3B+i)[0] for i in range(3)]
+    demand_commodities = [struct.unpack_from('<b', d, 0x3E+i)[0] for i in range(3)]
+    trade_route_type = [struct.unpack_from('<b', d, 0x41+i)[0] for i in range(3)]
+    trade_route_partner = [struct.unpack_from('<h', d, 0x44+i*2)[0] for i in range(3)]
+    tile_improvements = d[0x34:0x39]
+    food_out = struct.unpack_from('<h', d, 0x4A)[0]
+    shield_out = struct.unpack_from('<h', d, 0x4C)[0]
+    trade_out = struct.unpack_from('<h', d, 0x4E)[0]
+    food_surplus = struct.unpack_from('<b', d, 0x50)[0]
+    shield_surplus = struct.unpack_from('<B', d, 0x51)[0]
+    happy = struct.unpack_from('<b', d, 0x52)[0]
+    unhappy = struct.unpack_from('<b', d, 0x53)[0]
     exists = struct.unpack_from('<i', d, 0x54)[0]
     if 0 <= prod < len(UNIT_NAMES): pname = UNIT_NAMES[prod]
-    elif prod < 0: pname = f'Bldg{-prod-1}'
+    elif prod < 0:
+        bidx = -prod - 1
+        pname = BUILDING_NAMES[bidx] if bidx < len(BUILDING_NAMES) else f'Bldg{bidx}'
     else: pname = f'Item{prod}'
-    return dict(idx=idx, x=x, y=y, owner=owner, size=size, name=name,
+    # Decode flags
+    wltk = bool(flags & 0x01)
+    disorder = bool(flags & 0x02)
+    coastal = bool(flags & 0x80)
+    return dict(idx=idx, raw=d, x=x, y=y, owner=owner, size=size, name=name,
                 food=food, shields=shields, trade=trade, prodItem=prod,
-                prodName=pname, exists=exists)
+                prodName=pname, exists=exists,
+                flags=flags, originalOwner=original_owner, turnFounded=turn_founded,
+                workerTiles=worker_tiles, improvements=improvements,
+                numTradeRoutes=num_trade_routes,
+                civPopKnowledge=civ_pop_knowledge, civVis=civ_vis,
+                supplyCommodities=supply_commodities, demandCommodities=demand_commodities,
+                tradeRouteType=trade_route_type, tradeRoutePartner=trade_route_partner,
+                tileImprovements=tile_improvements,
+                foodOut=food_out, shieldOut=shield_out, tradeOut=trade_out,
+                foodSurplus=food_surplus, shieldSurplus=shield_surplus,
+                happy=happy, unhappy=unhappy,
+                wltk=wltk, disorder=disorder, coastal=coastal)
+
+TERRAIN_NAMES = [
+    'Desert','Plains','Grassland','Forest','Hills','Mountains','Tundra',
+    'Glacier','Swamp','Jungle','Ocean','River','(12)','(13)','(14)','(15)',
+]
+
+def get_unit_type_stats(h, utype):
+    """Read attack, defense, hp, firepower, moves, cost from unit type table."""
+    base = UNIT_TYPE_BASE + utype * UNIT_TYPE_STRIDE
+    d = read_mem(h, base, UNIT_TYPE_STRIDE)
+    if not d or len(d) < UNIT_TYPE_STRIDE: return None
+    return dict(
+        attack=d[0x0C],
+        defense=d[0x0D],
+        maxHp=d[0x0E],
+        firepower=d[0x0F],
+        moves=d[0x0A],
+        cost=d[0x10],
+    )
+
+def get_terrain_at(h, x, y, map_w):
+    """Read terrain type at (x,y) from tile array."""
+    ptr_data = read_mem(h, TILE_PTR_ADDR, 4)
+    if not ptr_data: return None
+    tile_base = struct.unpack('<I', ptr_data)[0]
+    if not tile_base: return None
+    offset = (map_w * y + (x & ~1)) * 3
+    d = read_mem(h, tile_base + offset, 6)
+    if not d: return None
+    terrain = d[0] & 0x0F
+    return TERRAIN_NAMES[terrain] if terrain < len(TERRAIN_NAMES) else f'T{terrain}'
+
+DIPLO_BITS = {0x01:'contact', 0x02:'ceasefire', 0x04:'peace', 0x08:'alliance'}
+DIPLO_BITS_B1 = {0x20:'war'}
+
+def decode_diplo(b0, b1):
+    """Decode 2 bytes of diplomatic_status into a set of flag names."""
+    flags = set()
+    for bit, name in DIPLO_BITS.items():
+        if (b0 or 0) & bit: flags.add(name)
+    for bit, name in DIPLO_BITS_B1.items():
+        if (b1 or 0) & bit: flags.add(name)
+    return flags
 
 def read_civ(h, idx):
+    """Read entire civ struct as blob, parse all known fields."""
     base = CIV_BASE + idx * CIV_STRIDE
-    gold = ru16(h, base + 0xA2)
-    beakers = ru16(h, base + 0xAA)
-    researching = ru8(h, base + 0xAC)
-    num_techs = ru8(h, base + 0xB0)
-    sci_rate = ru8(h, base + 0xB3)
-    tax_rate = ru8(h, base + 0xB4)
-    gov = ru8(h, base + 0xB5)
-    gov_name = GOV_NAMES[gov] if gov is not None and gov < len(GOV_NAMES) else f'gov{gov}'
-    return dict(idx=idx, gold=gold, beakers=beakers, researching=researching,
-                numTechs=num_techs, sciRate=(sci_rate or 0)*10,
-                taxRate=(tax_rate or 0)*10, gov=gov, govName=gov_name)
+    raw = read_mem(h, base, CIV_STRIDE)
+    if not raw or len(raw) < CIV_STRIDE:
+        return dict(idx=idx, raw=b'\x00'*CIV_STRIDE, civName=f'Civ{idx}',
+                    gold=0, gov=0, govName='?', beakers=0, researching=0,
+                    numTechs=0, sciRate=0, taxRate=0, luxRate=0,
+                    reputation=0, diplo={}, attitude={}, friction={},
+                    lastContact={}, numCities=0, numUnits=0,
+                    techList=bytes(93))
+    d = raw
+    # Core fields (offsets from CIV_BASE, which has 0xA0 header before civ[0] fields)
+    H = 0xA0  # header offset
+    gold = struct.unpack_from('<H', d, H+0x02)[0]
+    leader_gid = struct.unpack_from('<h', d, H+0x06)[0]
+    civ_name = LEADER_CIVS[leader_gid] if 0 <= leader_gid < len(LEADER_CIVS) else f'Civ{idx}'
+    beakers = struct.unpack_from('<H', d, H+0x0A)[0]
+    researching = d[H+0x0C]
+    num_techs = d[H+0x10]
+    sci_rate = d[H+0x13]
+    tax_rate = d[H+0x14]
+    gov = d[H+0x15]
+    gov_name = GOV_NAMES[gov] if gov < len(GOV_NAMES) else f'gov{gov}'
+    reputation = d[H+0x1E]
+    patience = d[H+0x1F]
+    # Diplomatic status: 4 bytes per opposing civ at offset 0x20
+    diplo = {}
+    for j in range(8):
+        if j == idx: continue
+        b0 = d[H+0x20 + j*4]
+        b1 = d[H+0x20 + j*4 + 1]
+        diplo[j] = decode_diplo(b0, b1)
+    # Attitude: 1 byte per civ at offset 0x40
+    attitude = {}
+    for j in range(8):
+        if j == idx: continue
+        attitude[j] = struct.unpack_from('<b', d, H+0x40+j)[0]
+    # Spy operations: 1 byte per civ at offset 0x48
+    spy_ops = {}
+    for j in range(8):
+        if j == idx: continue
+        spy_ops[j] = d[H+0x48+j]
+    # Border friction: 1 byte per civ at offset 0x50
+    friction = {}
+    for j in range(8):
+        if j == idx: continue
+        friction[j] = d[H+0x50+j]
+    # Tech/contact flags (offset 0x58, 12 bytes)
+    tech_contact = d[H+0x58:H+0x64]
+    # City/unit counts (offset 0x66, 14 bytes)
+    num_cities = struct.unpack_from('<h', d, H+0x66)[0]
+    num_units = struct.unpack_from('<h', d, H+0x68)[0]
+    # Tech list (offset 0x74, 93 bytes — 1 byte per tech)
+    tech_list = d[H+0x74:H+0x74+93]
+    # Unit counts by type (offset 0x0D8, 54 bytes)
+    unit_type_counts = d[H+0xD8:H+0xD8+54]
+    # Improvement counts (offset 0x154, 54 bytes)
+    impr_counts = d[H+0x154:H+0x154+54]
+    # Last contact turn (offset 0x3E2, 16 bytes = short[8])
+    last_contact = {}
+    for j in range(8):
+        if j == idx: continue
+        last_contact[j] = struct.unpack_from('<h', d, H+0x3E2+j*2)[0]
+    # Spy level (offset 0x3F3, 8 bytes)
+    spy_level = {}
+    for j in range(8):
+        if j == idx: continue
+        spy_level[j] = d[H+0x3F3+j]
+    return dict(idx=idx, raw=raw, civName=civ_name,
+                gold=gold, gov=gov, govName=gov_name,
+                beakers=beakers, researching=researching,
+                numTechs=num_techs,
+                sciRate=sci_rate*10, taxRate=tax_rate*10,
+                luxRate=(10 - sci_rate - tax_rate)*10,
+                reputation=reputation, patience=patience,
+                diplo=diplo, attitude=attitude, spyOps=spy_ops,
+                friction=friction, lastContact=last_contact,
+                spyLevel=spy_level,
+                numCities=num_cities, numUnits=num_units,
+                techList=tech_list, unitTypeCounts=unit_type_counts,
+                imprCounts=impr_counts, techContact=tech_contact)
 
 def read_wonders(h):
     d = read_mem(h, WONDER_BASE, 56)
@@ -220,6 +476,102 @@ def read_wonders(h):
         if city_id >= 0:
             wonders[i] = city_id
     return wonders
+
+# ═══════════════════════════════════════════════════════════════════
+# Window/dialog monitoring
+# ═══════════════════════════════════════════════════════════════════
+
+EnumWindowsProc = ctypes.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)
+
+def enum_civ2_windows(pid):
+    """Enumerate all top-level windows owned by civ2.exe PID.
+    Returns dict of {hwnd: (title, class_name, width, height)}."""
+    results = {}
+    _pid_buf = ctypes.c_ulong(0)
+
+    def callback(hwnd, lparam):
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(_pid_buf))
+        if _pid_buf.value != pid:
+            return True
+        if not user32.IsWindowVisible(hwnd):
+            return True
+        length = user32.GetWindowTextLengthW(hwnd) + 1
+        title_buf = ctypes.create_unicode_buffer(length)
+        user32.GetWindowTextW(hwnd, title_buf, length)
+        class_buf = ctypes.create_unicode_buffer(256)
+        user32.GetClassNameW(hwnd, class_buf, 256)
+        rect = (wt.LONG * 4)()
+        user32.GetWindowRect(hwnd, rect)
+        w = rect[2] - rect[0]
+        h = rect[3] - rect[1]
+        results[hwnd] = (title_buf.value, class_buf.value, w, h)
+        return True
+
+    proc = EnumWindowsProc(callback)
+    user32.EnumWindows(proc, 0)
+    return results
+
+EnumChildProc = ctypes.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)
+
+def read_dialog_text(hwnd):
+    """Read all text from child controls of a dialog window. Returns list of strings."""
+    texts = []
+    def child_callback(child_hwnd, lparam):
+        length = user32.GetWindowTextLengthW(child_hwnd) + 1
+        if length > 1:
+            buf = ctypes.create_unicode_buffer(length)
+            user32.GetWindowTextW(child_hwnd, buf, length)
+            text = buf.value.strip()
+            if text:
+                texts.append(text)
+        return True
+    proc = EnumChildProc(child_callback)
+    user32.EnumChildWindows(hwnd, proc, 0)
+    return texts
+
+# Text buffer addresses used by Civ2 for dialog/message text
+DIALOG_TEXT_BUFFERS = [
+    0x00679640,  # Main text buffer (thunk_FUN_0040ff60 output)
+    0x00673e10,  # Secondary text buffer (sprintf targets)
+]
+
+def read_dialog_text_from_memory(handle):
+    """Read dialog text directly from Civ2's text buffers in process memory."""
+    texts = []
+    for addr in DIALOG_TEXT_BUFFERS:
+        d = read_mem(handle, addr, 1024)
+        if not d: continue
+        # Extract null-terminated strings, skip very short fragments
+        parts = d.split(b'\x00')
+        for p in parts:
+            if len(p) >= 4:
+                try:
+                    t = p.decode('ascii').strip()
+                    # Filter out junk — must have letters and reasonable chars
+                    if t and any(c.isalpha() for c in t) and all(32 <= ord(c) < 127 for c in t):
+                        texts.append(t)
+                except: pass
+            if len(texts) >= 10: break  # cap to avoid noise
+    return texts
+
+def diff_windows(prev_wins, curr_wins, t0, handle=None):
+    """Detect new/closed windows. Returns list of log lines."""
+    lines = []
+    ms = (time.perf_counter() - t0) * 1000
+    for hwnd, (title, cls, w, h) in curr_wins.items():
+        if hwnd not in prev_wins:
+            lines.append(f"[{ms:10.1f}ms]  DIALOG OPEN: \"{title}\" class={cls} {w}x{h}")
+    for hwnd, (title, cls, w, h) in prev_wins.items():
+        if hwnd not in curr_wins:
+            lines.append(f"[{ms:10.1f}ms]  DIALOG CLOSE: \"{title}\" class={cls}")
+    # Also detect title changes on existing windows (dialog content changes)
+    for hwnd in curr_wins:
+        if hwnd in prev_wins:
+            if curr_wins[hwnd][0] != prev_wins[hwnd][0]:
+                old_title = prev_wins[hwnd][0]
+                new_title = curr_wins[hwnd][0]
+                lines.append(f"[{ms:10.1f}ms]  DIALOG CHANGE: \"{old_title}\" -> \"{new_title}\"")
+    return lines
 
 def read_state(h):
     g = read_globals(h)
@@ -277,19 +629,69 @@ def dump_snapshot(h, snap_dir, turn, map_w, map_h, difficulty):
     return fname
 
 # ═══════════════════════════════════════════════════════════════════
+# Combat tracking
+# ═══════════════════════════════════════════════════════════════════
+
+# Tracks HP changes per unit id: {unit_id: {'info':..., 'rounds':[(hp_b, hp_a, ms), ...], 'activeUnit': idx}}
+_combat_hp_log = {}
+_combat_active_unit = None  # set each diff cycle from curr['activeUnit']
+
+def _log_hp_change(unit_id, hp_before, hp_after, ms, unit_info=None):
+    if unit_id not in _combat_hp_log:
+        _combat_hp_log[unit_id] = {'rounds': [], 'info': unit_info, 'activeUnit': _combat_active_unit}
+    _combat_hp_log[unit_id]['rounds'].append((hp_before, hp_after, ms))
+    if unit_info:
+        _combat_hp_log[unit_id]['info'] = unit_info
+
+def _get_combat_rounds(unit_id):
+    """Get and clear accumulated HP changes for a unit. Returns (rounds, info)."""
+    entry = _combat_hp_log.pop(unit_id, None)
+    if entry:
+        return entry['rounds'], entry.get('info')
+    return [], None
+
+def _find_combat_opponent(dead_id, dead_owner):
+    """Find the other unit involved in combat by looking for HP changes at similar timestamps."""
+    dead_entry = _combat_hp_log.get(dead_id)
+    if not dead_entry or not dead_entry['rounds']:
+        return None
+    dead_times = {r[2] for r in dead_entry['rounds']}
+    # Look for another unit with HP changes within 2ms of the dead unit's changes
+    best = None
+    best_overlap = 0
+    for uid, entry in _combat_hp_log.items():
+        if uid == dead_id: continue
+        info = entry.get('info')
+        if info and info.get('owner') == dead_owner: continue  # same team
+        overlap = sum(1 for _, _, t in entry['rounds'] if any(abs(t - dt) < 100 for dt in dead_times))
+        if overlap > best_overlap:
+            best_overlap = overlap
+            best = uid
+    return best
+
+# ═══════════════════════════════════════════════════════════════════
 # Diffing
 # ═══════════════════════════════════════════════════════════════════
 
-def diff_states(prev, curr, t0):
+def diff_states(prev, curr, t0, handle=None):
+    global _combat_active_unit
     lines = []
     ms = (time.perf_counter() - t0) * 1000
+    _combat_active_unit = curr.get('activeUnit')
+
+    # Helper to get civ name
+    def cn(idx):
+        if 0 <= idx < 8:
+            return curr['civs'][idx].get('civName', f'Civ{idx}')
+        return f'Civ{idx}'
 
     # Turn / active civ
     if prev['turn'] != curr['turn'] or prev['activeCiv'] != curr['activeCiv']:
         human = curr.get('humanPlayers', 0) or 0
-        ctype = 'HUMAN' if human & (1 << (curr['activeCiv'] or 0)) else 'AI'
+        ac = curr['activeCiv'] or 0
+        ctype = 'HUMAN' if human & (1 << ac) else 'AI'
         lines.append(f"\n{'═'*60}")
-        lines.append(f"Turn {curr['turn']} | Civ {curr['activeCiv']} ({ctype})")
+        lines.append(f"Turn {curr['turn']} | {cn(ac)} ({ctype})")
         lines.append('═' * 60)
 
     # Active unit change (AI processing)
@@ -297,7 +699,7 @@ def diff_states(prev, curr, t0):
         au = curr['activeUnit']
         u = next((u for u in curr['units'] if u['idx'] == au), None)
         if u:
-            lines.append(f"[{ms:10.1f}ms]  >> Processing: {u['name']} #{au} (civ {u['owner']}) at ({u['x']},{u['y']})")
+            lines.append(f"[{ms:10.1f}ms]  >> Processing: {u['name']} #{au} ({cn(u['owner'])}) at ({u['x']},{u['y']})")
 
     # Civ changes
     for i in range(8):
@@ -306,12 +708,118 @@ def diff_states(prev, curr, t0):
         if p['gold'] != c['gold']: ch.append(f"gold {p['gold']}→{c['gold']}")
         if p['gov'] != c['gov']: ch.append(f"gov {p['govName']}→{c['govName']}")
         if p['beakers'] != c['beakers']: ch.append(f"beakers {p['beakers']}→{c['beakers']}")
-        if p['researching'] != c['researching']: ch.append(f"research {p['researching']}→{c['researching']}")
         if p['sciRate'] != c['sciRate']: ch.append(f"sci {p['sciRate']}%→{c['sciRate']}%")
         if p['taxRate'] != c['taxRate']: ch.append(f"tax {p['taxRate']}%→{c['taxRate']}%")
-        if p['numTechs'] != c['numTechs']: ch.append(f"techs {p['numTechs']}→{c['numTechs']}")
+        if p['numTechs'] != c['numTechs']:
+            # The tech they just discovered is what they WERE researching
+            discovered = TECH_NAMES[p['researching']] if p['researching'] is not None and 0 <= p['researching'] < len(TECH_NAMES) else None
+            if discovered and c['numTechs'] > p['numTechs']:
+                ch.append(f"DISCOVERED {discovered} (techs {p['numTechs']}→{c['numTechs']})")
+            else:
+                ch.append(f"techs {p['numTechs']}→{c['numTechs']}")
+        if p['reputation'] != c['reputation']: ch.append(f"rep {p['reputation']}→{c['reputation']}")
+        if p.get('patience') != c.get('patience'): ch.append(f"patience {p.get('patience')}→{c.get('patience')}")
+        if p['luxRate'] != c['luxRate']: ch.append(f"lux {p['luxRate']}%→{c['luxRate']}%")
+        if p['researching'] != c['researching']:
+            rname = TECH_NAMES[c['researching']] if c['researching'] is not None and 0 <= c['researching'] < len(TECH_NAMES) else f"#{c['researching']}"
+            ch.append(f"researching→{rname}")
+        if p.get('numCities',0) != c.get('numCities',0):
+            ch.append(f"cities {p.get('numCities',0)}→{c.get('numCities',0)}")
+        if p.get('numUnits',0) != c.get('numUnits',0):
+            ch.append(f"units {p.get('numUnits',0)}→{c.get('numUnits',0)}")
         if ch:
-            lines.append(f"[{ms:10.1f}ms]  Civ {i}: {', '.join(ch)}")
+            lines.append(f"[{ms:10.1f}ms]  {cn(i)}: {', '.join(ch)}")
+        # Tech list changes — identify specific techs gained/lost
+        pt = p.get('techList', bytes(93))
+        ct = c.get('techList', bytes(93))
+        if pt != ct:
+            for ti in range(min(len(pt), len(ct), 93)):
+                if pt[ti] != ct[ti]:
+                    tname = TECH_NAMES[ti] if ti < len(TECH_NAMES) else f'Tech{ti}'
+                    if ct[ti] > pt[ti]:
+                        lines.append(f"[{ms:10.1f}ms]  TECH: {cn(i)} gained {tname}")
+                    else:
+                        lines.append(f"[{ms:10.1f}ms]  TECH: {cn(i)} lost {tname}")
+        # Unit type count changes — army composition
+        pu_counts = p.get('unitTypeCounts', bytes(54))
+        cu_counts = c.get('unitTypeCounts', bytes(54))
+        if pu_counts != cu_counts:
+            for ui in range(min(len(pu_counts), len(cu_counts), 54)):
+                if pu_counts[ui] != cu_counts[ui]:
+                    uname = UNIT_NAMES[ui] if ui < len(UNIT_NAMES) else f'UnitType{ui}'
+                    lines.append(f"[{ms:10.1f}ms]  ARMY: {cn(i)} {uname} count {pu_counts[ui]}→{cu_counts[ui]}")
+        # Improvement count changes
+        pi_counts = p.get('imprCounts', bytes(54))
+        ci_counts = c.get('imprCounts', bytes(54))
+        if pi_counts != ci_counts:
+            for ii in range(min(len(pi_counts), len(ci_counts), 54)):
+                if pi_counts[ii] != ci_counts[ii]:
+                    bname = BUILDING_NAMES[ii] if ii < len(BUILDING_NAMES) else f'Bldg{ii}'
+                    lines.append(f"[{ms:10.1f}ms]  BUILDINGS: {cn(i)} {bname} count {pi_counts[ii]}→{ci_counts[ii]}")
+        # Diplomatic status changes
+        for j in c.get('diplo', {}):
+            pd = p.get('diplo', {}).get(j, set())
+            cd = c['diplo'][j]
+            if pd != cd:
+                added = cd - pd
+                removed = pd - cd
+                parts = []
+                if added: parts.append(f"+{','.join(sorted(added))}")
+                if removed: parts.append(f"-{','.join(sorted(removed))}")
+                lines.append(f"[{ms:10.1f}ms]  DIPLO: {cn(i)}→{cn(j)}: {' '.join(parts)} [{','.join(sorted(cd)) or 'none'}]")
+        # Attitude changes
+        for j in c.get('attitude', {}):
+            pa = p.get('attitude', {}).get(j)
+            ca = c['attitude'][j]
+            if pa != ca and pa is not None:
+                lines.append(f"[{ms:10.1f}ms]  ATTITUDE: {cn(i)}→{cn(j)}: {pa}→{ca}")
+        # Spy operations changes
+        for j in c.get('spyOps', {}):
+            ps = p.get('spyOps', {}).get(j, 0)
+            cs = c['spyOps'][j]
+            if ps != cs and ps is not None:
+                lines.append(f"[{ms:10.1f}ms]  SPY OPS: {cn(i)}→{cn(j)}: {ps}→{cs}")
+        # Spy level changes
+        for j in c.get('spyLevel', {}):
+            ps = p.get('spyLevel', {}).get(j, 0)
+            cs = c['spyLevel'][j]
+            if ps != cs and ps is not None:
+                lines.append(f"[{ms:10.1f}ms]  SPY LEVEL: {cn(i)}→{cn(j)}: {ps}→{cs}")
+        # Border friction changes
+        for j in c.get('friction', {}):
+            pf = p.get('friction', {}).get(j)
+            cf = c['friction'][j]
+            if pf != cf and pf is not None:
+                lines.append(f"[{ms:10.1f}ms]  FRICTION: {cn(i)}→{cn(j)}: {pf}→{cf}")
+        # Raw byte diff — catch anything we haven't explicitly handled
+        pr = p.get('raw', b'')
+        cr = c.get('raw', b'')
+        if pr and cr and len(pr) == len(cr) and pr != cr:
+            # Only log changes in regions we don't already diff above
+            # Known handled offsets (relative to CIV_BASE, including 0xA0 header):
+            handled = set()
+            H = 0xA0
+            for off in [H+0x02, H+0x03, H+0x04, H+0x05,  # gold (4 bytes)
+                        H+0x0A, H+0x0B,  # beakers
+                        H+0x0C,  # researching
+                        H+0x10,  # num_techs
+                        H+0x13, H+0x14, H+0x15,  # sci, tax, gov
+                        H+0x1E, H+0x1F,  # rep, patience
+                        ]:
+                handled.add(off)
+            for off in range(H+0x20, H+0x58): handled.add(off)  # diplo+attitude+spy+friction
+            for off in range(H+0x66, H+0x6A): handled.add(off)  # numCities, numUnits
+            for off in range(H+0x74, H+0x74+93): handled.add(off)  # techList
+            for off in range(H+0xD8, H+0xD8+54): handled.add(off)  # unitTypeCounts
+            for off in range(H+0x154, H+0x154+54): handled.add(off)  # imprCounts
+            for off in range(H+0x3E2, H+0x3F2): handled.add(off)  # lastContact
+            for off in range(H+0x3F3, H+0x3FB): handled.add(off)  # spyLevel
+            for off in range(len(pr)):
+                if off not in handled and pr[off] != cr[off]:
+                    if off < H:
+                        lines.append(f"[{ms:10.1f}ms]  CIV RAW: {cn(i)} header byte 0x{off:03X}: {pr[off]}→{cr[off]}")
+                    else:
+                        lines.append(f"[{ms:10.1f}ms]  CIV RAW: {cn(i)} field 0x{off-H:03X} (abs 0x{off:03X}): {pr[off]}→{cr[off]}")
 
     # Wonder changes
     for wid in set(list(prev['wonders'].keys()) + list(curr['wonders'].keys())):
@@ -328,7 +836,7 @@ def diff_states(prev, curr, t0):
     for c in curr['cities']:
         p = pc.pop(c['idx'], None)
         if not p:
-            lines.append(f"[{ms:10.1f}ms]  NEW CITY: {c['name']} (civ {c['owner']}) at ({c['x']},{c['y']})")
+            lines.append(f"[{ms:10.1f}ms]  NEW CITY: {c['name']} ({cn(c['owner'])}) at ({c['x']},{c['y']})")
             continue
         ch = []
         if p['size'] != c['size']: ch.append(f"size {p['size']}→{c['size']}")
@@ -336,34 +844,221 @@ def diff_states(prev, curr, t0):
         if p['shields'] != c['shields']: ch.append(f"shld {p['shields']}→{c['shields']}")
         if p['trade'] != c['trade']: ch.append(f"trade {p['trade']}→{c['trade']}")
         if p['prodItem'] != c['prodItem']: ch.append(f"build {p['prodName']}→{c['prodName']}")
+        if p['happy'] != c['happy']: ch.append(f"happy {p['happy']}→{c['happy']}")
+        if p['unhappy'] != c['unhappy']: ch.append(f"unhappy {p['unhappy']}→{c['unhappy']}")
+        if p['foodOut'] != c['foodOut']: ch.append(f"foodOut {p['foodOut']}→{c['foodOut']}")
+        if p['shieldOut'] != c['shieldOut']: ch.append(f"shieldOut {p['shieldOut']}→{c['shieldOut']}")
+        if p['tradeOut'] != c['tradeOut']: ch.append(f"tradeOut {p['tradeOut']}→{c['tradeOut']}")
+        if p['foodSurplus'] != c['foodSurplus']: ch.append(f"foodSur {p['foodSurplus']}→{c['foodSurplus']}")
+        if p['shieldSurplus'] != c['shieldSurplus']: ch.append(f"shldSur {p['shieldSurplus']}→{c['shieldSurplus']}")
+        if p['improvements'] != c['improvements']:
+            # Decode which improvement bits changed
+            diff_bits = p['improvements'] ^ c['improvements']
+            for bit in range(26):
+                if diff_bits & (1 << bit):
+                    bname = BUILDING_NAMES[bit] if bit < len(BUILDING_NAMES) else f'Bldg{bit}'
+                    action = '+' if c['improvements'] & (1 << bit) else '-'
+                    ch.append(f"impr {action}{bname}")
+        if p['wltk'] != c['wltk']: ch.append(f"WLTK {'ON' if c['wltk'] else 'OFF'}")
+        if p['disorder'] != c['disorder']: ch.append(f"DISORDER {'ON' if c['disorder'] else 'OFF'}")
+        if p['numTradeRoutes'] != c['numTradeRoutes']: ch.append(f"routes {p['numTradeRoutes']}→{c['numTradeRoutes']}")
+        if p['workerTiles'] != c['workerTiles']: ch.append(f"workers 0x{p['workerTiles']:08X}→0x{c['workerTiles']:08X}")
         if ch:
-            lines.append(f"[{ms:10.1f}ms]  {c['name']} (civ {c['owner']}): {', '.join(ch)}")
+            lines.append(f"[{ms:10.1f}ms]  {c['name']} ({cn(c['owner'])}): {', '.join(ch)}")
+        # Raw byte catch-all for city
+        pr = p.get('raw', b'')
+        cr = c.get('raw', b'')
+        if pr and cr and len(pr) == len(cr):
+            for off in range(len(pr)):
+                if off in CITY_DIFFED_OFFSETS: continue
+                if pr[off] != cr[off]:
+                    fname = CITY_BYTE_MAP.get(off, f'byte_0x{off:02X}')
+                    lines.append(f"[{ms:10.1f}ms]  CITY RAW: {c['name']} ({cn(c['owner'])}) {fname}: {pr[off]}->{cr[off]}")
     for c in pc.values():
-        lines.append(f"[{ms:10.1f}ms]  CITY DESTROYED: {c['name']} (civ {c['owner']})")
+        lines.append(f"[{ms:10.1f}ms]  CITY DESTROYED: {c['name']} ({cn(c['owner'])})")
 
     # Unit changes
     pu = {u['id']: u for u in prev['units']}
     for u in curr['units']:
         p = pu.pop(u['id'], None)
         if not p:
-            lines.append(f"[{ms:10.1f}ms]  UNIT CREATED: {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']}) home={u['home']}")
+            lines.append(f"[{ms:10.1f}ms]  UNIT CREATED: {u['name']} ({cn(u['owner'])}) at ({u['x']},{u['y']}) home={u['home']} hp={u['hp']} role={u['aiRoleName']}")
             continue
         ch = []
         if p['x'] != u['x'] or p['y'] != u['y']:
-            goto = f" →({u['gotoX']},{u['gotoY']})" if u['order'] in (11, 27) else ""
-            ch.append(f"({p['x']},{p['y']})→({u['x']},{u['y']}) [{u['orderName']}{goto}]")
+            goto = f" ->({u['gotoX']},{u['gotoY']})" if u['order'] in (11, 27) else ""
+            ch.append(f"({p['x']},{p['y']})->({u['x']},{u['y']}) [{u['orderName']}{goto}]")
         elif p['order'] != u['order']:
-            ch.append(f"order {p['orderName']}→{u['orderName']}")
+            ch.append(f"order {p['orderName']}->{u['orderName']}")
         if p['moves'] != u['moves']:
-            ch.append(f"mv {p['moves']}→{u['moves']}")
+            ch.append(f"mv {p['moves']}->{u['moves']}")
         if p['veteran'] != u['veteran']:
             ch.append('VETERAN!')
+        if p['hp'] != u['hp']:
+            ch.append(f"hp {p['hp']}->{u['hp']}")
+            _log_hp_change(u['id'], p['hp'], u['hp'], ms, unit_info={'name': u['name'], 'owner': u['owner'], 'type': u['type'], 'veteran': u.get('veteran', 0)})
         if p['home'] != u['home']:
-            ch.append(f"home {p['home']}→{u['home']}")
+            ch.append(f"home {p['home']}->{u['home']}")
+        if p['aiRole'] != u['aiRole']:
+            ch.append(f"role {p['aiRoleName']}->{u['aiRoleName']}")
+        if p['carrying'] != u['carrying']:
+            ch.append(f"carry {p['carrying']}->{u['carrying']}")
+        if p['fuel'] != u['fuel']:
+            ch.append(f"fuel {p['fuel']}->{u['fuel']}")
+        if p['visMask'] != u['visMask']:
+            ch.append(f"vis 0x{p['visMask']:02X}->0x{u['visMask']:02X}")
+        if p['status'] != u['status']:
+            ch.append(f"status 0x{p['status']:04X}->0x{u['status']:04X}")
         if ch:
-            lines.append(f"[{ms:10.1f}ms]  {u['name']} (civ {u['owner']}): {', '.join(ch)}")
+            lines.append(f"[{ms:10.1f}ms]  {u['name']} ({cn(u['owner'])}): {', '.join(ch)}")
+        # Raw byte catch-all for unit
+        pr = p.get('raw', b'')
+        ur = u.get('raw', b'')
+        if pr and ur and len(pr) == len(ur):
+            for off in range(len(pr)):
+                if off in UNIT_DIFFED_OFFSETS: continue
+                if pr[off] != ur[off]:
+                    fname = UNIT_BYTE_MAP.get(off, f'byte_0x{off:02X}')
+                    lines.append(f"[{ms:10.1f}ms]  UNIT RAW: {u['name']} ({cn(u['owner'])}) {fname}: {pr[off]}->{ur[off]}")
+    # Build city lookup for combat context
+    city_at = {}
+    for c in curr['cities']:
+        city_at[(c['x'], c['y'])] = c
+    for c in prev['cities']:
+        city_at.setdefault((c['x'], c['y']), c)
+
     for u in pu.values():
-        lines.append(f"[{ms:10.1f}ms]  UNIT KILLED: {u['name']} (civ {u['owner']}) at ({u['x']},{u['y']})")
+        lines.append(f"[{ms:10.1f}ms]  UNIT KILLED: {u['name']} ({cn(u['owner'])}) at ({u['x']},{u['y']}) hp={u['hp']}")
+        if handle and u['x'] > -500:
+            map_w = curr.get('mapWidth') or 80
+            dead_terrain = get_terrain_at(handle, u['x'], u['y'], map_w)
+            dead_stats = get_unit_type_stats(handle, u['type'])
+            dead_city = city_at.get((u['x'], u['y']))
+
+            # Detect non-combat deaths before looking for killer
+            if dead_terrain == 'Ocean' and u['name'] in ('Trireme','Caravel','Galleon','Frigate','Ironclad','Destroyer','Cruiser','AEGIS','Battleship','Submarine','Carrier','Transport'):
+                # Check if any enemy is nearby — if not, this is a sinking/lost at sea event
+                has_enemy_nearby = any(cu['owner'] != u['owner'] and abs(cu['x'] - u['x']) <= 2 and abs(cu['y'] - u['y']) <= 2 for cu in curr['units'])
+                if not has_enemy_nearby:
+                    lines.append(f"[{ms:10.1f}ms]  LOST AT SEA: {u['name']} sank at ({u['x']},{u['y']}) — {dead_terrain}")
+                    _get_combat_rounds(u['id'])  # clear any hp log
+                    continue
+            # Settlers consumed by city founding
+            if u['name'] in ('Settlers','Engineers') and (u['x'], u['y']) in city_at:
+                new_city = city_at[(u['x'], u['y'])]
+                if new_city.get('owner') == u['owner']:
+                    lines.append(f"[{ms:10.1f}ms]  SETTLED: {u['name']} founded/joined city at ({u['x']},{u['y']})")
+                    _get_combat_rounds(u['id'])
+                    continue
+
+            # Find opponent from combat HP log (most reliable — matched by timestamp)
+            opp_id = _find_combat_opponent(u['id'], u['owner'])
+            dead_rounds, _ = _get_combat_rounds(u['id'])
+            opp_rounds, opp_info = _get_combat_rounds(opp_id) if opp_id else ([], None)
+
+            # Build location string for dead unit
+            dloc = dead_terrain or '?'
+            if dead_city:
+                dloc = f"{dead_city['name']} ({dead_terrain})"
+                if dead_city.get('improvements', 0) & (1 << 8):
+                    dloc += ' +CityWalls'
+                else:
+                    dloc += ' +city'
+
+            if dead_stats and opp_info:
+                opp_stats = get_unit_type_stats(handle, opp_info['type'])
+                opp_unit = next((cu for cu in curr['units'] if cu['id'] == opp_id), None)
+
+                # Determine attacker from DAT_00655afe (activeUnit) stored during combat
+                dead_entry_au = None  # activeUnit at time of combat
+                # Check which unit's combat log recorded the activeUnit
+                # The activeUnit is the unit whose turn it is = the attacker
+                dead_was_active = (u['idx'] == _combat_active_unit)
+                opp_was_active = (opp_unit and opp_unit['idx'] == _combat_active_unit)
+
+                if opp_was_active:
+                    # Opponent was the active/attacking unit, dead unit was defender
+                    atk_info, def_info = opp_info, {'name': u['name'], 'owner': u['owner'], 'type': u['type'], 'veteran': u.get('veteran', 0)}
+                    atk_stats, def_stats = opp_stats, dead_stats
+                    atk_rounds, def_rounds = opp_rounds, dead_rounds
+                    atk_unit, def_unit = opp_unit, u
+                else:
+                    # Dead unit was the active/attacking unit (attacker died)
+                    atk_info, def_info = {'name': u['name'], 'owner': u['owner'], 'type': u['type'], 'veteran': u.get('veteran', 0)}, opp_info
+                    atk_stats, def_stats = dead_stats, opp_stats
+                    atk_rounds, def_rounds = dead_rounds, opp_rounds
+                    atk_unit, def_unit = u, opp_unit
+
+                # Defender location (where combat takes place)
+                def_x = def_unit['x'] if def_unit and def_unit.get('x', -999) > -500 else u['x']
+                def_y = def_unit['y'] if def_unit and def_unit.get('y', -999) > -500 else u['y']
+                def_terrain = get_terrain_at(handle, def_x, def_y, map_w)
+                def_city = city_at.get((def_x, def_y))
+                def_loc = def_terrain or '?'
+                if def_city:
+                    def_loc = f"{def_city['name']} ({def_terrain})"
+                    if def_city.get('improvements', 0) & (1 << 8):
+                        def_loc += ' +CityWalls'
+                    else:
+                        def_loc += ' +city'
+
+                # Attacker location (where they came from)
+                atk_x = atk_unit['x'] if atk_unit and atk_unit.get('x', -999) > -500 else 0
+                atk_y = atk_unit['y'] if atk_unit and atk_unit.get('y', -999) > -500 else 0
+                atk_terrain = get_terrain_at(handle, atk_x, atk_y, map_w)
+
+                a_vet = atk_info.get('veteran', 0)
+                d_vet = def_info.get('veteran', 0)
+
+                # Starting HP from first round
+                a_start_dmg = atk_rounds[0][0] if atk_rounds else 0
+                d_start_dmg = def_rounds[0][0] if def_rounds else 0
+                a_start_hp = atk_stats['maxHp'] - a_start_dmg
+                d_start_hp = def_stats['maxHp'] - d_start_dmg
+
+                lines.append(f"[{ms:10.1f}ms]  ---- COMBAT ----")
+                lines.append(f"[{ms:10.1f}ms]  Attacker: {atk_info['name']} ({cn(atk_info['owner'])}) {a_start_hp}/{atk_stats['maxHp']} hp, atk={atk_stats['attack']} fp={atk_stats['firepower']}{' VETERAN' if a_vet else ''} from {atk_terrain or '?'}")
+                lines.append(f"[{ms:10.1f}ms]  Defender: {def_info['name']} ({cn(def_info['owner'])}) {d_start_hp}/{def_stats['maxHp']} hp, def={def_stats['defense']} fp={def_stats['firepower']}{' VETERAN' if d_vet else ''} at {def_loc}")
+
+                # Modifiers
+                mods = []
+                if a_vet: mods.append('attacker veteran (1.5x atk)')
+                if d_vet: mods.append('defender veteran (1.5x def)')
+                if def_city:
+                    if def_city.get('improvements', 0) & (1 << 8):
+                        mods.append('City Walls (3x def)')
+                    else:
+                        mods.append('city (1.5x def)')
+                if mods:
+                    lines.append(f"[{ms:10.1f}ms]  Modifiers: {', '.join(mods)}")
+
+                # Interleave all rounds by timestamp
+                all_rounds = []
+                for hp_b, hp_a, t in def_rounds:
+                    all_rounds.append((t, def_info['name'], def_stats['maxHp'], hp_b, hp_a))
+                for hp_b, hp_a, t in atk_rounds:
+                    all_rounds.append((t, atk_info['name'], atk_stats['maxHp'], hp_b, hp_a))
+                all_rounds.sort(key=lambda r: r[0])
+
+                if all_rounds:
+                    lines.append(f"[{ms:10.1f}ms]  Rounds:")
+                    for i, (t, name, maxhp, hp_b, hp_a) in enumerate(all_rounds):
+                        dmg = hp_a - hp_b
+                        remaining = maxhp - hp_a
+                        lines.append(f"[{ms:10.1f}ms]    {i+1}. {name} takes {dmg} damage -> {remaining}/{maxhp} hp")
+
+                # Result
+                if opp_unit:
+                    surv_hp = opp_stats['maxHp'] - opp_unit['hp']
+                    lines.append(f"[{ms:10.1f}ms]  Result: {u['name']} KILLED. {opp_info['name']} survives {surv_hp}/{opp_stats['maxHp']} hp")
+                else:
+                    lines.append(f"[{ms:10.1f}ms]  Result: {u['name']} KILLED.")
+                lines.append(f"[{ms:10.1f}ms]  ---- END COMBAT ----")
+            elif dead_stats:
+                lines.append(f"[{ms:10.1f}ms]  COMBAT: {u['name']} maxHp={dead_stats['maxHp']} at {dloc} -- no opponent data")
+                if dead_rounds:
+                    for i, (hp_b, hp_a, t) in enumerate(dead_rounds):
+                        lines.append(f"[{ms:10.1f}ms]    {i+1}. takes {hp_a - hp_b} damage -> {dead_stats['maxHp'] - hp_a}/{dead_stats['maxHp']} hp")
 
     return lines
 
@@ -575,9 +1270,12 @@ def main():
     log(f"Cities: {len(prev['cities'])} | Units: {len(prev['units'])}")
     for i, cv in enumerate(prev['civs']):
         if cv['gold'] is not None and (cv['gold'] > 0 or cv['numTechs']):
-            log(f"  Civ {i}: gold={cv['gold']} {cv['govName']} sci={cv['sciRate']}% tax={cv['taxRate']}% techs={cv['numTechs']}")
+            rname = TECH_NAMES[cv['researching']] if cv['researching'] is not None and 0 <= cv['researching'] < len(TECH_NAMES) else f"#{cv['researching']}"
+            nc = cv.get('numCities', '?')
+            nu = cv.get('numUnits', '?')
+            log(f"  {cv['civName']}: gold={cv['gold']} {cv['govName']} sci={cv['sciRate']}% tax={cv['taxRate']}% lux={cv['luxRate']}% techs={cv['numTechs']} cities={nc} units={nu} researching={rname}")
     for c in prev['cities'][:8]:
-        log(f"  {c['name']} (civ {c['owner']}) sz={c['size']} food={c['food']} shld={c['shields']} build={c['prodName']}")
+        log(f"  {c['name']} (civ {c['owner']}) sz={c['size']} food={c['food']} shld={c['shields']} build={c['prodName']} happy={c['happy']} unhappy={c['unhappy']}{' DISORDER' if c['disorder'] else ''}{' WLTK' if c['wltk'] else ''}")
     if len(prev['cities']) > 8:
         log(f"  ... +{len(prev['cities'])-8} more")
     wonders = prev['wonders']
@@ -596,6 +1294,8 @@ def main():
     changes = 0
     last_status = time.perf_counter()
     last_turn = prev['turn']
+    prev_windows = enum_civ2_windows(pid)
+    last_win_poll = time.perf_counter()
 
     snap_log = os.path.join(snap_dir, 'game.log')
 
@@ -613,7 +1313,7 @@ def main():
                 time.sleep(0.1)
                 continue
 
-            lines = diff_states(prev, curr, t0)
+            lines = diff_states(prev, curr, t0, handle=handle)
             if lines:
                 for line in lines: log(line)
                 prev = curr
@@ -632,6 +1332,24 @@ def main():
                         with open(snap_log, 'a', encoding='utf-8') as f:
                             f.write('\n'.join(lines) + '\n')
                     except: pass
+
+            # Window/dialog polling (every 0.5s to avoid overhead)
+            now_wp = time.perf_counter()
+            if now_wp - last_win_poll > 0.5:
+                try:
+                    curr_windows = enum_civ2_windows(pid)
+                    win_lines = diff_windows(prev_windows, curr_windows, t0, handle=handle)
+                    if win_lines:
+                        for line in win_lines: log(line)
+                        flush()
+                        if log_file:
+                            try:
+                                with open(snap_log, 'a', encoding='utf-8') as f:
+                                    f.write('\n'.join(win_lines) + '\n')
+                            except: pass
+                    prev_windows = curr_windows
+                except: pass
+                last_win_poll = now_wp
 
             # F11 window capture
             if capture_flag[0]:

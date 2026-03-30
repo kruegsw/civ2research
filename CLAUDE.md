@@ -43,6 +43,14 @@ in "audited" code, and session handoffs lost audit context. See `archive/binary_
 - Keep code vanilla JS. No TypeScript, no frameworks, no build tools.
 - Prefer editing existing files over creating new ones.
 
+## Blanket Permissions
+These actions are pre-approved — do not prompt for confirmation:
+- **Read/search decompiled C** — Grep, Read, Glob, and Explore agents on `reverse_engineering/decompiled/` and `reverse_engineering/findings/`
+- **Read Civ2 process memory** — Python scripts using `ctypes.windll.kernel32.ReadProcessMemory` to read from civ2.exe (read-only, never write to process memory)
+- **Edit `charlizationv4/sniff-game.py`** — the sniffer is actively developed, edits are expected
+- **Edit `.md` docs** in `reverse_engineering/`, `reverse_engineering/findings/`, and `.claude/` memory files
+- **Spawn agents** for searching code, verifying data, and running analysis scripts
+
 ## Running
 ```bash
 cd charlizationv3 && node server/server.js   # default port 3000

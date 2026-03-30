@@ -1,6 +1,14 @@
 # Civ2 MGE Data Structure Map
 
-Reverse-engineered from Ghidra decompilation of CIV2.EXE (MGE).
+**THIS IS A DATED ANALYSIS DOCUMENT** — written during early RE phases (sessions 1-2). Many fields have since been corrected or expanded.
+
+For the current, comprehensive byte-level mapping of all structs, see:
+**`findings/byte_verification_plan.md`** — complete byte map with verification status for every byte in every struct (unit, city, civ, unit type, tile).
+
+Source of truth hierarchy:
+1. `reverse_engineering/decompiled/*.c` — Ghidra output (read-only, never modify)
+2. `reverse_engineering/findings/RULES.TXT` — game data tables (read-only, never modify)
+3. Live memory verification via `charlizationv4/sniff-game.py`
 
 All offsets are relative to each struct's base address (field offset within a single instance).
 "DAT_" labels show the absolute address of **civ[0]**, **unit_type[0]**, **unit[0]**, or **building[0]**.
