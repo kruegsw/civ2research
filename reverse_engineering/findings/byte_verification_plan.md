@@ -115,9 +115,9 @@ Total from 8 fread chunks = 1395 bytes + 33 bytes inter-chunk padding = 1428.
 | 0x00A | 2 | CONFIRMED | beakers | 22 |
 | 0x00C | 1 | CONFIRMED | researching_tech_id | 7 |
 | 0x00E | 2 | DERIVED | unknown_0E | 9 |
-| 0x010 | 1 | CONFIRMED | num_techs | 112 |
-| 0x011 | 1 | DERIVED | unknown_11 | 10 |
-| 0x012 | 1 | DERIVED | unknown_12 | 7 |
+| 0x010 | 1 | CONFIRMED | tech_counter (gameplay-incremented, NOT total techs — see note) | 112 |
+| 0x011 | 1 | CONFIRMED | future_tech_counter (only for tech >= 89 or > 99) | 10 |
+| 0x012 | 1 | DERIVED | unknown_12 (used with 0x10 in research speed calc) | 7 |
 | 0x013 | 1 | CONFIRMED | science_rate (0-10) | 54 |
 | 0x014 | 1 | CONFIRMED | tax_rate (0-10) | 36 |
 | 0x015 | 1 | CONFIRMED | government_type | 168 |

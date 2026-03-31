@@ -62,6 +62,11 @@ Multiple transit coordinates observed: -1200, -600, -800, -1400. What determines
 
 ---
 
+## Known Sniffer Bugs
+
+- **Tech gained/lost logic is INVERTED** (sniff-game.py line 739): Uses `ct[ti] > pt[ti]` to mean "gained", but tech encoding is `0xFF = not discovered`, `0-7 = has tech`. When game inits from zeroed memory, `0->0xFF` (255>0) reports as "gained" when it means "not discovered". And `0xFF->civIndex` (255->5) reports as "lost" when it means "actually acquired". Fix: check `pt[ti] == 0xFF and ct[ti] != 0xFF` for gained, reverse for lost.
+- **Initial snapshot captured pre-game**: Sniffer attaches before game starts, reads Map 0x0, difficulty=0 (uninitialized). The "Chieftain" label and zero map dimensions are meaningless. Should defer initial snapshot until map dimensions are non-zero.
+
 ## Notes for sniffing sessions
 
 - Run: `python charlizationv4/sniff-game.py --log charlizationv4/game.log --hooks`
