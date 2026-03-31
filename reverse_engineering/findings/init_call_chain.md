@@ -1542,13 +1542,56 @@ with param_3 → store in DAT_006ced4c, return true. LEAF.
 **FUN_005b9f1c** (194 bytes) — End map iteration (MP only):
 `DAT_006ad699=1; DAT_006ad69a=0;` Send network flush if changes accumulated.
 
+### Audit-found functions (previously only referenced, now traced)
+
+**FUN_0059a791** (113 bytes) — Random in range: `random(min, max)`.
+Calls FUN_0059a733 (floating-point RNG), converts to int via `__ftol`, adds min. LEAF.
+
+**FUN_004a7577** (47 bytes) — Civ is active check:
+`return DAT_0064caa0[civ * 0x594] & 2` — tests bit 1 of civ flags. LEAF.
+
+**FUN_004ad01e** (88 bytes) — Pathfinder cost grid read:
+`return *(int *)(0x6cffc0 + (x-originX)*0xC0 + ((x-originX+y-originY)>>1)*-0xBC)`
+Reads from fixed pathfinding grid at 0x6cffc0. LEAF.
+
+**FUN_004ad076** (91 bytes) — Pathfinder cost grid write:
+Same formula as FUN_004ad01e, but writes param_3. LEAF.
+
+**FUN_005b496e** (92 bytes) — Discover unit for civ:
+Iterates unit stack, calls FUN_005b490e(unit, civ) on each. Sets per-unit visibility. LEAF.
+
+**FUN_005b53b6** (120 bytes) — Count units of type in stack:
+Iterates stack from head, counts units where `DAT_0064b1ca[type*0x14] == param_2`. LEAF.
+
+**FUN_005b898b** (48 bytes) — Per-civ visibility array offset:
+`return DAT_006365c0[civ*4] + (mapWidth>>1)*y + (x>>1)`. Direct pointer arithmetic into per-civ visibility arrays. LEAF.
+
+**FUN_0043cc00** (126 bytes) — Record city discovery for civ:
+`city.discovered_by |= (1 << civ); city.known_size[civ] = city.size`. LEAF.
+
+**FUN_004a9785** (3059 bytes) — Scenario bonus init (Path B):
+Gives 4 hardcoded techs (Alphabet, Bronze Working, Ceremonial Burial, Horseback Riding).
+Creates starting city. Sets gold = `(rand()%50 + 25) * (difficulty+1)`.
+Sets `DAT_00655af8 = ((difficulty*4+4)*5+1)`. Only runs if `DAT_00631ee8 != 0`.
+
 ### Rendering/Visibility
 
-**FUN_004274a6** (4250 bytes) — Update unit visibility/exploration:
-Called as `FUN_004274a6(unit, 1)` after placing a unit. Updates which tiles are
-visible to the owning civ based on unit position and sight range. Modifies per-civ
-visibility arrays at `DAT_006365c0[civ*4]`. For headless: runs correctly but visual
-effects don't matter. Too large to trace line-by-line but pure game-state function.
+**FUN_004274a6** (4250 bytes) — Update unit visibility/exploration (FULLY TRACED):
+Called as `FUN_004274a6(unit, 1)` after placing a unit. Three phases:
+1. **Radius-1.5 exploration** (25 tiles): `FUN_005b976d(x, y, 1<<civ, 1, 1)` sets tile byte 4 visibility
+2. **Adjacent city/unit detection** (8 tiles): discovers enemy cities (`FUN_0043cc00`),
+   discovers enemy units (`FUN_005b496e`), triggers diplomatic encounters (`FUN_0055d8d8`)
+3. **Extended sight** (tiles 8-24): same as ring 1, for units with extended sight flag
+
+**FUN_004abfe5** (4118 bytes) — Pathfinder (BFS/Dijkstra, FULLY TRACED):
+- Circular queue: `DAT_00673fc8/006763c8` (x/y arrays, 2304 entries)
+- Cost grid: `DAT_006ced60` (9216 bytes), cleared on new search
+- Search radius: `(|dx|+|dy|) & ~1 < 0x30` (distance < 48)
+- Movement cost: `DAT_00627cc8[terrain*0x18] * DAT_0064bcc8` (terrain cost × multiplier)
+- Road/rail bonus reduces cost; enemy territory adds cost
+- Same-domain check: land ≠ water crossing forbidden
+- `FUN_004ad01e(x,y)` reads cost grid, `FUN_004ad076(x,y,cost)` writes it
+- Returns direction (0-7) to move toward target, or 8 if unreachable
 
 ### Transit Code Summary (FULLY RESOLVED)
 

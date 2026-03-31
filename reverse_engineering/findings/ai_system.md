@@ -239,11 +239,28 @@ score = 100 + power_modifier(my_civ, target_civ)
 
 ---
 
-## FUN_005351aa — Barbarian Unit Handler (6,102 bytes)
+## FUN_005351aa — Barbarian Unit Handler (6,102 bytes, fully traced)
 
-Separate from main AI. Called when civ == 0 (barbarian civ index).
-Handles barbarian-specific movement patterns and attack targeting.
-Barbarians don't use the strategic city defense analysis from FUN_0053184d.
+Called when `civ == 0`. Completely separate decision tree from regular AI.
+
+**Structure:**
+1. **Init**: If at map edge (y<2 or y>height-2): disband immediately
+2. **Transport units** (has cargo capacity):
+   - If stack too small: disband. If wandered > 30 turns: disband
+   - Scan 8 adjacent tiles for enemy cities within range 8
+   - If human civ visible on tile: show "BARBARIANSLAND" message
+   - Set order 0x55 (goody hut), consume movement
+3. **Target selection** (no cargo):
+   - Find best enemy city: score = `(spawn_rate + 50) / (distance + 1)`
+   - Set goto order 0x70 to best city
+4. **Ransom logic** (adjacent to enemy city):
+   - Demand = `max(city_size * 25, gold / 2)`, minimum 50
+   - Rank 7 civ with year > 200 and science > 4: demand = `(gold/100)*100`
+   - If player accepts ransom: deduct gold, delete all barbarian units in city radius
+5. **8-direction scoring**: terrain_defense + random(0,3-5) + distance*4
+   - Bonus for matching target direction (+2), own units present (+99)
+   - Penalty for ocean (-20)
+6. **Exit**: direction 8 = skip turn + auto-fortify; else set goto_ai (0x1B)
 
 ---
 
