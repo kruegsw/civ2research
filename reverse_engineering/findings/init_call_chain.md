@@ -1446,6 +1446,122 @@ Called everywhere. Pure predicate, no side effects.
 **FUN_00467933** (120 bytes) — Write attitude: `DAT_0064c6e0[civ1*0x594 + civ2] = clamp(val, 0, 100)`
 Guarded: only writes if not hotseat OR current civ.
 
+### Core Utility Functions (called everywhere)
+
+**FUN_005adfa0** (57 bytes) — Clamp: `return max(param_2, min(param_1, param_3))`
+Wait — Ghidra decompiled it oddly. Actual: `if (min <= val) min = val; if (min <= max) max = min; return max;` which is `clamp(val, min, max)`. LEAF.
+
+**FUN_005ae3bf** (45 bytes) — Bit index decomposition:
+`*param_2 = param_1 >> 3` (byte index), `*param_3 = 1 << (param_1 & 7)` (bit mask).
+Used by FUN_004bd9f0, FUN_0043d20a to index bitmask arrays. LEAF.
+
+**FUN_004bd9f0** (181 bytes) — Has tech check:
+- Returns 0 for tech -2, 0x59 (89), or >= 100
+- Returns 1 for any negative tech (always-have sentinel)
+- Otherwise: `FUN_005ae3bf(tech, &byteIdx, &mask); return (mask & DAT_0064c6f8[civ*0x594 + byteIdx]) != 0`
+- Reads tech bitmask at `DAT_0064c6f8 + civ*0x594` (12 bytes = 96 bits). LEAF.
+
+**FUN_00453e18** (57 bytes) — Who has wonder:
+- Calls FUN_00453da0(wonder) to check if obsolete
+- If not obsolete: returns `DAT_00655be6[wonder * 2]` (city index that built it, -1 if none)
+- LEAF (calls FUN_00453da0).
+
+**FUN_00453e51** (142 bytes) — Civ has wonder:
+- Calls FUN_00453e18(wonder) to get city index
+- Returns 1 if city exists and is owned by param_1 (civ)
+- Special: wonder 0x14 with DAT_00655af0 bit 7 and DAT_0064bc60 bit 0 → returns 0
+- LEAF (calls FUN_00453e18).
+
+**FUN_00453da0** (120 bytes) — Wonder obsolete check:
+- Reads `DAT_0064ba28[wonder]` (obsolete tech ID, -1 = never obsolete)
+- Loops civs 1-7: if any civ has the obsoleting tech → wonder is obsolete (return 1)
+- LEAF (calls FUN_004bd9f0).
+
+**FUN_0043d07a** (400 bytes) — Find nearest city:
+- Linear scan of all cities, optionally filtered by owner/continent
+- `param_3` = civ filter (-1 = any), `param_4` = continent filter (-1 = any)
+- Returns city index with minimum distance (via FUN_005ae31d)
+- Stores distance in `DAT_0063f660`. LEAF.
+
+**FUN_0043d20a** (122 bytes) — City has building:
+- `FUN_005ae3bf(building, &byteIdx, &mask); return (mask & DAT_0064f374[city*0x58 + byteIdx]) != 0`
+- Building bitmask at `DAT_0064f374 + city*0x58` (4 bytes = 32 bits for buildings 1-34). LEAF.
+
+### Unit Stack Functions (traced to leaf)
+
+**pick_up_unit_005b319e** (705 bytes) — Remove unit from stack:
+1. Unlink doubly-linked list: `prev.next = this.next; next.prev = this.prev`
+2. Clear own links: `this.prev = this.next = -1`
+3. If last unit on tile: clear tile byte 1 bit 0 (no unit marker)
+4. Set transit coordinates: `x = y = -(owner * 4 + 4) * 25 = -(owner+1) * 100`
+   - This is the source of transit codes: civ 5 → -600, civ 7 → -800
+5. In MP: send network message type 0x3F
+
+**FUN_005b36df** (388 bytes) — Move unit to new position:
+Simple wrapper: `pick_up_unit(unit, 0); FUN_005b345f(unit, x, y, 0)`.
+In MP: send network message type 0x45. LEAF (calls only traced functions).
+
+**FUN_005b3b78** (343 bytes) — Unload ship passengers:
+Iterates stack at ship's tile. For each sea-type unit (class == 2):
+- Move to transit: `x = y = -(owner * 4 + 4) * 0x4B = -(owner+1) * 300`
+  (Third transit formula! -300 per civ for ship unload)
+Then moves remaining units to ship's saved position.
+
+**FUN_005b2daf** (186 bytes) — Find first unit at (x,y) owned by civ:
+Linear scan matching x, y, owner. Returns stack head via FUN_005b2d39. LEAF.
+
+**FUN_005b29d7** (98 bytes) — Get remaining HP:
+`if (!(DAT_00655ae8 & 0x10)) damage = 0; return max(0, maxHP - damage)`. LEAF.
+
+### Tile Accessors (all leaf)
+
+**FUN_005b8a81** (39 bytes) — Body/continent ID: `return tile_ptr[3]`
+NOTE: Byte 3 is continent ID, NOT byte 2 bits 0-4 as previously thought.
+
+**FUN_005b8aa8** (72 bytes) — Get continent for land tile:
+`if (is_ocean(x,y)) return -1; else return FUN_005b8a81(x,y)`
+
+**FUN_005b8dec** (245 bytes) — Check foreign civ on tile:
+If tile is land AND has claiming civ != param_3 AND not at war → return civ.
+If at war → return -1. Used for border/territory checks.
+
+**FUN_005ae1b0** (157 bytes) — Manhattan distance (simpler than 005ae31d):
+`dx = |x1-x2|; if wrapping: dx = min(dx, width-dx); dy = |y1-y2|; return (dx+dy) >> 1`
+
+**FUN_0058c56c** (242 bytes) — Has adjacent coast/resource:
+Checks 5 cardinal+center tiles. Returns 1 if any is ocean, has special (byte 0 & 0x80),
+or has improvement flag (byte 1 & 0x04). LEAF.
+
+**FUN_005b4c63** (297 bytes) — Compute threat at tile:
+Checks 8 adjacent tiles. If any has a city owned by different civ AND not at war
+with param_3 → store in DAT_006ced4c, return true. LEAF.
+
+**FUN_005b9ec6** (86 bytes) — Init map iteration (MP only):
+`DAT_006ad699=0; DAT_006ad69a=1; memset(DAT_006d1190, 0, 0x400); DAT_006365f4=1`
+
+**FUN_005b9f1c** (194 bytes) — End map iteration (MP only):
+`DAT_006ad699=1; DAT_006ad69a=0;` Send network flush if changes accumulated.
+
+### Rendering/Visibility
+
+**FUN_004274a6** (4250 bytes) — Update unit visibility/exploration:
+Called as `FUN_004274a6(unit, 1)` after placing a unit. Updates which tiles are
+visible to the owning civ based on unit position and sight range. Modifies per-civ
+visibility arrays at `DAT_006365c0[civ*4]`. For headless: runs correctly but visual
+effects don't matter. Too large to trace line-by-line but pure game-state function.
+
+### Transit Code Summary (FULLY RESOLVED)
+
+Three formulas, all encoding owner civ:
+| Operation | Formula | Civ 5 | Civ 7 |
+|-----------|---------|-------|-------|
+| Regular pick-up | `-(owner+1) * 100` | -600 | -800 |
+| Ship embark | `-(owner+1) * 200` | -1200 | -1600 |
+| Ship unload | `-(owner+1) * 300` | -1800 | -2400 |
+
+NOTE: Ship embark uses `(owner*5+5) * -40 = -(owner+1)*200` (from FUN_005b542e/36df).
+Ship unload uses `(owner*4+4) * -0x4B = -(owner+1)*300` (from FUN_005b3b78).
+
 ### FUN_004e7eb1 — Supply Pool Init (block_004E0000.c, 512 bytes)
 
 Sets `DAT_006a6608` (supply base) and `DAT_006a6560` (food rows):

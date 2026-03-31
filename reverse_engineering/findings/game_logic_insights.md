@@ -168,5 +168,11 @@ Target continent tiles = `(mapArea/800) * ((landmass*8+8+difficulty*8)*5 + 80) *
 2. **AI pathfinding bugs**: Units marching to unreachable targets. Reproduce for fidelity, but our Phase 4 could add connectivity checks.
 3. **Deferred wonder completion**: Is this intentional design or an artifact of the city processing model? Our engine should handle it the same way.
 4. **Attitude scale**: Is 100 = max friendly, or is it a default/neutral? Need more data points.
-5. **Transit state codes**: What determines -1200 vs -600 vs -800 vs -1400? Is it unit type, terrain, or movement type?
+5. ~~**Transit state codes**~~: **RESOLVED** from C source (pick_up_unit_005b319e and FUN_005b542e):
+   - **Regular pick-up** (pick_up_unit): `x = y = -(owner + 1) * 100`
+     - civ 5: -600, civ 7: -800
+   - **Ship embark** (FUN_005b542e → FUN_005b36df): `x = y = -(owner + 1) * 200`
+     - civ 5: -1200, civ 6: -1400
+   - All four observed values (-600, -800, -1200, -1400) explained by these two formulas
+   - The transit coordinate encodes BOTH the owning civ AND the operation type (pick-up vs embark)
 6. **Combat randomness**: The round-by-round HP changes show the actual RNG outcomes. We need to verify our combat formula produces the same statistical distribution.
