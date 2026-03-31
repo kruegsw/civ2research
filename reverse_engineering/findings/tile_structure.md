@@ -204,3 +204,39 @@ Improvement bonuses per terrain:
 | `DAT_006365f0` | 4 | Allocation complete flag (1) | FUN_005b7fe0 |
 | `DAT_006d1188` | 6 | Invalid tile sentinel data | Copied from tile[0,0] |
 | `DAT_00655ae8` | 2 | Map options (bit 15 = wrapping) | Dialog |
+
+---
+
+## Unit Stack Functions (linked list on tile)
+
+Units at the same tile form a **doubly-linked list** via offsets +0x16 (prev) and +0x18 (next).
+
+### FUN_005b2e69(x, y) — Get first unit on tile (231 bytes)
+Linear scan of all units for matching (x,y), then follows prev pointers to list head.
+
+### FUN_005b2c82(unit) — Get next unit in stack (65 bytes)
+Returns `*(short *)(unit_base + unit*0x20 + 0x18)` — the next pointer.
+
+### FUN_005b6458(unit) — Can unit move? (176 bytes)
+Returns 1 if unit is alive, has valid position, not killed (flag != 3), and has movement remaining.
+
+### FUN_005b6787(unit) — Skip unit's turn (40 bytes)
+Sets `moves_used = base_movement` — consumes all movement without moving.
+
+### FUN_005b2f50(unit) — Mark unit killed (66 bytes)
+Sets `orders = 3` (killed flag), clears transport pointer to 0xFFFF.
+
+### FUN_005b5d93(unit, sync) — Disband unit safely (677 bytes)
+If ship on water: relocate first, then delete. Otherwise direct delete via FUN_005b4391.
+In multiplayer: sends network message and waits for confirmation.
+
+### FUN_005b50ad(unit, countType) — Aggregate units on tile (724 bytes)
+Iterates stack, accumulates by type:
+0=attack, 1=defense, 2=count, 3=firepower, 4=air+cargo, 5=transport, 6=ships,
+7=bombers, 8=ranged, 9=naval, 10=fortified, 0xB=transport contents.
+
+### FUN_005b4d8c(x, y, civ) — Threat level at tile (86 bytes)
+If no city at tile: compute threat via FUN_005b4c63. Otherwise returns 0.
+
+### FUN_005b8c42(x, y) — Fertility at tile (100 bytes)
+Returns 0-8 fertility value. Used by AI for settler placement scoring.

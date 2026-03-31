@@ -1386,3 +1386,88 @@ Sets `DAT_006a6608` (supply base) and `DAT_006a6560` (food rows):
 - Human: `DAT_006a6560 = DAT_0064bccb` (from @COSMIC)
 - AI: `DAT_006a6560 = 13 - difficulty` (+ modifiers, scaled by @COSMIC)
 - If `DAT_0064bccb != 10`: scale by `(bccb * value) / 10`, round up
+
+### FUN_004ea1f6 — Final Yield Distribution (block_004E0000.c, 1769 bytes)
+
+Distributes raw yield into food/trade/shields:
+```
+food   = yield * (10 - sci_rate - tax_rate) / 10
+trade  = yield * sci_rate / 10
+shields = yield - food - trade
+```
+Then applies building bonuses (workshops +2 food, mfg plant +3 shields, etc.),
+wonder multipliers (Colossus doubles trade if monopoly), and government penalties.
+Stores final values: `DAT_0064f38a[city*0x58]` (trade), `DAT_0064f38c` (shields),
+`DAT_0064f38e` (total yield).
+
+### FUN_004e989a — Maintenance Calculation (block_004E0000.c, 890 bytes)
+
+Computes unit/building maintenance cost per city.
+- Base = `DAT_006a6588` (culture distance)
+- Distance divisor from FUN_004e9849 (government-dependent)
+- Formula: `cost = (distance * supply * 3) / (divisor * 20)`
+- Monarchy uses alternate formula with `DAT_0064bcd8` constant
+- Buildings 7 and 1 (palace types) halve maintenance
+- Clamped to `[0, total_supply]`
+
+### FUN_005b3d06 — Create Unit (block_005B0000.c, 1675 bytes) — CRITICAL
+
+**Unit slot allocation:**
+1. Scan unit array for first slot where `DAT_0065610a[slot*0x20] == 0` (dead)
+2. If none found: append at `DAT_00655b16` (total count) if under limits
+3. Hard limit: 2048 units total, 1948 per civ, 2039 for human civs
+
+**32-byte unit record initialization:**
+
+| Offset | Field | Init Value | Purpose |
+|--------|-------|------------|---------|
+| +0x00 | x | 0xFFFF | Position (set by FUN_005b345f later) |
+| +0x02 | y | 0xFFFF | Position |
+| +0x04 | flags | 0x0000 | Status flags |
+| +0x06 | type | param_1 | Unit type index |
+| +0x07 | owner | param_2 | Civilization index |
+| +0x08 | moves_used | 0 | Movement consumed this turn |
+| +0x09 | visibility | 0 | Per-civ visibility mask |
+| +0x0A | damage | 0 | Damage taken |
+| +0x0B | carry | 0xFF | Transport link (-1 = none) |
+| +0x0C | order_byte | 0x58 | Current order (0x58 default) |
+| +0x0D | home_city | 0xFF | Home city (-1 = none) |
+| +0x0E | fuel | 0 | Fuel/turns remaining |
+| +0x0F | orders | 0xFF | Order type (-1 = none) |
+| +0x10 | goto_counter | 0 | Goto turn counter |
+| +0x12 | goto_x | 0xFFFF | Goto destination X |
+| +0x14 | goto_y | 0xFFFF | Goto destination Y |
+| +0x16 | prev_stack | 0xFFFF | Previous unit in stack |
+| +0x18 | next_stack | 0xFFFF | Next unit in stack |
+| +0x1A | unique_id | DAT_00627fd8++ | Unique ID (auto-increment) |
+
+After init: `FUN_005b345f(unit, x, y, 0)` places on map, `FUN_004274a6(unit, 1)` makes visible.
+
+Civ counters updated: `DAT_0064c706[civ]++`, `DAT_0064c778[civ + type]++`, `DAT_0064b9e8[civ]++`
+
+### FUN_0055c066 — Government Change (block_00550000.c, 529 bytes)
+
+Updates civ government type with cascading effects:
+- Sets `DAT_0064c6b5[civ*0x594] = new_gov`
+- If new gov == 0 (Anarchy) or civ is AI: clears all diplomatic flags
+- If civ is human: changes unit states from 0x08 to 0x0B (revolution → executing)
+- Clears state flag 0x04 from `DAT_00655aee`
+
+### FUN_00456f20 — Border Friction Penalty (block_00450000.c, 107 bytes)
+
+Simple: reads current penalty via FUN_00467904, adds `param_3`, writes back via FUN_00467933.
+Accumulates in `DAT_0064b114` if same civ pair as last friction event.
+
+### FUN_004efbc6 — Celebration Effects (block_004E0000.c, 382 bytes)
+
+"We Love the King Day" trade doubling:
+- **Human + Monarchy**: If researching a known tech AND difficulty == 0 → double trade
+- **AI + Republic/Democracy**: If capital city has required buildings (0x23-0x25) → double trade
+- Applies trade modifier to diplomacy via FUN_004c2b73
+
+### FUN_004f080d — End-of-City Processing (block_004E0000.c, 650 bytes)
+
+Checks 20 adjacent tiles for special events (goody huts with 0x80 flag).
+If found: creates founding unit via FUN_0049301b and sets city flag 0x80000.
+Otherwise: checks trade route opportunities via FUN_004f03b7.
+Growth bonus for cities > size 4 (extra +1 growth).
