@@ -1380,6 +1380,72 @@ Two loops:
 1. **48 diplomatic targets** (`DAT_0064cab4`, stride 6 per entry): if priority < 0, mark as deleted (0xFF)
 2. **16 AI targets** (`DAT_0064cbd4`, stride 6): process remaining orders via `FUN_0049301b`
 
+### FUN_004087c0 — Map Bounds Check (block_00400000.c, 80 bytes)
+
+```c
+return (y >= 0 && y < DAT_006d1162 && x >= 0 && x < DAT_006d1160) ? 1 : 0;
+```
+Called everywhere. Pure predicate, no side effects.
+
+### FUN_005b345f — Place Unit on Map (block_005B0000.c, 640 bytes)
+
+1. Find existing stack at destination via FUN_005b2daf(owner, x, y)
+2. Set unit x/y coordinates
+3. Link into stack: `unit.next = existing_head`, `existing_head.prev = unit`
+4. If no stack at tile: set tile byte 1 |= 1 (unit present), set byte 5 upper nibble = owner
+5. In multiplayer: send network message type 0x41
+
+### FUN_005b4391 — Delete Unit (block_005B0000.c, 1129 bytes)
+
+1. Save unit position and type before deletion
+2. Decrement civ counters: `DAT_0064c706[civ]--`, `DAT_0064c778[civ+type]--`, `DAT_0064b9e8[civ]--`
+3. Remove from stack via FUN_005b319e (pick_up_unit)
+4. Zero existence: `DAT_0065610a[unit*0x20] = 0`
+5. If last unit: `DAT_00655b16--`
+6. Clear from waiting list (units with orders==3 targeting this unit)
+7. **Extinction check**: If unit type 5 (settler class) AND civ has 0 cities AND 0 settlers → `kill_civ(civ, -1)`
+8. Network: send messages type 0x87, 0x88
+
+### FUN_005b2a39 — Get Base Movement (block_005B0000.c, 516 bytes)
+
+1. Base = `DAT_0064b1c2[unit_type * 0x14]` (movement from type table)
+2. If unit class == 2 (sea): check tech bonuses
+   - Tech 0x3B (Railroad?): `+= DAT_0064bcc8` (movement multiplier from @COSMIC)
+   - Tech 0x0C: `+= bcc8 * 2`
+   - Tech 3 (and unit flag 0x20 not set): `+= bcc8`
+3. If unit damaged AND rule flag DAT_00655ae8 bit 4 set:
+   - Scale by `(remaining_hp * base) / max_hp`
+   - Round up to multiple of `DAT_0064bcc8`
+   - Minimum: `bcc8` (or `bcc8 * 2` for sea units)
+
+### Leaf Functions (block_004E0000.c)
+
+**FUN_004e78ce** (62 bytes) — Check tile worked:
+`return (DAT_0064f370[city*0x58] >> (tileIdx & 0x1F)) & 1`
+
+**FUN_004e790c** (91 bytes) — Set/clear tile worked:
+`DAT_0064f370[city*0x58] |= (1 << tileIdx)` or `&= ~(1 << tileIdx)`
+
+**FUN_004e75a6** (68 bytes) — Get building type at index:
+`return (DAT_0064f356[city*0x58] >> (idx * 2)) & 3` (2-bit field, 16 slots)
+
+**FUN_004e9849** (81 bytes) — Distance divisor: returns 4 + count of (param2 > {0,1,2,4})
+
+### Leaf Functions (block_005B0000.c)
+
+**FUN_005b8af0** (42 bytes) — Read claiming civ: `tile_ptr[2] >> 5` (upper 3 bits)
+
+**FUN_005b8c18** (42 bytes) — Read fertility: `tile_ptr[5] & 0x0F` (lower 4 bits)
+
+**FUN_005b2d39** (118 bytes) — Get stack head: traverse `DAT_00656106[unit*0x20]` backward until -1
+
+### Leaf Functions (block_00460000.c)
+
+**FUN_00467904** (47 bytes) — Read attitude: `return DAT_0064c6e0[civ1*0x594 + civ2]`
+
+**FUN_00467933** (120 bytes) — Write attitude: `DAT_0064c6e0[civ1*0x594 + civ2] = clamp(val, 0, 100)`
+Guarded: only writes if not hotseat OR current civ.
+
 ### FUN_004e7eb1 — Supply Pool Init (block_004E0000.c, 512 bytes)
 
 Sets `DAT_006a6608` (supply base) and `DAT_006a6560` (food rows):

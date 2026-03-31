@@ -43,10 +43,11 @@ Notes:
 | 1 | 6 | City indicator | FUN_005b8ca6: `ptr[1] & 0x42 == 0x02` | City present (with bit 1) |
 | 1 | 7 | Unknown | | Possibly pollution or goody hut |
 | 2 | 0-4 | Body ID | | Continent/ocean number (0-31) |
-| 2 | 5-7 | Claiming civ | FUN_005b9c49: upper 3 bits | Which civ claims this tile (0-7) |
-| 3 | all | Unknown | | Possibly river bitmask, fertility, or city radius owner |
+| 2 | 5-7 | Claiming civ | FUN_005b9c49: upper 3 bits | Which civ claims this tile (0-7). Also read by FUN_005b8af0 as `ptr[2] >> 5` for threat. |
+| 3 | all | Unknown | | Possibly river bitmask or improvements sub-field |
 | 4 | 0-7 | Visibility bitmask | FUN_005b8b65, FUN_005b976d | Bit N = civ N has explored this tile |
-| 5 | all | City-related | FUN_005b8a1d | Upper bits = city owner/index when city present |
+| 5 | 0-3 | Fertility | FUN_005b8c18: `ptr[5] & 0x0F` | Fertility value (0-15), used by AI for settler placement |
+| 5 | 4-7 | City owner | FUN_005b8a1d: `ptr[5] >> 4` | City owner (0-14), 0xF = no city |
 
 ---
 
