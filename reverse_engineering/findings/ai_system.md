@@ -170,6 +170,75 @@ final_score = base_score + 100 - distance
 
 ---
 
+## FUN_00538a29 — Complete Per-Unit AI Structure (44,777 bytes, 3088 lines)
+
+**Fully traced.** Organized around goto labels as a state machine:
+
+| Label | Line | Phase | Purpose |
+|-------|------|-------|---------|
+| ENTRY | 2590 | Init | Read unit state, compute threat/movement |
+| LAB_005392a6 | 2710 | Decision | Main branch: movement/action selection |
+| LAB_005397e7 | 2783 | Special | Unit-type-specific handling |
+| LAB_0053b8f0 | 3257 | Settle | City founding / garrison decision |
+| LAB_0053be12 | 3349 | Transport | Stack management, embark/disembark |
+| LAB_0053cdd1 | 3843 | Waypoint | Mid-move interpolation |
+| LAB_0053fc8d | 4428 | Worker | Settler improvement orders |
+| LAB_005414d7 | 4798 | Movement | 8-direction scoring loop (CORE) |
+| LAB_005435ca | 5414 | Execute | Apply chosen direction |
+| LAB_005436c1 | 5434 | Exit | Final cleanup, auto-fortify |
+
+**Movement scoring (LAB_005414d7):** For each of 8 adjacent tiles:
+- Base = random(0, 2-4) via FUN_0059a791
+- Military: penalty for slow terrain, bonus for enemy attack strength
+- Settler: bonus for fertile terrain
+- Diplomat: bonus for trade potential
+- Distance-to-goto modifier if unit has active order
+- Own-unit avoidance (reduce stacking)
+
+**Order byte table:**
+
+| Byte | Hex | Order | Context |
+|------|-----|-------|---------|
+| 0x1B | 27 | goto_ai | Single hop movement |
+| 0x30 | 48 | patrol | Idle military |
+| 0x32 | 50 | settle_dir | Settler moving to found |
+| 0x33 | 51 | defend_city | Transport to ally |
+| 0x34 | 52 | cross_sea | Foreign continent attack |
+| 0x39 | 57 | explore | Default movement |
+| 0x41 | 65 | reinforce | To allied city |
+| 0x42 | 66 | disband | Settler absorbed |
+| 0x46 | 70 | fortify | Settler/transport |
+| 0x49 | 73 | raid | Enemy city attack |
+| 0x4D | 77 | mine | Settler mine |
+| 0x53 | 83 | diplomat | Spy mission |
+| 0x55 | 85 | goody_hut | Adjacent hut |
+| 0x58 | 88 | fortress | Sea fortress |
+| 0x70 | 112 | clean | Pollution |
+| 0x72 | 114 | road | Build road |
+| 0x74 | 116 | air_land | Air landing direction |
+| 0x64 | 100 | idle | Default idle |
+
+**Settler city founding:** Turn 1 special case — if at starting position
+(from DAT_00627fe0/00628010) and fertility > 7, found city immediately.
+
+**Diplomat scoring:**
+```
+score = 100 + power_modifier(my_civ, target_civ)
+/= 2 if defended
+/= 2 if strong defense (my_power + 6 < enemy_power)
+= 1 if civil war
++= 100 base
+/= (distance + 1)
+```
+
+**Function exit (LAB_005436c1):**
+- Idle military units auto-fortify (order 1 or 2)
+- Sea units consume 1 movement point
+- Units at goto target: clear orders, set flag 0x80
+- Returns 0 (no action) or 1 (action taken)
+
+---
+
 ## FUN_005351aa — Barbarian Unit Handler (6,102 bytes)
 
 Separate from main AI. Called when civ == 0 (barbarian civ index).
