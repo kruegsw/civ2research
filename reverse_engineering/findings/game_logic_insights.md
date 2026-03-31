@@ -41,6 +41,7 @@ Source of truth hierarchy applies: decompiled C > observed behavior > inference.
 - **Tech counter (offset 0x10)**: NOT a total tech count. Incremented by FUN_004bf05b (block_004B0000.c:6750-6751) only when `DAT_00655af8 != 0`. Used in research speed calculation (combined with offset 0x12) and AI diplomacy/combat decisions. All civs showed value=1 in fresh Deity game — timing of DAT_00655af8 relative to init needs further tracing.
 - **Future tech counter (offset 0x11)**: Separate counter, only incremented for tech index 0x59 (89) or > 99. Used in science output: `future_techs * 5` added to research.
 - **Tech trading**: FUN_004bf05b(receiving_civ, tech_id, giving_civ, 0, 0) — the tech byte stores which civ gave it.
+- **Research timing**: FUN_004853e7 (2094 bytes, block_00480000.c:984) processes research for ALL civs in a single pass at end-of-turn (inside FUN_00487371), NOT inside per-civ processing (FUN_00489553). This means all civs discover techs simultaneously before any civ's turn processes.
 - v4 transpiled blocks handle this correctly (1:1 C mapping). No code fix needed.
 
 ## Game Mechanics
@@ -52,8 +53,9 @@ Source of truth hierarchy applies: decompiled C > observed behavior > inference.
 - `improvements` bitfield: bit N = building N is present. Changes logged as `+Granary`, `-Library` etc.
 
 ### Turn Processing
-- Turn order: all AI civs process in sequence (civ 0 through 7, skipping human), then human phase.
-- Human civ appears to process twice — once for end-of-turn bookkeeping, then for active phase.
+- Turn order: all civs process in sequence (civ 0 through 7), each getting FUN_00489553 (city/unit/diplomacy bookkeeping), then AI dispatch (FUN_00543cd6) or human turn (FUN_0048a416).
+- Human civ processes in TWO stages: FUN_00489553 (automatic: city growth, production, gold, unit healing) then FUN_0048a416 (interactive: unit movement, player input). This explains the sniffer observation of "processing twice."
+- End-of-turn global processing (FUN_00487371) runs BETWEEN turns: increments turn counter, processes research for ALL civs simultaneously (FUN_004853e7), spawns barbarians, resets unit moves, decays reputation.
 - AI turn processing is a burst: all gold, city, and unit changes happen within ~2ms per civ.
 - `changes/poll = 0` when city dialog is open — game is paused during dialogs.
 
@@ -108,7 +110,55 @@ Two distinct init paths exist in block_004A0000.c:
 
 **Key global: DAT_00655b0b** — human player bitmask. Bit N = civ N is human. Read as 0x20 (civ 5) in session 4.
 
-**Leader personality table: DAT_006554fa** — stride 0x30 (48 bytes per leader). First byte used for sci/tax formula. Signed byte values observed: -1 to 3. Full table structure TBD.
+**Leader personality table: DAT_006554fa** — stride 0x30 (48 bytes per leader). First byte used for sci/tax formula. Signed byte values observed: -1 to 3. Key fields per leader:
+  - `+0x00` (DAT_006554fa): sci/tax personality byte (signed, -1 to 3)
+  - `+0x01` (DAT_006554fb): use count (incremented when leader assigned to a civ)
+  - `+0x02` (DAT_006554fc): personality toggle (0 or 1, flipped with 1/3 probability)
+  - `+0x03` (DAT_006554fd): cleared to 0 on assignment
+  - `+0x04` (DAT_006554fe): preferred civ slot (short — which civ index this leader belongs to)
+  - `+0x06` (DAT_00655500): display name index (short)
+  - `+0x08` (DAT_00655502): personality flag A (short, negated after name lookup)
+  - `+0x0A` (DAT_00655504): personality flag B (short, for leader name)
+  - `+0x0C` (DAT_00655506): personality flag C (short, for leader title)
+  - `+0x0E..+0x2F` (DAT_00655508+): lookup table entries (7 pairs of shorts, per-city names)
+
+### Pollution / Global Warming
+- **Pollution level** (`DAT_00655b0e`): 0-99, adjusts toward target each turn
+- **Target formula**: `2 * avg_wealth - 4 * warming_counter - spaceship_count`
+- **Global warming trigger**: pollution > 16 → `FUN_004868fb()` degrades terrain, reset to 0
+- **Warning**: At pollution == 12, shows "Global Warming" dialog
+
+### City Growth (from C source)
+- **Growth threshold**: `(city_size + 1) * food_rows` (food_rows = DAT_006a6560 from @COSMIC)
+- **With granary**: food box resets to half of new threshold
+- **Without granary**: food box resets to 0
+- **Starvation**: food_box < 0 → try disband unit, else size--, if size < 1 → delete city + kill civ
+
+### City Production (from C source)
+- **Completion**: `shield_box >= item_cost` → produce item, shield_box -= cost (overflow carries)
+- **AI shield bonus**: `(difficulty * base_shields) / 10 / (8 - leader_rank)`
+- **Wonder race**: If another civ's city has same wonder and shields >= cost, production is blocked
+- **Wonder built**: `DAT_00655be6[wonder*2] = city_index`, city_flags |= 0x100
+
+### Barbarian Spawning (from C source)
+- **Earliest turn**: `((3 - barb_level) * 3 + 30) * (5 - difficulty)`
+- **Frequency**: Every 15 turns (level 1) or 7 turns (level 2-3)
+- **Unit count**: `clamp(turn / ((3-level)*-50+250) + 1, 1, 5) + 1` (level 3: +1 more)
+- **Tile constraints**: unoccupied, no adjacent hostile city, terrain desirability ≥ 16, y in [3, height-3]
+
+### Map Generation Algorithm (from C source, 10 phases)
+1. Init + seed generation (`DAT_006d1168 = rand() & 0x7FFF`)
+2. Tile memory allocation (12 GlobalAlloc calls)
+3. Continent generation via random walks (1-48 step walks, branching at 25%)
+4. Island filling (1-16 step walks)
+5. Water smoothing (diagonal checkerboard pass)
+6. Latitude-based terrain (equator=desert, poles=tundra/mountains)
+7. Pole erosion (two backward sweeps)
+8. Resource scatter + mineral clustering
+9. Edge hardening (mountains on borders for flat maps)
+10. Island detection (mark isolated water with 0x40 flag)
+
+Target continent tiles = `(mapArea/800) * ((landmass*8+8+difficulty*8)*5 + 80) * 8 / 10`
 
 ---
 

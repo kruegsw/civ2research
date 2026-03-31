@@ -22,7 +22,20 @@ Live reverse engineering discoveries from sniff-game.py + sniff-windows.py sessi
 | Formula | `tilePtr = base + (mapWidth * y + (x & ~1)) * 3` |
 | Format | 6 bytes/record, two isometric positions share one record; matches .sav file exactly |
 
-Full details: `memory_map/tile_array.md`
+Full details: `memory_map/tile_array.md` and `tile_structure.md` (byte-level reference from C source)
+
+## Deep C Source Traces (2026-03-31)
+
+Complete function-by-function traces from decompiled C source:
+
+- **`init_call_chain.md`** (1388 lines) — Complete game initialization and turn processing pipeline.
+  Entry point → rules loading → map gen → civ init → game loop → per-civ → per-city.
+  Every function traced with exact DAT_ addresses, formulas, and algorithms.
+- **`tile_structure.md`** — 6-byte tile record layout, all utility functions, yield table format.
+- **`ai_system.md`** — Complete AI architecture: FUN_0053184d (strategy), FUN_00543cd6 (dispatch),
+  FUN_00538a29 (44KB decision engine). City threat states, unit action types, movement targeting.
+- **`game_logic_insights.md`** — Key formulas: food growth, production, research, barbarians,
+  pollution, diplomacy, leader personality table.
 
 ---
 
