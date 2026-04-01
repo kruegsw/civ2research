@@ -1196,7 +1196,7 @@ export function FUN_00485c15() {
   if (v(DAT_00655b09) !== 0) {
     if (v(DAT_00655b08) < 5) {
       iVar2 = ((3 - ((v(DAT_00655b09)) >>> 0)) * 3 + 0x1e) * (5 - ((v(DAT_00655b08)) >>> 0));
-      if (iVar2 - v(DAT_00655af8) !== 0 && DAT_00655af8 <= iVar2) {
+      if (iVar2 - v(DAT_00655af8) !== 0 && v(DAT_00655af8) <= iVar2) { // fixed: was missing v()
         return;
       }
     }
@@ -1212,7 +1212,7 @@ export function FUN_00485c15() {
     else if (v(DAT_00655b09) === 3) {
       local_8 = 7;
     }
-    if (((local_8 & DAT_00655af8 + 1) === 0) && (_MEM[DAT_00655b82 + DAT_0064b383] === 0)) {
+    if (((local_8 & v(DAT_00655af8) + 1) === 0) && (_MEM[DAT_00655b82 + v(DAT_0064b383)] === 0)) { // fixed: was missing v() on both
       local_40 = 0;
       do {
         if (v(DAT_006d1160) === 1 || v(DAT_006d1160) + -1 < 0) {
@@ -1244,7 +1244,7 @@ export function FUN_00485c15() {
       } while (((iVar2 === 0) || (iVar2 = FUN_005b8d62(local_18,local_1c), -1 < iVar2)) || (iVar2 = FUN_005b8a81(local_18,local_1c), s16(DAT_00666134, iVar2 * 0x10) < 0x10));
               /*JOINED*/
               /*JOINED*/
-      iVar2 = FUN_005adfa0(v(DAT_00655af8) / ((v(DAT_00655b09)) >>> 0) * -0x32 + 0xfa + 1,1, 5);
+      iVar2 = FUN_005adfa0(v(DAT_00655af8) / (((v(DAT_00655b09)) >>> 0) * -0x32 + 0xfa) + 1, 1, 5); // C: turn / (barb_level * -50 + 250) + 1
                                  /*JOINED*/
       local_34 = iVar2 + 1;
       if (v(DAT_00655b09) === 3) {
@@ -1261,7 +1261,7 @@ export function FUN_00485c15() {
       if ((v(DAT_00655ae8) & 1) !== 0) {
         local_38 = 4;
       }
-      if ((v(DAT_00655b0b) & DAT_00655ba9) !== 0) {
+      if ((v(DAT_00655b0b) & v(DAT_00655ba9)) !== 0) { // fixed: was missing v()
         local_38 = 5;
       }
       if ((v(DAT_00655bb5) !== 0) || ((v(DAT_00655b09) === 3 && (v(DAT_00655b8d) !== 0)))) {
@@ -1273,7 +1273,7 @@ export function FUN_00485c15() {
         }
       }
       local_c = local_34;
-      if (((v(DAT_00655b0b) & DAT_00655bd3) !== 0) && ((v(DAT_00655ae8) & 1) !== 0)) {
+      if (((v(DAT_00655b0b) & v(DAT_00655bd3)) !== 0) && ((v(DAT_00655ae8) & 1) !== 0)) { // fixed: was missing v()
         local_38 = 0x14;
       }
       while( true ) {
@@ -1387,7 +1387,7 @@ export function FUN_00485c15() {
           local_2c[0] = 0xf;
           iVar2 = _rand();
           if (iVar2 % 3 === 0) {
-            FUN_005adfd9(local_14[0],local_2c[0]);
+            FUN_005adfd9(local_14,local_2c); // C: passes pointers for swap — must pass arrays not values
           }
           uVar5 = FUN_00428b0c(s32(DAT_00628420, 0x188));
           FUN_0040ff60(0,uVar5);
@@ -1408,7 +1408,7 @@ export function FUN_00485c15() {
             FUN_0040ff60(0,uVar5);
             local_14[0] = 0x18;
             local_2c[0] = 7;
-            if (_MEM[DAT_00655b82 + DAT_0064b383] !== 0) {
+            if (_MEM[DAT_00655b82 + v(DAT_0064b383)] !== 0) {
               uVar5 = FUN_00428b0c(s32(DAT_00628420, 0x198));
               FUN_0040ff60(0,uVar5);
               local_2c[0] = 0xb;
@@ -4520,7 +4520,7 @@ function LAB_004862b4_helper(iVar2, iVar3, local_10, local_14, local_18, local_1
           local_2c[0] = 0xf;
           iVar2 = _rand();
           if (iVar2 % 3 === 0) {
-            FUN_005adfd9(local_14[0],local_2c[0]);
+            FUN_005adfd9(local_14,local_2c); // C: passes pointers for swap — must pass arrays not values
           }
           uVar5 = FUN_00428b0c(s32(DAT_00628420, 0x188));
           FUN_0040ff60(0,uVar5);
@@ -4541,7 +4541,7 @@ function LAB_004862b4_helper(iVar2, iVar3, local_10, local_14, local_18, local_1
             FUN_0040ff60(0,uVar5);
             local_14[0] = 0x18;
             local_2c[0] = 7;
-            if (_MEM[DAT_00655b82 + DAT_0064b383] !== 0) {
+            if (_MEM[DAT_00655b82 + v(DAT_0064b383)] !== 0) {
               uVar5 = FUN_00428b0c(s32(DAT_00628420, 0x198));
               FUN_0040ff60(0,uVar5);
               local_2c[0] = 0xb;
