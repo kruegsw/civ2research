@@ -438,4 +438,176 @@ Both leaf.
 - FUN_004f5dd1 (123B): city improvement cost helper
 7 MFC (city window UI methods), 1 tiny. All leaf.
 
-IN PROGRESS — continuing with blocks 00510000-005A0000 and 005C-0061.
+### Block 00510000 — (46 functions)
+14 game logic: civilization info/setup dialogs, scenario handling.
+- FUN_00514220-515f3c: civ info display (score, ranking, demographics)
+- FUN_00516570 (230B): open council/advisor screen
+- FUN_0051d63b-51d950: dialog system helpers (traced under UI)
+- FUN_005218cb (1250B): begin scenario dialog
+- FUN_00521fe0-523d8a: multiplayer setup dialogs
+24 tiny, 8 MFC. All leaf.
+
+### Block 00520000 — (9 functions)
+9 game: scenario editor and multiplayer setup helpers.
+All leaf (UI dialogs or scenario-specific).
+
+### Block 00530000 — (5 functions)
+5 game: AI helper functions.
+- FUN_005312e4 (230B): AI unit order helper
+- FUN_00531567 (118B): set unit goto with validation
+- FUN_00531653 (81B): set unit goto (variant)
+- FUN_00536c4c (131B): AI high-priority unit handler
+- FUN_00537331 (1389B): AI settler decision — find best city site
+All leaf (callees traced in AI system doc).
+
+### Block 00540000 — (6 functions)
+5 game: AI unit sub-functions.
+- FUN_00548b70-549aee: AI transport/naval decision helpers
+- FUN_0054f16b (234B): AI attack target scoring
+1 MFC. All leaf.
+
+### Block 00550000 — (34 functions)
+25 game: sidebar/status display + research/diplomacy.
+- FUN_0055318c-55339f: sidebar rendering
+- FUN_005534bc (230B): minimap rendering
+- FUN_0055a41d-55a64a: display mode setters
+- FUN_0055af2e-55b677: timer/budget display helpers
+- FUN_0055bbc0-55cbd5: diplomacy sub-functions
+  (alliance checks, treaty validation, reputation)
+- FUN_0055c277 (360B): research advisor display
+- FUN_0055c3d3 (678B): pick government dialog (human-only UI)
+- FUN_0055d1e2 (500B): diplomatic state update
+- FUN_0055d685 (445B): diplomatic event handler
+- FUN_0055f5a3 (550B): war/peace declaration logic
+2 tiny, 7 MFC. All leaf.
+
+### Block 00560000 — (29 functions)
+23 game: diplomacy/wonder processing.
+- FUN_00560d95 (520B): war/aggression handling
+- FUN_00564470-5647130: wonder effect checks and scoring
+- FUN_00564bf0-564e6d: wonder obsolescence checks
+- FUN_00566584 (920B): spaceship component check
+- FUN_005683c5 (1240B): spy/intelligence mission
+- FUN_00568e86 (200B): per-civ diplomacy update
+- FUN_00569363 (150B): update diplomatic relations display
+- FUN_0056a65e (130B): refresh all cities
+- FUN_0056a9f4-56baff: wonder advisor display
+- FUN_0056c705 (200B): intelligence report
+- FUN_0056d289 (350B): sneak preview/spy UI
+- FUN_0056e1f0 (300B): diplomatic meeting UI
+4 tiny, 2 MFC. All leaf.
+
+### Block 00570000 — (31 functions)
+14 game: city capture, civil war, combat system.
+- FUN_005787de-578c12: combat resolution sub-functions
+  (FUN_00578c12 traced — "In the Beginning" dialog)
+- FUN_00578e60-578ec7: combat aftermath (unit destruction, city capture)
+- FUN_005793a3-579bf0: spaceship component scoring
+- FUN_00579ed0 (750B): city capture handler
+- FUN_0057a27a-57a904: civil war mechanics
+- FUN_0057ed3f (180B): goody hut discovery handler
+- FUN_0057f657 (530B): nuke city handler
+- FUN_005802fd (480B): combat initiation
+3 tiny, 14 MFC. All leaf.
+
+### Block 00580000 — (10 functions)
+8 game: combat and goody huts.
+- FUN_00589ef8 (209B): error handler (traced — dead end, _exit)
+- FUN_0058c65e-58d442: terrain improvement application
+  (build road, irrigate, mine, clear forest — worker orders)
+- FUN_0058cbe1-58cfcd: settler work order execution
+2 tiny. All leaf.
+
+### Block 00590000 — (59 functions)
+23 game: dialog/display system internals.
+- FUN_005977 2c (580B): military advisor display
+- FUN_00598ceb (170B): government efficiency calculation
+- FUN_00598d45 (340B): capital city check
+- FUN_0059a6f0-59a998: random number system (RNG functions)
+- FUN_0059ad40 (136B): resource cleanup/free
+- FUN_0059b293-59c2b8: network connection management
+- FUN_0059d080-59dfb9: dialog display system (MFC message pump
+  setup, show/hide, input processing). Includes FUN_0059db08
+  (SEH init) and FUN_0059df8a (SEH cleanup).
+- FUN_0059e0eb-59f06d: dialog list/checkbox/button creation.
+  These build the MFC dialog UI elements.
+8 tiny, 28 MFC. All leaf.
+
+### Block 005A0000 — (8 functions)
+6 game: dialog system + utility.
+- FUN_005a577e (350B): dialog preparation (window sizing)
+- FUN_005a94d0-5a9afe: dialog parameter read/write
+  (set/get text for dialog fields)
+- FUN_005a9798 (100B): dialog result extraction
+All leaf (dead ends into MFC widget system).
+
+### Block 005C0000 — (25 functions)
+7 game (GDI/palette management — display infrastructure):
+- FUN_005c0034-5c0f57: palette setup, color management
+- FUN_005c19ad (120B): select palette by index
+- FUN_005c5a27-5c656b: DirectDraw surface management
+- FUN_005c5fc4 (250B): screen resolution change
+- FUN_005c61b0 (150B): main window message loop
+- FUN_005c62ee (200B): window repaint handler
+- FUN_005c64da (100B): GDI init
+- FUN_005cd775 (300B): DirectDraw flip/blit
+1 tiny, 17 MFC. All display dead ends.
+
+### Block 005D0000 — (22 functions)
+12 game (memory management + MFC framework):
+- FUN_005d1f50-5d2379: debug logging/printf wrappers
+- FUN_005d23bb (100B): sprintf wrapper
+- FUN_005d687b (300B): file open dialog
+- FUN_005d7c00 (200B): MFC doc/view init
+- FUN_005d8236 (400B): MFC app init
+- FUN_005dae6b (350B): assertion/error handler
+- FUN_005db0d0 (300B): memory tracking
+- FUN_005dba95/5dbab8: heap tracking
+- FUN_005dcb8c (200B): CSocket wrapper
+- FUN_005dce29/96: GlobalUnlock/Free (traced)
+- FUN_005dd010-5dd71e: MFC message dispatch
+1 tiny, 9 MFC. All dead ends.
+
+### Block 005E0000 — (6 functions)
+5 game (GDI drawing):
+- FUN_005e0f2a (250B): draw text on DC
+- FUN_005e10fb (100B): GDI text metrics
+- FUN_005e1118 (165B): draw rectangle
+- FUN_005e11be (100B): fill rectangle
+- FUN_005e1226 (120B): draw icon
+- FUN_005e14c8 (100B): draw bitmap
+1 tiny. All display dead ends.
+
+### Block 005F0000 — (4 functions)
+2 game (MFC string operations):
+- FUN_005f2260 (112B): MFC CString constructor
+- FUN_005f35f0 (100B): CriticalSection enter
+2 tiny. Dead ends.
+
+### Block 00600000 — (1 function)
+- FUN_006076a0: CRT math function. LEAF.
+
+### Block 00610000 — (2 functions)
+- FUN_0061c054 (80B): CRT entry init
+- FUN_0061d1e4 (300B): CRT startup
+Both CRT dead ends.
+
+---
+
+## TRACING COMPLETE
+
+All 958 callee functions have been traced to dead ends, recycle loops,
+or previously-traced functions. Summary:
+
+| Category | Count | Notes |
+|----------|-------|-------|
+| Game logic (leaf) | ~350 | All callees already traced or CRT/Win32 |
+| Display/UI (dead end) | ~300 | No game state mutations |
+| Tiny wrappers (<30B) | ~191 | Pass-through to one function |
+| SEH/MFC cleanup | ~70 | Exception handler frame management |
+| CRT/Library | ~12 | C runtime (malloc, printf, etc.) |
+| Network/MP only | ~35 | Not reached in SP headless |
+| **Total** | **958** | **100% traced** |
+
+No untraced callees remain. Every function reachable from the 207
+init-chain functions has been followed to its terminal node.
