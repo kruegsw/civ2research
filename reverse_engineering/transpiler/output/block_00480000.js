@@ -1046,16 +1046,12 @@ export function FUN_004853e7() {
     if (((v(DAT_00655af0) & 0x80) === 0) || ((v(DAT_0064bc60) & 2) === 0)) {
       if (v(DAT_00655af8) < 600) {
         uVar1 = FUN_005adfa0(aiStack_48[local_50] >> 3,0,0xff);
-        (v(DAT_00655c38))
-        [(v(DAT_00655af8) >> 2) % 0x96 * 8 + local_50] = uVar1;
-             /*JOINED*/
+        _MEM[DAT_00655c38 + (v(DAT_00655af8) >> 2) % 0x96 * 8 + local_50] = uVar1; // C: (&DAT_00655c38)[slot * 8 + civ] = clamped_beakers
       }
     }
     else if (v(DAT_00655af8) < 0x4b) {
       uVar1 = FUN_005adfa0(aiStack_48[local_50],0,0xff);
-      (v(DAT_00655c38))
-      [(v(DAT_00655af8) >> 1) % 0x96 * 8 + local_50] = uVar1;
-           /*JOINED*/
+      _MEM[DAT_00655c38 + (v(DAT_00655af8) >> 1) % 0x96 * 8 + local_50] = uVar1; // C: same, different shift
     }
   }
   for (local_28 = 1; local_28 < 8; local_28 = local_28 + 1) {
@@ -1067,7 +1063,7 @@ export function FUN_004853e7() {
         local_8 = aiStack_48[local_10];
       }
     }
-    _MEM[DAT_00655c22 + local_50] = '\b' - s8(local_28);
+    _MEM[DAT_00655c22 + local_50] = 8 - s8(local_28); // C: '\b' = 8 (backspace char literal)
     aiStack_48[local_50] = -1;
   }
   wv(DAT_00655af0, v(DAT_00655af0) & 0xfffe);
