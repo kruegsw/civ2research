@@ -5592,7 +5592,7 @@ export function FUN_0041b00e(param_1) {
     uVar1 = FUN_004a25aa();
     w32(DAT_00655490, local_8 * 8, uVar1);
     FUN_004a24b1();
-    _MEM[local_8 * 8 + 0x655494] = v(DAT_00673e10);
+    _MEM[local_8 * 8 + (DAT_00655490 + 4)] = v(DAT_00673e10); // C: 0x655494 = DAT_00655490 + 4
   }
   FUN_004a2379(0,s_DIFFICULTY_0062533c);
   for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
