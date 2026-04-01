@@ -1775,7 +1775,7 @@ export function FUN_0048710a(param_1) {
         if (_MEM[DAT_006560fe + local_8 * 0x20] === 0) {
           w16(DAT_006560f4, local_8 * 0x20, u16(DAT_006560f4, local_8 * 0x20) & 0xfffd);
                /*JOINED*/
-          // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6c0 + (char)(&DAT_006560fd)[local_8 * 0x20] * 4 + param_1 * 0x594) = *(uint *)(&DAT_0064c6c0 + (char)(&DAT_006560fd)[local_8 * 0x20] * 4 + param_1 * 0x594 ) & 0xfeffffff;
+          { const _off = s8(_MEM[DAT_006560fd + local_8 * 0x20]) * 4 + param_1 * 0x594; w32(DAT_0064c6c0, _off, u32(DAT_0064c6c0, _off) & 0xfeffffff); } // C: diplomatic_flags &= 0xFEFFFFFF (clear bit 24)
                /*JOINED*/
                         /*JOINED*/
           FUN_004c5fae(local_8,0,s8(_MEM[DAT_006560fd + local_8 * 0x20]));
