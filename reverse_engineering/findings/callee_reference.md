@@ -259,4 +259,37 @@ Tracing each from C source, following callees to dead ends or recycle loops.
 - FUN_0040bd10 (156B): get food rows by government type (6/7/8/10)
 - FUN_0040bdac (293B): balance sci/tax/lux to sum=10
 
-IN PROGRESS — continuing with block_00410000 (60 functions).
+### Block 00410000 — COMPLETE (89 functions)
+
+**RULES.TXT parsers** (game logic — all LEAF, read game text files):
+- FUN_00419d23 (432B): @COSMIC parser → DAT_0064bcc8-bcdd (22 bytes)
+- FUN_0041ab18 (1270B): @GOVERNMENTS + @LEADERS → DAT_0064b9a0, DAT_006554f8
+- FUN_0041b00e (361B): RULES.TXT master parser (calls section parsers)
+- FUN_0041b4c0 (983B): @IMPROVE parser → building data
+- FUN_00419cf4 (47B): load CITY.TXT helper
+- FUN_00419ed3 (371B): rules file path resolver
+- FUN_0041b177 (53B): terrain table loader helper
+
+**Dialog display** (UI — read game state but don't modify):
+- FUN_004100cf (518B): city info popup
+- FUN_00410302 (56B): zoom to tile display
+- FUN_00410835 (554B): unit info popup
+- FUN_00410bc3 (311B): advisor notification popup
+- FUN_004132b7 (153B): status bar text update
+- FUN_004135ab (343B): year display update
+
+**Game setup dialogs** (UI — set globals via user selection):
+- FUN_0041d417 (937B): map size dialog
+- FUN_0041d7ea (1204B): custom world options
+- FUN_0041dd0e (708B): premade map selection
+- FUN_0041e864 (151B): load game file dialog
+
+**SEH/MFC wrappers** (48 functions — tiny wrappers or cleanup):
+All are `thunk_FUN_xxx()` wrappers, FS_OFFSET restores, or MFC class methods.
+
+**File I/O**:
+- FUN_0041508c: fopen wrapper with path search
+- FUN_0041f69f (473B): save/load file dialog helper
+- FUN_0041f878 (97B): file existence check
+
+IN PROGRESS — continuing with block_00420000.
