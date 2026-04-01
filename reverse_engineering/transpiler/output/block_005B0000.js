@@ -2957,7 +2957,7 @@ export function FUN_005b7fe0() {
   }
   local_14 = v(DAT_00636598);
   for (local_c = 0; local_c < v(DAT_006d1164); local_c = local_c + 1) {
-    w32(local_14, 0, 10);
+    _MEM[local_14] = 10; // C: *local_14 = 10 (byte write, was w32)
     _MEM[local_14 + 1] = 0;
     _MEM[local_14 + 2] = 0;
     _MEM[local_14 + 3] = 0;
@@ -2971,16 +2971,16 @@ export function FUN_005b7fe0() {
   }
   for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
     uVar1 = FUN_004bb870(local_8);
-    w32(local_18 * 4 + 0x6365a0, 0, uVar1);
-    if (s32(local_18 * 4 + 0x6365a0, 0) === 0) {
+    w32(local_18 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0, uVar1);
+    if (s32(local_18 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0) === 0) {
       FUN_00589ef8(0xfffffff7,5,0,0xea,local_18);
     }
-    uVar1 = FUN_0046aad0(s32(local_18 * 4 + 0x6365a0, 0));
+    uVar1 = FUN_0046aad0(s32(local_18 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0));
     w32(DAT_006365c0, local_18 * 4, uVar1);
     if (s32(DAT_006365c0, local_18 * 4) === 0) {
       FUN_00589ef8(0xfffffff6,5,0,0xea,local_18);
     }
-    _memset(true /* DEVIATION: C pointer — *(void **)(ptrAdd(DAT_006365c0, local_18 * 4)) */,0,v(DAT_006d1164));
+    _memset(s32(DAT_006365c0, local_18 * 4),0,v(DAT_006d1164)); // C: _memset(*(void**)(&DAT_006365c0 + local_18*4), 0, DAT_006d1164)
   }
   local_8 = v(DAT_006d116a) * v(DAT_006d116c);
   if ((local_8 & 3) !== 0) {
@@ -3068,12 +3068,12 @@ export function FUN_005b8416() {
     }
     for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
       if (s32(DAT_006365c0, local_8 * 4) !== 0) {
-        uVar1 = FUN_0046ab00(s32(local_8 * 4 + 0x6365a0, 0));
+        uVar1 = FUN_0046ab00(s32(local_8 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0));
         w32(DAT_006365c0, local_8 * 4, uVar1);
       }
-      if (s32(local_8 * 4 + 0x6365a0, 0) !== 0) {
-        uVar1 = FUN_0046aaa0(s32(local_8 * 4 + 0x6365a0, 0));
-        w32(local_8 * 4 + 0x6365a0, 0, uVar1);
+      if (s32(local_8 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0) !== 0) {
+        uVar1 = FUN_0046aaa0(s32(local_8 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0));
+        w32(local_8 * 4 + (DAT_006365c0 - 32) /* 0x6365a0: handle array, 32 bytes before pointer array */, 0, uVar1);
       }
     }
     wv(DAT_006365f0, 0);
