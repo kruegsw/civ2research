@@ -3554,7 +3554,7 @@ export function FUN_004aa9c0() {
   wv(DAT_00655b18, 0);
   wv(DAT_00655afe, 0);
   wv(DAT_00655b05, 0);
-  wv(_DAT_00655b1c, 0);
+  w32(DAT_00655b18, 4, 0); // C: _DAT_00655b1c = 0 (overlapping global at DAT_00655b18 + 4)
   wv(DAT_00655b07, 0);
   wv(DAT_00655b06, 0xff);
   wv(DAT_00655b12, 0);
@@ -3597,15 +3597,15 @@ export function FUN_004aa9c0() {
   }
   wv(DAT_00655b0c, v(DAT_00655b0a));
   FUN_004a7754();
-  if (((10 < v(_DAT_0064bc1a) + v(_DAT_0064bc1c)) || (6 < v(_DAT_0064bc1a))) || (6 < v(_DAT_0064bc1c)) ) {
+  if (((10 < v(DAT_0064bc1a) + v(DAT_0064bc1c)) || (6 < v(DAT_0064bc1a))) || (6 < v(DAT_0064bc1c)) ) {
      /*JOINED*/
-    wv(_DAT_0064bc1a, 6);
-    wv(_DAT_0064bc1c, 4);
+    wv(DAT_0064bc1a, 6); // C: _DAT_0064bc1a = 6 (same address as DAT_0064bc1a)
+    wv(DAT_0064bc1c, 4); // C: _DAT_0064bc1c = 4 (same address as DAT_0064bc1c)
   }
   iVar1 = FUN_005ae006(v(DAT_00655b0b));
   if (iVar1 === 1) {
-    _MEM[DAT_0064c6b3 + DAT_00655b03 * 0x594] = v(DAT_0064bc1a);
-    _MEM[DAT_0064c6b4 + DAT_00655b03 * 0x594] = v(DAT_0064bc1c);
+    _MEM[DAT_0064c6b3 + v(DAT_00655b03) * 0x594] = v(DAT_0064bc1a); // C: reads DAT_00655b03 as value
+    _MEM[DAT_0064c6b4 + v(DAT_00655b03) * 0x594] = v(DAT_0064bc1c); // C: reads DAT_00655b03 as value
     if (v(DAT_00655b08) === 0) {
       w32(DAT_0064c6a2, v(DAT_00655b03) * 0x594, 0x32);
     }
