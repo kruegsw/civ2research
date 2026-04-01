@@ -220,4 +220,43 @@ Tracing each from C source, following callees to dead ends or recycle loops.
 - FUN_005bb3f0/5bb4ae/5bb574 (74-119B): palette/sprite setup
 - FUN_005bc3f1-5bd915 (25-325B): various sprite/color operations
 
-IN PROGRESS — continuing with remaining blocks (040, 041, 042, etc.).
+### Block 00400000 — COMPLETE (101 functions)
+
+**Map generation helpers** (game logic — all LEAF):
+- FUN_00408873 (144B): fill tile rectangular region with terrain value
+- FUN_00408903 (73B): copy one byte per tile (stride 6) between arrays
+- FUN_0040894c (51B): display refresh + network check
+- FUN_0040897f (948B): **build continent scoring table** — per-continent
+  terrain quality in DAT_00666132[continent * 0x10]
+- FUN_0040ac5a (1242B): **body/continent ID assignment** — flood-fill
+  after map generation to number each landmass
+- FUN_0040a763/a824/a8db/a92f/aaa4 (84-373B): continent random walk
+  functions (traced in init_call_chain.md under map gen)
+- FUN_0040ab41 (281B): island placement helper
+
+**MFC/Window wrappers** (45+ functions, all display-only — dead ends):
+- FUN_00408010-004086c0: window property get/set via in_ECX pointer
+- FUN_0040c480 (848B): window management
+- FUN_0040c7d0 (1428B): map/sidebar rendering
+- FUN_0040cd64 (4140B): MFC main window creation
+- FUN_0040beec/0040c07f/0040c212 (403B each): MFC dialog variants
+- FUN_0040c3cd (179B): MFC class factory
+
+**Text parameter wrappers** (display — dead ends):
+- FUN_0040ff60 (46B): set dialog parameter `FUN_005a94d0(&DAT_006359d4, idx, val)`
+- FUN_0040ff00/ff30 (33B): similar parameter setters
+- FUN_0040bbb0/bbe0/bc10/bc40 (29-42B): text buffer operations via DAT_00679640
+- FUN_0040fe10-0040fed0 (29B each): text buffer operation wrappers
+
+**Dialog system** (traced in init_call_chain.md under UI):
+- FUN_0040ffa0 (47B): show dialog → FUN_005a632a
+- FUN_0040bc80 (38B): get dialog result → FUN_005a5f34
+- FUN_0040ffe0 (56B): dialog with params → FUN_005a632a
+
+**Utility**:
+- FUN_0040ddc6 (226B): open tax rate advisor dialog
+- FUN_0040bcb0 (72B): check coordinate parity
+- FUN_0040bd10 (156B): get food rows by government type (6/7/8/10)
+- FUN_0040bdac (293B): balance sci/tax/lux to sum=10
+
+IN PROGRESS — continuing with block_00410000 (60 functions).
