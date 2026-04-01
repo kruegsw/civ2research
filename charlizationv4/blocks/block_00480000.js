@@ -3029,6 +3029,24 @@ export function FUN_0048a374() {
 
 export function FUN_0048a416() {
 
+  // ╔══════════════════════════════════════════════════════════════════╗
+  // ║ HEADLESS_BYPASS: Human player turn auto-end                     ║
+  // ║                                                                 ║
+  // ║ This function normally runs the interactive unit movement loop:  ║
+  // ║ select unit → wait for player input → process move → repeat.    ║
+  // ║ It blocks indefinitely waiting for keyboard/mouse input.        ║
+  // ║                                                                 ║
+  // ║ For headless mode, we skip all units and return immediately,    ║
+  // ║ equivalent to pressing "End Turn" with no moves.                ║
+  // ║                                                                 ║
+  // ║ WHEN ADDING UI: Replace this block with input from WebSocket    ║
+  // ║ or CLI. The function iterates units via FUN_00489859 (find      ║
+  // ║ next moveable unit) and processes moves via FUN_0048a004.       ║
+  // ║ Unit selection state is in DAT_00655afe (active unit index).    ║
+  // ╚══════════════════════════════════════════════════════════════════╝
+  if (globalThis.HEADLESS_BYPASS) {
+    return;
+  }
 
   let sVar1;
   let iVar2;
@@ -3036,7 +3054,7 @@ export function FUN_0048a416() {
   let local_18;
   let local_14;
   let local_c;
-  
+
   local_c = 0;
   sVar1 = -1;
   wv(DAT_00655afe, -1);

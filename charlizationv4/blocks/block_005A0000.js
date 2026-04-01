@@ -2272,6 +2272,30 @@ export function FUN_005a577e(in_ECX = globalThis.in_ECX) {
 
 export function FUN_005a5f34(in_ECX = globalThis.in_ECX, param_1, param_2) {
 
+  // ╔══════════════════════════════════════════════════════════════════╗
+  // ║ HEADLESS_BYPASS: Dialog result auto-return                      ║
+  // ║                                                                 ║
+  // ║ This function normally enters an MFC message pump (while loop   ║
+  // ║ at lines 2307/2313) waiting for user input, then returns the    ║
+  // ║ selected option index from in_ECX+0xd8.                        ║
+  // ║                                                                 ║
+  // ║ For headless mode, we return 0 immediately. Return value 0 is   ║
+  // ║ the safe/continue default for ALL dialogs:                      ║
+  // ║   - KEEPPLAYING: 0 = keep playing (nonzero = quit)              ║
+  // ║   - REALLYQUIT:  0 = cancel quit  (nonzero = confirm quit)      ║
+  // ║   - TAXES:       0 = ignore deficit                             ║
+  // ║   - COUNCILTIME: 0 = skip council                               ║
+  // ║   - All notifications (GLOBALWARMING, PLANRETIRE, etc.): 0 = OK ║
+  // ║                                                                 ║
+  // ║ WHEN ADDING UI: Replace this block with input from WebSocket,   ║
+  // ║ CLI, or other input source. The dialog name is stored at        ║
+  // ║ DAT_006cecb0 (set by FUN_005a632a before this function).        ║
+  // ║ The available options are built by FUN_005a632a's @OPTIONS       ║
+  // ║ parser. The return value should be the selected option index.    ║
+  // ╚══════════════════════════════════════════════════════════════════╝
+  if (globalThis.HEADLESS_BYPASS) {
+    return 0;
+  }
 
   let iVar1;
   let BVar2;
@@ -2280,7 +2304,7 @@ export function FUN_005a5f34(in_ECX = globalThis.in_ECX, param_1, param_2) {
   let local_90 = new Array(132).fill(0);
   let local_c;
   let local_8;
-  
+
   if (v(DAT_00635a9c) !== 0x10) {
     if (param_2 === 0) {
       wv(DAT_006cec80, FUN_00421bb0());
