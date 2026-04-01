@@ -2905,16 +2905,11 @@ export function new_civ_004A7CE9(param_1) {
                           /*JOINED*/
                             /*JOINED*/
                            /*JOINED*/
-          if ((v(DAT_00655af8) === 0) && (iVar4 = FUN_004087c0(s16(DAT_00627fe0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_0064c6a6, param_1 * 0x594), 0) */ * 2), s16(DAT_00628010, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_0064c6a6, param_1 * 0x594), 0) */ * 2)), iVar4 !== 0)) {
-             /*JOINED*/
-                                                        /*JOINED*/
-                                                        /*JOINED*/
-                                         /*JOINED*/
-                                                        /*JOINED*/
-                                                        /*JOINED*/
-            local_3c = ((s16(DAT_00627fe0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_0064c6a6, param_1 * 0x594), 0) */ * 2)) >>> 0);
-                                       /*JOINED*/
-            local_140 = ((s16(DAT_00628010, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_0064c6a6, param_1 * 0x594), 0) */ * 2)) >>> 0);
+          // C: if DAT_00655af8 == 0, use leader's predefined starting position
+          if ((v(DAT_00655af8) === 0) && (iVar4 = FUN_004087c0(s16(DAT_00627fe0, s16(DAT_0064c6a6, param_1 * 0x594) * 2), s16(DAT_00628010, s16(DAT_0064c6a6, param_1 * 0x594) * 2)), iVar4 !== 0)) {
+            // Read leader_graphic_id, use as index into starting position tables
+            local_3c = ((s16(DAT_00627fe0, s16(DAT_0064c6a6, param_1 * 0x594) * 2)) >>> 0);
+            local_140 = ((s16(DAT_00628010, s16(DAT_0064c6a6, param_1 * 0x594) * 2)) >>> 0);
                                         /*JOINED*/
             local_14c = 0;
           }
