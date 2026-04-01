@@ -4639,7 +4639,7 @@ export function FUN_004ebbde(param_1) {
     else {
       iVar2 = s8(_MEM[DAT_0064f37a + param_1 * 0x58]);
       while (local_8 = iVar2 + -1, -1 < local_8) {
-        iVar3 = iVar2 + 0x64f380;
+        iVar3 = iVar2 + (DAT_0064f340 + 0x40); // C: &DAT_0064f380 (city struct offset 0x40)
         iVar2 = local_8;
         if ((s8(_MEM[iVar3 + param_1 * 0x58]) < 0) && (s16(DAT_0064f384, local_8 * 2 + param_1 * 0x58) === v(DAT_006a6570))) {
            /*JOINED*/
@@ -4682,7 +4682,7 @@ export function FUN_004ebbde(param_1) {
         }
         else {
           FUN_004c4210(0,v(DAT_0064bcd1));
-          FUN_004f3f30(s_AQUEDUCT_0062ee54,param_1,0x64537c);
+          FUN_004f3f30(s_AQUEDUCT_0062ee54,param_1,(0x64537c - 0x61c068)); // C: &DAT_0064537c (building description)
           wv(DAT_00655af4, v(DAT_00655af4) | 8);
         }
       }
