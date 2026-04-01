@@ -182,4 +182,42 @@ Tracing each from C source, following callees to dead ends or recycle loops.
 | 05B   | 54    | 0      | 54        |
 | 061   | 2     | 0      | 2         |
 
-IN PROGRESS — starting with block_005B (tile/unit utilities, most critical for init chain).
+### Block 005B — COMPLETE (53 functions, all leaf/dead-end)
+
+**Tile mutators** (all same pattern: modify byte, network broadcast if MP):
+- FUN_005b94fc (330B): set/clear improvement flags — byte 1 `|= mask` or `&= ~mask`
+- FUN_005b9646 (295B): set terrain type — byte 0 `= (*ptr & 0xF0) | terrain`
+- FUN_005b98b7 (305B): set fertility — byte 5 `= (ptr[5] & 0xF0) | (val & 0xF)`
+- FUN_005b99e8 (333B): set city owner — byte 5 `= (ptr[5] & 0x0F) | (val << 4)`
+- FUN_005b9b35 (276B): set body/continent ID — byte 3 `= val`
+- FUN_005b9c49 (traced): set claiming civ — byte 2 upper 3 bits
+- FUN_005b976d (traced): set visibility — byte 4 `|= mask` or `&= ~mask`
+- FUN_005b8b1a (75B): update per-civ improvement snapshot
+- FUN_005b8bac (108B): set/clear per-civ visibility bit
+
+**Unit operations** (all leaf — callees already traced):
+- FUN_005b3863 (60B): refresh unit position — wrapper → FUN_005b36df(unit, unit.x, unit.y)
+- FUN_005b389f (577B): move unit to bottom of stack — relink via FUN_005b2cc3
+- FUN_005b3ae0 (152B): move entire stack to new position
+- FUN_005b5bab (488B): load unit onto transport
+- FUN_005b633f (271B): check if unit ready to move (alive + has movement + not fortified)
+- FUN_005b6512 (629B): find nearest moveable unit (3-pass search)
+- FUN_005b67af (233B): find nearest unit of specific civ
+
+**Map utilities** (all leaf):
+- FUN_005b9431 (78B): check continent has feature (bit lookup in DAT_00666137)
+- FUN_005b8d15 (77B): get city ID with fortress flag check
+- FUN_005bad40 (135B): parse binary string to int
+- FUN_005badf0 (145B): build file path (dir + "\\" + filename)
+- FUN_005baeb0/5baec8/5baee0: display dimension setters (24-68B each)
+
+**Graphics/rendering** (dead ends — no game state mutations):
+- FUN_005bbb32 (40B): drain Windows message queue + GdiFlush
+- FUN_005bbbce (52B): process palette messages via PeekMessage
+- FUN_005bf071 (1353B): load GIF sprite from DLL resource
+- FUN_005bf5e1 (847B): load GIF from resource (alternate path)
+- FUN_005baf57/5bb024/5bb0af (131-205B): text rendering with shadow/centering
+- FUN_005bb3f0/5bb4ae/5bb574 (74-119B): palette/sprite setup
+- FUN_005bc3f1-5bd915 (25-325B): various sprite/color operations
+
+IN PROGRESS — continuing with remaining blocks (040, 041, 042, etc.).
