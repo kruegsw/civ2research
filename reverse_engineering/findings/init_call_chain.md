@@ -1574,6 +1574,127 @@ Gives 4 hardcoded techs (Alphabet, Bronze Working, Ceremonial Burial, Horseback 
 Creates starting city. Sets gold = `(rand()%50 + 25) * (difficulty+1)`.
 Sets `DAT_00655af8 = ((difficulty*4+4)*5+1)`. Only runs if `DAT_00631ee8 != 0`.
 
+---
+
+## UI Function Call Chain (traced from C source)
+
+### Dialog System: FUN_0040ffa0 → FUN_005a632a → FUN_005a5f34 → FUN_0040bc80
+
+**Text-file-driven dialog engine.** The game reads dialog definitions from `.txt` files.
+
+**FUN_0040ffa0(dialogName, flags)** (47 bytes) — Show dialog:
+Wrapper: `FUN_005a632a(&DAT_006359d4, dialogName, 0, flags, 0, 0, 0, flags)`.
+
+**FUN_005a632a** (2287 bytes) — Dialog parser:
+Opens text file via `FUN_004a2379(textBuffer, dialogName)`.
+Reads lines via `FUN_004a23fc(1)` (readline from game text files).
+Parses `@` directives: `@OPTIONS` (phase 2: add selectable items),
+`@PROMPT` (phase 2), `@TITLE`, `@BUTTON`, `@COLUMNS`, `@HEIGHT`,
+`@WIDTH`, `@CHECKBOX`, `@LISTBOX`, `@DEFAULT`, `@SMALLFONT`, `@SYSTEM`, `@LENGTH`.
+Builds dialog via MFC class at `in_ECX`.
+
+**FUN_0040bc80(param)** (38 bytes) — Get dialog result:
+Wrapper: `FUN_005a5f34(0, param)`.
+
+**FUN_005a5f34** (999 bytes) — Wait for dialog response:
+1. If `param_2 != 0`: set timeout = `param_2 * 60 - 1200 + now`
+2. Enter MFC message pump: `while ((byte)(in_ECX+0x3d) & 4 == 0) { FUN_0040ef50(); }`
+3. After user clicks: extract result from `*(in_ECX + 0xd8)` (selected option index)
+4. **Returns** the selected option index (int)
+
+**How the game loop uses dialogs:**
+```
+FUN_0040ffa0("KEEPPLAYING", ...)   // show "Keep Playing?" dialog
+result = FUN_0040bc80(0)            // wait, returns option index
+// result checked to decide if game continues
+```
+
+**For headless:** The dialog parser (FUN_005a632a) reads game text files and builds
+option lists — this could still run. But FUN_005a5f34's message pump loop will hang
+waiting for user input. This function must either be stubbed to return a default
+value, or receive input from an alternative source (WebSocket, CLI, etc.).
+
+### Message Box: FUN_00410030
+
+**FUN_00410030(dialogName, dataPtr, flags)** (43 bytes):
+Wrapper: `FUN_0051d564(&DAT_006359d4, dialogName, 0, dataPtr, flags)`.
+
+**FUN_0051d564** (178 bytes):
+Creates CSocket dialog, calls `FUN_0040bc80(0)` to wait for response.
+Stores result in `DAT_00631edc`.
+Used for: "PLANRETIRE", "DORETIRE", "SCENARIOENDS", "KEEPPLAYING",
+"CASUALTY/CASUALTIES", "HOTHUMANSDEAD", "FEARWARMING", "GLOBALWARMING".
+
+**For headless:** Return value of `FUN_0040bc80(0)` determines game flow.
+`KEEPPLAYING` → 0 means keep playing, nonzero means quit.
+Most other messages just need acknowledgment (return 0 = OK).
+
+### Display Functions (pure UI, no game state)
+
+**FUN_0042a768** (84 bytes) — Process pending Windows messages:
+Checks `in_ECX + 0x450`, calls message pump + repaint + sidebar.
+**No game state mutations.** Safe to no-op for headless.
+
+**FUN_004e4ceb** (3761 bytes) — Full map redraw:
+Enables/disables menu items via FUN_005792e1. Renders all visible tiles.
+**No game state mutations.** Safe to no-op for headless.
+
+**FUN_00413476** (304 bytes) — Status bar/sidebar refresh:
+Updates player name, year, treasury, opens advisor windows.
+**No game state mutations.** Safe to no-op for headless.
+
+### City Window Functions
+
+**citywin_994F** (64 bytes) — Close city window:
+Sets `DAT_006aa75c=1`, calls FUN_004503d0 (close), FUN_00484d52.
+**Mutates:** DAT_006aa75c, _DAT_006aa754. Safe to no-op (no city window in headless).
+
+**citywin_9429** (246 bytes) — Refresh city window:
+**MUTATES GAME STATE** — calls `FUN_004eb4ed(cityIdx, 1)` (yield recalculation).
+But ONLY when city window is actively displayed (`in_ECX+0x15a0==0 && in_ECX+0x15a4==0`).
+Since headless has no city window open, the `in_ECX` pointer conditions will be false.
+Safe to no-op IF `in_ECX` is properly initialized (all zeros = window not open).
+
+**citywin_DADA** (92 bytes) — Set display mode flags on `in_ECX`. Pure UI.
+
+**citywin_DB36** (92 bytes) — Similar to DADA. Pure UI.
+
+**citywin_DCB6** (498 bytes) — City window class init. Sets `in_ECX` pointers.
+Called from WinMain post-init. For headless: safe to no-op (no window to init).
+
+### FUN_0048a416 — Human Player Turn (1303 bytes)
+
+The interactive unit movement loop. Calls FUN_00489a0d (init unit selection),
+then loops: find next unit → wait for player input → process move → repeat.
+Exits when `DAT_0064b9bc == 0` (end of turn) or `DAT_00628044 == 0` (game over).
+
+**For all-AI headless:** This function is only called for human civs. If
+`DAT_00655b0b == 0` (no human players), it's never reached. For headless with
+a human observer, it needs to auto-end-turn or receive external input.
+
+### Summary: UI Function Impact on Game State
+
+| Function | Size | Mutates State? | Game Loop Depends on Return? | Headless Strategy |
+|----------|------|---------------|------------------------------|-------------------|
+| FUN_0040ffa0 | 47 | No (builds dialog) | No (void) | Let run (reads text files) |
+| FUN_0040bc80 | 38 | No (reads result) | **YES** (option index) | Return default (0) |
+| FUN_005a5f34 | 999 | No | **YES** (selected option) | Return default (0) |
+| FUN_00410030 | 43 | DAT_00631edc | **YES** (via FUN_0040bc80) | Return 0 (OK/continue) |
+| FUN_0042a768 | 84 | in_ECX+0x450 only | No (void) | No-op |
+| FUN_004e4ceb | 3761 | No | No (void) | No-op |
+| FUN_00413476 | 304 | No | No (void) | No-op |
+| citywin_994F | 64 | DAT_006aa75c | No | No-op |
+| citywin_9429 | 246 | **Yield recalc** | No | No-op (window not open) |
+| citywin_DADA | 92 | in_ECX flags | No | No-op |
+| citywin_DB36 | 92 | in_ECX flags | No | No-op |
+| citywin_DCB6 | 498 | in_ECX init | No | No-op |
+| FUN_0048a416 | 1303 | Unit movement | **YES** (turn flow) | Skip for all-AI |
+
+**The critical path:** Only FUN_005a5f34 (dialog result) and FUN_0048a416 (human turn)
+affect game flow. Everything else is display-only. For an all-AI headless game with
+no human players, FUN_0048a416 is never called (guarded by DAT_00655b0b check in game loop).
+FUN_005a5f34 needs to return 0 (default/OK) to prevent the game loop from hanging.
+
 ### Rendering/Visibility
 
 **FUN_004274a6** (4250 bytes) — Update unit visibility/exploration (FULLY TRACED):
