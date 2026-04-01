@@ -328,4 +328,114 @@ Display functions (43 — dead ends):
 - FUN_004371b3-437c6f: sprite/palette wrappers
 - FUN_004325d5/e1: `thunk_FUN_0043c520()` — GDI object management
 
-IN PROGRESS — continuing with blocks 00440000-00490000.
+### Block 00440000 — (14 functions)
+9 game logic (diplomacy dialogs — UI-driven but access DAT_0064c6c0 diplo flags).
+5 MFC wrappers. All call dialog display system. Dead ends for headless.
+
+### Block 00450000 — (58 functions)
+23 game logic: wonder checks (FUN_00453af0-453edf), tech effect lookups
+(FUN_004547xx series — 16 tiny wrappers to FUN_005bd915/FUN_0043c520),
+diplomacy helpers (FUN_00456e90-4570xx), border friction (FUN_00456f20 — traced).
+17 tiny wrappers, 18 MFC. All leaf or traced.
+
+### Block 00460000 — (44 functions)
+27 game logic: network protocol message handlers (FUN_00460129-46e8f0).
+Most are multiplayer-only — they format and send/receive network packets
+via FUN_0046b14d and XD_FlushSendBuffer. In single-player headless,
+these are never called (guarded by `DAT_00655b02 < 3`).
+Key non-network:
+- FUN_00467750 (124B): set peace treaty between two civs
+- FUN_00467825 (200B): set diplomatic flag
+- FUN_004679ab-467baf: diplomatic status read/write helpers
+- FUN_0046aaa0/aad0/ab00: GlobalAlloc/Lock/Unlock wrappers (traced)
+14 MFC, 3 tiny. All leaf.
+
+### Block 00470000 — (59 functions)
+17 game logic: map rendering and tile display functions.
+- FUN_0047cea6 (102B): refresh tile display at (x,y)
+- FUN_0047cf22 (160B): scroll map viewport
+- FUN_0047ce1e (163B): redraw tile + surrounding area
+- FUN_004728c0-472cf0: map coordinate conversion
+All display-only. 26 tiny, 16 MFC. Dead ends.
+
+### Block 00480000 — (21 functions, CRITICAL)
+16 game logic:
+- FUN_00488a45 (682B): **path connectivity check** — uses pathfinder to trace
+  road from city A to city B. Returns 0/1/2 (none/path/road). LEAF.
+- FUN_004824e3 (577B): multiplayer quit handler (dead end for SP)
+- FUN_004828a5 (2021B): multiplayer game loop (not used in SP)
+- FUN_00484d85 (615B): year display calculation
+- FUN_00485208 (479B): per-turn unit automation (settlers, caravans)
+- FUN_00489859 (436B): find next unit to move (active unit selector)
+- FUN_00489be2 (1058B): process player move command
+- FUN_0048a374 (162B): end-of-turn cleanup for human player
+- FUN_0048bf51 (155B): post-game-loop cleanup
+- FUN_0048bfec (2530B): multiplayer game loop
+- FUN_0048c9f3 (3990B): multiplayer turn processing
+- FUN_0048dab9 (956B): network server main loop
+5 tiny/SEH. All leaf for SP headless (MP paths never reached).
+
+### Block 00490000 — (47 functions)
+32 game logic: advisor/score/ranking system.
+- FUN_00492b60 (302B): clear diplomatic target slot
+- FUN_00492c15 (259B): AI diplomatic target assignment
+- FUN_00492d18-492dd0: AI strategy helpers
+- FUN_0049301b (958B): **create AI event/action** — adds entries to
+  diplomatic_targets[48] array at DAT_0064cab4 (stride 6). Key function.
+- FUN_004933f2 (167B): AI update unit action
+- FUN_0049376f (268B): AI targeting helper
+- FUN_00493b10-493eeb: civ name/leader formatters for display
+- FUN_00498a5c (302B): advisor initialization
+- FUN_00498e8b (2139B): advisor dialog display
+9 tiny, 6 MFC. All leaf.
+
+### Block 004A0000 — (19 functions)
+17 game logic: pathfinding and game init.
+- FUN_004abfe5 (4118B): **pathfinder** (BFS/Dijkstra — traced in init_call_chain.md)
+- FUN_004ad01e/4ad076 (88/91B): pathfinder grid read/write (traced)
+- FUN_004a2020-4a26bf: RULES.TXT text file reader functions
+  (FUN_004a2379 = open, FUN_004a23fc = readline, FUN_004a24b1 = close)
+- FUN_004a6cc5 (458B): tech prerequisite chain validator
+- FUN_004a733d (156B): clear active unit selection
+- FUN_004a75a6/75d5 (47B each): civ active/alive checks
+- FUN_004aef20-4af1d5: text buffer formatting operations
+1 tiny, 1 MFC. All leaf.
+
+### Block 004B0000 — (17 functions)
+14 game logic: tech system and network.
+- FUN_004b32fe (164B): count continents (iterates DAT_00666130)
+- FUN_004b4735 (246B): tech research cost calculation
+- FUN_004b7645-4b7eb6: network message handlers
+- FUN_004bb4a0/4bb4f0: memory allocation helpers
+- FUN_004bdb2c (156B): tech priority scoring
+- FUN_004b0b53 (251B): network message prep
+- FUN_004b0a0a (238B): network flush
+3 MFC. All leaf.
+
+### Block 004C0000 — (8 functions)
+8 game logic: unit orders and city founding.
+- FUN_004c0cf7 (156B): unit goto pathfinder setup
+- FUN_004c2788 (200B): trade route gold calculation
+- FUN_004c4240 (76B): city rush-buy cost calculation
+- FUN_004c42a0 (131B): rush-buy cost for buildings
+- FUN_004c50d0 (262B): settler improvement auto-assign
+- FUN_004c54da (1297B): settler/engineer work order AI
+- FUN_004c5fae (365B): unit movement execution
+- FUN_004cc870 (178B): caravan trade route establishment
+All leaf.
+
+### Block 004D0000 — (2 functions)
+- FUN_004d007e (302B): income report dialog
+- FUN_004d0339 (121B): income deficit check
+Both leaf.
+
+### Block 004E0000 — (1 function)
+- FUN_004e1763 (254B): unit cost modifier display update. Leaf.
+
+### Block 004F0000 — (10 functions)
+2 game logic:
+- FUN_004f00f0 (152B): city production cost lookup from building table
+- FUN_004f5dd1 (123B): city improvement cost helper
+7 MFC (city window UI methods), 1 tiny. All leaf.
+
+IN PROGRESS — continuing with blocks 00510000-005A0000 and 005C-0061.
