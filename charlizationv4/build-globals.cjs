@@ -134,9 +134,10 @@ for (const [name, info] of allRefs) {
   if (addr > maxAddr) maxAddr = addr;
 }
 
-// Add generous padding to the max address (largest known structure is units at 64KB)
+// Add generous padding for heap allocations (GlobalAlloc for tile/visibility arrays)
+// Standard map (80x50): ~27KB heap. Large map (150x75): ~100KB. 512KB is safe.
 const BASE = minAddr;
-const SIZE = (maxAddr - BASE) + 0x20000; // +128KB padding for largest arrays
+const SIZE = (maxAddr - BASE) + 0x80000; // +512KB for heap (GlobalAlloc tile/visibility arrays)
 console.log(`Flat memory: BASE=0x${BASE.toString(16)}, SIZE=${SIZE} (${(SIZE/1024).toFixed(0)} KB)`);
 console.log(`Array addresses: ${arrayNames.length} (all addresses — no scalars)`);
 

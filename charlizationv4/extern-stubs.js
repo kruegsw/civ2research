@@ -9,6 +9,20 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { stubCall } from './devlog.js';
+import { G } from './globals.js';
+
+// ── Heap allocator for GlobalAlloc/GlobalLock ──
+// Bump allocator starting after all known DAT_ addresses.
+// In the real binary, GlobalAlloc returns a handle and GlobalLock returns a pointer.
+// For our flat memory model, handle == pointer (offset into _MEM).
+const _heap = { ptr: 0 };
+function heapInit() {
+  if (_heap.ptr === 0) {
+    // Start heap after all known data, aligned to 4KB
+    // Highest DAT_ view is ~830KB into buffer. Start at 900KB.
+    _heap.ptr = 900 * 1024;
+  }
+}
 
 export function AVIFileExit(...args) { return stubCall('AVIFileExit', args); }
 export function AVIFileGetStream(...args) { return stubCall('AVIFileGetStream', args); }
@@ -159,13 +173,28 @@ export function GetVersion(...args) { return stubCall('GetVersion', args); }
 export function GetWindow(...args) { return stubCall('GetWindow', args); }
 export function GetWindowLongA(...args) { return stubCall('GetWindowLongA', args); }
 export function GetWindowRect(...args) { return stubCall('GetWindowRect', args); }
-export function GlobalAlloc(...args) { return stubCall('GlobalAlloc', args); }
+export function GlobalAlloc(flags, size) {
+  heapInit();
+  // Align to 4 bytes
+  const aligned = (size + 3) & ~3;
+  const ptr = _heap.ptr;
+  _heap.ptr += aligned;
+  if (_heap.ptr > G._MEM.length) {
+    console.error(`GlobalAlloc: out of memory (requested ${size}, heap at ${ptr}, buffer ${G._MEM.length})`);
+    return 0;
+  }
+  // GMEM_ZEROINIT (flag 0x40) — zero the allocated region
+  if (flags & 0x40) {
+    G._MEM.fill(0, ptr, ptr + aligned);
+  }
+  return ptr;  // handle == pointer in our flat model
+}
 export function GlobalCompact(...args) { return stubCall('GlobalCompact', args); }
-export function GlobalFree(...args) { return stubCall('GlobalFree', args); }
+export function GlobalFree(handle) { return 0; }  // no-op, don't reclaim
 export function GlobalHandle(...args) { return stubCall('GlobalHandle', args); }
-export function GlobalLock(...args) { return stubCall('GlobalLock', args); }
-export function GlobalSize(...args) { return stubCall('GlobalSize', args); }
-export function GlobalUnlock(...args) { return stubCall('GlobalUnlock', args); }
+export function GlobalLock(handle) { return handle; }  // handle == pointer
+export function GlobalSize(handle) { return stubCall('GlobalSize', args); }
+export function GlobalUnlock(handle) { return 0; }  // no-op
 export function HELPERS(...args) { return stubCall('HELPERS', args); }
 export function HeapAlloc(...args) { return stubCall('HeapAlloc', args); }
 export function HeapCreate(...args) { return stubCall('HeapCreate', args); }

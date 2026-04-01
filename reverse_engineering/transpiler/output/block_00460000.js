@@ -2773,8 +2773,7 @@ export function FUN_0046aaa0(param_1) {
 export function FUN_0046aad0(param_1) {
 
 
-  FUN_005dcdf9(param_1);
-  return;
+  return FUN_005dcdf9(param_1);
 }
 
 
