@@ -1279,7 +1279,7 @@ export function FUN_00408830(param_1, param_2) {
   let local_8;
   
   for (local_8 = 0; local_8 < v(DAT_006d1164); local_8 = local_8 + 1) {
-    w32(param_1, 0, param_2);
+    _MEM[param_1] = param_2; // C: *param_1 = param_2 (byte write)
     param_1 = param_1 + 6;
   }
   return;
@@ -1304,7 +1304,7 @@ export function FUN_00408873(param_1, param_2, param_3, param_4, param_5, param_
   for (local_10 = 0; local_10 < param_5; local_10 = local_10 + 1) {
     local_8 = local_14;
     for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
-      w32(local_8, 0, param_6);
+      _MEM[local_8] = param_6; // C: *local_8 = param_6 (byte write)
       local_8 = local_8 + 6;
     }
     local_14 = local_14 + v(DAT_006d1160) * 6;
