@@ -1710,7 +1710,7 @@ export function FUN_00408d33(param_1) {
       else {
         local_38 = 5;
       }
-      w32(local_50, 0, u8(local_38));
+      _MEM[local_50] = u8(local_38);
       local_50 = local_50 + 6;
       local_5c = local_5c + 2;
       if (v(DAT_006d1160) <= local_5c) {
@@ -1768,19 +1768,19 @@ export function FUN_00408d33(param_1) {
           }
           switch(bVar1) {
           case 0:
-            w32(local_50, 0, 1);
+            _MEM[local_50] = 1;
             break;
           case 1:
-            w32(local_50, 0, 2);
+            _MEM[local_50] = 2;
             break;
           case 4:
-            w32(local_50, 0, 3);
+            _MEM[local_50] = 3;
             break;
           case 5:
             local_54 = local_54 + -3;
             break;
           case 6:
-            w32(local_50, 0, 3);
+            _MEM[local_50] = 3;
           }
         }
         local_50 = local_50 + 6;
@@ -1802,36 +1802,36 @@ export function FUN_00408d33(param_1) {
           }
           switch(bVar1) {
           case 0:
-            w32(local_34, 0, 1);
+            _MEM[local_34] = 1;
             break;
           case 1:
-            w32(local_34, 0, 2);
+            _MEM[local_34] = 2;
             break;
           case 2:
             if (local_28 < (v(DAT_006d1162) * 3) / 10) {
               if (local_28 < 10) {
-                w32(local_34, 0, 9);
+                _MEM[local_34] = 9;
               }
               else {
-                w32(local_34, 0, 8);
+                _MEM[local_34] = 8;
               }
             }
             else {
-              w32(local_34, 0, 3);
+              _MEM[local_34] = 3;
             }
             local_54 = local_54 + -2;
             break;
           case 4:
-            w32(local_34, 0, 3);
+            _MEM[local_34] = 3;
             break;
           case 5:
             local_54 = local_54 + -3;
             break;
           case 6:
-            w32(local_34, 0, 1);
+            _MEM[local_34] = 1;
             break;
           case 8:
-            w32(local_34, 0, 3);
+            _MEM[local_34] = 3;
           }
         }
         local_34 = local_34 + -6;
@@ -1874,39 +1874,39 @@ export function FUN_00408d33(param_1) {
         local_50 = FUN_005b8931(local_5c,local_354);
         switch(s32(local_50, 0)) {
         case 0:
-          w32(local_50, 0, 1);
+          _MEM[local_50] = 1;
           break;
         case 1:
-          w32(local_50, 0, 4);
+          _MEM[local_50] = 4;
           break;
         case 2:
-          w32(local_50, 0, 3);
+          _MEM[local_50] = 3;
           break;
         case 3:
           if (local_28 < (v(DAT_006d1162) * 3) / 10) {
-            w32(local_50, 0, 9);
+            _MEM[local_50] = 9;
           }
           else {
-            w32(local_50, 0, 1);
+            _MEM[local_50] = 1;
           }
           break;
         case 4:
-          w32(local_50, 0, 5);
+          _MEM[local_50] = 5;
           break;
         case 5:
           FUN_0040ab41(local_5c,local_354);
           break;
         case 6:
-          w32(local_50, 0, 4);
+          _MEM[local_50] = 4;
           break;
         case 7:
-          w32(local_50, 0, 5);
+          _MEM[local_50] = 5;
           break;
         case 8:
-          w32(local_50, 0, 2);
+          _MEM[local_50] = 2;
           break;
         case 9:
-          w32(local_50, 0, 8);
+          _MEM[local_50] = 8;
         }
       }
     }
@@ -1995,7 +1995,7 @@ export function FUN_00408d33(param_1) {
           for (local_40 = 0; local_40 < 0xb; local_40 = local_40 + 1) {
             if (local_1c < _MEM[local_388 + local_40]) {
               local_1c = _MEM[local_388 + local_40];
-              w32(local_50, 0, u8(local_40));
+              _MEM[local_50] = u8(local_40);
               local_390 = local_40;
             }
           }
@@ -2088,7 +2088,7 @@ export function FUN_00408d33(param_1) {
           }
         }
         if (local_18 === 0) {
-          w32(local_50, 0, s32(local_50, 0) | 0x40);
+          _MEM[local_50] = _MEM[local_50] | 0x40; // C: *local_50 |= 0x40 (byte OR, set resource flag)
         }
       }
       local_50 = local_50 + 6;
