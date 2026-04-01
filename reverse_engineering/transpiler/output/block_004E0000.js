@@ -4840,7 +4840,7 @@ export function FUN_004ec3fe(param_1) {
   // DEVIATION: SEH
   local_24 = -1;
   local_14 = 0;
-  wv(_DAT_006a6610, -1);
+  wv((DAT_006a660c + 4) /* _DAT_006a6610 */, -1);
   local_84 = ((s8(_MEM[DAT_0064f348 + param_1 * 0x58])) >>> 0);
   local_2c = v(DAT_006a65cc) - v(DAT_006a6568);
   if ((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) !== 0) {
@@ -5097,7 +5097,7 @@ export function FUN_004ec3fe(param_1) {
               FUN_004bb8e0(local_3c);
             }
             if ((1 << (u8(local_84) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
-              wv(_DAT_006a6610, local_24);
+              wv((DAT_006a660c + 4) /* _DAT_006a6610 */, local_24);
             }
             if (local_14 === 0) {
               w16(DAT_0064f35c, param_1 * 0x58, 0);
