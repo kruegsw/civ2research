@@ -89,8 +89,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
   local_ac = 0;
   local_38 = 1;
   for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-    w32(local_18 * 4 + 0x6acae8, 0, 0);
-    w32(local_18 * 4 + 0x6acb10, 0, 0);
+    w32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0, 0);
+    w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 0);
   }
   bVar1 = _MEM[DAT_006560f7 + param_1 * 0x20];
   uVar7 = ((s8(bVar1)) >>> 0);
@@ -309,15 +309,15 @@ export function FUN_00580341(param_1, param_2, param_3) {
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if ((1 << (u8(local_18) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
             if (uVar7 === local_18) {
-              w32(local_18 * 4 + 0x6acb10, 0, 1);
+              w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 1);
             }
             else if (uVar12 === local_18) {
-              w32(local_18 * 4 + 0x6acb10, 0, 1);
+              w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 1);
             }
             else if (v(DAT_00655b07) !== 0) {
-              w32(local_18 * 4 + 0x6acb10, 0, 1);
+              w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 1);
             }
-            if (s32(local_18 * 4 + 0x6acb10, 0) !== 0) {
+            if (s32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0) !== 0) {
               local_30 = 1;
             }
           }
@@ -328,12 +328,12 @@ export function FUN_00580341(param_1, param_2, param_3) {
             {
               if ((uVar7 !== local_18) && ((_MEM[DAT_0064c6c0 + uVar7 * 4 + local_18 * 0x594] & 8) !== 0))
               {
-                w32(local_18 * 4 + 0x6acae8, 0, 2);
+                w32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0, 2);
                 local_b0 = 2;
               }
             }
             else {
-              w32(local_18 * 4 + 0x6acae8, 0, 1);
+              w32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0, 1);
               local_b0 = 1;
             }
           }
@@ -1014,7 +1014,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
           if (iVar16 !== 0) {
             local_30 = 0;
             for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-              w32(local_18 * 4 + 0x6acb10, 0, 0);
+              w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 0);
             }
           }
         }
@@ -1115,7 +1115,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     }
     else if (v(DAT_00654fa8) === 0) {
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-        if (s32(local_18 * 4 + 0x6acb10, 0) !== 0) {
+        if (s32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0) !== 0) {
           if (v(DAT_006d1da0) === local_18) {
             FUN_00421ea0(s_CANCELPEACE_006344f8);
           }
@@ -1125,9 +1125,9 @@ export function FUN_00580341(param_1, param_2, param_3) {
                                /*JOINED*/
           }
         }
-        if ((s32(local_18 * 4 + 0x6acae8, 0) !== 0) && (v(DAT_00654fa8) === 0)) {
+        if ((s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) !== 0) && (v(DAT_00654fa8) === 0)) {
           if (v(DAT_006d1da0) === local_18) {
-            if (s32(local_18 * 4 + 0x6acae8, 0) === 1) {
+            if (s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) === 1) {
               FUN_00421ea0(s_ALLYUNDERATTACK_00634504);
               FUN_0045b0d6(uVar12,uVar7);
             }
@@ -1135,7 +1135,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
               FUN_00421ea0(s_ALLYATTACKING_00634514);
             }
           }
-          else if (s32(local_18 * 4 + 0x6acae8, 0) === 1) {
+          else if (s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) === 1) {
             FUN_00511880(0x3b,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, local_18 * 4), 0) */ * 0x54) ,2,0,0,0);
                                      /*JOINED*/
                                /*JOINED*/
@@ -5629,7 +5629,7 @@ function LAB_00582cbe_helper(aiStack_58, bVar1, bVar18, bVar2, bVar3, bVar4, bVa
           if (iVar16 !== 0) {
             local_30 = 0;
             for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-              w32(local_18 * 4 + 0x6acb10, 0, 0);
+              w32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0, 0);
             }
           }
         }
@@ -5730,7 +5730,7 @@ function LAB_00582cbe_helper(aiStack_58, bVar1, bVar18, bVar2, bVar3, bVar4, bVa
     }
     else if (v(DAT_00654fa8) === 0) {
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-        if (s32(local_18 * 4 + 0x6acb10, 0) !== 0) {
+        if (s32(local_18 * 4 + (DAT_006acb08 + 8) /* 0x6acb10: combat state array B */, 0) !== 0) {
           if (v(DAT_006d1da0) === local_18) {
             FUN_00421ea0(s_CANCELPEACE_006344f8);
           }
@@ -5740,9 +5740,9 @@ function LAB_00582cbe_helper(aiStack_58, bVar1, bVar18, bVar2, bVar3, bVar4, bVa
                                /*JOINED*/
           }
         }
-        if ((s32(local_18 * 4 + 0x6acae8, 0) !== 0) && (v(DAT_00654fa8) === 0)) {
+        if ((s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) !== 0) && (v(DAT_00654fa8) === 0)) {
           if (v(DAT_006d1da0) === local_18) {
-            if (s32(local_18 * 4 + 0x6acae8, 0) === 1) {
+            if (s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) === 1) {
               FUN_00421ea0(s_ALLYUNDERATTACK_00634504);
               FUN_0045b0d6(uVar12,uVar7);
             }
@@ -5750,7 +5750,7 @@ function LAB_00582cbe_helper(aiStack_58, bVar1, bVar18, bVar2, bVar3, bVar4, bVa
               FUN_00421ea0(s_ALLYATTACKING_00634514);
             }
           }
-          else if (s32(local_18 * 4 + 0x6acae8, 0) === 1) {
+          else if (s32(local_18 * 4 + (DAT_006acb08 - 32) /* 0x6acae8: combat state array A */, 0) === 1) {
             FUN_00511880(0x3b,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, local_18 * 4), 0) */ * 0x54) ,2,0,0,0);
                                      /*JOINED*/
                                /*JOINED*/
