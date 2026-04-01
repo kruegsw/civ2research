@@ -731,7 +731,7 @@ export function FUN_00484cc0() {
   wv(DAT_0064bcb8, 0);
   wv(DAT_0064bcba, 0);
   for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    _MEM[DAT_0064bcbc + local_8] = 0;
+    w16(DAT_0064bcbc, local_8 * 2, 0); // C: (&DAT_0064bcbc)[local_8] = 0 (short array, stride 2)
   }
   return;
 }
@@ -1821,9 +1821,9 @@ export function FUN_00487371(param_1) {
   wv(DAT_00655aee, v(DAT_00655aee) & 0xfffe);
   FUN_0048710a(param_1);
   uVar2 = ((v(DAT_00655b08)) >>> 0);
-  if (v(DAT_00655af8) % (uVar2 + 1) * 0xc === 0) {
+  if (v(DAT_00655af8) % ((uVar2 + 1) * 0xc) === 0) { // C: turn % ((difficulty+1) * 12)
     for (local_1c = 0; local_1c < 8; local_1c = local_1c + 1) {
-      if ((((v(DAT_00655af8) % (uVar2 + 1) * 0x18 === 0) || (iVar3 = FUN_00453e51(local_1c,0x14), iVar3 !== 0)) && ((1 < u8(_MEM[DAT_0064c6be + local_1c * 0x594]) || (iVar3 = FUN_00453e51(local_1c,0x14), iVar3 !== 0)))) && (_MEM[DAT_0064c6be + local_1c * 0x594] !== 0)) {
+      if ((((v(DAT_00655af8) % ((uVar2 + 1) * 0x18) === 0) // C: turn % ((difficulty+1) * 24) || (iVar3 = FUN_00453e51(local_1c,0x14), iVar3 !== 0)) && ((1 < u8(_MEM[DAT_0064c6be + local_1c * 0x594]) || (iVar3 = FUN_00453e51(local_1c,0x14), iVar3 !== 0)))) && (_MEM[DAT_0064c6be + local_1c * 0x594] !== 0)) {
            /*JOINED*/
           /*JOINED*/
            /*JOINED*/
@@ -1901,7 +1901,7 @@ export function FUN_00487371(param_1) {
                                  /*JOINED*/
                            /*JOINED*/
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
-          if ((((1 << (u8(local_18) & 0x1f) & ((v(DAT_00655b0a) & DAT_00655b0b) >>> 0) & 1 << (u8(local_18) & 0x1f)) !== 0) && (v(DAT_006d1da0) !== local_18)) && (local_18 !== local_1c)) {
+          if ((((1 << (u8(local_18) & 0x1f) & ((v(DAT_00655b0a) & v(DAT_00655b0b)) >>> 0) & 1 << (u8(local_18) & 0x1f)) !== 0) && (v(DAT_006d1da0) !== local_18)) && (local_18 !== local_1c)) { // fixed: was missing v() on DAT_00655b0b
                 /*JOINED*/
               /*JOINED*/
             FUN_00511880(6,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, local_18 * 4), 0) */ * 0x54),1, 0,0,0);
