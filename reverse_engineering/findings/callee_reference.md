@@ -292,4 +292,40 @@ All are `thunk_FUN_xxx()` wrappers, FS_OFFSET restores, or MFC class methods.
 - FUN_0041f69f (473B): save/load file dialog helper
 - FUN_0041f878 (97B): file existence check
 
-IN PROGRESS — continuing with block_00420000.
+### Block 00420000 — (57 functions, categorized)
+
+MFC/UI display functions (39): window creation, viewport rendering,
+sprite drawing, map tile rendering, credits display. All dead ends.
+Key large ones:
+- FUN_004274a6 (4250B): unit visibility/exploration (traced in init_call_chain.md)
+- FUN_004253ef (1186B): map tile sprite rendering
+- FUN_00425607 (1355B): map tile overlay rendering
+- FUN_004289e0-428d00: palette/sprite utility wrappers
+
+Text utilities (8): FUN_00426f30-426ff0 — string substitution for dialog params.
+FUN_004271e8 — format tech/unit name for display. All display LEAF.
+
+Game-accessible display (2):
+- FUN_00421bb0 (21B): `return FUN_005d41e0()` — GetTickCount (timestamp). LEAF.
+- FUN_00421bd0 (21B): display refresh wrapper. LEAF.
+
+### Block 00430000 — COMPLETE (60 functions)
+
+City utility functions (17 game logic, all LEAF):
+- FUN_0043cc7e (103B): triangular sum of city size (food box threshold base)
+- FUN_0043cce5 (193B): format number for display (gold/production)
+- FUN_0043cef9 (125B): city revenue — checks trade route flag (DAT_0064f347 & 4)
+- FUN_0043cf76 (245B): find city at (x,y) — searches city array
+- FUN_0043d289 (186B): set/clear building (write to DAT_0064f374 bitmask)
+- FUN_0043d348/d3a4 (92B each): building iteration — find building by type/index
+- FUN_0043cab0/cb30 (92B each): city population count helpers
+- FUN_0043cda6/ce5a: number formatting
+
+Display functions (43 — dead ends):
+- FUN_0043c8d0/c910/c950: text rendering with shadow
+- FUN_004325c9-432c0e: MFC window wrappers
+- FUN_004331d1-43742f: diplomacy/advisor UI display
+- FUN_004371b3-437c6f: sprite/palette wrappers
+- FUN_004325d5/e1: `thunk_FUN_0043c520()` — GDI object management
+
+IN PROGRESS — continuing with blocks 00440000-00490000.
