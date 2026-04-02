@@ -407,6 +407,12 @@ function transformLine(line, ctx) {
     out = replaceCast(out, 'uchar', 'u8');
     out = replaceCast(out, 'undefined1', 'u8');
 
+    // ── Fix s8/u8 on bare DAT_ addresses ──
+    // (char)DAT_xxx becomes s8(DAT_xxx) above, but DAT_ is an address constant.
+    // s8(DAT_xxx) sign-extends the low byte of the ADDRESS, not the VALUE.
+    // Fix: s8(DAT_xxx) → s8(_MEM[DAT_xxx]),  u8(DAT_xxx) → u8(_MEM[DAT_xxx])
+    out = out.replace(/\b(s8|u8)\((DAT_[0-9a-fA-F]+)\)/g, '$1(_MEM[$2])');
+
     // ── All remaining casts use balanced expression extraction ──
     // Process INNER casts before OUTER ones: (uint)(int)(short)x
     // Order: innermost first → (short), (ushort), (int), then (uint)
@@ -420,8 +426,9 @@ function transformLine(line, ctx) {
     // (bool) → ternary
     out = replaceCast(out, 'bool', null, expr => '((' + expr + ') ? 1 : 0)');
 
-    // (int) → drop (no-op) — MUST run before (uint) so (uint)(int)x doesn't consume (int) as value
-    out = replaceCast(out, 'int', null, expr => expr);
+    // (int) → preserve parens — (int)(expr + 4) / 10 must keep grouping parens as (expr + 4) / 10
+    // Without this, (int)(a + 4) / 10 → a + 4 / 10 (wrong precedence)
+    out = replaceCast(out, 'int', null, expr => '(' + expr + ')');
     // Fallback: drop any remaining (int) that replaceCast couldn't extract (e.g., before strings)
     out = out.replace(/\(\s*int\s*\)/g, '');
 
@@ -432,8 +439,8 @@ function transformLine(line, ctx) {
     // (uint) → expr >>> 0
     out = replaceCast(out, 'uint', null, expr => '((' + expr + ') >>> 0)');
 
-    // (undefined4) → drop (no-op)
-    out = replaceCast(out, 'undefined4', null, expr => expr);
+    // (undefined4) → preserve parens (same reason as (int))
+    out = replaceCast(out, 'undefined4', null, expr => '(' + expr + ')');
 
     // (undefined2) → mask 16-bit
     out = replaceCast(out, 'undefined2', null, expr => '((' + expr + ') & 0xFFFF)');
@@ -847,10 +854,180 @@ function transformLine(line, ctx) {
       }
     }
 
+    // ── Fix negative comparisons with _MEM[] byte values ──
+    // _MEM[] returns Uint8Array values (0-255). Comparing to negative literals
+    // is always false. Convert: -1 → 0xFF, -2 → 0xFE, -0x26 → 0xDA, etc.
+    out = out.replace(/_MEM\[([^\]]+)\]\s*([!=]==?)\s*(-(?:0x[0-9a-fA-F]+|\d+))\b/g,
+      (m, idx, op, negVal) => {
+        const val = parseInt(negVal);
+        if (val >= 0) return m; // not negative, skip
+        const unsignedVal = ((val % 256) + 256) % 256;
+        const hexVal = '0x' + unsignedVal.toString(16).padStart(2, '0');
+        return '_MEM[' + idx + '] ' + op + ' ' + hexVal + ' /* ' + negVal + ' as unsigned byte */';
+      });
+
     if (out !== prev) changed = true;
   }
 
+  // ── Integer division truncation (final pass, runs once) ──
+  // C integer division truncates toward zero. JS division produces floats.
+  // Wrap each "a / b" with truncation: (a / b | 0)
+  out = truncateIntDivisions(out);
+
   return out;
+}
+
+// ── Integer division truncation ────────────────────────────────────
+// Scans a line for arithmetic / operators and wraps with | 0.
+// Handles: expr / expr, (expr) / expr, expr / (expr)
+// Skips: // comments, /* comments */, string literals, already-truncated (| 0)
+function truncateIntDivisions(line) {
+  // Skip pure comment lines or lines with no /
+  if (/^\s*\/\//.test(line) || !line.includes('/')) return line;
+
+  let result = '';
+  let i = 0;
+  while (i < line.length) {
+    // Skip string literals
+    if (line[i] === '"' || line[i] === "'") {
+      const quote = line[i];
+      result += quote; i++;
+      while (i < line.length && line[i] !== quote) {
+        if (line[i] === '\\') { result += line[i]; i++; }
+        if (i < line.length) { result += line[i]; i++; }
+      }
+      if (i < line.length) { result += line[i]; i++; }
+      continue;
+    }
+    // Skip // line comments — copy rest of line
+    if (line[i] === '/' && i + 1 < line.length && line[i + 1] === '/') {
+      result += line.substring(i);
+      return result;
+    }
+    // Skip /* block comments */
+    if (line[i] === '/' && i + 1 < line.length && line[i + 1] === '*') {
+      const end = line.indexOf('*/', i + 2);
+      if (end >= 0) { result += line.substring(i, end + 2); i = end + 2; continue; }
+      result += line.substring(i); return result;
+    }
+    // Detect arithmetic division: preceded by ), ], digit, or identifier char
+    if (line[i] === '/' && i + 1 < line.length && line[i + 1] !== '/' && line[i + 1] !== '*' && line[i + 1] !== '=') {
+      const prevTrimmed = result.trimEnd();
+      const lastChar = prevTrimmed.length > 0 ? prevTrimmed[prevTrimmed.length - 1] : '';
+      if (/[)\]0-9a-zA-Z_]/.test(lastChar)) {
+        // Extract right operand (skip spaces after /)
+        let j = i + 1;
+        while (j < line.length && line[j] === ' ') j++;
+        const rightStart = j;
+        j = scanForwardTerm(line, j);
+        const rightOp = line.substring(rightStart, j).trim();
+
+        if (rightOp.length > 0) {
+          // Check if already truncated: "/ expr | 0" or "/ expr | 0)"
+          let k = j;
+          while (k < line.length && line[k] === ' ') k++;
+          if (line[k] === '|' && k + 1 < line.length && line.substring(k, k + 3).trim().startsWith('| 0')) {
+            // Already truncated — skip
+            result += line[i]; i++; continue;
+          }
+
+          // Find start of left operand: scan back through result past * and % groups
+          let leftEnd = result.length;
+          while (leftEnd > 0 && result[leftEnd - 1] === ' ') leftEnd--;
+          let leftStart = scanBackwardTerm(result, leftEnd);
+          // Extend left through * and % operators
+          let ls = leftStart;
+          while (ls > 0) {
+            let p = ls;
+            while (p > 0 && result[p - 1] === ' ') p--;
+            if (p > 0 && (result[p - 1] === '*' || result[p - 1] === '%')) {
+              p--;
+              while (p > 0 && result[p - 1] === ' ') p--;
+              ls = scanBackwardTerm(result, p);
+            } else break;
+          }
+          leftStart = ls;
+          const leftOp = result.substring(leftStart, leftEnd);
+
+          // Wrap: (leftOp / rightOp | 0)
+          result = result.substring(0, leftStart) + '(' + leftOp + ' / ' + rightOp + ' | 0)';
+          i = j;
+          continue;
+        }
+      }
+    }
+    result += line[i]; i++;
+  }
+  return result;
+}
+
+// Scan forward to extract one term: number, identifier (with brackets/parens), or balanced parens
+function scanForwardTerm(str, pos) {
+  let j = pos;
+  if (j >= str.length) return j;
+  // Unary operators
+  while (j < str.length && (str[j] === '-' || str[j] === '~' || str[j] === '!')) j++;
+  // Parenthesized expression
+  if (j < str.length && str[j] === '(') {
+    let depth = 1; j++;
+    while (j < str.length && depth > 0) {
+      if (str[j] === '(') depth++;
+      if (str[j] === ')') depth--;
+      j++;
+    }
+    return j;
+  }
+  // Number: 0xHEX or decimal
+  if (j < str.length && (str[j] >= '0' && str[j] <= '9')) {
+    if (str[j] === '0' && j + 1 < str.length && str[j + 1] === 'x') {
+      j += 2;
+      while (j < str.length && /[0-9a-fA-F]/.test(str[j])) j++;
+    } else {
+      while (j < str.length && str[j] >= '0' && str[j] <= '9') j++;
+    }
+    return j;
+  }
+  // Identifier with optional trailing () or []
+  if (j < str.length && /[a-zA-Z_]/.test(str[j])) {
+    while (j < str.length && /[a-zA-Z_0-9]/.test(str[j])) j++;
+    while (j < str.length && (str[j] === '(' || str[j] === '[')) {
+      const close = str[j] === '(' ? ')' : ']';
+      let depth = 1; j++;
+      while (j < str.length && depth > 0) {
+        if (str[j] === '(' || str[j] === '[') depth++;
+        if (str[j] === ')' || str[j] === ']') depth--;
+        j++;
+      }
+    }
+    return j;
+  }
+  return j;
+}
+
+// Scan backward from pos to find the start of one term
+function scanBackwardTerm(str, pos) {
+  if (pos === 0) return 0;
+  let j = pos;
+  // If preceded by ) or ], scan back to matching opener
+  if (str[j - 1] === ')' || str[j - 1] === ']') {
+    const close = str[j - 1];
+    const open = close === ')' ? '(' : '[';
+    let depth = 1; j -= 2;
+    while (j >= 0 && depth > 0) {
+      if (str[j] === close) depth++;
+      if (str[j] === open) depth--;
+      j--;
+    }
+    j++;
+    // Continue past identifier before the parens
+    while (j > 0 && /[a-zA-Z_0-9]/.test(str[j - 1])) j--;
+    return j;
+  }
+  // Number or identifier
+  while (j > 0 && /[a-zA-Z_0-9]/.test(str[j - 1])) j--;
+  // Include hex prefix 0x
+  if (j >= 2 && str[j - 2] === '0' && (str[j - 1] === 'x' || str[j - 1] === 'X')) j -= 2;
+  return j;
 }
 
 // ── Split "base + offset" from pointer dereference inner expression ──

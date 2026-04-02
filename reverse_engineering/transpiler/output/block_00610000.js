@@ -41,9 +41,9 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   let auStack_2 = new Array(2).fill(0);
   let iVar21;
   
-  sVar20 = ((auStack_2) << 16 >> 16);
-  sVar18 = ((auStack_2) << 16 >> 16);
-  iVar21 = ((((((auStack_2) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar20 + -0x16));
+  sVar20 = ((auStack_2[0]) << 16 >> 16);
+  sVar18 = ((auStack_2[0]) << 16 >> 16);
+  iVar21 = ((((((auStack_2[0]) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar20 + -0x16));
   w16(iVar21, -4, in_DS);
   w16(iVar21, -6, unaff_SI);
   w16(iVar21, -8, unaff_DI);
@@ -165,9 +165,9 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   let auStack_2 = new Array(2).fill(0);
   let iVar24;
   
-  sVar23 = ((auStack_2) << 16 >> 16);
-  sVar17 = ((auStack_2) << 16 >> 16);
-  iVar24 = ((((((auStack_2) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar23 + -0x18));
+  sVar23 = ((auStack_2[0]) << 16 >> 16);
+  sVar17 = ((auStack_2[0]) << 16 >> 16);
+  iVar24 = ((((((auStack_2[0]) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar23 + -0x18));
   w16(iVar24, -4, in_DS);
   w16(iVar24, -6, unaff_SI);
   w16(iVar24, -8, unaff_DI);
@@ -187,7 +187,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   w32(puVar3, 0, ((uVar16) << 16 >> 16));
   puVar1 = segment(in_SS,sVar23 + 0xe);
   psVar4 = segment(in_SS,sVar23 + 0x20);
-  iVar22 = s32(psVar4, 0);
+  iVar22 = (s32(psVar4, 0));
   if (iVar22 < 1) {
     iVar22 = -iVar22;
     psVar4 = segment(in_SS,sVar23 + 0x22);
