@@ -108,7 +108,12 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         _MEM[((s32((unaff_FS_OFFSET + (s32(piVar9, 0) + (((s16(psVar3, 0) + s16(psVar5, 0)) * 4) & 0xFFFF))), 0) + ((s16(puVar7, 0)) & 0xFFFF)) + ((s16(puVar8, 0)) & 0xFFFF))] = _MEM[puVar11];
       }
       sVar19 = (sVar19 + 0xffff);
-    } while ((0 < sVar19))
+    } while ((0 < sVar19));
+    /* DEVIATION: intrinsic */;
+    sVar19 = (s16(psVar3, 0) + 0xffff);
+  } while ((0 < sVar19));
+  return;
+}
 
 
  /* /*  WARNING: */  /* Unable */  /* to */  /* track */  /* spacebase */  /* fully */  /* for */
@@ -208,7 +213,19 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       /* DEVIATION: intrinsic */;
       sVar25 = ((iVar20) & 0xFFFF);
       uVar21 = (((iVar20 >>> 0x10)) & 0xFFFF);
-      if ((s16(psVar4, 0) <= sVar25)) {
+      if ((s16(psVar4, 0) <= sVar25));
+      iVar20 = ((uVar21 << 16) | (sVar25 + 1));
+    }
+    /* DEVIATION: intrinsic */;
+    w16(psVar4, 0, sVar25);
+    /* DEVIATION: intrinsic */;
+    w32(piVar10, 0, iVar22);
+    /* DEVIATION: intrinsic */;
+    w16(puVar3, 0, s16((iVar22 + -4), 0));
+    sVar25 = s16((iVar22 + -2), 0);
+    /* DEVIATION: intrinsic */;
+    w16(psVar4, 0, sVar25);
+    if ((sVar25 !== 0)) {
       /* DEVIATION: intrinsic */;
       /* DEVIATION: intrinsic */;
       /* DEVIATION: intrinsic */;
@@ -242,13 +259,25 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           /* DEVIATION: intrinsic */;
           /* DEVIATION: intrinsic */;
           /* DEVIATION: intrinsic */;
-          if ((s16(psVar5, 0) <= (s16(psVar8, 0) - s16(psVar4, 0)))) {
+          if ((s16(psVar5, 0) <= (s16(psVar8, 0) - s16(psVar4, 0))));
+          if ((cVar13 !== cVar12)) {
             _MEM[pcVar26] = cVar13;
           }
           sVar25 = (sVar25 + 2);
           pcVar26 = (pcVar26 + 1);
           iVar20 = (iVar20 + -1);
-        } while ((iVar20 !== 0)) {
+        } while ((iVar20 !== 0));
+      }
+      pcVar26 = s32((iVar24 + -14), 0);
+    }
+    /* DEVIATION: intrinsic */;
+    pcVar26 = (pcVar26 + ((s16(psVar4, 0)) << 16 >> 16));
+    /* DEVIATION: intrinsic */;
+    /* DEVIATION: intrinsic */;
+    w16(psVar5, 0, (s16(psVar4, 0) + 2));
+    uVar21 = (((iVar20 >>> 0x10)) & 0xFFFF);
+    sVar25 = (s16((iVar24 + -10), 0) + 0xffff);
+    if ((sVar25 < 1)) {
       return;
     }
   } while ( true );

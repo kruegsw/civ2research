@@ -747,6 +747,10 @@ class JSEmitter(object):
                 if text == '{':
                     self.skip_until_brace = False
                     self._text('{')
+                elif text == ';':
+                    # End of a single-statement if/while/for (no braces)
+                    self.skip_until_brace = False
+                    self._text(';')
                 return
             if text != '':
                 self._text(text)
@@ -800,9 +804,27 @@ class JSEmitter(object):
             self.skip_until_brace = True
             return
 
+        # "for" keyword — CBRANCH, skip to { (init/cond/update are between)
+        if opc == PcodeOp.CBRANCH and get_token_text(node) == 'for':
+            cond = self.pcode.emit(pcop)
+            self._text('for (/* cond: %s */)' % cond)
+            self._mark_op_emitted(pcop)
+            self.skip_until_brace = True
+            return
+
         # "do" keyword — CBRANCH for do-while
         if opc == PcodeOp.CBRANCH and get_token_text(node) == 'do':
             self._text('do')
+            self._mark_op_emitted(pcop)
+            return
+
+        # "return" keyword — RETURN op (when it appears as a leaf token)
+        if opc == PcodeOp.RETURN and get_token_text(node) == 'return':
+            if pcop.getNumInputs() > 1:
+                val = self.pcode._emit_varnode(pcop.getInput(1))
+                self._text('return %s' % val)
+            else:
+                self._text('return')
             self._mark_op_emitted(pcop)
             return
 
