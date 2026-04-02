@@ -1264,6 +1264,7 @@ function processFunction(headerLines, bodyLines, ctx) {
       if (declStr === 'delete') declStr = '_delete';
       const arrMatch = declStr.match(/^(\w+)\s*\[(\d+)\]$/);
       if (arrMatch) {
+        localArrays.add(arrMatch[1]); // Track array locals so bracket access isn't converted to _MEM[]
         result.push(line.replace(trimmed, 'let ' + arrMatch[1] + ' = new Array(' + arrMatch[2] + ').fill(0);'));
       } else {
         result.push(line.replace(trimmed, 'let ' + declStr + ';'));
