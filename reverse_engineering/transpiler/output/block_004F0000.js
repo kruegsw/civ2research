@@ -2980,7 +2980,7 @@ export function FUN_004f8a9b(param_1, param_2) {
   for (local_8 = param_1; (local_8 !== 0x0 && (_MEM[local_8 + 1] !== param_2)); local_8 = _MEM[local_8 + 2]) {
       /*JOINED*/
   }
-  puVar1 = PTR_DAT_0062f008;
+  puVar1 = PTR(DAT_0062f004 + 4);
   if (local_8 !== 0x0) {
     puVar1 = s32(local_8, 0);
   }

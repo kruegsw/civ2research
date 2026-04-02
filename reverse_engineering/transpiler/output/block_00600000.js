@@ -733,7 +733,7 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
       if (_Buf === 0x0) {
         _Buf = __malloc_dbg(_Size,2,"setvbuf.c",0x85);
         if (_Buf === 0x0) {
-          wv(_DAT_0063aed8, v(_DAT_0063aed8) + 1);
+          wv(126576 /* 126576 */, v(126576 /* 126576 */) + 1);
           return -1;
         }
         // DEVIATION: C struct — _File->_flag = _File->_flag | 0x408;
@@ -2738,10 +2738,10 @@ export function __fltout_006033E0() {
   let local_8;
   
   ___dtold(local_10[0],0 /* ADDR:stack0x00000004 */);
-  wv(_DAT_006e55d8, _I10_OUTPUT(local_10[0],local_c,local_8,0x11,0,v(DAT_006e55b0)));
-  wv(_DAT_006e55d0, v(DAT_006e55b2));
-  wv(_DAT_006e55d4, v(DAT_006e55b0));
-  wv(_DAT_006e55dc, 0x6e55b4);
+  wv((DAT_006e55d0 + 8), _I10_OUTPUT(local_10[0],local_c,local_8,0x11,0,v(DAT_006e55b0)));
+  wv(DAT_006e55d0, v(DAT_006e55b2));
+  wv((DAT_006e55d0 + 4), v(DAT_006e55b0));
+  wv(824692, 0x6e55b4);
   return v(DAT_006e55d0);
 }
 
@@ -2895,10 +2895,10 @@ export function __tzset_00603650() {
         wv(DAT_0063b2b4, 1);
         wv(DAT_0063b2b8, (v(DAT_006e5690) - v(DAT_006e563c)) * 0x3c);
       }
-      _wcstombs(PTR_DAT_0063b340,v(DAT_006e55ec),0x40);
-      _wcstombs(PTR_DAT_0063b344,v(DAT_006e5640),0x40);
-      _MEM[PTR_DAT_0063b344 + 0x3f] = 0;
-      _MEM[PTR_DAT_0063b340 + 0x3f] = _MEM[PTR_DAT_0063b344 + 0x3f];
+      _wcstombs(PTR127704 /* 127704 */,v(DAT_006e55ec),0x40);
+      _wcstombs(PTR127708 /* 127708 */,v(DAT_006e5640),0x40);
+      _MEM[PTR127708 /* 127708 */ + 0x3f] = 0;
+      _MEM[PTR127704 /* 127704 */ + 0x3f] = _MEM[PTR127708 /* 127708 */ + 0x3f];
     }
   }
   else if ((s32(_Str1, 0) !== 0) && ((v(DAT_0063b348) === 0x0 || (iVar3 = _strcmp(_Str1,v(DAT_0063b348)), iVar3 !== 0)))) {
@@ -2911,8 +2911,8 @@ export function __tzset_00603650() {
     wv(DAT_0063b348, __malloc_dbg(sVar4 + 1,uVar6,pcVar7,uVar8));
     if (v(DAT_0063b348) !== 0x0) {
       FUN_005f22d0(v(DAT_0063b348),_Str1);
-      _strncpy(PTR_DAT_0063b340,_Str1,3);
-      _MEM[PTR_DAT_0063b340 + 3] = 0;
+      _strncpy(PTR127704 /* 127704 */,_Str1,3);
+      _MEM[PTR127704 /* 127704 */ + 3] = 0;
       local_c = _Str1 + 3;
       cVar1 = s32(local_c, 0);
       if (cVar1 === 45) {
@@ -2941,11 +2941,11 @@ export function __tzset_00603650() {
       }
       wv(DAT_0063b2b4, s32(local_c, 0));
       if (v(DAT_0063b2b4) === 0) {
-        w32(PTR_DAT_0063b344, 0, 0);
+        w32(PTR127708 /* 127708 */, 0, 0);
       }
       else {
-        _strncpy(PTR_DAT_0063b344,local_c,3);
-        _MEM[PTR_DAT_0063b344 + 3] = 0;
+        _strncpy(PTR127708 /* 127708 */,local_c,3);
+        _MEM[PTR127708 /* 127708 */ + 3] = 0;
       }
     }
   }
@@ -3623,7 +3623,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       local_8 = pbVar1;
       while( true ) {
         if (v(DAT_0063a29c) < 2) {
-          local_84 = u16(PTR_DAT_0063a090, ((local_40) >>> 0) * 2) & 4;
+          local_84 = u16(PTR(DAT_0063a088 + 8), ((local_40) >>> 0) * 2) & 4;
         }
         else {
           local_84 = __isctype(((local_40) >>> 0),4);
@@ -3676,7 +3676,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       }
       while( true ) {
         if (v(DAT_0063a29c) < 2) {
-          local_88 = u16(PTR_DAT_0063a090, ((local_40) >>> 0) * 2) & 4;
+          local_88 = u16(PTR(DAT_0063a088 + 8), ((local_40) >>> 0) * 2) & 4;
         }
         else {
           local_88 = __isctype(((local_40) >>> 0),4);
@@ -3712,7 +3712,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
     case 5:
       local_10 = 1;
       if (v(DAT_0063a29c) < 2) {
-        local_8c = u16(PTR_DAT_0063a090, ((local_40) >>> 0) * 2) & 4;
+        local_8c = u16(PTR(DAT_0063a088 + 8), ((local_40) >>> 0) * 2) & 4;
         local_8 = pbVar1;
       }
       else {
@@ -3790,7 +3790,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       local_8 = pbVar1;
       while( true ) {
         if (v(DAT_0063a29c) < 2) {
-          local_90 = u16(PTR_DAT_0063a090, ((local_40) >>> 0) * 2) & 4;
+          local_90 = u16(PTR(DAT_0063a088 + 8), ((local_40) >>> 0) * 2) & 4;
         }
         else {
           local_90 = __isctype(((local_40) >>> 0),4);
@@ -3806,7 +3806,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       local_18 = local_80;
       while( true ) {
         if (v(DAT_0063a29c) < 2) {
-          local_94 = u16(PTR_DAT_0063a090, ((local_40) >>> 0) * 2) & 4;
+          local_94 = u16(PTR(DAT_0063a088 + 8), ((local_40) >>> 0) * 2) & 4;
         }
         else {
           local_94 = __isctype(((local_40) >>> 0),4);

@@ -1404,7 +1404,7 @@ export function FUN_005d2590(param_1) {
 export function FUN_005d25a8(param_1) {
 
 
-  PTR_DAT_00637e68 = param_1;
+  PTR(DAT_00637e58 + 16) = param_1;
   return;
 }
 
@@ -1422,7 +1422,7 @@ export function FUN_005d25c0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR(DAT_00637e58 + 20);
   w32(in_ECX, 0x2c, 0);
   SetRect(local_14[0],param_3,param_4,param_5 + param_3,param_4 + 0x1e);
   FUN_00418910(param_1,param_2,local_14[0],param_6);
@@ -1443,7 +1443,7 @@ export function FUN_005d2625(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR(DAT_00637e58 + 20);
   w32(in_ECX, 0x2c, 0);
   SetRect(local_14[0],param_3,param_4,param_5 + param_3,param_4 + 0x1e);
   FUN_005d26b0(param_1,param_2,local_14[0],param_6,param_7);
@@ -1460,7 +1460,7 @@ export function FUN_005d2625(in_ECX, param_1, param_2, param_3, param_4, param_5
 export function FUN_005d268e(param_1) {
 
 
-  PTR_DAT_00637e6c = param_1;
+  PTR(DAT_00637e58 + 20) = param_1;
   return;
 }
 
@@ -1481,7 +1481,7 @@ export function FUN_005d26b0(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR(DAT_00637e58 + 20);
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,1,param_5,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -2889,7 +2889,7 @@ export function FUN_005d4122(in_ECX) {
 export function FUN_005d4167(param_1) {
 
 
-  PTR_DAT_00637e64 = param_1;
+  PTR(DAT_00637e58 + 12) = param_1;
   return;
 }
 
@@ -3920,7 +3920,7 @@ export function FUN_005d57b1(param_1) {
            /*JOINED*/
         param_1 = ((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0) / u16(DAT_006385d0, 0x80);
                   /*JOINED*/
-        wv(_DAT_00638594, v(_DAT_00638594) + 1);
+        wv((DAT_0063858c + 8), v((DAT_0063858c + 8)) + 1);
       }
       local_c = s32(DAT_006385d0, 0x98);
       uVar3 = (s32(DAT_006385d0, 0x3c) - s32(DAT_006385d0, 0x34)) / u16(DAT_006385d0, 0x80);
@@ -3930,7 +3930,7 @@ export function FUN_005d57b1(param_1) {
       }
       local_24 = u16(DAT_006385d0, 0x80) * param_1;
       uVar3 = s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68);
-      wv(_DAT_00638598, param_1);
+      wv((DAT_0063858c + 12), param_1);
       if (uVar3 < local_24) {
         local_24 = uVar3;
       }
@@ -3973,7 +3973,7 @@ export function FUN_005d57b1(param_1) {
         w32(DAT_006385d0, 0x68, 0);
         w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) | 1);
       }
-      wv(_DAT_00638590, v(_DAT_00638590) + 1);
+      wv((DAT_0063858c + 4), v((DAT_0063858c + 4)) + 1);
       uVar2 = 0;
     }
     else {
@@ -4421,7 +4421,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       local_10 = 0;
     }
     _MEM[local_8 + 7] = v(DAT_006385c0);
-    wv(_DAT_006385b4, 1);
+    wv((DAT_006385b0 + 4), 1);
     wv(DAT_006385cc, param_1);
   }
   return local_10;
@@ -4592,12 +4592,12 @@ export function FUN_005d6a2c() {
   let local_8;
   
   local_c = 0;
-  wv(_DAT_006385b8, 0);
+  wv((DAT_006385b0 + 8), 0);
   local_14 = v(DAT_006385d0);
   if (v(DAT_00638578) !== 0x0) {
     waveOutReset(v(DAT_00638578));
     while (BVar1 = PeekMessageA(local_30[0],v(DAT_0063857c),0x3bd,0x3bd,1), BVar1 !== 0) {
-      wv(_DAT_006385d4, v(_DAT_006385d4) + 1);
+      wv((DAT_006385d0 + 4), v((DAT_006385d0 + 4)) + 1);
     }
     while (local_14 !== 0) {
       if (s16(local_14, 0x88) === 4) {
@@ -4657,7 +4657,7 @@ export function FUN_005d6b89(param_1) {
   
   piVar1 = v(DAT_006385c0);
   local_8 = v(DAT_006385c0);
-  wv(_DAT_006385b8, 0);
+  wv((DAT_006385b0 + 8), 0);
   if (v(DAT_006385b0) !== 0) {
     waveOutReset(param_1);
   }
@@ -4741,7 +4741,7 @@ export function FUN_005d6c99(param_1, param_2) {
             if (s16(local_30, 0x22) === 4) {
               if ((((_MEM[local_20 + 3]) >>> 0) >> 3 & 1) === 0) {
                 FUN_005d791b(local_20,local_30);
-                wv(_DAT_00638594, v(_DAT_00638594) + 1);
+                wv((DAT_0063858c + 8), v((DAT_0063858c + 8)) + 1);
               }
               iVar3 = (((_MEM[local_20 + 3]) >>> 0) >> 7 & 0xff) * _MEM[local_30 + 0x27] + _MEM[local_30 + 0xc];
               FUN_005edc6c(_MEM[local_20 + 4],iVar3,_MEM[local_20 + 6] / (((v(DAT_006385ac)) & 0xFFFF) >>> 0), s16(local_30, 0x20), ((((((iVar3) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (((v(DAT_006385ac)) & 0xFFFF))));
@@ -5418,7 +5418,7 @@ export function FUN_005d7f72(in_ECX, param_1, param_2, param_3, param_4, param_5
 export function FUN_005d8236(param_1) {
 
 
-  PTR_DAT_00637e60 = param_1;
+  PTR(DAT_00637e58 + 8) = param_1;
   return;
 }
 
@@ -9074,7 +9074,7 @@ export function FUN_005dd010(in_ECX) {
   in_ECX[0x288] = 0;
   in_ECX[0x16b] = 1;
   in_ECX[0x289] = 0;
-  wv(_DAT_006389d0, in_ECX);
+  wv(117096 /* 117096 */, in_ECX);
   // DEVIATION: SEH
   return in_ECX;
 }
@@ -9105,7 +9105,7 @@ export function FUN_005dd1a0(in_ECX) {
   local_8 = 3;
   FUN_005e2675();
   FUN_005e2799(in_ECX);
-  wv(_DAT_006389d0, 0);
+  wv(117096 /* 117096 */, 0);
   local_8 = 2;
   FUN_005dd230();
   local_8 = 1;

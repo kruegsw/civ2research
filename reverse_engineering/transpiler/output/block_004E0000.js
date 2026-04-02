@@ -543,7 +543,7 @@ export function FUN_004e0f18() {
           wv(DAT_006ad670, 0);
           FUN_00511880(0x43,0xff,2,0,0,0);
           wv(DAT_00635a3c, 0 /* ADDR:LAB_004019b5 */);
-          wv(_DAT_006cec80, FUN_00421bb0());
+          wv((DAT_006cec78 + 8), FUN_00421bb0());
           iVar1 = FUN_00426fb0(s_PMCHANGESERVER_0062eb8c,0x2000001,v(DAT_0063fc58),0);
           if (((iVar1 < 0) || (v(DAT_006ad670) === -1)) || (v(DAT_006ad66c) !== 0)) {
             wv(DAT_006665fe, v(DAT_00654fac));
@@ -1646,8 +1646,8 @@ export function FUN_004e2803(param_1, param_2) {
   else {
     debug_log(s_Mainmenu__menu_exec___blocked_by_0062ecd0);
     wv(DAT_006c31ac, 5);
-    wv(_DAT_006c31b0, param_1);
-    wv(_DAT_006c31b4, param_2);
+    wv((DAT_006c31ac + 4), param_1);
+    wv((DAT_006c31ac + 8), param_2);
   }
   return;
 }
@@ -2411,7 +2411,7 @@ export function FUN_004e4ceb() {
   }
   FUN_0057940d(0x701,local_68);
   FUN_005792e1(0x701,v(DAT_00655b02) !== 0 && DAT_0062eb30 === 0);
-  if ((2 < v(DAT_00655b02)) && (v(_DAT_006ad578) !== v(DAT_006d1da0))) {
+  if ((2 < v(DAT_00655b02)) && (v(DAT_006ad578) !== v(DAT_006d1da0))) {
     FUN_005794cf(4,1);
   }
   if (((((v(DAT_00655aea) & 0x80) === 0) || (v(DAT_00655b02) !== 0)) || ((v(DAT_00655af0) & 0x80) === 0)) || (iVar13 = _strcmp(v(DAT_0064bb08),v(DAT_00655020)), iVar13 === 0)) {
@@ -4840,7 +4840,7 @@ export function FUN_004ec3fe(param_1) {
   // DEVIATION: SEH
   local_24 = -1;
   local_14 = 0;
-  wv((DAT_006a660c + 4) /* _DAT_006a6610 */, -1);
+  wv((DAT_006a660c + 4) /* (DAT_006a660c + 4) */, -1);
   local_84 = ((s8(_MEM[DAT_0064f348 + param_1 * 0x58])) >>> 0);
   local_2c = v(DAT_006a65cc) - v(DAT_006a6568);
   if ((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) !== 0) {
@@ -5097,7 +5097,7 @@ export function FUN_004ec3fe(param_1) {
               FUN_004bb8e0(local_3c);
             }
             if ((1 << (u8(local_84) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
-              wv((DAT_006a660c + 4) /* _DAT_006a6610 */, local_24);
+              wv((DAT_006a660c + 4) /* (DAT_006a660c + 4) */, local_24);
             }
             if (local_14 === 0) {
               w16(DAT_0064f35c, param_1 * 0x58, 0);

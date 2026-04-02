@@ -2786,7 +2786,7 @@ export function FUN_00505ffa(in_ECX, param_1) {
         local_44 = local_44 + iVar3;
       }
     }
-    wv(_DAT_006aa770, local_38);
+    wv((DAT_006aa76c + 4), local_38);
     FUN_0040fd40(0,local_38 + -1);
     FUN_005db0d0(local_20 + -1);
     FUN_0040fcf0(s32(in_ECX, 0x15b4));
@@ -4361,7 +4361,7 @@ export function citywin_994F_0050994F() {
 
   wv(DAT_006aa75c, 1);
   FUN_004503d0();
-  wv(_DAT_006aa754, -1);
+  wv(583404 /* 583404 */, -1);
   FUN_00451900();
   FUN_00484d52();
   return 0;
@@ -4390,7 +4390,7 @@ export function citywin_998F_0050998F() {
   iVar2 = iVar2 + iVar3 + 8;
   iVar3 = FUN_004080c0();
   iVar4 = FUN_00414bb0();
-  wv(_DAT_006aa784, -1);
+  wv((DAT_006aa76c + 24), -1);
   FUN_004086c0(v(DAT_00655344),(iVar3 >> 1) - (iVar1 + 0x10 >> 1),(iVar4 >> 1) - (iVar2 >> 1), iVar1 + 0x10 + v(DAT_006335a0),iVar2 + v(DAT_006335a4));
                      /*JOINED*/
   return;
@@ -4426,7 +4426,7 @@ export function citywin_9A49_00509A49() {
 export function citywin_9A82_00509A82() {
 
 
-  wv(_DAT_006aa758, 1);
+  wv(583408 /* 583408 */, 1);
   return;
 }
 
@@ -4442,7 +4442,7 @@ export function citywin_9A82_00509A82() {
 export function citywin_9A9C_00509A9C() {
 
 
-  wv(_DAT_006aa758, 0);
+  wv(583408 /* 583408 */, 0);
   thunk_citywin_9429();
   return;
 }
@@ -4526,10 +4526,10 @@ export function city_button_buy_00509B48(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_buy___block_00630e0c);
     wv(DAT_006c31ac, 7);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
+    // DEVIATION: MFC — wv((DAT_006c31ac + 4), CSplitterWnd::IsTracking(v(DAT_006a91b8)));
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-    wv(_DAT_006c31b4, s8(_MEM[DAT_0064f348 + iVar2 * 0x58]));
-    wv(_DAT_006c31b8, param_1);
+    wv((DAT_006c31ac + 8), s8(_MEM[DAT_0064f348 + iVar2 * 0x58]));
+    wv((DAT_006c31ac + 12), param_1);
     // DEVIATION: SEH
     citywin_A1B2();
     citywin_A1C8();
@@ -4839,10 +4839,10 @@ export function city_button_change_0050A473(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_change___bl_00630e60);
     wv(DAT_006c31ac, 8);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
+    // DEVIATION: MFC — wv((DAT_006c31ac + 4), CSplitterWnd::IsTracking(v(DAT_006a91b8)));
     // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-    wv(_DAT_006c31b4, s8(_MEM[DAT_0064f348 + iVar2 * 0x58]));
-    wv(_DAT_006c31b8, param_1);
+    wv((DAT_006c31ac + 8), s8(_MEM[DAT_0064f348 + iVar2 * 0x58]));
+    wv((DAT_006c31ac + 12), param_1);
     local_8 = 1;
     citywin_B638();
     local_8 = ((local_8) >>> 0) << 8;
@@ -5346,10 +5346,10 @@ export function city_button_rename_0050B74E(param_1) {
     else {
       debug_log(s_Citywin__city_button_rename___bl_00630f68);
       wv(DAT_006c31ac, 10);
-      // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
+      // DEVIATION: MFC — wv((DAT_006c31ac + 4), CSplitterWnd::IsTracking(v(DAT_006a91b8)));
       // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-      wv(_DAT_006c31b4, s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
-      wv(_DAT_006c31b8, param_1);
+      wv((DAT_006c31ac + 8), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
+      wv((DAT_006c31ac + 12), param_1);
     }
   }
   return;
@@ -5461,10 +5461,10 @@ export function city_button_view_0050BACD(param_1) {
     else {
       debug_log(s_Citywin__city_button_view___bloc_00630fc0);
       wv(DAT_006c31ac, 9);
-      // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
+      // DEVIATION: MFC — wv((DAT_006c31ac + 4), CSplitterWnd::IsTracking(v(DAT_006a91b8)));
       // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-      wv(_DAT_006c31b4, s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
-      wv(_DAT_006c31b8, param_1);
+      wv((DAT_006c31ac + 8), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
+      wv((DAT_006c31ac + 12), param_1);
     }
   }
   return;
@@ -5693,12 +5693,12 @@ export function city_mouse_0050C1D1(param_1, param_2, param_3) {
   else {
     debug_log(s_Citywin__city_mouse___blocked_by_00631040);
     wv(DAT_006c31ac, 6);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
+    // DEVIATION: MFC — wv((DAT_006c31ac + 4), CSplitterWnd::IsTracking(v(DAT_006a91b8)));
     // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-    wv(_DAT_006c31b4, s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
-    wv(_DAT_006c31b8, param_1);
-    wv(_DAT_006c31bc, param_2);
-    wv(_DAT_006c31c0, param_3);
+    wv((DAT_006c31ac + 8), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]));
+    wv((DAT_006c31ac + 12), param_1);
+    wv((DAT_006c31ac + 16), param_2);
+    wv((DAT_006c31ac + 20), param_3);
   }
   return;
 }

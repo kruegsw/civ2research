@@ -2003,8 +2003,8 @@ export function FUN_00445e46(param_1) {
   FUN_0059db08(0x4000);
   local_8 = 0;
   local_330 = 0;
-  wv(_DAT_006ad12c, 0);
-  wv(_DAT_006ad178, 0);
+  wv((DAT_006ad110 + 28), 0);
+  wv((DAT_006ad160 + 24), 0);
   do {
     FUN_0040bc40(0x801);
     FUN_0052182c(local_32c,param_1 + 0x25e);
@@ -2082,7 +2082,7 @@ export function FUN_00445e46(param_1) {
         }
       }
       FUN_0059c276();
-      wv(_DAT_006ad674, FUN_00421bb0());
+      wv((DAT_006ad670 + 4), FUN_00421bb0());
       local_2f0 = local_2f0 & 0xfffffbff;
       local_254 = 0;
       local_250 = 0;
@@ -2104,7 +2104,7 @@ export function FUN_00445e46(param_1) {
       return;
     }
     iVar1 = aiStack_34[uVar3];
-    wv(_DAT_006ad120, iVar1);
+    wv((DAT_006ad110 + 16), iVar1);
     local_330 = uVar3;
     FUN_0046b14d(0x30,0,0,iVar1,0,0,0,0,0,0);
     if (v(DAT_006ad2f7) === 0) {
@@ -2149,7 +2149,7 @@ export function FUN_00445e46(param_1) {
                            /*JOINED*/
       wv(DAT_00635a3c, 0 /* ADDR:LAB_00402c3e */);
       iVar4 = FUN_0040bc80(0);
-      wv(_DAT_006ad128, iVar4);
+      wv((DAT_006ad110 + 24), iVar4);
       FUN_0046e020(0x6a,0,0,0);
       if (iVar4 < 0) {
         wv(DAT_00655b0b, v(DAT_00655b0b) & ~u8(1 << (u8(local_448) & 0x1f)));
@@ -9702,7 +9702,7 @@ function LAB_00446036_helper(aiStack_34, iVar1, iVar4, local_14, local_250, loca
         }
       }
       FUN_0059c276();
-      wv(_DAT_006ad674, FUN_00421bb0());
+      wv((DAT_006ad670 + 4), FUN_00421bb0());
       local_2f0 = local_2f0 & 0xfffffbff;
       local_254 = 0;
       local_250 = 0;
@@ -9724,7 +9724,7 @@ function LAB_00446036_helper(aiStack_34, iVar1, iVar4, local_14, local_250, loca
       return;
     }
     iVar1 = aiStack_34[uVar3];
-    wv(_DAT_006ad120, iVar1);
+    wv((DAT_006ad110 + 16), iVar1);
     local_330 = uVar3;
     FUN_0046b14d(0x30,0,0,iVar1,0,0,0,0,0,0);
     if (v(DAT_006ad2f7) === 0) {
@@ -9769,7 +9769,7 @@ function LAB_00446036_helper(aiStack_34, iVar1, iVar4, local_14, local_250, loca
                            /*JOINED*/
       wv(DAT_00635a3c, 0 /* ADDR:LAB_00402c3e */);
       iVar4 = FUN_0040bc80(0);
-      wv(_DAT_006ad128, iVar4);
+      wv((DAT_006ad110 + 24), iVar4);
       FUN_0046e020(0x6a,0,0,0);
       if (iVar4 < 0) {
         wv(DAT_00655b0b, v(DAT_00655b0b) & ~u8(1 << (u8(local_448) & 0x1f)));

@@ -49,7 +49,7 @@ export function FUN_00530ee0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = new Array(16).fill(0);
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR(DAT_00637e58 + 16);
   gdi_C035(param_3,param_4,param_5,local_14,s32(in_ECX, 0x38));
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
@@ -140,7 +140,7 @@ export function FUN_005310a0(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x44) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x4c) = PTR_DAT_00637e64;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x4c) = PTR(DAT_00637e58 + 12);
   FUN_0040f730(param_1,3,param_2,param_3);
   w32(in_ECX, 0x2c, 0);
   w32(in_ECX, 0x30, 0);
@@ -201,8 +201,8 @@ export function FUN_00531210(param_1) {
 
 
   if ((-1 < param_1) && (param_1 < 9)) {
-    wv(_DAT_0062803c, param_1);
-    PTR_DAT_00628040 = ptrAdd(DAT_0064c6a0, param_1 * 0x594);
+    wv((DAT_00628010 + 44), param_1);
+    PTR(DAT_00628010 + 48) = ptrAdd(DAT_0064c6a0, param_1 * 0x594);
   }
   return;
 }

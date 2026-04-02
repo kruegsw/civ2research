@@ -153,9 +153,9 @@ export function FUN_00406b4c() {
     wv(DAT_0063c808, v(DAT_0063c948) / v(DAT_0063c804));
   }
   iVar2 = FUN_005adfa0(v(DAT_0063c944) - v(DAT_0063c80c) * v(DAT_0063c800),0,999);
-  wv(_DAT_0063caf0, FUN_005adfa0(iVar1 - v(DAT_0063c808) * v(DAT_0063c804),0,999));
+  wv(133768 /* 133768 */, FUN_005adfa0(iVar1 - v(DAT_0063c808) * v(DAT_0063c804),0,999));
   wv(DAT_0063caf4, iVar2 >> 1);
-  wv(_DAT_0063caf0, v(_DAT_0063caf0) >> 1);
+  wv(133768 /* 133768 */, v(133768 /* 133768 */) >> 1);
   if (v(DAT_0063c808) < v(DAT_006d1162)) {
     wv(DAT_0063c810, v(DAT_0066ca8a) - (v(DAT_0063c808) >> 1));
     wv(DAT_0063c810, FUN_005adfa0(v(DAT_0063c810),0,v(DAT_0066cad4) - v(DAT_0063c808)));
@@ -199,7 +199,7 @@ export function FUN_00406db8(param_1, param_2, param_3, param_4) {
   if (((v(DAT_00655ae8) & 0x8000) === 0) && (local_8 < 0)) {
     local_8 = local_8 + v(DAT_006d1160);
   }
-  w32(param_4, 0, (param_2 - v(DAT_0063c810)) * v(DAT_0063c804) + v(_DAT_0063caf0));
+  w32(param_4, 0, (param_2 - v(DAT_0063c810)) * v(DAT_0063c804) + v(133768 /* 133768 */));
   w32(param_3, 0, (local_8 >> 1) * v(DAT_0063c800) + v(DAT_0063caf4));
   if ((param_2 & 1) !== 0) {
     w32(param_3, 0, s32(param_3, 0) + (v(DAT_0063c800) >> 1));
@@ -397,7 +397,7 @@ export function FUN_0040733c() {
     FUN_005a9780(v(DAT_0063c818));
     FUN_00406b4c();
     FUN_00408750(0);
-    local_10 = v(DAT_0063c940) + v(_DAT_0063caf0);
+    local_10 = v(DAT_0063c940) + v(133768 /* 133768 */);
     for (local_20 = 0; local_20 < v(DAT_0063c808); local_20 = local_20 + 1) {
       uVar1 = local_20 + v(DAT_0063c810);
       if ((uVar1 & 1) === 0) {
@@ -456,7 +456,7 @@ export function FUN_004074dc(param_1, param_2) {
   if ((((-1 < param_1) && (-1 < param_2)) && (param_1 < v(DAT_0063c944))) && (param_2 < v(DAT_0063c948)))
   {
     if (v(DAT_0062edf8) === 0) {
-      uVar1 = FUN_005adfa0(v(DAT_0063c810) + (param_2 - v(_DAT_0063caf0)) / v(DAT_0063c804), v(DAT_0063c810),v(DAT_0063c810) + v(DAT_0063c808) + -1);
+      uVar1 = FUN_005adfa0(v(DAT_0063c810) + (param_2 - v(133768 /* 133768 */)) / v(DAT_0063c804), v(DAT_0063c810),v(DAT_0063c810) + v(DAT_0063c808) + -1);
                                  /*JOINED*/
       if ((uVar1 & 1) === 0) {
         local_14 = 0;
@@ -510,7 +510,7 @@ export function FUN_00407658(param_1, param_2) {
   if ((((-1 < param_1) && (-1 < param_2)) && (param_1 < v(DAT_0063c944))) && (param_2 < v(DAT_0063c948)))
   {
     if (v(DAT_0062edf8) === 0) {
-      uVar1 = FUN_005adfa0(v(DAT_0063c810) + (param_2 - v(_DAT_0063caf0)) / v(DAT_0063c804), v(DAT_0063c810),v(DAT_0063c810) + v(DAT_0063c808) + -1);
+      uVar1 = FUN_005adfa0(v(DAT_0063c810) + (param_2 - v(133768 /* 133768 */)) / v(DAT_0063c804), v(DAT_0063c810),v(DAT_0063c810) + v(DAT_0063c808) + -1);
                                  /*JOINED*/
       if ((uVar1 & 1) === 0) {
         local_1c = 0;
@@ -3345,7 +3345,7 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   FUN_0040fd40(0,10);
   FUN_0040fcf0(s32(in_ECX, 0x2e4));
   FUN_0040fd80(0 /* ADDR:LAB_004020f4 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR(DAT_006359d4 + 28)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   w32(in_ECX, 0x328, extraout_EAX + 8);
   w32(in_ECX, 0x324, s32(in_ECX, 300) + -4);
   iVar5 = s32(in_ECX, 0x128);
@@ -3411,8 +3411,8 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
   // DEVIATION: C pointer write — *(CPropertySheet *)(&DAT_0064c6b4 + param_1 * 0x594) = in_ECX[0x2e0];
   // DEVIATION: C pointer write — *(CPropertySheet *)(&DAT_0064c6b3 + param_1 * 0x594) = in_ECX[0x2e8];
   if ((v(DAT_00655af8) < 0xb) && (u8(_MEM[DAT_0064c6b5 + param_1 * 0x594]) < 2)) {
-    wv(_DAT_0064bc1a, ((u8(_MEM[DAT_0064c6b3 + param_1 * 0x594])) & 0xFFFF));
-    wv(_DAT_0064bc1c, ((u8(_MEM[DAT_0064c6b4 + param_1 * 0x594])) & 0xFFFF));
+    wv(DAT_0064bc1a, ((u8(_MEM[DAT_0064c6b3 + param_1 * 0x594])) & 0xFFFF));
+    wv(DAT_0064bc1c, ((u8(_MEM[DAT_0064c6b4 + param_1 * 0x594])) & 0xFFFF));
     FUN_004a73d9();
   }
   if (local_464[0] !== 0) {
@@ -4228,7 +4228,7 @@ export function FUN_0040f680(in_ECX, param_1, param_2, param_3, param_4) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e60;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR(DAT_00637e58 + 8);
   FUN_0040f730(param_1,6,param_2,param_3);
   w32(in_ECX, 0x30, 0);
   uVar1 = draw_text_9740(param_3,in_ECX,param_4,1,s32(in_ECX, 0x38));
@@ -4430,7 +4430,7 @@ export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = new Array(16).fill(0);
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR(DAT_00637e58 + 16);
   measure_text_BF40(param_5,param_3,param_4,local_14,s32(in_ECX, 0x38));
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();

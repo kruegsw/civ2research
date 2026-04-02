@@ -686,20 +686,20 @@ export function FUN_005c0d69(in_ECX, param_1, param_2, param_3, param_4) {
   let iVar3;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_006372a0);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar2 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
+      iVar2 = gdi_847F(s32(PTR(DAT_00637e58 + 4), 0));
       iVar2 = iVar2 + (iVar2 >> 0x1f & 7);
       iVar3 = iVar2 >> 3;
       uVar1 = FUN_005c19ad(((v(DAT_00638b40)) & 0xFF));
-      FUN_005e3cb4(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1, iVar3 + param_2,iVar3 + param_3,in_ECX + 0x14,param_4);
+      FUN_005e3cb4(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1, iVar3 + param_2,iVar3 + param_3,in_ECX + 0x14,param_4);
                    /*JOINED*/
       FUN_005c19ad(uVar1);
     }
-    FUN_005e3cb4(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3,in_ECX + 0x14,param_4);
+    FUN_005e3cb4(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3,in_ECX + 0x14,param_4);
                  /*JOINED*/
   }
   return;
@@ -720,12 +720,12 @@ export function FUN_005c0e57(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_006372c0);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_3 & 0x10) !== 0) {
-      iVar2 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
+      iVar2 = gdi_847F(s32(PTR(DAT_00637e58 + 4), 0));
       iVar2 = iVar2 + (iVar2 >> 0x1f & 7) >> 3;
       local_14[0].left = s32(param_2, 0);
       local_14[0].top = _MEM[param_2 + 1];
@@ -733,11 +733,11 @@ export function FUN_005c0e57(in_ECX, param_1, param_2, param_3) {
       local_14[0].bottom = _MEM[param_2 + 3];
       OffsetRect(local_14[0],iVar2,iVar2);
       uVar1 = FUN_005c19ad(v(DAT_00638b40));
-      handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,local_14[0], param_3);
+      handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,local_14[0], param_3);
                    /*JOINED*/
       FUN_005c19ad(uVar1);
     }
-    handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3);
+    handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3);
                  /*JOINED*/
   }
   return;
@@ -819,11 +819,11 @@ export function FUN_005c10fb(in_ECX, param_1, param_2, param_3) {
 
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_006372e0);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
-    handle_colortable_3FEB(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3);
+    handle_colortable_3FEB(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3);
                  /*JOINED*/
   }
   return;
@@ -3009,17 +3009,17 @@ export function FUN_005c4dd3(in_ECX, param_1, param_2, param_3, param_4, param_5
   let iVar1;
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_00637b8c);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar1 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
+      iVar1 = gdi_847F(s32(PTR(DAT_00637e58 + 4), 0));
       iVar1 = iVar1 + (iVar1 >> 0x1f & 7) >> 3;
-      FUN_005e47a5(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1, iVar1 + param_2,iVar1 + param_3,in_ECX + 0x14,param_4,0,0,0);
+      FUN_005e47a5(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1, iVar1 + param_2,iVar1 + param_3,in_ECX + 0x14,param_4,0,0,0);
                    /*JOINED*/
     }
-    FUN_005e47a5(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3,in_ECX + 0x14,param_4,param_5,param_6,param_7);
+    FUN_005e47a5(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3,in_ECX + 0x14,param_4,param_5,param_6,param_7);
                  /*JOINED*/
   }
   return;
@@ -3039,22 +3039,22 @@ export function FUN_005c4eb6(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_00637bac);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_3 & 0x10) !== 0) {
-      iVar1 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
+      iVar1 = gdi_847F(s32(PTR(DAT_00637e58 + 4), 0));
       iVar1 = iVar1 + (iVar1 >> 0x1f & 7) >> 3;
       local_14[0].left = s32(param_2, 0);
       local_14[0].top = _MEM[param_2 + 1];
       local_14[0].right = _MEM[param_2 + 2];
       local_14[0].bottom = _MEM[param_2 + 3];
       OffsetRect(local_14[0],iVar1,iVar1);
-      FUN_005e49a0(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,local_14[0], param_3,0,0,0);
+      FUN_005e49a0(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,local_14[0], param_3,0,0,0);
                    /*JOINED*/
     }
-    handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3);
+    handle_colortable_3ECA(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3);
                  /*JOINED*/
   }
   return;
@@ -3132,11 +3132,11 @@ export function FUN_005c512d(in_ECX, param_1, param_2, param_3, param_4, param_5
 
   // in_ECX → promoted to parameter
   
-  if (PTR_DAT_00637e5c === 0x0) {
+  if (PTR(DAT_00637e58 + 4) === 0x0) {
     debug_log(s_Error__No_current_font_selected_00637bcc);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
-    FUN_005e4aa6(s32(in_ECX, 0x40),s32(PTR_DAT_00637e5c, 0),param_1,param_2, param_3,param_4,param_5,param_6);
+    FUN_005e4aa6(s32(in_ECX, 0x40),s32(PTR(DAT_00637e58 + 4), 0),param_1,param_2, param_3,param_4,param_5,param_6);
                  /*JOINED*/
   }
   return;

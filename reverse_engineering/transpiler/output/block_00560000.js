@@ -1953,7 +1953,7 @@ export function load_civ2_art_005681c9_005681C9() {
   local_8 = 0;
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   local_8 = 1;
-  wv(_DAT_00633dac, 1);
+  wv((DAT_00633d6c + 64), 1);
   FUN_004aef20(local_cc);
   FUN_0043c840(local_cc,s_civ2_civ2art_dll_00633db0);
   iVar1 = FUN_00564713(local_cc);
@@ -4572,10 +4572,10 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
       FUN_005dae6b(7,s_pPlayerPopup____NULL_00633ec4,s_D__Ss_Franklinton_startup_player_00633e9c, 0x34);
                    /*JOINED*/
     }
-    in_ECX[0x13] = PTR_DAT_00635a48;
+    in_ECX[0x13] = PTR(DAT_00635a44 + 4);
     FUN_004aef20(in_ECX + 0xb);
     FUN_004af14b(in_ECX + 0xb,0x28b);
-    PTR_DAT_00635a48 = (in_ECX + 0xb);
+    PTR(DAT_00635a44 + 4) = (in_ECX + 0xb);
     FUN_0040bc40(0x81801);
     FUN_0040bbb0();
     FUN_0040bc10(0x288);
@@ -4626,7 +4626,7 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
     }
     if (iVar2 < 0) {
       FUN_0046b14d(0xb,0xff,0,0,0,0,0,0,0,0);
-      PTR_DAT_00635a48 = in_ECX[0x13];
+      PTR(DAT_00635a44 + 4) = in_ECX[0x13];
       FUN_0056ee2c();
       if (s32(in_ECX, 0) !== 0) {
         FUN_00426f30(1);
@@ -4641,7 +4641,7 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
     FUN_005f22d0(v(DAT_006ad5bc),v(DAT_00666570));
     FUN_005f22d0(v(DAT_006ad5dc),v(DAT_00666570));
     FUN_0059db65();
-    PTR_DAT_00635a48 = in_ECX[0x13];
+    PTR(DAT_00635a44 + 4) = in_ECX[0x13];
     FUN_0056ee2c();
     if (s32(in_ECX, 0) !== 0) {
       FUN_00426f30(1);
@@ -4698,7 +4698,7 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
     if (1 < v(DAT_006ad308)) {
       FUN_005f22d0(v(DAT_0063cc48),v(DAT_006ad63c));
       wv(DAT_00635a3c, 0 /* ADDR:LAB_0040266c */);
-      wv(_DAT_006ad674, FUN_00421bb0());
+      wv((DAT_006ad670 + 4), FUN_00421bb0());
       iVar2 = FUN_00426fb0(s_WAITINGONJOIN_00633fac,0x2000001,v(DAT_0063fc58),0);
       if (iVar2 === -1) {
         FUN_0046b14d(0xb,0xff,0,0,0,0,0,0,0,0);

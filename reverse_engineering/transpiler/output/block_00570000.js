@@ -668,15 +668,15 @@ export function FUN_00572089(param_1, param_2, param_3, param_4, param_5, param_
   else {
     FUN_005f22d0(v(DAT_006ac2e4),param_1);
   }
-  wv(_DAT_006ac484, v(DAT_006ab1a0));
-  wv(_DAT_006ac47c, v(DAT_006ab190));
-  wv(_DAT_006ac480, v(DAT_006ab178));
-  wv(_DAT_006ac2c4, param_2);
+  wv((DAT_006ac46c + 24), v(DAT_006ab1a0));
+  wv((DAT_006ac46c + 16), v(DAT_006ab190));
+  wv((DAT_006ac46c + 20), v(DAT_006ab178));
+  wv(590428 /* 590428 */, param_2);
   wv(DAT_006ac2c8, param_8);
   wv(DAT_006ac2cc, param_9);
   wv(DAT_006ac2d0, param_7);
-  wv(_DAT_006ac3ac, 0);
-  wv(_DAT_006ac458, 0);
+  wv(590660 /* 590660 */, 0);
+  wv(590832 /* 590832 */, 0);
   if ((param_2 & 4) !== 0) {
     wv(DAT_006ac2c8, v(DAT_00633598));
     wv(DAT_006ac2cc, v(DAT_0063359c));
@@ -1638,10 +1638,10 @@ export function FUN_00573e59(param_1, param_2, param_3, param_4) {
   wv(DAT_006ac88c, 1);
   wv(DAT_006ac8a4, 0);
   FUN_00572089(param_2,0xd,0,0,0x192,0x14e,0,0,0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR(DAT_006359d4 + 28)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   local_68 = extraout_EAX + 8;
   local_60 = (v(DAT_006ac2dc) + -6) / 2;
-  local_a8 = (v(DAT_006ac2d8) + v(_DAT_006ac2e0)) - (extraout_EAX + 10);
+  local_a8 = (v(DAT_006ac2d8) + v((DAT_006ac2dc + 4))) - (extraout_EAX + 10);
   local_64 = v(DAT_006ac2d4) + 2;
   FUN_004086c0(local_5c,local_64,local_a8,local_60,local_68);
   uVar2 = FUN_00428b0c(s32(DAT_00628420, 0x3f8));
@@ -1819,7 +1819,7 @@ export function FUN_00574522(in_ECX) {
   local_c = local_c * 2;
   local_10 = FUN_004bb540();
   local_10 = local_10 * 2;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR(DAT_006359d4 + 28)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   local_1c = extraout_EAX + 8;
   local_8 = GetSystemMetrics(3);
   local_8 = local_8 + 2;
@@ -2043,15 +2043,15 @@ export function FUN_00574ca6(param_1, param_2, param_3, param_4, param_5, param_
   else {
     FUN_005f22d0(v(DAT_006ac5bc),param_1);
   }
-  wv(_DAT_006ac75c, v(DAT_006ab1a0));
-  wv(_DAT_006ac754, v(DAT_006ab190));
-  wv(_DAT_006ac758, v(DAT_006ab178));
-  wv(_DAT_006ac59c, param_2);
+  wv(591604 /* 591604 */, v(DAT_006ab1a0));
+  wv(591596 /* 591596 */, v(DAT_006ab190));
+  wv(591600 /* 591600 */, v(DAT_006ab178));
+  wv(591156 /* 591156 */, param_2);
   wv(DAT_006ac5a0, param_8);
   wv(DAT_006ac5a4, param_9);
   wv(DAT_006ac5a8, param_7);
-  wv(_DAT_006ac684, 0);
-  wv(_DAT_006ac730, 0);
+  wv(591388 /* 591388 */, 0);
+  wv(591560 /* 591560 */, 0);
   if ((param_2 & 4) !== 0) {
     wv(DAT_006ac5a0, v(DAT_00633598));
     wv(DAT_006ac5a4, v(DAT_0063359c));
@@ -2384,7 +2384,7 @@ export function FUN_00575dec(in_ECX) {
   uVar1 = FUN_00428b0c(s32(DAT_00628420, 0x950),0xd,0,0, s32(in_ECX, 0x2d8),s32(in_ECX, 0x2dc),0,0,0);
                              /*JOINED*/
   FUN_00574ca6(uVar1);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR(DAT_006359d4 + 28)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   w32(in_ECX, 0x2f4, extraout_EAX + 8);
   w32(in_ECX, 0x2f0, s32(in_ECX, 300) + -4);
   iVar2 = GetSystemMetrics(3);

@@ -2687,7 +2687,7 @@ export function FUN_00495e0c(in_ECX) {
   FUN_0043c840(local_4c8,s_civ2_kings__0062cb94);
   FUN_004aef20(local_608);
   FUN_0043c840(local_608,v(DAT_0062cba0));
-  FUN_0043c840(local_608, (PTR_DAT_0062c9e0) [s16(DAT_0064c6a6, ((true) >>> 0) /* DEVIATION: C pointer — u8(_MEM[in_ECX + 0x1085]) */ * 0x594)]);
+  FUN_0043c840(local_608, (PTR(DAT_0062c9a0 + 64)) [s16(DAT_0064c6a6, ((true) >>> 0) /* DEVIATION: C pointer — u8(_MEM[in_ECX + 0x1085]) */ * 0x594)]);
                      /*JOINED*/
                      /*JOINED*/
   local_601 = 0;
@@ -3356,7 +3356,7 @@ export function FUN_00497d40(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   
   w32(in_ECX, 0x34, param_4);
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e60;
+  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR(DAT_00637e58 + 8);
   FUN_0040f680(param_1,param_2,param_3,param_5);
   return;
 }

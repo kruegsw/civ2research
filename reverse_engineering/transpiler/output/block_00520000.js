@@ -3823,7 +3823,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_004189c0(0x2000);
     FUN_00418a00(0 /* ADDR:LAB_00402040 */);
     FUN_0040f380();
-    wv(_DAT_0067a9e0, 1);
+    wv((DAT_0067a9dc + 4), 1);
     if (s32(in_ECX, 0x234) !== 0) {
       iVar1 = s32(in_ECX, 0x234);
       local_4c = (iVar1 + 0x20);
