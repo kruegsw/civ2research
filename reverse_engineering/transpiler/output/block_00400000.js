@@ -1749,7 +1749,7 @@ export function FUN_00408d33(param_1) {
       }
       for (local_5c = (((local_354 & 1) !== 0) >>> 0); local_5c < v(DAT_006d1160); local_5c = local_5c + 2) {
           /*JOINED*/
-        bVar1 = s32(local_50, 0);
+        bVar1 = _MEM[local_50];
         if (bVar1 === 10) {
           if (v(DAT_006d1162) >> 2 === local_28 || (v(DAT_006d1162) >> 2) - local_28 < 0) {
             local_3b4 = ~((v(DAT_006d1162) >> 2) - local_28) + 1;
@@ -1788,7 +1788,7 @@ export function FUN_00408d33(param_1) {
       local_54 = 0;
       for (local_5c = v(DAT_006d1160) - ((local_354 & 1) + 1); -1 < local_5c; local_5c = local_5c - 2) {
           /*JOINED*/
-        bVar1 = s32(local_34, 0);
+        bVar1 = _MEM[local_34];
         if (bVar1 === 10) {
           if (local_54 < (local_28 >> 1) + v(DAT_00624ef4) + 1) {
             local_54 = local_54 + 1;
@@ -1872,7 +1872,7 @@ export function FUN_00408d33(param_1) {
       iVar4 = FUN_004087c0(local_5c,local_354);
       if (iVar4 !== 0) {
         local_50 = FUN_005b8931(local_5c,local_354);
-        switch(s32(local_50, 0)) {
+        switch(_MEM[local_50]) {
         case 0:
           _MEM[local_50] = 1;
           break;
@@ -2077,7 +2077,7 @@ export function FUN_00408d33(param_1) {
     local_354 = 0;
     local_5c = 0;
     for (local_48 = 0; local_48 < v(DAT_006d1164); local_48 = local_48 + 1) {
-      if ((s32(local_50, 0) === 10) && (iVar4 = FUN_005b8ee1(local_5c,local_354), iVar4 !== 0)) {
+      if ((_MEM[local_50] === 10) && (iVar4 = FUN_005b8ee1(local_5c,local_354), iVar4 !== 0)) {
         local_18 = 0;
         for (local_30 = 0; (local_18 === 0 && (local_30 < 0x14)); local_30 = local_30 + 1) {
           uVar2 = FUN_005ae052(s8(_MEM[DAT_00628370 + local_30]) + local_5c);
