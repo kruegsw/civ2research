@@ -2209,8 +2209,8 @@ export function FUN_0040a572(param_1) {
   local_1c = (v(DAT_00636598) + 5);
   local_18 = (v(DAT_00636598) + 1);
   for (local_8 = 0; local_8 < v(DAT_006d1164); local_8 = local_8 + 1) {
-    if (s32(local_1c, 0) !== 0) {
-      w32(local_18, 0, s32(local_18, 0) + 0x01);
+    if (_MEM[local_1c] !== 0) { // C: *local_1c != '\0' (byte read)
+      _MEM[local_18] = _MEM[local_18] + 1; // C: *local_18 = *local_18 + 1 (byte read-modify-write)
       wv(DAT_0063cba4, v(DAT_0063cba4) + 1);
     }
     local_1c = local_1c + 6;
