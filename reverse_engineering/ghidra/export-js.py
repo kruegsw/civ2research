@@ -196,7 +196,7 @@ class PcodeExprEmitter(object):
     def _emit_op(self, op):
         """Recursively emit JS for one PcodeOp."""
         self._depth += 1
-        if self._depth > 40:
+        if self._depth > 80:
             self._depth -= 1
             return '/* DEPTH */'
 
@@ -352,13 +352,70 @@ class PcodeExprEmitter(object):
 
         # ── Control flow ──────────────────────────────────────────
         if opc == PcodeOp.CBRANCH:
-            # Conditional branch — input 1 is the condition
             return self._inp(op, 1)
 
         if opc == PcodeOp.RETURN:
             if op.getNumInputs() > 1:
                 return self._inp(op, 1)
             return ''
+
+        if opc == PcodeOp.BRANCH:
+            return '/* goto */'
+
+        if opc == PcodeOp.BRANCHIND:
+            return '/* switch */'
+
+        # ── Win32 / C runtime intrinsics ─────────────────────────
+        if opc == PcodeOp.CALLOTHER:
+            return '/* DEVIATION: intrinsic */'
+
+        # ── Float ops (C runtime, rare in game logic) ────────────
+        if opc == PcodeOp.FLOAT_ADD:
+            return '(%s + %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_SUB:
+            return '(%s - %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_MULT:
+            return '(%s * %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_DIV:
+            return '(%s / %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_LESS:
+            return '(%s < %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_LESSEQUAL:
+            return '(%s <= %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_EQUAL:
+            return '(%s === %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_NOTEQUAL:
+            return '(%s !== %s)' % (self._inp(op, 0), self._inp(op, 1))
+        if opc == PcodeOp.FLOAT_NEG:
+            return '(-%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_ABS:
+            return 'Math.abs(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_SQRT:
+            return 'Math.sqrt(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_TRUNC:
+            return 'Math.trunc(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_NAN:
+            return 'Number.isNaN(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_INT2FLOAT:
+            return self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_FLOAT2FLOAT:
+            return self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_TRUNC:
+            return '(%s | 0)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_CEIL:
+            return 'Math.ceil(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_FLOOR:
+            return 'Math.floor(%s)' % self._inp(op, 0)
+        if opc == PcodeOp.FLOAT_ROUND:
+            return 'Math.round(%s)' % self._inp(op, 0)
+
+        # ── Carry/borrow (rare, overflow detection) ──────────────
+        if opc == PcodeOp.INT_CARRY:
+            return '/* carry */'
+        if opc == PcodeOp.INT_SCARRY:
+            return '/* scarry */'
+        if opc == PcodeOp.INT_SBORROW:
+            return '/* sborrow */'
 
         # ── Fallback ──────────────────────────────────────────────
         return '/* %s */' % pcode_name(opc)
@@ -578,6 +635,7 @@ class JSEmitter(object):
         self.first_param = True
         self.emitted_ops = set()  # PcodeOps already emitted
         self.skip_until_brace = False  # After emitting if(cond), skip until {
+        self._comment_words = []  # Accumulator for consecutive comment tokens
 
         # Pre-analysis
         self.register_params = []
@@ -605,6 +663,7 @@ class JSEmitter(object):
     def _text(self, s):
         if not s:
             return
+        self._flush_comment()  # flush pending comment words before new content
         if self.cur:
             prev = self.cur[-1]
             need = True
@@ -625,11 +684,27 @@ class JSEmitter(object):
         self.cur = [' ' * indent_chars]
 
     def _flush(self):
+        self._flush_comment()  # flush any pending comment
         if self.cur:
             line = ''.join(self.cur).rstrip()
             if line:
                 self.lines.append(line)
             self.cur = []
+
+    def _add_comment_word(self, word):
+        """Collect consecutive ClangCommentToken words into one comment."""
+        self._comment_words.append(word)
+
+    def _flush_comment(self):
+        """Emit collected comment words as a single /* ... */ block."""
+        if self._comment_words:
+            text = ' '.join(self._comment_words)
+            comment = '/* %s */' % text
+            # Append directly to cur to avoid recursion with _text
+            if self.cur:
+                self.cur.append(' ')
+            self.cur.append(comment)
+            self._comment_words = []
 
     # ── Main entry ────────────────────────────────────────────────
 
@@ -652,9 +727,10 @@ class JSEmitter(object):
             else:
                 self._emit_var_decl(node)
         elif isinstance(node, ClangStatement):
-            self._emit_statement(node)
+            if not self.skip_until_brace:
+                self._emit_statement(node)
         elif is_group(node):
-            self._walk_children(node)
+            self._walk_children(node)  # Always recurse — skip_until_brace checked at leaf level
         # Leaf tokens — only reached for non-statement contexts (control flow)
         elif isinstance(node, ClangBreak):
             if not self.skip_until_brace:
@@ -671,7 +747,6 @@ class JSEmitter(object):
                 if text == '{':
                     self.skip_until_brace = False
                     self._text('{')
-                # else skip everything until {
                 return
             if text != '':
                 self._text(text)
@@ -681,13 +756,19 @@ class JSEmitter(object):
         elif isinstance(node, ClangTypeToken):
             pass  # Cast type tokens — handled by P-code, skip
         elif isinstance(node, ClangLabelToken):
-            self._text(get_token_text(node) + ':')
+            if not self.skip_until_brace:
+                self._text(get_token_text(node) + ':')
         elif isinstance(node, ClangCommentToken):
-            self._text('/* %s */' % get_token_text(node))
+            if not self.skip_until_brace:
+                self._add_comment_word(get_token_text(node))
+        elif isinstance(node, ClangFieldToken):
+            if not self.skip_until_brace:
+                self._text(get_token_text(node))
         else:
-            text = get_token_text(node)
-            if text.strip():
-                self._text(text)
+            if not self.skip_until_brace:
+                text = get_token_text(node)
+                if text.strip():
+                    self._text(text)
 
     def _walk_children(self, node):
         for i in range(node.numChildren()):
@@ -854,25 +935,38 @@ class JSEmitter(object):
                     self._text(text)
             return
 
-        # Check for RETURN statement
-        return_ops = [op for op in ops if op.getOpcode() == PcodeOp.RETURN]
-        if return_ops:
-            rop = return_ops[0]
-            if rop.getNumInputs() > 1:
-                js = self.pcode._emit_varnode(rop.getInput(1))
-                self._text('return %s' % js)
-            else:
-                self._text('return')
-            return
+        # Classify the statement by looking at its PcodeOps
 
-        # Check for STORE (memory write)
+        # RETURN
+        for op in ops:
+            if op.getOpcode() == PcodeOp.RETURN:
+                if op.getNumInputs() > 1:
+                    js = self.pcode._emit_varnode(op.getInput(1))
+                    self._text('return %s' % js)
+                else:
+                    self._text('return')
+                return
+
+        # STORE (memory write) — may have multiple stores in one statement
         store_ops = [op for op in ops if op.getOpcode() == PcodeOp.STORE]
         if store_ops:
             js = self.pcode.emit(store_ops[0])
             self._text(js)
             return
 
-        # Check for standalone CALL (void call — first token is function name)
+        # BRANCHIND (switch indirect jump)
+        for op in ops:
+            if op.getOpcode() == PcodeOp.BRANCHIND:
+                self._text('/* DEVIATION: switch indirect */')
+                return
+
+        # CALLOTHER (Win32/C runtime intrinsic)
+        callother_ops = [op for op in ops if op.getOpcode() == PcodeOp.CALLOTHER]
+        if callother_ops and not any(op.getOpcode() == PcodeOp.CALL for op in ops):
+            self._text('/* DEVIATION: intrinsic */')
+            return
+
+        # Standalone CALL (void call — first token is function name)
         if isinstance(tokens[0], ClangFuncNameToken):
             call_ops = [op for op in ops if op.getOpcode() == PcodeOp.CALL]
             if call_ops:
@@ -880,7 +974,7 @@ class JSEmitter(object):
                 self._text(js)
                 return
 
-        # Default: assignment — LHS variable = P-code expression
+        # Assignment: LHS variable = expression
         lhs_name = None
         lhs_op = None
         for tok in tokens:
@@ -894,7 +988,7 @@ class JSEmitter(object):
             self._text('%s = %s' % (lhs_name, js))
             return
 
-        # Fallback
+        # Fallback — emit tokens as-is with marker
         self._text('/* UNHANDLED_STMT */')
         for tok in tokens:
             text = get_token_text(tok)

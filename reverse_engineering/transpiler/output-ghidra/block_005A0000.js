@@ -15,10 +15,10 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_c;
   let local_8;
 
-  while ((_MEM[param_1] !== 0)) param_1 = _MEM[param_1] {
+  while ((_MEM[param_1] !== 0)) {
     iVar1 = s32(((in_ECX + 0x1e8) + s32((in_ECX + 0x48), 0) * 4), 0);
     iVar2 = FUN_0040efd0(param_1);
-    if ((iVar2 <= (iVar1 + -6))) break; sVar3 = _strlen(param_1) param_1[(sVar3 - 1)] = 0 {
+    if ((iVar2 <= (iVar1 + -6))) {
     local_8 = s32((in_ECX + 0x94), 0);
     local_c = s32((in_ECX + 0x98), 0);
   }
@@ -100,7 +100,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     iVar1 = FUN_0059fb78(s32(in_ECX, (s32(param_1, 3) + 0x84)));
     iVar2 = FUN_0059fb78(param_1);
     iVar1 = (iVar2 - iVar1);
-    if ((((s32(in_ECX, (s32(param_1, 3) + 0x17)) * s32(in_ECX, 0xe) - iVar1) === 0) || (s32(in_ECX, (s32(param_1, 3) + 0x17)) * s32(in_ECX, 0xe) < iVar1))) in_ECX = (in_ECX + (s32(param_1, 3) + 0x17)) {
+    if ((((s32(in_ECX, (s32(param_1, 3) + 0x17)) * s32(in_ECX, 0xe) - iVar1) === 0) || (s32(in_ECX, (s32(param_1, 3) + 0x17)) * s32(in_ECX, 0xe) < iVar1))) {
       local_18 = 0;
     }
     else {
@@ -123,7 +123,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       if ((in_ECX !== -0x208)) {
         local_3c = (local_14 + s32(in_ECX, (s32(param_1, 3) + 0x82)));
       }
-      if ((iVar2 === 0)) iVar2 = s32(in_ECX, 0x92)(in_ECX, s32(in_ECX, 0), s32(param_1, 1), iVar2, local_20, local_28, s32(in_ECX, (s32(param_1, 3) + 0x7c))) iVar2 = (iVar2 === 0) {
+      if ((iVar2 === 0)) {
         if ((local_18 !== 0)) {
           FUN_005a99fc(s32(in_ECX, 0), DAT_ffffffc4, s32(in_ECX, 0x1e), s32(in_ECX, 0x1f));
           FUN_004bb800(DAT_ffffffc4, 1, 1);
@@ -160,7 +160,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 
   uVar1 = s32(in_ECX, 0x12);
   (local_24 < 2) (local_24 = 0; local_24 = (local_24 < 2); local_24 = (local_24 + 1)) {
-    if (((_MEM[(in_ECX + 0x3e)] & 0x40) !== 0)) in_ECX = in_ECX {
+    if (((_MEM[(in_ECX + 0x3e)] & 0x40) !== 0)) {
       w32(in_ECX, 0x12, local_24);
       w32(in_ECX, (s32(in_ECX, 0x12) + 0x6e), 0);
       iVar2 = s32(in_ECX, 0x12);
@@ -168,7 +168,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       local_10 = s32(in_ECX, (iVar2 * 4 + 0x57));
       local_c = s32(in_ECX, (iVar2 * 4 + 0x58));
       local_8 = s32(in_ECX, (iVar2 * 4 + 0x59));
-      if ((s32(in_ECX, 0x92) !== 0)) in_ECX = (in_ECX + 0xa) in_ECX = (in_ECX + 0x92) {
+      if ((s32(in_ECX, 0x92) !== 0)) {
         FUN_0040fdb0(s32(in_ECX, 0), (in_ECX + (s32(in_ECX, 0x12) * 4 + 0x56)), s32(in_ECX, 0x24));
       }
       FUN_0043c7c0(s32(in_ECX, 0), (in_ECX + (s32(in_ECX, 0x12) * 4 + 0x4e)), s32(in_ECX, 0x1f));
@@ -180,7 +180,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         (local_18 < s32(in_ECX, 0xa)) (local_18 = 0; (local_1c = (local_1c !== 0) && (local_18 = (local_18 < s32(in_ECX, 0xa)))); local_18 = (local_18 + 1))
         {
           if ((s32(in_ECX, 0x12) === s32((local_1c + 0xc), 0))) {
-            if ((local_2c < (s32(in_ECX, (s32(in_ECX, 0x12) + 0x17)) * s32(in_ECX, 0xe) + iVar2))) local_2c = (local_2c < (s32(in_ECX, (s32(in_ECX, 0x12) + 0x17)) * s32(in_ECX, 0xe) + iVar2)) {
+            if ((local_2c < (s32(in_ECX, (s32(in_ECX, 0x12) + 0x17)) * s32(in_ECX, 0xe) + iVar2))) {
               uVar5 = 0;
               uVar3 = FUN_0059fc19(local_2c);
               uVar4 = FUN_005a120b(uVar3, uVar5);
@@ -191,7 +191,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           }
           local_1c = s32((local_1c + 0x10), 0);
         }
-        if ((0 < iVar2)) in_ECX = (in_ECX + 0x92) iVar2 = FUN_00407fc0(DAT_ffffffec) 0 = (0 < iVar2) {
+        if ((0 < iVar2)) {
           FUN_0040fdb0(s32(in_ECX, 0), DAT_ffffffec, s32(in_ECX, 0x24));
         }
       }
@@ -239,14 +239,14 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_10;
 
   bVar1 = 0;
-  if ((s32((in_ECX + 0x220), 0) !== param_1)) in_ECX = (in_ECX + 0x220) {
+  if ((s32((in_ECX + 0x220), 0) !== param_1)) {
     local_10 = FUN_0059fb78(s32(((in_ECX + 0x210) + s32((in_ECX + 0x48), 0) * 4), 0));
     iVar2 = FUN_0059fb78(param_1);
     if ((iVar2 < local_10)) {
       bVar1 = 1;
       local_10 = iVar2;
     }
-    while (((s32(((in_ECX + 0x5c) + s32((in_ECX + 0x48), 0) * 4), 0) * s32((in_ECX + 0x38), 0) + local_10) <= iVar2)) in_ECX = (in_ECX + 0x5c) {
+    while (((s32(((in_ECX + 0x5c) + s32((in_ECX + 0x48), 0) * 4), 0) * s32((in_ECX + 0x38), 0) + local_10) <= iVar2)) {
       if ((s32((in_ECX + 0x38), 0) === 1)) {
         local_10 = (local_10 + 1);
       }
@@ -261,7 +261,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     w32(((in_ECX + 0x210) + s32((in_ECX + 0x48), 0) * 4), 0, uVar3);
     uVar3 = s32((in_ECX + 0x220), 0);
     w32((in_ECX + 0x220), 0, param_1);
-    if ((param_2 === 0)) param_2 = (param_2 === 0) {
+    if ((param_2 === 0)) {
       if ((s32(((in_ECX + 0x284) + s32((in_ECX + 0x48), 0) * 4), 0) !== 0)) {
         uVar4 = FUN_0059fb78(s32(((in_ECX + 0x210) + s32((in_ECX + 0x48), 0) * 4), 0));
         FUN_0040fcf0(uVar4);
@@ -371,7 +371,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   }
   else {
     w32((in_ECX + 0x48), 0, 0);
-    if ((s32((in_ECX + 0x150), 0) < param_1)) in_ECX = (in_ECX + 0x144) param_1 = (param_1 < s32((in_ECX + 0x138), 0)) in_ECX = (in_ECX + 0x140) w32((in_ECX + 0x48), 0, 1) param_2 = (param_2 < s32((in_ECX + 0x14c), 0)) in_ECX = (in_ECX + 0x154) param_1 = (param_1 < s32((in_ECX + 0x148), 0)) in_ECX = (in_ECX + 0x150) {
+    if ((s32((in_ECX + 0x150), 0) < param_1)) {
       w32((in_ECX + 0x48), 0, uVar1);
     }
   }
@@ -567,7 +567,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   w32(unaff_FS_OFFSET, 0, DAT_fffffff0);
   local_d4 = 0;
   if ((in_ECX !== DAT_006cec84)) {
-    if ((0xf < DAT_00635a9c)) 0xf = (0xf < DAT_00635a9c) {
+    if ((0xf < DAT_00635a9c)) {
       FUN_005dae6b(7, s_popupStackIndex_>=_0_&&_popupSta_00635b40, s_D:\Ss\Franklinton\Popup_1.cpp_00635b20, 0xc75);
     }
     DAT_00635a9c = (DAT_00635a9c + 1);
@@ -583,7 +583,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     FUN_005d268e(DAT_006cec90);
     uVar1 = s32(in_ECX, 0xf);
     local_cc = (s32(in_ECX, 0xf) & 0x1000);
-    if ((local_cc === 0)) local_cc = (local_cc === 0) {
+    if ((local_cc === 0)) {
       if ((0x28 < s32(in_ECX, 0xa))) {
         if ((DAT_0062f004 === 0)) {
           FUN_00589ef8(-14, 9, 0, 0x28, s32(in_ECX, 0xa));
@@ -675,7 +675,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       else {
         w32(in_ECX, 0x12, 0);
         if (((_MEM[(in_ECX + 0x3e)] & 4) === 0)) {
-          if (((_MEM[(in_ECX + 0x3f)] & 1) !== 0)) in_ECX = in_ECX {
+          if (((_MEM[(in_ECX + 0x3f)] & 1) !== 0)) {
             if ((s32(in_ECX, 0xe) === 1)) {
               pvVar2 = operator_new(0x40);
               local_8 = 1;
@@ -771,7 +771,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         if (((_MEM[(in_ECX + 0x3e)] & 0x40) !== 0)) {
           w32(in_ECX, 0x12, 1);
           if (((_MEM[(in_ECX + 0x3e)] & 4) === 0)) {
-            if (((_MEM[(in_ECX + 0x3f)] & 1) !== 0)) in_ECX = in_ECX {
+            if (((_MEM[(in_ECX + 0x3f)] & 1) !== 0)) {
               if ((s32(in_ECX, 0xe) === 1)) {
                 pvVar2 = operator_new(0x40);
                 local_8 = 4;
@@ -864,7 +864,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         }
       }
     }
-    if ((s32(in_ECX, 0xa) === 0)) in_ECX = (in_ECX + 0xa) {
+    if ((s32(in_ECX, 0xa) === 0)) {
       iVar5 = s32(in_ECX, 0xb);
       local_15c = operator_new((iVar5 * 0x40 + 4));
       local_8 = 8;
@@ -968,7 +968,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         local_198 = (s32(in_ECX, 0) + 0x48);
       }
       FUN_0040f680(local_198, (local_c0 + 0x64), DAT_ffffff1c, local_e8);
-      if (((_MEM[(in_ECX + 0xf)] & 1) === 0)) local_d0 = (local_d0 === 0) in_ECX = (in_ECX + 0xf) {
+      if (((_MEM[(in_ECX + 0xf)] & 1) === 0)) {
         FUN_0040f840();
       }
       if ((local_d0 === 0)) {
@@ -1025,7 +1025,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  export function FUN_005a3c83 ()
 
  {
-  if (((_MEM[(DAT_006cec84 + 0x3d)] & 4) === 0)) DAT_006cec84 = (DAT_006cec84 + 0x3d) {
+  if (((_MEM[(DAT_006cec84 + 0x3d)] & 4) === 0)) {
     w32((DAT_006cec84 + 0x3c), 0, (s32((DAT_006cec84 + 0x3c), 0) | 0x2000));
     FUN_005a3c58();
   }
@@ -1051,7 +1051,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       }
     }
     w32((DAT_006cec84 + 0xd8), 0, s32(local_c, 0));
-    if (((_MEM[(DAT_006cec84 + 0x3e)] & 2) !== 0)) w32((DAT_006cec84 + 0x224), 0, local_c) DAT_006cec84 = (DAT_006cec84 + 0x3e) {
+    if (((_MEM[(DAT_006cec84 + 0x3e)] & 2) !== 0)) {
       bVar1 = 1;
     }
     if ((s32((DAT_006cec84 + 0x23c), 0) === 0)) {
@@ -1091,9 +1091,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005a3e56 (param_1)
+ /* address  */ */ export function FUN_005a3e56 (param_1)
 
  {
   let uVar1;
@@ -1117,7 +1117,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     if ((local_18 === 1)) {
       w32((DAT_006cec84 + 0x3c), 0, (s32((DAT_006cec84 + 0x3c), 0) | 0x80));
     }
-    if ((s32((DAT_006cec84 + 0x224), 0) !== 0)) DAT_006cec84 = (DAT_006cec84 + 0x3e) DAT_006cec84 = (DAT_006cec84 + 0x224) {
+    if ((s32((DAT_006cec84 + 0x224), 0) !== 0)) {
       local_8 = s32((DAT_006cec84 + 0x234), 0);
       local_20 = 0;
       (s32((DAT_006cec84 + 0x224), 0) !== local_8) (; (local_8 = (local_8 !== 0) && (DAT_006cec84 = (DAT_006cec84 + 0x224)));
@@ -1132,10 +1132,10 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       w32((DAT_006cec84 + 0xd8), 0, -1);
     }
     else {
-      if ((s32((DAT_006cec84 + 0x28), 0) !== 0)) DAT_006cec84 = (DAT_006cec84 + 0x28) {
+      if ((s32((DAT_006cec84 + 0x28), 0) !== 0)) {
         w32((DAT_006cec84 + 0xd8), 0, 0);
       }
-      if (((s32((DAT_006cec84 + 0x3c), 0) & 0x1004) === 0)) DAT_006cec84 = (DAT_006cec84 + 0x3c) {
+      if (((s32((DAT_006cec84 + 0x3c), 0) & 0x1004) === 0)) {
         local_14 = 0;
         local_1c = 0;
         local_c = s32((DAT_006cec84 + 0x228), 0);
@@ -1157,9 +1157,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005a407f (param_1)
+ /* address  */ */ export function FUN_005a407f (param_1)
 
  {
   let iVar1;
@@ -1173,11 +1173,11 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   if ((DAT_006cec84 === 0)) {
     return;
   }
-  if ((s32((DAT_006cec84 + 0x24), 0) !== 0)) DAT_006cec84 = (DAT_006cec84 + 0x24) {
+  if ((s32((DAT_006cec84 + 0x24), 0) !== 0)) {
     _DAT_006cec80 = FUN_00421bb0();
   }
   if (((_MEM[(DAT_006cec84 + 0x3e)] & 2) !== 0)) {
-    /* BRANCHIND */ () {
+    /* switch */ () {
     case 0xa2 :
     case 0xc1 :
       w32((DAT_006cec84 + 0x224), 0, s32((s32((DAT_006cec84 + 0x224), 0) + 0x10), 0))
@@ -1209,7 +1209,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     param_1 = 0;
   }
   do {
-    /* BRANCHIND */ () {
+    /* switch */ () {
     case 0xa1 :
     case 199 :
       iVar2 = FUN_0059fb78(s32((DAT_006cec84 + 0x220), 0));
@@ -1324,9 +1324,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       param_1 = 0xc2;
     }
   } while ( true );
-  while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_8 + 0xc), 0))) local_8 = s32((local_8 + 0x14), 0) DAT_006cec84 = (DAT_006cec84 + 0x48) {
+  while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_8 + 0xc), 0))) {
  LAB_005a4287: :
-    if ((s32((local_8 + 0x14), 0) === 0)) break; {
+    if ((s32((local_8 + 0x14), 0) === 0)) {
     return;
   }
   if ((s32((DAT_006cec84 + 0x220), 0) === local_8)) {
@@ -1346,18 +1346,18 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   }
   FUN_005a17e9(local_8, 1);
   return;
-  while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_8 + 0xc), 0))) local_8 = s32((local_8 + 0x10), 0) DAT_006cec84 = (DAT_006cec84 + 0x48) {
+  while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_8 + 0xc), 0))) {
  LAB_005a43d9: :
-    if ((s32((local_8 + 0x10), 0) === 0)) break; DAT_006cec84 = (DAT_006cec84 + 0x220) {
+    if ((s32((local_8 + 0x10), 0) === 0)) {
     FUN_005a17e9(local_8, 1);
   }
   return;
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005a49c1 (param_1)
+ /* address  */ */ export function FUN_005a49c1 (param_1)
 
  {
   let iVar1;
@@ -1371,7 +1371,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_10;
   let local_c;
 
-  if ((iVar1 !== 0)) iVar1 = _isalpha(u8(param_1)) iVar1 = (iVar1 !== 0) {
+  if ((iVar1 !== 0)) {
     _DAT_006cec80 = FUN_00421bb0();
     uVar2 = FID_conflict:__toupper_lk(u8(param_1));
     if (((s32((DAT_006cec84 + 0x3c), 0) & 0x41000) === 0x1000)) {
@@ -1384,16 +1384,16 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           if ((local_10 === 0)) {
             local_10 = s32((DAT_006cec84 + 0x228), 0);
           }
-        } while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_10 + 0xc), 0))) uVar3 = FID_conflict:__toupper_lk(s8(_MEM[s32((local_10 + 8), 0)])) {
+        } while ((s32((DAT_006cec84 + 0x48), 0) !== s32((local_10 + 0xc), 0))) {
           local_18 = local_10;
         }
-      } while ((local_c < 0x7d0)) local_c = (local_c + 1) local_c = (local_c < 0x7d0) {
+      } while ((local_c < 0x7d0)) {
         iVar1 = FUN_0059fb78(local_18);
         local_c = 0;
         while ((iVar1 < iVar5)) {
           iVar4 = FUN_0059fb78(s32(((DAT_006cec84 + 0x210) + s32((DAT_006cec84 + 0x48), 0) * 4), 0));
           iVar5 = (s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0) * s32((DAT_006cec84 + 0x38), 0) + iVar4);
-          if ((iVar1 < iVar5)) iVar4 = (iVar4 <= iVar1) iVar1 = (iVar1 < iVar5) break; {
+          if ((iVar1 < iVar5)) {
             uVar6 = FUN_0059fc19((iVar4 - s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0)));
             w32(((DAT_006cec84 + 0x210) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, uVar6);
             local_c = (local_c + 1);
@@ -1474,7 +1474,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   if ((DAT_006cec84 !== 0)) {
     FUN_005a1caf(param_1, param_2);
     w32(((DAT_006cec84 + 0x218) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, 0);
-    if ((-1 < iVar1)) DAT_006cec84 = (DAT_006cec84 + 0x28) iVar1 = FUN_005a1a7d(param_1, param_2) -1 = (-1 < iVar1) {
+    if ((-1 < iVar1)) {
       w32(((DAT_006cec84 + 0x218) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, 1);
       FUN_00414ce0();
       uVar3 = 1;
@@ -1497,14 +1497,14 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let uVar6;
   let local_8;
 
-  if ((s32(((DAT_006cec84 + 0x218) + s32((DAT_006cec84 + 0x48), 0) * 4), 0) !== 0)) DAT_006cec84 = (DAT_006cec84 + 0x3c) DAT_006cec84 = (DAT_006cec84 + 0x218) {
+  if ((s32(((DAT_006cec84 + 0x218) + s32((DAT_006cec84 + 0x48), 0) * 4), 0) !== 0)) {
     iVar2 = FUN_005a1a7d(param_1, param_2);
     if ((iVar2 < 0)) {
       if ((s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0) * s32((DAT_006cec84 + 0x38), 0) < s32((DAT_006cec84 + 0x28), 0))) {
         iVar4 = FUN_0059fb78(s32(((DAT_006cec84 + 0x210) + s32((DAT_006cec84 + 0x48), 0) * 4), 0));
-        /* BRANCHIND */ () {
+        /* switch */ () {
         case -4 :
-          if ((iVar4 < iVar2)) iVar2 = FUN_005a17a4((s32((DAT_006cec84 + 0x28), 0) + -1)) iVar4 = (iVar4 < iVar2) {
+          if ((iVar4 < iVar2)) {
             iVar2 = s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0);
             iVar1 = s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0);
             iVar5 = FUN_005a1766((s32((DAT_006cec84 + 0x28), 0) + -1));
@@ -1523,7 +1523,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           }
           break;
         case -3 :
-          if ((0 < iVar4)) 0 = (0 < iVar4) {
+          if ((0 < iVar4)) {
             iVar4 = (iVar4 - s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0));
             if ((iVar4 < 1)) {
               iVar4 = 0;
@@ -1537,7 +1537,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           }
           break;
         case -2 :
-          if ((s32((DAT_006cec84 + 0x38), 0) === 1)) DAT_006cec84 = (DAT_006cec84 + 0x38) {
+          if ((s32((DAT_006cec84 + 0x38), 0) === 1)) {
             uVar3 = FUN_0059fc19((iVar4 + 1));
             w32(((DAT_006cec84 + 0x210) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, uVar3);
             uVar3 = FUN_005a1a44(((s32(((DAT_006cec84 + 0x5c) + s32((DAT_006cec84 + 0x48), 0) * 4), 0) * s32((DAT_006cec84 + 0x38), 0) + (iVar4 + 1)) + -1), 0, (s32((DAT_006cec84 + 0x28), 0) + -1));
@@ -1547,7 +1547,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           }
           break;
         case -1 :
-          if ((s32((DAT_006cec84 + 0x38), 0) === 1)) DAT_006cec84 = (DAT_006cec84 + 0x38) {
+          if ((s32((DAT_006cec84 + 0x38), 0) === 1)) {
             uVar3 = FUN_0059fc19((iVar4 + -1));
             w32((DAT_006cec84 + 0x220), 0, uVar3);
             w32(((DAT_006cec84 + 0x210) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, s32((DAT_006cec84 + 0x220), 0));
@@ -1583,7 +1583,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   let iVar1;
 
-  if ((-1 < iVar1)) FUN_005a1caf(param_1, param_2) DAT_006cec84 = (DAT_006cec84 + 0x3c) DAT_006cec84 = (DAT_006cec84 + 0x28) DAT_006cec84 = (DAT_006cec84 + 0x3d) iVar1 = FUN_005a1a7d(param_1, param_2) -1 = (-1 < iVar1) {
+  if ((-1 < iVar1)) {
     w32(((DAT_006cec84 + 0x218) + s32((DAT_006cec84 + 0x48), 0) * 4), 0, 1);
     FUN_005a535e(param_1, param_2);
     w32((DAT_006cec84 + 0x3c), 0, (s32((DAT_006cec84 + 0x3c), 0) | 0x2000));
@@ -1651,8 +1651,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   // in_ECX promoted to parameter;
 
   if ((s32(in_ECX, 1) === 0)) {
-    if ((param_2 !== 1)) param_2 = (param_2 !== 1) {
-      if ((param_2 !== 2)) param_2 = (param_2 !== 2) {
+    if ((param_2 !== 1)) {
+      if ((param_2 !== 2)) {
         FUN_0040fdb0(s32(in_ECX, 0), param_1, s32(in_ECX, 0x1d));
       }
       else {
@@ -1732,7 +1732,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     }
     FUN_005a5649(DAT_ffffffec, 2);
   }
-  if (((_MEM[(in_ECX + 0x3e)] & 1) === 0)) in_ECX = in_ECX {
+  if (((_MEM[(in_ECX + 0x3e)] & 1) === 0)) {
     iVar1 = s32(in_ECX, 0x10);
     iVar2 = FUN_0040efd0(s32(in_ECX, 0x4d));
     local_24 = ((iVar1 >> 1) - ((iVar2 + 4) >> 1));
@@ -1760,7 +1760,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       else {
         in_ECX = (in_ECX + 0x91);
       }
-      if ((s32(in_ECX, 0x89) === local_20)) in_ECX = (in_ECX + 0x89) {
+      if ((s32(in_ECX, 0x89) === local_20)) {
         FUN_00408680(DAT_ffffffec, (local_34 + -1), (local_38 + -1), (local_18 + local_34), (local_40 + local_38));
         FUN_0043c7c0(s32(in_ECX, 0), DAT_ffffffec, s32(in_ECX, 0x1c));
       }
@@ -1809,7 +1809,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       else if (((_MEM[(in_ECX + 0x3e)] & 4) === 0)) {
         local_48 = s32(in_ECX, 0x12);
         (local_4c < 2) (local_4c = 0; local_4c = (local_4c < 2); local_4c = (local_4c + 1)) {
-          if (((_MEM[(in_ECX + 0x3e)] & 0x40) !== 0)) in_ECX = in_ECX {
+          if (((_MEM[(in_ECX + 0x3e)] & 0x40) !== 0)) {
             w32(in_ECX, 0x12, local_4c);
             if ((s32(in_ECX, (s32(in_ECX, 0x12) + 0xa1)) !== 0)) {
               FUN_0040f380();
@@ -1832,7 +1832,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         FUN_0040f380();
       }
     }
-    if ((s32(in_ECX, 0xa) === 0)) in_ECX = (in_ECX + 0xa) {
+    if ((s32(in_ECX, 0xa) === 0)) {
       (local_1c < s32(in_ECX, 0xb)) (local_1c = 0; local_1c = (local_1c < s32(in_ECX, 0xb)); local_1c = (local_1c + 1)) {
         FUN_0040f380();
       }
@@ -1846,9 +1846,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005a5f34 (in_ECX, param_1, param_2)
+ /* address  */ */ export function FUN_005a5f34 (in_ECX, param_1, param_2)
 
  {
   let iVar1;
@@ -1879,22 +1879,22 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       w32((in_ECX + 0x3c), 0, (s32((in_ECX + 0x3c), 0) | 0x10000));
     }
     FUN_005a577e();
-    if (((_MEM[(in_ECX + 0x3c)] & 8) === 0)) in_ECX = (in_ECX + 0x3c) {
+    if (((_MEM[(in_ECX + 0x3c)] & 8) === 0)) {
       if ((s32((in_ECX + 0x250), 0) === 0)) {
         FUN_005c61b0();
-        while (((_MEM[(in_ECX + 0x3d)] & 4) === 0)) in_ECX = (in_ECX + 0x3d) {
+        while (((_MEM[(in_ECX + 0x3d)] & 4) === 0)) {
           FUN_0040ef50();
         }
       }
       else {
-        while (((_MEM[(in_ECX + 0x3d)] & 4) === 0)) in_ECX = (in_ECX + 0x3d) {
+        while (((_MEM[(in_ECX + 0x3d)] & 4) === 0)) {
           iVar1 = s32((in_ECX + 0x250), 0)(in_ECX);
           if ((iVar1 !== 0)) {
             FUN_005a3c58();
           }
         }
       }
-      if ((s32((in_ECX + 0x270), 0) !== 0)) in_ECX = (in_ECX + 0x270) {
+      if ((s32((in_ECX + 0x270), 0) !== 0)) {
         FUN_00418a70(param_1);
       }
       if ((1 < s32((in_ECX + 0x24), 0))) {
@@ -2001,7 +2001,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         else if ((_MEM[local_70] === 0x40)) {
           local_18 = (local_70 + 1);
           iVar1 = __strcmpi(local_18, s_OPTIONS_00635b74);
-          if ((iVar1 === 0)) iVar1 = _strcmp(local_18, s_PROMPT_00635b7c) iVar1 = (iVar1 === 0) {
+          if ((iVar1 === 0)) {
             local_7c = 2;
           }
           else {
@@ -2034,7 +2034,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                 else {
                   iVar1 = __strnicmp(local_18, s_COLUMNS_00635b9c, 7);
                   if ((iVar1 === 0)) {
-                    while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                    while ((iVar1 === 0)) {
                       local_18 = (local_18 + 1);
                     }
                     local_c = _atoi(local_18);
@@ -2043,7 +2043,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                   else {
                     iVar1 = __strnicmp(local_18, s_HEIGHT_00635ba4, 6);
                     if ((iVar1 === 0)) {
-                      while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                      while ((iVar1 === 0)) {
                         local_18 = (local_18 + 1);
                       }
                       local_c = _atoi(local_18);
@@ -2053,8 +2053,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                       iVar1 = __strcmpi(local_18, s_SMALLFONT_00635bac);
                       if ((iVar1 !== 0)) {
                         iVar1 = __strnicmp(local_18, DAT_00635bb8, 1);
-                        if ((iVar1 === 0)) iVar1 = _isalpha(s8(local_18[1])) iVar1 = (iVar1 === 0) {
-                          while ((_MEM[local_18] !== 0x2d)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) local_18 = _MEM[local_18] {
+                        if ((iVar1 === 0)) {
+                          while ((_MEM[local_18] !== 0x2d)) {
                             local_18 = (local_18 + 1);
                           }
                           iVar1 = _atoi(local_18);
@@ -2062,8 +2062,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                         }
                         else {
                           iVar1 = __strnicmp(local_18, DAT_00635bbc, 1);
-                          if ((iVar1 === 0)) iVar1 = _isalpha(s8(local_18[1])) iVar1 = (iVar1 === 0) {
-                            while ((_MEM[local_18] !== 0x2d)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) local_18 = _MEM[local_18] {
+                          if ((iVar1 === 0)) {
+                            while ((_MEM[local_18] !== 0x2d)) {
                               local_18 = (local_18 + 1);
                             }
                             iVar1 = _atoi(local_18);
@@ -2072,7 +2072,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                           else {
                             iVar1 = __strnicmp(local_18, s_WIDTH_00635bc0, 5);
                             if ((iVar1 === 0)) {
-                              while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                              while ((iVar1 === 0)) {
                                 local_18 = (local_18 + 1);
                               }
                               local_c = _atoi(local_18);
@@ -2081,7 +2081,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                             else {
                               iVar1 = __strnicmp(local_18, s_LENGTH_00635bc8, 6);
                               if ((iVar1 === 0)) {
-                                while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                                while ((iVar1 === 0)) {
                                   local_18 = (local_18 + 1);
                                 }
                                 if ((param_3 === 0)) {
@@ -2096,7 +2096,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                                 else {
                                   iVar1 = __strnicmp(local_18, s_LISTBOX_00635bdc, 7);
                                   if ((iVar1 === 0)) {
-                                    while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                                    while ((iVar1 === 0)) {
                                       local_18 = (local_18 + 1);
                                     }
                                     local_1c = _atoi(local_18);
@@ -2114,7 +2114,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
                                       iVar1 = __strnicmp(local_18, s_DEFAULT_00635bec, 7);
                                       if ((iVar1 === 0)) {
                                         if ((local_74 === 0)) {
-                                          while ((iVar1 === 0)) local_18 = _MEM[local_18] iVar1 = _isdigit(s8(_MEM[local_18])) iVar1 = (iVar1 === 0) {
+                                          while ((iVar1 === 0)) {
                                             local_18 = (local_18 + 1);
                                           }
                                           if ((param_3 === 0)) {
@@ -2182,7 +2182,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           }
         }
       }
-    } while ((local_7c < 3)) local_78 = 0 {
+    } while ((local_7c < 3)) {
     FUN_0059dfb9(param_5, param_6, param_7, param_8);
   }
   return local_78;
@@ -2206,15 +2206,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* Library */ /* Function */ /* - */ /* Multiple */ /* Matches */ /* With */ /* Different */ /* Base */ /* Names */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoIndexFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoRelationFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CODBCFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CString::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
+ /* /*  Library */  /* Function */  /* - */  /* Multiple */  /* Matches */  /* With */  /* Different */  /* Base */
+ /* Names */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoIndexFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoRelationFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CODBCFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CString::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */
+    /* Library: */  /* Visual */  /* Studio */  /* 1998 */
 
-   /* Library: */ /* Visual */ /* Studio */ /* 1998 */ /* Debug */ /*  */ */
-
- export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
+ /* Debug  */ */ export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
 
  {
   // in_ECX promoted to parameter;
@@ -2233,15 +2233,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* Library */ /* Function */ /* - */ /* Multiple */ /* Matches */ /* With */ /* Different */ /* Base */ /* Names */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoIndexFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoRelationFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CODBCFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CString::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
+ /* /*  Library */  /* Function */  /* - */  /* Multiple */  /* Matches */  /* With */  /* Different */  /* Base */
+ /* Names */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoIndexFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoRelationFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CODBCFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CString::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */
+    /* Library: */  /* Visual */  /* Studio */  /* 1998 */
 
-   /* Library: */ /* Visual */ /* Studio */ /* 1998 */ /* Debug */ /*  */ */
-
- export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
+ /* Debug  */ */ export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
 
  {
   // in_ECX promoted to parameter;
@@ -2260,15 +2260,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* Library */ /* Function */ /* - */ /* Multiple */ /* Matches */ /* With */ /* Different */ /* Base */ /* Names */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoIndexFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoRelationFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CODBCFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CString::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
+ /* /*  Library */  /* Function */  /* - */  /* Multiple */  /* Matches */  /* With */  /* Different */  /* Base */
+ /* Names */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoIndexFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoRelationFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CODBCFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CString::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */
+    /* Library: */  /* Visual */  /* Studio */  /* 1998 */
 
-   /* Library: */ /* Visual */ /* Studio */ /* 1998 */ /* Debug */ /*  */ */
-
- export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
+ /* Debug  */ */ export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
 
  {
   // in_ECX promoted to parameter;
@@ -2300,15 +2300,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* Library */ /* Function */ /* - */ /* Multiple */ /* Matches */ /* With */ /* Different */ /* Base */ /* Names */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoIndexFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CDaoRelationFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CODBCFieldInfo::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
-    /* public: */ /* void */ /* * */ /* __thiscall */ /* CString::`vector */ /* deleting */ /* destructor'(unsigned */ /* int) */
+ /* /*  Library */  /* Function */  /* - */  /* Multiple */  /* Matches */  /* With */  /* Different */  /* Base */
+ /* Names */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoIndexFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CDaoRelationFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CODBCFieldInfo::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */     /* public: */  /* void */  /* * */  /* __thiscall */  /* CString::`vector */  /* deleting */  /* destructor'(unsigned */
+ /* int) */
+    /* Library: */  /* Visual */  /* Studio */  /* 1998 */
 
-   /* Library: */ /* Visual */ /* Studio */ /* 1998 */ /* Debug */ /*  */ */
-
- export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
+ /* Debug  */ */ export function FID_conflict:`vector_deleting_destructor' (in_ECX, param_1)
 
  {
   // in_ECX promoted to parameter;
@@ -2544,7 +2544,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 
   pCVar2 = GetActiveView(param_2);
   pCVar3 = GetActiveView(param_2);
-  if ((pCVar3 !== 0)) pCVar3 = (pCVar3 !== 0) {
+  if ((pCVar3 !== 0)) {
     if (((param_3 === param_7) || ((param_3 - param_7) < 0))) {
       local_34 = ((~(param_3 - param_7)) + 1);
     }
@@ -2561,10 +2561,10 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     pCVar4 = (param_3 + param_5);
     pCVar5 = (param_4 + param_6);
     local_8 = param_4;
-    while ((local_8 < pCVar5)) local_8 = local_8 {
+    while ((local_8 < pCVar5)) {
       local_30 = param_3;
       local_28 = (local_34 % pCVar2);
-      while ((local_30 < pCVar4)) local_30 = local_30 {
+      while ((local_30 < pCVar4)) {
         pCVar6 = (pCVar2 + (local_30 - local_28));
         if ((pCVar4 <= (pCVar2 + (local_30 - local_28)))) {
           pCVar6 = pCVar4;
@@ -2606,10 +2606,10 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_c;
 
   FUN_0047e94e(1, 0);
-  if ((DAT_006ad308 < 2)) DAT_006ad308 = (DAT_006ad308 < 2) {
+  if ((DAT_006ad308 < 2)) {
     bVar1 = 1;
     (local_c < 8) (local_c = 1; local_c = (local_c < 8); local_c = (local_c + 1)) {
-      if ((s32((DAT_006ced20 + local_c * 4), 0) === 0)) 1 = (1 << (((local_c) & 0xFF) & 0x1f)) DAT_006ced20 = DAT_006ced20 {
+      if ((s32((DAT_006ced20 + local_c * 4), 0) === 0)) {
         bVar1 = 0;
         break;
       }
@@ -2630,15 +2630,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_c;
 
   FUN_0047e94e(1, 0);
-  if ((DAT_006ad308 < 2)) DAT_006ad308 = (DAT_006ad308 < 2) {
+  if ((DAT_006ad308 < 2)) {
     bVar1 = 1;
     (local_c < 8) (local_c = 1; local_c = (local_c < 8); local_c = (local_c + 1)) {
-      if ((s32((DAT_006ced20 + local_c * 4), 0) === 0)) 1 = (1 << (((local_c) & 0xFF) & 0x1f)) DAT_006ced20 = DAT_006ced20 {
+      if ((s32((DAT_006ced20 + local_c * 4), 0) === 0)) {
         bVar1 = 0;
         break;
       }
     }
-    if ((DAT_006ad308 < 2)) DAT_006ad308 = (DAT_006ad308 < 2) {
+    if ((DAT_006ad308 < 2)) {
       w32(DAT_006ad678, 0xf, (s32(DAT_006ad678, 0xf) | 0x400));
       DAT_006ad678 = s32(DAT_006ad678, 0);
     }
@@ -2647,9 +2647,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005aa0e5 ()
+ /* address  */ */ export function FUN_005aa0e5 ()
 
  {
   let bVar1;
@@ -2683,7 +2683,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   uVar3 = FUN_00493c7d(DAT_006d1da0, DAT_006d1da0);
   FUN_005d23bb(s_Server:_%s_(%d)_00635c68, uVar3);
   (local_330 < 8) (local_330 = 1; local_330 = (local_330 < 8); local_330 = (local_330 + 1)) {
-    if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) {
+    if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) {
       uVar3 = FUN_00493c7d(local_330, local_330);
       FUN_005d23bb(s_Client:_%s_(%d)_00635c78, uVar3);
     }
@@ -2697,7 +2697,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   FUN_00413476();
   local_18 = 0;
   (local_328 < ((DAT_00655b16) << 16 >> 16)) (local_328 = 0; local_328 = (local_328 < ((DAT_00655b16) << 16 >> 16)); local_328 = (local_328 + 1)) {
-    if ((s8(DAT_006560f7[local_328 * 0x20]) === DAT_006d1da0)) DAT_006560f7 = DAT_006560f7 {
+    if ((s8(DAT_006560f7[local_328 * 0x20]) === DAT_006d1da0)) {
       FUN_00410402(((s16((DAT_006560f0 + local_328 * 0x20), 0)) << 16 >> 16), ((s16((DAT_006560f2 + local_328 * 0x20), 0)) << 16 >> 16));
       local_18 = (local_18 + 1);
       break;
@@ -2705,7 +2705,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   }
   if ((local_18 === 0)) {
     (local_328 < ((DAT_00655b18) << 16 >> 16)) (local_328 = 0; local_328 = (local_328 < ((DAT_00655b18) << 16 >> 16)); local_328 = (local_328 + 1)) {
-      if ((s8(DAT_0064f348[local_328 * 0x58]) === DAT_006d1da0)) DAT_0064f348 = DAT_0064f348 {
+      if ((s8(DAT_0064f348[local_328 * 0x58]) === DAT_006d1da0)) {
         FUN_00410402(((s16((DAT_0064f340 + local_328 * 0x58), 0)) << 16 >> 16), ((s16((DAT_0064f342 + local_328 * 0x58), 0)) << 16 >> 16));
         break;
       }
@@ -2714,17 +2714,17 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   bVar1 = DAT_00628048;
   if ((DAT_00628048 !== 0)) {
     do {
-      if ((((1 << (DAT_00628048 & 0x1f)) & u8(DAT_00655b0a)) !== 0)) goto LAB_005aa3dc; DAT_00628048 = (DAT_00628048 + 1) {
+      if ((((1 << (DAT_00628048 & 0x1f)) & u8(DAT_00655b0a)) !== 0)) {
         DAT_00628048 = 0;
       }
-    } while ((DAT_00628048 !== bVar1)) DAT_0064b1ac = 1 LAB_005aa3dc: {
+    } while ((DAT_00628048 !== bVar1)) {
     DAT_00655b0b = (DAT_006c31a8 | DAT_00655b0b);
     DAT_006c31a8 = 0;
     _memset(DAT_0064ba48, -1, 0xc0);
     FUN_0048710a(-3);
     FUN_004b0b53(0xff, 2, 0, 0, 0);
     XD_FlushSendBuffer(0xea60);
-    while ((DAT_006c8fa0 !== 0)) DAT_006c8fac = (DAT_006c8fac !== 0) DAT_006c8fa0 = (DAT_006c8fa0 !== 0) {
+    while ((DAT_006c8fa0 !== 0)) {
       FUN_0047e94e(1, 0);
     }
     FUN_0048a92d();
@@ -2734,11 +2734,11 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       XD_FlushSendBuffer(0xea60);
     }
     iVar4 = FUN_0048aedc();
-    if ((DAT_0064b1ac !== 0)) DAT_0064b1ac = (DAT_0064b1ac !== 0) {
+    if ((DAT_0064b1ac !== 0)) {
       DAT_00628044 = 0;
       break;
     }
-    if ((DAT_0062c488 !== 0)) DAT_00628048 = (DAT_00628048 === 0) DAT_0062c488 = (DAT_0062c488 !== 0) {
+    if ((DAT_0062c488 !== 0)) {
       FUN_004fba0c(((DAT_00655af8) << 16 >> 16));
       FUN_004fba9c(((DAT_00655af8) << 16 >> 16));
       FUN_004fbb2f(((DAT_00655af8) << 16 >> 16));
@@ -2751,7 +2751,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     DAT_006ad699 = 0;
     (local_330 < 8) (local_330 = 0; (DAT_00628044 = (DAT_00628044 !== 0) && (local_330 = (local_330 < 8))); local_330 = (local_330 + 1)) {
       DAT_00655b05 = ((local_330) & 0xFF);
-      if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) === 0)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) {
+      if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) === 0)) {
         FUN_00489553(local_330);
         FUN_004b0b53(0xff, 2, 0, 0, 0);
       }
@@ -2784,7 +2784,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       }
       local_2c = 1;
       (local_330 < 8) (local_330 = 1; local_330 = (local_330 < 8); local_330 = (local_330 + 1)) {
-        if ((s32((DAT_006ced20 + local_330 * 4), 0) === 0)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) DAT_006ced20 = DAT_006ced20 {
+        if ((s32((DAT_006ced20 + local_330 * 4), 0) === 0)) {
           local_2c = 0;
           break;
         }
@@ -2803,12 +2803,12 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       FUN_0048710a(-1);
     }
     (local_330 < 8) (local_330 = 0; (DAT_00628044 = (DAT_00628044 !== 0) && (local_330 = (local_330 < 8))); local_330 = (local_330 + 1)) {
-      if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) === 0)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) {
+      if ((((1 << (((local_330) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) === 0)) {
         DAT_00655b05 = ((local_330) & 0xFF);
         _DAT_006ad578 = local_330;
         FUN_004e4ceb();
         FUN_00568e86(local_330);
-        if ((DAT_0062c488 !== 0)) DAT_0062c488 = (DAT_0062c488 !== 0) DAT_00628048 = (DAT_00628048 !== 0) DAT_0062c488 = (DAT_0062c488 !== 0) {
+        if ((DAT_0062c488 !== 0)) {
           FUN_00413476();
           FUN_0047cf9e(DAT_006d1da0, 1);
           FUN_00419b80();
@@ -2829,7 +2829,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       FUN_0046b14d(0x31, 0, 0, DAT_006d1da0, 0, 0, 0, 0, 0, 0);
       break;
     }
-    if ((DAT_00654fa8 === 0)) DAT_00654fa8 = (DAT_00654fa8 === 0) {
+    if ((DAT_00654fa8 === 0)) {
       FUN_0041b8ff(DAT_006d1da0);
       w16((DAT_00654b60 + DAT_006d1da0 * 2), 0, 1);
     }
@@ -2931,7 +2931,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       }
       local_30 = 1;
       (local_330 < 8) (local_330 = 1; local_330 = (local_330 < 8); local_330 = (local_330 + 1)) {
-        if ((s32((DAT_006ced20 + local_330 * 4), 0) === 0)) 1 = (1 << (((local_330) & 0xFF) & 0x1f)) DAT_006ced20 = DAT_006ced20 {
+        if ((s32((DAT_006ced20 + local_330 * 4), 0) === 0)) {
           local_30 = 0;
           break;
         }
@@ -2941,25 +2941,25 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  LAB_005aaef1: :
     DAT_006c921c = 0;
     FUN_0048dab9();
-    if ((None === DAT_006d1da0)) _DAT_006ad578 = (None === DAT_006d1da0) {
+    if ((None === DAT_006d1da0)) {
       (local_328 < ((DAT_00655b16) << 16 >> 16)) (local_328 = 0; local_328 = (local_328 < ((DAT_00655b16) << 16 >> 16)); local_328 = (local_328 + 1)) {
-        if ((s8(DAT_006560f7[local_328 * 0x20]) === local_330)) DAT_006560f7 = DAT_006560f7 {
+        if ((s8(DAT_006560f7[local_328 * 0x20]) === local_330)) {
           FUN_005b6787(local_328);
         }
       }
       local_32c = ((DAT_00655b18) << 16 >> 16);
-      while ((-1 < local_32c)) local_32c = (local_32c + -1) -1 = (-1 < local_32c) {
+      while ((-1 < local_32c)) {
         if ((s32((DAT_0064f394 + local_32c * 0x58), 0) !== 0)) {
           w32((DAT_0064f344 + local_32c * 0x58), 0, (s32((DAT_0064f344 + local_32c * 0x58), 0) & -0x400001));
         }
       }
     }
     FUN_00453af0();
-    if ((DAT_00628044 === 0)) break; DAT_0064b1ac = (DAT_0064b1ac !== 0) {
+    if ((DAT_00628044 === 0)) {
       DAT_00628044 = 0;
       break;
     }
-  } while ((DAT_00628044 !== 0)) FUN_0055ae80(0) FUN_004824e3() {
+  } while ((DAT_00628044 !== 0)) {
     FUN_0048b165();
   }
   local_8 = -1;
@@ -2993,7 +2993,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  if ((DAT_006c8fb4 !== 0)) DAT_006c918c = (DAT_006c918c !== 0) DAT_00628044 = (DAT_00628044 === 0) DAT_006c8fb4 = (DAT_006c8fb4 !== 0) {
+  if ((DAT_006c8fb4 !== 0)) {
     w32(DAT_006ad678, 0xf, (s32(DAT_006ad678, 0xf) | 0x400));
     DAT_006ad678 = s32(DAT_006ad678, 0);
   }
@@ -3006,7 +3006,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  if ((DAT_006c8fb4 !== 0)) DAT_006c918c = (DAT_006c918c !== 0) DAT_00628044 = (DAT_00628044 === 0) DAT_006c8fb4 = (DAT_006c8fb4 !== 0) {
+  if ((DAT_006c8fb4 !== 0)) {
     w32(DAT_006ad678, 0xf, (s32(DAT_006ad678, 0xf) | 0x400));
     DAT_006ad678 = s32(DAT_006ad678, 0);
   }
@@ -3019,7 +3019,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  if ((DAT_006c8fb4 !== 0)) DAT_006ad698 = (DAT_006ad698 === 1) DAT_006c918c = (DAT_006c918c !== 0) DAT_006ad685 = (DAT_006ad685 === 1) DAT_00628044 = (DAT_00628044 === 0) DAT_006c8fb4 = (DAT_006c8fb4 !== 0) {
+  if ((DAT_006c8fb4 !== 0)) {
     w32(DAT_006ad678, 0xf, (s32(DAT_006ad678, 0xf) | 0x400));
     DAT_006ad678 = s32(DAT_006ad678, 0);
   }
@@ -3032,7 +3032,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  if ((DAT_006c8fb4 !== 0)) DAT_006ad698 = (DAT_006ad698 !== 0) DAT_006c918c = (DAT_006c918c !== 0) DAT_006ad685 = (DAT_006ad685 !== 0) DAT_00628044 = (DAT_00628044 === 0) DAT_006c8fb4 = (DAT_006c8fb4 !== 0) {
+  if ((DAT_006c8fb4 !== 0)) {
     w32(DAT_006ad678, 0xf, (s32(DAT_006ad678, 0xf) | 0x400));
     DAT_006ad678 = s32(DAT_006ad678, 0);
   }
@@ -3040,9 +3040,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
 }
 
 
- /* /*  */ /* WARNING: */ /* Globals */ /* starting */ /* with */ /* '_' */ /* overlap */ /* smaller */ /* symbols */ /* at */ /* the */ /* same */ /* address */ /*  */ */
+ /* /*  WARNING: */  /* Globals */  /* starting */  /* with */  /* '_' */  /* overlap */  /* smaller */  /* symbols */  /* at */  /* the */  /* same */
 
- export function FUN_005ab2d5 ()
+ /* address  */ */ export function FUN_005ab2d5 ()
 
  {
   let cVar1;
@@ -3073,7 +3073,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   uVar3 = FUN_00493c7d(DAT_006ad35c, DAT_006ad35c);
   FUN_005d23bb(s_Server:_%s_(%d)_00635cd0, uVar3);
   (local_31c < 8) (local_31c = 1; local_31c = (local_31c < 8); local_31c = (local_31c + 1)) {
-    if ((((1 << (((local_31c) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) 1 = (1 << (((local_31c) & 0xFF) & 0x1f)) 1 = (1 << (((local_31c) & 0xFF) & 0x1f)) {
+    if ((((1 << (((local_31c) & 0xFF) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) {
       uVar3 = FUN_00493c7d(local_31c, local_31c);
       FUN_005d23bb(s_Client:_%s_(%d)_00635ce0, uVar3);
     }
@@ -3090,7 +3090,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   FUN_00413476();
   local_1c = 0;
   (local_318 < ((DAT_00655b16) << 16 >> 16)) (local_318 = 0; local_318 = (local_318 < ((DAT_00655b16) << 16 >> 16)); local_318 = (local_318 + 1)) {
-    if ((s8(DAT_006560f7[local_318 * 0x20]) === s32(DAT_006ad35c, DAT_006ad304 * 0x15))) DAT_006560f7 = DAT_006560f7 {
+    if ((s8(DAT_006560f7[local_318 * 0x20]) === s32(DAT_006ad35c, DAT_006ad304 * 0x15))) {
       FUN_00410402(((s16((DAT_006560f0 + local_318 * 0x20), 0)) << 16 >> 16), ((s16((DAT_006560f2 + local_318 * 0x20), 0)) << 16 >> 16));
       local_1c = (local_1c + 1);
       break;
@@ -3098,7 +3098,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   }
   if ((local_1c === 0)) {
     (local_318 < ((DAT_00655b18) << 16 >> 16)) (local_318 = 0; local_318 = (local_318 < ((DAT_00655b18) << 16 >> 16)); local_318 = (local_318 + 1)) {
-      if ((s8(DAT_0064f348[local_318 * 0x58]) === DAT_006d1da0)) DAT_0064f348 = DAT_0064f348 {
+      if ((s8(DAT_0064f348[local_318 * 0x58]) === DAT_006d1da0)) {
         FUN_00410402(((s16((DAT_0064f340 + local_318 * 0x58), 0)) << 16 >> 16), ((s16((DAT_0064f342 + local_318 * 0x58), 0)) << 16 >> 16));
         break;
       }
@@ -3118,7 +3118,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   do {
     DAT_00628048 = cVar1;
     (local_318 < ((DAT_00655b16) << 16 >> 16)) (local_318 = 0; local_318 = (local_318 < ((DAT_00655b16) << 16 >> 16)); local_318 = (local_318 + 1)) {
-      if ((s8(DAT_006560f7[local_318 * 0x20]) === DAT_006d1da0)) DAT_006560f7 = DAT_006560f7 {
+      if ((s8(DAT_006560f7[local_318 * 0x20]) === DAT_006d1da0)) {
         FUN_005b6787(local_318);
       }
     }
@@ -3128,7 +3128,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       FUN_00410030(s_WAITHUMANMOVES_00635d00, DAT_0063fc58, 0);
     }
     FUN_0048d9ad(DAT_006ad35c);
-    while ((DAT_00628044 !== 0)) DAT_006c920c = (DAT_006c920c === 0) DAT_006ad698 = (DAT_006ad698 === 0) DAT_006c918c = (DAT_006c918c === 0) DAT_006ad685 = (DAT_006ad685 === 0) DAT_00628044 = (DAT_00628044 !== 0) {
+    while ((DAT_00628044 !== 0)) {
       FUN_0047e94e(1, 0);
       FUN_0048da51(DAT_006ad35c);
       iVar4 = FUN_0048dab9();
@@ -3153,7 +3153,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         FUN_005abff1();
         return;
       }
-      if ((DAT_00628044 !== 0)) DAT_006c918c = (DAT_006c918c === 0) DAT_006ad685 = (DAT_006ad685 === 0) cVar1 = DAT_00628048 DAT_00628044 = (DAT_00628044 !== 0) goto LAB_005ab60f; DAT_00628044 = (DAT_00628044 !== 0) {
+      if ((DAT_00628044 !== 0)) {
       DAT_006c9038 = 0;
       DAT_006c920c = 0;
       DAT_006d1da0 = s32(DAT_006ad35c, DAT_006ad304 * 0x15);
@@ -3163,7 +3163,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         DAT_00633a78 = (DAT_00654b70 / 0x3e8 | 0);
         _DAT_0066c990 = -1;
       }
-      while ((DAT_006c8fa0 !== 0)) DAT_006c8fac = (DAT_006c8fac !== 0) DAT_006c8fa0 = (DAT_006c8fa0 !== 0) {
+      while ((DAT_006c8fa0 !== 0)) {
         FUN_0047e94e(1, 0);
       }
       _DAT_006ad578 = DAT_006d1da0;
@@ -3175,7 +3175,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         if ((DAT_00628048 === 0)) {
           FUN_00486e6f();
         }
-        if ((DAT_0062c488 !== 0)) DAT_0062c488 = (DAT_0062c488 !== 0) {
+        if ((DAT_0062c488 !== 0)) {
           FUN_00489553(DAT_006d1da0);
           FUN_004b0b53(0xff, 2, 0, 0, 0);
         }
@@ -3185,7 +3185,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         FUN_0048d9ad(DAT_006ad35c);
         DAT_00635a3c = LAB_004028c4;
         FUN_00410030(s_WAITPRODUCTION_00635d20, DAT_0063fc58, 0);
-        while ((DAT_00628044 !== 0)) DAT_006c9214 = (DAT_006c9214 === 0) DAT_006c918c = (DAT_006c918c === 0) DAT_00628044 = (DAT_00628044 !== 0) {
+        while ((DAT_00628044 !== 0)) {
           FUN_0047e94e(1, 0);
           FUN_0048da51(DAT_006ad35c);
           iVar4 = FUN_0048dab9();
@@ -3196,12 +3196,12 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
             return;
           }
         }
-        if ((DAT_00628044 !== 0)) DAT_00628044 = (DAT_00628044 !== 0) {
+        if ((DAT_00628044 !== 0)) {
           DAT_006c9214 = 0;
           FUN_0048d9ad(DAT_006ad35c);
           DAT_00635a3c = LAB_00401695;
           FUN_00410030(s_WAITAIMOVES_00635d30, DAT_0063fc58, 0);
-          while ((DAT_00628044 !== 0)) DAT_006c9218 = (DAT_006c9218 === 0) DAT_006c918c = (DAT_006c918c === 0) DAT_00628044 = (DAT_00628044 !== 0) {
+          while ((DAT_00628044 !== 0)) {
             FUN_0047e94e(1, 0);
             FUN_0048da51(DAT_006ad35c);
             iVar4 = FUN_0048dab9();
@@ -3212,9 +3212,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
               return;
             }
           }
-          if ((DAT_00628044 !== 0)) DAT_00628044 = (DAT_00628044 !== 0) {
+          if ((DAT_00628044 !== 0)) {
             DAT_006c9218 = 0;
-            if ((DAT_00654fa8 === 0)) DAT_00654fa8 = (DAT_00654fa8 === 0) {
+            if ((DAT_00654fa8 === 0)) {
               FUN_0041b8ff(DAT_006d1da0);
               w16((DAT_00654b60 + DAT_006d1da0 * 2), 0, 1);
             }
@@ -3268,14 +3268,14 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       else {
         _DAT_00673b08 = u8(DAT_00655b0b);
         DAT_00655b0b = 0;
-        if ((DAT_0062c488 !== 0)) DAT_0062c488 = (DAT_0062c488 !== 0) {
+        if ((DAT_0062c488 !== 0)) {
           FUN_00489553(DAT_006d1da0);
         }
         FUN_0046b14d(0x8c, 0, DAT_006d1da0, 0, 0, 0, 0, 0, 0, 0);
         FUN_0048d9ad(DAT_006ad35c);
         DAT_00635a3c = LAB_004028c4;
         FUN_00410030(s_WAITPRODUCTION_00635d10, DAT_0063fc58, 0);
-        while ((DAT_00628044 !== 0)) DAT_006c9214 = (DAT_006c9214 === 0) DAT_006c918c = (DAT_006c918c === 0) DAT_00628044 = (DAT_00628044 !== 0) {
+        while ((DAT_00628044 !== 0)) {
           FUN_0047e94e(1, 0);
           FUN_0048da51(DAT_006ad35c);
           iVar4 = FUN_0048dab9();
@@ -3286,7 +3286,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
             return;
           }
         }
-        if ((DAT_00628044 !== 0)) DAT_00628044 = (DAT_00628044 !== 0) {
+        if ((DAT_00628044 !== 0)) {
           DAT_006c9214 = 0;
           if ((DAT_00654b70 !== 0)) {
             FUN_0055af2e(1);
@@ -3362,13 +3362,13 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   // in_ECX promoted to parameter;
   let local_8;
 
-  if ((s32((in_ECX + 0xb9c), 0) <= s32((in_ECX + 0x120), 0))) in_ECX = (in_ECX + 0xb9c) {
+  if ((s32((in_ECX + 0xb9c), 0) <= s32((in_ECX + 0x120), 0))) {
     w32((in_ECX + 0x120), 0, 0);
   }
   w32((in_ECX + 0x1b34), 0, s32((in_ECX + 0xb9c), 0));
   w32((in_ECX + 0x1f38), 0, s32((in_ECX + 0x120), 0));
   w32((in_ECX + 0x1f3c), 0, s32((in_ECX + 0x120), 0));
-  while (((DAT_006a85a4 % 9) !== 0)) DAT_006a85a4 = (DAT_006a85a4 % 9) {
+  while (((DAT_006a85a4 % 9) !== 0)) {
     w32((in_ECX + 0x1f3c), 0, (s32((in_ECX + 0x1f3c), 0) + -1));
   }
   (local_8 < s32((in_ECX + 0xb9c), 0)) (local_8 = 0; local_8 = (local_8 < s32((in_ECX + 0xb9c), 0)); local_8 = (local_8 + 1)) {
@@ -3736,7 +3736,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   // in_ECX promoted to parameter;
   let local_8;
 
-  if ((DAT_006ad908 === 0)) DAT_006ad908 = (DAT_006ad908 === 0) {
+  if ((DAT_006ad908 === 0)) {
     (s32(((in_ECX + 0xc98) + local_8 * 4), 0) !== param_1) (local_8 = 0;
         (local_8 = (local_8 < s32((in_ECX + 0xb9c), 0)) && (in_ECX = (in_ECX + 0xc98)));
         local_8 = (local_8 + 1)) {
@@ -3848,7 +3848,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   else {
     local_8 = (param_1 - param_2);
   }
-  if (((((DAT_006d1160) << 16 >> 16) >> 1) < local_8)) DAT_006d1160 = ((DAT_006d1160) << 16 >> 16) {
+  if (((((DAT_006d1160) << 16 >> 16) >> 1) < local_8)) {
     local_8 = (((DAT_006d1160) << 16 >> 16) - local_8);
   }
   return local_8;
@@ -3877,7 +3877,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   else {
     local_8 = (param_1 - param_3);
   }
-  if (((((DAT_006d1160) << 16 >> 16) >> 1) < local_8)) DAT_006d1160 = ((DAT_006d1160) << 16 >> 16) {
+  if (((((DAT_006d1160) << 16 >> 16) >> 1) < local_8)) {
     local_8 = (((DAT_006d1160) << 16 >> 16) - local_8);
   }
   if (((param_2 === param_4) || ((param_2 - param_4) < 0))) {
@@ -3950,7 +3950,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   let local_8;
 
   local_8 = 0;
-  if ((((param_2 - 1) & 7) === param_1)) param_2 = (param_2 - 1) {
+  if ((((param_2 - 1) & 7) === param_1)) {
     local_8 = 1;
   }
   return local_8;
@@ -4031,15 +4031,15 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     return;
   }
   DAT_00666542 = ((iVar1) & 0xFFFF);
-  if ((iVar1 < 3)) iVar1 = (iVar1 < 3) {
+  if ((iVar1 < 3)) {
     __chdir(DAT_00655020);
     FUN_0041e864(1);
   }
   DAT_00627670 = 0;
-  /* BRANCHIND */ () {
+  /* switch */ () {
   case 0 :
     iVar1 = FUN_0041d417();
-    if ((iVar1 !== 0)) goto LAB_005ae610; local_18 = 0 iVar1 = _rand() DAT_00624ee8 = ((iVar1 % 3) + -1) DAT_00624eec = 0 iVar1 = _rand() {
+    if ((iVar1 !== 0)) {
       DAT_00624eec = ((iVar1 % 3) + -1);
     }
     iVar1 = _rand();
@@ -4052,7 +4052,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     break;
   case 1 :
     iVar1 = FUN_0041dd0e();
-    if ((iVar1 !== 0)) goto LAB_005ae610; local_18 = 1 {
+    if ((iVar1 !== 0)) {
       local_18 = 2;
     }
     iVar1 = _rand();
@@ -4072,7 +4072,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     break;
   case 2 :
     iVar1 = FUN_0041d417();
-    if ((iVar1 !== 0)) goto LAB_005ae610; local_18 = 0 iVar1 = FUN_0041d7ea() goto LAB_005ae610; iVar1 = FUN_0051dd97(0, 2) break; 3 DAT_006a9110 = 0 iVar1 = FUN_005218cb(2) {
+    if ((iVar1 !== 0)) {
       if ((0 !== 0)) {
         DAT_00655aea = (DAT_00655aea & -0x10001);
       }
@@ -4133,9 +4133,9 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           FUN_005aec05();
           return;
         }
-        while ((iVar3 !== 0)) iVar3 = FUN_0051f19c(local_310, 2, 0) iVar3 = (iVar3 !== 0) {
+        while ((iVar3 !== 0)) {
           local_310 = (local_310 + -1);
-          if ((local_310 < 0)) goto switchD_005aea9a_default; local_310 = (local_310 + 1) goto LAB_005ae610; switchD_005aea9a_caseD_4: DAT_006a9110 = 0 iVar1 = FUN_00477d8c(0, 2, 1) {
+          if ((local_310 < 0)) {
     if ((DAT_00655b02 === 2)) {
       FUN_004a73d9();
       local_8 = -1;
@@ -4309,7 +4309,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     else if ((s32((DAT_00635e60 + local_14 * 8), 0) === 0xc)) {
       iVar1 = FUN_00418740();
       local_8 = s32((DAT_006a2a00 + (iVar1 * 4 + s32((DAT_006a4f88 + 0x2ec), 0) * 0x58)), 0);
-      if ((local_14 === 2)) local_14 = (local_14 === 2) {
+      if ((local_14 === 2)) {
         local_8 = (local_8 + 2);
       }
       FUN_00418d90(local_8);
@@ -4344,7 +4344,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     }
     else if ((s32((DAT_00635e60 + local_18 * 8), 0) === 0xc)) {
       local_8 = FUN_00418d60();
-      if ((local_18 === 2)) local_18 = (local_18 === 2) {
+      if ((local_18 === 2)) {
         local_8 = (local_8 + -2);
       }
       iVar1 = FUN_00418740();
@@ -4520,7 +4520,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     FUN_005a6c23(local_12c);
     local_8 = FUN_0051d63b(s_DEBUG_006359dc, s_UNITNAME_00635fa8, 0xe, DAT_fffffed8, DAT_fffffeec);
     FUN_005a6c45();
-    if ((local_8 === -1)) break; sVar1 = _strlen(DAT_fffffeec) {
+    if ((local_8 === -1)) {
     FUN_005f22d0((DAT_006a1d88 + local_10 * 0x28), DAT_fffffeec);
     local_c = FUN_00418d60();
     FUN_00418d20();
