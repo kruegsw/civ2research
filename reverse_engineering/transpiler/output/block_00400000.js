@@ -2011,12 +2011,12 @@ export function FUN_00408d33(param_1) {
       iVar4 = FUN_005b89e4(local_5c + 1,1);
       if (iVar4 === 0) {
         puVar5 = FUN_005b8931(local_5c,0);
-        w32(puVar5, 0, 7);
+        _MEM[puVar5] = 7;
       }
       iVar4 = FUN_005b89e4(local_5c,v(DAT_006d1162) + -2);
       if (iVar4 === 0) {
         puVar5 = FUN_005b8931(local_5c + 1,v(DAT_006d1162) + -1);
-        w32(puVar5, 0, 7);
+        _MEM[puVar5] = 7;
       }
     }
   }
@@ -2026,9 +2026,9 @@ export function FUN_00408d33(param_1) {
   if ((v(DAT_00655ae8) & 0x8000) === 0) {
     for (local_5c = 0; local_5c < v(DAT_006d1160); local_5c = local_5c + 2) {
       puVar5 = FUN_005b8931(local_5c,0);
-      w32(puVar5, 0, 7);
+      _MEM[puVar5] = 7;
       puVar5 = FUN_005b8931(local_5c + 1,v(DAT_006d1162) + -1);
-      w32(puVar5, 0, 7);
+      _MEM[puVar5] = 7;
     }
     if (param_1 === 0) {
       for (local_48 = 0; local_48 < v(DAT_006d1160) >> 3; local_48 = local_48 + 1) {
@@ -2040,7 +2040,7 @@ export function FUN_00408d33(param_1) {
           local_3d4 = local_3d4 % (v(DAT_006d1160) / 2);
         }
         puVar5 = FUN_005b8931(local_3d4 * 2,0);
-        w32(puVar5, 0, 6);
+        _MEM[puVar5] = 6;
         if (v(DAT_006d1160) / 2 === 1 || v(DAT_006d1160) / 2 + -1 < 0) {
           local_3dc = 0;
         }
@@ -2049,7 +2049,7 @@ export function FUN_00408d33(param_1) {
           local_3dc = local_3dc % (v(DAT_006d1160) / 2);
         }
         puVar5 = FUN_005b8931(local_3dc * 2 + 1,1);
-        w32(puVar5, 0, 6);
+        _MEM[puVar5] = 6;
         if (v(DAT_006d1160) / 2 === 1 || v(DAT_006d1160) / 2 + -1 < 0) {
           local_3e4 = 0;
         }
@@ -2058,7 +2058,7 @@ export function FUN_00408d33(param_1) {
           local_3e4 = local_3e4 % (v(DAT_006d1160) / 2);
         }
         puVar5 = FUN_005b8931(local_3e4 * 2 + 1,v(DAT_006d1162) + -1);
-        w32(puVar5, 0, 6);
+        _MEM[puVar5] = 6;
         if (v(DAT_006d1160) / 2 === 1 || v(DAT_006d1160) / 2 + -1 < 0) {
           local_3ec = 0;
         }
@@ -2067,7 +2067,7 @@ export function FUN_00408d33(param_1) {
           local_3ec = local_3ec % (v(DAT_006d1160) / 2);
         }
         puVar5 = FUN_005b8931(local_3ec * 2,v(DAT_006d1162) + -2);
-        w32(puVar5, 0, 6);
+        _MEM[puVar5] = 6;
       }
     }
   }
@@ -2100,7 +2100,7 @@ export function FUN_00408d33(param_1) {
       FUN_0040894c();
     }
   }
-  _memcpy(v(DAT_006d1188),v(DAT_00636598),6);
+  _memcpy(DAT_006d1188,v(DAT_00636598),6); // C: &DAT_006d1188 is dest ADDRESS, DAT_00636598 is src POINTER
   FUN_00408010(0x201);
   FUN_00484d52();
   // DEVIATION: SEH
