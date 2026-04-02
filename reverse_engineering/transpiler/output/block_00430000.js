@@ -5100,7 +5100,7 @@ export function FUN_0043d400(param_1) {
     if (s8(_MEM[DAT_0064f349 + param_1 * 0x58]) < 0x04) {
       wv(DAT_0063f548, v(DAT_0063f548) + (v(DAT_0063f548) >> 1));
     }
-    if ('\v' < s8(_MEM[DAT_0064f349 + param_1 * 0x58])) {
+    if (0x0b < s8(_MEM[DAT_0064f349 + param_1 * 0x58])) {
       wv(DAT_0063f548, v(DAT_0063f548) / 2);
     }
     if (0x2f < local_8c) {
@@ -5118,7 +5118,7 @@ export function FUN_0043d400(param_1) {
     if (s8(_MEM[DAT_0064f349 + param_1 * 0x58]) < 0x05) {
       wv(DAT_0063f554, 0);
     }
-    if (s8(_MEM[DAT_0064f349 + param_1 * 0x58]) < '\b') {
+    if (s8(_MEM[DAT_0064f349 + param_1 * 0x58]) < 8) {
       wv(DAT_0063f554, v(DAT_0063f554) >> 1);
     }
     iVar5 = FUN_004bd9f0(iVar4,0x25);

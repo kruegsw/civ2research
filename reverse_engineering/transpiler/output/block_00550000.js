@@ -4922,7 +4922,7 @@ export function FUN_0055c066(param_1, param_2) {
     if ((1 << (u8(param_1) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
       wv(DAT_00655aee, v(DAT_00655aee) & 0xfffb);
       for (local_c = 0; local_c < v(DAT_00655b18); local_c = local_c + 1) {
-        if ((((s32(DAT_0064f394, local_c * 0x58) !== 0) && (s8(_MEM[DAT_0064f348 + local_c * 0x58]) === param_1)) && (FUN_004eb4ed(local_c,1), _MEM[DAT_0064f379 + local_c * 0x58] === '\b')) && (_MEM[DAT_0064c6b5 + param_1 * 0x594] !== 0x04)) {
+        if ((((s32(DAT_0064f394, local_c * 0x58) !== 0) && (s8(_MEM[DAT_0064f348 + local_c * 0x58]) === param_1)) && (FUN_004eb4ed(local_c,1), _MEM[DAT_0064f379 + local_c * 0x58] === 8)) && (_MEM[DAT_0064c6b5 + param_1 * 0x594] !== 0x04)) {
              /*JOINED*/
             /*JOINED*/
            /*JOINED*/

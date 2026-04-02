@@ -7194,7 +7194,7 @@ export function FUN_005be2c4(in_ECX, param_1, param_2, param_3, param_4) {
           local_14 = FUN_005c19d3(0,0);
           local_44 = in_ECX[4];
         }
-        if (_MEM[local_8 + 0x10] === '\b') {
+        if (_MEM[local_8 + 0x10] === 8) {
           for (local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
             local_30 = local_14;
             for (local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
@@ -7416,7 +7416,7 @@ export function FUN_005be967(param_1, param_2, param_3, param_4) {
     FUN_005dced3(local_14,local_c4,0x80);
     local_14 = (local_14 + 0x80);
     if ((_MEM[local_c4 + 0] === 0xa) || (local_c2 !== 0)) {
-      if ((local_c1 === '\b') || (local_83 === 0x01)) {
+      if ((local_c1 === 8) || (local_83 === 0x01)) {
         local_c = local_bc + 1;
         local_20 = local_ba + 1;
         SetRect(local_44[0],0,0,local_c,local_20);
@@ -7551,7 +7551,7 @@ export function FUN_005bec8c(unaff_EBX, unaff_ESI, param_1, param_2, param_3, pa
     FUN_005bf060(unaff_ESI,unaff_EBX,uVar2,in_stack_fffffe8c);
     return;
   }
-  if ((local_15d !== '\b') && (local_11f !== 0x01)) {
+  if ((local_15d !== 8) && (local_11f !== 0x01)) {
     debug_log(s_Error__Not_a_256_color_or_1plane_00636be0);
     FUN_005c54a0();
     FUN_00421c30();
@@ -7593,7 +7593,7 @@ export function FUN_005bec8c(unaff_EBX, unaff_ESI, param_1, param_2, param_3, pa
   }
   local_24 = s8(_MEM[local_1c + local_14 + -0x301]);
   local_20 = (local_1c + local_14 + -0x300);
-  if (local_24 === '\f') {
+  if (local_24 === 12) {
     if (0x100 < param_3 + param_2) {
       param_3 = 0x100 - param_2;
     }

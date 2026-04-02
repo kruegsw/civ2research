@@ -5363,7 +5363,7 @@ export function FUN_0058fedb(param_1, param_2) {
        /*JOINED*/
       local_31c = 0;
     }
-    if ((_MEM[DAT_006560ff + param_1 * 0x20] === '\v') && ((s16(DAT_0064f340, param_2 * 0x58) !== s16(DAT_00656102, param_1 * 0x20) || (s16(DAT_0064f342, param_2 * 0x58) !== s16(DAT_00656104, param_1 * 0x20)))) ) {
+    if ((_MEM[DAT_006560ff + param_1 * 0x20] === 0x0b) && ((s16(DAT_0064f340, param_2 * 0x58) !== s16(DAT_00656102, param_1 * 0x20) || (s16(DAT_0064f342, param_2 * 0x58) !== s16(DAT_00656104, param_1 * 0x20)))) ) {
        /*JOINED*/
         /*JOINED*/
        /*JOINED*/
