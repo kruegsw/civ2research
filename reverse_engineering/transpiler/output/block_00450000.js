@@ -1142,7 +1142,7 @@ export function FUN_00452315(param_1) {
         sVar5 = _strlen(v(DAT_00679640));
         if (0xffe < sVar4 + sVar5) {
           sVar4 = _strlen(local_110c);
-          _MEM[0x67a63f - sVar4] = 0;
+          _MEM[386519 - sVar4] = 0;
         }
         FUN_005f22e0();
         sVar4 = _strlen(local_110c);
@@ -6711,7 +6711,7 @@ function LAB_0045259e_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, l
         sVar5 = _strlen(v(DAT_00679640));
         if (0xffe < sVar4 + sVar5) {
           sVar4 = _strlen(local_110c);
-          _MEM[0x67a63f - sVar4] = 0;
+          _MEM[386519 - sVar4] = 0;
         }
         FUN_005f22e0();
         sVar4 = _strlen(local_110c);

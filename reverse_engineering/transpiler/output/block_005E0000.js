@@ -10516,7 +10516,7 @@ export function FUN_005ee6e3(in_ECX, param_1, param_2) {
   iVar1 = FUN_00414d10(v(DAT_006e4ff0),0x4000010a,param_2);
   iVar1 = MCIWndCreateA(s32(iVar1, 4));
   w32(in_ECX, 0, iVar1);
-  SendMessageA(s32(in_ECX, 0),0x477,0,0x639d44);
+  SendMessageA(s32(in_ECX, 0),0x477,0,383324);
   return;
 }
 
@@ -10567,7 +10567,7 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,param_2);
   w32(in_ECX, 0, iVar1);
-  SendMessageA(s32(in_ECX, 0),0x477,0,0x639d4c);
+  SendMessageA(s32(in_ECX, 0),0x477,0,383332);
   return;
 }
 
@@ -10613,7 +10613,7 @@ export function FUN_005ee87f(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   SendMessageA(s32(in_ECX, 0),0x499,0,param_1);
-  SendMessageA(s32(in_ECX, 0),0x477,0,0x639d54);
+  SendMessageA(s32(in_ECX, 0),0x477,0,383340);
   return;
 }
 

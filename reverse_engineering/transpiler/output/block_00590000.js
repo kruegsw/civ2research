@@ -3905,7 +3905,7 @@ export function FUN_0059c575(param_1, param_2, param_3, param_4, param_5) {
    /*JOINED*/
   _Count = 0x18;
   _Source = FUN_00493c7d(s8(_MEM[DAT_006560f7 + param_2 * 0x20]));
-  _strncpy((s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22 + s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + 0x6af2aa),_Source,_Count);
+  _strncpy((s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22 + s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + (DAT_006af2a8 + 2)),_Source,_Count);
                     /*JOINED*/
   (v(DAT_006af2c1))
   [s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22] = 0;

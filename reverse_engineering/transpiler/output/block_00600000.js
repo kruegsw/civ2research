@@ -335,7 +335,7 @@ export function _raise_006006A0(_SigNum) {
     }
     if (_SigNum === 8) {
       for (local_c = v(DAT_0063af80); local_c < v(DAT_0063af84) + v(DAT_0063af80); local_c = local_c + 1) {
-        w32(local_c * 0xc + 0x63af10, 0, 0);
+        w32(local_c * 0xc + (DAT_0063af08 + 8), 0, 0);
       }
     }
     else {
@@ -2741,7 +2741,7 @@ export function __fltout_006033E0() {
   wv((DAT_006e55d0 + 8), _I10_OUTPUT(local_10[0],local_c,local_8,0x11,0,v(DAT_006e55b0)));
   wv(DAT_006e55d0, v(DAT_006e55b2));
   wv((DAT_006e55d0 + 4), v(DAT_006e55b0));
-  wv(824692, 0x6e55b4);
+  wv(824692, 824652);
   return v(DAT_006e55d0);
 }
 

@@ -12916,7 +12916,7 @@ export function __XcptFilter_005FEB20(_ExceptionNum, _ExceptionPtr) {
     if (_MEM[piVar4 + 1] === 8) {
       for (local_14 = v(DAT_0063af80); uVar2 = v(DAT_0063af8c), local_14 < v(DAT_0063af84) + v(DAT_0063af80); local_14 = local_14 + 1) {
           /*JOINED*/
-        w32(local_14 * 0xc + 0x63af10, 0, 0);
+        w32(local_14 * 0xc + (DAT_0063af08 + 8), 0, 0);
       }
       if (s32(piVar4, 0) === -0x3fffff72) {
         wv(DAT_0063af8c, 0x83);
