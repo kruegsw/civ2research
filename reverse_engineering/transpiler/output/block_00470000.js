@@ -1584,7 +1584,7 @@ export function FUN_00472f7b() {
   FUN_0047314e(v(DAT_00655284),v(DAT_0066c602));
   FUN_0047314e(v(DAT_00655294),v(DAT_0066c60a));
   for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    FUN_0047314e(ptrAdd(DAT_006552a4, local_8 * 0x10),local_8 * 8 + 0x66c612);
+    FUN_0047314e(ptrAdd(DAT_006552a4, local_8 * 0x10),local_8 * 8 + (DAT_0066c60a + 8));
   }
   FUN_0047314e(v(DAT_00655324),v(DAT_0066c652));
   FUN_0047314e(v(DAT_00655334),v(DAT_0066c65a));
@@ -1608,7 +1608,7 @@ export function FUN_00473064() {
   FUN_00473190(v(DAT_0066c602),v(DAT_00655284));
   FUN_00473190(v(DAT_0066c60a),v(DAT_00655294));
   for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    FUN_00473190(local_8 * 8 + 0x66c612,ptrAdd(DAT_006552a4, local_8 * 0x10));
+    FUN_00473190(local_8 * 8 + (DAT_0066c60a + 8),ptrAdd(DAT_006552a4, local_8 * 0x10));
   }
   FUN_00473190(v(DAT_0066c652),v(DAT_00655324));
   FUN_00473190(v(DAT_0066c65a),v(DAT_00655334));
@@ -2067,7 +2067,7 @@ export function FUN_00473e55(param_1, param_2, param_3) {
       FUN_004af14b(v(DAT_0066c4f8),0x105);
       FUN_005f22e0(v(DAT_0066c4f8),s____mp__0062ba74);
       sVar1 = _strlen(v(DAT_0066c4f8));
-      FUN_005f22e0(sVar1 + 0x66c4f9,v(DAT_0062ba7c));
+      FUN_005f22e0(sVar1 + (DAT_0066c4e9 + 16),v(DAT_0062ba7c));
     }
   }
   else {
@@ -2075,7 +2075,7 @@ export function FUN_00473e55(param_1, param_2, param_3) {
     FUN_004af14b(v(DAT_0066c4f8),0x19f);
     FUN_005f22e0(v(DAT_0066c4f8),s____scn__0062ba60);
     sVar1 = _strlen(v(DAT_0066c4f8));
-    FUN_005f22e0(sVar1 + 0x66c4f9,s___scn_0062ba6c);
+    FUN_005f22e0(sVar1 + (DAT_0066c4e9 + 16),s___scn_0062ba6c);
   }
   return v(DAT_0066c4f8);
 }
@@ -5426,7 +5426,7 @@ export function FUN_0047e0e5(param_1, param_2, param_3) {
            /*JOINED*/
     }
     if (param_1 === 0x70) {
-      _memcpy((v(DAT_006ad914) * 0x40 + 0x6ad940),param_3,0x20);
+      _memcpy((v(DAT_006ad914) * 0x40 + (DAT_006ad934 + 12)),param_3,0x20);
     }
     wv(DAT_006ad90c, v(DAT_006ad90c) + 1);
     if (v(DAT_006ad91c) < v(DAT_006ad90c)) {
@@ -5464,7 +5464,7 @@ export function FUN_0047e2b3() {
     FUN_005b2590(s32(DAT_006ad924, v(DAT_006ad910) * 0x40));
     iVar2 = FUN_0047e030(iVar6,iVar1);
     if (iVar2 !== 0) {
-      _memcpy(v(DAT_00666110),(v(DAT_006ad910) * 0x40 + 0x6ad940),0x20);
+      _memcpy(v(DAT_00666110),(v(DAT_006ad910) * 0x40 + (DAT_006ad934 + 12)),0x20);
       wv(DAT_00666126, -1);
       wv(DAT_00666128, -1);
       FUN_004105f8(iVar6,iVar1,v(DAT_00666117));

@@ -2615,7 +2615,7 @@ export function FUN_004362e2() {
         FUN_005f22d0(local_e0,s_FEMALEFAME_006260e4);
       }
       local_8c = FUN_004a2379(v(DAT_006558e8),local_e0);
-      FUN_0040ff60(0,local_ec * 0x48 + 0x63f0e0);
+      FUN_0040ff60(0,local_ec * 0x48 + (DAT_0063f0de + 2));
       for (local_e4 = 0; local_e4 <= s16(DAT_0063f0de, local_ec * 0x48); local_e4 = local_e4 + 1) {
           /*JOINED*/
         if (local_8c === 0) {
@@ -2637,7 +2637,7 @@ export function FUN_004362e2() {
       FUN_0040fe10();
       FUN_0040bc10(0x8c);
       FUN_0040fe10();
-      FUN_0040bbe0(local_ec * 0x48 + 0x63f0f8);
+      FUN_0040bbe0(local_ec * 0x48 + 143504);
       FUN_0040fe10();
       FUN_0040fea0();
       FUN_0040bc10(0x1bb);
@@ -3610,7 +3610,7 @@ export function FUN_00437cea() {
       FUN_005baee0(s16(DAT_006af2a8, iVar1 * 0x27d8 + local_38 * 0x22),0x12, -1,-1);
                          /*JOINED*/
       FUN_0040bbb0();
-      FUN_0040bbe0(local_38 * 0x22 + iVar1 * 0x27d8 + 0x6af2aa);
+      FUN_0040bbe0(local_38 * 0x22 + iVar1 * 0x27d8 + (DAT_006af2a8 + 2));
       while (iVar9 = v(DAT_0063e7bc) - v((DAT_0063e968 + 36)), iVar8 = FUN_0040efd0(v(DAT_00679640)), (iVar9 + -2) - (iVar6 + 0x1e2) < iVar8) {
             /*JOINED*/
         sVar10 = _strlen(v(DAT_00679640));
