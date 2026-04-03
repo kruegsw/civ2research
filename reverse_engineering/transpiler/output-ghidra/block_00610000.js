@@ -1,8 +1,11 @@
-// Block 0x00610000 — Ghidra P-code transpiler
+// Block 0x00610000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 2
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+
+const DAT_fffffffe = globalThis.DAT_fffffffe;
 
 
  /* /*  WARNING: */  /* Unable */  /* to */  /* track */  /* spacebase */  /* fully */  /* for */

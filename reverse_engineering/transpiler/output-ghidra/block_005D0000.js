@@ -1,8 +1,80 @@
-// Block 0x005D0000 — Ghidra P-code transpiler
+// Block 0x005D0000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 370
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_004080c0, FUN_00408490, FUN_004085f0 } from './block_00400000.js';
+import { FUN_0040f3e0, FUN_0040f610, FUN_0040f680, FUN_0040f730, FUN_0040f810, FUN_0040f880 } from './block_00400000.js';
+import { FUN_00414bb0, FUN_00414d10, FUN_00417ef0, FUN_00418740, FUN_00418910, FUN_00418cb0 } from './block_00410000.js';
+import { FUN_00421bb0, FUN_00421c30, FUN_00421c60, FUN_00421ca0 } from './block_00420000.js';
+import { FUN_0043c630, FUN_0043c660 } from './block_00430000.js';
+import { FUN_00447210, FUN_004472f0, FUN_0044c5a0, FUN_0044cba0 } from './block_00440000.js';
+import { FUN_00450390, FUN_004503d0, FUN_00450400, FUN_00451830, FUN_00451860, FUN_00453af0 } from './block_00450000.js';
+import { FUN_0046f440 } from './block_00460000.js';
+import { GetActiveView } from './block_00470000.js';
+import { FUN_00492a80, FUN_00497c40 } from './block_00490000.js';
+import { FUN_004a6980 } from './block_004A0000.js';
+import { FUN_004bb370, FUN_004bb3b0, FUN_004bb540 } from './block_004B0000.js';
+import { FUN_004d8af0 } from './block_004D0000.js';
+import { FUN_00511320 } from './block_00510000.js';
+import { FUN_005a95b0 } from './block_005A0000.js';
+import { FUN_005bb3f0, FUN_005bb4ae, FUN_005bb6c7, FUN_005bb8c0, FUN_005bbc10, FUN_005bc019 } from './block_005B0000.js';
+import { FUN_005bc0ab, FUN_005bc173, FUN_005bcfa0, FUN_005bd298, FUN_005bd39e, FUN_005bd4cd } from './block_005B0000.js';
+import { FUN_005bd500, FUN_005bd610, FUN_005bd630, FUN_005bd65c, FUN_005bd915 } from './block_005B0000.js';
+import { FUN_005c041f, FUN_005c0593, FUN_005c0979, FUN_005c0cc5, FUN_005c0d12, FUN_005c1167 } from './block_005C0000.js';
+import { FUN_005c11b2, FUN_005c19ad, FUN_005c5540, FUN_005c5560, FUN_005c55d0, FUN_005c5640 } from './block_005C0000.js';
+import { FUN_005c5660, FUN_005c56a0, FUN_005c5ee0, FUN_005c5f00, FUN_005c62ee, FUN_005c6303 } from './block_005C0000.js';
+import { FUN_005c64da, FUN_005c656b, FUN_005c8834, FUN_005c8b00, FUN_005c8b2d, FUN_005c8b58 } from './block_005C0000.js';
+import { FUN_005c90ca, FUN_005c9307, FUN_005c9499, FUN_005c9563, FUN_005c96cc, FUN_005cb601 } from './block_005C0000.js';
+import { FUN_005cbdd0, FUN_005cbeb0, FUN_005cd535, FUN_005cd6e0, FUN_005cd775, FUN_005cda06 } from './block_005C0000.js';
+import { FUN_005cef31, FUN_005cf2ff, FUN_005cf337, FUN_005cf39b, FUN_005cf3c5, GetCheckStyle } from './block_005C0000.js';
+import { delbuf } from './block_005C0000.js';
+import { FUN_005e0b50, FUN_005e0b80, FUN_005e0ba0, FUN_005e0c90, FUN_005e10c7, FUN_005e1599 } from './block_005E0000.js';
+import { FUN_005e16e0, FUN_005e1768, FUN_005e17db, FUN_005e1805, FUN_005e1c8e, FUN_005e22ed } from './block_005E0000.js';
+import { FUN_005e2675, FUN_005e26f6, FUN_005e2799, FUN_005e28cd, FUN_005e2997, FUN_005e30a1 } from './block_005E0000.js';
+import { FUN_005e32b2, FUN_005e395a, FUN_005e518e, FUN_005e52bf, FUN_005e6188, FUN_005e7f85 } from './block_005E0000.js';
+import { FUN_005eb370, FUN_005eb3ed, FUN_005ed710, FUN_005ed920, FUN_005eda65, FUN_005edb15 } from './block_005E0000.js';
+import { FUN_005edbb2, FUN_005edc6c, FUN_005edcac, FUN_005edd00, FUN_005eddaa, FUN_005ee0b1 } from './block_005E0000.js';
+import { FUN_005eeca0, FUN_005eed1b } from './block_005E0000.js';
+import { FID_conflict:__expand, FID_conflict:_memcpy, FUN_005f2260, FUN_005f22d0, FUN_005f22e0, __ftol } from './block_005F0000.js';
+import { __getcwd, __msize, _atexit, _memset, _sprintf, _strchr } from './block_005F0000.js';
+import { _strcmp, _strlen, _strncmp, _strncpy, _time, operator_delete } from './block_005F0000.js';
+import { operator_new } from './block_005F0000.js';
+import { __strlwr, __strupr } from './block_00600000.js';
+import { FUN_0061a000, FUN_0061a759 } from './block_00610000.js';
+// Unresolved: AVIStreamInfoA, AVIStreamRead, AVIStreamReadFormat, AVIStreamTimeToSample, CommDlgExtendedError, GetOpenFileNameA, GetSaveFileNameA
+
+const DAT_00000000 = globalThis.DAT_00000000, DAT_00000004 = globalThis.DAT_00000004, DAT_00000008 = globalThis.DAT_00000008, DAT_0000000c = globalThis.DAT_0000000c, DAT_00638318 = globalThis.DAT_00638318, DAT_0063831c = globalThis.DAT_0063831c;
+const DAT_00638334 = globalThis.DAT_00638334, DAT_0063834c = globalThis.DAT_0063834c, DAT_0063836c = globalThis.DAT_0063836c, DAT_00638380 = globalThis.DAT_00638380, DAT_00638388 = globalThis.DAT_00638388, DAT_006383a4 = globalThis.DAT_006383a4;
+const DAT_006383b8 = globalThis.DAT_006383b8, DAT_00638578 = globalThis.DAT_00638578, DAT_006385a0 = globalThis.DAT_006385a0, DAT_0063863c = globalThis.DAT_0063863c, DAT_00638698 = globalThis.DAT_00638698, DAT_006386f0 = globalThis.DAT_006386f0;
+const DAT_00638704 = globalThis.DAT_00638704, DAT_00638718 = globalThis.DAT_00638718, DAT_00638a44 = globalThis.DAT_00638a44, DAT_00638b50 = globalThis.DAT_00638b50, DAT_00638bb0 = globalThis.DAT_00638bb0, DAT_00638bb4 = globalThis.DAT_00638bb4;
+const DAT_00638be0 = globalThis.DAT_00638be0, DAT_006d1ec8 = globalThis.DAT_006d1ec8, DAT_006e4818 = globalThis.DAT_006e4818, DAT_006e4850 = globalThis.DAT_006e4850, DAT_006e4f60 = globalThis.DAT_006e4f60, DAT_006e4f64 = globalThis.DAT_006e4f64;
+const DAT_fffffb8c = globalThis.DAT_fffffb8c, DAT_fffffbf4 = globalThis.DAT_fffffbf4, DAT_fffffbf8 = globalThis.DAT_fffffbf8, DAT_fffffbfc = globalThis.DAT_fffffbfc, DAT_fffffe8c = globalThis.DAT_fffffe8c, DAT_fffffec8 = globalThis.DAT_fffffec8;
+const DAT_fffffee0 = globalThis.DAT_fffffee0, DAT_fffffef4 = globalThis.DAT_fffffef4, DAT_fffffef8 = globalThis.DAT_fffffef8, DAT_ffffff24 = globalThis.DAT_ffffff24, DAT_ffffff34 = globalThis.DAT_ffffff34, DAT_ffffff3c = globalThis.DAT_ffffff3c;
+const DAT_ffffff54 = globalThis.DAT_ffffff54, DAT_ffffff5c = globalThis.DAT_ffffff5c, DAT_ffffff60 = globalThis.DAT_ffffff60, DAT_ffffff64 = globalThis.DAT_ffffff64, DAT_ffffff68 = globalThis.DAT_ffffff68, DAT_ffffff6c = globalThis.DAT_ffffff6c;
+const DAT_ffffff78 = globalThis.DAT_ffffff78, DAT_ffffff7c = globalThis.DAT_ffffff7c, DAT_ffffff8c = globalThis.DAT_ffffff8c, DAT_ffffff9c = globalThis.DAT_ffffff9c, DAT_ffffffa4 = globalThis.DAT_ffffffa4, DAT_ffffffa8 = globalThis.DAT_ffffffa8;
+const DAT_ffffffac = globalThis.DAT_ffffffac, DAT_ffffffb0 = globalThis.DAT_ffffffb0, DAT_ffffffb4 = globalThis.DAT_ffffffb4, DAT_ffffffb8 = globalThis.DAT_ffffffb8, DAT_ffffffc0 = globalThis.DAT_ffffffc0, DAT_ffffffc4 = globalThis.DAT_ffffffc4;
+const DAT_ffffffc8 = globalThis.DAT_ffffffc8, DAT_ffffffcc = globalThis.DAT_ffffffcc, DAT_ffffffd0 = globalThis.DAT_ffffffd0, DAT_ffffffd4 = globalThis.DAT_ffffffd4, DAT_ffffffd8 = globalThis.DAT_ffffffd8, DAT_ffffffdc = globalThis.DAT_ffffffdc;
+const DAT_ffffffe0 = globalThis.DAT_ffffffe0, DAT_ffffffe4 = globalThis.DAT_ffffffe4, DAT_ffffffe8 = globalThis.DAT_ffffffe8, DAT_ffffffec = globalThis.DAT_ffffffec, DAT_fffffff0 = globalThis.DAT_fffffff0, DAT_fffffff4 = globalThis.DAT_fffffff4;
+const DAT_fffffff8 = globalThis.DAT_fffffff8, PTR_FUN_0061d718 = globalThis.PTR_FUN_0061d718, s_(%5d)_0063830c = globalThis.s_(%5d)_0063830c, s_Bad_file_handle_in_MSFileSize_0063869c = globalThis.s_Bad_file_handle_in_MSFileSize_0063869c, s_CDAUDIO:_could_not_set_time_form_00638af4 = globalThis.s_CDAUDIO:_could_not_set_time_form_00638af4, s_COMBOBOX_00638350 = globalThis.s_COMBOBOX_00638350;
+const s_D:\Ss\Smeds32\Pcmem.cpp_00638968 = globalThis.s_D:\Ss\Smeds32\Pcmem.cpp_00638968, s_D:\Ss\Smeds32\Pctimer.cpp_0063841c = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_0063841c, s_D:\Ss\Smeds32\Pctimer.cpp_00638468 = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_00638468, s_D:\Ss\Smeds32\Pctimer.cpp_006384b4 = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_006384b4, s_D:\Ss\Smeds32\Pctimer.cpp_006384e4 = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_006384e4, s_D:\Ss\Smeds32\Pctimer.cpp_00638514 = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_00638514;
+const s_D:\Ss\Smeds32\Pctimer.cpp_00638544 = globalThis.s_D:\Ss\Smeds32\Pctimer.cpp_00638544, s_ERR_CANTCREATEWINDOW_00638484 = globalThis.s_ERR_CANTCREATEWINDOW_00638484, s_ERR_DYNAMICLINKFAILED_00638438 = globalThis.s_ERR_DYNAMICLINKFAILED_00638438, s_ERR_MEMALLOCFAILED_00638980 = globalThis.s_ERR_MEMALLOCFAILED_00638980, s_ERR_TIMERSETFAILED_006384d0 = globalThis.s_ERR_TIMERSETFAILED_006384d0, s_ERR_TIMERSETFAILED_00638500 = globalThis.s_ERR_TIMERSETFAILED_00638500;
+const s_ERR_TIMERSETFAILED_00638530 = globalThis.s_ERR_TIMERSETFAILED_00638530, s_ERR_TIMERSETFAILED_00638560 = globalThis.s_ERR_TIMERSETFAILED_00638560, s_Error:_%s_File:_%s_Line:_%d_00638790 = globalThis.s_Error:_%s_File:_%s_Line:_%d_00638790, s_Error:_Cannot_unregister_AppWind_0063885c = globalThis.s_Error:_Cannot_unregister_AppWind_0063885c, s_Error:_Cannot_unregister_control_00638908 = globalThis.s_Error:_Cannot_unregister_control_00638908, s_Error:_Cannot_unregister_timer_c_00638940 = globalThis.s_Error:_Cannot_unregister_timer_c_00638940;
+const s_Error:_Cannot_unregister_window_c_00638898 = globalThis.s_Error:_Cannot_unregister_window_c_00638898, s_Error:_Cannot_unregister_window_c_006388d0 = globalThis.s_Error:_Cannot_unregister_window_c_006388d0, s_Error:_GIF_Image_Block_not_found_00638c30 = globalThis.s_Error:_GIF_Image_Block_not_found_00638c30, s_Error:_GIF_contains_no_global_co_00638c04 = globalThis.s_Error:_GIF_contains_no_global_co_00638c04, s_Error:_GIF_resource_not_found_-_00638bbc = globalThis.s_Error:_GIF_resource_not_found_-_00638bbc, s_Error:_GetOpenFileName_returned_006386cc = globalThis.s_Error:_GetOpenFileName_returned_006386cc;
+const s_Error:_MrTimer_not_initialized_i_006382d4 = globalThis.s_Error:_MrTimer_not_initialized_i_006382d4, s_Error:_Resource_file_006387d0 = globalThis.s_Error:_Resource_file_006387d0, s_Error:_Resource_is_not_a_GIF_-_00638be4 = globalThis.s_Error:_Resource_is_not_a_GIF_-_00638be4, s_Error:_Sprite_size_exceeds_scale_006381cc = globalThis.s_Error:_Sprite_size_exceeds_scale_006381cc, s_Error:_Sprite_size_exceeds_scale_006381f8 = globalThis.s_Error:_Sprite_size_exceeds_scale_006381f8, s_Error:_Sprite_size_exceeds_scale_00638224 = globalThis.s_Error:_Sprite_size_exceeds_scale_00638224;
+const s_Error:_Sprite_size_exceeds_scale_00638250 = globalThis.s_Error:_Sprite_size_exceeds_scale_00638250, s_Error:_Sprite_size_exceeds_scale_0063827c = globalThis.s_Error:_Sprite_size_exceeds_scale_0063827c, s_Error:_Sprite_size_exceeds_scale_006382a8 = globalThis.s_Error:_Sprite_size_exceeds_scale_006382a8, s_Error:_Tried_to_dismantle_NULL_R_0063872c = globalThis.s_Error:_Tried_to_dismantle_NULL_R_0063872c, s_Error:_Tried_to_dispose_of_NULL_H_00638994 = globalThis.s_Error:_Tried_to_dispose_of_NULL_H_00638994, s_Error:_Tried_to_write_to_a_read_o_00638640 = globalThis.s_Error:_Tried_to_write_to_a_read_o_00638640;
+const s_Error:_Tried_to_write_to_a_read_o_0063866c = globalThis.s_Error:_Tried_to_write_to_a_read_o_0063866c, s_FATAL_ERROR_00638778 = globalThis.s_FATAL_ERROR_00638778, s_Failed_to_open_CDAUDIO_device_00638ad4 = globalThis.s_Failed_to_open_CDAUDIO_device_00638ad4, s_Failed_to_play_requested_CD_Trac_00638a84 = globalThis.s_Failed_to_play_requested_CD_Trac_00638a84, s_Failed_to_play_requested_CD_Trac_00638aa8 = globalThis.s_Failed_to_play_requested_CD_Trac_00638aa8, s_GetTimerID_006383ec = globalThis.s_GetTimerID_006383ec;
+const s_GetTimerIndex_006383f8 = globalThis.s_GetTimerIndex_006383f8, s_LISTBOX_0063838c = globalThis.s_LISTBOX_0063838c, s_MSAppWindow_00638850 = globalThis.s_MSAppWindow_00638850, s_MSCONTROLCLASS_00638768 = globalThis.s_MSCONTROLCLASS_00638768, s_MSComboBoxClass_0063835c = globalThis.s_MSComboBoxClass_0063835c, s_MSComboBoxClass_00638370 = globalThis.s_MSComboBoxClass_00638370;
+const s_MSControlClass_00638708 = globalThis.s_MSControlClass_00638708, s_MSControlClass_0063871c = globalThis.s_MSControlClass_0063871c, s_MSControlClass_00638830 = globalThis.s_MSControlClass_00638830, s_MSControlClass_006388f8 = globalThis.s_MSControlClass_006388f8, s_MSEditBoxClass_00638324 = globalThis.s_MSEditBoxClass_00638324, s_MSEditBoxClass_00638338 = globalThis.s_MSEditBoxClass_00638338;
+const s_MSListBoxClass_00638394 = globalThis.s_MSListBoxClass_00638394, s_MSListBoxClass_006383a8 = globalThis.s_MSListBoxClass_006383a8, s_MSMMWindow_006389e4 = globalThis.s_MSMMWindow_006389e4, s_MSMMWindow_006389f0 = globalThis.s_MSMMWindow_006389f0, s_MSMovieClass_00638820 = globalThis.s_MSMovieClass_00638820, s_MSMovieClass_006388c0 = globalThis.s_MSMovieClass_006388c0;
+const s_MSMrTimerClass_00638458 = globalThis.s_MSMrTimerClass_00638458, s_MSMrTimerClass_006384a4 = globalThis.s_MSMrTimerClass_006384a4, s_MSMrTimerClass_00638840 = globalThis.s_MSMrTimerClass_00638840, s_MSMrTimerClass_00638930 = globalThis.s_MSMrTimerClass_00638930, s_MSWindowClass_00638810 = globalThis.s_MSWindowClass_00638810, s_MSWindowClass_00638888 = globalThis.s_MSWindowClass_00638888;
+const s_Midi_Device_failed_to_open_00638a08 = globalThis.s_Midi_Device_failed_to_open_00638a08, s_Midi_Play_error_00638a74 = globalThis.s_Midi_Play_error_00638a74, s_MrTimer_00638450 = globalThis.s_MrTimer_00638450, s_MrTimer_0063849c = globalThis.s_MrTimer_0063849c, s_Output_port_is_not_MIDI_Mapper_00638a24 = globalThis.s_Output_port_is_not_MIDI_Mapper_00638a24, s_RLLDecode_could_not_allocate_dec_00638c78 = globalThis.s_RLLDecode_could_not_allocate_dec_00638c78;
+const s_RLLDecode_could_not_allocate_dec_00638cac = globalThis.s_RLLDecode_could_not_allocate_dec_00638cac, s_RLLDecode_could_not_allocate_dec_00638ce0 = globalThis.s_RLLDecode_could_not_allocate_dec_00638ce0, s_RLLDecode_could_not_allocate_dec_00638d14 = globalThis.s_RLLDecode_could_not_allocate_dec_00638d14, s_RLLEncode_could_not_allocate_com_00638d48 = globalThis.s_RLLEncode_could_not_allocate_com_00638d48, s_ResetTimerNotified_00638408 = globalThis.s_ResetTimerNotified_00638408, s_SMEDS>_Terminated_Normally._006387f4 = globalThis.s_SMEDS>_Terminated_Normally._006387f4;
+const s_SMEDS_Application_Error_006387b4 = globalThis.s_SMEDS_Application_Error_006387b4, s_Select_a_File_006386bc = globalThis.s_Select_a_File_006386bc, s_SetTimerID_006383e0 = globalThis.s_SetTimerID_006383e0, s_Sound_Error_006385d8 = globalThis.s_Sound_Error_006385d8, s_Sound_Error_00638608 = globalThis.s_Sound_Error_00638608, s_The_MIDI_Mapper_is_not_available_00638a48 = globalThis.s_The_MIDI_Mapper_is_not_available_00638a48;
+const s_This_Sound_format_is_not_support_006385e4 = globalThis.s_This_Sound_format_is_not_support_006385e4, s_TimerCallBack_006383d0 = globalThis.s_TimerCallBack_006383d0, s_Undefined_Sound_Error_00638614 = globalThis.s_Undefined_Sound_Error_00638614, s_WARNING_00638784 = globalThis.s_WARNING_00638784, s_Warning:_Skipping_local_color_ta_00638c54 = globalThis.s_Warning:_Skipping_local_color_ta_00638c54, s_Wave_Out_Error_0063862c = globalThis.s_Wave_Out_Error_0063862c;
+const s_cdaudio_00638acc = globalThis.s_cdaudio_00638acc, s_cdaudio_00638b18 = globalThis.s_cdaudio_00638b18, s_cdaudio_00638b20 = globalThis.s_cdaudio_00638b20, s_cdaudio_00638b28 = globalThis.s_cdaudio_00638b28, s_cdaudio_00638b30 = globalThis.s_cdaudio_00638b30, s_cdaudio_00638b38 = globalThis.s_cdaudio_00638b38;
+const s_not_found._006387e8 = globalThis.s_not_found._006387e8, s_sequencer_006389fc = globalThis.s_sequencer_006389fc, s_timerdll.dll_006383c0 = globalThis.s_timerdll.dll_006383c0;
 
 
  export function FUN_005d056c (in_ECX, param_1, param_2, param_3, param_4, param_5)

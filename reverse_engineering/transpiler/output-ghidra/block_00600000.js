@@ -1,8 +1,25 @@
-// Block 0x00600000 — Ghidra P-code transpiler
+// Block 0x00600000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 103
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+import { FID_conflict:_memcpy, FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __CrtDbgReport, ___crtLCMapStringA } from './block_005F0000.js';
+import { __amsg_exit, __calloc_dbg, __close, __dosmaperr, __exit, __flsbuf } from './block_005F0000.js';
+import { __flush, __free_dbg, __freebuf, __ftbuf, __isctype, __lseek } from './block_005F0000.js';
+import { __malloc_dbg, __output, __read, __realloc_dbg, __setdefaultprecision, __stbuf } from './block_005F0000.js';
+import { __write, _atexit, _atol, _fclose, _memset, _strchr } from './block_005F0000.js';
+import { _strcmp, _strlen, _strncpy, terminate } from './block_005F0000.js';
+
+const DAT_00000000 = globalThis.DAT_00000000, DAT_00000004 = globalThis.DAT_00000004, DAT_00000006 = globalThis.DAT_00000006, DAT_00000008 = globalThis.DAT_00000008, DAT_0000000c = globalThis.DAT_0000000c, DAT_00000010 = globalThis.DAT_00000010;
+const DAT_00000014 = globalThis.DAT_00000014, DAT_00000018 = globalThis.DAT_00000018, DAT_0000001c = globalThis.DAT_0000001c, DAT_0061e2fc = globalThis.DAT_0061e2fc, DAT_0063af08 = globalThis.DAT_0063af08, DAT_0063afa1 = globalThis.DAT_0063afa1;
+const DAT_0063b1b8 = globalThis.DAT_0063b1b8, DAT_0063b24c = globalThis.DAT_0063b24c, DAT_0063b250 = globalThis.DAT_0063b250, DAT_0063b254 = globalThis.DAT_0063b254, DAT_0063b258 = globalThis.DAT_0063b258, DAT_0063b280 = globalThis.DAT_0063b280;
+const DAT_0063b298 = globalThis.DAT_0063b298, DAT_0063b36c = globalThis.DAT_0063b36c, DAT_0063b370 = globalThis.DAT_0063b370, DAT_0063b380 = globalThis.DAT_0063b380, DAT_0063b3a4 = globalThis.DAT_0063b3a4, DAT_0063b3a8 = globalThis.DAT_0063b3a8;
+const DAT_0063b4e0 = globalThis.DAT_0063b4e0, DAT_006e55b0 = globalThis.DAT_006e55b0, DAT_006e55d0 = globalThis.DAT_006e55d0, DAT_006e55e8 = globalThis.DAT_006e55e8, DAT_006e55ec = globalThis.DAT_006e55ec, DAT_006e5640 = globalThis.DAT_006e5640;
+const DAT_006e69f0 = globalThis.DAT_006e69f0, DAT_ffffeff8 = globalThis.DAT_ffffeff8, DAT_fffffe4c = globalThis.DAT_fffffe4c, DAT_fffffeec = globalThis.DAT_fffffeec, DAT_ffffff9c = globalThis.DAT_ffffff9c, DAT_ffffffa8 = globalThis.DAT_ffffffa8;
+const DAT_ffffffc4 = globalThis.DAT_ffffffc4, DAT_ffffffcc = globalThis.DAT_ffffffcc, DAT_ffffffd4 = globalThis.DAT_ffffffd4, DAT_ffffffd8 = globalThis.DAT_ffffffd8, DAT_ffffffdc = globalThis.DAT_ffffffdc, DAT_ffffffe0 = globalThis.DAT_ffffffe0;
+const DAT_ffffffe4 = globalThis.DAT_ffffffe4, DAT_ffffffe8 = globalThis.DAT_ffffffe8, DAT_ffffffec = globalThis.DAT_ffffffec, DAT_fffffff0 = globalThis.DAT_fffffff0, DAT_fffffff4 = globalThis.DAT_fffffff4, DAT_fffffff8 = globalThis.DAT_fffffff8;
+const PTR_s_R6002_-_floating_point_not_loade_0063b1bc = globalThis.PTR_s_R6002_-_floating_point_not_loade_0063b1bc;
 
 
  /* /*  Library */  /* Function */  /* - */  /* Single */

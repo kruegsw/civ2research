@@ -1,8 +1,108 @@
-// Block 0x00570000 — Ghidra P-code transpiler
+// Block 0x00570000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 122
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_00408010, FUN_004083f0, FUN_00408460 } from './block_00400000.js';
+import { FUN_00408490, FUN_004085f0, FUN_004086c0, FUN_004087c0, FUN_0040bbb0, FUN_0040bbe0 } from './block_00400000.js';
+import { FUN_0040bc10, FUN_0040bc80, FUN_0040ef50, FUN_0040f010, FUN_0040f380, FUN_0040f3e0 } from './block_00400000.js';
+import { FUN_0040f570, FUN_0040f680, FUN_0040f7d0, FUN_0040f840, FUN_0040f880, FUN_0040fb00 } from './block_00400000.js';
+import { FUN_0040fbb0, FUN_0040fc50, FUN_0040fcf0, FUN_0040fd40, FUN_0040fd80, FUN_0040fdb0 } from './block_00400000.js';
+import { FUN_0040fe10, FUN_0040ff30, FUN_0040ff60 } from './block_00400000.js';
+import { FUN_00410030, FUN_00410070, FUN_004105f8, FUN_00414be0, FUN_00414c20, FUN_00414c60 } from './block_00410000.js';
+import { FUN_00414ca0, FUN_00414d10, FUN_00414dd0, FUN_00415133, FUN_00417f70, FUN_00419100 } from './block_00410000.js';
+import { FUN_00421bb0, FUN_00421da0, FUN_00421ea0, FUN_004271e8, FUN_00428b0c, FUN_00428cb0 } from './block_00420000.js';
+import { FUN_0043c9d0, FUN_0043cc00, FUN_0043cf76, FUN_0043d20a, FUN_0043d289 } from './block_00430000.js';
+import { FUN_004413d1, FUN_00441b11, FUN_00442541, FUN_00444270, FUN_004442e0 } from './block_00440000.js';
+import { FUN_00453c40, FUN_00453e18, FUN_00453e51, FUN_00456f20, FUN_0045ac71 } from './block_00450000.js';
+import { FUN_00467750, FUN_00467825, FUN_00467933, FUN_0046b14d, FUN_0046e020, FUN_0046e287 } from './block_00460000.js';
+import { FUN_0046f460, FUN_0046fbf3 } from './block_00460000.js';
+import { FUN_004731d2, FUN_0047a6b0, FUN_0047c3e0, FUN_0047cea6, FUN_0047cf22, FUN_0047cf9e } from './block_00470000.js';
+import { FUN_0047df20, FUN_0047df50, FUN_0047dfb0, FUN_0047dff0, FUN_0047e94e } from './block_00470000.js';
+import { FUN_00484d52 } from './block_00480000.js';
+import { FUN_00492c15, FUN_00493c7d, FUN_00497d00, FUN_00497ea0, FUN_0049805e, FUN_004980ec } from './block_00490000.js';
+import { FUN_00498159 } from './block_00490000.js';
+import { FUN_004a6980, FUN_004a7577, FUN_004a75a6, FUN_004a762d, FUN_004a7ce9, FUN_004aa378 } from './block_004A0000.js';
+import { FUN_004abfe5 } from './block_004A0000.js';
+import { FUN_004b0b53, FUN_004bb540, FUN_004bd9f0, FUN_004bdb2c, FUN_004be6ba, FUN_004bf05b } from './block_004B0000.js';
+import { FUN_004bfe5a } from './block_004B0000.js';
+import { FUN_004c03ae, FUN_004c0cf7, FUN_004c4240, FUN_004ca39e, FUN_004cc870, FUN_004ccb6a } from './block_004C0000.js';
+import { FUN_004cff70 } from './block_004C0000.js';
+import { FUN_004eb80a, FUN_004ec312 } from './block_004E0000.js';
+import { FUN_004fbd9d, FUN_004fc20d, FUN_004fc2bb } from './block_004F0000.js';
+import { FUN_00509590, FUN_0050dada, FUN_0050db36 } from './block_00500000.js';
+import { FUN_00511880 } from './block_00510000.js';
+import { FUN_00552112, FUN_00552ed2, FUN_00553379, FUN_0055339f, FUN_0055bef9, ~COleCntrFrameWnd } from './block_00550000.js';
+import { FUN_00569363, FUN_0056c5fc } from './block_00560000.js';
+import { FUN_0059c575, FUN_0059d3c9, FUN_0059db08, FUN_0059df8a, FUN_0059ec88, FUN_0059edf0 } from './block_00590000.js';
+import { FUN_005a6c23, FUN_005a6c45, FUN_005a9964, FUN_005a99fc, FUN_005a9abf, FUN_005adfa0 } from './block_005A0000.js';
+import { FUN_005ae052, FUN_005ae1b0, FUN_005ae31d } from './block_005A0000.js';
+import { FUN_005b29aa, FUN_005b29d7, FUN_005b2c3d, FUN_005b2c82, FUN_005b2d39, FUN_005b2e69 } from './block_005B0000.js';
+import { FUN_005b3d06, FUN_005b4391, FUN_005b47fa, FUN_005b490e, FUN_005b50ad, FUN_005b53b6 } from './block_005B0000.js';
+import { FUN_005b6042, FUN_005b8931, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8a81 } from './block_005B0000.js';
+import { FUN_005b8b1a, FUN_005b8b65, FUN_005b8ca6, FUN_005b8da4, FUN_005b9179, FUN_005b94d5 } from './block_005B0000.js';
+import { FUN_005b976d, FUN_005b99e8, FUN_005b9c49, FUN_005b9ec6, FUN_005b9f1c, FUN_005baeb0 } from './block_005B0000.js';
+import { FUN_005baec8, FUN_005baee0, FUN_005bb4ae, FUN_005bb574, FUN_005bcdfc, FUN_005bd630 } from './block_005B0000.js';
+import { FUN_005bd65c, FUN_005bf071 } from './block_005B0000.js';
+import { CString, FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c041f, FUN_005c044a } from './block_005C0000.js';
+import { FUN_005c0bf2, FUN_005c0c5d, FUN_005c61b0, FUN_005c64da, FUN_005c656b, FUN_005cd775 } from './block_005C0000.js';
+import { FUN_005cde4d, FUN_005cdf50, FUN_005cebb4, FUN_005cec44, FUN_005cedad, FUN_005cef31 } from './block_005C0000.js';
+import { FUN_005cef66, FUN_005cf23f, FUN_005cf467, InvalidateObjectCache } from './block_005C0000.js';
+import { FUN_005dcc10, ~_Timevec } from './block_005D0000.js';
+import { FUN_005e0f2a, FUN_005e10fb, FUN_005e1118, FUN_005e11be, FUN_005e1226, FUN_005e128c } from './block_005E0000.js';
+import { FUN_005e14c8 } from './block_005E0000.js';
+import { FID_conflict:_remove, FUN_005f22d0, FUN_005f22e0, __chdir, __getcwd, _isdigit } from './block_005F0000.js';
+import { _rand, _sprintf, _strlen, _strncmp, _strrchr, _strstr } from './block_005F0000.js';
+import { `eh_vector_constructor_iterator', `eh_vector_destructor_iterator', operator_new } from './block_005F0000.js';
+import { __strupr } from './block_00600000.js';
+// Unresolved: XD_FlushSendBuffer
+
+const DAT_00627684 = globalThis.DAT_00627684, DAT_0062768e = globalThis.DAT_0062768e, DAT_0062768f = globalThis.DAT_0062768f, DAT_00627cc9 = globalThis.DAT_00627cc9, DAT_00628350 = globalThis.DAT_00628350, DAT_00628360 = globalThis.DAT_00628360;
+const DAT_00628370 = globalThis.DAT_00628370, DAT_006283a0 = globalThis.DAT_006283a0, DAT_006341f0 = globalThis.DAT_006341f0, DAT_006341f4 = globalThis.DAT_006341f4, DAT_0063427c = globalThis.DAT_0063427c, DAT_00634280 = globalThis.DAT_00634280;
+const DAT_00634310 = globalThis.DAT_00634310, DAT_00634440 = globalThis.DAT_00634440, DAT_00634444 = globalThis.DAT_00634444, DAT_0063f858 = globalThis.DAT_0063f858, DAT_0063fc18 = globalThis.DAT_0063fc18, DAT_0063fc58 = globalThis.DAT_0063fc58;
+const DAT_0063fd18 = globalThis.DAT_0063fd18, DAT_0063fe50 = globalThis.DAT_0063fe50, DAT_006409d8 = globalThis.DAT_006409d8, DAT_00641808 = globalThis.DAT_00641808, DAT_00641848 = globalThis.DAT_00641848, DAT_00642710 = globalThis.DAT_00642710;
+const DAT_0064292c = globalThis.DAT_0064292c, DAT_00642b48 = globalThis.DAT_00642b48, DAT_00642c48 = globalThis.DAT_00642c48, DAT_00643b38 = globalThis.DAT_00643b38, DAT_00643b74 = globalThis.DAT_00643b74, DAT_00643bb0 = globalThis.DAT_00643bb0;
+const DAT_00643bec = globalThis.DAT_00643bec, DAT_006442f8 = globalThis.DAT_006442f8, DAT_00644334 = globalThis.DAT_00644334, DAT_006446b8 = globalThis.DAT_006446b8, DAT_006447b0 = globalThis.DAT_006447b0, DAT_00644e48 = globalThis.DAT_00644e48;
+const DAT_00645160 = globalThis.DAT_00645160, DAT_00645a84 = globalThis.DAT_00645a84, DAT_00646158 = globalThis.DAT_00646158, DAT_006461d8 = globalThis.DAT_006461d8, DAT_006465d8 = globalThis.DAT_006465d8, DAT_00646650 = globalThis.DAT_00646650;
+const DAT_00646878 = globalThis.DAT_00646878, DAT_00646cb8 = globalThis.DAT_00646cb8, DAT_00647168 = globalThis.DAT_00647168, DAT_00647388 = globalThis.DAT_00647388, DAT_00647748 = globalThis.DAT_00647748, DAT_00647c40 = globalThis.DAT_00647c40;
+const DAT_00647fa0 = globalThis.DAT_00647fa0, DAT_00647fdc = globalThis.DAT_00647fdc, DAT_00648018 = globalThis.DAT_00648018, DAT_006482f8 = globalThis.DAT_006482f8, DAT_00648334 = globalThis.DAT_00648334, DAT_0064b1b8 = globalThis.DAT_0064b1b8;
+const DAT_0064b1bc = globalThis.DAT_0064b1bc, DAT_0064b1bd = globalThis.DAT_0064b1bd, DAT_0064b1c1 = globalThis.DAT_0064b1c1, DAT_0064b1c4 = globalThis.DAT_0064b1c4, DAT_0064b1c5 = globalThis.DAT_0064b1c5, DAT_0064b1c8 = globalThis.DAT_0064b1c8;
+const DAT_0064b1ca = globalThis.DAT_0064b1ca, DAT_0064bb08 = globalThis.DAT_0064bb08, DAT_0064c488 = globalThis.DAT_0064c488, DAT_0064c6a2 = globalThis.DAT_0064c6a2, DAT_0064c6a8 = globalThis.DAT_0064c6a8, DAT_0064c6ac = globalThis.DAT_0064c6ac;
+const DAT_0064c6ae = globalThis.DAT_0064c6ae, DAT_0064c6b0 = globalThis.DAT_0064c6b0, DAT_0064c6b5 = globalThis.DAT_0064c6b5, DAT_0064c6be = globalThis.DAT_0064c6be, DAT_0064c6c0 = globalThis.DAT_0064c6c0, DAT_0064c6c1 = globalThis.DAT_0064c6c1;
+const DAT_0064c6c2 = globalThis.DAT_0064c6c2, DAT_0064c6f8 = globalThis.DAT_0064c6f8, DAT_0064c706 = globalThis.DAT_0064c706, DAT_0064c708 = globalThis.DAT_0064c708, DAT_0064c70c = globalThis.DAT_0064c70c, DAT_0064c70e = globalThis.DAT_0064c70e;
+const DAT_0064c7b6 = globalThis.DAT_0064c7b6, DAT_0064c7f4 = globalThis.DAT_0064c7f4, DAT_0064c932 = globalThis.DAT_0064c932, DAT_0064ca82 = globalThis.DAT_0064ca82, DAT_0064f340 = globalThis.DAT_0064f340, DAT_0064f342 = globalThis.DAT_0064f342;
+const DAT_0064f344 = globalThis.DAT_0064f344, DAT_0064f348 = globalThis.DAT_0064f348, DAT_0064f349 = globalThis.DAT_0064f349, DAT_0064f34a = globalThis.DAT_0064f34a, DAT_0064f34b = globalThis.DAT_0064f34b, DAT_0064f34c = globalThis.DAT_0064f34c;
+const DAT_0064f35c = globalThis.DAT_0064f35c, DAT_0064f360 = globalThis.DAT_0064f360, DAT_0064f374 = globalThis.DAT_0064f374, DAT_0064f379 = globalThis.DAT_0064f379, DAT_0064f394 = globalThis.DAT_0064f394, DAT_00655020 = globalThis.DAT_00655020;
+const DAT_00655c22 = globalThis.DAT_00655c22, DAT_006560f0 = globalThis.DAT_006560f0, DAT_006560f2 = globalThis.DAT_006560f2, DAT_006560f4 = globalThis.DAT_006560f4, DAT_006560f6 = globalThis.DAT_006560f6, DAT_006560f7 = globalThis.DAT_006560f7;
+const DAT_006560f8 = globalThis.DAT_006560f8, DAT_006560fc = globalThis.DAT_006560fc, DAT_006560ff = globalThis.DAT_006560ff, DAT_00656100 = globalThis.DAT_00656100, DAT_00656102 = globalThis.DAT_00656102, DAT_00656104 = globalThis.DAT_00656104;
+const DAT_00656108 = globalThis.DAT_00656108, DAT_0065610a = globalThis.DAT_0065610a, DAT_0066c7a8 = globalThis.DAT_0066c7a8, DAT_0066c8cc = globalThis.DAT_0066c8cc, DAT_0066c8d0 = globalThis.DAT_0066c8d0, DAT_0066ca84 = globalThis.DAT_0066ca84;
+const DAT_0066ca8c = globalThis.DAT_0066ca8c, DAT_0066ca90 = globalThis.DAT_0066ca90, DAT_0066ca94 = globalThis.DAT_0066ca94, DAT_0066cab0 = globalThis.DAT_0066cab0, DAT_0066cab4 = globalThis.DAT_0066cab4, DAT_0066cac0 = globalThis.DAT_0066cac0;
+const DAT_00679640 = globalThis.DAT_00679640, DAT_006a4f90 = globalThis.DAT_006a4f90, DAT_006a8c00 = globalThis.DAT_006a8c00, DAT_006ab178 = globalThis.DAT_006ab178, DAT_006ab190 = globalThis.DAT_006ab190, DAT_006ab1a0 = globalThis.DAT_006ab1a0;
+const DAT_006ac0a8 = globalThis.DAT_006ac0a8, DAT_006ac0f8 = globalThis.DAT_006ac0f8, DAT_006ac108 = globalThis.DAT_006ac108, DAT_006ac128 = globalThis.DAT_006ac128, DAT_006ac170 = globalThis.DAT_006ac170, DAT_006ac1b0 = globalThis.DAT_006ac1b0;
+const DAT_006ac1f8 = globalThis.DAT_006ac1f8, DAT_006ac208 = globalThis.DAT_006ac208, DAT_006ac2e4 = globalThis.DAT_006ac2e4, DAT_006ac46c = globalThis.DAT_006ac46c, DAT_006ac4d0 = globalThis.DAT_006ac4d0, DAT_006ac5bc = globalThis.DAT_006ac5bc;
+const DAT_006ac8a8 = globalThis.DAT_006ac8a8, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_fffff630 = globalThis.DAT_fffff630, DAT_fffff6b8 = globalThis.DAT_fffff6b8, DAT_fffff7c0 = globalThis.DAT_fffff7c0;
+const DAT_fffff8c4 = globalThis.DAT_fffff8c4, DAT_fffff980 = globalThis.DAT_fffff980, DAT_fffff990 = globalThis.DAT_fffff990, DAT_fffff9a0 = globalThis.DAT_fffff9a0, DAT_fffff9b0 = globalThis.DAT_fffff9b0, DAT_fffff9c0 = globalThis.DAT_fffff9c0;
+const DAT_fffff9d0 = globalThis.DAT_fffff9d0, DAT_fffff9e0 = globalThis.DAT_fffff9e0, DAT_fffff9f0 = globalThis.DAT_fffff9f0, DAT_fffffa00 = globalThis.DAT_fffffa00, DAT_fffffa10 = globalThis.DAT_fffffa10, DAT_fffffa20 = globalThis.DAT_fffffa20;
+const DAT_fffffa30 = globalThis.DAT_fffffa30, DAT_fffffa40 = globalThis.DAT_fffffa40, DAT_fffffa50 = globalThis.DAT_fffffa50, DAT_fffffa60 = globalThis.DAT_fffffa60, DAT_fffffa68 = globalThis.DAT_fffffa68, DAT_fffffa70 = globalThis.DAT_fffffa70;
+const DAT_fffffa78 = globalThis.DAT_fffffa78, DAT_fffffa80 = globalThis.DAT_fffffa80, DAT_fffffa88 = globalThis.DAT_fffffa88, DAT_fffffa90 = globalThis.DAT_fffffa90, DAT_fffffa98 = globalThis.DAT_fffffa98, DAT_fffffaac = globalThis.DAT_fffffaac;
+const DAT_fffffab0 = globalThis.DAT_fffffab0, DAT_fffffab4 = globalThis.DAT_fffffab4, DAT_fffffc28 = globalThis.DAT_fffffc28, DAT_fffffc3c = globalThis.DAT_fffffc3c, DAT_fffffc5c = globalThis.DAT_fffffc5c, DAT_fffffc74 = globalThis.DAT_fffffc74;
+const DAT_fffffc80 = globalThis.DAT_fffffc80, DAT_fffffca0 = globalThis.DAT_fffffca0, DAT_fffffcc8 = globalThis.DAT_fffffcc8, DAT_fffffce8 = globalThis.DAT_fffffce8, DAT_fffffec4 = globalThis.DAT_fffffec4, DAT_fffffee4 = globalThis.DAT_fffffee4;
+const DAT_fffffee8 = globalThis.DAT_fffffee8, DAT_fffffefc = globalThis.DAT_fffffefc, DAT_ffffff2c = globalThis.DAT_ffffff2c, DAT_ffffff48 = globalThis.DAT_ffffff48, DAT_ffffff50 = globalThis.DAT_ffffff50, DAT_ffffff80 = globalThis.DAT_ffffff80;
+const DAT_ffffff94 = globalThis.DAT_ffffff94, DAT_ffffffa0 = globalThis.DAT_ffffffa0, DAT_ffffffa4 = globalThis.DAT_ffffffa4, DAT_ffffffb0 = globalThis.DAT_ffffffb0, DAT_ffffffb4 = globalThis.DAT_ffffffb4, DAT_ffffffb8 = globalThis.DAT_ffffffb8;
+const DAT_ffffffc0 = globalThis.DAT_ffffffc0, DAT_ffffffc4 = globalThis.DAT_ffffffc4, DAT_ffffffd0 = globalThis.DAT_ffffffd0, DAT_ffffffd4 = globalThis.DAT_ffffffd4, DAT_ffffffd8 = globalThis.DAT_ffffffd8, DAT_ffffffdc = globalThis.DAT_ffffffdc;
+const DAT_ffffffe0 = globalThis.DAT_ffffffe0, DAT_ffffffe4 = globalThis.DAT_ffffffe4, DAT_ffffffe8 = globalThis.DAT_ffffffe8, DAT_ffffffec = globalThis.DAT_ffffffec, DAT_fffffff0 = globalThis.DAT_fffffff0, DAT_fffffff4 = globalThis.DAT_fffffff4;
+const DAT_fffffff8 = globalThis.DAT_fffffff8, PTR_FUN_0061d6fc = globalThis.PTR_FUN_0061d6fc, s_%s*.BMP;%s*.GIF_0063423c = globalThis.s_%s*.BMP;%s*.GIF_0063423c, s_%s_"%s"_0063425c = globalThis.s_%s_"%s"_0063425c, s_%s_%s%c%s*.BMP;%s*.GIF%c%c_00634220 = globalThis.s_%s_%s%c%s*.BMP;%s*.GIF%c%c_00634220, s_%s_%s_0063424c = globalThis.s_%s_%s_0063424c;
+const s_ABANDONWONDER_006343ac = globalThis.s_ABANDONWONDER_006343ac, s_ALLOWAGGRESSOR_00634364 = globalThis.s_ALLOWAGGRESSOR_00634364, s_ALLOWHAWKS_00634374 = globalThis.s_ALLOWHAWKS_00634374, s_ALLOWUN_0063435c = globalThis.s_ALLOWUN_0063435c, s_ANNOYALLIED_00634318 = globalThis.s_ANNOYALLIED_00634318, s_ANNOYCEASE_0063433c = globalThis.s_ANNOYCEASE_0063433c;
+const s_ANNOYPEACE_00634324 = globalThis.s_ANNOYPEACE_00634324, s_ANNOYVASSAL_00634330 = globalThis.s_ANNOYVASSAL_00634330, s_ANNOY_00634348 = globalThis.s_ANNOY_00634348, s_BMP;GIF_00634254 = globalThis.s_BMP;GIF_00634254, s_CANESCAPE_00634398 = globalThis.s_CANESCAPE_00634398, s_CAPTUREWONDER_006343c8 = globalThis.s_CAPTUREWONDER_006343c8;
+const s_CITIES_00634218 = globalThis.s_CITIES_00634218, s_CITYCAPTURE2_0063440c = globalThis.s_CITYCAPTURE2_0063440c, s_CITYCAPTURE_006343e4 = globalThis.s_CITYCAPTURE_006343e4, s_CITYLOSEALLY_006343fc = globalThis.s_CITYLOSEALLY_006343fc, s_CITYWINALLY_006343f0 = globalThis.s_CITYWINALLY_006343f0, s_DEBUG_006359dc = globalThis.s_DEBUG_006359dc;
+const s_ESCAPE_006343a4 = globalThis.s_ESCAPE_006343a4, s_EVENTERRAIN_00634270 = globalThis.s_EVENTERRAIN_00634270, s_ICONS.BMP_00634160 = globalThis.s_ICONS.BMP_00634160, s_ICONS.BMP_00634184 = globalThis.s_ICONS.BMP_00634184, s_ICONS.BMP_00634190 = globalThis.s_ICONS.BMP_00634190, s_ICONS.BMP_0063419c = globalThis.s_ICONS.BMP_0063419c;
+const s_ICONS.BMP_006341a8 = globalThis.s_ICONS.BMP_006341a8, s_ICONS.BMP_006341cc = globalThis.s_ICONS.BMP_006341cc, s_ICONS.BMP_006341d8 = globalThis.s_ICONS.BMP_006341d8, s_ICONS.BMP_006341e4 = globalThis.s_ICONS.BMP_006341e4, s_ICONS.GIF_0063416c = globalThis.s_ICONS.GIF_0063416c, s_ICONS.GIF_00634178 = globalThis.s_ICONS.GIF_00634178;
+const s_ICONS.GIF_006341b4 = globalThis.s_ICONS.GIF_006341b4, s_ICONS.GIF_006341c0 = globalThis.s_ICONS.GIF_006341c0, s_ICONS_00634210 = globalThis.s_ICONS_00634210, s_LOSTWONDER_006343d8 = globalThis.s_LOSTWONDER_006343d8, s_ODDTERRAIN_00634264 = globalThis.s_ODDTERRAIN_00634264, s_OVERRULE_00634350 = globalThis.s_OVERRULE_00634350;
+const s_PARTISANS_0063441c = globalThis.s_PARTISANS_0063441c, s_PROMOTED_00634428 = globalThis.s_PROMOTED_00634428, s_RUSURE_006341f8 = globalThis.s_RUSURE_006341f8, s_SCHISM_00634390 = globalThis.s_SCHISM_00634390, s_STILLWONDER_006343bc = globalThis.s_STILLWONDER_006343bc, s_TAKECIV_00634380 = globalThis.s_TAKECIV_00634380;
+const s_TERRAIN1.BMP_006340a0 = globalThis.s_TERRAIN1.BMP_006340a0, s_TERRAIN1.BMP_006340d0 = globalThis.s_TERRAIN1.BMP_006340d0, s_TERRAIN1.BMP_006340e0 = globalThis.s_TERRAIN1.BMP_006340e0, s_TERRAIN1.BMP_006340f0 = globalThis.s_TERRAIN1.BMP_006340f0, s_TERRAIN1.GIF_006340b0 = globalThis.s_TERRAIN1.GIF_006340b0, s_TERRAIN1.GIF_006340c0 = globalThis.s_TERRAIN1.GIF_006340c0;
+const s_TERRAIN2.BMP_00634100 = globalThis.s_TERRAIN2.BMP_00634100, s_TERRAIN2.BMP_00634130 = globalThis.s_TERRAIN2.BMP_00634130, s_TERRAIN2.BMP_00634140 = globalThis.s_TERRAIN2.BMP_00634140, s_TERRAIN2.BMP_00634150 = globalThis.s_TERRAIN2.BMP_00634150, s_TERRAIN2.GIF_00634110 = globalThis.s_TERRAIN2.GIF_00634110, s_TERRAIN2.GIF_00634120 = globalThis.s_TERRAIN2.GIF_00634120;
+const s_TERRAIN_00634208 = globalThis.s_TERRAIN_00634208, s_TOOKCIV_00634388 = globalThis.s_TOOKCIV_00634388, s_UNITS_00634200 = globalThis.s_UNITS_00634200, s_USEWEAPONS_00634434 = globalThis.s_USEWEAPONS_00634434;
 
 
  export function FUN_0057075c ()

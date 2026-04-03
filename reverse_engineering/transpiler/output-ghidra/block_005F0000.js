@@ -1,8 +1,36 @@
-// Block 0x005F0000 — Ghidra P-code transpiler
+// Block 0x005F0000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 346
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+import { FUN_0055add0 } from './block_00550000.js';
+import { FUN_005e0cc0, FUN_005e6297, FUN_005e635f, FUN_005e8e06, FUN_005e8f4b, FUN_005ef4e3 } from './block_005E0000.js';
+import { FUN_005ef65a } from './block_005E0000.js';
+import { FID_conflict:__atodbl, _ValidateExecute, _ValidateRead, _ValidateWrite, __NMSG_WRITE, ___crtGetStringTypeA } from './block_00600000.js';
+import { ___crtMessageBoxA, ___loctotime_t, __aulldiv, __aullrem, __commit, __controlfp } from './block_00600000.js';
+import { __fcloseall, __fltout, __fptostr, __free_osfhnd, __get_osfhandle, __isatty } from './block_00600000.js';
+import { __itoa, __snprintf, __sopen, __vsnprintf, _abort, _fprintf } from './block_00600000.js';
+import { _raise, _setvbuf, _wcslen, _wctomb } from './block_00600000.js';
+// Unresolved: RtlUnwind
+
+const DAT_00000000 = globalThis.DAT_00000000, DAT_00000004 = globalThis.DAT_00000004, DAT_00000006 = globalThis.DAT_00000006, DAT_00000008 = globalThis.DAT_00000008, DAT_0000000c = globalThis.DAT_0000000c, DAT_00000010 = globalThis.DAT_00000010;
+const DAT_00000014 = globalThis.DAT_00000014, DAT_00000018 = globalThis.DAT_00000018, DAT_0000001c = globalThis.DAT_0000001c, DAT_0061d790 = globalThis.DAT_0061d790, DAT_0061d7a0 = globalThis.DAT_0061d7a0, DAT_0061d7b0 = globalThis.DAT_0061d7b0;
+const DAT_0061dc40 = globalThis.DAT_0061dc40, DAT_0061e2f0 = globalThis.DAT_0061e2f0, DAT_0061e438 = globalThis.DAT_0061e438, DAT_0061e448 = globalThis.DAT_0061e448, DAT_0061e460 = globalThis.DAT_0061e460, DAT_0061e470 = globalThis.DAT_0061e470;
+const DAT_0061e480 = globalThis.DAT_0061e480, DAT_0061e498 = globalThis.DAT_0061e498, DAT_0061e724 = globalThis.DAT_0061e724, DAT_0061e748 = globalThis.DAT_0061e748, DAT_00624000 = globalThis.DAT_00624000, DAT_006245a8 = globalThis.DAT_006245a8;
+const DAT_006246ac = globalThis.DAT_006246ac, DAT_006248bc = globalThis.DAT_006248bc, DAT_006249c0 = globalThis.DAT_006249c0, DAT_00624bc8 = globalThis.DAT_00624bc8, DAT_00624ccc = globalThis.DAT_00624ccc, DAT_00624dd0 = globalThis.DAT_00624dd0;
+const DAT_0063a030 = globalThis.DAT_0063a030, DAT_0063a038 = globalThis.DAT_0063a038, DAT_0063a048 = globalThis.DAT_0063a048, DAT_0063a09a = globalThis.DAT_0063a09a, DAT_0063a2b0 = globalThis.DAT_0063a2b0, DAT_0063a2b8 = globalThis.DAT_0063a2b8;
+const DAT_0063a2bc = globalThis.DAT_0063a2bc, DAT_0063a420 = globalThis.DAT_0063a420, DAT_0063ac68 = globalThis.DAT_0063ac68, DAT_0063ac78 = globalThis.DAT_0063ac78, DAT_0063ac98 = globalThis.DAT_0063ac98, DAT_0063af08 = globalThis.DAT_0063af08;
+const DAT_0063afa0 = globalThis.DAT_0063afa0, DAT_0063afa1 = globalThis.DAT_0063afa1, DAT_0063b0b0 = globalThis.DAT_0063b0b0, DAT_0063b0c0 = globalThis.DAT_0063b0c0, DAT_0063b0c8 = globalThis.DAT_0063b0c8, DAT_0063b0cc = globalThis.DAT_0063b0cc;
+const DAT_0063b0d8 = globalThis.DAT_0063b0d8, DAT_006e54a8 = globalThis.DAT_006e54a8, DAT_006e69f0 = globalThis.DAT_006e69f0, DAT_ffffcfd8 = globalThis.DAT_ffffcfd8, DAT_ffffcfec = globalThis.DAT_ffffcfec, DAT_ffffcff5 = globalThis.DAT_ffffcff5;
+const DAT_ffffdff4 = globalThis.DAT_ffffdff4, DAT_ffffdff5 = globalThis.DAT_ffffdff5, DAT_ffffeef0 = globalThis.DAT_ffffeef0, DAT_ffffeffc = globalThis.DAT_ffffeffc, DAT_ffffeffd = globalThis.DAT_ffffeffd, DAT_fffffbe4 = globalThis.DAT_fffffbe4;
+const DAT_fffffbe8 = globalThis.DAT_fffffbe8, DAT_fffffcd8 = globalThis.DAT_fffffcd8, DAT_fffffd74 = globalThis.DAT_fffffd74, DAT_fffffd98 = globalThis.DAT_fffffd98, DAT_fffffdbc = globalThis.DAT_fffffdbc, DAT_fffffdd0 = globalThis.DAT_fffffdd0;
+const DAT_fffffdd4 = globalThis.DAT_fffffdd4, DAT_fffffde0 = globalThis.DAT_fffffde0, DAT_fffffee8 = globalThis.DAT_fffffee8, DAT_fffffef0 = globalThis.DAT_fffffef0, DAT_fffffef4 = globalThis.DAT_fffffef4, DAT_ffffff2c = globalThis.DAT_ffffff2c;
+const DAT_ffffff84 = globalThis.DAT_ffffff84, DAT_ffffffa0 = globalThis.DAT_ffffffa0, DAT_ffffffb4 = globalThis.DAT_ffffffb4, DAT_ffffffbc = globalThis.DAT_ffffffbc, DAT_ffffffc8 = globalThis.DAT_ffffffc8, DAT_ffffffcc = globalThis.DAT_ffffffcc;
+const DAT_ffffffd3 = globalThis.DAT_ffffffd3, DAT_ffffffd4 = globalThis.DAT_ffffffd4, DAT_ffffffd8 = globalThis.DAT_ffffffd8, DAT_ffffffdc = globalThis.DAT_ffffffdc, DAT_ffffffe0 = globalThis.DAT_ffffffe0, DAT_ffffffe4 = globalThis.DAT_ffffffe4;
+const DAT_ffffffe8 = globalThis.DAT_ffffffe8, DAT_ffffffec = globalThis.DAT_ffffffec, DAT_fffffff0 = globalThis.DAT_fffffff0, DAT_fffffff4 = globalThis.DAT_fffffff4, DAT_fffffff8 = globalThis.DAT_fffffff8, DAT_fffffffc = globalThis.DAT_fffffffc;
+const PTR_DAT_00639f88 = globalThis.PTR_DAT_00639f88, PTR_DAT_0063ac58 = globalThis.PTR_DAT_0063ac58, PTR_FUN_0061d720 = globalThis.PTR_FUN_0061d720, PTR_LOOP_0063a438 = globalThis.PTR_LOOP_0063a438, s_Assertion_failed:_%s,_file_%s,_l_00639fe0 = globalThis.s_Assertion_failed:_%s,_file_%s,_l_00639fe0, s_D:\Ss\Smeds32\ddcntrl.cpp_00639dcc = globalThis.s_D:\Ss\Smeds32\ddcntrl.cpp_00639dcc;
+const s_D:\Ss\Smeds32\ddcntrl.cpp_00639e08 = globalThis.s_D:\Ss\Smeds32\ddcntrl.cpp_00639e08, s_GetParentGameWin()_00639e24 = globalThis.s_GetParentGameWin()_00639e24, s_pParentWin_||_pParentControl_00639de8 = globalThis.s_pParentWin_||_pParentControl_00639de8;
 
 
  export function FUN_005f0056 (in_ECX)

@@ -1061,44 +1061,155 @@ def get_functions_by_block():
     return blocks
 
 def transpile_function(decomp, func, program):
+    """Transpile one function. Returns (js_lines, called_funcs, referenced_globals)."""
     results = decomp.decompileFunction(func, DECOMPILE_TIMEOUT, _get_monitor())
     if not results.decompileCompleted():
-        return ['// DECOMPILE_FAILED: %s' % func.getName()]
+        return (['// DECOMPILE_FAILED: %s' % func.getName()], set(), set())
     high_func = results.getHighFunction()
     markup = results.getCCodeMarkup()
     if high_func is None or markup is None:
-        return ['// NO_AST: %s' % func.getName()]
+        return (['// NO_AST: %s' % func.getName()], set(), set())
     emitter = JSEmitter(func, high_func, program)
-    return emitter.emit(markup)
+    js_lines = emitter.emit(markup)
 
-def process_block(decomp, block_addr, funcs, output_dir, program):
+    # Collect cross-references from the P-code graph
+    called_funcs = set()
+    referenced_globals = set()
+    for op in high_func.getPcodeOps():
+        opc = op.getOpcode()
+        # CALL: input 0 is the target function address
+        if opc == PcodeOp.CALL:
+            try:
+                target_addr = op.getInput(0).getAddress()
+                target_func = program.getFunctionManager().getFunctionAt(target_addr)
+                if target_func is not None:
+                    name = target_func.getName()
+                    if name.startswith('thunk_'):
+                        name = name[6:]
+                    if name.startswith('FID_conflict_'):
+                        name = name[13:]
+                    called_funcs.add(name)
+            except:
+                pass
+        # PTRSUB: references a global address
+        if opc == PcodeOp.PTRSUB:
+            try:
+                vn = op.getInput(1)
+                if vn.isConstant():
+                    offset = vn.getOffset()
+                    sym_name = get_symbol_name_at(offset, program)
+                    if sym_name.startswith('DAT_') or sym_name.startswith('PTR_') or sym_name.startswith('s_'):
+                        referenced_globals.add(sym_name)
+            except:
+                pass
+
+    return (js_lines, called_funcs, referenced_globals)
+
+def process_block(decomp, block_addr, funcs, output_dir, program, all_blocks):
+    """Process one block. all_blocks is the full {block_addr: [funcs]} map for cross-referencing."""
     filename = 'block_%08X.js' % block_addr
     filepath = os.path.join(output_dir, filename)
-    lines = []
-    lines.append('// Block 0x%08X — Ghidra P-code transpiler' % block_addr)
-    lines.append('// Source: civ2.exe (Civilization II MGE)')
-    lines.append('// Functions: %d' % len(funcs))
-    lines.append('')
-    lines.append("import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';")
-    lines.append('')
+
+    # Build set of function names defined in THIS block
+    local_fn_names = set()
+    for func in funcs:
+        name = func.getName()
+        if name.startswith('thunk_'):
+            name = name[6:]
+        if name.startswith('FID_conflict_'):
+            name = name[13:]
+        local_fn_names.add(name)
+
+    # Build registry: function name → block filename (for all blocks)
+    fn_registry = {}  # name → block_XXXXXXXX.js
+    for ba, bfuncs in all_blocks.items():
+        bfile = 'block_%08X.js' % ba
+        for f in bfuncs:
+            n = f.getName()
+            if n.startswith('thunk_'):
+                n = n[6:]
+            if n.startswith('FID_conflict_'):
+                n = n[13:]
+            fn_registry[n] = bfile
+
+    # Transpile all functions, collecting metadata
+    body_lines = []
+    all_called = set()
+    all_globals = set()
     ok = 0
     failed = 0
     for func in funcs:
         _get_monitor().checkCancelled()
         _get_monitor().setMessage('Block 0x%08X: %s' % (block_addr, func.getName()))
-        js_lines = transpile_function(decomp, func, program)
-        lines.extend(js_lines)
-        lines.append('')
+        js_lines, called, globals_ref = transpile_function(decomp, func, program)
+        body_lines.extend(js_lines)
+        body_lines.append('')
+        all_called.update(called)
+        all_globals.update(globals_ref)
         if js_lines and js_lines[0].startswith('//'):
             failed += 1
         else:
             ok += 1
+
+    # Build cross-block imports from P-code metadata (no regex!)
+    imports_by_block = {}  # block filename → [func names]
+    unresolved = []
+    for fn_name in sorted(all_called):
+        if fn_name in local_fn_names:
+            continue  # Defined in this block
+        src_block = fn_registry.get(fn_name)
+        if src_block and src_block != filename:
+            if src_block not in imports_by_block:
+                imports_by_block[src_block] = []
+            imports_by_block[src_block].append(fn_name)
+        elif src_block is None:
+            unresolved.append(fn_name)
+
+    # Assemble output with imports and global bindings
+    out = []
+    out.append('// Block 0x%08X — Ghidra P-code transpiler (wired)' % block_addr)
+    out.append('// Source: civ2.exe (Civilization II MGE)')
+    out.append('// Functions: %d' % len(funcs))
+    out.append('')
+
+    # Standard imports
+    out.append("import '../globals-init.js';")
+    out.append("import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';")
+
+    # Cross-block function imports
+    for src_block in sorted(imports_by_block.keys()):
+        fns = sorted(imports_by_block[src_block])
+        for i in range(0, len(fns), 6):
+            chunk = fns[i:i+6]
+            out.append("import { %s } from './%s';" % (', '.join(chunk), src_block))
+
+    # Unresolved (comment only)
+    if unresolved:
+        out.append('// Unresolved: %s' % ', '.join(sorted(unresolved)))
+
+    out.append('')
+
+    # DAT_ global bindings from globalThis (6 per line)
+    sorted_globals = sorted(all_globals)
+    for i in range(0, len(sorted_globals), 6):
+        chunk = sorted_globals[i:i+6]
+        out.append('const %s;' % ', '.join('%s = globalThis.%s' % (g, g) for g in chunk))
+    if sorted_globals:
+        out.append('')
+
+    # Function bodies
+    out.extend(body_lines)
+
+    # Write
     f = open(filepath, 'w')
     try:
-        f.write('\n'.join(lines))
+        f.write('\n'.join(out))
     finally:
         f.close()
-    print('  %-28s  %4d ok, %3d failed' % (filename, ok, failed))
+
+    n_imports = sum(len(v) for v in imports_by_block.values())
+    print('  %-28s  %4d ok, %3d failed, %4d imports, %4d globals' % (
+        filename, ok, failed, n_imports, len(sorted_globals)))
     return ok, failed
 
 def process_all(output_dir, program):
@@ -1112,7 +1223,7 @@ def process_all(output_dir, program):
         tok = 0
         tfail = 0
         for ba in sorted(blocks.keys()):
-            o, f = process_block(decomp, ba, blocks[ba], output_dir, program)
+            o, f = process_block(decomp, ba, blocks[ba], output_dir, program, blocks)
             tok += o
             tfail += f
         print('')
@@ -1199,7 +1310,7 @@ def mode_block(block_hex):
             os.makedirs(output_dir)
         funcs = blocks[block_addr]
         print('Processing block 0x%08X (%d functions)' % (block_addr, len(funcs)))
-        process_block(decomp, block_addr, funcs, output_dir, program)
+        process_block(decomp, block_addr, funcs, output_dir, program, blocks)
     finally:
         decomp.dispose()
 

@@ -1,8 +1,54 @@
-// Block 0x00400000 — Ghidra P-code transpiler
+// Block 0x00400000 — Ghidra P-code transpiler (wired)
 // Source: civ2.exe (Civilization II MGE)
 // Functions: 154
 
-import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.js';
+import '../globals-init.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, w16r, w32r, _MEM } from '../mem.js';
+import { FUN_00410030, FUN_00410070, FUN_00410402, FUN_00413717 } from './block_00410000.js';
+import { FUN_004271e8, FUN_00428b0c } from './block_00420000.js';
+import { FUN_00436287, FUN_0043cef9, FUN_0043cf76, FUN_0043d20a } from './block_00430000.js';
+import { FUN_0046b14d, FUN_0046e020 } from './block_00460000.js';
+import { FUN_0047e94e } from './block_00470000.js';
+import { FUN_00484d52 } from './block_00480000.js';
+import { FUN_00493c7d, FUN_00493d13 } from './block_00490000.js';
+import { FUN_004a73d9, FUN_004aef20, FUN_004aef36, FUN_004aefb7, FUN_004aeff9, FUN_004af01a } from './block_004A0000.js';
+import { FUN_004af03b, FUN_004af122, FUN_004af14b, FUN_004af1d5 } from './block_004A0000.js';
+import { FUN_004b32fe } from './block_004B0000.js';
+import { FUN_004c2788 } from './block_004C0000.js';
+import { FUN_004e4ceb, FUN_004ea1f6, FUN_004eb4ed } from './block_004E0000.js';
+import { FUN_004f00f0 } from './block_004F0000.js';
+import { FUN_005013bc, FUN_00501780, FUN_00509429, FUN_00509545, FUN_00509590 } from './block_00500000.js';
+import { FUN_00552112, FUN_00552ed2, FUN_0055339f, FUN_005534bc, FUN_0055a980, FUN_0055c066 } from './block_00550000.js';
+import { FUN_0055c69d, ~COleCntrFrameWnd } from './block_00550000.js';
+import { FUN_0056a65e } from './block_00560000.js';
+import { FUN_0059db08, FUN_0059df8a, FUN_0059dfb9, FUN_0059e18b, FUN_0059e6a9, FUN_0059e6ff } from './block_00590000.js';
+import { FUN_0059e783, FUN_0059edf0 } from './block_00590000.js';
+import { FUN_005a5f34, FUN_005a632a, FUN_005a9780, FUN_005a98e4, FUN_005a9aa3, FUN_005a9abf } from './block_005A0000.js';
+import { FUN_005a9afe, FUN_005adfa0, FUN_005ae052, FUN_005ae24d } from './block_005A0000.js';
+import { FUN_005b7fe0, FUN_005b85fe, FUN_005b8931, FUN_005b89bb, FUN_005b89e4, FUN_005b8a81 } from './block_005B0000.js';
+import { FUN_005b8b65, FUN_005b8ee1, FUN_005baeb0, FUN_005baec8, FUN_005baee0, FUN_005baf57 } from './block_005B0000.js';
+import { FUN_005bb024, FUN_005bb0af, FUN_005bb574, FUN_005bba4f, FUN_005bbbce, FUN_005bc0ab } from './block_005B0000.js';
+import { FUN_005bc40a, FUN_005bc636, FUN_005bc6bb, FUN_005bc933, FUN_005bcb85, FUN_005bce5f } from './block_005B0000.js';
+import { FUN_005bd05f, FUN_005bd630, FUN_005bd65c, FUN_005bd915, FUN_005bf5e1 } from './block_005B0000.js';
+import { FUN_005c0979, FUN_005c59c4, FUN_005c5a27, FUN_005c5b7f, FUN_005c61b0, FUN_005c64da } from './block_005C0000.js';
+import { FUN_005c656b, FUN_005c8514, FUN_005c858e, FUN_005c8b00, FUN_005c8b2d, FUN_005c944b } from './block_005C0000.js';
+import { FUN_005c9740, FUN_005cbf40, FUN_005cc0f0, FUN_005cc248, FUN_005ccf17, FUN_005cd139 } from './block_005C0000.js';
+import { FUN_005cd4c7, FUN_005cd559, InvalidateObjectCache } from './block_005C0000.js';
+import { FID_conflict:_memcpy, FUN_005f22d0, FUN_005f22e0, _atexit, _rand, `eh_vector_constructor_iterator' } from './block_005F0000.js';
+import { `eh_vector_destructor_iterator', operator_delete, operator_new } from './block_005F0000.js';
+
+const DAT_00624efc = globalThis.DAT_00624efc, DAT_00624f00 = globalThis.DAT_00624f00, DAT_00624f04 = globalThis.DAT_00624f04, DAT_00624f10 = globalThis.DAT_00624f10, DAT_00624f20 = globalThis.DAT_00624f20, DAT_00624f30 = globalThis.DAT_00624f30;
+const DAT_00627cca = globalThis.DAT_00627cca, DAT_00627ccb = globalThis.DAT_00627ccb, DAT_00627ccc = globalThis.DAT_00627ccc, DAT_00627cce = globalThis.DAT_00627cce, DAT_00627ccf = globalThis.DAT_00627ccf, DAT_00627fe0 = globalThis.DAT_00627fe0;
+const DAT_00628010 = globalThis.DAT_00628010, DAT_0062833c = globalThis.DAT_0062833c, DAT_00628344 = globalThis.DAT_00628344, DAT_00628350 = globalThis.DAT_00628350, DAT_00628351 = globalThis.DAT_00628351, DAT_00628360 = globalThis.DAT_00628360;
+const DAT_00628361 = globalThis.DAT_00628361, DAT_00628370 = globalThis.DAT_00628370, DAT_006283a0 = globalThis.DAT_006283a0, DAT_006359d4 = globalThis.DAT_006359d4, DAT_0063c818 = globalThis.DAT_0063c818, DAT_0063c870 = globalThis.DAT_0063c870;
+const DAT_0063cc48 = globalThis.DAT_0063cc48, DAT_0063fc58 = globalThis.DAT_0063fc58, DAT_00646878 = globalThis.DAT_00646878, DAT_0064b9a0 = globalThis.DAT_0064b9a0, DAT_0064c6a0 = globalThis.DAT_0064c6a0, DAT_0064c6b3 = globalThis.DAT_0064c6b3;
+const DAT_0064c6b4 = globalThis.DAT_0064c6b4, DAT_0064c6b5 = globalThis.DAT_0064c6b5, DAT_0064f340 = globalThis.DAT_0064f340, DAT_0064f342 = globalThis.DAT_0064f342, DAT_0064f344 = globalThis.DAT_0064f344, DAT_0064f348 = globalThis.DAT_0064f348;
+const DAT_0064f34c = globalThis.DAT_0064f34c, DAT_0064f360 = globalThis.DAT_0064f360, DAT_0064f38a = globalThis.DAT_0064f38a, DAT_0064f38c = globalThis.DAT_0064f38c, DAT_0064f38e = globalThis.DAT_0064f38e, DAT_0064f394 = globalThis.DAT_0064f394;
+const DAT_00655324 = globalThis.DAT_00655324, DAT_00655360 = globalThis.DAT_00655360, DAT_00666130 = globalThis.DAT_00666130, DAT_00666132 = globalThis.DAT_00666132, DAT_0066ca84 = globalThis.DAT_0066ca84, DAT_00679640 = globalThis.DAT_00679640;
+const DAT_006ab1a0 = globalThis.DAT_006ab1a0, DAT_006ad30c = globalThis.DAT_006ad30c, DAT_006ad558 = globalThis.DAT_006ad558, DAT_006d1188 = globalThis.DAT_006d1188, DAT_fffffb9c = globalThis.DAT_fffffb9c, DAT_fffffba8 = globalThis.DAT_fffffba8;
+const DAT_fffffbbc = globalThis.DAT_fffffbbc, DAT_fffffc78 = globalThis.DAT_fffffc78, DAT_ffffff60 = globalThis.DAT_ffffff60, DAT_ffffff80 = globalThis.DAT_ffffff80, DAT_ffffffdc = globalThis.DAT_ffffffdc, DAT_ffffffe0 = globalThis.DAT_ffffffe0;
+const DAT_ffffffe4 = globalThis.DAT_ffffffe4, DAT_ffffffe8 = globalThis.DAT_ffffffe8, DAT_ffffffec = globalThis.DAT_ffffffec, DAT_fffffff0 = globalThis.DAT_fffffff0, DAT_fffffff8 = globalThis.DAT_fffffff8, PTR_FUN_0061c054 = globalThis.PTR_FUN_0061c054;
+const s_FINDCITY_00624f24 = globalThis.s_FINDCITY_00624f24, s_REVOLUTION_00624f34 = globalThis.s_REVOLUTION_00624f34, s_STARTREV_00624f40 = globalThis.s_STARTREV_00624f40;
 
 
  /* /*  Library */  /* Function */  /* - */  /* Multiple */  /* Matches */  /* With */  /* Different */  /* Base */
