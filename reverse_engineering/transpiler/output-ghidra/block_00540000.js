@@ -51,7 +51,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
           return;
         }
       }
-      if ((DAT_0064b1c1[u8(DAT_006560f6[local_18 * 0x20]) * 0x14] === 1)) {
+      if ((_MEM[DAT_0064b1c1 + u8(_MEM[DAT_006560f6 + local_18 * 0x20]) * 0x14] === 1)) {
         while ((iVar4 !== 0)) {
           if ((2 < DAT_00655b02)) {
             FUN_004b0b53(0xff, 2, 0, 0, 0);
@@ -59,7 +59,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
             FUN_0047e94e(1, 0);
           }
           sVar2 = DAT_00655b16;
-          DAT_00655afe = ((local_18) & 0xFFFF);
+          wv(DAT_00655afe, ((local_18) & 0xFFFF));
           FUN_00543b80();
           if ((DAT_00655b16 !== sVar2)) {
             local_14 = (local_14 + 1);
@@ -1258,8 +1258,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       iVar1 = FUN_00414d10();
       FUN_006e7dd4(s32((iVar1 + 4), 0), lpText, lpCaption, uType);
     }
-    DAT_006a1d7c = 0;
-    DAT_006a4f88 = (DAT_006a4f88 + 0x48);
+    wv(DAT_006a1d7c, 0);
+    wv(DAT_006a4f88, (DAT_006a4f88 + 0x48));
     FUN_004e4ceb();
   }
   else {
@@ -1272,7 +1272,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     FUN_0059d3c9(local_28);
     FUN_004190d0(s_DEBUG_006359dc, s_NOTICE_00632b14);
     FUN_0059d3c9(0);
-    DAT_0062e014 = 0;
+    wv(DAT_0062e014, 0);
     FUN_00548df0();
   }
   return;
@@ -1449,8 +1449,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
  {
   FUN_004fa5d9(0xc350);
   FUN_004ce98e(DAT_0064b690, DAT_00632578);
-  DAT_006a1d7c = 0;
-  DAT_006a4f88 = (DAT_006a4f88 + 0x48);
+  wv(DAT_006a1d7c, 0);
+  wv(DAT_006a4f88, (DAT_006a4f88 + 0x48));
   return;
 }
 
@@ -1980,7 +1980,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       w32((s32((local_10 + 0x1bc), 0) + 0x1c0), 0, s32((local_10 + 0x1c0), 0));
     }
     if ((iVar1 === 0)) {
-      DAT_0064b99c = s32((local_10 + 0x1bc), 0);
+      wv(DAT_0064b99c, s32((local_10 + 0x1bc), 0));
     }
     FUN_004cef35();
     FUN_0054b635();
@@ -2638,7 +2638,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
       local_14 = (DAT_006a4f88 + 0x48);
     }
     FUN_0059d3c9(local_14);
-    DAT_00631edc = 0;
+    wv(DAT_00631edc, 0);
     local_c = FUN_00551e20(s_TRIGGERS_006331e8, local_c, 1);
     FUN_0059d3c9(0);
     if ((0 === 0));
@@ -2663,7 +2663,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
             local_10 = s32((local_10 + 0x1bc), 0)) {
         }
         if ((s32((local_10 + 0x1c0), 0) === 0)) {
-          DAT_0064b99c = s32((local_10 + 0x1bc), 0);
+          wv(DAT_0064b99c, s32((local_10 + 0x1bc), 0));
         }
         else {
           w32((s32((local_10 + 0x1c0), 0) + 0x1bc), 0, s32((local_10 + 0x1bc), 0));
@@ -3236,7 +3236,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
         local_20 = (DAT_006a4f88 + 0x48);
       }
       FUN_0059d3c9(local_20);
-      DAT_00631edc = 0;
+      wv(DAT_00631edc, 0);
       if ((s32(local_18, 0) === 0x20)) {
         local_14 = FUN_004cdd3d(s_ACTIONS_006332bc, local_14, (s32(local_18, 1) | -0x191), 1);
       }
@@ -3360,8 +3360,8 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   w32(unaff_FS_OFFSET, 0, DAT_fffffff0);
   FUN_005c64da();
   local_8 = 0;
-  DAT_006a1d7c = 1;
-  DAT_006a4f88 = in_ECX;
+  wv(DAT_006a1d7c, 1);
+  wv(DAT_006a4f88, in_ECX);
   pvVar2 = operator_new(0x310);
   local_8 = 1;
   if ((pvVar2 === 0)) {
@@ -3371,7 +3371,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
     local_464 = FUN_004fa4be(0xc350);
   }
   local_8 = (UNNAMED << 8);
-  DAT_00632578 = local_464;
+  wv(DAT_00632578, local_464);
   FUN_004fa5d9(0xc350);
   FUN_004ce98e(local_464, DAT_0064b690);
   FUN_00417ef0(0, DAT_0062e01c);
@@ -3383,7 +3383,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   w32((in_ECX + 0x2d8), 0, 0x230);
   w32((in_ECX + 0x2dc), 0, 0x17c);
   w32((in_ECX + 0x2ec), 0, 0);
-  DAT_006a1d80 = 0xc9;
+  wv(DAT_006a1d80, 0xc9);
   uVar3 = FUN_0040ef70();
   w32((in_ECX + 0x2e8), 0, uVar3);
   uVar12 = 0;
@@ -3396,7 +3396,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   uVar6 = 0xd;
   uVar4 = FUN_00428b0c(s32((DAT_00628420 + 0x73c), 0), 0xd, 0, 0, uVar9, uVar3, 0, 0, 0);
   FUN_005534bc(uVar4, uVar6, uVar7, uVar8, uVar9, uVar3, uVar10, uVar11, uVar12);
-  PTR_DAT_006359f0 = PTR_DAT_006359f0;
+  wv(PTR_DAT_006359f0, PTR_DAT_006359f0);
   w32((in_ECX + 0x2e4), 0, (extraout_EAX + 8));
   w32((in_ECX + 0x2e0), 0, 0x97);
   iVar5 = (s32((in_ECX + 0x128), 0) + 0x90);
@@ -3467,7 +3467,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   FUN_0040f880(LAB_004027c5);
   FUN_004086c0(DAT_fffffbac, (s32((in_ECX + 0x124), 0) + 0x32), (s32((in_ECX + 0x128), 0) + 0x1b), 0x1cb, 0x6e);
   iVar1 = 0xc9;
-  DAT_006a1d80 = (0xc9 + 1);
+  wv(DAT_006a1d80, (0xc9 + 1));
   if ((in_ECX === 0)) {
     local_48c = 0;
   }
@@ -3482,7 +3482,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   FUN_00551d80(0);
   FUN_004086c0(DAT_fffffbac, (s32((in_ECX + 0x124), 0) + 0x32), (s32((in_ECX + 0x128), 0) + 0xc5), 0x1cb, 0x6e);
   iVar1 = (0xc9 + 1);
-  DAT_006a1d80 = ((0xc9 + 1) + 1);
+  wv(DAT_006a1d80, ((0xc9 + 1) + 1));
   if ((in_ECX === 0)) {
     local_494 = 0;
   }
@@ -3531,7 +3531,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   FUN_0040f880(LAB_0040317a);
   FUN_0040f840();
   FUN_0040f350(0);
-  DAT_0062e014 = 0;
+  wv(DAT_0062e014, 0);
   in_ECX = EnableStackedTabs(in_ECX, 0x402ed2);
   FUN_005bb574();
   FUN_004085f0();
@@ -3542,7 +3542,7 @@ import { _MEM, s8, u8, s16, u16, s32, u32, w16, w32, w16r, w32r } from '../mem.j
   if ((DAT_00632578 !== 0)) {
     FUN_00551cd0(1);
   }
-  DAT_00632578 = 0;
+  wv(DAT_00632578, 0);
   local_8 = -1;
   FUN_0054ffa4();
   FUN_0054ffba();

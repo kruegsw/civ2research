@@ -490,7 +490,7 @@ class PcodeExprEmitter(object):
                 base = self._emit_varnode(addr_op.getInput(0))
                 index = self._emit_varnode(addr_op.getInput(1))
                 if size == 1:
-                    return '%s[%s]' % (base, index)
+                    return '_MEM[%s + %s]' % (base, index)
                 if size == 2:
                     return 's16(%s, %s)' % (base, index)
                 if size == 4:
@@ -501,7 +501,7 @@ class PcodeExprEmitter(object):
                 base = self._emit_varnode(addr_op.getInput(0))
                 offset = self._emit_varnode(addr_op.getInput(1))
                 if size == 1:
-                    return '%s[%s]' % (base, offset)
+                    return '_MEM[%s + %s]' % (base, offset)
                 if size == 2:
                     return 's16(%s, %s)' % (base, offset)
                 if size == 4:
@@ -511,7 +511,7 @@ class PcodeExprEmitter(object):
             if opc2 == PcodeOp.PTRSUB:
                 addr = self._emit_op(addr_op)
                 if size == 1:
-                    return '%s[0]' % addr
+                    return '_MEM[%s]' % addr
                 if size == 2:
                     return 's16(%s, 0)' % addr
                 if size == 4:
@@ -544,7 +544,7 @@ class PcodeExprEmitter(object):
                 base = self._emit_varnode(addr_op.getInput(0))
                 index = self._emit_varnode(addr_op.getInput(1))
                 if size == 1:
-                    return '%s[%s] = %s' % (base, index, val)
+                    return '_MEM[%s + %s] = %s' % (base, index, val)
                 if size == 2:
                     return 'w16(%s, %s, %s)' % (base, index, val)
                 if size == 4:
@@ -554,7 +554,7 @@ class PcodeExprEmitter(object):
                 base = self._emit_varnode(addr_op.getInput(0))
                 offset = self._emit_varnode(addr_op.getInput(1))
                 if size == 1:
-                    return '%s[%s] = %s' % (base, offset, val)
+                    return '_MEM[%s + %s] = %s' % (base, offset, val)
                 if size == 2:
                     return 'w16(%s, %s, %s)' % (base, offset, val)
                 if size == 4:
@@ -563,7 +563,7 @@ class PcodeExprEmitter(object):
             if opc2 == PcodeOp.PTRSUB:
                 addr = self._emit_op(addr_op)
                 if size == 1:
-                    return '%s[0] = %s' % (addr, val)
+                    return '_MEM[%s] = %s' % (addr, val)
                 if size == 2:
                     return 'w16(%s, 0, %s)' % (addr, val)
                 if size == 4:
@@ -1007,7 +1007,11 @@ class JSEmitter(object):
 
         if lhs_name and lhs_op:
             js = self.pcode.emit(lhs_op)
-            self._text('%s = %s' % (lhs_name, js))
+            # Global variables (DAT_, PTR_, s_) need wv() for writes
+            if lhs_name.startswith('DAT_') or lhs_name.startswith('PTR_') or lhs_name.startswith('s_'):
+                self._text('wv(%s, %s)' % (lhs_name, js))
+            else:
+                self._text('%s = %s' % (lhs_name, js))
             return
 
         # Fallback — emit tokens as-is with marker
