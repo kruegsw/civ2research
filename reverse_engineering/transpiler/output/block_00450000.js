@@ -3062,9 +3062,9 @@ export function FUN_00455b8e(in_ECX) {
                                /*JOINED*/
     uVar1 = s32(s32(in_ECX, 0x19e4) * 0x60 + iVar2 * 4 + 0x1b6c + in_ECX, 0);
     w32(in_ECX, 0x19ec, s32(in_ECX, 0x19ec) + -1);
-    // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(in_ECX + 0x19e4) * 0x60 + iVar2 * 4 + 0x1b6c + in_ECX) = *(undefined4 *)
+    w32(s32(in_ECX, 0x19e4) * 0x60 + iVar2 * 4 + 0x1b6c + in_ECX, 0, s32(s32(in_ECX, 0x19e4) * 0x60 + s32(in_ECX, 0x19ec) * 4 + 0x1b6c + in_ECX, 0));
          /*JOINED*/
-          // DEVIATION(cont): (*(int *)(in_ECX + 0x19e4) * 0x60 + *(int *)(in_ECX + 0x19ec) * 4 + 0x1b6c + in_ECX);
+          /*JOINED*/
   }
   return uVar1;
 }
@@ -3092,9 +3092,9 @@ export function FUN_00455c5d(in_ECX) {
                                /*JOINED*/
     uVar1 = s32(iVar2 * 4 + s32(in_ECX, 0x19e4) * 0x7c + 0x19f8 + in_ECX, 0);
     w32(in_ECX, 0x19f0, s32(in_ECX, 0x19f0) + -1);
-    // DEVIATION: C pointer write — *(undefined4 *)(iVar2 * 4 + *(int *)(in_ECX + 0x19e4) * 0x7c + 0x19f8 + in_ECX) = *(undefined4 *)
+    w32(iVar2 * 4 + s32(in_ECX, 0x19e4) * 0x7c + 0x19f8 + in_ECX, 0, s32(s32(in_ECX, 0x19e4) * 0x7c + s32(in_ECX, 0x19f0) * 4 + 0x19f8 + in_ECX, 0));
          /*JOINED*/
-          // DEVIATION(cont): (*(int *)(in_ECX + 0x19e4) * 0x7c + *(int *)(in_ECX + 0x19f0) * 4 + 0x19f8 + in_ECX);
+          /*JOINED*/
   }
   return uVar1;
 }

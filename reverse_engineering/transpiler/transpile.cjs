@@ -1428,6 +1428,10 @@ function processFunction(headerLines, bodyLines, ctx) {
           // Stop when we hit ; or { or depth returns to 0 after closing
           if (/;\s*$/.test(nextT) || /\{\s*$/.test(nextT)) break;
           if (runningDepth <= 0 && !/[+\-*/,&|=]\s*$/.test(nextT)) {
+            // Check if the NEXT line starts with ( or & — expression continuation
+            if (j < bodyLines.length && /^\s*[(&]/.test(bodyLines[j])) {
+              continue; // keep joining
+            }
             // But if the next line is just ";", grab it too
             if (j < bodyLines.length && bodyLines[j].trim() === ';') {
               const semiIndent = bodyLines[j].match(/^(\s*)/)[1];
@@ -1679,6 +1683,32 @@ function processFunction(headerLines, bodyLines, ctx) {
       }
       continue;
     }}} // close eqMatch, balanced, writeTypeMatch
+
+    // ── Typed pointer WRITE on variable (no parens): *(TYPE *)variable = expr ──
+    {
+      const allWriteTypes = Object.keys({
+        'int':1,'uint':1,'short':1,'ushort':1,'undefined4':1,'undefined2':1,'undefined1':1,
+        'undefined':1,'char':1,'byte':1,'long':1,'ulong':1,'size_t':1,'SIZE_T':1,
+        'UINT':1,'DWORD':1,'BOOL':1,'float':1,'code':1,'void':1,
+        'CPropertySheet':1,'intptr_t':1
+      }).join('|');
+      const varWriteRe = new RegExp('^\\*\\s*\\(\\s*(' + allWriteTypes + ')\\s*\\*\\s*\\)\\s*(\\w+)\\s*=\\s*(.+);$');
+      const varWriteMatch = trimmed.match(varWriteRe);
+      if (varWriteMatch) {
+        const wType = varWriteMatch[1];
+        const varName = varWriteMatch[2];
+        let val = varWriteMatch[3].trim();
+        val = transformLine('  ' + val, ctx).trim();
+        const tVar = transformLine('  ' + varName, ctx).trim();
+        if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
+          result.push(line.replace(trimmed, '_MEM[' + tVar + '] = ' + val + ';'));
+        } else {
+          const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
+          result.push(line.replace(trimmed, wHelper + '(' + tVar + ', 0, ' + val + ');'));
+        }
+        continue;
+      }
+    }
 
     // ── Double-pointer WRITE: *(TYPE **)(base + off) = expr → w32 (pointer = 4 bytes) ──
     const dblWriteTypeMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(/);

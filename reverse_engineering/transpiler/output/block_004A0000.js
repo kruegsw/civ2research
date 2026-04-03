@@ -2810,9 +2810,9 @@ export function new_civ_004A7CE9(param_1) {
               _MEM[DAT_006554fc + local_24 * 0x30] = 0;
             }
           }
-          // DEVIATION: C pointer write — *(undefined2 *)(&DAT_00655502 + local_24 * 0x30) = *(undefined2 *)
+          w16(ptrAdd(DAT_00655502, local_24 * 0x30), 0, s16(DAT_00655508, u8(_MEM[DAT_006554fc + local_24 * 0x30]) * 2 + local_24 * 0x30));
                /*JOINED*/
-                // DEVIATION(cont): (&DAT_00655508 + (uint)(byte)(&DAT_006554fc)[local_24 * 0x30] * 2 + local_24 * 0x30);
+                /*JOINED*/
           /*JOINED*/
           _MEM[DAT_0064ca92 + param_1 * 0x594] = u8(local_24);
           w16(ptrAdd(DAT_0064c6a0, param_1 * 0x594), 0, u16(DAT_0064c6a0, param_1 * 0x594) & 0xfdff);

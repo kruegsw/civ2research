@@ -658,18 +658,18 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
           while (local_24 !== 0) {
             local_60 = 0;
             if ((iVar8 <= local_34) && (local_34 < iVar4)) {
-              // DEVIATION: C pointer write — *(char *)local_20 = (char)*local_5c;
+              _MEM[local_20] = s8(s32(local_5c, 0));
               local_5c = ((local_5c) + 1);
               local_60 = 1;
             }
             if ((iVar6 <= local_34) && (local_34 < iVar10)) {
               if (u8(_MEM[param_1 + 0xc]) === (s8(s32(local_54, 0)))) {
                 if (local_60 === 0) {
-                  // DEVIATION: C pointer write — *(char *)local_20 = (char)param_2[3].left;
+                  _MEM[local_20] = s8(_MEM[param_2 + 3]).left;
                 }
               }
               else {
-                // DEVIATION: C pointer write — *(char *)local_20 = (char)*local_54;
+                _MEM[local_20] = s8(s32(local_54, 0));
               }
               local_54 = ((local_54) + 1);
               local_60 = local_60 + 1;

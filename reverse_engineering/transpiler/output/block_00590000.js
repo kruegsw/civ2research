@@ -4768,7 +4768,7 @@ export function FUN_0059dfb9(in_ECX, param_1, param_2, param_3, param_4) {
   FUN_0059e472(PTR_DAT_006359e4);
   CArchive__SetObjectSchema(in_ECX,((PTR_DAT_006359e8) >>> 0));
   FUN_0059e4c5(PTR_DAT_006359ec);
-  // DEVIATION: C pointer write — *(int *)in_ECX = param_1;
+  w32(in_ECX, 0, param_1);
   w32(in_ECX, 4, param_2);
   w32(in_ECX, 0xd8, 0);
   w32(in_ECX, 0x3c, param_4);

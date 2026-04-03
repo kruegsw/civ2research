@@ -4025,7 +4025,7 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
         ___shl_12(local_3c[0]);
         ___add_12(local_3c[0],local_20[0]);
         ___shl_12(local_3c[0]);
-        // DEVIATION: C pointer write — *(char *)local_8 = cStack_31 + '0';
+        _MEM[local_8] = cStack_31 + 48;
         local_8 = ((local_8) + 1);
         cStack_31 = 0;
       }
@@ -4047,13 +4047,13 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
       else {
         for (; (param_6 + 2 <= local_8 && (s8(s16(local_8, 0)) === 57)); local_8 = ((local_8) + -1)) {
             /*JOINED*/
-          // DEVIATION: C pointer write — *(char *)local_8 = '0';
+          _MEM[local_8] = 48;
         }
         if (local_8 < param_6 + 2) {
           local_8 = ((local_8) + 1);
           w16(param_6, 0, s16(param_6, 0) + 1);
         }
-        // DEVIATION: C pointer write — *(char *)local_8 = (char)*local_8 + '\x01';
+        _MEM[local_8] = s8(s16(local_8, 0)) + 0x01;
       }
       _MEM[(param_6) + 3] = (s8(local_8) - (s8(param_6) + 0x04)) + 0x01;
       _MEM[s8(_MEM[(param_6) + 3]) + 4 + (param_6)] = 0;
@@ -4440,7 +4440,7 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
       local_18[2] = ((((iVar6) >>> 0) >> 0x10) << 16 >> 16);
       local_18[1] = ((iVar6) << 16 >> 16);
       if (local_38 < 0x7fff) {
-        // DEVIATION: C pointer write — *(undefined2 *)param_1 = uStack_1a;
+        w16(param_1, 0, uStack_1a);
         w32((param_1) + 2, 0, ((local_18[1]) << 16 | (local_18[0])));
         w32((param_1) + 6, 0, ((bStack_11) << 24 | (((uStack_12) << 16 | (local_18[2])))));
         w16((param_1) + 10, 0, uVar5 & 0x8000 | local_38);

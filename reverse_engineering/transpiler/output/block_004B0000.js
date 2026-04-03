@@ -1191,7 +1191,7 @@ export function FUN_004b263e(param_1) {
         if ((uVar3 < local_c) || (uVar2 <= local_c)) {
           return 0;
         }
-        // DEVIATION: C pointer write — *(char *)local_1c = *local_20;
+        _MEM[local_1c] = _MEM[local_20];
         local_1c = ((psVar1) + 3);
       }
       local_20 = local_24;

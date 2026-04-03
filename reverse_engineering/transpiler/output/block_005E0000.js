@@ -3418,11 +3418,11 @@ export function FUN_005e4e60(param_1, param_2, param_3, param_4, param_5, param_
       }
     }
     if ((param_5 & 2) !== 0) {
-      // DEVIATION: C pointer write — *(short *)puVar4 = (short)uVar1;
+      w16(puVar4, 0, ((uVar1) << 16 >> 16));
       puVar4 = ((puVar4) + 2);
     }
     if ((param_5 & 1) !== 0) {
-      // DEVIATION: C pointer write — *(char *)puVar4 = (char)param_2;
+      _MEM[puVar4] = s8(param_2);
       puVar4 = ((puVar4) + 1);
     }
     puVar4 = ((puVar4) + (param_7 - param_5));
@@ -3458,7 +3458,7 @@ export function FUN_005e4ef8(param_1, param_2, param_3, param_4, param_5, param_
     uVar1 = ((param_7 * 2) >>> 0) >> 2;
     if (uVar1 !== 0) {
       for (; uVar1 !== 0; uVar1 = uVar1 - 1) {
-        // DEVIATION: C pointer write — *(uint *)psVar4 = CONCAT22(sVar2,sVar2);
+        w32(psVar4, 0, ((sVar2) << 16 | (sVar2)));
         psVar4 = psVar4 + 2;
       }
     }
@@ -3515,7 +3515,7 @@ export function FUN_005e4f9b(param_1, param_2, param_3, param_4, param_5, param_
     for (uVar2 = param_7 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
       uVar1 = _MEM[puVar4];
       puVar4 = ((puVar4) + 1);
-      // DEVIATION: C pointer write — *(undefined1 *)puVar5 = uVar1;
+      _MEM[puVar5] = uVar1;
       puVar5 = ((puVar5) + 1);
     }
     puVar4 = ((puVar4) + (param_11 - param_7));
@@ -3570,7 +3570,7 @@ export function FUN_005e5056(param_1, param_2, param_3, param_4, param_5, param_
     if ((uVar4 & 2) !== 0) {
       uVar1 = s16(puVar5, 0);
       puVar5 = ((puVar5) + 2);
-      // DEVIATION: C pointer write — *(undefined2 *)puVar6 = uVar1;
+      w16(puVar6, 0, uVar1);
       puVar6 = ((puVar6) + 2);
     }
     puVar5 = ((puVar5) + uVar4);
@@ -3947,11 +3947,11 @@ export function FUN_005e5869(param_1, param_2, param_3, param_4, param_5, param_
     }
   }
   if ((param_3 & 2) !== 0) {
-    // DEVIATION: C pointer write — *(ushort *)puVar3 = CONCAT11(param_2,param_2);
+    w16(puVar3, 0, ((param_2) << 8 | (param_2)));
     puVar3 = ((puVar3) + 2);
   }
   if ((param_3 & 1) !== 0) {
-    // DEVIATION: C pointer write — *(undefined1 *)puVar3 = param_2;
+    _MEM[puVar3] = param_2;
   }
   return;
 }
@@ -4007,7 +4007,7 @@ export function FUN_005e593a(param_1, param_2, param_3, param_4, param_5, param_
     for (uVar2 = param_3 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
       iVar1 = s32(param_1, 0);
       param_1 = ((param_1) + 1);
-      // DEVIATION: C pointer write — *(char *)param_2 = (char)iVar1 + param_6;
+      _MEM[param_2] = s8(iVar1) + param_6;
       param_2 = ((param_2) + 1);
     }
     param_2 = ((param_2) + (param_5 - param_3));
@@ -4041,7 +4041,7 @@ export function FUN_005e59b3(param_1, param_2, param_3, param_4, param_5, param_
     for (uVar2 = param_3 & 3; uVar2 !== 0; uVar2 = uVar2 - 1) {
       iVar1 = s32(param_1, 0);
       param_1 = ((param_1) + 1);
-      // DEVIATION: C pointer write — *(char *)piVar3 = (char)iVar1 + param_6;
+      _MEM[piVar3] = s8(iVar1) + param_6;
       piVar3 = ((piVar3) + 1);
     }
     piVar3 = ((piVar3) + (param_5 - param_3));
@@ -4089,7 +4089,7 @@ export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_
           do {
             iVar2 = s32(param_1, 0);
             param_1 = ((param_1) + 1);
-            // DEVIATION: C pointer write — *(char *)param_2 = (char)iVar2 + param_6;
+            _MEM[param_2] = s8(iVar2) + param_6;
             param_2 = ((param_2) + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
@@ -4107,7 +4107,7 @@ export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
-            // DEVIATION: C pointer write — *(char *)param_2 = (char)iVar2;
+            _MEM[param_2] = s8(iVar2);
             param_2 = ((param_2) + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
@@ -4160,7 +4160,7 @@ export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_
           do {
             iVar2 = s32(param_1, 0);
             param_1 = ((param_1) + 1);
-            // DEVIATION: C pointer write — *(char *)piVar7 = (char)iVar2 + param_6;
+            _MEM[piVar7] = s8(iVar2) + param_6;
             piVar7 = ((piVar7) + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
@@ -4178,7 +4178,7 @@ export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_
         uVar3 = uVar1 & 3;
         if ((uVar1 & 3) !== 0) {
           do {
-            // DEVIATION: C pointer write — *(char *)piVar7 = (char)iVar2;
+            _MEM[piVar7] = s8(iVar2);
             piVar7 = ((piVar7) + 1);
             uVar3 = uVar3 - 1;
           } while (uVar3 !== 0);
@@ -4248,7 +4248,7 @@ export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_
         if ((uVar1 & 1) !== 0) {
           uVar1 = s16(param_1, 0);
           param_1 = param_1 + 1;
-          // DEVIATION: C pointer write — *(ushort *)param_2 = uVar1 + CONCAT11(param_6,param_6);
+          w16(param_2, 0, uVar1 + ((param_6) << 8 | (param_6)));
           param_2 = ((param_2) + 2);
         }
         uVar5 = uVar5 - 1;
@@ -4263,7 +4263,7 @@ export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_
         param_2 = param_2 + 1;
       }
       if ((uVar1 & 1) !== 0) {
-        // DEVIATION: C pointer write — *(short *)param_2 = (short)iVar2;
+        w16(param_2, 0, ((iVar2) << 16 >> 16));
         param_2 = ((param_2) + 2);
       }
       uVar5 = uVar5 - 1;
@@ -4337,7 +4337,7 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
         if ((uVar1 & 1) !== 0) {
           uVar1 = s16(param_1, 0);
           param_1 = param_1 + 1;
-          // DEVIATION: C pointer write — *(ushort *)piVar7 = uVar1 + CONCAT11(param_6,param_6);
+          w16(piVar7, 0, uVar1 + ((param_6) << 8 | (param_6)));
           piVar7 = ((piVar7) + 2);
         }
         uVar5 = uVar5 - 1;
@@ -4352,7 +4352,7 @@ export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_
         piVar7 = piVar7 + 1;
       }
       if ((uVar1 & 1) !== 0) {
-        // DEVIATION: C pointer write — *(short *)piVar7 = (short)iVar2;
+        w16(piVar7, 0, ((iVar2) << 16 >> 16));
         piVar7 = ((piVar7) + 2);
       }
       uVar5 = uVar5 - 1;
@@ -5930,7 +5930,7 @@ export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
 export function CReObject_005E82FB(_this) {
 
 
-  // DEVIATION: C pointer write — *(undefined4 *)this = 0;
+  w32(_this, 0, 0);
   w32(_this, 0x20, 0);
   w32(_this, 0x24, 0);
   w32(_this, 0x28, 0);
