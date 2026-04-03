@@ -4591,7 +4591,7 @@ export function FUN_0056e2e9(in_ECX, param_1, param_2) {
     FUN_0059e5c9(7,0x1b7,0);
     FUN_0059ea99(in_ECX[1] + -1);
     FUN_005a577e();
-    CPropertySheet__EnableStackedTabs((true /* DEVIATION: C pointer — s32(s32, 0)(in_ECX, 0) */ + 0x48),0x402dba);
+    CPropertySheet__EnableStackedTabs((true /* TODO_FIXME: C pointer — s32(s32, 0)(in_ECX, 0) */ + 0x48),0x402dba);
     if (v(DAT_006ad228) === 2) {
       debug_log(s_IGZ___Sending_DPLSYS_CONNECTIONS_00633ee0);
       iVar2 = XD_LobbySendMessage(1);

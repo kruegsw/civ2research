@@ -328,14 +328,14 @@ export function FUN_005a17e9(in_ECX, param_1, param_2) {
       if (bVar1) {
         FUN_005a14d2();
         if (s32(in_ECX, 0x24c) !== 0) {
-          true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x24c))(in_ECX,*(undefined4 *)(param_1 + 4)); */;
+          true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x24c))(in_ECX,*(undefined4 *)(param_1 + 4)); */;
         }
       }
       else {
         FUN_005a120b(uVar3,1);
         FUN_005a120b(param_1,1);
         if (s32(in_ECX, 0x24c) !== 0) {
-          true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x24c))(in_ECX,*(undefined4 *)(param_1 + 4)); */;
+          true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x24c))(in_ECX,*(undefined4 *)(param_1 + 4)); */;
         }
       }
     }
@@ -2036,7 +2036,7 @@ export function FUN_005a577e(in_ECX) {
         FUN_005cef31(local_5c[0],s32(in_ECX, 0),local_34,local_38);
       }
       else {
-        true /* DEVIATION: function pointer call — (*(code *)in_ECX[0x91])(local_20[3],*in_ECX,*local_20,local_20[1],local_34,local_38); */;
+        true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)in_ECX[0x91])(local_20[3],*in_ECX,*local_20,local_20[1],local_34,local_38); */;
       }
       if (((u8(_MEM[(in_ECX) + 0x3e]) & 2) !== 0) && (in_ECX[0x89] === local_20)) {
         FUN_00408680(local_14[0],local_34 + -1,local_38 + -1,local_18 + local_34, local_40 + local_38);

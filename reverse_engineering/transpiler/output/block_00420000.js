@@ -468,7 +468,7 @@ export function FUN_00421fcd(param_1) {
     FUN_0059ea99();
     FUN_0042472a();
     FUN_005a577e();
-    CPropertySheet__EnableStackedTabs((true /* DEVIATION: C pointer — s32(s32, 0)(extraout_ECX, 0) */ + 0x48),0x401bb8);
+    CPropertySheet__EnableStackedTabs((true /* TODO_FIXME: C pointer — s32(s32, 0)(extraout_ECX, 0) */ + 0x48),0x401bb8);
     while( true ) {
       while( true ) {
         while( true ) {
@@ -7517,7 +7517,7 @@ function LAB_00422109_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, loca
     FUN_0059ea99();
     FUN_0042472a();
     FUN_005a577e();
-    CPropertySheet__EnableStackedTabs((true /* DEVIATION: C pointer — s32(s32, 0)(extraout_ECX, 0) */ + 0x48),0x401bb8);
+    CPropertySheet__EnableStackedTabs((true /* TODO_FIXME: C pointer — s32(s32, 0)(extraout_ECX, 0) */ + 0x48),0x401bb8);
     while( true ) {
       while( true ) {
         while( true ) {

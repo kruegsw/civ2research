@@ -815,7 +815,7 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
   let lVar1;
   let iVar2;
   
-  if (true /* DEVIATION: C struct — if (((s32(param_1, 4)->ExceptionCode === 0xe06d7363) && (s32(param_1, 4)->NumberParameters === 3)) && (s32(param_1, 4)->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
+  if (true /* DEVIATION: TODO_FIXME: C struct — if (((s32(param_1, 4)->ExceptionCode === 0xe06d7363) && (s32(param_1, 4)->NumberParameters === 3)) && (s32(param_1, 4)->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
       /*JOINED*/
      /*JOINED*/
     terminate();
@@ -1483,7 +1483,7 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
         SetStdHandle(0xfffffff4,param_2);
       }
     }
-    // DEVIATION: C pointer write — *(intptr_t *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = param_2;
+    // DEVIATION: TODO_FIXME: C pointer write — *(intptr_t *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = param_2;
      /*JOINED*/
          /*JOINED*/
     iVar1 = 0;
@@ -1562,7 +1562,7 @@ export function __get_osfhandle_00602060(_FileHandle) {
   if ((((_FileHandle) >>> 0) < v(DAT_006e6b2c)) && ((u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
-    iVar1 = true /* DEVIATION: C pointer — *(intptr_t *) (s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + (_FileHandle & 0x1f) * 8) */;
+    // DEVIATION: TODO_FIXME: C-syntax — iVar1 = true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — *(intptr_t *) (s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + (_FileHandle & 0x1f) * 8) */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */;
              /*JOINED*/
              /*JOINED*/
   }
@@ -2590,7 +2590,7 @@ export function __ld12told_00603170(_Ifp, _Ld) {
   }
   local_18 = ((local_8 & 0xffff) === 0x7fff);
   w32(s32(_Ld, 0) + 4, 0, local_14);
-  // DEVIATION: C pointer write — *(undefined4 *)_Ld->ld = local_10;
+  // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)_Ld->ld = local_10;
   w16(s32(_Ld, 0) + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
   return local_18;
 }
@@ -3531,7 +3531,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         local_4c = 0;
         local_48 = local_48 | 2;
       }
-      // DEVIATION: C pointer write — *(undefined2 *)pld12->ld12 = local_4c;
+      // DEVIATION: TODO_FIXME: C pointer write — *(undefined2 *)pld12->ld12 = local_4c;
       w32(s32(pld12, 0) + 2, 0, local_c);
       w32(s32(pld12, 0) + 6, 0, local_14);
       w16(s32(pld12, 0) + 10, 0, ((local_20) & 0xFFFF) | local_54);
@@ -4939,7 +4939,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
      /*JOINED*/
     return -1;
   }
-  bVar5 = true /* DEVIATION: C pointer — *(uchar *)((ppcVar1) + 1) */ === 0;
+  // DEVIATION: TODO_FIXME: C-syntax — bVar5 = true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — *(uchar *)((ppcVar1) + 1) */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ === 0;
   if (v(DAT_00639f40) === v(DAT_00639f3c)) {
     wv(DAT_00639f3c, copy_environ(v(DAT_00639f3c)));
   }

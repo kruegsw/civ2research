@@ -4630,7 +4630,7 @@ export function FUN_005bb621(in_ECX, param_1, param_2) {
     return;
   }
   SetRect(local_14[0],0,0,(param_1),(param_2));
-  true /* DEVIATION: function pointer call — (*(code *)**(undefined4 **)in_ECX)(&local_14); */;
+  true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)**(undefined4 **)in_ECX)(&local_14); */;
   uVar2 = FUN_005bb8c0();
   FUN_005c0d12(uVar2);
   if (in_ECX === 0x0) {
@@ -4829,7 +4829,7 @@ export function FUN_005bb990(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x110) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x110))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x110))(); */;
   }
   return;
 }
@@ -7167,7 +7167,7 @@ export function FUN_005be2c4(in_ECX, param_1, param_2, param_3, param_4) {
     local_1c = u16(local_10, 0xe);
     local_8 = local_10;
     SetRect(local_40[0],0,0,local_18,local_1c);
-    iVar2 = (true /* DEVIATION: C pointer — s32(s32(s32, 0), 0)(in_ECX, 0) */)(local_40[0]);
+    iVar2 = (true /* TODO_FIXME: C pointer — s32(s32(s32, 0), 0)(in_ECX, 0) */)(local_40[0]);
     if (iVar2 === 0) {
       FUN_005c5520(local_28);
       uVar1 = 0;
@@ -7275,7 +7275,7 @@ export function FUN_005be595(in_ECX, unaff_EBX, unaff_ESI, unaff_EDI, param_1, p
   local_c0 = u16(local_1c, 0xe);
   local_14 = local_1c;
   SetRect(local_dc[0],0,0,local_bc,local_c0);
-  iVar1 = (true /* DEVIATION: C pointer — s32(s32(s32, 0), 0)(in_ECX, 0) */)(local_dc[0]);
+  iVar1 = (true /* TODO_FIXME: C pointer — s32(s32(s32, 0), 0)(in_ECX, 0) */)(local_dc[0]);
   if (iVar1 !== 0) {
     local_1c = local_1c + _MEM[local_14] + 0x12;
     if ((_MEM[local_14 + 1] !== 0) && (_MEM[local_14 + 7] === 0x18)) {

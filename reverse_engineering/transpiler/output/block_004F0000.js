@@ -2381,7 +2381,7 @@ export function FUN_004f74eb(param_1) {
   if (v(DAT_006a819c) <= local_c) {
     local_c = 0;
   }
-  while ((local_14 !== 0 && (iVar1 = __toupper_lk(true /* DEVIATION: C pointer — s8(_MEM[s32])(local_8, 0) */), iVar1 !== param_1))) {
+  while ((local_14 !== 0 && (iVar1 = __toupper_lk(true /* TODO_FIXME: C pointer — s8(_MEM[s32])(local_8, 0) */), iVar1 !== param_1))) {
          /*JOINED*/
     if (_MEM[local_8 + 2] === 0) {
       local_8 = local_10;

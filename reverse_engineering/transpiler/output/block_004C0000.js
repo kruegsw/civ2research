@@ -3895,7 +3895,7 @@ export function show_messagebox_CF2D_004CCF2D() {
         iVar1 = __strcmpi(local_104[0],local_274[0]);
       } while (iVar1 !== 0);
       if (s32(DAT_006a1884, local_108 * 8) !== 0) {
-        true /* DEVIATION: function pointer call — (**(code **)(&DAT_006a1884 + local_108 * 8))(local_224,local_220); */;
+        true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(&DAT_006a1884 + local_108 * 8))(local_224,local_220); */;
       }
       do {
         pcVar2 = _fgets(local_104[0],0x100,local_220);

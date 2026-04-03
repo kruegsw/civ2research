@@ -744,7 +744,7 @@ export function FUN_005e0ce0(param_1, param_2) {
         bVar1 = true;
       }
       local_14 = v(DAT_00638d9c);
-      // DEVIATION: C struct — wv(DAT_00638d9c, (v(DAT_00638d9c)->unused + 1));
+      wv(DAT_00638d9c, (s32(DAT_00638d9c, 0) + 1));
       do {
         param_2 = param_2 + 1;
       } while (_MEM[param_2] === 32);
@@ -2372,7 +2372,7 @@ export function FUN_005e3550(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x114) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x114))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x114))(); */;
   }
   return;
 }
@@ -2390,7 +2390,7 @@ export function FUN_005e3580(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x118) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x118))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x118))(); */;
   }
   return;
 }
@@ -4512,7 +4512,7 @@ export function FUN_005e6018(in_ECX, param_1, param_2) {
       in_ECX[0xe] = iVar1;
       pvVar2 = operator_new(in_ECX[1] << 2);
       in_ECX[0xf] = (pvVar2);
-      // DEVIATION: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
+      // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
       for (local_c = 1; local_c < in_ECX[1]; local_c = local_c + 1) {
         w32(in_ECX[0xf] + local_c * 4, 0, s32(in_ECX[0xf] + -4 + local_c * 4, 0) + in_ECX[3]);
       }
@@ -4562,7 +4562,7 @@ export function FUN_005e61e9(in_ECX) {
   if (in_ECX[0xc] === 0) {
     iVar1 = FUN_005e9091(s32(in_ECX, 0));
     if ((iVar1 !== 0) && (in_ECX[0x10] !== 0)) {
-      true /* DEVIATION: function pointer call — (*(code *)in_ECX[0x10])(); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)in_ECX[0x10])(); */;
     }
   }
   else {
@@ -4658,7 +4658,7 @@ export function FUN_005e635f(in_ECX, param_1, param_2, param_3) {
     in_ECX[0xc] = 1;
     pvVar2 = operator_new(in_ECX[1] << 2);
     in_ECX[0xf] = (pvVar2);
-    // DEVIATION: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
+    // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
     for (local_8 = 1; local_8 < in_ECX[1]; local_8 = local_8 + 1) {
       w32(in_ECX[0xf] + local_8 * 4, 0, s32(in_ECX[0xf] + -4 + local_8 * 4, 0) + in_ECX[3]);
     }
@@ -6225,7 +6225,7 @@ export function register_wndclass_89D0_005E89D0() {
   if (iVar1 === 0) {
     wv(_DAT_006e50e8, 0x13c);
     wv(_DAT_006e5228, 0x13c);
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x2c))(DAT_006394c0,&DAT_006e50e8,&DAT_006e5228); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x2c))(DAT_006394c0,&DAT_006e50e8,&DAT_006e5228); */;
     if ((v(DAT_006e50ec) & 0x40) === 0) {
       debug_log(s_Direct_Draw__Doesn_t_Supports_Ha_006394f8);
     }
@@ -6258,7 +6258,7 @@ export function FUN_005e8b04() {
 
 
   if (v(DAT_006394c0) !== 0x0) {
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
     wv(DAT_006394c0, 0x0);
     UnregisterClassA(s_MSDirectWindow_006395a0,v(DAT_006e4ff0));
   }
@@ -6310,7 +6310,7 @@ export function FUN_005e8c29(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
   }
   return;
 }
@@ -6385,7 +6385,7 @@ export function FUN_005e8e06(param_1, param_2) {
 
 
   if ((param_1 !== 0x0) && (param_2 !== 0)) {
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x7c))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x7c))(param_1,param_2); */;
   }
   return;
 }
@@ -6532,7 +6532,7 @@ export function FUN_005e906b(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
   }
   return;
 }
@@ -6593,7 +6593,7 @@ export function FUN_005e910b(param_1) {
   else {
     local_70[0] = 0x6c;
     local_6c = 8;
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x58))(param_1,&local_70); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x58))(param_1,&local_70); */;
   }
   return local_60;
 }
@@ -6686,7 +6686,7 @@ export function FUN_005e92c9(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
   }
   return 0;
 }
@@ -6706,7 +6706,7 @@ export function FUN_005e92fd(param_1, param_2, param_3) {
   
   local_c[0] = param_2;
   local_8 = param_2 + param_3;
-  true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x74))(param_1,8,&local_c); */;
+  true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x74))(param_1,8,&local_c); */;
   return;
 }
 
@@ -6734,7 +6734,7 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
   if (iVar1 === 0) {
     local_84 = GetPixel(local_78[0],0,0);
     SetPixel(local_78[0],0,0,((((param_4) << 16 | (((param_3) << 8 | (param_2))))) >>> 0));
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
   }
   local_70[0] = 0x6c;
   while( true ) {
@@ -6744,12 +6744,12 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
   }
   if (local_74 === 0) {
     local_7c = s32(local_4c, 0) & (1 << (local_1c & 0x1f)) - 1;
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
   }
   iVar1 = (s32(s32(s32(param_1, 0) + 0x44, 0), 0))(param_1,local_78[0]);
   if (iVar1 === 0) {
     SetPixel(local_78[0],0,0,local_84);
-    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
   }
   return local_7c;
 }
@@ -6936,7 +6936,7 @@ export function blit_9838_005E9838(param_1, param_2, param_3, param_4, param_5, 
     if (iVar1 === 0) {
       BitBlt(local_8[0],param_7,param_8,param_4,param_5,s32(param_1, 4),param_2,param_3,0xcc0020);
       /*JOINED*/
-      true /* DEVIATION: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
     }
   }
   return;
@@ -6961,7 +6961,7 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
     if (iVar1 === 0) {
       StretchBlt(local_8[0],param_7,param_8,param_9,param_10,s32(param_1, 4),param_2,param_3, param_4,param_5,0xcc0020);
                  /*JOINED*/
-      true /* DEVIATION: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
     }
   }
   return;
@@ -6977,7 +6977,7 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
 export function FUN_005e9944(param_1, param_2) {
 
 
-  true /* DEVIATION: function pointer call — (**(code **)(*param_2 + 0x10))(param_2,0,param_1,1,&DAT_006e5224); */;
+  true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_2 + 0x10))(param_2,0,param_1,1,&DAT_006e5224); */;
   return;
 }
 
@@ -7048,7 +7048,7 @@ export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_
       SetTextAlign(local_20[0],local_1c);
       SelectObject(local_20[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7109,7 +7109,7 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7165,7 +7165,7 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7207,7 +7207,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
       LineTo(local_10[0],param_4,param_5);
       SelectObject(local_10[0],local_8);
       DeleteObject(local_c);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7287,7 +7287,7 @@ export function FUN_005e9f8a(param_1, param_2, param_3, param_4, param_5, param_
       SetTextAlign(local_20[0],local_1c);
       SelectObject(local_20[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7350,7 +7350,7 @@ export function FUN_005ea1dd(param_1, param_2, param_3, param_4, param_5, param_
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7408,7 +7408,7 @@ export function FUN_005ea32f(param_1, param_2, param_3, param_4, param_5, param_
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7452,7 +7452,7 @@ export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_
       LineTo(local_10[0],param_4,param_5);
       SelectObject(local_10[0],local_8);
       DeleteObject(local_c);
-      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe52) {
@@ -7540,7 +7540,7 @@ export function FUN_005ea610(param_1) {
     else {
       local_8 = 1;
     }
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x58))(DAT_006394c0,local_8,0); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x58))(DAT_006394c0,local_8,0); */;
   }
   return;
 }
@@ -8120,7 +8120,7 @@ export function FUN_005eb2f0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -8138,7 +8138,7 @@ export function FUN_005eb330(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -9027,7 +9027,7 @@ export function FUN_005ecf50(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0) !== 0) {
-    true /* DEVIATION: function pointer call — (*(code *)*in_ECX)(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)*in_ECX)(param_1,param_2); */;
   }
   return;
 }
@@ -9045,7 +9045,7 @@ export function FUN_005ecf90(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 4) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 4))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 4))(param_1,param_2); */;
   }
   return;
 }
@@ -9063,7 +9063,7 @@ export function FUN_005ecfd0(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 8) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 8))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 8))(param_1,param_2); */;
   }
   return;
 }
@@ -9081,7 +9081,7 @@ export function FUN_005ed010(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xc) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xc))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xc))(param_1,param_2); */;
   }
   return;
 }
@@ -9099,7 +9099,7 @@ export function FUN_005ed050(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x10) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x10))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x10))(param_1,param_2); */;
   }
   return;
 }
@@ -9117,7 +9117,7 @@ export function FUN_005ed090(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x14) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x14))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x14))(param_1,param_2); */;
   }
   return;
 }
@@ -9135,7 +9135,7 @@ export function FUN_005ed0d0(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x18) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x18))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x18))(param_1,param_2); */;
   }
   return;
 }
@@ -9153,7 +9153,7 @@ export function FUN_005ed110(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x1c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x1c))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x1c))(param_1,param_2); */;
   }
   return;
 }
@@ -9171,7 +9171,7 @@ export function FUN_005ed150(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x20) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x20))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x20))(param_1); */;
   }
   return;
 }
@@ -9189,7 +9189,7 @@ export function FUN_005ed190(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x24) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x24))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x24))(param_1); */;
   }
   return;
 }
@@ -9207,7 +9207,7 @@ export function FUN_005ed1d0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x28) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x28))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x28))(param_1); */;
   }
   return;
 }
@@ -9225,7 +9225,7 @@ export function FUN_005ed210(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
   }
   return;
 }
@@ -9265,7 +9265,7 @@ export function FUN_005ed290(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(); */;
   }
   return;
 }
@@ -9283,7 +9283,7 @@ export function FUN_005ed2c0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x38) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x38))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x38))(); */;
   }
   return;
 }
@@ -9301,7 +9301,7 @@ export function FUN_005ed2f0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x3c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x3c))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x3c))(); */;
   }
   return;
 }
@@ -9319,7 +9319,7 @@ export function FUN_005ed320(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x40) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x40))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x40))(param_1); */;
   }
   return;
 }
@@ -9337,7 +9337,7 @@ export function FUN_005ed360(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x44) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x44))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x44))(param_1,param_2); */;
   }
   return;
 }
@@ -9355,7 +9355,7 @@ export function FUN_005ed3a0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x48) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x48))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x48))(param_1); */;
   }
   return;
 }
@@ -9373,7 +9373,7 @@ export function FUN_005ed3e0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x4c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x4c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x4c))(param_1); */;
   }
   return;
 }
@@ -9391,7 +9391,7 @@ export function FUN_005ed420(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x50) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x50))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x50))(param_1); */;
   }
   return;
 }
@@ -9409,7 +9409,7 @@ export function FUN_005ed460(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x54) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x54))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x54))(param_1); */;
   }
   return;
 }
@@ -9427,7 +9427,7 @@ export function FUN_005ed4a0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x58) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x58))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x58))(param_1); */;
   }
   return;
 }
@@ -9445,7 +9445,7 @@ export function FUN_005ed4e0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x5c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x5c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x5c))(param_1); */;
   }
   return;
 }
@@ -9463,7 +9463,7 @@ export function FUN_005ed520(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x60) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x60))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x60))(); */;
   }
   return;
 }
@@ -9481,7 +9481,7 @@ export function FUN_005ed550(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 100) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 100))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 100))(); */;
   }
   return;
 }
@@ -9514,7 +9514,7 @@ export function FUN_005ed5a0(in_ECX, param_1, param_2) {
   
   bVar1 = s32(in_ECX, 0x98) !== 0;
   if (bVar1) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x98))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x98))(param_1,param_2); */;
   }
   return bVar1;
 }
@@ -9534,7 +9534,7 @@ export function FUN_005ed5f0(in_ECX, param_1) {
   
   bVar1 = s32(in_ECX, 0x9c) !== 0;
   if (bVar1) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x9c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x9c))(param_1); */;
   }
   return bVar1;
 }
@@ -9642,7 +9642,7 @@ export function FUN_005ed6e0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xbc) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xbc))(); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xbc))(); */;
   }
   return;
 }
@@ -11612,9 +11612,9 @@ export function FUN_005efcde(param_1, param_2) {
 
 
   if (((v(DAT_006394c0) !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
-    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
   }
   return;
 }
@@ -11632,7 +11632,7 @@ export function FUN_005efd70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xbc) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xbc))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xbc))(param_1); */;
   }
   return;
 }

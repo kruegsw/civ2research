@@ -5892,7 +5892,7 @@ export function FUN_0059f06d(in_ECX, param_1, param_2, param_3) {
   }
   w32(in_ECX, 0x128, iVar5);
   if (param_2 === 0x0) {
-    // DEVIATION: C pointer write — *(undefined1 *)puVar1[5] = 0;
+    // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)puVar1[5] = 0;
   }
   else {
     _memset(_MEM[puVar1 + 5],0,0x100);

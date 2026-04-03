@@ -6776,7 +6776,7 @@ export function FUN_0051f19c(param_1, param_2, param_3) {
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -6784,7 +6784,7 @@ export function FUN_0051f19c(param_1, param_2, param_3) {
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -8126,7 +8126,7 @@ function LAB_0052144f_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -8134,7 +8134,7 @@ function LAB_0052144f_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -8590,7 +8590,7 @@ function LAB_0051fdd1_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -8598,7 +8598,7 @@ function LAB_0051fdd1_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -9153,7 +9153,7 @@ function LAB_0051f8c0_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -9161,7 +9161,7 @@ function LAB_0051f8c0_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -9839,7 +9839,7 @@ function LAB_0051f1f6_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -9847,7 +9847,7 @@ function LAB_0051f1f6_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -10255,7 +10255,7 @@ function LAB_0051ffec_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
             for (local_1c = 0; local_1c < 7; local_1c = local_1c + 1) {
               if (s16(DAT_0065550c, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550c + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/
@@ -10263,7 +10263,7 @@ function LAB_0051ffec_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
               }
               if (s16(DAT_0065550e, local_1c * 4 + s32(DAT_006ab144, param_1 * 4) * 0x30) < 1) {
                             /*JOINED*/
-                // DEVIATION: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
+                // DEVIATION: TODO_FIXME: C pointer write — *(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30) = ~*(ushort *) (&DAT_0065550e + local_1c * 4 + *(int *)(&DAT_006ab144 + param_1 * 4) * 0x30)
                  /*JOINED*/
                      /*JOINED*/
                        /*JOINED*/

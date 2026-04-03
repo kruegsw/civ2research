@@ -154,14 +154,14 @@ export function FUN_005c01c1(in_ECX) {
       w32(in_ECX, 0x38, pvVar2);
       iVar3 = FUN_005e395a(s32(in_ECX, 0x40));
       if (iVar3 === 0) {
-        // DEVIATION: C pointer write — **(int **)(in_ECX + 0x38) = (*(int *)(in_ECX + 8) + -1) * *(int *)(in_ECX + 0xc);
+        // DEVIATION: TODO_FIXME: C pointer write — **(int **)(in_ECX + 0x38) = (*(int *)(in_ECX + 8) + -1) * *(int *)(in_ECX + 0xc);
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           w32(s32(in_ECX, 0x38) + local_8 * 4, 0, s32(s32(in_ECX, 0x38) + -4 + local_8 * 4, 0) - s32(in_ECX, 0xc));
                /*JOINED*/
         }
       }
       else {
-        // DEVIATION: C pointer write — **(undefined4 **)(in_ECX + 0x38) = 0;
+        // DEVIATION: TODO_FIXME: C pointer write — **(undefined4 **)(in_ECX + 0x38) = 0;
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           w32(s32(in_ECX, 0x38) + local_8 * 4, 0, s32(s32(in_ECX, 0x38) + -4 + local_8 * 4, 0) + s32(in_ECX, 0xc));
                /*JOINED*/
@@ -3908,7 +3908,7 @@ export function FUN_005c5c86(in_ECX, param_1) {
         iVar2 = FUN_005c5ee0();
         iVar5 = FUN_005c5f00();
         for (local_20 = 0; local_20 < iVar5; local_20 = local_20 + 1) {
-          if ((-1 < s32(iVar2, 0xa0 + local_20 * 0xa4)) && (true /* DEVIATION: C pointer — *(streambuf *)(iVar2 + 0x9c + local_20 * 0xa4) */ === sVar1)) {
+          if (true /* DEVIATION: TODO_FIXME: C-syntax — if ((-1 < s32(iVar2, 0xa0 + local_20 * 0xa4)) && (true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — *(streambuf *)(iVar2 + 0x9c + local_20 * 0xa4) * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / * / === sVar1)) { */) {
              /*JOINED*/
             invalidate_9A9A(s32(iVar2, local_20 * 0xa4));
             local_14 = 1;
@@ -4205,7 +4205,7 @@ export function FUN_005c61b0(in_ECX) {
     while (s32(in_ECX, 0x8c) !== 0) {
       FUN_0040ef50();
       if (s32(in_ECX, 0xa4) !== 0) {
-        true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xa4))(); */;
+        true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xa4))(); */;
       }
     }
     if (v(DAT_00637ea8) === 0) {
@@ -4330,7 +4330,7 @@ export function FUN_005c63af(in_ECX, param_1) {
   
   bVar1 = s32(in_ECX, 0xa0) !== 0;
   if (bVar1) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xa0))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xa0))(param_1); */;
   }
   return bVar1;
 }
@@ -5893,7 +5893,7 @@ export function create_font_86BC_005C86BC(param_1, param_2, param_3, param_4) {
   
   _MaxCount = 3;
   _Str2 = __strlwr((param_4 + 0x104));
-  // DEVIATION: C struct — _Str1 = __strlwr(param_1->lfFaceName);
+  _Str1 = __strlwr(s32(param_1, 28));
   iVar1 = _strncmp(_Str1,_Str2,_MaxCount);
   if (iVar1 === 0) {
     pHVar2 = CreateFontIndirectA(param_1);
@@ -6349,7 +6349,7 @@ export function FUN_005c8f70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
   }
   return;
 }
@@ -6367,7 +6367,7 @@ export function FUN_005c8fb0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
   }
   return;
 }
@@ -6385,7 +6385,7 @@ export function FUN_005c8ff0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(param_1); */;
   }
   return;
 }
@@ -6403,7 +6403,7 @@ export function FUN_005c9030(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x38) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x38))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x38))(param_1); */;
   }
   return;
 }
@@ -6421,7 +6421,7 @@ export function FUN_005c9070(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x3c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x3c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x3c))(param_1); */;
   }
   return;
 }
@@ -6560,7 +6560,7 @@ export function send_msg_9307_005C9307(param_1, param_2, param_3, param_4) {
       iVar1 = FUN_005c9563(param_1);
       if (iVar1 !== 0) {
         if (s32(iVar1, 0x2c) === 3) {
-          // DEVIATION: C pointer write — **(undefined4 **)(iVar1 + 0x24) = 0;
+          // DEVIATION: TODO_FIXME: C pointer write — **(undefined4 **)(iVar1 + 0x24) = 0;
         }
         else {
           ios__delbuf(s32(iVar1, 4),0);
@@ -7874,7 +7874,7 @@ export function FUN_005cbdf0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
   }
   return;
 }
@@ -7892,7 +7892,7 @@ export function FUN_005cbe30(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
   }
   return;
 }
@@ -7910,7 +7910,7 @@ export function FUN_005cbe70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
   }
   return;
 }
@@ -8511,7 +8511,7 @@ export function FUN_005cce40(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1,param_2); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1,param_2); */;
   }
   return;
 }
@@ -8873,7 +8873,7 @@ export function FUN_005cd640(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
   }
   return;
 }
@@ -8891,7 +8891,7 @@ export function FUN_005cd680(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(param_1); */;
   }
   return;
 }
@@ -10713,10 +10713,10 @@ export function FUN_005cf64c(in_ECX, param_1, param_2, param_3) {
           iVar3 = FUN_00407f90(local_64[0]);
           SetRect(in_ECX,0,0,iVar3,iVar2);
           if (param_2 === -2) {
-            // DEVIATION: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
+            // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
           }
           else {
-            // DEVIATION: C pointer write — *(char *)&in_ECX[3].left = local_40;
+            // DEVIATION: TODO_FIXME: C pointer write — *(char *)&in_ECX[3].left = local_40;
           }
           in_ECX[2].left = 0;
           in_ECX[2].top = 0;
@@ -10746,10 +10746,10 @@ export function FUN_005cf64c(in_ECX, param_1, param_2, param_3) {
       iVar3 = FUN_00407f90(local_64[0]);
       SetRect(in_ECX,0,0,iVar3,iVar2);
       if (param_2 === -2) {
-        // DEVIATION: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
+        // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
       }
       else {
-        // DEVIATION: C pointer write — *(char *)&in_ECX[3].left = local_40;
+        // DEVIATION: TODO_FIXME: C pointer write — *(char *)&in_ECX[3].left = local_40;
       }
       in_ECX[2].left = 0;
       in_ECX[2].top = 0;
@@ -10929,10 +10929,10 @@ export function FUN_005cfdeb(in_ECX, param_1, param_2, param_3) {
             iVar2 = FUN_00407f90(local_68[0]);
             SetRect(in_ECX,0,0,iVar2,iVar1);
             if (param_2 === -2) {
-              // DEVIATION: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
+              // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
             }
             else {
-              // DEVIATION: C pointer write — *(char *)&in_ECX[3].left = local_44;
+              // DEVIATION: TODO_FIXME: C pointer write — *(char *)&in_ECX[3].left = local_44;
             }
             in_ECX[2].left = 0;
             in_ECX[2].top = 0;
@@ -10960,10 +10960,10 @@ export function FUN_005cfdeb(in_ECX, param_1, param_2, param_3) {
         iVar2 = FUN_00407f90(local_68[0]);
         SetRect(in_ECX,0,0,iVar2,iVar1);
         if (param_2 === -2) {
-          // DEVIATION: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
+          // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
         }
         else {
-          // DEVIATION: C pointer write — *(char *)&in_ECX[3].left = local_44;
+          // DEVIATION: TODO_FIXME: C pointer write — *(char *)&in_ECX[3].left = local_44;
         }
         in_ECX[2].left = 0;
         in_ECX[2].top = 0;

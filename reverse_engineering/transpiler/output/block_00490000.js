@@ -2849,7 +2849,7 @@ export function _CCommandLineInfo_0049632A(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  // DEVIATION: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6c0;
+  // DEVIATION: TODO_FIXME: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6c0;
   local_8 = 0;
   local_8 = 3;
   FUN_004963a5();

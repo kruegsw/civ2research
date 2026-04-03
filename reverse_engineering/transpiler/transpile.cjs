@@ -489,11 +489,19 @@ function transformLine(line, ctx) {
         'tm_mon': { off: 16, width: 4 }, 'tm_year': { off: 20, width: 4 },
         'tm_wday': { off: 24, width: 4 }, 'tm_yday': { off: 28, width: 4 },
         'tm_isdst': { off: 32, width: 4 },
-        // CRT debug
+        // CRT debug (_CrtMemBlockHeader)
         'nBlockUse': { off: 20, width: 4 },
+        'nLine': { off: 4, width: 4 }, 'lRequest': { off: 12, width: 4 },
         'ld12': { off: 0, width: 4 }, 'ld': { off: 0, width: 4 },
         // EXCEPTION_RECORD
-        'ExceptionRecord': { off: 4, width: 4 },
+        'ExceptionCode': { off: 0, width: 4 }, 'ExceptionRecord': { off: 4, width: 4 },
+        'NumberParameters': { off: 20, width: 4 },
+        // LOGFONT
+        'lfFaceName': { off: 28, width: 4 }, // pointer to char array
+        // MMCKINFO
+        'ckid': { off: 0, width: 4 }, 'cksize': { off: 4, width: 4 },
+        // generic
+        'unused': { off: 0, width: 4 },
       };
       // Match: expr->member (read or write)
       out = out.replace(/(\w+)->(\w+)/g, (m, obj, member) => {
@@ -663,7 +671,7 @@ function transformLine(line, ctx) {
     // ── C struct member access: expr->member → DEVIATION ──
     // Deviate the whole line since -> implies pointer context we can't translate
     if (/->/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      out = makeDeviation(out, 'C struct', ctx);
+      out = makeDeviation(out, 'TODO_FIXME: C struct', ctx);
     }
 
     // ── &local_XX → local_XX (drop &) ──
@@ -818,12 +826,12 @@ function transformLine(line, ctx) {
             endPos = valEnd;
           }
           const original = out.substring(matchStart, endPos);
-          newOut += 'true /* DEVIATION: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx = endPos;
           ptrRe.lastIndex = lastIdx;
         } else {
           const original = out.substring(matchStart);
-          newOut += 'true /* DEVIATION: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx = out.length;
           ctx.ptrDeviationContinuation = true;
           break;
@@ -855,7 +863,7 @@ function transformLine(line, ctx) {
             endPos = afterCast;
           }
           const original = out.substring(matchStart3, endPos);
-          newOut3 += 'true /* DEVIATION: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut3 += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx3 = endPos;
           noParenRe.lastIndex = lastIdx3;
         }
@@ -1876,7 +1884,7 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Function pointer calls and Ghidra artifacts ──
     // (**(code **)(expr))(args), (*UNRECOVERED_JUMPTABLE)(), (*funcptr)(args)
     if (/^\(\s*\*+/.test(trimmed) && (/\bcode\s*\*/.test(trimmed) || /UNRECOVERED/.test(trimmed))) {
-      result.push(makeDeviation(line, 'function pointer call', ctx));
+      result.push(makeDeviation(line, 'TODO_FIXME: function pointer call', ctx));
       continue;
     }
 
@@ -1885,7 +1893,7 @@ function processFunction(headerLines, bodyLines, ctx) {
     // The typed write handler above already caught handled types (int, uint, etc.) and continued.
     // This catches what's left: double pointers (TYPE **), code *, void *, etc.
     if (/^\s*\*+\s*\(\s*\w[\w\s]*\*+\s*\)/.test(trimmed) && /=(?!=)/.test(trimmed)) {
-      result.push(makeDeviation(line, 'C pointer write', ctx));
+      result.push(makeDeviation(line, 'TODO_FIXME: C pointer write', ctx));
       continue;
     }
 
@@ -1972,7 +1980,7 @@ function processFunction(headerLines, bodyLines, ctx) {
           /\(\s*void\s*\)\s*\w/.test(ft) ||  // (void)expr
           /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
           /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) && !/^(else|if|for|while|do|switch|case|return|break|continue)\b/.test(ft)) {  // C function signature (not JS keywords)
-        transformed = makeDeviation(transformed, 'C-syntax', ctx);
+        transformed = makeDeviation(transformed, 'TODO_FIXME: C-syntax', ctx);
       }
     }
 

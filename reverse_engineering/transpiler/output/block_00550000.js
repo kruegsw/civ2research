@@ -658,7 +658,7 @@ export function FUN_00552e5b(param_1) {
     local_8 = local_8 + -0x48;
   }
   if (s32(local_8, 0x2a8) !== 0) {
-    true /* DEVIATION: function pointer call — (**(code **)(local_8 + 0x2a8))(*(undefined4 *)(local_8 + 0x200 + (param_1 + -1000) * 0x1c)); */;
+    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(local_8 + 0x2a8))(*(undefined4 *)(local_8 + 0x200 + (param_1 + -1000) * 0x1c)); */;
   }
   return;
 }
@@ -884,7 +884,7 @@ export function _COleCntrFrameWnd_00553444(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  // DEVIATION: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6dc;
+  // DEVIATION: TODO_FIXME: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6dc;
   local_8 = 0;
   FUN_005532d7();
   FUN_004083b0();
@@ -3339,7 +3339,7 @@ export function FUN_005582ad() {
       for (local_8 = 0; local_8 < v(DAT_006d1164); local_8 = local_8 + 1) {
         _MEM[local_34 + 4] = 0xff;
         for (local_140 = 1; local_140 < 8; local_140 = local_140 + 1) {
-          // DEVIATION: C pointer write — *(undefined1 *)aiStack_30[local_140] = *(undefined1 *)(local_34 + 1);
+          // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)aiStack_30[local_140] = *(undefined1 *)(local_34 + 1);
           aiStack_30[local_140] = aiStack_30[local_140] + 1;
         }
         local_34 = local_34 + 6;
@@ -3694,7 +3694,7 @@ export function _CMiniFrameWnd_00559ED4(_this) {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  // DEVIATION: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6e0;
+  // DEVIATION: TODO_FIXME: C pointer write — *(undefined ***)this = &PTR_FUN_0061d6e0;
   local_8 = 1;
   local_8 = 0;
   FUN_00559ded();

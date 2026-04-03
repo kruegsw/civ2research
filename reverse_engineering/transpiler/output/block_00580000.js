@@ -2918,7 +2918,7 @@ export function FUN_0058a0ee(param_1, param_2, param_3, param_4) {
   local_108 = v(DAT_00634768);
   while (local_108 = local_108 + -1, -1 < local_108) {
     if (s32(DAT_006acbd0, local_108 * 4) !== 0) {
-      true /* DEVIATION: function pointer call — (**(code **)(&DAT_006acbd0 + local_108 * 4))(); */;
+      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(&DAT_006acbd0 + local_108 * 4))(); */;
     }
   }
   DebugBreak();
