@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+// ═══════════════════════════════════════════════════════════════════
+// DEAD CODE — kept for reference only, do not run.
+//
+// This script used regex to scan transpiler output text for function
+// names and global references, then generated import/export wiring
+// as a post-processing step. It was replaced by integrated wiring
+// in export-js.py, which extracts the same data directly from
+// Ghidra's P-code operation graph (CALL ops → imports, PTRSUB ops
+// → globals) during transpilation. No regex, no text scanning.
+// ═══════════════════════════════════════════════════════════════════
+//
 // wire-pcode.cjs — Wire P-code transpiler output for charlizationv4 runtime
 //
 // Reads:  reverse_engineering/transpiler/output-ghidra/block_*.js
