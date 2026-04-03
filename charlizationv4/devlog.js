@@ -28,6 +28,7 @@ export function stubCall(name, args) {
   if (_counts[key] <= 3) {
     _log.push({ type: 'stub', name, args: args.slice(0, 4) });
   }
+  return 0; // Default return for all stubs — "nothing/false/null"
   return 0;
 }
 
