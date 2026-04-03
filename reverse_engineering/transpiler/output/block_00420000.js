@@ -2338,7 +2338,7 @@ export function FUN_00426ff0(param_1, param_2) {
         iVar2 = _strncmp(local_34,s_NUMBER_00625e48,6);
         if (iVar2 === 0) {
           iVar2 = _atoi(pcVar1 + 7);
-          __ltoa(true /* DEVIATION: C pointer — *(long *)(ptrAdd(DAT_0063cc30, iVar2 * 4)) */,local_2c[0],10);
+          __ltoa(s32(DAT_0063cc30, iVar2 * 4),local_2c[0],10);
           FUN_005f22e0(param_2,local_2c[0]);
           param_1 = pcVar1 + 8;
         }
@@ -2346,7 +2346,7 @@ export function FUN_00426ff0(param_1, param_2) {
           iVar2 = _strncmp(local_34,v(DAT_00625e50),3);
           if (iVar2 === 0) {
             iVar2 = _atoi(pcVar1 + 4);
-            __ltoa(true /* DEVIATION: C pointer — *(long *)(ptrAdd(DAT_0063cc30, iVar2 * 4)) */,local_2c[0],0x10);
+            __ltoa(s32(DAT_0063cc30, iVar2 * 4),local_2c[0],0x10);
             for (local_30 = 0; sVar3 = _strlen(local_2c[0]), local_30 < 4 - sVar3; local_30 = local_30 + 1) {
                 /*JOINED*/
               FUN_005f22e0(param_2,v(DAT_00625e54));

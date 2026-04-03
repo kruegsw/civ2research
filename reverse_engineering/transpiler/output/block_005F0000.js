@@ -5186,7 +5186,7 @@ export function __heap_alloc_dbg_005F4520(param_1, param_2, param_3, param_4) {
     puVar5 = (s32(pcVar1, 0))();
     return puVar5;
   }
-  iVar6 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(1,0,param_1,param_2,v(DAT_00639f74),param_3,param_4);
+  iVar6 = (s32(PTR_FUN_0063a42c, 0))(1,0,param_1,param_2,v(DAT_00639f74),param_3,param_4);
   if (iVar6 === 0) {
     if (param_3 === 0) {
       iVar4 = __CrtDbgReport(0,0,0,0,v(DAT_0061dc40),"Client hook allocation failure.\n");
@@ -5411,7 +5411,7 @@ export function realloc_help_005F4970(param_1, param_2, param_3, param_4, param_
       piVar4 = (s32(pcVar1, 0))();
       return piVar4;
     }
-    iVar5 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(2,param_1,param_2,param_3,v(DAT_00639f74),param_4,param_5);
+    iVar5 = (s32(PTR_FUN_0063a42c, 0))(2,param_1,param_2,param_3,v(DAT_00639f74),param_4,param_5);
     if (iVar5 === 0) {
       if (param_4 === 0) {
         iVar3 = __CrtDbgReport(0,0,0,0,v(DAT_0061dc40),"Client hook re-allocation failure.\n");
@@ -5655,7 +5655,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
     return;
   }
   if (param_1 !== 0x0) {
-    iVar2 = (true /* DEVIATION: C pointer — *(code *)PTR_FUN_0063a42c */)(3,param_1,0,param_2,0,0,0);
+    iVar2 = (s32(PTR_FUN_0063a42c, 0))(3,param_1,0,param_2,0,0,0);
     if (iVar2 === 0) {
       iVar2 = __CrtDbgReport(0,0,0,0,v(DAT_0061dc40),"Client hook free failure.\n");
       if (iVar2 === 1) {
@@ -5758,7 +5758,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
         }
         else {
           w32((param_1) + -0xc, 0, 0);
-          _memset(param_1,((v(DAT_00639f80)) >>> 0),true /* DEVIATION: C pointer — *(size_t *)((param_1) + -0x10) */);
+          _memset(param_1,((v(DAT_00639f80)) >>> 0),u32((param_1) + -0x10, 0));
         }
       }
     }
@@ -8390,7 +8390,7 @@ export function BuildCatchObject_005F8460(param_1, param_2, param_3, param_4) {
             _inconsistency();
           }
           else {
-            _Size = true /* DEVIATION: C pointer — *(size_t *)(param_4 + 0x14) */;
+            _Size = u32(param_4, 0x14);
             pvVar2 = AdjustPointer(s32(param_1, 0x18),(param_4 + 8));
             _memcpy(_Dst,pvVar2,_Size);
           }
@@ -8418,7 +8418,7 @@ export function BuildCatchObject_005F8460(param_1, param_2, param_3, param_4) {
           _inconsistency();
         }
         else {
-          _memcpy(_Dst,s32(param_1, 0x18),true /* DEVIATION: C pointer — *(size_t *)(param_4 + 0x14) */);
+          _memcpy(_Dst,s32(param_1, 0x18),u32(param_4, 0x14));
           if ((s32(param_4, 0x14) === 4) && (s32(_Dst, 0) !== 0)) {
             pvVar2 = AdjustPointer(s32(_Dst, 0),(param_4 + 8));
             // DEVIATION: C pointer write — *(void **)_Dst = pvVar2;
@@ -8699,11 +8699,11 @@ export function __CrtSetReportFile_005F8A90(param_1, param_2) {
     uVar1 = s32(DAT_0063a048, param_1 * 4);
     if (param_2 === -4) {
       pvVar2 = GetStdHandle(0xfffffff5);
-      // DEVIATION: C pointer write — *(HANDLE *)(&DAT_0063a048 + param_1 * 4) = pvVar2;
+      w32(DAT_0063a048, param_1 * 4, pvVar2);
     }
     else if (param_2 === -5) {
       pvVar2 = GetStdHandle(0xfffffff4);
-      // DEVIATION: C pointer write — *(HANDLE *)(&DAT_0063a048 + param_1 * 4) = pvVar2;
+      w32(DAT_0063a048, param_1 * 4, pvVar2);
     }
     else {
       w32(DAT_0063a048, param_1 * 4, param_2);
@@ -8837,7 +8837,7 @@ export function __CrtDbgReport_005F8B70(param_1, param_2, param_3, param_4, para
         lpOverlapped = 0x0;
         lpNumberOfBytesWritten = local_3014[0];
         nNumberOfBytesToWrite = _strlen(local_200c[0]);
-        WriteFile(s32(ptrAdd(DAT_0063a048, param_1 * 4), 0),local_200c[0],nNumberOfBytesToWrite, lpNumberOfBytesWritten,lpOverlapped);
+        WriteFile(s32(DAT_0063a048, param_1 * 4),local_200c[0],nNumberOfBytesToWrite, lpNumberOfBytesWritten,lpOverlapped);
                   /*JOINED*/
       }
       if ((_MEM[DAT_0063a038 + param_1 * 4] & 2) !== 0) {
@@ -10366,7 +10366,7 @@ export function get_int64_arg_005FB590(param_1) {
 
 
   w32(param_1, 0, s32(param_1, 0) + 8);
-  return true /* DEVIATION: C pointer — *(undefined8 *)(s32(param_1, 0) + -8) */;
+  return s32(s32(param_1, 0) + -8, 0);
 }
 
 
@@ -10840,7 +10840,7 @@ export function __dosmaperr_005FBFD0(param_1) {
       }
       return;
     }
-    if (true /* DEVIATION: C pointer — *(ulong *)(ptrAdd(DAT_0063a2b8, local_8 * 8)) */ === param_1) break;
+    if (u32(DAT_0063a2b8, local_8 * 8) === param_1) break;
     local_8 = local_8 + 1;
   }
   wv(DAT_00639f14, s32(DAT_0063a2bc, local_8 * 8));
@@ -10931,7 +10931,7 @@ export function __ioinit_005FC160() {
   }
   GetStartupInfoA(local_4c[0]);
   if ((local_4c[0].cbReserved2 !== 0) && (local_4c[0].lpReserved2 !== 0x0)) {
-    local_68 = s32(local_4c[0], 0).lpReserved2;
+    local_68 = u32(local_4c[0], 0).lpReserved2;
     local_8 = ((local_4c[0]).lpReserved2 + 4);
     local_64 = (local_68 + (local_8));
     if (0x7ff < (local_68)) {
@@ -13747,7 +13747,7 @@ export function __setmbcp_005FFAC0(_CodePage) {
   }
   else {
     for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if (s32(ptrAdd(DAT_0063b0c8, local_8 * 0x30), 0) === CodePage) {
+      if (u32(DAT_0063b0c8, local_8 * 0x30) === CodePage) {
         for (local_28 = 0; local_28 < 0x101; local_28 = local_28 + 1) {
           _MEM[DAT_0063afa0 + local_28] = 0;
         }

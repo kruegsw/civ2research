@@ -91,9 +91,16 @@ function replaceTypedPtrDeref(line) {
 function replaceTypedPtrDerefOnce(line) {
   const typeMap = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
                     'undefined4': 's32', 'undefined2': 's16', 'undefined1': null,
-                    'char': 's8_arr', 'byte': 'u8_arr' };
-  // Match *(TYPE *)(expr) — single pointer
-  const typePattern = /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|char|byte)\s*\*(?!\s*\*)\s*\)\s*\(/g;
+                    'char': 's8_arr', 'byte': 'u8_arr',
+                    'long': 's32', 'ulong': 'u32', 'undefined': null, 'undefined8': 's32',
+                    'size_t': 'u32', 'SIZE_T': 'u32', 'UINT': 'u32', 'DWORD': 'u32',
+                    'BOOL': 's32', 'HANDLE': 's32', 'HWND': 's32', 'HDC': 's32',
+                    'HBITMAP': 's32', 'HBRUSH': 's32', 'HCURSOR': 's32', 'HFONT': 's32',
+                    'HICON': 's32', 'HMODULE': 's32', 'HPALETTE': 's32', 'LPVOID': 's32',
+                    'HPSTR': 's8_arr', 'float': 's32', 'code': 's32', 'void': 's32' };
+  // Match *(TYPE *)(expr) — single pointer. Include all known types.
+  const allTypes = Object.keys(typeMap).join('|');
+  const typePattern = new RegExp('\\*\\s*\\(\\s*(' + allTypes + ')\\s*\\*(?!\\s*\\*)\\s*\\)\\s*\\(', 'g');
   let result = '';
   let lastIdx = 0;
   let match;
@@ -131,10 +138,9 @@ function replaceTypedPtrDerefOnce(line) {
   let out = result;
 
   // Second pass: *(TYPE *)variable (no parens after cast) → helper(variable, 0)
-  const typeMap2 = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
-                     'undefined4': 's32', 'undefined2': 's16', 'undefined1': null,
-                     'char': 's8_arr', 'byte': 'u8_arr' };
-  out = out.replace(/\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|char|byte)\s*\*(?!\s*\*)\s*\)\s*(\w+)/g,
+  const typeMap2 = typeMap;
+  const typePattern2 = new RegExp('\\*\\s*\\(\\s*(' + allTypes + ')\\s*\\*(?!\\s*\\*)\\s*\\)\\s*(\\w+)', 'g');
+  out = out.replace(typePattern2,
     (m, type, varName) => {
       const h = typeMap2[type];
       if (h === null || h === 's8_arr' || h === 'u8_arr') {
@@ -1579,7 +1585,14 @@ function processFunction(headerLines, bodyLines, ctx) {
     // ── Typed pointer WRITE at statement level ──
     // *(TYPE *)(base + off) = expr;
     // Uses balanced paren extraction for nested expressions like ((int)in_ECX + 0x1ed)
-    const writeTypeMatch = trimmed.match(/^\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|undefined|char|byte|UINT|DWORD|BOOL)\s*\*\s*\)\s*\(/);
+    const writeTypeRe = new RegExp('^\\*\\s*\\(\\s*(' + Object.keys({
+      'int':1,'uint':1,'short':1,'ushort':1,'undefined4':1,'undefined2':1,'undefined1':1,
+      'undefined':1,'char':1,'byte':1,'long':1,'ulong':1,'size_t':1,'SIZE_T':1,
+      'UINT':1,'DWORD':1,'BOOL':1,'HANDLE':1,'HWND':1,'HDC':1,'HBITMAP':1,
+      'HBRUSH':1,'HCURSOR':1,'HFONT':1,'HICON':1,'HMODULE':1,'HPALETTE':1,
+      'LPVOID':1,'HPSTR':1,'float':1,'code':1,'void':1
+    }).join('|') + ')\\s*\\*\\s*\\)\\s*\\(');
+    const writeTypeMatch = trimmed.match(writeTypeRe);
     if (writeTypeMatch) {
       const wType = writeTypeMatch[1];
       const parenStart = trimmed.indexOf('(', writeTypeMatch[0].length - 1);

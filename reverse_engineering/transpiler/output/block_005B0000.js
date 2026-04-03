@@ -5385,14 +5385,14 @@ export function update_palette_C280_005BC280(param_1, param_2) {
     FUN_00511320();
     FUN_00497c40(param_2,local_c[0],local_14[0],local_8[0]);
     pHVar1 = CreateSolidBrush(((((local_8[0]) << 16 | (((local_14[0]) << 8 | (local_c[0]))))) >>> 0));
-    // DEVIATION: C pointer write — *(HBRUSH *)(param_1 + 0x14) = pHVar1;
+    w32(param_1, 0x14, pHVar1);
   }
   else {
     if (s32(param_1, 0x18) !== 0) {
       RealizePalette(s32(param_1, 8));
     }
     pHVar1 = CreateSolidBrush(param_2 | 0x1000000);
-    // DEVIATION: C pointer write — *(HBRUSH *)(param_1 + 0x14) = pHVar1;
+    w32(param_1, 0x14, pHVar1);
   }
   InvalidateRect(s32(param_1, 4),0x0,0);
   return;
@@ -5414,7 +5414,7 @@ export function invalidate_C35E_005BC35E(param_1, param_2, param_3, param_4) {
     DeleteObject(s32(param_1, 0x14));
   }
   pHVar1 = CreateSolidBrush(((((param_4) << 16 | (((param_3) << 8 | (param_2))))) >>> 0));
-  // DEVIATION: C pointer write — *(HBRUSH *)(param_1 + 0x14) = pHVar1;
+  w32(param_1, 0x14, pHVar1);
   InvalidateRect(s32(param_1, 4),0x0,0);
   return;
 }
@@ -6083,7 +6083,7 @@ export function FUN_005bcdc3(param_1, param_2) {
 
 
   if (v(DAT_00638b48) === 1) {
-    // DEVIATION: C pointer write — *(HPALETTE *)(param_1 + 0x18) = param_2;
+    w32(param_1, 0x18, param_2);
     SelectPalette(s32(param_1, 8),param_2,0);
   }
   return;
@@ -6131,7 +6131,7 @@ export function invalidate_CE5F_005BCE5F(param_1, param_2) {
       DestroyIcon(s32(param_1, 0x20));
     }
     pHVar1 = LoadIconA(v(DAT_006e4ff0),(param_2 & 0xffff));
-    // DEVIATION: C pointer write — *(HICON *)(param_1 + 0x20) = pHVar1;
+    w32(param_1, 0x20, pHVar1);
     BVar2 = IsWindow(s32(param_1, 4));
     if ((BVar2 !== 0) && (BVar2 = IsIconic(s32(param_1, 4)), BVar2 !== 0)) {
       InvalidateRect(s32(param_1, 4),0x0,0);
@@ -6262,7 +6262,7 @@ export function FUN_005bd023(param_1, param_2) {
 
 
   if ((param_1 !== 0) && (param_2 !== 0x0)) {
-    // DEVIATION: C pointer write — *(HCURSOR *)(param_1 + 0x1c) = param_2;
+    w32(param_1, 0x1c, param_2);
     SetCursor(param_2);
   }
   return;
@@ -6284,16 +6284,16 @@ export function FUN_005bd05f(param_1, param_2) {
     if ((param_2) < 0) {
       if (param_2 === -1) {
         pHVar1 = LoadCursorA(0x0,0x7f00);
-        // DEVIATION: C pointer write — *(HCURSOR *)(param_1 + 0x1c) = pHVar1;
+        w32(param_1, 0x1c, pHVar1);
       }
       else if (param_2 === 0xfffffffe) {
         pHVar1 = LoadCursorA(0x0,0x7f02);
-        // DEVIATION: C pointer write — *(HCURSOR *)(param_1 + 0x1c) = pHVar1;
+        w32(param_1, 0x1c, pHVar1);
       }
     }
     else {
       pHVar1 = LoadCursorA(v(DAT_006e4ff0),(param_2 & 0xffff));
-      // DEVIATION: C pointer write — *(HCURSOR *)(param_1 + 0x1c) = pHVar1;
+      w32(param_1, 0x1c, pHVar1);
     }
   }
   return;

@@ -146,7 +146,7 @@ export function FUN_005a120b(in_ECX, param_1, param_2) {
       if (in_ECX !== 0xfffffdf8) {
         local_3c[0] = local_14[0] + in_ECX[_MEM[param_1 + 3] + 0x82];
       }
-      if ((in_ECX[0x92] === 0) || (iVar2 = (true /* DEVIATION: C pointer — *(code *)in_ECX[0x92] */) (in_ECX,s32(in_ECX, 0),_MEM[param_1 + 1],iVar2,local_20,local_28, in_ECX[_MEM[param_1 + 3] + 0x7c]), iVar2 === 0)) {
+      if ((in_ECX[0x92] === 0) || (iVar2 = (s32(in_ECX, 0)[0x92]) (in_ECX,s32(in_ECX, 0),_MEM[param_1 + 1],iVar2,local_20,local_28, in_ECX[_MEM[param_1 + 3] + 0x7c]), iVar2 === 0)) {
          /*JOINED*/
                             /*JOINED*/
                              /*JOINED*/

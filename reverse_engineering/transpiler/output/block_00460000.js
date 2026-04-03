@@ -3010,7 +3010,7 @@ export function FUN_0046af70(in_ECX, param_1, param_2) {
   }
   w32((param_2) + 0xc, 0, v(DAT_00628468));
   wv(DAT_00628468, v(DAT_00628468) + 1);
-  iVar1 = XD_SendSecureData(((param_1) & 0xFFFF),param_2,true /* DEVIATION: C pointer — *(ulong *)((param_2) + 8) */,0);
+  iVar1 = XD_SendSecureData(((param_1) & 0xFFFF),param_2,u32((param_2) + 8, 0),0);
   w32(in_ECX, 0x578, iVar1);
   if (s32(in_ECX, 0x578) < 0) {
     FUN_005d22f9(s_SendToConnections__FAILED_on_sen_0062a704,param_1,s32(in_ECX, 0x578) ,s32((param_2) + 4, 0));
@@ -3043,7 +3043,7 @@ export function FUN_0046b0a1(in_ECX, param_1) {
   
   w32((param_1) + 0xc, 0, v(DAT_00628468));
   wv(DAT_00628468, v(DAT_00628468) + 1);
-  iVar2 = XD_SendBroadcastData(param_1,true /* DEVIATION: C pointer — *(ulong *)((param_1) + 8) */,0);
+  iVar2 = XD_SendBroadcastData(param_1,u32((param_1) + 8, 0),0);
   w32(in_ECX, 0x578, iVar2);
   bVar1 = s32(in_ECX, 0x578) < s32((param_1) + 8, 0);
   if (bVar1) {

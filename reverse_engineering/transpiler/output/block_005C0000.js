@@ -5897,7 +5897,7 @@ export function create_font_86BC_005C86BC(param_1, param_2, param_3, param_4) {
   iVar1 = _strncmp(_Str1,_Str2,_MaxCount);
   if (iVar1 === 0) {
     pHVar2 = CreateFontIndirectA(param_1);
-    // DEVIATION: C pointer write — *(HFONT *)(param_4 + 0x108 + *(int *)(param_4 + 0x100) * 4) = pHVar2;
+    w32(param_4, 0x108 + s32(param_4, 0x100) * 4, pHVar2);
     w32(param_4, 0x100, s32(param_4, 0x100) + 1);
   }
   return 1;
@@ -7166,9 +7166,9 @@ export function draw_text_9740_005C9740(param_1, param_2, param_3, param_4) {
         DeleteObject(h_02);
         DeleteDC(local_164);
         iVar1 = FUN_005c9499(local_154,param_2);
-        // DEVIATION: C pointer write — *(HBITMAP *)(iVar1 + 0xc) = h;
-        // DEVIATION: C pointer write — *(HBITMAP *)(iVar1 + 0x10) = h_00;
-        // DEVIATION: C pointer write — *(HBITMAP *)(iVar1 + 0x14) = local_168;
+        w32(iVar1, 0xc, h);
+        w32(iVar1, 0x10, h_00);
+        w32(iVar1, 0x14, local_168);
         w32(iVar1, 0x2c, 6);
         SetWindowLongA(local_154,-4,0x5cacd4);
       }
@@ -8120,9 +8120,9 @@ export function create_window_C0F0_005CC0F0(param_1, param_2, param_3, param_4) 
   pHVar6 = LoadBitmapA(v(DAT_006e4ff0),0x131);
   pHVar7 = LoadBitmapA(v(DAT_006e4ff0),0x130);
   iVar3 = FUN_005c9499(pHVar4,param_2);
-  // DEVIATION: C pointer write — *(HBITMAP *)(iVar3 + 0xc) = pHVar5;
-  // DEVIATION: C pointer write — *(HBITMAP *)(iVar3 + 0x10) = pHVar6;
-  // DEVIATION: C pointer write — *(HBITMAP *)(iVar3 + 0x14) = pHVar7;
+  w32(iVar3, 0xc, pHVar5);
+  w32(iVar3, 0x10, pHVar6);
+  w32(iVar3, 0x14, pHVar7);
   w32(iVar3, 0x2c, 2);
   w32(iVar3, 0x24, pvVar2);
   SetWindowLongA(pHVar4,-4,0x5cc320);

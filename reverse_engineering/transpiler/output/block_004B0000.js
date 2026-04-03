@@ -253,7 +253,7 @@ export function FUN_004b0a41() {
   local_8 = v(DAT_0062d0bc);
   for (local_c = 0; local_c < 0x17; local_c = local_c + 1) {
     _memcpy
-              (local_8,_MEM[DAT_0067a424 + local_c * 6], true /* DEVIATION: C pointer — *(size_t *)(ptrAdd(DAT_0067a410, local_c * 0x18)) */);
+              (local_8,_MEM[DAT_0067a424 + local_c * 6], u32(DAT_0067a410, local_c * 0x18));
                /*JOINED*/
     local_8 = ((local_8) + _MEM[DAT_0067a414 + local_c * 6]);
   }

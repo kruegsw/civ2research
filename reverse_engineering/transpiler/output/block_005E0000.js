@@ -1588,7 +1588,7 @@ export function FUN_005e1c8e(param_1, param_2) {
       local_c[0] = 0x28;
       AVIStreamReadFormat(v(DAT_00638dc4),1,param_1 + 0x5c0,local_c[0]);
       AVIStreamInfoA(v(DAT_00638dc4),local_9c[0],0x8c);
-      // DEVIATION: C pointer write — *(SIZE_T *)(param_1 + 0x5d4) = local_74;
+      w32(param_1, 0x5d4, local_74);
       wv(_DAT_006e50d8, (local_84 / local_88 | 0));
       wv(DAT_00638db0, ICLocate(0x63646976,local_98,param_1 + 0x5c0,0,2));
       if (v(DAT_00638db0) === 0) {
@@ -2577,9 +2577,9 @@ export function FUN_005e3988(param_1) {
   _Dst = FUN_005dcdf9(uVar1);
   local_14 = ((s32(param_1, 0x1c) + -1) * s32(param_1, 0x20) + (local_c));
   for (local_18 = 0; local_18 < (s32(param_1, 0x1c) / 2 | 0); local_18 = local_18 + 1) {
-    _memcpy(_Dst,local_14,true /* DEVIATION: C pointer — *(size_t *)(param_1 + 0x20) */);
-    _memcpy(local_14,local_c,true /* DEVIATION: C pointer — *(size_t *)(param_1 + 0x20) */);
-    _memcpy(local_c,_Dst,true /* DEVIATION: C pointer — *(size_t *)(param_1 + 0x20) */);
+    _memcpy(_Dst,local_14,u32(param_1, 0x20));
+    _memcpy(local_14,local_c,u32(param_1, 0x20));
+    _memcpy(local_c,_Dst,u32(param_1, 0x20));
     local_c = ((local_c) + s32(param_1, 0x20));
     local_14 = ((local_14) - s32(param_1, 0x20));
   }
@@ -4795,7 +4795,7 @@ export function FUN_005e6651(in_ECX, param_1, param_2, param_3, param_4) {
   }
   else {
     local_c = FUN_005c5560(local_24);
-    local_18 = true /* DEVIATION: C pointer — *(size_t *)(local_c + 4) */;
+    local_18 = u32(local_c, 4);
     local_1c = s32(local_c, 8);
     SetRect(local_38[0],0,0,local_18,local_1c);
     iVar2 = FUN_005e6566(local_38[0]);

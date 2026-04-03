@@ -4291,7 +4291,7 @@ export function FUN_005d6283(param_1) {
     if (local_8 < local_10) {
       mmioRead(s32(param_1, 0x60),local_40,local_8);
       w32(param_1, 0x68, s32(param_1, 0x68) + local_8);
-      // DEVIATION: C pointer write — *(HPSTR *)(param_1 + 0x34) = local_44;
+      w32(param_1, 0x34, local_44);
       local_14 = 1;
     }
     else {
@@ -5876,13 +5876,13 @@ export function FUN_005d89e8(param_1, param_2, param_3) {
   if ((s32(param_1, 0x94) === 0) && (s32(param_1, 0x90) === 0)) {
     pvVar1 = CreateFileMappingA(s32(param_1, 4),0x0,2,0,0, 0x0);
                                 /*JOINED*/
-    // DEVIATION: C pointer write — *(HANDLE *)(param_1 + 0x94) = pvVar1;
+    w32(param_1, 0x94, pvVar1);
     if (s32(param_1, 0x94) === 0) {
       uVar2 = 0;
     }
     else {
       pvVar3 = MapViewOfFile(s32(param_1, 0x94),4,0,param_2,param_3);
-      // DEVIATION: C pointer write — *(LPVOID *)(param_1 + 0x90) = pvVar3;
+      w32(param_1, 0x90, pvVar3);
       if (s32(param_1, 0x90) === 0) {
         uVar2 = FUN_005d8ab8(param_1);
       }
@@ -6220,7 +6220,7 @@ export function create_window_8E3F_005D8E3F(param_1, param_2, param_3, param_4, 
     pHVar11 = CreateWindowExA(4,s_MSControlClass_00638708,v(DAT_00638704),local_40,local_44, (iVar10 - iVar13) + local_8,iVar7,nHeight,s32(iVar9, 4),hMenu, hInstance,lpParam);
                               /*JOINED*/
                               /*JOINED*/
-    // DEVIATION: C pointer write — *(HWND *)(iVar6 + local_28 * 0xa4) = pHVar11;
+    w32(iVar6, local_28 * 0xa4, pHVar11);
     iVar9 = FUN_005c9499(s32(iVar6, local_28 * 0xa4),param_4);
     if (local_28 === 0) {
       w32(iVar9, 8, 0);
@@ -6228,9 +6228,9 @@ export function create_window_8E3F_005D8E3F(param_1, param_2, param_3, param_4, 
     else {
       w32(iVar9, 8, 1);
     }
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar9 + 0xc) = pHVar2;
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar9 + 0x10) = pHVar3;
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar9 + 0x14) = pHVar4;
+    w32(iVar9, 0xc, pHVar2);
+    w32(iVar9, 0x10, pHVar3);
+    w32(iVar9, 0x14, pHVar4);
     w32(iVar9, 0x24, local_28 * 0xa4 + iVar6);
     w32(iVar9, 0x2c, 3);
     SetWindowLongA(s32(iVar6, local_28 * 0xa4),-4,0x5d9b86);
@@ -6371,7 +6371,7 @@ export function create_window_931B_005D931B(param_1, param_2, param_3, param_4, 
     pHVar12 = CreateWindowExA(4,s_MSControlClass_0063871c,v(DAT_00638718),local_448,local_44c, (iVar11 - iVar14) + local_8,iVar8,iVar9,s32(iVar10, 4),hMenu, hInstance,lpParam);
                               /*JOINED*/
                               /*JOINED*/
-    // DEVIATION: C pointer write — *(HWND *)(iVar7 + local_42c * 0xa4) = pHVar12;
+    w32(iVar7, local_42c * 0xa4, pHVar12);
     iVar10 = FUN_005c9499(s32(iVar7, local_42c * 0xa4),param_4);
     if (local_42c === 0) {
       w32(iVar10, 8, 0);
@@ -6379,9 +6379,9 @@ export function create_window_931B_005D931B(param_1, param_2, param_3, param_4, 
     else {
       w32(iVar10, 8, 1);
     }
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar10 + 0xc) = pHVar2;
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar10 + 0x10) = pHVar3;
-    // DEVIATION: C pointer write — *(HBITMAP *)(iVar10 + 0x14) = pHVar4;
+    w32(iVar10, 0xc, pHVar2);
+    w32(iVar10, 0x10, pHVar3);
+    w32(iVar10, 0x14, pHVar4);
     w32(iVar10, 0x24, local_42c * 0xa4 + iVar7);
     w32(iVar10, 0x2c, 3);
     SetWindowLongA(s32(iVar7, local_42c * 0xa4),-4,0x5d9b86);
@@ -7427,7 +7427,7 @@ export function FUN_005db140(param_1) {
     pHVar1 = 0x0;
   }
   else {
-    // DEVIATION: C pointer write — *(HMODULE *)(&DAT_006e4f60 + DAT_006387cc * 4) = pHVar1;
+    w32(DAT_006e4f60, v(DAT_006387cc) * 4, pHVar1);
     wv(DAT_006387cc, v(DAT_006387cc) + 1);
   }
   return pHVar1;
@@ -7476,7 +7476,7 @@ export function FUN_005db1fa(param_1, param_2) {
   local_10 = FindResourceA(v(DAT_006e4ff0),param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < v(DAT_006387cc) && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < v(DAT_006387cc) && (local_10 = FindResourceA(s32(DAT_006e4f60, local_14 * 4),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;
@@ -7490,7 +7490,7 @@ export function FUN_005db1fa(param_1, param_2) {
       local_1c = v(DAT_006e4ff0);
     }
     else {
-      local_1c = s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0);
+      local_1c = s32(DAT_006e4f60, local_14 * 4);
     }
     pvVar1 = LoadResource(local_1c,local_10);
   }
@@ -7516,7 +7516,7 @@ export function FUN_005db2f8(param_1) {
   local_8 = FindResourceA(v(DAT_006e4ff0),param_1,0x2);
   if (local_8 === 0x0) {
     local_c = 0;
-    while ((local_c < v(DAT_006387cc) && (local_8 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_c * 4), 0),param_1,0x2), local_8 === 0x0))) {
+    while ((local_c < v(DAT_006387cc) && (local_8 = FindResourceA(s32(DAT_006e4f60, local_c * 4),param_1,0x2), local_8 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_c = local_c + 1;
@@ -7530,7 +7530,7 @@ export function FUN_005db2f8(param_1) {
       local_14 = v(DAT_006e4ff0);
     }
     else {
-      local_14 = s32(ptrAdd(DAT_006e4f60, local_c * 4), 0);
+      local_14 = s32(DAT_006e4f60, local_c * 4);
     }
     pvVar1 = LoadResource(local_14,local_8);
   }
@@ -7572,7 +7572,7 @@ export function FUN_005db3ca(param_1, param_2) {
   local_10 = FindResourceA(v(DAT_006e4ff0),param_2,local_c[0]);
   if (local_10 === 0x0) {
     local_14 = 0;
-    while ((local_14 < v(DAT_006387cc) && (local_10 = FindResourceA(s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0),param_2,local_c[0]), local_10 === 0x0))) {
+    while ((local_14 < v(DAT_006387cc) && (local_10 = FindResourceA(s32(DAT_006e4f60, local_14 * 4),param_2,local_c[0]), local_10 === 0x0))) {
            /*JOINED*/
            /*JOINED*/
       local_14 = local_14 + 1;
@@ -7586,7 +7586,7 @@ export function FUN_005db3ca(param_1, param_2) {
       local_18 = v(DAT_006e4ff0);
     }
     else {
-      local_18 = s32(ptrAdd(DAT_006e4f60, local_14 * 4), 0);
+      local_18 = s32(DAT_006e4f60, local_14 * 4);
     }
     pvVar2 = LoadResource(local_18,local_10);
   }
@@ -7632,7 +7632,7 @@ export function FUN_005db55b(param_1) {
 
   let local_8;
   
-  for (local_8 = 0; (s32(ptrAdd(DAT_006e4f60, local_8 * 4), 0) !== param_1 && (local_8 < v(DAT_006387cc))); local_8 = local_8 + 1) {
+  for (local_8 = 0; (s32(DAT_006e4f60, local_8 * 4) !== param_1 && (local_8 < v(DAT_006387cc))); local_8 = local_8 + 1) {
       /*JOINED*/
       /*JOINED*/
   }
@@ -8336,7 +8336,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         iVar6 = FUN_00414d10();
         iVar7 = FUN_00414d10();
         pHVar3 = GetDC(s32(iVar7, 4));
-        // DEVIATION: C pointer write — *(HDC *)(iVar6 + 8) = pHVar3;
+        w32(iVar6, 8, pHVar3);
       }
       break;
     case 5:
@@ -8352,7 +8352,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         iVar6 = FUN_00414d10();
         iVar7 = FUN_00414d10();
         pHVar3 = GetDC(s32(iVar7, 4));
-        // DEVIATION: C pointer write — *(HDC *)(iVar6 + 8) = pHVar3;
+        w32(iVar6, 8, pHVar3);
       }
       break;
     case 7:
@@ -8400,7 +8400,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
           SendMessageA(s32(local_18, 0xc),0x86,0,0);
         }
         SendMessageA(param_1,0x86,1,0);
-        // DEVIATION: C pointer write — *(HWND *)(local_18 + 0xc) = param_1;
+        w32(local_18, 0xc, param_1);
       }
     }
   }
