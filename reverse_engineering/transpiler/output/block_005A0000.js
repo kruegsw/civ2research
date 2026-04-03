@@ -17,7 +17,7 @@ export function FUN_005a0fea(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_c;
   let local_8;
   
-  while (s32(param_1, 0) !== 0) {
+  while (_MEM[param_1] !== 0) {
     iVar1 = s32(in_ECX, 0x1e8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ * 4);
     iVar2 = FUN_0040efd0(param_1);
     if (iVar2 <= iVar1 + -6) break;
@@ -69,7 +69,7 @@ export function FUN_005a1148(in_ECX, param_1, param_2, param_3, param_4, param_5
   pcVar2 = _strchr(param_1,0x7c);
   if (pcVar2 !== 0x0) {
     local_8 = pcVar2 + 1;
-    w32(pcVar2, 0, 0);
+    _MEM[pcVar2] = 0;
   }
   FUN_005a0fea(param_1,s32(in_ECX, 0x208 + true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ * 4) + param_2, param_3,param_4,param_5);
                      /*JOINED*/
@@ -77,7 +77,7 @@ export function FUN_005a1148(in_ECX, param_1, param_2, param_3, param_4, param_5
     iVar1 = s32(in_ECX, 0x1e8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ * 4);
     iVar3 = FUN_0040efd0(local_8);
     FUN_005a0fea(local_8,(iVar1 + param_2 + -4) - iVar3,param_3,param_4,param_5);
-    w32(pcVar2, 0, 124);
+    _MEM[pcVar2] = 124;
   }
   return;
 }
@@ -2292,7 +2292,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
             FUN_0059e18b(v(DAT_00635b70),-1,-1,-1,0);
           }
         }
-        else if (s32(local_70, 0) === 64) {
+        else if (_MEM[local_70] === 64) {
           local_18 = local_70 + 1;
           iVar1 = __strcmpi(local_18,s_OPTIONS_00635b74);
           if ((iVar1 === 0) || (iVar1 = _strcmp(local_18,s_PROMPT_00635b7c), iVar1 === 0)) {
@@ -2306,9 +2306,9 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
             else {
               iVar1 = __strnicmp(local_18,s_TITLE_00635b8c,5);
               if (iVar1 === 0) {
-                for (; (s32(local_18, 0) !== 0 && (s32(local_18, 0) !== 61)); local_18 = local_18 + 1) {
+                for (; (_MEM[local_18] !== 0 && (_MEM[local_18] !== 61)); local_18 = local_18 + 1) {
                 }
-                if (s32(local_18, 0) !== 0) {
+                if (_MEM[local_18] !== 0) {
                   local_18 = local_18 + 1;
                 }
                 FUN_00426ff0(local_18,local_17c[0]);
@@ -2317,9 +2317,9 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
               else {
                 iVar1 = __strnicmp(local_18,s_BUTTON_00635b94,6);
                 if (iVar1 === 0) {
-                  for (; (s32(local_18, 0) !== 0 && (s32(local_18, 0) !== 61)); local_18 = local_18 + 1) {
+                  for (; (_MEM[local_18] !== 0 && (_MEM[local_18] !== 61)); local_18 = local_18 + 1) {
                   }
-                  if (s32(local_18, 0) !== 0) {
+                  if (_MEM[local_18] !== 0) {
                     local_18 = local_18 + 1;
                   }
                   FUN_00426ff0(local_18,local_17c[0]);
@@ -2328,7 +2328,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                 else {
                   iVar1 = __strnicmp(local_18,s_COLUMNS_00635b9c,7);
                   if (iVar1 === 0) {
-                    while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0))) {
+                    while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0))) {
                       local_18 = local_18 + 1;
                     }
                     local_c = _atoi(local_18);
@@ -2337,7 +2337,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                   else {
                     iVar1 = __strnicmp(local_18,s_HEIGHT_00635ba4,6);
                     if (iVar1 === 0) {
-                      while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0)))
+                      while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0)))
                       {
                         local_18 = local_18 + 1;
                       }
@@ -2349,7 +2349,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                       if (iVar1 !== 0) {
                         iVar1 = __strnicmp(local_18,v(DAT_00635bb8),1);
                         if ((iVar1 === 0) && (iVar1 = _isalpha((_MEM[local_18 + 1])), iVar1 === 0)) {
-                          while (((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0)) && (s32(local_18, 0) !== 45))) {
+                          while (((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0)) && (_MEM[local_18] !== 45))) {
                                   /*JOINED*/
                                  /*JOINED*/
                             local_18 = local_18 + 1;
@@ -2360,7 +2360,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                         else {
                           iVar1 = __strnicmp(local_18,v(DAT_00635bbc),1);
                           if ((iVar1 === 0) && (iVar1 = _isalpha((_MEM[local_18 + 1])), iVar1 === 0)) {
-                            while (((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0)) && (s32(local_18, 0) !== 45))) {
+                            while (((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0)) && (_MEM[local_18] !== 45))) {
                                     /*JOINED*/
                                    /*JOINED*/
                               local_18 = local_18 + 1;
@@ -2371,7 +2371,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                           else {
                             iVar1 = __strnicmp(local_18,s_WIDTH_00635bc0,5);
                             if (iVar1 === 0) {
-                              while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0))) {
+                              while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0))) {
                                      /*JOINED*/
                                 local_18 = local_18 + 1;
                               }
@@ -2381,7 +2381,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                             else {
                               iVar1 = __strnicmp(local_18,s_LENGTH_00635bc8,6);
                               if (iVar1 === 0) {
-                                while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0))) {
+                                while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0))) {
                                        /*JOINED*/
                                   local_18 = local_18 + 1;
                                 }
@@ -2397,7 +2397,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                                 else {
                                   iVar1 = __strnicmp(local_18,s_LISTBOX_00635bdc,7);
                                   if (iVar1 === 0) {
-                                    while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0))) {
+                                    while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0))) {
                                            /*JOINED*/
                                       local_18 = local_18 + 1;
                                     }
@@ -2416,7 +2416,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                                       iVar1 = __strnicmp(local_18,s_DEFAULT_00635bec,7);
                                       if (iVar1 === 0) {
                                         if (local_74 === 0) {
-                                          while ((s32(local_18, 0) !== 0 && (iVar1 = _isdigit((s32(local_18, 0))), iVar1 === 0))) {
+                                          while ((_MEM[local_18] !== 0 && (iVar1 = _isdigit((_MEM[local_18])), iVar1 === 0))) {
                                                  /*JOINED*/
                                             local_18 = local_18 + 1;
                                           }
@@ -2425,10 +2425,10 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                                           }
                                         }
                                         else {
-                                          for (; (s32(local_18, 0) !== 0 && (s32(local_18, 0) !== 61)); local_18 = local_18 + 1) {
+                                          for (; (_MEM[local_18] !== 0 && (_MEM[local_18] !== 61)); local_18 = local_18 + 1) {
                                               /*JOINED*/
                                           }
-                                          if (s32(local_18, 0) !== 0) {
+                                          if (_MEM[local_18] !== 0) {
                                             local_18 = local_18 + 1;
                                           }
                                           sVar2 = _strlen(param_4);
@@ -2437,7 +2437,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                                           }
                                         }
                                       }
-                                      else if (s32(local_18, 0) !== 64) {
+                                      else if (_MEM[local_18] !== 64) {
                                         local_7c = 3;
                                       }
                                     }

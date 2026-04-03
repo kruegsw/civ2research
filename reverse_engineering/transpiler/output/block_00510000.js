@@ -1872,7 +1872,7 @@ export function FUN_00515516(in_ECX) {
   FUN_004aef20(local_11c[0]);
   iVar2 = FUN_004a2379(v(DAT_006558e8),v(DAT_00631ab4));
   if (iVar2 === 0) {
-    while (pcVar3 = FUN_004a23fc(1), s32(pcVar3, 0) !== 64) {
+    while (pcVar3 = FUN_004a23fc(1), _MEM[pcVar3] !== 64) {
       FUN_0043c840(local_11c[0],v(DAT_00673f14));
       FUN_0043c840(local_11c[0],v(DAT_00631abc));
     }
@@ -2954,7 +2954,7 @@ export function FUN_005179a3(in_ECX, param_1) {
     if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) return LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_1c, local_8, param_1, puVar5, uVar4);
     bVar1 = false;
     puVar5 = FUN_004a24b1();
-    switch(s32(puVar5, 0)) {
+    switch(_MEM[puVar5]) {
     case 0x23:
       bVar1 = bVar2;
       return LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_1c, local_8, param_1, puVar5, uVar4);
@@ -3322,7 +3322,7 @@ export function FUN_00518392(param_1) {
 
   let uVar1;
   
-  switch(s32(param_1, 0)) {
+  switch(_MEM[param_1]) {
   case 0x41:
   case 0x61:
     uVar1 = 4;
@@ -5204,9 +5204,9 @@ export function FUN_0051d63b(param_1, param_2, param_3, param_4, param_5) {
   iVar1 = FUN_005a632a(param_1,param_2,param_3,param_4,0,0,0,1);
   if (iVar1 === 0) {
     FUN_005a5f34(param_5,0);
-    for (local_14 = param_5; (s32(local_14, 0) !== 0 && ((s32(local_14, 0) === 32 || (s32(local_14, 0) === 9)))); local_14 = local_14 + 1) {
+    for (local_14 = param_5; (_MEM[local_14] !== 0 && ((_MEM[local_14] === 32 || (_MEM[local_14] === 9)))); local_14 = local_14 + 1) {
         /*JOINED*/
-      w32(local_14, 0, 95);
+      _MEM[local_14] = 95;
     }
   }
   // DEVIATION: SEH
@@ -6314,7 +6314,7 @@ export function FUN_0051f19c(param_1, param_2, param_3) {
     }
     for (local_32c = 0; local_32c < 0x15; local_32c = local_32c + 1) {
       local_24 = FUN_0059e7ad(local_320);
-      if ((local_24 !== 0x0) && ((s32(local_24, 0) & 1) === 0)) {
+      if ((local_24 !== 0x0) && ((_MEM[local_24] & 1) === 0)) {
         FUN_0059ea99(s32(local_24, 4));
         if (local_b4 !== 0x0) {
           FUN_004472f0(s32(local_24, 4));
@@ -6943,7 +6943,7 @@ function LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local
     if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) return LAB_00517db5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_1c, local_8, param_1, puVar5, uVar4);
     bVar1 = false;
     puVar5 = FUN_004a24b1();
-    switch(s32(puVar5, 0)) {
+    switch(_MEM[puVar5]) {
     case 0x23:
       bVar1 = bVar2;
       return LAB_00517ae5_helper(bVar1, bVar2, iVar3, iVar6, in_ECX, local_10, local_18, local_1c, local_8, param_1, puVar5, uVar4);
@@ -8691,7 +8691,7 @@ function LAB_0051f8c0_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
     }
     for (local_32c = 0; local_32c < 0x15; local_32c = local_32c + 1) {
       local_24 = FUN_0059e7ad(local_320);
-      if ((local_24 !== 0x0) && ((s32(local_24, 0) & 1) === 0)) {
+      if ((local_24 !== 0x0) && ((_MEM[local_24] & 1) === 0)) {
         FUN_0059ea99(s32(local_24, 4));
         if (local_b4 !== 0x0) {
           FUN_004472f0(s32(local_24, 4));
@@ -9377,7 +9377,7 @@ function LAB_0051f1f6_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
     }
     for (local_32c = 0; local_32c < 0x15; local_32c = local_32c + 1) {
       local_24 = FUN_0059e7ad(local_320);
-      if ((local_24 !== 0x0) && ((s32(local_24, 0) & 1) === 0)) {
+      if ((local_24 !== 0x0) && ((_MEM[local_24] & 1) === 0)) {
         FUN_0059ea99(s32(local_24, 4));
         if (local_b4 !== 0x0) {
           FUN_004472f0(s32(local_24, 4));

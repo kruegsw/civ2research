@@ -1,0 +1,31 @@
+{
+  "description": "Sign corrections from P-code oracle. Only includes unambiguous cases where the expression is ALWAYS one sign in the P-code output.",
+  "generated": "2026-04-02",
+  "note": "Game-logic sign divergences (bVar, DAT_00656100) are context-dependent — same variable used both signed and unsigned. These cannot be blanket-corrected.",
+  "corrections": [
+    {
+      "block": "block_004C0000",
+      "fn": "FUN_004c4ada",
+      "from": "s8(_MEM[DAT_00656100 + param_1 * 0x20])",
+      "to": "u8(_MEM[DAT_00656100 + param_1 * 0x20])"
+    },
+    {
+      "block": "block_005F0000",
+      "fn": "FUN_005fcdc0",
+      "from": "s8(param_1)",
+      "to": "u8(param_1)"
+    },
+    {
+      "block": "block_005F0000",
+      "fn": "FUN_005fcdc0",
+      "from": "s8(_MEM[local_c])",
+      "to": "u8(_MEM[local_c])"
+    },
+    {
+      "block": "block_00600000",
+      "fn": "FUN_00601040",
+      "from": "s8(local_40)",
+      "to": "u8(local_40)"
+    }
+  ]
+}

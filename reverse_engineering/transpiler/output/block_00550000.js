@@ -1040,10 +1040,10 @@ export function FUN_00553db0(param_1) {
 
 
   __strupr(param_1);
-  while ((s32(param_1, 0) !== 0 && (_MEM[DAT_006335f8 + s32(param_1, 0)] !== 0))) {
+  while ((_MEM[param_1] !== 0 && (_MEM[DAT_006335f8 + _MEM[param_1]] !== 0))) {
     param_1 = param_1 + 1;
   }
-  return (s32(param_1, 0));
+  return (_MEM[param_1]);
 }
 
 
@@ -1560,8 +1560,8 @@ export function FUN_0055499f() {
         FUN_005551a5();
         return;
       }
-      w32(pbVar3, 0, s32(pbVar3, 0) & 0x80);
-      w32(pbVar3, 0, s32(pbVar3, 0) | u8(local_20));
+      _MEM[pbVar3] = _MEM[pbVar3] & 0x80;
+      _MEM[pbVar3] = _MEM[pbVar3] | u8(local_20);
     }
     local_14 = _MEM[pbVar3 + 1];
     FUN_0051d7d6(0,local_14 & 4);
@@ -1660,7 +1660,7 @@ export function FUN_0055499f() {
     return;
   }
   if (local_20 === 10) {
-    w32(pbVar3, 0, 10);
+    _MEM[pbVar3] = 10;
     local_320 = 0x3f;
     for (local_18 = 0; local_18 < 8; local_18 = local_18 + 1) {
       uVar5 = FUN_005ae052((s8(_MEM[DAT_00628350 + local_18])) + (v(DAT_0064b1b4)));
@@ -1674,8 +1674,8 @@ export function FUN_0055499f() {
     _MEM[pbVar3 + 3] = u8(local_320);
   }
   else {
-    w32(pbVar3, 0, s32(pbVar3, 0) & 0x80);
-    w32(pbVar3, 0, s32(pbVar3, 0) | u8(local_20));
+    _MEM[pbVar3] = _MEM[pbVar3] & 0x80;
+    _MEM[pbVar3] = _MEM[pbVar3] | u8(local_20);
     if (uVar6 === 10) {
       local_320 = 0x3f;
       for (local_18 = 0; local_18 < 8; local_18 = local_18 + 1) {

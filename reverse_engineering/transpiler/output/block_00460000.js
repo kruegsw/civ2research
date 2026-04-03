@@ -4211,7 +4211,7 @@ export function FUN_0046e020(param_1, param_2, param_3, param_4) {
       if (iVar1 === 0) {
         return;
       }
-      if ((pcVar2 !== 0x0) && (local_108[0] === s32(pcVar2, 0))) {
+      if ((pcVar2 !== 0x0) && (local_108[0] === _MEM[pcVar2])) {
         return;
       }
     }
@@ -4461,14 +4461,14 @@ export function FUN_0046e8f0(param_1) {
   let local_8;
   
   local_8 = 0;
-  while (s32(param_1, 0) !== 0) {
-    cVar1 = s32(param_1, 0);
+  while (_MEM[param_1] !== 0) {
+    cVar1 = _MEM[param_1];
     param_1 = param_1 + 1;
     _C = __toupper_lk((cVar1));
     iVar2 = _isdigit(_C);
     if (iVar2 === 0) {
       if ((_C < 0x41) || (0x46 < _C)) {
-        for (; s32(param_1, 0) !== 0; param_1 = param_1 + 1) {
+        for (; _MEM[param_1] !== 0; param_1 = param_1 + 1) {
         }
       }
       else {
@@ -4934,7 +4934,7 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                   local_45c = local_42c;
                   break;
                 }
-                w32(local_420, 0, s8(local_40c) + cVar1);
+                _MEM[local_420] = s8(local_40c) + cVar1;
                 local_420 = local_420 + 1;
               }
             } while( true );
@@ -4999,7 +4999,7 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                         // DEVIATION: C struct — local_468 = s32(local_43c, 0)->_ptr;
                         // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
                       }
-                      w32(local_420, 0, local_468 + cVar1);
+                      _MEM[local_420] = local_468 + cVar1;
                       local_420 = local_420 + 1;
                     }
                     if ((local_40c & 1) !== 0) {
@@ -5025,7 +5025,7 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                   // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
                 }
                 for (local_430 = 0; local_430 < (local_40c); local_430 = local_430 + 1) {
-                  w32(local_420, 0, cVar1 + s8(local_424));
+                  _MEM[local_420] = cVar1 + s8(local_424);
                   local_420 = local_420 + 1;
                 }
                 local_428 = local_428 + local_40c;
@@ -5163,7 +5163,7 @@ export function write_bitmap_data_0046FBF3(param_1, param_2, param_3, param_4, p
             if ((local_428 < 0) || (local_434 === 0)) return LAB_0046ffb7_helper(iVar3, local_404, local_408, local_40c, local_412, local_414, local_416, local_41a, local_41c, local_420, local_424, local_428, local_42c, local_430, local_434, local_438, local_43c, local_440, local_444, local_448, local_44c, local_450, local_452, local_454, local_458, local_45c, local_460, param_1, param_2, param_3, param_4, param_5, sVar2, uVar1);
             local_420 = FUN_005c19d3(0,local_428);
             for (local_424 = 0; local_424 < local_45c; local_424 = local_424 + 1) {
-              local_40c = ((s32(local_420, 0)) >>> 0) - param_3;
+              local_40c = ((_MEM[local_420]) >>> 0) - param_3;
               local_420 = local_420 + 1;
               iVar3 = _fputc(local_40c,local_438);
               if (iVar3 === -1) {

@@ -52,22 +52,22 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   puVar1 = segment(in_SS,sVar20 + -8);
   w32(puVar1, 0, uVar16 & 0xffff);
   puVar2 = segment(in_SS,sVar20 + -2);
-  w32(puVar2, 0, ((uVar16 >> 0x10) << 16 >> 16));
+  w16(puVar2, 0, ((uVar16 >> 0x10) << 16 >> 16));
   puVar1 = segment(in_SS,sVar20 + 0x1e);
   uVar16 = s32(puVar1, 0);
   puVar1 = segment(in_SS,sVar20 + -0xc);
   w32(puVar1, 0, uVar16 & 0xffff);
   puVar2 = segment(in_SS,sVar20 + -4);
-  w32(puVar2, 0, ((uVar16 >> 0x10) << 16 >> 16));
+  w16(puVar2, 0, ((uVar16 >> 0x10) << 16 >> 16));
   segment(in_SS,sVar20 + 10);
   segment(in_SS,sVar20 + 0xe);
   psVar3 = segment(in_SS,sVar20 + 0x28);
-  sVar19 = s32(psVar3, 0);
+  sVar19 = s16(psVar3, 0);
   do {
     psVar3 = segment(in_SS,sVar20 + -0x10);
-    w32(psVar3, 0, sVar19);
+    w16(psVar3, 0, sVar19);
     psVar3 = segment(in_SS,sVar20 + 0x24);
-    sVar19 = s32(psVar3, 0);
+    sVar19 = s16(psVar3, 0);
     do {
       puVar4 = segment(in_SS,sVar20 + 0x16);
       uVar22 = ((((s32(puVar4, 0)) >>> 0) >> 0x10) & 0xFFFF);
@@ -75,20 +75,20 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
       psVar3 = segment(in_SS,sVar20 + 0x28);
       psVar5 = segment(in_SS,sVar20 + -0x10);
       psVar6 = segment(in_SS,sVar20 + 0x22);
-      puVar12 = segment(uVar22,((s32(psVar3, 0) - s32(psVar5, 0)) + s32(psVar6, 0)) * 2 + sVar17);
+      puVar12 = segment(uVar22,((s16(psVar3, 0) - s16(psVar5, 0)) + s16(psVar6, 0)) * 2 + sVar17);
       puVar2 = segment(in_SS,sVar20 + -0xe);
-      w32(puVar2, 0, s32(puVar12, 0));
+      w16(puVar2, 0, s16(puVar12, 0));
       psVar3 = segment(in_SS,sVar20 + 0x26);
-      sVar14 = s32(psVar3, 0);
+      sVar14 = s16(psVar3, 0);
       psVar3 = segment(in_SS,sVar20 + 0x24);
-      sVar15 = s32(psVar3, 0);
+      sVar15 = s16(psVar3, 0);
       psVar3 = segment(in_SS,sVar20 + -0x14);
-      w32(psVar3, 0, sVar15 - sVar19);
+      w16(psVar3, 0, sVar15 - sVar19);
       psVar5 = segment(uVar22,(sVar15 - sVar19) * 2 + sVar17 + sVar14);
       psVar3 = segment(in_SS,sVar20 + -0xe);
       puVar7 = segment(in_SS,sVar20 + 0x26);
       puVar8 = segment(in_SS,sVar20 + -0x12);
-      w32(puVar8, 0, ((s32(psVar3, 0) + s32(psVar5, 0)) & 0xFFFF) % s32(puVar7, 0));
+      w16(puVar8, 0, ((s16(psVar3, 0) + s16(psVar5, 0)) & 0xFFFF) % s16(puVar7, 0));
       psVar3 = segment(in_SS,sVar20 + -0x12);
       psVar5 = segment(in_SS,sVar20 + 0x2c);
       piVar9 = segment(in_SS,sVar20 + -8);
@@ -99,9 +99,9 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
                                  /*JOINED*/
                         /*JOINED*/
       psVar3 = segment(in_SS,sVar20 + 0x32);
-      if ((s32(psVar3, 0) < 0) || (cVar13 !== s8(s32(psVar3, 0)))) {
+      if ((s16(psVar3, 0) < 0) || (cVar13 !== s8(s16(psVar3, 0)))) {
         pcVar10 = segment(in_SS,sVar20 + -0x16);
-        w32(pcVar10, 0, cVar13);
+        _MEM[pcVar10] = cVar13;
         psVar3 = segment(in_SS,sVar18 + -0x12);
         psVar5 = segment(in_SS,sVar18 + 0x30);
         piVar9 = segment(in_SS,sVar18 + -0xc);
@@ -116,7 +116,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
       sVar19 = sVar19 + -1;
     } while (0 < sVar19);
     psVar3 = segment(in_SS,sVar18 + -0x10);
-    sVar19 = s32(psVar3, 0) + -1;
+    sVar19 = s16(psVar3, 0) + -1;
   } while (0 < sVar19);
   return;
 }
@@ -176,106 +176,106 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   puVar2 = segment(in_SS,sVar23 + 0x12);
   uVar16 = s32(puVar2, 0);
   puVar3 = segment(in_SS,sVar23 + -6);
-  w32(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
+  w16(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
   puVar3 = segment(in_SS,sVar23 + -8);
-  w32(puVar3, 0, ((uVar16) << 16 >> 16));
+  w16(puVar3, 0, ((uVar16) << 16 >> 16));
   puVar2 = segment(in_SS,sVar23 + 0x16);
   uVar16 = s32(puVar2, 0);
   puVar3 = segment(in_SS,sVar23 + -10);
-  w32(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
+  w16(puVar3, 0, ((((uVar16) >>> 0) >> 0x10) << 16 >> 16));
   puVar3 = segment(in_SS,sVar23 + -0xc);
-  w32(puVar3, 0, ((uVar16) << 16 >> 16));
+  w16(puVar3, 0, ((uVar16) << 16 >> 16));
   puVar1 = segment(in_SS,sVar23 + 0xe);
   psVar4 = segment(in_SS,sVar23 + 0x20);
-  iVar22 = (s32(psVar4, 0));
+  iVar22 = (s16(psVar4, 0));
   if (iVar22 < 1) {
     iVar22 = -iVar22;
     psVar4 = segment(in_SS,sVar23 + 0x22);
     psVar5 = segment(in_SS,sVar23 + 0x1e);
-    uVar19 = (s32(psVar4, 0) + -1) - s32(psVar5, 0);
+    uVar19 = (s16(psVar4, 0) + -1) - s16(psVar5, 0);
   }
   else {
     puVar6 = segment(in_SS,sVar23 + 0x1e);
-    uVar19 = s32(puVar6, 0);
+    uVar19 = s16(puVar6, 0);
   }
   puVar6 = segment(in_SS,sVar23 + 0x1c);
-  pcVar26 = ((s32(puVar1, 0) & 0xffff) + ((uVar19) >>> 0) * iVar22 + ((s32(puVar6, 0)) >>> 0));
+  pcVar26 = ((s32(puVar1, 0) & 0xffff) + ((uVar19) >>> 0) * iVar22 + ((s16(puVar6, 0)) >>> 0));
   puVar3 = segment(in_SS,sVar23 + 0x2e);
   puVar7 = segment(in_SS,sVar23 + -0xe);
-  w32(puVar7, 0, s32(puVar3, 0));
+  w16(puVar7, 0, s16(puVar3, 0));
   psVar4 = segment(in_SS,sVar23 + 0x2a);
   psVar5 = segment(in_SS,sVar23 + 0x32);
   psVar8 = segment(in_SS,sVar23 + -0xc);
   psVar9 = segment(in_SS,sVar17 + -0x10);
-  w32(psVar9, 0, (s32(psVar4, 0) + s32(psVar5, 0)) * 2 + s32(psVar8, 0));
+  w16(psVar9, 0, (s16(psVar4, 0) + s16(psVar5, 0)) * 2 + s16(psVar8, 0));
   piVar10 = segment(in_SS,sVar17 + -4);
   w32(piVar10, 0, (uVar15 & 0xffff) + 4);
   psVar4 = segment(in_SS,sVar17 + 0x26);
-  sVar25 = s32(psVar4, 0);
+  sVar25 = s16(psVar4, 0);
   uVar21 = 0;
   do {
     w16(iVar24, -10, sVar25);
     piVar10 = segment(in_SS,sVar17 + -4);
     iVar22 = s32(piVar10, 0);
     puVar3 = segment(in_SS,sVar17 + -0xe);
-    iVar20 = ((uVar21) << 16 | (s32(puVar3, 0)));
+    iVar20 = ((uVar21) << 16 | (s16(puVar3, 0)));
     puVar3 = segment(in_SS,sVar17 + -10);
     puVar7 = segment(in_SS,sVar17 + -0x10);
     while( true ) {
-      psVar4 = segment(s32(puVar3, 0),s32(puVar7, 0));
+      psVar4 = segment(s16(puVar3, 0),s16(puVar7, 0));
       sVar25 = ((iVar20) << 16 >> 16);
       uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
-      if (s32(psVar4, 0) <= sVar25) break;
+      if (s16(psVar4, 0) <= sVar25) break;
       iVar22 = iVar22 + u16(iVar22, -2) + 4;
       iVar20 = ((uVar21) << 16 | (sVar25 + 1));
     }
     psVar4 = segment(in_SS,sVar17 + -0xe);
-    w32(psVar4, 0, sVar25);
+    w16(psVar4, 0, sVar25);
     piVar10 = segment(in_SS,sVar17 + -4);
     w32(piVar10, 0, iVar22);
     puVar3 = segment(in_SS,sVar17 + -0x14);
-    w32(puVar3, 0, s16(iVar22, -4));
+    w16(puVar3, 0, s16(iVar22, -4));
     sVar25 = s16(iVar22, -2);
     psVar4 = segment(in_SS,sVar17 + -0x16);
-    w32(psVar4, 0, sVar25);
+    w16(psVar4, 0, sVar25);
     if (sVar25 !== 0) {
       psVar4 = segment(in_SS,sVar17 + 0x28);
       psVar5 = segment(in_SS,sVar17 + 0x30);
       psVar8 = segment(in_SS,sVar17 + -8);
       psVar9 = segment(in_SS,sVar17 + -0x12);
-      w32(psVar9, 0, (s32(psVar4, 0) + s32(psVar5, 0)) * 2 + s32(psVar8, 0));
+      w16(psVar9, 0, (s16(psVar4, 0) + s16(psVar5, 0)) * 2 + s16(psVar8, 0));
       // DEVIATION: C pointer write — *(char **)(iVar24 + -0xe) = pcVar26;
       psVar4 = segment(in_SS,sVar17 + -0x14);
-      iVar20 = ((uVar21) << 16 | (s32(psVar4, 0)));
+      iVar20 = ((uVar21) << 16 | (s16(psVar4, 0)));
       puVar3 = segment(in_SS,sVar23 + -6);
-      uVar14 = s32(puVar3, 0);
+      uVar14 = s16(puVar3, 0);
       psVar5 = segment(in_SS,sVar23 + -0x12);
-      sVar25 = s32(psVar5, 0);
+      sVar25 = s16(psVar5, 0);
       psVar5 = segment(in_SS,sVar23 + 0x24);
-      sVar18 = s32(psVar5, 0);
-      while (psVar5 = segment(uVar14,sVar25), s32(psVar5, 0) < s32(psVar4, 0)) {
+      sVar18 = s16(psVar5, 0);
+      while (psVar5 = segment(uVar14,sVar25), s16(psVar5, 0) < s16(psVar4, 0)) {
         sVar25 = sVar25 + 2;
         pcVar26 = pcVar26 + 1;
         sVar18 = sVar18 + -1;
       }
       psVar4 = segment(in_SS,sVar23 + -0x12);
-      w32(psVar4, 0, sVar25);
+      w16(psVar4, 0, sVar25);
       psVar4 = segment(in_SS,sVar23 + -0x18);
-      w32(psVar4, 0, sVar18);
+      w16(psVar4, 0, sVar18);
       if (0 < sVar18) {
         iVar20 = ((uVar21) << 16 | (sVar18));
         pcVar11 = segment(in_SS,sVar23 + 0x1a);
-        cVar12 = s32(pcVar11, 0);
+        cVar12 = _MEM[pcVar11];
         piVar10 = segment(in_SS,sVar23 + -4);
         iVar22 = s32(piVar10, 0);
         do {
           psVar8 = segment(uVar14,sVar25);
           psVar4 = segment(in_SS,sVar23 + -0x14);
           psVar5 = segment(in_SS,sVar23 + -0x16);
-          if (s32(psVar5, 0) <= ((s32(psVar8, 0) - s32(psVar4, 0)) << 16 >> 16)) break;
-          cVar13 = s8(_MEM[(((s32(psVar8, 0) - s32(psVar4, 0)) & 0xFFFF) >>> 0) + iVar22]);
+          if (s16(psVar5, 0) <= ((s16(psVar8, 0) - s16(psVar4, 0)) << 16 >> 16)) break;
+          cVar13 = s8(_MEM[(((s16(psVar8, 0) - s16(psVar4, 0)) & 0xFFFF) >>> 0) + iVar22]);
           if (cVar13 !== cVar12) {
-            w32(pcVar26, 0, cVar13);
+            _MEM[pcVar26] = cVar13;
           }
           sVar25 = sVar25 + 2;
           pcVar26 = pcVar26 + 1;
@@ -285,10 +285,10 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
       pcVar26 = true /* DEVIATION: C pointer — *(char **)(iVar24 + -0xe) */;
     }
     psVar4 = segment(in_SS,sVar23 + 0x20);
-    pcVar26 = pcVar26 + s32(psVar4, 0);
+    pcVar26 = pcVar26 + s16(psVar4, 0);
     psVar4 = segment(in_SS,sVar23 + -0x10);
     psVar5 = segment(in_SS,sVar23 + -0x10);
-    w32(psVar5, 0, s32(psVar4, 0) + 2);
+    w16(psVar5, 0, s16(psVar4, 0) + 2);
     uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
     sVar25 = s16(iVar24, -10) + -1;
     if (sVar25 < 1) {

@@ -1152,7 +1152,7 @@ export function FUN_004c42a0(param_1, param_2) {
     local_8 = ((-(((uVar7 & 0x10) === 0) >>> 0) & 0xfffffffe) + 4) * (s8(_MEM[DAT_00627cc8 + uVar10 * 0x18]));
               /*JOINED*/
     pbVar8 = FUN_005b8931(iVar5,iVar6);
-    if ((s32(pbVar8, 0) & 0x80) !== 0) {
+    if ((_MEM[pbVar8] & 0x80) !== 0) {
       local_8 = local_8 + 2;
     }
     break;
@@ -1319,7 +1319,7 @@ export function FUN_004c4ada(param_1) {
   
   wv(DAT_0062804c, 0);
   _MEM[DAT_006560ff + param_1 * 0x20] = 2;
-  if (((((v(DAT_00655b0b)) >>> 0) & 1 << (_MEM[DAT_006560f7 + param_1 * 0x20] & 0x1f)) === 0) && (-1 < s8(_MEM[DAT_00656100 + param_1 * 0x20]))) {
+  if (((((v(DAT_00655b0b)) >>> 0) & 1 << (_MEM[DAT_006560f7 + param_1 * 0x20] & 0x1f)) === 0) && (-1 < u8(_MEM[DAT_00656100 + param_1 * 0x20]))) {
      /*JOINED*/
     iVar2 = FUN_0043cf76((s16(DAT_006560f0, param_1 * 0x20)), (s16(DAT_006560f2, param_1 * 0x20)));
                                /*JOINED*/
@@ -1487,17 +1487,17 @@ export function FUN_004c50d0(param_1, param_2) {
     iVar4 = FUN_005b8931(iVar2,iVar3);
     pbVar5 = (iVar4 + 1);
     if (param_2 < 1) {
-      if ((_MEM[DAT_006560f6 + param_1 * 0x20] === 9) && ((s32(pbVar5, 0) & 0x10) !== 0)) {
-        if ((s32(pbVar5, 0) & 0x20) === 0) {
+      if ((_MEM[DAT_006560f6 + param_1 * 0x20] === 9) && ((_MEM[pbVar5] & 0x10) !== 0)) {
+        if ((_MEM[pbVar5] & 0x20) === 0) {
           FUN_005b94fc(iVar2,iVar3,0x10,0,1);
         }
         else {
           FUN_005b94fc(iVar2,iVar3,0x20,0,1);
         }
       }
-      else if ((s32(pbVar5, 0) & 0xc) === 0) {
-        if ((s32(pbVar5, 0) & 0x40) === 0) {
-          if ((s32(pbVar5, 0) & 0x20) === 0) {
+      else if ((_MEM[pbVar5] & 0xc) === 0) {
+        if ((_MEM[pbVar5] & 0x40) === 0) {
+          if ((_MEM[pbVar5] & 0x20) === 0) {
             FUN_005b94fc(iVar2,iVar3,0x10,0,1);
           }
           else {
@@ -1508,7 +1508,7 @@ export function FUN_004c50d0(param_1, param_2) {
           FUN_005b94fc(iVar2,iVar3,0x42,0,1);
         }
       }
-      else if ((s32(pbVar5, 0) & 8) === 0) {
+      else if ((_MEM[pbVar5] & 8) === 0) {
         FUN_005b94fc(iVar2,iVar3,4,0,1);
       }
       else {
@@ -5106,7 +5106,7 @@ export function FUN_004cfff0(param_1) {
   
   sVar1 = _strlen(param_1);
   if (sVar1 !== 0) {
-    for (local_8 = param_1 + (sVar1 - 1); (param_1 <= local_8 && (((s32(local_8, 0) === 32 || (s32(local_8, 0) === 9)) && (w32r(local_8, 0, 0), local_8 !== param_1)))); local_8 = local_8 + -1) {
+    for (local_8 = param_1 + (sVar1 - 1); (param_1 <= local_8 && (((_MEM[local_8] === 32 || (_MEM[local_8] === 9)) && (_MEM[local_8] = 0, local_8 !== param_1)))); local_8 = local_8 + -1) {
         /*JOINED*/
         /*JOINED*/
         /*JOINED*/

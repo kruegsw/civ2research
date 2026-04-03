@@ -576,14 +576,14 @@ export function FUN_004b1396(param_1, param_2) {
     else if (((param_2 ^ uVar1) - uVar1 & 1 ^ uVar1) === uVar1) {
       local_20 = param_1;
       for (local_1c = 0; local_1c < (param_2) >> 2; local_1c = local_1c + 1) {
-        local_8 = local_8 + ((s32(local_20, 0)) >>> 0);
+        local_8 = local_8 + ((s16(local_20, 0)) >>> 0);
         local_20 = local_20 + 1;
       }
     }
     else {
       local_28 = param_1;
       for (local_24 = 0; local_24 < (param_2); local_24 = local_24 + 1) {
-        local_8 = local_8 + u8(s32(local_28, 0));
+        local_8 = local_8 + u8(s16(local_28, 0));
         local_28 = ((local_28) + 1);
       }
     }
@@ -1083,7 +1083,7 @@ export function FUN_004b24a2(param_1) {
   local_8 = s32(param_1, 0);
   local_c = 0;
   while (local_8 < _MEM[param_1 + 1]) {
-    local_10 = ((s32(local_8, 0)) >>> 0);
+    local_10 = ((s16(local_8, 0)) >>> 0);
     if (local_10 < 0x8000) {
       local_8 = ((local_8) + 3);
     }
@@ -1120,11 +1120,11 @@ export function FUN_004b251a(param_1) {
     local_10 = s32(param_1, 0);
     local_c = _MEM[param_1 + 2];
     while (local_10 < _MEM[param_1 + 1]) {
-      uVar1 = s32(local_10, 0);
+      uVar1 = s16(local_10, 0);
       _Src = local_10 + 1;
       if (uVar1 < 0x7fff) {
         local_10 = ((local_10) + 3);
-        _memset(local_c,(((u8(s32(_Src, 0))) & 0xFFFF) << 16 >> 16),((uVar1) >>> 0));
+        _memset(local_c,(((u8(s16(_Src, 0))) & 0xFFFF) << 16 >> 16),((uVar1) >>> 0));
       }
       else {
         uVar1 = uVar1 + 0x8000;
@@ -1170,7 +1170,7 @@ export function FUN_004b263e(param_1) {
       _MEM[param_1 + 4] = local_c;
       return 1;
     }
-    for (; (local_24 < _MEM[param_1 + 1] && (s32(local_24, 0) === s32(local_20, 0))); local_24 = local_24 + 1) {
+    for (; (local_24 < _MEM[param_1 + 1] && (_MEM[local_24] === _MEM[local_20])); local_24 = local_24 + 1) {
     }
     local_14 = (local_24) - (local_20);
     if (3 < local_14) {
@@ -1179,11 +1179,11 @@ export function FUN_004b263e(param_1) {
           return 0;
         }
         if (local_14 < 0x8000) {
-          w32(local_1c, 0, ((local_14) << 16 >> 16));
+          w16(local_1c, 0, ((local_14) << 16 >> 16));
           local_14 = 0;
         }
         else {
-          w32(local_1c, 0, 0x7fff);
+          w16(local_1c, 0, 0x7fff);
           local_14 = local_14 - 0x7fff;
         }
         local_1c = local_1c + 1;
@@ -1196,7 +1196,7 @@ export function FUN_004b263e(param_1) {
       }
       local_20 = local_24;
     }
-    for (; (local_24 < _MEM[param_1 + 1] && (_MEM[local_24 + 1] !== s32(local_24, 0))); local_24 = local_24 + 1) {
+    for (; (local_24 < _MEM[param_1 + 1] && (_MEM[local_24 + 1] !== _MEM[local_24])); local_24 = local_24 + 1) {
     }
     local_14 = (local_24) - (local_20);
     while (local_14 !== 0) {
@@ -1205,12 +1205,12 @@ export function FUN_004b263e(param_1) {
         return 0;
       }
       if (local_14 < 0x8000) {
-        w32(local_1c, 0, ((local_14) << 16 >> 16) + -0x8000);
+        w16(local_1c, 0, ((local_14) << 16 >> 16) + -0x8000);
         local_18 = local_14;
         local_14 = 0;
       }
       else {
-        w32(local_1c, 0, -1);
+        w16(local_1c, 0, -1);
         local_18 = 0x7fff;
         local_14 = local_14 - 0x7fff;
       }
@@ -1410,8 +1410,8 @@ export function FUN_004b32fe() {
                       for (local_1c = 0; (local_1c) <= (local_40); local_1c = local_1c + 1) {
                         for (local_68 = (((local_1c & 1) !== 0) >>> 0); (local_68) < (v(DAT_006d1160)); local_68 = local_68 + 2) {
                             /*JOINED*/
-                          if (((s32(local_28, 0)) >>> 0) === (uVar6 & 0xffff)) {
-                            w32(local_28, 0, ((local_8) & 0xFFFF));
+                          if (((s16(local_28, 0)) >>> 0) === (uVar6 & 0xffff)) {
+                            w16(local_28, 0, ((local_8) & 0xFFFF));
                           }
                           local_28 = local_28 + 1;
                         }
@@ -1457,8 +1457,8 @@ export function FUN_004b32fe() {
           if (local_30 !== 0) {
             local_28 = _Dst_00;
             for (local_10 = 0; local_10 < v(DAT_006d1164); local_10 = local_10 + 1) {
-              if (s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0) < 0) {
-                w32(local_28, 0, 0x3f);
+              if (s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0) < 0) {
+                w16(local_28, 0, 0x3f);
               }
               local_28 = local_28 + 1;
             }
@@ -1472,14 +1472,14 @@ export function FUN_004b32fe() {
         local_38 = (v(DAT_00636598) + 3);
         local_28 = _Dst_00;
         for (local_10 = 0; local_10 < v(DAT_006d1164); local_10 = local_10 + 1) {
-          if (s32(local_28, 0) !== 0) {
-            if (0x3f < s32(local_28, 0)) {
-              if (s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0) < 1) {
-                if (s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0) < 1) {
-                  w32(local_28, 0, ~((s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0)) & 0xFFFF) + 1);
+          if (s16(local_28, 0) !== 0) {
+            if (0x3f < s16(local_28, 0)) {
+              if (s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0) < 1) {
+                if (s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0) < 1) {
+                  w16(local_28, 0, ~((s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0)) & 0xFFFF) + 1);
                 }
                 else {
-                  w32(local_28, 0, ((s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0)) & 0xFFFF));
+                  w16(local_28, 0, ((s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0)) & 0xFFFF));
                 }
               }
               else {
@@ -1487,20 +1487,20 @@ export function FUN_004b32fe() {
                 do {
                   local_14 = local_14 + 1;
                 } while (s32((_Dst) + local_14 * 4, 0) !== 0);
-                if (((local_14) < 0x40) && ((local_18 === 0 || (0x10 < s32((_Dst) + ((s32(local_28, 0)) >>> 0) * 4, 0))))) {
+                if (((local_14) < 0x40) && ((local_18 === 0 || (0x10 < s32((_Dst) + ((s16(local_28, 0)) >>> 0) * 4, 0))))) {
                    /*JOINED*/
                   // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + local_14 * 4) = *(undefined4 *)((int)_Dst + (uint)*local_28 * 4);
                        /*JOINED*/
                   // DEVIATION: C pointer write — *(uint *)((int)_Dst + (uint)*local_28 * 4) = -local_14;
-                  w32(local_28, 0, ((local_14) & 0xFFFF));
+                  w16(local_28, 0, ((local_14) & 0xFFFF));
                 }
                 else {
                   local_44 = local_44 | 1 << (u8(local_18) & 0x1f);
-                  w32(local_28, 0, 0x3f);
+                  w16(local_28, 0, 0x3f);
                 }
               }
             }
-            w32(local_38, 0, s8(s32(local_28, 0)));
+            _MEM[local_38] = s8(s16(local_28, 0));
           }
           local_28 = local_28 + 1;
           local_38 = local_38 + 6;

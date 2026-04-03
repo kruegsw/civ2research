@@ -21,6 +21,12 @@ const OUT_DIR = path.join(__dirname, 'output');
 // Ensure output dir exists
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
+// Load P-code type corrections (sign/width fixes from Ghidra oracle)
+const CORRECTIONS_FILE = path.join(__dirname, 'pcode-corrections.json');
+const PCODE_CORRECTIONS = fs.existsSync(CORRECTIONS_FILE)
+  ? JSON.parse(fs.readFileSync(CORRECTIONS_FILE, 'utf8')).corrections
+  : [];
+
 // ── Balanced extraction helpers ────────────────────────────────────
 
 // Extract the contents of a balanced (...) starting at position `start`
@@ -413,6 +419,10 @@ function transformLine(line, ctx) {
     // Fix: s8(DAT_xxx) → s8(_MEM[DAT_xxx]),  u8(DAT_xxx) → u8(_MEM[DAT_xxx])
     out = out.replace(/\b(s8|u8)\((DAT_[0-9a-fA-F]+)\)/g, '$1(_MEM[$2])');
 
+    // NOTE: s8(bVarN) is NOT always wrong — some byte variables are legitimately
+    // sign-extended. Only specific instances diverge from P-code. These are fixed
+    // by the post-processing correction step, not a blanket rule.
+
     // ── All remaining casts use balanced expression extraction ──
     // Process INNER casts before OUTER ones: (uint)(int)(short)x
     // Order: innermost first → (short), (ushort), (int), then (uint)
@@ -592,10 +602,16 @@ function transformLine(line, ctx) {
       out = makeDeviation(out, 'MFC', ctx);
     }
 
-    // ── Bare pointer dereference: *variable → s32(variable, 0) ──
-    // Only match specific Ghidra variable patterns to avoid catching multiplication
+    // ── Bare pointer dereference: *variable → helper(variable, 0) ──
+    // Uses pointer width map from declarations to emit correct width.
+    // Falls back to s32 if type is unknown.
     out = out.replace(/(?<![a-zA-Z0-9_])\*([a-zA-Z_]\w*Var\d+|in_E\w+|DAT_[0-9a-fA-F]+|PTR_\w+|param_\d+|local_\w+|unaff_\w+|extraout_\w+|p[A-Z]\w*Var\d+|p_\w+|_\w+|arg\w*)(?!\s*\()/g,
-      (m, name) => 's32(' + name + ', 0)');
+      (m, name) => {
+        const w = ctx.ptrWidths ? ctx.ptrWidths.get(name) : undefined;
+        if (w === 1) return '_MEM[' + name + ']';
+        if (w === 2) return 's16(' + name + ', 0)';
+        return 's32(' + name + ', 0)';
+      });
     // ── Bare pointer deref with parens: *(expr) → s32(expr, offset) ──
     // Only match when * is a dereference (after =, (, ,, ;, space, start)
     {
@@ -1133,11 +1149,24 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
   }
 
-  // Detect pointer params (TYPE *param_N)
+  // Detect pointer params and their pointed-to widths (TYPE *param_N)
   const ptrParams = new Set();
+  const ptrWidths = new Map(); // variable name → pointed-to width in bytes
+  const ptrWidthMap = {
+    'short': 2, 'ushort': 2, 'undefined2': 2,
+    'int': 4, 'uint': 4, 'undefined4': 4, 'long': 4, 'ulong': 4,
+    'byte': 1, 'char': 1, 'undefined1': 1, 'undefined': 1, 'uchar': 1,
+  };
   for (const p of rawParams.split(',')) {
     const pm = p.trim().match(/\*\s*(param_\d+)$/);
-    if (pm) ptrParams.add(pm[1]);
+    if (pm) {
+      ptrParams.add(pm[1]);
+      // Extract type: "short *param_1" → "short"
+      const tm = p.trim().match(/^\s*(\w+)\s+\*/);
+      if (tm && ptrWidthMap[tm[1]]) {
+        ptrWidths.set(pm[1], ptrWidthMap[tm[1]]);
+      }
+    }
   }
 
   // Scan body for register params and &local_XX
@@ -1163,6 +1192,16 @@ function processFunction(headerLines, bodyLines, ctx) {
   // Find &local_XX patterns
   for (const m of bodyText.matchAll(/&(local_[0-9a-fA-F]+)/g)) {
     localArrays.add(m[1]);
+  }
+
+  // Scan body declarations for pointer types: "short *local_20;" or "byte *pbVar6;"
+  // This tells us the correct width for bare pointer derefs (*variable)
+  for (const m of bodyText.matchAll(/^\s*(\w+)\s+\*\s*(\w+)\s*;/gm)) {
+    const typeName = m[1];
+    const varName = m[2];
+    if (ptrWidthMap[typeName]) {
+      ptrWidths.set(varName, ptrWidthMap[typeName]);
+    }
   }
 
   // Build JS signature — rename reserved words
@@ -1307,6 +1346,7 @@ function processFunction(headerLines, bodyLines, ctx) {
 
   ctx.deviationContinuation = false;
   ctx.localArrays = localArrays; // pass to transformLine for bracket access conversion
+  ctx.ptrWidths = ptrWidths; // pass to transformLine for typed pointer derefs
   let inBlockComment = false;
   for (let i = 0; i < bodyLines.length; i++) {
     const line = bodyLines[i];
@@ -2147,7 +2187,30 @@ function transpileBlock(blockName) {
     }
   }
 
-  const outputContent = outputLines.join('\n');
+  let outputContent = outputLines.join('\n');
+
+  // ── Apply P-code type corrections ──
+  // These are specific sign/width fixes derived from the P-code oracle
+  // where the C text disagrees with the binary's actual types.
+  const blockCorrections = PCODE_CORRECTIONS.filter(c => c.block === blockName);
+  let correctionCount = 0;
+  for (const corr of blockCorrections) {
+    // Find the function body and apply the correction within it
+    const fnStart = outputContent.indexOf('export function ' + corr.fn + '(');
+    if (fnStart < 0) continue;
+    const fnEnd = outputContent.indexOf('\nexport function ', fnStart + 1);
+    const fnBody = fnEnd > 0 ? outputContent.substring(fnStart, fnEnd) : outputContent.substring(fnStart);
+
+    const escapedFrom = corr.from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const replaced = fnBody.replace(new RegExp(escapedFrom, 'g'), corr.to);
+    if (replaced !== fnBody) {
+      outputContent = fnEnd > 0
+        ? outputContent.substring(0, fnStart) + replaced + outputContent.substring(fnEnd)
+        : outputContent.substring(0, fnStart) + replaced;
+      correctionCount++;
+    }
+  }
+
   const outFile = path.join(OUT_DIR, blockName + '.js');
   fs.writeFileSync(outFile, outputContent);
 
@@ -2156,7 +2219,7 @@ function transpileBlock(blockName) {
   const deviations = (outputContent.match(/DEVIATION/g) || []).length;
   const totalLines = outputLines.length;
 
-  return { blockName, totalLines, unknowns, deviations };
+  return { blockName, totalLines, unknowns, deviations, correctionCount };
 }
 
 // ── Main ───────────────────────────────────────────────────────────

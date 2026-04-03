@@ -1231,7 +1231,7 @@ export function FUN_00523f02(param_1) {
     local_330 = 0;
     for (local_33c = 0; local_33c < local_334; local_33c = local_33c + 1) {
       local_38 = FUN_0059e7ad(local_330);
-      if ((local_38 !== 0x0) && ((s32(local_38, 0) & 1) === 0)) {
+      if ((local_38 !== 0x0) && ((_MEM[local_38] & 1) === 0)) {
         FUN_0059ea99(s32(local_38, 4));
         if (local_c4 !== 0) {
           FUN_004472f0(s32(local_38, 4));

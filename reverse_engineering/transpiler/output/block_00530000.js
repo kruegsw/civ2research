@@ -4513,12 +4513,12 @@ export function FUN_00538a29() {
                         bVar6 = u8(_MEM[iVar11 + 1]);
                         local_14 = ((bVar6) >>> 0);
                         if (((bVar6 & 0x10) === 0) || ((bVar6 & 0x20) !== 0)) {
-                          if (((bVar6 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (s32(pbVar16, 0) & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)))) {
+                          if (((bVar6 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (_MEM[pbVar16] & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)))) {
                              /*JOINED*/
                               /*JOINED*/
                               /*JOINED*/
                             local_170 = local_170 & 1;
-                            if (((local_14 & 0xc) !== 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (s32(pbVar16, 0) & 0x80) !== 0 || ((local_80) < 3)))) {
+                            if (((local_14 & 0xc) !== 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (_MEM[pbVar16] & 0x80) !== 0 || ((local_80) < 3)))) {
                                /*JOINED*/
                                 /*JOINED*/
                               local_170 = local_170 | 2;
@@ -4596,7 +4596,7 @@ export function FUN_00538a29() {
                         }
                       }
                       uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]);
-                      if ((((uVar15 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (s32(pbVar16, 0) & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)))) && ((local_3c < 3 && ((local_80) < 3)))) {
+                      if ((((uVar15 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (_MEM[pbVar16] & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)))) && ((local_3c < 3 && ((local_80) < 3)))) {
                           /*JOINED*/
                            /*JOINED*/
                            /*JOINED*/
@@ -4635,7 +4635,7 @@ export function FUN_00538a29() {
                     return LAB_005436c1_helper(bVar22, bVar23, bVar24, bVar25, bVar3, bVar4, bVar5, bVar6, bVar7, cVar1, iVar10, iVar11, iVar12, iVar13, iVar18, iVar19, local_10, local_104, local_10c, local_110, local_114, local_118, local_11c, local_134, local_14, local_140, local_144, local_14c, local_158, local_160, local_168, local_16c, local_170, local_17c, local_18, local_188, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, local_9c, local_a0, local_a4, local_a8, local_ac, local_b0, local_b4, local_b8, local_bc, local_c, local_c0, local_c4, local_c8, local_cc, local_d0, local_d4, local_d8, local_dc, local_e0, local_e4, local_e8, local_f0, local_fc, pbVar16, uVar14, uVar15, uVar17, uVar2, uVar20, uVar21, uVar8, uVar9);
                   }
                   uVar15 = FUN_005b94d5(local_d4[0],local_e8[0]);
-                  if (((uVar15 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (s32(pbVar16, 0) & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)) )) {
+                  if (((uVar15 & 0x10) === 0) && ((pbVar16 = FUN_005b8931(local_d4[0],local_e8[0]), (_MEM[pbVar16] & 0x80) === 0 || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)) )) {
                      /*JOINED*/
                       /*JOINED*/
                      /*JOINED*/
@@ -4700,7 +4700,7 @@ export function FUN_00538a29() {
                           }
                         }
                         pbVar16 = FUN_005b8931(uVar9,local_74);
-                        if ((((s32(pbVar16, 0) & 0x80) === 0) || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)) && ((uVar17 = FUN_005b94d5(uVar9,local_74), (uVar17 & 0x10) === 0 || ((uVar17 = FUN_005b94d5(uVar9,local_74), (uVar17 & 0x20) === 0 && (iVar11 = FUN_004bd9f0(uVar8,0x43), iVar11 !== 0)))))) {
+                        if ((((_MEM[pbVar16] & 0x80) === 0) || (iVar11 = FUN_004bd9f0(uVar8,7), iVar11 !== 0)) && ((uVar17 = FUN_005b94d5(uVar9,local_74), (uVar17 & 0x10) === 0 || ((uVar17 = FUN_005b94d5(uVar9,local_74), (uVar17 & 0x20) === 0 && (iVar11 = FUN_004bd9f0(uVar8,0x43), iVar11 !== 0)))))) {
                             /*JOINED*/
                            /*JOINED*/
                             /*JOINED*/

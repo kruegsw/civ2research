@@ -1414,10 +1414,10 @@ export function FUN_004241f8() {
       sVar2 = _strlen(pcVar4);
       pcVar3 = _strchr(pcVar4,0x3e);
       if (pcVar4 + (sVar2 - 1) === pcVar3) {
-        w32(pcVar3, 0, 60);
+        _MEM[pcVar3] = 60;
       }
       else {
-        w32(pcVar3, 0, 45);
+        _MEM[pcVar3] = 45;
         _MEM[pcVar3 + 1] = 62;
       }
       pcVar3 = _strchr(pcVar4,0x3c);
@@ -1426,10 +1426,10 @@ export function FUN_004241f8() {
         _MEM[pcVar4 + -1] = 60;
       }
       else if (pcVar3 === pcVar4) {
-        w32(pcVar3, 0, 62);
+        _MEM[pcVar3] = 62;
       }
       else {
-        w32(pcVar3, 0, 45);
+        _MEM[pcVar3] = 45;
         _MEM[pcVar3 + -1] = 60;
       }
       FUN_005a577e();
@@ -1943,7 +1943,7 @@ export function FUN_004254a8(in_ECX, param_1, param_2) {
   pvVar3 = operator_new(sVar2 + 1);
   _MEM[puVar1 + 2] = ((pvVar3) >>> 0);
   FUN_005f22d0(_MEM[puVar1 + 2],param_1);
-  if (s32(param_1, 0) === 0) {
+  if (_MEM[param_1] === 0) {
     w32(puVar1, 0, s32(puVar1, 0) | 1);
   }
   _MEM[puVar1 + 1] = param_2;
@@ -2313,13 +2313,13 @@ export function FUN_00426ff0(param_1, param_2) {
   let local_30;
   let local_2c = new Array(40).fill(0);
   
-  w32(param_2, 0, 0);
+  _MEM[param_2] = 0;
   do {
     pcVar1 = _strchr(param_1,0x25);
     if (pcVar1 !== 0x0) {
-      w32(pcVar1, 0, 0);
+      _MEM[pcVar1] = 0;
     }
-    if (s32(param_1, 0) !== 0) {
+    if (_MEM[param_1] !== 0) {
       FUN_005f22e0(param_2,param_1);
     }
     local_34 = pcVar1;
@@ -2356,7 +2356,7 @@ export function FUN_00426ff0(param_1, param_2) {
           }
           else {
             param_1 = local_34;
-            if (s32(local_34, 0) === 37) {
+            if (_MEM[local_34] === 37) {
               FUN_005f22e0(param_2,v(DAT_00625e58));
               param_1 = pcVar1 + 2;
             }
@@ -2546,7 +2546,7 @@ export function FUN_004274a6(param_1, param_2) {
       iVar16 = FUN_005b8931(uVar15,iVar14);
       if (uVar10 !== 0) {
         pcVar18 = FUN_005b898b(uVar15,iVar14,uVar10);
-        if (((bVar24) && (!bVar5)) && ((s8(_MEM[iVar16 + 1]) !== s32(pcVar18, 0) || ((uVar23 & u8(_MEM[iVar16 + 4])) === 0)))) {
+        if (((bVar24) && (!bVar5)) && ((s8(_MEM[iVar16 + 1]) !== _MEM[pcVar18] || ((uVar23 & u8(_MEM[iVar16 + 4])) === 0)))) {
            /*JOINED*/
           if (local_10 < 8) {
             local_30 = local_30 | 5;
@@ -2912,9 +2912,9 @@ export function FUN_00428b0c(param_1) {
   
   local_8 = v(DAT_0063e4c8);
   for (; param_1 !== 0; param_1 = param_1 + -1) {
-    for (; s32(local_8, 0) !== 0; local_8 = local_8 + 1) {
+    for (; _MEM[local_8] !== 0; local_8 = local_8 + 1) {
     }
-    for (; s32(local_8, 0) === 0; local_8 = local_8 + 1) {
+    for (; _MEM[local_8] === 0; local_8 = local_8 + 1) {
     }
   }
   return local_8;

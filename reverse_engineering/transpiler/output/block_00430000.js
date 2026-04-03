@@ -1569,7 +1569,7 @@ export function FUN_00433434() {
   }
   local_130 = (v(DAT_00636598) + 5);
   for (local_c4 = 0; local_c4 < v(DAT_006d1164); local_c4 = local_c4 + 1) {
-    local_e8 = ((s32(local_130, 0)) >>> 0) >> 4;
+    local_e8 = ((_MEM[local_130]) >>> 0) >> 4;
     if (local_e8 < 8) {
       aiStack_1d0[local_e8] = aiStack_1d0[local_e8] + 1;
     }
@@ -3069,7 +3069,7 @@ export function FUN_00437284(param_1) {
   
   local_8 = v(DAT_0063f040);
   for (; param_1 !== 0; param_1 = param_1 + -1) {
-    for (; s32(local_8, 0) !== 0; local_8 = local_8 + 1) {
+    for (; _MEM[local_8] !== 0; local_8 = local_8 + 1) {
     }
     local_8 = local_8 + 1;
   }
@@ -3231,7 +3231,7 @@ export function FUN_0043742f(param_1) {
       }
       if (local_14 < 0) {
         if (local_34 < 0) return LAB_00437a02_helper(extraout_EAX, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_64, local_68, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_94, param_1, uVar1, uVar2);
-        if (s32(local_38, 0) === 94) {
+        if (_MEM[local_38] === 94) {
           local_38 = local_38 + 1;
           FUN_0040bbb0();
           FUN_0040bbe0(local_38);
@@ -4857,7 +4857,7 @@ export function FUN_0043d400(param_1) {
           local_128[local_78] = local_128[local_78] + 3;
         }
         pbVar6 = FUN_005b8931(local_70,local_80);
-        if ((s32(pbVar6, 0) & 0x80) !== 0) {
+        if ((_MEM[pbVar6] & 0x80) !== 0) {
           local_b4 = local_b4 + 1;
         }
         uVar7 = FUN_005b94d5(local_70,local_80);
@@ -5721,7 +5721,7 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
                /*JOINED*/
         }
         pbVar7 = FUN_005b8931(uVar6,iVar4);
-        if (((s32(pbVar7, 0) & 0x80) !== 0) || (cVar1 = FUN_005b89bb(uVar6,iVar4), cVar1 === 0x05)) {
+        if (((_MEM[pbVar7] & 0x80) !== 0) || (cVar1 = FUN_005b89bb(uVar6,iVar4), cVar1 === 0x05)) {
           w32(DAT_0064f344, local_28 * 0x58, u32(DAT_0064f344, local_28 * 0x58) | 0x800);
                /*JOINED*/
         }

@@ -3907,7 +3907,7 @@ export function FUN_0058c56c(param_1, param_2) {
         return 1;
       }
       pbVar4 = FUN_005b8931(uVar1,iVar2);
-      if ((s32(pbVar4, 0) & 0x80) !== 0) {
+      if ((_MEM[pbVar4] & 0x80) !== 0) {
         return 1;
       }
       uVar5 = FUN_005b94d5(uVar1,iVar2);
@@ -3992,7 +3992,7 @@ export function FUN_0058c65e(param_1) {
       return;
     }
     pbVar8 = FUN_005b8931(iVar4,iVar5);
-    if (((s32(pbVar8, 0) & 0x80) !== 0) && (iVar7 = FUN_004bd9f0(iVar6,7), iVar7 === 0)) {
+    if (((_MEM[pbVar8] & 0x80) !== 0) && (iVar7 = FUN_004bd9f0(iVar6,7), iVar7 === 0)) {
       FUN_004c4240(s_BRIDGEBUILDING_00634aa0,7,8);
       return;
     }

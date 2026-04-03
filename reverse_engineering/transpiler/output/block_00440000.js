@@ -2069,7 +2069,7 @@ export function FUN_00445e46(param_1) {
       }
       for (local_33c = 0; (local_33c) < (local_334); local_33c = local_33c + 1) {
         local_38 = FUN_0059e7ad(local_330);
-        if ((local_38 !== 0x0) && ((s32(local_38, 0) & 1) === 0)) {
+        if ((local_38 !== 0x0) && ((_MEM[local_38] & 1) === 0)) {
           FUN_0059ea99(s32(local_38, 4));
           if (local_c4 !== 0x0) {
             FUN_004472f0(s32(local_38, 4));
@@ -7752,7 +7752,7 @@ export function FUN_0044d296(in_ECX) {
     iVar1 = FUN_004a2379(v(DAT_006558e8),s_THRONE_00626824);
     if (iVar1 === 0) {
       FUN_004aef20(local_420[0]);
-      while (pcVar2 = FUN_004a23fc(1), s32(pcVar2, 0) !== 64) {
+      while (pcVar2 = FUN_004a23fc(1), _MEM[pcVar2] !== 64) {
         FUN_0043c840(local_420[0],v(DAT_00673f14));
         FUN_0043c840(local_420[0],v(DAT_0062682c));
       }
@@ -7785,7 +7785,7 @@ export function FUN_0044d296(in_ECX) {
       iVar1 = FUN_004a2379(v(DAT_006558e8),s_ADDTOTHRONE_00626830);
       if (iVar1 === 0) {
         FUN_004aef20(local_420[0]);
-        while (pcVar2 = FUN_004a23fc(1), s32(pcVar2, 0) !== 64) {
+        while (pcVar2 = FUN_004a23fc(1), _MEM[pcVar2] !== 64) {
           FUN_0043c840(local_420[0],v(DAT_00673f14));
           FUN_0043c840(local_420[0],v(DAT_0062683c));
         }
@@ -9689,7 +9689,7 @@ function LAB_00446036_helper(aiStack_34, iVar1, iVar4, local_14, local_250, loca
       }
       for (local_33c = 0; (local_33c) < (local_334); local_33c = local_33c + 1) {
         local_38 = FUN_0059e7ad(local_330);
-        if ((local_38 !== 0x0) && ((s32(local_38, 0) & 1) === 0)) {
+        if ((local_38 !== 0x0) && ((_MEM[local_38] & 1) === 0)) {
           FUN_0059ea99(s32(local_38, 4));
           if (local_c4 !== 0x0) {
             FUN_004472f0(s32(local_38, 4));

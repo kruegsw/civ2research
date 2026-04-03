@@ -3379,7 +3379,7 @@ export function FUN_00497da0(param_1, param_2) {
   local_10 = 1;
   for (local_8 = 0; (local_10 !== 0 && (local_8 < 0x4f)); local_8 = local_8 + 1) {
     local_10 = _fgetc(param_2);
-    w32(local_c, 0, u8(local_10));
+    _MEM[local_c] = u8(local_10);
     local_c = local_c + 1;
   }
   _fgetc(param_2);
@@ -3400,7 +3400,7 @@ export function FUN_00497e0f(param_1, param_2) {
   
   local_8 = 1;
   while (local_8 !== 0) {
-    local_8 = (s32(param_1, 0));
+    local_8 = (_MEM[param_1]);
     param_1 = param_1 + 1;
     _fputc(local_8,param_2);
   }
@@ -3429,7 +3429,7 @@ export function FUN_00497ea0(param_1, param_2, param_3) {
     FUN_005dce96(s32(param_1, 4));
     w32(param_1, 4, 0);
   }
-  w32(param_1, 0, u8(param_2));
+  _MEM[param_1] = u8(param_2);
   uVar2 = FUN_005dce4f(param_3);
   w32(param_1, 4, uVar2);
   iVar1 = s32(param_1, 4);
@@ -3459,7 +3459,7 @@ export function FUN_00497fa0(param_1, param_2, param_3, param_4, param_5) {
 
 
   _MEM[param_1 + 1] = 0;
-  w32(param_1, 0, param_2);
+  _MEM[param_1] = param_2;
   w32(param_1, 4, param_3);
   w32(param_1, 8, param_4);
   w16(param_1, 0xc, 0);
@@ -3484,7 +3484,7 @@ export function FUN_00497ff3(param_1) {
     uVar1 = FUN_005dcdf9(s32(param_1, 4));
     w32(param_1, 8, uVar1);
     if (s32(param_1, 8) === 0) {
-      FUN_00589ef8(0xfffffff6,s32(param_1, 0),0,0,0);
+      FUN_00589ef8(0xfffffff6,_MEM[param_1],0,0,0);
     }
   }
   return 0;
@@ -3577,7 +3577,7 @@ export function FUN_00498159(param_1, param_2) {
   
   local_8 = 0;
   if (u16(param_1, 0x10) < param_2) {
-    FUN_00589ef8(0xfffffffd,s32(param_1, 0),0,param_2,s16(param_1, 0x10));
+    FUN_00589ef8(0xfffffffd,_MEM[param_1],0,param_2,s16(param_1, 0x10));
   }
   iVar1 = FUN_00497ff3(param_1);
   if (iVar1 === 0) {
@@ -4252,7 +4252,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
     if ((v(DAT_00655b0b) & u8(_MEM[iVar5 + 4])) === 0) {
       local_d0 = 4;
       pbVar7 = FUN_005b8931(local_dc,local_ec);
-      if ((s32(pbVar7, 0) & 0x80) === 0) {
+      if ((_MEM[pbVar7] & 0x80) === 0) {
         local_d0 = local_d0 | 0x10;
       }
       FUN_005b94fc(local_dc,local_ec,local_d0,1,1);

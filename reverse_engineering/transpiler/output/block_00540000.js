@@ -1322,7 +1322,7 @@ export function FUN_0054ae93() {
       local_14 = true /* DEVIATION: C pointer — *(byte **)(local_14 + 0x1bc) */;
       local_8 = local_8 + -1;
     }
-    if ((s32(local_14, 0) & 0x20) === 0) {
+    if ((_MEM[local_14] & 0x20) === 0) {
       FUN_00453c80();
     }
     else {
@@ -1340,7 +1340,7 @@ export function FUN_0054ae93() {
         local_10 = local_10 + 1;
       }
     }
-    if ((local_10 < 0xc) && ((s32(local_14, 0) & 0x90) === 0)) {
+    if ((local_10 < 0xc) && ((_MEM[local_14] & 0x90) === 0)) {
       FUN_00453c80();
     }
     else {

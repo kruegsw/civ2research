@@ -3200,9 +3200,9 @@ export function FUN_00578abd(param_1) {
 
   let local_8;
   
-  for (local_8 = param_1; s32(local_8, 0) !== 0; local_8 = local_8 + 1) {
-    if (s32(local_8, 0) === 124) {
-      w32(local_8, 0, 9);
+  for (local_8 = param_1; _MEM[local_8] !== 0; local_8 = local_8 + 1) {
+    if (_MEM[local_8] === 124) {
+      _MEM[local_8] = 9;
     }
   }
   return;
@@ -5340,7 +5340,7 @@ export function FUN_0057e33a(param_1, param_2, param_3) {
   }
   cVar1 = _MEM[DAT_0064b1c5 + u8(_MEM[DAT_006560f6 + param_1 * 0x20]) * 0x14];
   pbVar5 = FUN_005b8931(iVar3,iVar4);
-  local_8 = (((s32(pbVar5, 0) >> 7) >>> 0) + (s8(_MEM[DAT_00627cc9 + DAT_006acb30 * 0x18]))) * cVar1 * 4;
+  local_8 = (((_MEM[pbVar5] >> 7) >>> 0) + (s8(_MEM[DAT_00627cc9 + DAT_006acb30 * 0x18]))) * cVar1 * 4;
   wv(DAT_006acb34, 2);
   if ((_MEM[DAT_006560ff + param_1 * 0x20] === 0x02) && (_MEM[DAT_0064b1c1 + u8(_MEM[DAT_006560f6 + param_1 * 0x20]) * 0x14] === 0)) {
      /*JOINED*/

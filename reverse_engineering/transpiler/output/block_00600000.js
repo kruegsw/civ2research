@@ -479,7 +479,7 @@ export function xtoa_00600A70(param_1, param_2, param_3, param_4) {
   
   local_8 = param_2;
   if (param_4 !== 0) {
-    w32(param_2, 0, 45);
+    _MEM[param_2] = 45;
     local_8 = param_2 + 1;
     param_1 = -param_1;
   }
@@ -490,19 +490,19 @@ export function xtoa_00600A70(param_1, param_2, param_3, param_4) {
     param_1 = (param_1 / param_3 | 0);
     cVar1 = s8(uVar3);
     if (uVar3 < 10) {
-      w32(local_8, 0, cVar1 + 48);
+      _MEM[local_8] = cVar1 + 48;
     }
     else {
-      w32(local_8, 0, cVar1 + 87);
+      _MEM[local_8] = cVar1 + 87;
     }
     local_8 = local_8 + 1;
   } while (param_1 !== 0);
-  w32(local_8, 0, 0);
+  _MEM[local_8] = 0;
   local_8 = pcVar2;
   do {
-    cVar1 = s32(local_8, 0);
-    w32(local_8, 0, s32(local_c, 0));
-    w32(local_c, 0, cVar1);
+    cVar1 = _MEM[local_8];
+    _MEM[local_8] = _MEM[local_c];
+    _MEM[local_c] = cVar1;
     local_8 = local_8 + -1;
     local_c = local_c + 1;
   } while (local_c < local_8);
@@ -608,7 +608,7 @@ export function x64toa_00600C30(param_1, param_2, param_3, param_4, param_5) {
   lVar4 = (param_1);
   local_8 = param_3;
   if (param_5 !== 0) {
-    w32(param_3, 0, 45);
+    _MEM[param_3] = 45;
     local_8 = param_3 + 1;
   }
   local_c = local_8;
@@ -617,19 +617,19 @@ export function x64toa_00600C30(param_1, param_2, param_3, param_4, param_5) {
     uVar3 = __aullrem(lVar4,param_4,0);
     lVar4 = __aulldiv(lVar4,param_4,0);
     if (uVar3 < 10) {
-      w32(local_8, 0, s8(uVar3) + 48);
+      _MEM[local_8] = s8(uVar3) + 48;
     }
     else {
-      w32(local_8, 0, s8(uVar3) + 87);
+      _MEM[local_8] = s8(uVar3) + 87;
     }
     local_8 = local_8 + 1;
   } while (lVar4 !== 0);
-  w32(local_8, 0, 0);
+  _MEM[local_8] = 0;
   local_8 = pcVar2;
   do {
-    cVar1 = s32(local_8, 0);
-    w32(local_8, 0, s32(local_c, 0));
-    w32(local_c, 0, cVar1);
+    cVar1 = _MEM[local_8];
+    _MEM[local_8] = _MEM[local_c];
+    _MEM[local_c] = cVar1;
     local_8 = local_8 + -1;
     local_c = local_c + 1;
   } while (local_c < local_8);
@@ -2451,7 +2451,7 @@ export function __ld12cvt_00602EA0(param_1, param_2, param_3) {
   local_24 = _MEM[param_1 + 5] & 0x8000;
   local_1c[0] = u32(param_1, 3);
   local_18 = u32(param_1, 1);
-  local_14 = ((s32(param_1, 0)) >>> 0) << 0x10;
+  local_14 = ((s16(param_1, 0)) >>> 0) << 0x10;
   if (local_8 === -0x3fff) {
     local_c = 0;
     iVar1 = __IsZeroMan(local_1c[0]);
@@ -2692,21 +2692,21 @@ export function __fptostr_00603300(_Buf, _SizeInBytes, _Digits, _PtFlt) {
   w32(_Buf, 0, 48);
   pcVar1 = _Buf;
   for (; local_8 = pcVar1 + 1, 0 < (_SizeInBytes); _SizeInBytes = _SizeInBytes - 1) {
-    if (s32(local_c, 0) === 0) {
-      w32(local_8, 0, 48);
+    if (_MEM[local_c] === 0) {
+      _MEM[local_8] = 48;
     }
     else {
-      w32(local_8, 0, s32(local_c, 0));
+      _MEM[local_8] = _MEM[local_c];
       local_c = local_c + 1;
     }
     pcVar1 = local_8;
   }
-  w32(local_8, 0, 0);
-  if ((-1 < (_SizeInBytes)) && (local_8 = pcVar1, 52 < s32(local_c, 0))) {
-    for (; s32(local_8, 0) === 57; local_8 = local_8 + -1) {
-      w32(local_8, 0, 48);
+  _MEM[local_8] = 0;
+  if ((-1 < (_SizeInBytes)) && (local_8 = pcVar1, 52 < _MEM[local_c])) {
+    for (; _MEM[local_8] === 57; local_8 = local_8 + -1) {
+      _MEM[local_8] = 48;
     }
-    w32(local_8, 0, s32(local_8, 0) + 0x01);
+    _MEM[local_8] = _MEM[local_8] + 0x01;
   }
   if (s32(_Buf, 0) === 49) {
     w32(_Digits, 4, s32(_Digits, 4) + 1);
@@ -2901,7 +2901,7 @@ export function __tzset_00603650() {
       _MEM[PTR_DAT_0063b340 + 0x3f] = _MEM[PTR_DAT_0063b344 + 0x3f];
     }
   }
-  else if ((s32(_Str1, 0) !== 0) && ((v(DAT_0063b348) === 0x0 || (iVar3 = _strcmp(_Str1,v(DAT_0063b348)), iVar3 !== 0)))) {
+  else if ((_MEM[_Str1] !== 0) && ((v(DAT_0063b348) === 0x0 || (iVar3 = _strcmp(_Str1,v(DAT_0063b348)), iVar3 !== 0)))) {
           /*JOINED*/
     __free_dbg(v(DAT_0063b348),2);
     uVar8 = 0xec;
@@ -2914,32 +2914,32 @@ export function __tzset_00603650() {
       _strncpy(PTR_DAT_0063b340,_Str1,3);
       _MEM[PTR_DAT_0063b340 + 3] = 0;
       local_c = _Str1 + 3;
-      cVar1 = s32(local_c, 0);
+      cVar1 = _MEM[local_c];
       if (cVar1 === 45) {
         local_c = _Str1 + 4;
       }
       lVar5 = _atol(local_c);
       wv(DAT_0063b2b0, lVar5 * 0xe10);
-      for (; (s32(local_c, 0) === 43 || ((47 < s32(local_c, 0) && (s32(local_c, 0) < 58)))); local_c = local_c + 1) {
+      for (; (_MEM[local_c] === 43 || ((47 < _MEM[local_c] && (_MEM[local_c] < 58)))); local_c = local_c + 1) {
       }
-      if (s32(local_c, 0) === 58) {
+      if (_MEM[local_c] === 58) {
         local_c = local_c + 1;
         lVar5 = _atol(local_c);
         wv(DAT_0063b2b0, v(DAT_0063b2b0) + lVar5 * 0x3c);
-        for (; (47 < s32(local_c, 0) && (s32(local_c, 0) < 58)); local_c = local_c + 1) {
+        for (; (47 < _MEM[local_c] && (_MEM[local_c] < 58)); local_c = local_c + 1) {
         }
-        if (s32(local_c, 0) === 58) {
+        if (_MEM[local_c] === 58) {
           local_c = local_c + 1;
           lVar5 = _atol(local_c);
           wv(DAT_0063b2b0, v(DAT_0063b2b0) + lVar5);
-          for (; (47 < s32(local_c, 0) && (s32(local_c, 0) < 58)); local_c = local_c + 1) {
+          for (; (47 < _MEM[local_c] && (_MEM[local_c] < 58)); local_c = local_c + 1) {
           }
         }
       }
       if (cVar1 === 45) {
         wv(DAT_0063b2b0, -v(DAT_0063b2b0));
       }
-      wv(DAT_0063b2b4, (s32(local_c, 0)));
+      wv(DAT_0063b2b4, (_MEM[local_c]));
       if (v(DAT_0063b2b4) === 0) {
         w32(PTR_DAT_0063b344, 0, 0);
       }
@@ -3368,7 +3368,7 @@ export function ___mtold12_006043E0(param_1, param_2, param_3) {
     ___shl_12(param_3);
     ___add_12(param_3,local_10[0]);
     ___shl_12(param_3);
-    local_10[0] = ((s32(param_1, 0)) >>> 0);
+    local_10[0] = ((_MEM[param_1]) >>> 0);
     local_c = 0;
     local_8 = 0;
     ___add_12(param_3,local_10[0]);
@@ -3453,7 +3453,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
   local_48 = 0;
   local_50 = 0;
   local_68 = str;
-  for (local_8 = str; (((s32(local_8, 0) === 0x20 || (s32(local_8, 0) === 9)) || (s32(local_8, 0) === 10)) || (s32(local_8, 0) === 0xd)); local_8 = local_8 + 1) {
+  for (local_8 = str; (((_MEM[local_8] === 0x20 || (_MEM[local_8] === 9)) || (_MEM[local_8] === 10)) || (_MEM[local_8] === 0xd)); local_8 = local_8 + 1) {
       /*JOINED*/
       /*JOINED*/
   }
@@ -3476,7 +3476,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
           local_c = 0;
         }
         else {
-          while (local_6c = local_6c + -1, s32(local_6c, 0) === 0) {
+          while (local_6c = local_6c + -1, _MEM[local_6c] === 0) {
             local_74 = local_74 - 1;
             local_70 = local_70 + 1;
           }
@@ -3537,7 +3537,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       w16(true /* DEVIATION: C struct — pld12->ld12 + 10 */, 0, ((local_20) & 0xFFFF) | local_54);
       /* DEVIATION(cont): return local_48 */;
     }
-    local_40 = s32(local_8, 0);
+    local_40 = _MEM[local_8];
     pbVar1 = local_8 + 1;
     switch(local_50) {
     case 0:
@@ -3631,13 +3631,13 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         if (local_84 === 0) break;
         if (local_74 < 0x19) {
           local_74 = local_74 + 1;
-          w32(local_6c, 0, local_40 - 0x30);
+          _MEM[local_6c] = local_40 - 0x30;
           local_6c = local_6c + 1;
         }
         else {
           local_70 = local_70 + 1;
         }
-        local_40 = s32(local_8, 0);
+        local_40 = _MEM[local_8];
         local_8 = local_8 + 1;
       }
       pbVar1 = local_8;
@@ -3670,7 +3670,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       if (local_74 === 0) {
         while (local_40 === 0x30) {
           local_70 = local_70 + -1;
-          local_40 = s32(local_8, 0);
+          local_40 = _MEM[local_8];
           local_8 = local_8 + 1;
         }
       }
@@ -3684,11 +3684,11 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         if (local_88 === 0) break;
         if (local_74 < 0x19) {
           local_74 = local_74 + 1;
-          w32(local_6c, 0, local_40 - 0x30);
+          _MEM[local_6c] = local_40 - 0x30;
           local_6c = local_6c + 1;
           local_70 = local_70 + -1;
         }
-        local_40 = s32(local_8, 0);
+        local_40 = _MEM[local_8];
         local_8 = local_8 + 1;
       }
       switch(local_40) {
@@ -3772,7 +3772,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
       local_1c = 1;
       local_8 = pbVar1;
       while (local_40 === 0x30) {
-        local_40 = s32(local_8, 0);
+        local_40 = _MEM[local_8];
         local_8 = local_8 + 1;
       }
       if ((s8(local_40) < 49) || (57 < s8(local_40))) {
@@ -3798,7 +3798,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         if (local_90 === 0) return LAB_00604dcb_helper(bVar2, local_10, local_14, local_18, local_1c, local_20, local_25, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5a, local_5e, local_62, local_64, local_68, local_6c, local_70, local_74, local_78, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_c, pbVar1);
         local_80 = s8(local_40) + -0x30 + local_80 * 10;
         if (0x1450 < local_80) break;
-        local_40 = s32(local_8, 0);
+        local_40 = _MEM[local_8];
         local_8 = local_8 + 1;
       }
       local_80 = 0x1451;
@@ -3812,7 +3812,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
           local_94 = __isctype(((local_40) >>> 0),4);
         }
         if (local_94 === 0) break;
-        local_40 = s32(local_8, 0);
+        local_40 = _MEM[local_8];
         local_8 = local_8 + 1;
       }
       local_50 = 10;
@@ -3950,7 +3950,7 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
     _MEM[param_6 + 1] = 0x2d;
   }
   if ((((param_3 & 0x7fff) === 0) && (param_2 === 0)) && (param_1 === 0)) {
-    w32(param_6, 0, 0);
+    w16(param_6, 0, 0);
     _MEM[param_6 + 1] = 0x20;
     // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
     _MEM[param_6 + 2] = 0x30;
@@ -3958,7 +3958,7 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
     local_5c = 1;
   }
   else if ((param_3 & 0x7fff) === 0x7fff) {
-    w32(param_6, 0, 1);
+    w16(param_6, 0, 1);
     if (((param_2 === 0x80000000) && (param_1 === 0)) || ((param_2 & 0x40000000) !== 0)) {
       if ((((param_3 & 0x8000) === 0) || (param_2 !== 0xc0000000)) || (param_1 !== 0)) {
         if ((param_2 === 0x80000000) && (param_1 === 0)) {
@@ -4000,7 +4000,7 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
       local_60 = local_60 + 1;
       ___ld12mul(local_3c[0],local_58[0]);
     }
-    w32(param_6, 0, local_60);
+    w16(param_6, 0, local_60);
     if (((param_5 & 1) === 0) || (param_4 = param_4 + local_60, 0 < param_4)) {
       if (0x15 < param_4) {
         param_4 = 0x15;
@@ -4031,12 +4031,12 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
       }
       pcVar1 = ((local_8) + -1);
       local_8 = local_8 + -1;
-      if (s32(pcVar1, 0) < 53) {
-        for (; (param_6 + 2 <= local_8 && (s8(s32(local_8, 0)) === 48)); local_8 = ((local_8) + -1)) {
+      if (_MEM[pcVar1] < 53) {
+        for (; (param_6 + 2 <= local_8 && (s8(s16(local_8, 0)) === 48)); local_8 = ((local_8) + -1)) {
             /*JOINED*/
         }
         if (local_8 < param_6 + 2) {
-          w32(param_6, 0, 0);
+          w16(param_6, 0, 0);
           _MEM[param_6 + 1] = 0x20;
           // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
           _MEM[param_6 + 2] = 0x30;
@@ -4045,13 +4045,13 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
         }
       }
       else {
-        for (; (param_6 + 2 <= local_8 && (s8(s32(local_8, 0)) === 57)); local_8 = ((local_8) + -1)) {
+        for (; (param_6 + 2 <= local_8 && (s8(s16(local_8, 0)) === 57)); local_8 = ((local_8) + -1)) {
             /*JOINED*/
           // DEVIATION: C pointer write — *(char *)local_8 = '0';
         }
         if (local_8 < param_6 + 2) {
           local_8 = ((local_8) + 1);
-          w32(param_6, 0, s32(param_6, 0) + 1);
+          w16(param_6, 0, s16(param_6, 0) + 1);
         }
         // DEVIATION: C pointer write — *(char *)local_8 = (char)*local_8 + '\x01';
       }
@@ -4059,7 +4059,7 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
       // DEVIATION: C pointer write — *(undefined1 *)(*(char *)((int)param_6 + 3) + 4 + (int)param_6) = 0;
     }
     else {
-      w32(param_6, 0, 0);
+      w16(param_6, 0, 0);
       _MEM[param_6 + 1] = 0x20;
       // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
       _MEM[param_6 + 2] = 0x30;
@@ -4207,10 +4207,10 @@ export function wcsncnt_00605A40(param_1, param_2) {
   let local_8;
   
   local_c = param_2 + 1;
-  for (local_8 = param_1; (local_c = local_c + -1, local_c !== 0 && (s32(local_8, 0) !== 0)); local_8 = local_8 + 1) {
+  for (local_8 = param_1; (local_c = local_c + -1, local_c !== 0 && (s16(local_8, 0) !== 0)); local_8 = local_8 + 1) {
       /*JOINED*/
   }
-  if ((local_c !== 0) && (s32(local_8, 0) === 0)) {
+  if ((local_c !== 0) && (s16(local_8, 0) === 0)) {
     param_2 = ((local_8) - (param_1) >> 1) + 1;
   }
   return param_2;
@@ -4501,7 +4501,7 @@ export function ___multtenpow12_00606110(param_1, param_2, param_3) {
     }
     uStack_16 = ((uStack_16) << 16 | (((uStack_16) & 0xFFFF)));
     if (param_3 === 0) {
-      w32(param_1, 0, 0);
+      w16(param_1, 0, 0);
       uStack_16 = ((uStack_16) << 16 | (((uStack_16) & 0xFFFF)));
     }
     while (param_2 !== 0) {
@@ -4510,7 +4510,7 @@ export function ___multtenpow12_00606110(param_1, param_2, param_3) {
       param_2 = (param_2) >> 3;
       if (uVar1 !== 0) {
         local_c = (local_8 + uVar1 * 0xc);
-        if (0x7fff < s32(local_c, 0)) {
+        if (0x7fff < s16(local_c, 0)) {
           local_18[0] = ((s32(local_c, 0)) & 0xFFFF);
           uStack_16 = ((((s32(local_c, 0)) >>> 0) >> 0x10) & 0xFFFF);
           uStack_16 = ((s32(local_c, 2)) & 0xFFFF);
@@ -4723,10 +4723,10 @@ export function wcsncnt_00606620(param_1, param_2) {
   let local_8;
   
   local_c = param_2;
-  for (local_8 = param_1; (local_c !== 0 && (s32(local_8, 0) !== 0)); local_8 = local_8 + 1) {
+  for (local_8 = param_1; (local_c !== 0 && (s16(local_8, 0) !== 0)); local_8 = local_8 + 1) {
     local_c = local_c + -1;
   }
-  if (s32(local_8, 0) === 0) {
+  if (s16(local_8, 0) === 0) {
     param_2 = (local_8) - (param_1) >> 1;
   }
   return param_2;
@@ -4898,10 +4898,10 @@ export function _strncnt_00606AF0(_String, _Cnt) {
   let local_8;
   
   local_c = _Cnt;
-  for (local_8 = _String; (local_c !== 0 && (s32(local_8, 0) !== 0)); local_8 = local_8 + 1) {
+  for (local_8 = _String; (local_c !== 0 && (_MEM[local_8] !== 0)); local_8 = local_8 + 1) {
     local_c = local_c - 1;
   }
-  if (s32(local_8, 0) === 0) {
+  if (_MEM[local_8] === 0) {
     _Cnt = (local_8) - (_String);
   }
   return _Cnt;
@@ -5140,10 +5140,10 @@ export function __mbschr_00607070(_Str, _Ch) {
       }
       else {
         puVar1 = _Str + 1;
-        if (s32(puVar1, 0) === 0) {
+        if (_MEM[puVar1] === 0) {
           return 0x0;
         }
-        if (((bVar2) << 8 | (s32(puVar1, 0))) === _Ch) {
+        if (((bVar2) << 8 | (_MEM[puVar1])) === _Ch) {
           return _Str;
         }
       }
@@ -5234,9 +5234,9 @@ export function __strupr_006076C0(unaff_ESI, unaff_EDI, _String) {
   
   local_c = 0;
   if (v(DAT_0063a078) === 0x0) {
-    for (local_10 = _String; s32(local_10, 0) !== 0; local_10 = local_10 + 1) {
-      if ((96 < s32(local_10, 0)) && (s32(local_10, 0) < 123)) {
-        w32(local_10, 0, s32(local_10, 0) + -0x20);
+    for (local_10 = _String; _MEM[local_10] !== 0; local_10 = local_10 + 1) {
+      if ((96 < _MEM[local_10]) && (_MEM[local_10] < 123)) {
+        _MEM[local_10] = _MEM[local_10] + -0x20;
       }
     }
   }
@@ -5278,9 +5278,9 @@ export function __strlwr_006077F0(unaff_ESI, unaff_EDI, _String) {
   
   local_c = 0;
   if (v(DAT_0063a078) === 0x0) {
-    for (local_10 = _String; s32(local_10, 0) !== 0; local_10 = local_10 + 1) {
-      if ((64 < s32(local_10, 0)) && (s32(local_10, 0) < 91)) {
-        w32(local_10, 0, s32(local_10, 0) + 32);
+    for (local_10 = _String; _MEM[local_10] !== 0; local_10 = local_10 + 1) {
+      if ((64 < _MEM[local_10]) && (_MEM[local_10] < 91)) {
+        _MEM[local_10] = _MEM[local_10] + 32;
       }
     }
   }
