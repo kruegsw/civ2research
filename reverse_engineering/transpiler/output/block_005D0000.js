@@ -66,8 +66,8 @@ export function FUN_005d056c(in_ECX, param_1, param_2, param_3, param_4, param_5
       }
       iVar4 = local_c;
       iVar6 = local_8;
-      // DEVIATION: MFC — pCVar9 = COleClientItem::GetActiveView(param_2);
-      // DEVIATION: MFC — uVar10 = CCheckListBox::GetCheckStyle(param_2);
+      pCVar9 = COleClientItem__GetActiveView(param_2);
+      uVar10 = CCheckListBox__GetCheckStyle(param_2);
       iVar1 = FUN_005e395a(uVar10,pCVar9,uVar5,uVar8,local_30,iVar4,iVar6,iVar1,iVar2,iVar3);
       iVar2 = FUN_005c55d0();
       uVar5 = FUN_005c5640(v(DAT_006e47c8),u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
@@ -158,7 +158,7 @@ export function FUN_005d080d(in_ECX, param_1, param_2, param_3, param_4, param_5
         uVar6 = FUN_005c5660(uVar6,uVar8,local_34,local_c,local_8,iVar1 - iVar2,iVar3,iVar4);
         uVar6 = FUN_005c56a0(uVar6);
         FUN_005e518e(in_ECX[0xe],iVar5,v(DAT_006e47c8),u8(param_3),local_28,local_2c,uVar6);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(param_2); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(param_2);
       }
     }
     w32(param_1, 0, local_1c[0].left);
@@ -242,8 +242,8 @@ export function FUN_005d0aac(in_ECX, param_1, param_2, param_3, param_4, param_5
       }
       iVar4 = local_c;
       iVar6 = local_8;
-      // DEVIATION: MFC — pCVar9 = COleClientItem::GetActiveView(param_2);
-      // DEVIATION: MFC — uVar10 = CCheckListBox::GetCheckStyle(param_2);
+      pCVar9 = COleClientItem__GetActiveView(param_2);
+      uVar10 = CCheckListBox__GetCheckStyle(param_2);
       iVar1 = FUN_005e395a(uVar10,pCVar9,uVar5,uVar8,local_30,iVar4,iVar6,iVar1,iVar2,iVar3);
       iVar2 = FUN_005c55d0();
       uVar5 = FUN_005c5640(v(DAT_006e47c0),v(DAT_006e47c4),u8(param_3),local_28,local_2c, ((-((iVar1 === 0) >>> 0) & 0xfffffffe) + 1) * iVar2);
@@ -336,7 +336,7 @@ export function FUN_005d0dbf(in_ECX, param_1, param_2, param_3, param_4, param_5
         uVar6 = FUN_005c56a0(uVar6);
         FUN_0061a759(in_ECX[0xe],local_c,v(DAT_006e47c0),v(DAT_006e47c4),u8(param_3),local_2c, local_30,uVar6);
                      /*JOINED*/
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(param_2); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(param_2);
       }
     }
     w32(param_1, 0, local_20[0].left);
@@ -421,8 +421,8 @@ export function FUN_005d10cd(in_ECX, param_1, param_2, param_3, param_4, param_5
       }
       iVar4 = local_c;
       iVar6 = local_8;
-      // DEVIATION: MFC — pCVar9 = COleClientItem::GetActiveView(param_2);
-      // DEVIATION: MFC — uVar10 = CCheckListBox::GetCheckStyle(param_2);
+      pCVar9 = COleClientItem__GetActiveView(param_2);
+      uVar10 = CCheckListBox__GetCheckStyle(param_2);
       iVar1 = FUN_005e395a(uVar10,pCVar9,uVar5,uVar8,local_30,iVar4,iVar6,iVar1,iVar2,iVar3,param_6);
       /*JOINED*/
       iVar2 = FUN_005c55d0();
@@ -517,7 +517,7 @@ export function FUN_005d1372(in_ECX, param_1, param_2, param_3, param_4, param_5
                             /*JOINED*/
         uVar6 = FUN_005c56a0(uVar6);
         FUN_005e52bf(in_ECX[0xe],local_c,v(DAT_006e47c8),u8(param_3),local_2c,local_30,uVar6);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(param_2); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(param_2);
       }
     }
     w32(param_1, 0, local_20[0].left);
@@ -1632,7 +1632,7 @@ export function send_msg_2A01_005D2A01(param_1, param_2, param_3, param_4) {
     }
     if (uVar2 === 2) {
       if (_this !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — ios::delbuf(_this,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        ios__delbuf(_this,0);
       }
       LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
       return LVar6;
@@ -2122,7 +2122,7 @@ export function send_msg_3310_005D3310(param_1, param_2, param_3, param_4) {
     }
     if (param_2 === 2) {
       if (_this !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — ios::delbuf(_this,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        ios__delbuf(_this,0);
       }
       LVar4 = CallWindowProcA(lpPrevWndFunc,param_1,2,param_3,param_4);
       return LVar4;
@@ -2465,7 +2465,7 @@ export function send_msg_39E2_005D39E2(param_1, param_2, param_3, param_4) {
     }
     if (param_2 === 2) {
       if (_this !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — ios::delbuf(_this,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        ios__delbuf(_this,0);
       }
       LVar4 = CallWindowProcA(lpPrevWndFunc,param_1,2,param_3,param_4);
       return LVar4;
@@ -5295,9 +5295,9 @@ export function FUN_005d7cb0(in_ECX, param_1, param_2, param_3, param_4, param_5
   FUN_005cef31(local_74[0],in_ECX + 0x34,local_40,local_44);
   FUN_005cf39b(local_50[0],local_54[0]);
   FUN_005cd775(local_48[0],local_4c[0]);
-  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((in_ECX + 0x7c));
+  pCVar2 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   pCVar2 = pCVar2 + param_4 + -1;
-  // DEVIATION: MFC — pCVar3 = COleClientItem::GetActiveView((in_ECX + 0x7c));
+  pCVar3 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   SetRect(local_3c[0],param_3,param_4,(pCVar3 + param_3 + -1),(pCVar2));
   OffsetRect(local_3c[0],-local_3c[0].left,-local_3c[0].top);
   local_24[0].left = local_3c[0].left;
@@ -5380,9 +5380,9 @@ export function FUN_005d7f72(in_ECX, param_1, param_2, param_3, param_4, param_5
   FUN_005cef31(local_74[0],in_ECX + 0x34,local_40,local_44);
   FUN_005cf39b(local_50[0],local_54[0]);
   FUN_005cd775(local_48[0],local_4c[0]);
-  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((in_ECX + 0x7c));
+  pCVar2 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   pCVar2 = pCVar2 + param_4 + -1;
-  // DEVIATION: MFC — pCVar3 = COleClientItem::GetActiveView((in_ECX + 0x7c));
+  pCVar3 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   SetRect(local_3c[0],param_3,param_4,(pCVar3 + param_3 + -1),(pCVar2));
   OffsetRect(local_3c[0],-local_3c[0].left,-local_3c[0].top);
   local_24[0].left = local_3c[0].left;
@@ -6491,22 +6491,22 @@ export function invalidate_9A9A_005D9A9A(param_1) {
     _this = s32(iVar1, 4);
     iVar1 = s32(iVar1, 0x24);
     SetFocus(param_1);
-    // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(_this);
+    uVar2 = CCheckListBox__GetCheckStyle(_this);
     if ((uVar2 !== u32(iVar1, 0x14)) && (s32(iVar1, 0x18) === 1)) {
       BVar6 = 0;
       pRVar5 = 0x0;
-      // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(_this);
+      uVar2 = CCheckListBox__GetCheckStyle(_this);
       iVar3 = FUN_005c5ee0();
       InvalidateRect(s32(iVar3, uVar2 * 0xa4),pRVar5,BVar6);
       FUN_004472f0(s32(iVar1, 0x14));
       BVar6 = 0;
       pRVar5 = 0x0;
-      // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(_this);
+      uVar2 = CCheckListBox__GetCheckStyle(_this);
       iVar1 = FUN_005c5ee0();
       InvalidateRect(s32(iVar1, uVar2 * 0xa4),pRVar5,BVar6);
     }
     wv(DAT_00637ea4, FUN_0040f810());
-    // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(_this);
+    uVar2 = CCheckListBox__GetCheckStyle(_this);
     uVar4 = FUN_00418740(uVar2);
     FUN_005dad40(uVar4,uVar2);
   }
@@ -6568,7 +6568,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
   if (param_2 < 0x10) {
     if (param_2 === 0xf) {
       if (s32(local_bc, 0x18) === 1) {
-        // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+        uVar3 = CCheckListBox__GetCheckStyle(local_9c);
         if (uVar3 === u32(local_bc, 0x14)) {
           local_128 = s32(local_124, 0x14);
         }
@@ -6739,13 +6739,13 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
   else if (param_2 < 0x202) {
     if (param_2 === 0x201) {
       if (v(DAT_006386fc) === 0) {
-        // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+        uVar3 = CCheckListBox__GetCheckStyle(local_9c);
         if ((uVar3 !== u32(local_bc, 0x14)) && (s32(local_bc, 0x18) === 1)) {
-          // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+          uVar3 = CCheckListBox__GetCheckStyle(local_9c);
           if (uVar3 !== -1) {
             BVar14 = 0;
             pRVar11 = 0x0;
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
             InvalidateRect(s32(iVar4, uVar3 * 0xa4),pRVar11,BVar14);
           }
@@ -6754,7 +6754,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
           InvalidateRect(param_1,0x0,0);
           uVar7 = FUN_0040f810();
           FUN_005c6303(uVar7);
-          // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+          uVar3 = CCheckListBox__GetCheckStyle(local_9c);
           uVar7 = FUN_00418740(uVar3);
           FUN_005dad40(uVar7,uVar3);
         }
@@ -6804,7 +6804,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             SetFocus(s32(iVar4, local_c8 * 0xa4));
             BVar14 = 0;
             pRVar11 = 0x0;
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
             InvalidateRect(s32(iVar4, uVar3 * 0xa4),pRVar11,BVar14);
             FUN_004472f0(local_c8);
@@ -6814,7 +6814,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             InvalidateRect(s32(iVar4, local_c8 * 0xa4),pRVar11,BVar14);
             uVar7 = FUN_0040f810();
             FUN_005c6303(uVar7);
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             uVar7 = FUN_00418740(uVar3);
             FUN_005dad40(uVar7,uVar3);
             return 0;
@@ -6846,7 +6846,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             SetFocus(s32(iVar4, local_c8 * 0xa4));
             BVar14 = 0;
             pRVar11 = 0x0;
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
             InvalidateRect(s32(iVar4, uVar3 * 0xa4),pRVar11,BVar14);
             FUN_004472f0(local_c8);
@@ -6856,7 +6856,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
             InvalidateRect(s32(iVar4, local_c8 * 0xa4),pRVar11,BVar14);
             uVar7 = FUN_0040f810();
             FUN_005c6303(uVar7);
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             uVar7 = FUN_00418740(uVar3);
             FUN_005dad40(uVar7,uVar3);
             return 0;
@@ -6877,13 +6877,13 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
       if (s32(local_bc, 0x18) === 1) {
         uVar7 = FUN_0040f810();
         FUN_005c6303(uVar7);
-        // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+        uVar3 = CCheckListBox__GetCheckStyle(local_9c);
         if (uVar3 !== u32(local_bc, 0x14)) {
-          // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+          uVar3 = CCheckListBox__GetCheckStyle(local_9c);
           if (uVar3 !== -1) {
             BVar14 = 0;
             pRVar11 = 0x0;
-            // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(local_9c);
+            uVar3 = CCheckListBox__GetCheckStyle(local_9c);
             iVar4 = FUN_005c5ee0();
             InvalidateRect(s32(iVar4, uVar3 * 0xa4),pRVar11,BVar14);
           }
@@ -6973,7 +6973,7 @@ export function FUN_005dabe5(param_1) {
   
   iVar2 = FUN_005c9563(param_1);
   iVar1 = s32(iVar2, 0x24);
-  // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle(s32(iVar2, 4));
+  uVar3 = CCheckListBox__GetCheckStyle(s32(iVar2, 4));
   return uVar3 === u32(iVar1, 0x14);
 }
 
@@ -7154,7 +7154,7 @@ export function FUN_005dae34() {
 export function FUN_005dae51() {
 
 
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — Iostream_init::~Iostream_init(v(DAT_006e4850)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  Iostream_init__Iostream_init(v(DAT_006e4850));
   return;
 }
 
@@ -7345,7 +7345,7 @@ export function FUN_005db089(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(in_ECX,0);
   FUN_005db059();
   return in_ECX;
 }
@@ -8249,9 +8249,9 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
       }
       else {
         iVar6 = FUN_00414d10();
-        // DEVIATION: MFC — local_3c = COleClientItem::GetActiveView(s32(iVar6, 0x24));
+        local_3c = COleClientItem__GetActiveView(s32(iVar6, 0x24));
         iVar6 = FUN_00414d10();
-        // DEVIATION: MFC — local_44 = COleClientItem::GetActiveView(s32(iVar6, 0x24));
+        local_44 = COleClientItem__GetActiveView(s32(iVar6, 0x24));
         if ((local_3c !== 0x0) && (local_44 !== 0x0)) {
           local_38[0].left = local_98[0].rcPaint.left;
           local_38[0].top = local_98[0].rcPaint.top;
@@ -8277,9 +8277,9 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
       iVar6 = FUN_00414d10();
       if (s32(iVar6, 0x2c) !== 0) {
         iVar6 = FUN_00414d10();
-        // DEVIATION: MFC — local_3c = COleClientItem::GetActiveView(s32(iVar6, 0x2c));
+        local_3c = COleClientItem__GetActiveView(s32(iVar6, 0x2c));
         iVar6 = FUN_00414d10();
-        // DEVIATION: MFC — local_44 = COleClientItem::GetActiveView(s32(iVar6, 0x2c));
+        local_44 = COleClientItem__GetActiveView(s32(iVar6, 0x2c));
         local_38[0].left = local_98[0].rcPaint.left;
         local_38[0].top = local_98[0].rcPaint.top;
         local_38[0].right = local_98[0].rcPaint.right;
@@ -9411,19 +9411,19 @@ export function FUN_005dd5a4(in_ECX, param_1) {
   let local_14 = [0];
   
   show_messagebox_2997();
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView(param_1);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+  pCVar2 = COleClientItem__GetActiveView(param_1);
   if ((pCVar1) <= (pCVar2)) {
-    // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-    // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView(param_1);
+    pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+    pCVar2 = COleClientItem__GetActiveView(param_1);
     if ((pCVar1) <= (pCVar2)) return LAB_005dd60c_helper(in_ECX, local_14, pCVar1, pCVar2, pCVar3, param_1);
   }
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+  pCVar3 = CRichEditCntrItem__GetActiveView(in_ECX);
   FUN_005bd65c(pCVar3,pCVar1);
 // LAB_005dd60c: (code below also in LAB_005dd60c_helper, kept for 1:1 audit)
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+  pCVar3 = CRichEditCntrItem__GetActiveView(in_ECX);
   SetRect(local_14[0],0,0,(pCVar3),(pCVar1));
   FUN_005c0593(param_1,local_14[0],local_14[0]);
   return;
@@ -9447,15 +9447,15 @@ export function FUN_005dd64c(in_ECX, param_1, param_2, param_3) {
   let local_14 = [0];
   
   if ((-1 < param_2) && (-1 < param_3)) {
-    // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView(param_1);
-    // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+    pCVar1 = COleClientItem__GetActiveView(param_1);
+    pCVar2 = CRichEditCntrItem__GetActiveView(in_ECX);
     if ((pCVar2) <= (pCVar1) - param_2) {
-      // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView(param_1);
-      // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+      pCVar1 = COleClientItem__GetActiveView(param_1);
+      pCVar2 = CRichEditCntrItem__GetActiveView(in_ECX);
       if ((pCVar2) <= (pCVar1) - param_3) {
         show_messagebox_2997(in_ECX,0);
-        // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
-        // DEVIATION: MFC — xRight = CRichEditCntrItem::GetActiveView(in_ECX);
+        pCVar2 = CRichEditCntrItem__GetActiveView(in_ECX);
+        xRight = CRichEditCntrItem__GetActiveView(in_ECX);
         SetRect(local_24[0],0,0,(xRight),(pCVar2));
         CopyRect(local_14[0],local_24[0]);
         OffsetRect(local_14[0],param_2,param_3);
@@ -9480,9 +9480,9 @@ export function FUN_005dd71e(in_ECX) {
   // in_ECX → promoted to parameter
   let iVar2;
   
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
   iVar2 = (pCVar1) * 2;
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
   FUN_005bb6c7((pCVar1) * 2,iVar2);
   w32(in_ECX, 0x5a0, 1);
   return;
@@ -9529,8 +9529,8 @@ export function FUN_005dd7de(in_ECX) {
   let local_24 = [0];
   let local_14 = [0];
   
-  // DEVIATION: MFC — yBottom = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — xRight = CRichEditCntrItem::GetActiveView(in_ECX);
+  yBottom = CRichEditCntrItem__GetActiveView(in_ECX);
+  xRight = CRichEditCntrItem__GetActiveView(in_ECX);
   SetRect(local_14[0],0,0,(xRight),(yBottom));
   local_24[0].left = local_14[0].left;
   local_24[0].top = local_14[0].top;
@@ -11708,8 +11708,8 @@ function switchD_005dc5f2_caseD_4_helper(BVar4, LVar5, LVar8, iVar6, iVar7, loca
 }
 
 function LAB_005dd60c_helper(in_ECX, local_14, pCVar1, pCVar2, pCVar3, param_1) {
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+  pCVar3 = CRichEditCntrItem__GetActiveView(in_ECX);
   SetRect(local_14[0],0,0,(pCVar3),(pCVar1));
   FUN_005c0593(param_1,local_14[0],local_14[0]);
   return;

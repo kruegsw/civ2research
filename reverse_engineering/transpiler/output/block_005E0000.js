@@ -11,11 +11,11 @@ export function FUN_005e00bb(param_1) {
 
 
   if (param_1 === 0x65) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006e5020) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((v(DAT_006e5020) + 0x48));
   }
   else if (param_1 === 0x66) {
     wv(DAT_006e5018, -1);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006e5020) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((v(DAT_006e5020) + 0x48));
   }
   return;
 }
@@ -45,7 +45,7 @@ export function FUN_005e0122(param_1, param_2) {
 
 
   wv(DAT_006e5018, param_2);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006e5020) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CRichEditDoc__InvalidateObjectCache((v(DAT_006e5020) + 0x48));
   return;
 }
 
@@ -213,19 +213,19 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   wv(DAT_006e5020, local_124[0]);
   FUN_005c19ad(((v(DAT_00638b40)) & 0xFF));
   iVar2 = local_628 * local_63c + 10;
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124[0]);
+  pCVar5 = CRichEditCntrItem__GetActiveView(local_124[0]);
   SetRect(local_638[0],10,10,(pCVar5 + -10),iVar2);
   FUN_005c1167(local_680[0],local_5ac,local_638[0],1);
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124[0]);
+  pCVar5 = CRichEditCntrItem__GetActiveView(local_124[0]);
   SetRect(local_624[0],local_638[0].left,local_638[0].bottom + 10,local_638[0].right + -0x46,(pCVar5 + -10) );
          /*JOINED*/
   FUN_005e0bc0(local_dc[0],100,local_624[0],1,local_174);
   FUN_005311b0(FUN_005e010a);
   FUN_005311e0(FUN_005e0122);
   SetRect(local_134[0],0,0,0x3c,0x19);
-  // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_124[0]);
+  pCVar5 = CRichEditCntrItem__GetActiveView(local_124[0]);
   pCVar5 = pCVar5 + -0x23;
-  // DEVIATION: MFC — pCVar6 = CRichEditCntrItem::GetActiveView(local_124[0]);
+  pCVar6 = CRichEditCntrItem__GetActiveView(local_124[0]);
   OffsetRect(local_134[0],(pCVar6 + -0x46),(pCVar5));
   FUN_0040f680(local_dc[0],0x65,local_134[0],v(DAT_00638d84));
   FUN_0040f880(FUN_005e00bb);
@@ -394,9 +394,9 @@ export function FUN_005e0863() {
   FUN_005d8236(local_5f4[0]);
   FUN_005d268e(local_5f4[0]);
   SetRect(local_20[0],0,0,0x3c,0x19);
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(local_1b8[0]);
+  pCVar1 = CRichEditCntrItem__GetActiveView(local_1b8[0]);
   pCVar1 = pCVar1 + -0x23;
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(local_1b8[0]);
+  pCVar2 = CRichEditCntrItem__GetActiveView(local_1b8[0]);
   OffsetRect(local_20[0],(pCVar2 + -0x46),(pCVar1));
   FUN_0040f680(local_170[0],0x65,local_20[0],v(DAT_00638d90));
   FUN_0040f880(FUN_005e00bb);
@@ -1455,27 +1455,27 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
       local_c = local_68[0].rcPaint.right;
       local_8 = local_68[0].rcPaint.bottom;
       SetRect(local_24[0],0,0,0,0);
-      // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
-      // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+      pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
+      pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
       if ((pCVar4) < (pCVar5)) {
-        // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
+        pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
         iVar3 = FUN_00407f90(local_14[0]);
-        // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+        pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
         local_24[0].right = (((pCVar4) * iVar3) / (pCVar5) | 0);
         local_24[0].bottom = FUN_00407fc0(local_14[0]);
       }
       else {
         local_24[0].right = FUN_00407f90(local_14[0]);
-        // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
+        pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
         iVar3 = FUN_00407fc0(local_14[0]);
-        // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+        pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
         local_24[0].bottom = (((pCVar4) * iVar3) / (pCVar5) | 0);
       }
-      // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle(local_74);
+      uVar6 = CCheckListBox__GetCheckStyle(local_74);
       hdcSrc = s32(uVar6, 4);
       rop = 0xcc0020;
-      // DEVIATION: MFC — pCVar4 = CRichEditCntrItem::GetActiveView(local_74);
-      // DEVIATION: MFC — pCVar5 = CRichEditCntrItem::GetActiveView(local_74);
+      pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
+      pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
       ySrc = 0;
       xSrc = 0;
       wDest = local_24[0].right;
@@ -1608,7 +1608,7 @@ export function FUN_005e1c8e(param_1, param_2) {
         w32(param_1, 0x608, 0x100);
         wv(DAT_00638db4, s32(param_1, 0x5c4));
         wv(DAT_00638db8, s32(param_1, 0x5c8));
-        // DEVIATION: MFC — uVar4 = CCheckListBox::GetCheckStyle(param_1);
+        uVar4 = CCheckListBox__GetCheckStyle(param_1);
         iVar3 = FUN_005e395a(uVar4);
         if (iVar3 !== 0) {
           w32(param_1, 0x5f0, -s32(param_1, 0x5f0));
@@ -2337,8 +2337,8 @@ export function FUN_005e32b2(param_1, param_2) {
     }
     else {
       FUN_005bd65c(v(DAT_00638db4),v(DAT_00638db8));
-      // DEVIATION: MFC — yBottom = CRichEditCntrItem::GetActiveView(param_1);
-      // DEVIATION: MFC — xRight = CRichEditCntrItem::GetActiveView(param_1);
+      yBottom = CRichEditCntrItem__GetActiveView(param_1);
+      xRight = CRichEditCntrItem__GetActiveView(param_1);
       SetRect(local_1c[0],0,0,(xRight),(yBottom));
       local_2c[0].left = local_1c[0].left;
       local_2c[0].top = local_1c[0].top;
@@ -4829,7 +4829,7 @@ export function FUN_005e6651(in_ECX, param_1, param_2, param_3, param_4) {
           local_14 = ((local_14) - s32(in_ECX, 0xc));
           local_8 = ((local_8) + local_18);
         }
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(in_ECX);
         FUN_005c5520(local_24);
         uVar1 = 1;
       }
@@ -4932,7 +4932,7 @@ export function FUN_005e6893(in_ECX, param_1, param_2, param_3, param_4) {
         FUN_005e4d60(local_8,param_2, ((((((s32(in_ECX, 0xc)) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (((local_18) & 0xFFFF))) ,s32(in_ECX, 0xc),local_1c,local_20,uVar1);
                      /*JOINED*/
                      /*JOINED*/
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(in_ECX);
         FUN_005c5580(local_28);
         FUN_005c5520(local_28);
         uVar1 = 1;
@@ -5005,7 +5005,7 @@ export function FUN_005e6bc5(in_ECX, param_1, param_2, param_3, param_4) {
       uVar2 = FUN_005e6188();
       FUN_005e4d60(local_8,param_2,s8(_MEM[local_c + 2]),s32(in_ECX, 0xc),local_14,local_18, uVar2);
                    /*JOINED*/
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      _Timevec___Timevec(in_ECX);
       FUN_005c5580(local_20);
       FUN_005c5520(local_20);
       uVar2 = 1;
@@ -5077,7 +5077,7 @@ export function FUN_005e6d4c(in_ECX, param_1) {
           local_14 = ((local_14) - s32(in_ECX, 0xc));
         }
       }
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      _Timevec___Timevec(in_ECX);
       FUN_005c5580(local_24);
       FUN_005c5520(local_24);
       uVar3 = 1;
@@ -5341,17 +5341,17 @@ export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
       local_10 = local_20[0].bottom - local_20[0].top;
     }
     if ((local_c !== 0) && (local_10 !== 0)) {
-      // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(param_1);
+      uVar1 = CCheckListBox__GetCheckStyle(param_1);
       iVar2 = FUN_005e395a(uVar1);
       iVar3 = FUN_005c55d0();
       uVar4 = FUN_005c56a0(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3);
-      // DEVIATION: MFC — pCVar5 = COleClientItem::GetActiveView(param_1);
+      pCVar5 = COleClientItem__GetActiveView(param_1);
       uVar4 = FUN_005c5660(pCVar5,uVar4);
       uVar4 = FUN_005c5640(local_20[0].left,local_20[0].top,local_30[0].left,local_30[0].top,local_c,local_10, uVar4);
                            /*JOINED*/
       FUN_005e4f9b(local_8,uVar4);
     }
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    _Timevec___Timevec(in_ECX);
   }
   return;
 }
@@ -7827,7 +7827,7 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
         return;
       }
       _this = FUN_005ea7d7(param_2,s32(param_1, 0xb8));
-      if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((_this !== 0x0) && ((((iVar1 = FUN_005c5e60(), iVar1 === 6 && (pcVar4 = streambuf::egptr(_this), pcVar4 !== 0x0)) || ((iVar1 = FUN_005c5e60(), iVar1 === 2 && (iVar1 = FUN_005c5ec0(), iVar1 !== 0)))) || (((iVar1 = FUN_005c5e60(), iVar1 === 4 || (iVar1 = FUN_005c5e60(), iVar1 === 7)) || (iVar1 = FUN_005c5e60(), iVar1 === 10)))))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+      if ((_this !== 0x0) && ((((iVar1 = FUN_005c5e60(), iVar1 === 6 && (pcVar4 = streambuf__egptr(_this), pcVar4 !== 0x0)) || ((iVar1 = FUN_005c5e60(), iVar1 === 2 && (iVar1 = FUN_005c5ec0(), iVar1 !== 0)))) || (((iVar1 = FUN_005c5e60(), iVar1 === 4 || (iVar1 = FUN_005c5e60(), iVar1 === 7)) || (iVar1 = FUN_005c5e60(), iVar1 === 10)))))) {
          /*JOINED*/
             /*JOINED*/
            /*JOINED*/
@@ -8352,7 +8352,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
       }
       sVar1 = ((((param_3) >>> 0) >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_1c = CSplitterWnd::IsTracking(local_14);
+        local_1c = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0x0:
           local_1c = local_1c + -1;
@@ -8371,7 +8371,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_1c);
           break;
         case 0x2:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          iVar5 = CSplitterWnd__IsTracking(local_14);
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
@@ -8380,7 +8380,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_1c);
           break;
         case 0x3:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          iVar5 = CSplitterWnd__IsTracking(local_14);
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,0,local_1c,1);
           local_1c = GetScrollPos(param_1,0);
@@ -8402,7 +8402,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
       }
       else {
         if (param_2 !== 0x115) return switchD_005ec033_caseD_4_helper(BVar6, iVar4, iVar5, local_10, local_14, local_18, local_1c, local_20, local_24, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2, uVar3);
-        // DEVIATION: MFC — local_1c = CSplitterWnd::IsTracking(local_14);
+        local_1c = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0x0:
           local_1c = local_1c + -1;
@@ -8421,7 +8421,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_1c);
           break;
         case 0x2:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          iVar5 = CSplitterWnd__IsTracking(local_14);
           local_1c = local_1c - iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
@@ -8430,7 +8430,7 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_1c);
           break;
         case 0x3:
-          // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(local_14);
+          iVar5 = CSplitterWnd__IsTracking(local_14);
           local_1c = local_1c + iVar5;
           SetScrollPos(param_1,1,local_1c,1);
           local_1c = GetScrollPos(param_1,1);
@@ -8782,7 +8782,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       }
       sVar1 = ((param_3 >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        local_18 = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -8801,7 +8801,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -8810,7 +8810,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed3e0(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -8834,7 +8834,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         }
       }
       if (param_2 === 0x115) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        local_18 = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -8853,7 +8853,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -8862,7 +8862,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
           FUN_005ed460(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -8958,7 +8958,7 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
     }
 // switchD_005ecda6_caseD_6: (code below also in switchD_005ecda6_caseD_6_helper, kept for 1:1 audit)
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    local_10 = CSplitterWnd__IsTracking(local_14);
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -10564,7 +10564,7 @@ export function FUN_005ee7b1(in_ECX, param_1, param_2) {
   }
   uVar3 = 0x4000010a;
   uVar2 = v(DAT_006e4ff0);
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
+  iVar1 = CSplitterWnd__IsTracking(param_1);
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,param_2);
   w32(in_ECX, 0, iVar1);
   SendMessageA(s32(in_ECX, 0),0x477,0,0x639d4c);
@@ -10594,7 +10594,7 @@ export function FUN_005ee825(in_ECX, param_1) {
   uVar4 = 0;
   uVar3 = 0x4000010a;
   uVar2 = v(DAT_006e4ff0);
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
+  iVar1 = CSplitterWnd__IsTracking(param_1);
   iVar1 = MCIWndCreateA(s32(iVar1, 4),uVar2,uVar3,uVar4);
   w32(in_ECX, 0, iVar1);
   return;
@@ -10857,7 +10857,7 @@ export function FUN_005eeba2(in_ECX, param_1) {
   let lParam;
   
   lParam = 0;
-  // DEVIATION: MFC — wParam = CSplitterWnd::IsTracking(param_1);
+  wParam = CSplitterWnd__IsTracking(param_1);
   SendMessageA(s32(in_ECX, 0),0x47f,wParam,lParam);
   return;
 }
@@ -11659,7 +11659,7 @@ export function FUN_005efdc0(in_ECX) {
   // DEVIATION: SEH
   FUN_005e5ea0();
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString((in_ECX + 0x44)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CString__CString((in_ECX + 0x44));
   local_8 = ((1) & 0xFF);
   FUN_005f0520();
   w32(in_ECX, 0xb0, 0);
@@ -12252,7 +12252,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
       }
       sVar1 = ((param_3 >> 0x10) << 16 >> 16);
       if (param_2 === 0x114) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        local_18 = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12271,7 +12271,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
           FUN_005ed3e0(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12280,7 +12280,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
           FUN_005ed3e0(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,0,local_18,1);
           local_18 = GetScrollPos(param_1,0);
@@ -12304,7 +12304,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
         }
       }
       if (param_2 === 0x115) {
-        // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+        local_18 = CSplitterWnd__IsTracking(local_14);
         switch(param_3) {
         case 0:
           local_18 = local_18 + -1;
@@ -12323,7 +12323,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
           FUN_005ed460(local_18);
           return 0;
         case 2:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 - iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12332,7 +12332,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
           FUN_005ed460(local_18);
           return 0;
         case 3:
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+          iVar4 = CSplitterWnd__IsTracking(local_14);
           local_18 = local_18 + iVar4;
           SetScrollPos(param_1,1,local_18,1);
           local_18 = GetScrollPos(param_1,1);
@@ -12428,7 +12428,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
       return switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2);
     }
   // switchD_005ecda6_caseD_6:
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    local_10 = CSplitterWnd__IsTracking(local_14);
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -12440,7 +12440,7 @@ function switchD_005ecda6_caseD_4_helper(BVar3, iVar4, local_10, local_14, local
 }
 
 function switchD_005ecda6_caseD_6_helper(BVar3, iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2) {
-    // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+    local_10 = CSplitterWnd__IsTracking(local_14);
     if (local_10 === 0) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
@@ -12548,7 +12548,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) }
   // (skipped else) sVar1 = ((param_3 >> 0x10) << 16 >> 16);
   // (skipped else) if (param_2 === 0x114) {
-  // (skipped else) // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) switch(param_3) {
   // (skipped else) case 0:
   // (skipped else) local_18 = local_18 + -1;
@@ -12567,7 +12567,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) FUN_005ed3e0(local_18);
   // (skipped else) return 0;
   // (skipped else) case 2:
-  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) iVar4 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) local_18 = local_18 - iVar4;
   // (skipped else) SetScrollPos(param_1,0,local_18,1);
   // (skipped else) local_18 = GetScrollPos(param_1,0);
@@ -12576,7 +12576,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) FUN_005ed3e0(local_18);
   // (skipped else) return 0;
   // (skipped else) case 3:
-  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) iVar4 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) local_18 = local_18 + iVar4;
   // (skipped else) SetScrollPos(param_1,0,local_18,1);
   // (skipped else) local_18 = GetScrollPos(param_1,0);
@@ -12600,7 +12600,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) }
   // (skipped else) }
   // (skipped else) if (param_2 === 0x115) {
-  // (skipped else) // DEVIATION: MFC — local_18 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_18 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) switch(param_3) {
   // (skipped else) case 0:
   // (skipped else) local_18 = local_18 + -1;
@@ -12619,7 +12619,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) FUN_005ed460(local_18);
   // (skipped else) return 0;
   // (skipped else) case 2:
-  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) iVar4 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) local_18 = local_18 - iVar4;
   // (skipped else) SetScrollPos(param_1,1,local_18,1);
   // (skipped else) local_18 = GetScrollPos(param_1,1);
@@ -12628,7 +12628,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) FUN_005ed460(local_18);
   // (skipped else) return 0;
   // (skipped else) case 3:
-  // (skipped else) // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) iVar4 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) local_18 = local_18 + iVar4;
   // (skipped else) SetScrollPos(param_1,1,local_18,1);
   // (skipped else) local_18 = GetScrollPos(param_1,1);
@@ -12724,7 +12724,7 @@ function switchD_005ecda6_caseD_5_helper(BVar3, iVar4, local_10, local_14, local
   // (skipped else) goto switchD_005ecda6_caseD_4;
   // (skipped else) }
   // (skipped else) switchD_005ecda6_caseD_6:
-  // (skipped else) // DEVIATION: MFC — local_10 = CSplitterWnd::IsTracking(local_14);
+  // (skipped else) local_10 = CSplitterWnd__IsTracking(local_14);
   // (skipped else) if (local_10 === 0) {
   // (skipped else) uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
   // (skipped else) return uVar2;

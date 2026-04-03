@@ -1394,7 +1394,7 @@ export function show_messagebox_B0ED_0054B0ED() {
       MessageBoxA(s32(iVar1, 4),lpText,lpCaption,uType);
     }
     wv(DAT_006a1d7c, 0);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006a4f88) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((v(DAT_006a4f88) + 0x48));
     FUN_004e4ceb();
   }
   else {
@@ -1609,7 +1609,7 @@ export function FUN_0054b5eb() {
   FUN_004fa5d9(50000);
   FUN_004ce98e(v(DAT_0064b690),v(DAT_00632578));
   wv(DAT_006a1d7c, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006a4f88) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CRichEditDoc__InvalidateObjectCache((v(DAT_006a4f88) + 0x48));
   return;
 }
 
@@ -2872,7 +2872,7 @@ export function show_messagebox_D4E6_0054D4E6() {
       w32(piVar1, 0, 1 << (u8(local_c) & 0x1f));
       FUN_0054b635();
       FUN_0054bc1a(0);
-      // DEVIATION: MFC — pcVar3 = streambuf::egptr((v(DAT_006a4f88) + 0xad0));
+      pcVar3 = streambuf__egptr((v(DAT_006a4f88) + 0xad0));
       FUN_00551d80(pcVar3 + -1);
       iVar2 = FUN_0054c4a1(0);
       if (iVar2 === 0) {
@@ -3684,7 +3684,7 @@ export function FUN_0054f3b9(in_ECX) {
   uVar6 = 0xd;
   uVar4 = FUN_00428b0c(s32(DAT_00628420, 0x73c),0xd,0,0,uVar9,uVar3,0,0,0);
   FUN_005534bc(uVar4,uVar6,uVar7,uVar8,uVar9,uVar3,uVar10,uVar11,uVar12);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(PTR_DAT_006359f0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  _Timevec___Timevec(PTR_DAT_006359f0);
   w32(in_ECX, 0x2e4, extraout_EAX + 8);
   w32(in_ECX, 0x2e0, 0x97);
   iVar5 = s32(in_ECX, 0x128) + 0x90;
@@ -3831,7 +3831,7 @@ export function FUN_0054f3b9(in_ECX) {
   FUN_0040f840();
   FUN_0040f350(0);
   wv(DAT_0062e014, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402ed2); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(in_ECX,0x402ed2);
   FUN_005bb574();
   FUN_004085f0();
   FUN_005c61b0();

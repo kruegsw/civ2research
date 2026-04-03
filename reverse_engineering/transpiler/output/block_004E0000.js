@@ -4366,7 +4366,7 @@ export function FUN_004eb571(param_1, param_2, param_3, param_4) {
   }
   if (param_4 !== 0) {
     FUN_0059ec88(param_4,0,0);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_304[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CPropertySheet__EnableStackedTabs(local_304[0],8);
   }
   iVar1 = FUN_0040bc80(0);
   if (0 < iVar1) {
@@ -4442,7 +4442,7 @@ export function FUN_004eb80a(param_1, param_2, param_3, param_4, param_5) {
   // DEVIATION: SEH
   FUN_005c64da();
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_484[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CString__CString(local_484[0]);
   local_8 = 1;
   if (v(DAT_00654fa8) !== 0) {
     local_8 = ((local_8) >>> 0) << 8;
@@ -4487,8 +4487,8 @@ export function FUN_004eb80a(param_1, param_2, param_3, param_4, param_5) {
     local_4a8 = param_3;
   }
   FUN_005bf5e1(local_4a8,10,0xc0,local_444[0]);
-  // DEVIATION: MFC — pCVar3 = COleClientItem::GetActiveView((local_448 + 0x2d8));
-  // DEVIATION: MFC — pCVar4 = COleClientItem::GetActiveView((local_448 + 0x2d8));
+  pCVar3 = COleClientItem__GetActiveView((local_448 + 0x2d8));
+  pCVar4 = COleClientItem__GetActiveView((local_448 + 0x2d8));
   FUN_005cedad(local_448 + 0x2d8,7,0,0,pCVar4,pCVar3);
   FUN_0043c9d0(param_1);
   FUN_0059ec88(local_484[0],0,0);
@@ -5085,7 +5085,7 @@ export function FUN_004ec3fe(param_1) {
                 local_974 = ptrAdd(DAT_00645a84, local_3c * 0x3c);
               }
               FUN_0059ec88(local_974,0,0);
-              true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_66c[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+              CPropertySheet__EnableStackedTabs(local_66c[0],8);
               FUN_0040bc80(0);
               // DEVIATION: SEH
               FUN_004eeef3();
@@ -5611,7 +5611,7 @@ export function FUN_004ec3fe(param_1) {
         local_8 = 2;
         FUN_0043c9d0(s_ALMOSTWONDER_0062ef10);
         FUN_0059ec88(ptrAdd(DAT_00645160, local_70 * 0x3c),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_960[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_960[0],8);
         FUN_0040bc80(0);
         // DEVIATION: SEH
         FUN_004eeee7();
@@ -6340,7 +6340,7 @@ function LAB_004ee539_helper(bVar1, iVar3, iVar4, local_14, local_18, local_1c, 
         local_8 = 2;
         FUN_0043c9d0(s_ALMOSTWONDER_0062ef10);
         FUN_0059ec88(ptrAdd(DAT_00645160, local_70 * 0x3c),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_960[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_960[0],8);
         FUN_0040bc80(0);
         // DEVIATION: SEH
         FUN_004eeee7();
@@ -6620,7 +6620,7 @@ function LAB_004ecd0c_helper(bVar1, iVar3, iVar4, local_14, local_18, local_1c, 
         local_8 = 2;
         FUN_0043c9d0(s_ALMOSTWONDER_0062ef10);
         FUN_0059ec88(ptrAdd(DAT_00645160, local_70 * 0x3c),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_960[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_960[0],8);
         FUN_0040bc80(0);
         // DEVIATION: SEH
         FUN_004eeee7();

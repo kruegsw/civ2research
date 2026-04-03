@@ -354,7 +354,7 @@ export function FUN_0050101f() {
   // DEVIATION: SEH
   FUN_005bd630();
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CString__CString(local_4c[0]);
   local_8 = 1;
   FUN_005c64da();
   local_8 = 2;
@@ -553,7 +553,7 @@ export function FUN_00501440(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((in_ECX + 0x2d8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CRichEditDoc__InvalidateObjectCache((in_ECX + 0x2d8));
   w32(in_ECX, 0x15a4, 1);
   w32(in_ECX, 0x15a0, 0);
   w32(in_ECX, 0x15a8, 0);
@@ -612,7 +612,7 @@ export function FUN_0050152b(in_ECX) {
   // in_ECX → promoted to parameter
   
   FUN_005014e5();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CMiniDockFrameWnd::OnClose(in_ECX); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CMiniDockFrameWnd__OnClose(in_ECX);
   return;
 }
 
@@ -721,7 +721,7 @@ export function FUN_00501691(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(s32(unaff_EBP, -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  COleCntrFrameWnd__COleCntrFrameWnd(s32(unaff_EBP, -0x10));
   return;
 }
 
@@ -821,25 +821,25 @@ export function FUN_00501819(param_1) {
   let uVar4;
   let local_10;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if ((s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0)) || (v(DAT_00655b07) !== 0)) {
     uVar4 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004eb4ed(iVar1,uVar4);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSplitterWnd::IsTracking(v(DAT_006a91b8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    CSplitterWnd__IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     if (s8(_MEM[DAT_0064f349 + iVar1 * 0x58]) - v(DAT_006a6604) <= (param_1)) {
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       param_1 = param_1 - (((s8(_MEM[DAT_0064f349 + iVar1 * 0x58])) << 16 >> 16) - ((v(DAT_006a6604)) << 16 >> 16));
       if (param_1 < v(DAT_006a6604)) {
         iVar2 = (param_1);
         iVar1 = iVar2;
-        // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         local_10 = FUN_004e75a6(iVar3,iVar1);
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         if (s8(_MEM[DAT_0064f349 + iVar1 * 0x58]) < 0x05) {
           if (local_10 === 1) {
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_00414dd0(s_ELVISERR_00630d84,iVar1);
             return;
           }
@@ -851,7 +851,7 @@ export function FUN_00501819(param_1) {
             local_10 = 1;
           }
         }
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         FUN_004e7549(iVar1,iVar2,local_10);
         FUN_00501780(1);
       }
@@ -1145,10 +1145,10 @@ export function FUN_005022c0(param_1, param_2) {
   let local_c;
   
   local_1c = -1;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if ((s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0)) || (v(DAT_00655b07) !== 0)) {
     uVar5 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004eb4ed(iVar1,uVar5);
     iVar1 = FUN_00472cf0(0x40,v(DAT_006aa790));
     iVar2 = FUN_00472cf0(0x20,v(DAT_006aa790));
@@ -1180,36 +1180,36 @@ export function FUN_005022c0(param_1, param_2) {
       }
       if (-1 < local_1c) {
         if (local_1c === 0x14) {
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           w32(DAT_0064f370, iVar1 * 0x58, 0);
         }
         else {
           iVar1 = local_1c;
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           iVar1 = FUN_004e78ce(iVar2,iVar1);
           if (iVar1 === 0) {
             if (_MEM[DAT_006a6530 + local_1c] !== 0) {
               return;
             }
             if (v(DAT_006a6604) === 0) {
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+              iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
               w32(DAT_0064f370, iVar1 * 0x58, 0);
             }
             else {
               uVar5 = 1;
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+              iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
               FUN_004e790c(iVar1,local_1c,uVar5);
               uVar5 = -1;
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+              iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
               FUN_004e9719(iVar1,uVar5);
             }
           }
           else {
             uVar5 = 0;
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_004e790c(iVar1,local_1c,uVar5);
             uVar5 = 1;
-            // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_004e9719(iVar1,uVar5);
           }
         }
@@ -2617,18 +2617,18 @@ export function FUN_00505d3d(param_1) {
   
   local_c = 0;
   local_10 = -1;
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if ((s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) === v(DAT_006d1da0)) || (v(DAT_00655b07) !== 0)) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     if (((_MEM[DAT_0064f344 + iVar3 * 0x58] & 4) === 0) || ((v(DAT_00655b07) !== 0 && ((v(DAT_00655af0) & 0x80) !== 0)))) {
        /*JOINED*/
       uVar6 = 0;
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004eb4ed(iVar3,uVar6);
       sVar2 = ((v(DAT_006aa76c)) << 16 >> 16);
       for (local_14 = 1; local_14 < 0x27; local_14 = local_14 + 1) {
         iVar3 = local_14;
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         iVar3 = FUN_0043d20a(iVar4,iVar3);
         if ((iVar3 !== 0) && (local_c = local_c + 1, ((sVar2 + param_1 + 1) << 16 >> 16) === local_c)) {
           local_10 = local_14;
@@ -2649,13 +2649,13 @@ export function FUN_00505d3d(param_1) {
           if (iVar3 === 0) {
             FUN_0046e020(0x6e,0,0,0);
             uVar6 = 0;
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_0043d289(iVar3,local_10,uVar6);
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             w32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594, s32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594) + bVar1 * uVar5);
                  /*JOINED*/
                  /*JOINED*/
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             w32(DAT_0064f344, iVar3 * 0x58, u32(DAT_0064f344, iVar3 * 0x58) | 4);
             citywin_9429();
             FUN_00569363(1);
@@ -2668,7 +2668,7 @@ export function FUN_00505d3d(param_1) {
     }
     else {
       FUN_0046e020(0x69,0,0,0);
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_00414dd0(s_ALREADYSOLD_00630d94,iVar3);
     }
   }
@@ -2889,21 +2889,21 @@ export function FUN_00506637(param_1) {
   // DEVIATION: SEH
   FUN_0059db08(0x4000);
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CString__CString(local_4c[0]);
   local_8 = ((1) & 0xFF);
   if (v(DAT_00630d2c) === 0) {
     wv(DAT_00630d2c, 1);
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     if ((s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0)) || (v(DAT_00655b07) !== 0)) {
       uVar4 = 0;
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004eb4ed(iVar1,uVar4);
       wv(DAT_0063605c, 8);
       FUN_005cdea1(0x40,0x20,0);
       FUN_00506448(param_1);
       FUN_0040ffa0(s_CHILDCLICK_00630dbc,1);
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340[0],0x402059); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CPropertySheet__EnableStackedTabs(local_340[0],0x402059);
+      CPropertySheet__EnableStackedTabs(local_340[0],8);
       FUN_0059ec88(local_4c[0],param_1,0);
       uVar5 = 0;
       uVar3 = 4;
@@ -2913,10 +2913,10 @@ export function FUN_00506637(param_1) {
       if (0 < iVar1) {
         if (iVar1 === 3) {
           _MEM[DAT_006560ff + param_1 * 0x20] = 0xb;
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           w16(DAT_00656102, param_1 * 0x20, s16(DAT_0064f340, iVar1 * 0x58));
                /*JOINED*/
-          // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           w16(DAT_00656104, param_1 * 0x20, s16(DAT_0064f342, iVar1 * 0x58));
                /*JOINED*/
         }
@@ -2928,9 +2928,9 @@ export function FUN_00506637(param_1) {
                  /*JOINED*/
                                           /*JOINED*/
                               /*JOINED*/
-            // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             if (iVar2 === iVar1) {
-              // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+              iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
               FUN_004e7492(iVar1);
             }
           }
@@ -3053,7 +3053,7 @@ export function FUN_00506a42(param_1) {
   // DEVIATION: SEH
   FUN_0059db08(0x4000);
   local_8 = 0;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CString__CString(local_4c[0]);
   local_8 = ((1) & 0xFF);
   if (v(DAT_00630d2c) !== 0) {
     local_8 = ((local_8) >>> 0) << 8;
@@ -3065,25 +3065,25 @@ export function FUN_00506a42(param_1) {
   }
   wv(DAT_00630d2c, 1);
   FUN_005cdea1(0x40,0x20,0);
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if ((s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) !== v(DAT_006d1da0)) && (v(DAT_00655b07) === 0))
   return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   uVar6 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar1,uVar6);
   if (v(DAT_006aa768) !== 0) return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   iVar1 = (param_1);
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   iVar2 = (s16(DAT_0064f342, iVar2 * 0x58));
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   uVar6 = FUN_005b2e69((s16(DAT_0064f340, iVar3 * 0x58)),iVar2,iVar1);
   iVar1 = FUN_005b2f92(uVar6);
   if (iVar1 < 0) return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   FUN_00506448(iVar1);
   FUN_0040ffa0(s_UNITOPTIONS_00630dc8,1);
   wv(DAT_0063605c, 8);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340[0],0x402059); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_340[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(local_340[0],0x402059);
+  CPropertySheet__EnableStackedTabs(local_340[0],8);
   FUN_0059ec88(local_4c[0],iVar1,0);
   uVar7 = 0;
   uVar5 = 0;
@@ -3108,7 +3108,7 @@ export function FUN_00506a42(param_1) {
     uVar6 = FUN_00428b0c(s32(DAT_00628420, 0x150),3,0);
     FUN_0059edf0(uVar6,uVar5,uVar7);
   }
-  // DEVIATION: MFC — uVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  uVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (uVar4 !== u8(_MEM[DAT_00656100 + iVar1 * 0x20])) {
     uVar7 = 0;
     uVar5 = 5;
@@ -3152,7 +3152,7 @@ export function FUN_00506a42(param_1) {
     FUN_005b3863(iVar1,1);
     break;
   case 5:
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     _MEM[DAT_00656100 + iVar1 * 0x20] = s8(iVar2);
     citywin_9429();
     return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
@@ -3160,11 +3160,11 @@ export function FUN_00506a42(param_1) {
     handle_city_disorder_00509590(_MEM[DAT_00656100 + iVar1 * 0x20]);
     return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   case 7:
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     w16(DAT_0064f35c, iVar2 * 0x58, ((((s8(_MEM[DAT_0064b1c8 + u8(_MEM[DAT_006560f6 + iVar1 * 0x20]) * 0x14]) * ((v(DAT_0064bccc)) >>> 0)) / 2 | 0)) << 16 >> 16) + s16(DAT_0064f35c, iVar2 * 0x58));
          /*JOINED*/
                       /*JOINED*/
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004e7492(iVar2);
     FUN_005b6042(iVar1,1);
     citywin_9429();
@@ -3184,7 +3184,7 @@ export function FUN_00506a42(param_1) {
     return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   }
   uVar6 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar1,uVar6);
   citywin_8ADC(1);
 // LAB_0050708f: (code below also in LAB_0050708f_helper, kept for 1:1 audit)
@@ -3409,7 +3409,7 @@ export function citywin_70E5_005070E5(in_ECX) {
   local_44 = local_70;
   local_74 = FUN_00511690(0x85);
   local_74 = local_58 + local_74;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  _Timevec___Timevec((in_ECX + 0x16ac));
   local_24 = extraout_EAX + -2;
   FUN_005baee0(0x79,0x12,1,1);
   iVar1 = FUN_004bd9f0((s8(_MEM[DAT_0064f348 + s32(in_ECX, 0x159c) * 0x58])),0x54);
@@ -3691,7 +3691,7 @@ export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4
   local_8 = FUN_00472cf0(0x30,local_c);
   param_3 = param_3 >> 1;
   if (bVar1 === 4) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    _Timevec___Timevec((in_ECX + 0x16ac));
     FUN_005baee0(0x29,10,1,0);
     uVar5 = FUN_00428b0c(uRam0064b9b0,s32(param_1, 0),(param_3 + param_2) - (extraout_EAX >> 1),0);
     iVar3 = FUN_0043c950(uVar5);
@@ -3874,7 +3874,7 @@ export function citywin_8552_00508552(in_ECX) {
       if (((v(DAT_006a6623)) >>> 0) - ((v(DAT_006a65f3)) >>> 0) === ((v(DAT_006a6624)) >>> 0) - ((v(DAT_006a65f4)) >>> 0))
       return LAB_00508678_helper(extraout_EAX, extraout_EAX_00, iVar2, iVar3, iVar4, in_ECX, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_54, local_64, local_8, local_c, uVar1);
       iVar2 = (local_10 >> 1) + local_40;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      _Timevec___Timevec((in_ECX + 0x16ac));
       local_1c = iVar2 - (extraout_EAX >> 1);
       FUN_005baee0(0x29,10,1,0);
       uVar1 = FUN_00428b0c(s32(DAT_00628420, 0x160),local_2c[0],local_1c,0);
@@ -3890,7 +3890,7 @@ export function citywin_8552_00508552(in_ECX) {
     local_c = iVar2;
     if ((local_18 === 2) && (_MEM[DAT_0064c6b5 + local_44 * 0x594] === 0x04)) {
       iVar2 = (local_10 >> 1) + local_40;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec((in_ECX + 0x16ac)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      _Timevec___Timevec((in_ECX + 0x16ac));
       local_1c = iVar2 - (extraout_EAX_00 >> 1);
       FUN_005baee0(0x29,10,1,0);
       FUN_0040bbb0();
@@ -4091,8 +4091,8 @@ export function citywin_9028_00509028(in_ECX) {
   let local_10;
   
   iVar4 = s32(in_ECX, 0x11c);
-  // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
+  pCVar1 = CRichEditCntrItem__GetActiveView(in_ECX);
+  pCVar2 = CRichEditCntrItem__GetActiveView(in_ECX);
   w32(in_ECX, 0x15d4, 2);
   if ((iVar4 + 0x297 <= (pCVar1)) && (iVar4 * 2 + 0x3b6 <= (pCVar2))) {
     w32(in_ECX, 0x15d4, 3);
@@ -4509,7 +4509,7 @@ export function city_button_buy_00509B48(param_1) {
   // DEVIATION: SEH
   FUN_0059db08(0x4000);
   local_8 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar2 === -1) {
     // DEVIATION: SEH
     citywin_A1B2();
@@ -4526,8 +4526,8 @@ export function city_button_buy_00509B48(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_buy___block_00630e0c);
     wv(DAT_006c31ac, 7);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    wv(_DAT_006c31b0, CSplitterWnd__IsTracking(v(DAT_006a91b8)));
+    iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     wv(_DAT_006c31b4, (s8(_MEM[DAT_0064f348 + iVar2 * 0x58])));
     wv(_DAT_006c31b8, param_1);
     // DEVIATION: SEH
@@ -4536,13 +4536,13 @@ export function city_button_buy_00509B48(param_1) {
     return;
   }
   uVar7 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar2,uVar7);
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   iVar2 = (s8(_MEM[DAT_0064f348 + iVar2 * 0x58]));
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   iVar3 = (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]));
-  // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   iVar4 = (s8(_MEM[DAT_0064f379 + iVar4 * 0x58]));
   if ((v(DAT_006d1da0) !== iVar2) && (v(DAT_00655b07) === 0)) {
     // DEVIATION: SEH
@@ -4556,13 +4556,13 @@ export function city_button_buy_00509B48(param_1) {
     citywin_A1C8();
     return;
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (s8(_MEM[DAT_0064f379 + iVar5 * 0x58]) < 0) {
     local_368 = u8(_MEM[DAT_0064c48c + iVar4 * -8]);
     uVar8 = 999;
     uVar7 = 0;
     uVar6 = ((v(DAT_0064bccc)) >>> 0);
-    // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     iVar5 = FUN_005adfa0(uVar6 * local_368 - (s16(DAT_0064f35c, iVar5 * 0x58)), uVar7,uVar8);
                                /*JOINED*/
     local_35c = iVar5 * 2;
@@ -4576,13 +4576,13 @@ export function city_button_buy_00509B48(param_1) {
     uVar8 = 999;
     uVar7 = 0;
     uVar6 = ((v(DAT_0064bccc)) >>> 0);
-    // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     iVar5 = FUN_005adfa0(uVar6 * local_368 - (s16(DAT_0064f35c, iVar5 * 0x58)), uVar7,uVar8);
                                /*JOINED*/
     local_35c = ((iVar5 * iVar5) / 0x14 | 0) + iVar5 * 2;
     FUN_004271e8(0,s32(DAT_0064b1b8, iVar3 * 0x14));
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (s16(DAT_0064f35c, iVar5 * 0x58) === 0) {
     local_35c = local_35c << 1;
   }
@@ -4593,22 +4593,22 @@ export function city_button_buy_00509B48(param_1) {
   if (bVar1) {
     local_58 = 0x31;
   }
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((-1 < s8(_MEM[DAT_0064f379 + iVar5 * 0x58])) && (iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), (_MEM[DAT_0064f344 + iVar5 * 0x58] & 1) !== 0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
+  if ((-1 < s8(_MEM[DAT_0064f379 + iVar5 * 0x58])) && (iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), (_MEM[DAT_0064f344 + iVar5 * 0x58] & 1) !== 0)) {
      /*JOINED*/
      /*JOINED*/
     local_58 = 0x32;
     bVar1 = false;
   }
   FUN_0043c9d0(local_60[0]);
-  // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar5 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (s8(_MEM[DAT_0064f379 + iVar5 * 0x58]) < 0) {
     FUN_0059ec88(ptrAdd(DAT_00645160, iVar4 * -0x3c),0,0);
   }
   else {
     FUN_0059ec88(ptrAdd(DAT_00641848, iVar3 * 0x3c),0,0);
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_354[0],8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(local_354[0],8);
   if (bVar1) {
     FUN_0059ea99(1);
   }
@@ -4616,13 +4616,13 @@ export function city_button_buy_00509B48(param_1) {
   if (bVar1) {
     if ((iVar3 === 0) && (v(DAT_006aa75c) !== 1)) {
       w32(DAT_0064c6a2, iVar2 * 0x594, s32(DAT_0064c6a2, iVar2 * 0x594) - local_35c);
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       w16(DAT_0064f35c, iVar2 * 0x58, ((v(DAT_0064bccc)) & 0xFFFF) * ((local_368) << 16 >> 16));
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004e7492(iVar2);
       FUN_0046e020(0x68,1,0,0);
       uVar7 = 1;
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004eb4ed(iVar2,uVar7);
       FUN_0050503e(1);
       citywin_92AF();
@@ -4818,7 +4818,7 @@ export function city_button_change_0050A473(param_1) {
   local_8 = 1;
   FUN_0059db08(0x4000);
   local_8 = 2;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar2 === -1) {
     local_8 = 1;
     citywin_B638();
@@ -4839,8 +4839,8 @@ export function city_button_change_0050A473(param_1) {
      /*JOINED*/
     debug_log(s_Citywin__city_button_change___bl_00630e60);
     wv(DAT_006c31ac, 8);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
-    // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    wv(_DAT_006c31b0, CSplitterWnd__IsTracking(v(DAT_006a91b8)));
+    iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     wv(_DAT_006c31b4, (s8(_MEM[DAT_0064f348 + iVar2 * 0x58])));
     wv(_DAT_006c31b8, param_1);
     local_8 = 1;
@@ -4853,9 +4853,9 @@ export function city_button_change_0050A473(param_1) {
     return;
   }
   uVar6 = 0;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar2,uVar6);
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   bVar1 = _MEM[DAT_0064f348 + iVar2 * 0x58];
   iVar2 = (s8(bVar1));
   if ((v(DAT_006d1da0) !== iVar2) && (v(DAT_00655b07) === 0)) {
@@ -4868,10 +4868,10 @@ export function city_button_change_0050A473(param_1) {
     citywin_B666();
     return;
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   local_658 = (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]));
   while( true ) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     if (iVar3 === -1) {
       FUN_0059db65();
       FUN_0059db65();
@@ -4888,25 +4888,25 @@ export function city_button_change_0050A473(param_1) {
     if ((v(DAT_00655aea) & 2) !== 0) {
       piVar7 = local_95c[0];
       piVar5 = local_660[0];
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_00498e8b(iVar3,piVar5,piVar7);
       if (local_660[0] !== 999) {
         FUN_004271e8(0,s32(DAT_0064b1b8, local_660[0] * 0x14));
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_954[0],0x630eb8,0x630eac,0x8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CSocket__Create(local_954[0],0x630eb8,0x630eac,0x8);
         FUN_004aef20(local_64[0]);
         FUN_0043c840(local_64[0],v(DAT_00630ec0));
         FUN_004af122(local_64[0],s32(DAT_0064b1b8, local_660[0] * 0x14));
         FUN_0059ec88(ptrAdd(DAT_00641848, local_660[0] * 0x3c),0,0);
-        // DEVIATION: MFC — iVar3 = CSocket::Create(local_954[0],0x630ec4,(local_64[0]),0x8000);
+        iVar3 = CSocket__Create(local_954[0],0x630ec4,(local_64[0]),0x8000);
         if (iVar3 !== 0) {
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_954[0],0x630ed8,0x630ecc,0x8000); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          CSocket__Create(local_954[0],0x630ed8,0x630ecc,0x8000);
         }
         FUN_005a5f34(0,300);
       }
       if (local_95c[0] !== 999) {
         FUN_004aef20(local_64[0]);
         FUN_0043c840(local_64[0],v(DAT_00630ee0));
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_360[0],0x630ef0,0x630ee4,0x8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CSocket__Create(local_360[0],0x630ef0,0x630ee4,0x8);
         if (local_95c[0] < 0) {
           iVar3 = local_95c[0] * -8;
           local_95c[0] = -local_95c[0];
@@ -4927,22 +4927,22 @@ export function city_button_change_0050A473(param_1) {
           FUN_004af122(local_64[0],s32(DAT_0064b1b8, local_660[0] * 0x14));
           FUN_0059ec88(ptrAdd(DAT_00641848, local_660[0] * 0x3c),0,0);
         }
-        // DEVIATION: MFC — iVar3 = CSocket::Create(local_360[0],0x630f00,(local_64[0]),0x8000);
+        iVar3 = CSocket__Create(local_360[0],0x630f00,(local_64[0]),0x8000);
         if (iVar3 !== 0) {
-          true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSocket::Create(local_360[0],0x630f14,0x630f08,0x8000); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+          CSocket__Create(local_360[0],0x630f14,0x630f08,0x8000);
         }
         FUN_005a5f34(0,300);
       }
     }
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_0040ff60(0,ptrAdd(DAT_0064f360, iVar3 * 0x58));
     FUN_0043c9d0(s_PRODUCTION_00630f1c);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_654[0],0x401537); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CPropertySheet__EnableStackedTabs(local_654[0],0x401537);
     FUN_0043c990(0x4b,0);
     local_65c = 0;
     for (local_660[0] = 0; local_660[0] < 0x3e; local_660[0] = local_660[0] + 1) {
       iVar3 = local_660[0];
-      // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       iVar3 = FUN_004bfe5a(iVar2,iVar4,iVar3);
       if (iVar3 !== 0) {
         FUN_0040bbb0();
@@ -4951,7 +4951,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(v(DAT_00630f28));
         FUN_0040fea0();
         iVar3 = local_660[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         uVar6 = FUN_004e74df(iVar4,iVar3);
         citywin_9AC0((s8(_MEM[DAT_0064b1c8 + local_660[0] * 0x14])),uVar6);
         FUN_00421d30();
@@ -4981,7 +4981,7 @@ export function city_button_change_0050A473(param_1) {
     }
     for (local_95c[0] = 1; local_95c[0] < 0x27; local_95c[0] = local_95c[0] + 1) {
       iVar3 = local_95c[0];
-      // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       iVar3 = FUN_004c03ae(iVar2,iVar4,iVar3);
       if (iVar3 !== 0) {
         FUN_0040bbb0();
@@ -4990,7 +4990,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(v(DAT_00630f3c));
         FUN_0040fea0();
         iVar3 = -local_95c[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         uVar6 = FUN_004e74df(iVar4,iVar3);
         citywin_9AC0(_MEM[DAT_0064c48c + local_95c[0] * 8],uVar6);
         FUN_0040fed0();
@@ -5015,7 +5015,7 @@ export function city_button_change_0050A473(param_1) {
         FUN_0040bbe0(v(DAT_00630f44));
         FUN_0040fea0();
         iVar3 = -local_95c[0];
-        // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         uVar6 = FUN_004e74df(iVar4,iVar3);
         citywin_9AC0(_MEM[DAT_0064c48c + local_95c[0] * 8],uVar6);
         FUN_0040fed0();
@@ -5047,38 +5047,38 @@ export function city_button_change_0050A473(param_1) {
     wv(DAT_00635a3c, 0 /* ADDR:LAB_00402815 */);
     local_958 = FUN_005a5f34(0,300);
     wv(DAT_00630d30, 0);
-    if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((local_958 < 0) || (iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), iVar3 === -1)) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) * /) */)
+    if ((local_958 < 0) || (iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), iVar3 === -1))
        /*JOINED*/
-    /* DEVIATION(cont): goto LAB_0050b609 */;
+    return LAB_0050b609_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6);
     if ((v(DAT_00655aea) & 2) !== 0) {
       FUN_0059db65();
       FUN_0059db65();
       FUN_00484d52();
     }
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     w32(DAT_0064f344, iVar3 * 0x58, u32(DAT_0064f344, iVar3 * 0x58) & 0xfcffffef);
     if (local_578 === 0) break;
     if (local_578 === 1) {
       if ((1 << (bVar1 & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
         load_city_preferences();
-        // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         local_958 = FUN_00511520(s_AUTOMODE_00630f48,1,iVar2);
         if (local_958 < 0) return LAB_0050b609_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6);
-        // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x10);
         if (local_958 === 1) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x1000000);
                /*JOINED*/
         }
         if (local_958 === 2) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x2000000);
                /*JOINED*/
         }
       }
       uVar6 = 99;
-      // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_00441b11(iVar2,uVar6);
       FUN_0050503e(1);
       return LAB_0050b609_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6);
@@ -5086,11 +5086,11 @@ export function city_button_change_0050A473(param_1) {
     if (local_578 !== 2) {
       if (local_578 === 3) {
         if (local_958 < 0x3e) {
-          // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           iVar2 = (s16(DAT_0064f342, iVar2 * 0x58));
-          // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           iVar3 = (s16(DAT_0064f340, iVar3 * 0x58));
-          // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+          iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
           FUN_005b3d06(local_958,(s8(_MEM[DAT_0064f348 + iVar4 * 0x58])),iVar3,iVar2);
           iVar2 = local_958;
         }
@@ -5099,7 +5099,7 @@ export function city_button_change_0050A473(param_1) {
           if (iVar2 < 0x23) {
             uVar6 = 1;
             local_958 = iVar2;
-            // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_0043d289(iVar3,iVar2,uVar6);
             iVar2 = local_958;
           }
@@ -5107,14 +5107,14 @@ export function city_button_change_0050A473(param_1) {
             if ((0x22 < iVar2) && (iVar2 < 0x26)) {
               iVar3 = local_958 + -0x61;
               local_958 = iVar2;
-              // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+              iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
               FUN_00598197((s8(_MEM[DAT_0064f348 + iVar2 * 0x58])),iVar3);
               iVar2 = local_958;
             }
           }
           else {
             local_958 = local_958 + -0x65;
-            // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+            iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             w16(DAT_00655be6, local_958 * 2, ((iVar2) << 16 >> 16));
             iVar2 = local_958;
           }
@@ -5142,19 +5142,19 @@ export function city_button_change_0050A473(param_1) {
     local_14 = -(local_958 + -0x3e);
   }
   iVar3 = local_14;
-  // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar4 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   local_68 = FUN_004e74df(iVar4,iVar3);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if ((local_68 < s16(DAT_0064f35c, iVar3 * 0x58)) && ((v(DAT_00655af2) & 0x200) === 0)) {
     FUN_004c4210(0,v(DAT_0064bcda));
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     if (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]) < 0) {
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004271e8(0,s32(DAT_0064c488, s8(_MEM[DAT_0064f379 + iVar3 * 0x58]) * -8) );
                         /*JOINED*/
     }
     else {
-      // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004271e8(0,s32(DAT_0064b1b8, s8(_MEM[DAT_0064f379 + iVar3 * 0x58]) * 0x14));
                             /*JOINED*/
     }
@@ -5167,27 +5167,27 @@ export function city_button_change_0050A473(param_1) {
     iVar3 = FUN_00421ea0(s_PRODCHANGE_00630f5c);
     if (iVar3 === 0) return LAB_0050b5dc_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6);
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (-1 < s8(_MEM[DAT_0064f379 + iVar3 * 0x58])) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     _MEM[DAT_0064c7f4 + iVar2 * 0x594 + (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]))] = _MEM[DAT_0064c7f4 + iVar2 * 0x594 + (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]))] + -1;
          /*JOINED*/
   }
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   _MEM[DAT_0064f379 + iVar3 * 0x58] = u8(local_14);
-  // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (-1 < s8(_MEM[DAT_0064f379 + iVar3 * 0x58])) {
-    // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     _MEM[DAT_0064c7f4 + iVar2 * 0x594 + (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]))] = _MEM[DAT_0064c7f4 + iVar2 * 0x594 + (s8(_MEM[DAT_0064f379 + iVar3 * 0x58]))] + 0x01;
          /*JOINED*/
   }
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   w16(DAT_0064f35c, iVar2 * 0x58, ((local_68) << 16 >> 16));
   FUN_00436287(1);
   FUN_00436287(2);
 // LAB_0050b5dc: (code below also in LAB_0050b5dc_helper, kept for 1:1 audit)
   uVar6 = 1;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar2,uVar6);
   FUN_0050503e(1);
   FUN_005025d5(1);
@@ -5274,11 +5274,11 @@ export function citywin_B674_0050B674() {
 
   let iVar1;
   
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (((v(DAT_00633a74) !== 0) && (v(DAT_00633a78) < 1)) || (iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), iVar1 === -1)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  if (((v(DAT_00633a74) !== 0) && (v(DAT_00633a78) < 1)) || (iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), iVar1 === -1)) {
      /*JOINED*/
     if (v(DAT_006ad2f7) === 0) {
       _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
     }
     else if (v(DAT_00630d30) === 0) {
       wv(DAT_00630d30, 0x01);
@@ -5289,7 +5289,7 @@ export function citywin_B674_0050B674() {
       if (v(DAT_00630d68) + 0x4b0 < iVar1) {
         wv(DAT_00630d30, 0);
         _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
       }
     }
   }
@@ -5313,8 +5313,8 @@ export function city_button_rename_0050B74E(param_1) {
   let puVar2;
   let local_108 = new Array(260).fill(0);
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && (iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
+  if ((iVar1 !== -1) && (iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0))) {
      /*JOINED*/
      /*JOINED*/
     iVar1 = XD_InFlushSendBuffer();
@@ -5330,13 +5330,13 @@ export function city_button_rename_0050B74E(param_1) {
       wv(DAT_00630d30, 0);
       wv(DAT_00635a3c, 0 /* ADDR:LAB_00402815 */);
       puVar2 = local_108[0];
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       iVar1 = FUN_00421ed0(s_RENAMECITY_00630fb4,0xf,ptrAdd(DAT_0064f360, iVar1 * 0x58),puVar2);
-      if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 === 0) && (iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), iVar1 !== -1)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+      if ((iVar1 === 0) && (iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), iVar1 !== -1)) {
          /*JOINED*/
         FUN_0046e020(0x68,0,0,0);
         puVar2 = local_108[0];
-        // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+        iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
         FUN_005f22d0(ptrAdd(DAT_0064f360, iVar1 * 0x58),puVar2);
         citywin_9429();
         FUN_0047cf9e(v(DAT_006d1da0),1);
@@ -5346,8 +5346,8 @@ export function city_button_rename_0050B74E(param_1) {
     else {
       debug_log(s_Citywin__city_button_rename___bl_00630f68);
       wv(DAT_006c31ac, 10);
-      // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      wv(_DAT_006c31b0, CSplitterWnd__IsTracking(v(DAT_006a91b8)));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       wv(_DAT_006c31b4, (s8(_MEM[DAT_0064f348 + iVar1 * 0x58])));
       wv(_DAT_006c31b8, param_1);
     }
@@ -5368,11 +5368,11 @@ export function citywin_B9A4_0050B9A4() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar1 !== -1) {
     wv(DAT_006aa768, 0);
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004eb4ed(iVar1,uVar2);
     citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5393,11 +5393,11 @@ export function citywin_BA07_0050BA07() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar1 !== -1) {
     wv(DAT_006aa768, 1);
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004eb4ed(iVar1,uVar2);
     citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5418,11 +5418,11 @@ export function citywin_BA6A_0050BA6A() {
   let iVar1;
   let uVar2;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar1 !== -1) {
     wv(DAT_006aa768, 2);
     uVar2 = 0;
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     FUN_004eb4ed(iVar1,uVar2);
     citywin_8ADC(1);
     FUN_0046e020(99,0,0,0);
@@ -5444,7 +5444,7 @@ export function city_button_view_0050BACD(param_1) {
 
   let iVar1;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar1 !== -1) {
     iVar1 = XD_InFlushSendBuffer();
     if (((((((iVar1 === 0) && (v(DAT_006ad8bc) === 0)) && (v(DAT_006ad8c0) === 0)) && ((v(DAT_006ad8c4) === 0 && (v(DAT_006ad8c8) === 0)))) && ((v(DAT_006ad8cc) === 0 && ((v(DAT_006ad8d0) === 0 && (v(DAT_006ad8d8) === 0)))))) && (v(DAT_006ad8dc) === 0)) && (((((v(DAT_006ad8e0) === 0 && (v(DAT_006ad8e4) === 0)) && (v(DAT_006ad8e8) === 0)) && (((v(DAT_006ad8ec) === 0 && (v(DAT_006ad8f0) === 0)) && ((v(DAT_006ad8f4) === 0 && ((v(DAT_006ad8f8) === 0 && (v(DAT_006ad8fc) === 0)))))))) && ((v(DAT_006ad900) === 0 && (v(DAT_006ad904) === 0)))))) {
@@ -5455,14 +5455,14 @@ export function city_button_view_0050BACD(param_1) {
          /*JOINED*/
           /*JOINED*/
         /*JOINED*/
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_00454260(iVar1);
     }
     else {
       debug_log(s_Citywin__city_button_view___bloc_00630fc0);
       wv(DAT_006c31ac, 9);
-      // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
-      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      wv(_DAT_006c31b0, CSplitterWnd__IsTracking(v(DAT_006a91b8)));
+      iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       wv(_DAT_006c31b4, (s8(_MEM[DAT_0064f348 + iVar1 * 0x58])));
       wv(_DAT_006c31b8, param_1);
     }
@@ -5482,7 +5482,7 @@ export function citywin_BC4F_0050BC4F() {
 
   let iVar1;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   if (iVar1 !== -1) {
     FUN_0046e020(99,0,0,0);
     if (v(DAT_006aa764) === 2) {
@@ -5515,7 +5515,7 @@ export function citywin_BCDA_0050BCDA(param_1) {
   
   wv(DAT_006aa76c, param_1);
   uVar2 = 0;
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar1,uVar2);
   FUN_00505ffa(1);
   return;
@@ -5539,12 +5539,12 @@ export function citywin_BD13_0050BD13() {
   let local_c;
   let local_8;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0) || (v(DAT_00655b07) !== 0)))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
+  if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0) || (v(DAT_00655b07) !== 0)))) {
      /*JOINED*/
       /*JOINED*/
     if (v(DAT_0062edf8) === 0) {
-      // DEVIATION: MFC — local_c = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      local_c = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60[0],s__00631008);
@@ -5600,12 +5600,12 @@ export function citywin_BF72_0050BF72() {
   let local_c;
   let local_8;
   
-  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0) || (v(DAT_00655b07) !== 0)))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
+  if ((iVar1 !== -1) && ((iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar1 * 0x58]) === v(DAT_006d1da0) || (v(DAT_00655b07) !== 0)))) {
      /*JOINED*/
       /*JOINED*/
     if (v(DAT_0062edf8) === 0) {
-      // DEVIATION: MFC — local_c = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+      local_c = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       local_10 = -1;
       local_8 = local_c;
       FUN_005f22d0(local_60[0],s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024);
@@ -5693,8 +5693,8 @@ export function city_mouse_0050C1D1(param_1, param_2, param_3) {
   else {
     debug_log(s_Citywin__city_mouse___blocked_by_00631040);
     wv(DAT_006c31ac, 6);
-    // DEVIATION: MFC — wv(_DAT_006c31b0, CSplitterWnd::IsTracking(v(DAT_006a91b8)));
-    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+    wv(_DAT_006c31b0, CSplitterWnd__IsTracking(v(DAT_006a91b8)));
+    iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
     wv(_DAT_006c31b4, (s8(_MEM[DAT_0064f348 + iVar1 * 0x58])));
     wv(_DAT_006c31b8, param_1);
     wv(_DAT_006c31bc, param_2);
@@ -6479,20 +6479,20 @@ export function citywin_DCB6_0050DCB6(in_ECX) {
   uVar3 = FUN_00428b0c(s32(DAT_00628420, 0x1c),2,v(DAT_00655344),v(DAT_00655348),iVar2);
   /*JOINED*/
   FUN_005534bc(uVar3,uVar4,uVar5,uVar6,iVar2,iVar1,uVar7,uVar8,uVar9);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x6aa898); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x6a9168); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(in_ECX,0x6aa898);
+  CPropertySheet__EnableStackedTabs(in_ECX,0x6a9168);
   FUN_0055318c(v(DAT_00645120),1);
   FUN_0055318c(v(DAT_00648820),2);
   FUN_0055318c(v(DAT_00647788),3);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x40205e); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(in_ECX,0x40205e);
   citywin_C7A3();
   FUN_00408230(citywin_994F);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402abd); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CPropertySheet__EnableStackedTabs(in_ECX,0x402abd);
   FUN_00408270(0 /* ADDR:LAB_004014ec */);
   FUN_004082b0(0 /* ADDR:LAB_00401780 */);
   FUN_00408130(0 /* ADDR:LAB_004031ac */);
   FUN_00408170(0 /* ADDR:LAB_004021c6 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  COleControlSite__SetDlgCtrlID((in_ECX + 0x58),0x402cd4);
   tie(map_ascii);
   FUN_004082f0(0 /* ADDR:LAB_00401d7a */);
   FUN_00408330(0 /* ADDR:LAB_00403bbb */);
@@ -6555,7 +6555,7 @@ function LAB_0050b609_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, lo
 
 function LAB_0050b5dc_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6) {
   uVar6 = 1;
-  // DEVIATION: MFC — iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
+  iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
   FUN_004eb4ed(iVar2,uVar6);
   FUN_0050503e(1);
   FUN_005025d5(1);

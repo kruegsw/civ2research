@@ -207,7 +207,7 @@ export function FUN_005f0391(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   if ((s32(in_ECX, 0xcc) !== 0) && (param_1 === 0x200)) {
-    // DEVIATION: MFC — p_Var1 = ios::lockptr(s32(in_ECX, 0xcc));
+    p_Var1 = ios__lockptr(s32(in_ECX, 0xcc));
     if ((param_2 < s32(p_Var1, 0)) || (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) || (s32(p_Var1, 0xc) < param_3)))) {
        /*JOINED*/
         /*JOINED*/
@@ -831,7 +831,7 @@ export function FUN_005f0c69(in_ECX) {
     iVar2 = FUN_005f0e70();
     if ((iVar1 === 0) && (iVar2 === 0)) {
       if (in_ECX[2] !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CDataBoundProperty::_scalar_deleting_destructor_(in_ECX[2],1); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CDataBoundProperty___scalar_deleting_destructor_(in_ECX[2],1);
       }
       w32(in_ECX, 0, 0);
       in_ECX[1] = 0;
@@ -841,7 +841,7 @@ export function FUN_005f0c69(in_ECX) {
       w32(in_ECX, 0, iVar2);
       FUN_005f06ad(0);
       if (in_ECX[2] !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CDataBoundProperty::_scalar_deleting_destructor_(in_ECX[2],1); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CDataBoundProperty___scalar_deleting_destructor_(in_ECX[2],1);
       }
       in_ECX[2] = s32(in_ECX, 0);
     }
@@ -849,7 +849,7 @@ export function FUN_005f0c69(in_ECX) {
       in_ECX[1] = iVar1;
       FUN_005f068c(0);
       if (in_ECX[2] !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CDataBoundProperty::_scalar_deleting_destructor_(in_ECX[2],1); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CDataBoundProperty___scalar_deleting_destructor_(in_ECX[2],1);
       }
       in_ECX[2] = in_ECX[1];
     }
@@ -857,7 +857,7 @@ export function FUN_005f0c69(in_ECX) {
       FUN_005f068c(iVar2);
       FUN_005f06ad(iVar1);
       if (in_ECX[2] !== 0x0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CDataBoundProperty::_scalar_deleting_destructor_(in_ECX[2],1); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CDataBoundProperty___scalar_deleting_destructor_(in_ECX[2],1);
       }
       in_ECX[2] = iVar2;
     }
@@ -1322,7 +1322,7 @@ export function FUN_005f156d(in_ECX) {
     uVar1 = FUN_005f1514();
     w32(in_ECX, 8, uVar1);
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CSplitterWnd::IsTracking(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CSplitterWnd__IsTracking(s32(in_ECX, 8));
   return;
 }
 
@@ -1747,7 +1747,7 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   if ((s32(in_ECX, 0x1c) !== 0) && (param_1 === 0x200)) {
-    // DEVIATION: MFC — p_Var1 = ios::lockptr(s32(in_ECX, 0x1c));
+    p_Var1 = ios__lockptr(s32(in_ECX, 0x1c));
     if ((param_2 < s32(p_Var1, 0)) || (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) || (s32(p_Var1, 0xc) < param_3)))) {
        /*JOINED*/
         /*JOINED*/

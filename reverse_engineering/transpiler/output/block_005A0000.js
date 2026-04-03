@@ -566,24 +566,24 @@ export function FUN_005a1e28(in_ECX) {
     if ((u8(_MEM[(in_ECX) + 0x3e]) & 1) === 0) {
       FUN_00497d00(in_ECX[0x34]);
     }
-    // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(s32(in_ECX, 0));
+    pCVar3 = CRichEditCntrItem__GetActiveView(s32(in_ECX, 0));
     if (in_ECX[0x10] <= (pCVar3)) {
-      // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(s32(in_ECX, 0));
+      pCVar3 = CRichEditCntrItem__GetActiveView(s32(in_ECX, 0));
       in_ECX[0x10] = (pCVar3);
     }
-    // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(s32(in_ECX, 0));
+    pCVar3 = CRichEditCntrItem__GetActiveView(s32(in_ECX, 0));
     if (in_ECX[0x11] <= (pCVar3)) {
-      // DEVIATION: MFC — pCVar3 = CRichEditCntrItem::GetActiveView(s32(in_ECX, 0));
+      pCVar3 = CRichEditCntrItem__GetActiveView(s32(in_ECX, 0));
       in_ECX[0x11] = (pCVar3);
     }
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(s32(in_ECX, 0),0x5a20f4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CPropertySheet__EnableStackedTabs(s32(in_ECX, 0),0x5a20f4);
     if (v(DAT_00635a3c) === 0) {
       if (v(DAT_00635a40) !== 0) {
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs((s32(in_ECX, 0) + 0x48),v(DAT_00635a40)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs((s32(in_ECX, 0) + 0x48),v(DAT_00635a40));
       }
     }
     else {
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs((s32(in_ECX, 0) + 0x48),v(DAT_00635a3c)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CPropertySheet__EnableStackedTabs((s32(in_ECX, 0) + 0x48),v(DAT_00635a3c));
       wv(DAT_00635a3c, 0);
     }
     if (v(DAT_00635a44) !== 0) {
@@ -1015,7 +1015,7 @@ export function FUN_005a211c(in_ECX) {
         }
         FUN_004519b0(local_190,local_c0 + 300,local_e4[0]);
         FUN_00451a60(FUN_005a3cca);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CDialog::SetHelpID((in_ECX[0xa0] + local_c0 * 0x40),0x5a3df3); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CDialog__SetHelpID((in_ECX[0xa0] + local_c0 * 0x40),0x5a3df3);
         local_f8 = local_f8 + in_ECX[0x30] + iVar4;
         local_c0 = local_c0 + 1;
       }
@@ -1099,7 +1099,7 @@ export function FUN_005a211c(in_ECX) {
       }
       FUN_0040f880(FUN_005a3e56);
     }
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((s32(in_ECX, 0) + 0x58),0x5a407f); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    COleControlSite__SetDlgCtrlID((s32(in_ECX, 0) + 0x58),0x5a407f);
     tie(FUN_005a49c1);
     in_ECX[0xf] = in_ECX[0xf] | 0x200;
   }
@@ -1152,7 +1152,7 @@ export function FUN_005a3c58() {
 
 
   _MEM[DAT_006cec84 + 0xf] = _MEM[DAT_006cec84 + 0xf] | 0x400;
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006cec84, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CRichEditDoc__InvalidateObjectCache((s32(DAT_006cec84, 0) + 0x48));
   return;
 }
 
@@ -1302,7 +1302,7 @@ export function FUN_005a3e56(param_1) {
         local_14 = 0;
         local_1c = 0;
         local_c = s32(DAT_006cec84, 0x228);
-        // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(s32(DAT_006cec84, 0x268));
+        uVar1 = CCheckListBox__GetCheckStyle(s32(DAT_006cec84, 0x268));
         for (; local_c !== 0; local_c = s32(local_c, 0x10)) {
           if (uVar1 === local_14) {
             local_1c = local_c;
@@ -2046,7 +2046,7 @@ export function FUN_005a577e(in_ECX) {
       iVar1 = local_40;
       if (_MEM[local_20 + 2] !== 0) {
         local_44 = in_ECX[0x31] + local_18 + local_34;
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX[2]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        _Timevec___Timevec(in_ECX[2]);
         local_28 = (iVar1 - extraout_EAX >> 1) + local_38;
         FUN_005a9730(_MEM[local_20 + 2],local_44,local_28,0);
       }
@@ -2064,7 +2064,7 @@ export function FUN_005a577e(in_ECX) {
       iVar2 = iVar2 * local_1c;
       iVar4 = FUN_0059e448();
       iVar1 = in_ECX[0x43];
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(in_ECX[2]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      _Timevec___Timevec(in_ECX[2]);
       FUN_005c0d69(s32(local_3c, 0x10),in_ECX[0x42], (iVar2 + (iVar4 >> 1) + iVar1) - (extraout_EAX_00 >> 1),uVar3);
                    /*JOINED*/
       local_1c = local_1c + 1;
@@ -2194,7 +2194,7 @@ export function FUN_005a5f34(in_ECX, param_1, param_2) {
           local_8 = 0;
           for (; local_c !== 0x0; local_c = _MEM[local_c + 4]) {
             w32(local_c, 0, s32(local_c, 0) & 0xfffffffb);
-            // DEVIATION: MFC — iVar1 = ios::width((s32(in_ECX, 0x26c) + local_8 * 0x3c));
+            iVar1 = ios__width((s32(in_ECX, 0x26c) + local_8 * 0x3c));
             if (iVar1 !== 0) {
               w32(local_c, 0, s32(local_c, 0) | 4);
             }
@@ -2342,7 +2342,7 @@ export function FUN_005a632a(in_ECX, param_1, param_2, param_3, param_4, param_5
                         local_18 = local_18 + 1;
                       }
                       local_c = _atoi(local_18);
-                      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — ios::delbuf(in_ECX,local_c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+                      ios__delbuf(in_ECX,local_c);
                     }
                     else {
                       iVar1 = __strcmpi(local_18,s_SMALLFONT_00635bac);
@@ -3016,8 +3016,8 @@ export function FUN_005a9b5d(param_1, param_2, param_3, param_4, param_5, param_
   let local_28;
   let local_8;
   
-  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView(param_2);
-  // DEVIATION: MFC — pCVar3 = COleClientItem::GetActiveView(param_2);
+  pCVar2 = COleClientItem__GetActiveView(param_2);
+  pCVar3 = COleClientItem__GetActiveView(param_2);
   if ((pCVar2 !== 0x0) && (pCVar3 !== 0x0)) {
     if (param_3 === param_7 || (param_3) - (param_7) < 0) {
       local_34 = ~((param_3) - (param_7)) + 1;
@@ -3105,7 +3105,7 @@ export function FUN_005a9f30() {
     }
     if (bVar1) {
       _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
     }
   }
   return;
@@ -3137,7 +3137,7 @@ export function FUN_005aa004() {
     }
     if ((bVar1) || (v(DAT_006ad308) < 2)) {
       _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
     }
   }
   return;
@@ -3387,7 +3387,7 @@ export function wait_production_005aa0e5_005AA0E5() {
           FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_00635ca4);
         }
         FUN_0059ec88(v(DAT_0063fc58),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_324[0],0);
         FUN_00421bd0();
         FUN_0046e020(0x30,0,0,0);
         FUN_0040bc80(0);
@@ -3398,7 +3398,7 @@ export function wait_production_005aa0e5_005AA0E5() {
       else {
         FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_00635cb0);
         FUN_0059ec88(v(DAT_0063fc58),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_324[0],0);
         FUN_00421bd0();
         FUN_0046e020(0x30,0,0,0);
         FUN_0040bc80(0);
@@ -3543,7 +3543,7 @@ export function FUN_005ab0a3() {
   if ((((v(DAT_006c9214) !== 0) || (v(DAT_006c918c) !== 0)) || (v(DAT_00628044) === 0)) || (v(DAT_006c8fb4) !== 0)) {
      /*JOINED*/
     _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
   }
   return;
 }
@@ -3563,7 +3563,7 @@ export function FUN_005ab120() {
   if ((((v(DAT_006c9218) !== 0) || (v(DAT_006c918c) !== 0)) || (v(DAT_00628044) === 0)) || (v(DAT_006c8fb4) !== 0)) {
      /*JOINED*/
     _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
   }
   return;
 }
@@ -3583,7 +3583,7 @@ export function FUN_005ab19d() {
   if ((((v(DAT_006c920c) !== 0) || (v(DAT_006ad698) === 0x01)) || (v(DAT_006c918c) !== 0)) || (((v(DAT_006ad685) === 0x01 || (v(DAT_00628044) === 0)) || (v(DAT_006c8fb4) !== 0)))) {
      /*JOINED*/
     _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
   }
   return;
 }
@@ -3603,7 +3603,7 @@ export function FUN_005ab23a() {
   if ((((v(DAT_006c920c) !== 0) || (v(DAT_006ad698) !== 0)) || (v(DAT_006c918c) !== 0)) || (((v(DAT_006ad685) !== 0 || (v(DAT_00628044) === 0)) || (v(DAT_006c8fb4) !== 0)))) {
      /*JOINED*/
     _MEM[DAT_006ad678 + 0xf] = _MEM[DAT_006ad678 + 0xf] | 0x400;
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
   }
   return;
 }
@@ -3816,7 +3816,7 @@ export function wait_production_005ab2d5_005AB2D5() {
               if (local_18 < 1) {
                 FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_00635d54);
                 FUN_0059ec88(v(DAT_0063fc58),0,0);
-                true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+                CPropertySheet__EnableStackedTabs(local_314[0],0);
                 FUN_00421bd0();
                 FUN_0046e020(0x30,0,0,0);
                 FUN_0040bc80(0);
@@ -3832,7 +3832,7 @@ export function wait_production_005ab2d5_005AB2D5() {
                   FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_00635d48);
                 }
                 FUN_0059ec88(v(DAT_0063fc58),0,0);
-                true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+                CPropertySheet__EnableStackedTabs(local_314[0],0);
                 FUN_00421bd0();
                 FUN_0046e020(0x30,0,0,0);
                 FUN_0040bc80(0);
@@ -4081,7 +4081,7 @@ export function FUN_005ac9ad(in_ECX) {
     FUN_0040ff00(s32(DAT_00627684, s8(_MEM[DAT_0064b1cb + local_448 * 0x14]) * 0x10));
                         /*JOINED*/
     local_450 = FUN_0040efd0(v(DAT_00679640));
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(local_8); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    _Timevec___Timevec(local_8);
     SetRect(local_460[0],local_44,local_48,local_450 + local_44 + 5,extraout_EAX + local_48);
     FUN_00452c14((s8(_MEM[DAT_0064b1cb + local_448 * 0x14])),local_44,local_48,0, local_460[0].left,local_460[0].top,local_460[0].right,local_460[0].bottom);
                        /*JOINED*/
@@ -4377,9 +4377,9 @@ export function FUN_005ad998(in_ECX, param_1) {
       FUN_004085f0();
       FUN_00408460();
       FUN_004518d0();
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_006a66b0),0x401843); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CPropertySheet__EnableStackedTabs(v(DAT_006a66b0),0x401843);
       FUN_005c61b0();
-      true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_006a66b0),0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+      CPropertySheet__EnableStackedTabs(v(DAT_006a66b0),0);
     }
   }
   return;
@@ -5293,7 +5293,7 @@ export function show_messagebox_F9E3_005AF9E3() {
       MessageBoxA(s32(iVar1, 4),pcVar4,pcVar2,UVar5);
     }
     wv(DAT_006a1d7c, 0);
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006a4f88) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    CRichEditDoc__InvalidateObjectCache((v(DAT_006a4f88) + 0x48));
     FUN_004e4ceb();
   }
   else {
@@ -5397,7 +5397,7 @@ export function FUN_005afd9a() {
 
 
   wv(DAT_006a1d7c, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((v(DAT_006a4f88) + 0x48)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  CRichEditDoc__InvalidateObjectCache((v(DAT_006a4f88) + 0x48));
   return;
 }
 
@@ -5769,7 +5769,7 @@ function LAB_005aa3dc_helper(SVar2, bVar1, iVar4, local_14, local_18, local_1c, 
           FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_00635ca4);
         }
         FUN_0059ec88(v(DAT_0063fc58),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_324[0],0);
         FUN_00421bd0();
         FUN_0046e020(0x30,0,0,0);
         FUN_0040bc80(0);
@@ -5780,7 +5780,7 @@ function LAB_005aa3dc_helper(SVar2, bVar1, iVar4, local_14, local_18, local_1c, 
       else {
         FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_00635cb0);
         FUN_0059ec88(v(DAT_0063fc58),0,0);
-        true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+        CPropertySheet__EnableStackedTabs(local_324[0],0);
         FUN_00421bd0();
         FUN_0046e020(0x30,0,0,0);
         FUN_0040bc80(0);
@@ -6020,7 +6020,7 @@ function LAB_005ab60f_helper(SVar2, cVar1, iVar4, local_14, local_18, local_1c, 
               if (local_18 < 1) {
                 FUN_0043ca10(v(DAT_006359d4),s_OURTURNTOMOVE_00635d54);
                 FUN_0059ec88(v(DAT_0063fc58),0,0);
-                true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+                CPropertySheet__EnableStackedTabs(local_314[0],0);
                 FUN_00421bd0();
                 FUN_0046e020(0x30,0,0,0);
                 FUN_0040bc80(0);
@@ -6036,7 +6036,7 @@ function LAB_005ab60f_helper(SVar2, cVar1, iVar4, local_14, local_18, local_1c, 
                   FUN_0043ca10(v(DAT_006359d4),s_CASUALTIES_00635d48);
                 }
                 FUN_0059ec88(v(DAT_0063fc58),0,0);
-                true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_314[0],0); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+                CPropertySheet__EnableStackedTabs(local_314[0],0);
                 FUN_00421bd0();
                 FUN_0046e020(0x30,0,0,0);
                 FUN_0040bc80(0);

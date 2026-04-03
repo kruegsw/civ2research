@@ -459,6 +459,10 @@ function transformLine(line, ctx) {
     // ── Drop thunk_ prefix (from ALL function calls, not just FUN_) ──
     out = out.replace(/\bthunk_(\w+)/g, '$1');
 
+    // ── C++ scope resolution: ClassName::Method → ClassName__Method ──
+    // Also handles destructors: ClassName::~ClassName → ClassName___ClassName
+    out = out.replace(/(\w+)::~?(\w+)/g, '$1__$2');
+
     // ── Rename JS reserved words used as C variable names ──
     out = out.replace(/\bthis\b(?!\s*\.)/g, '_this');  // this → _this (but not this.property)
 
@@ -671,10 +675,8 @@ function transformLine(line, ctx) {
     out = out.replace(/&(stack\w+)/g, '0 /* ADDR:$1 */');
     out = out.replace(/&(\w+)/g, '$1'); // catch-all: drop & for any remaining
 
-    // ── C++ class method calls and destructor calls → DEVIATION ──
-    if (/\w+::~?\w+\s*[(\[,]/.test(out) && !/\/\//.test(out.split('::')[0])) {
-      out = makeDeviation(out, 'MFC', ctx);
-    }
+    // ── C++ class method calls: now handled by :: → __ conversion above ──
+    // No longer DEVIATEd — the functions have real implementations in the binary
 
     // ── Bare pointer dereference: *variable → helper(variable, 0) ──
     // Uses pointer width map from declarations to emit correct width.
@@ -1889,8 +1891,7 @@ function processFunction(headerLines, bodyLines, ctx) {
       if (/(?<![a-zA-Z0-9_\])])\*\s*\(\s*\w+\s*\*/.test(ft) ||  // *(type *) — but NOT multiplication like iVar * 0x58
           /\(\s*void\s*\)\s*\w/.test(ft) ||  // (void)expr
           /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
-          /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) && !/^(else|if|for|while|do|switch|case|return|break|continue)\b/.test(ft) ||  // C function signature (not JS keywords)
-          /^[A-Z]\w+\s*::\s*~?[A-Z]/.test(ft)) {  // C++ class::method
+          /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) && !/^(else|if|for|while|do|switch|case|return|break|continue)\b/.test(ft)) {  // C function signature (not JS keywords)
         transformed = makeDeviation(transformed, 'C-syntax', ctx);
       }
     }
