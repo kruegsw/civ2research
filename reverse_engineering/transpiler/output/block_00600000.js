@@ -728,7 +728,7 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
     _Size = _Size & 0xfffffffe;
     __flush(_File);
     __freebuf(_File);
-    // DEVIATION: C struct — _File->_flag = _File->_flag & 0xffffc2f3;
+    w32(_File, 12, s32(_File, 12) & 0xffffc2f3);
     if ((_Mode & 4) === 0) {
       if (_Buf === 0x0) {
         _Buf = __malloc_dbg(_Size,2,"setvbuf.c",0x85);
@@ -736,21 +736,21 @@ export function _setvbuf_00600DF0(_File, _Buf, _Mode, _Size) {
           wv(_DAT_0063aed8, v(_DAT_0063aed8) + 1);
           return -1;
         }
-        // DEVIATION: C struct — _File->_flag = _File->_flag | 0x408;
+        w32(_File, 12, s32(_File, 12) | 0x408);
       }
       else {
-        // DEVIATION: C struct — _File->_flag = _File->_flag | 0x500;
+        w32(_File, 12, s32(_File, 12) | 0x500);
       }
     }
     else {
-      // DEVIATION: C struct — _File->_flag = _File->_flag | 4;
-      // DEVIATION: C struct — _Buf = _File->_charbuf;
+      w32(_File, 12, s32(_File, 12) | 4);
+      _Buf = s32(_File, 20);
       _Size = 2;
     }
-    // DEVIATION: C struct — _File->_bufsiz = _Size;
-    // DEVIATION: C struct — _File->_base = _Buf;
-    // DEVIATION: C struct — _File->_ptr = _File->_base;
-    // DEVIATION: C struct — _File->_cnt = 0;
+    w32(_File, 24, _Size);
+    w32(_File, 8, _Buf);
+    w32(_File, 4, s32(_File, 8));
+    w32(_File, 0, 0);
   }
   else {
     local_c = -1;
@@ -815,7 +815,7 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
   let lVar1;
   let iVar2;
   
-  if (true /* DEVIATION: C struct — if (((param_1->ExceptionRecord->ExceptionCode === 0xe06d7363) && (param_1->ExceptionRecord->NumberParameters === 3)) && (param_1->ExceptionRecord->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
+  if (true /* DEVIATION: C struct — if (((s32(param_1, 4)->ExceptionCode === 0xe06d7363) && (s32(param_1, 4)->NumberParameters === 3)) && (s32(param_1, 4)->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
       /*JOINED*/
      /*JOINED*/
     terminate();
@@ -2578,21 +2578,21 @@ export function __ld12told_00603170(_Ifp, _Ld) {
   let local_c;
   let local_8;
   
-  // DEVIATION: C struct — local_8 = ((local_8) << 16 | (s16(_Ifp->ld12 + 10, 0))) & 0xffff7fff;
-  // DEVIATION: C struct — uVar1 = u16(_Ifp->ld12 + 10, 0);
-  // DEVIATION: C struct — local_14[0] = s32(_Ifp->ld12 + 6, 0);
-  // DEVIATION: C struct — local_10 = s32(_Ifp->ld12 + 2, 0);
-  // DEVIATION: C struct — local_c = u16(_Ifp, 0)->ld12 << 0x10;
+  local_8 = ((local_8) << 16 | (s16(s32(_Ifp, 0) + 10, 0))) & 0xffff7fff;
+  uVar1 = u16(s32(_Ifp, 0) + 10, 0);
+  local_14[0] = s32(s32(_Ifp, 0) + 6, 0);
+  local_10 = s32(s32(_Ifp, 0) + 2, 0);
+  local_c = u16(s32, 0)(_Ifp, 0) << 0x10;
   iVar2 = __RoundMan(local_14[0],0x40);
   if (iVar2 !== 0) {
     local_14[0] = 0x80000000;
     local_8 = (((((local_8) << 16 >> 16) + 1) & 0xFFFF) >>> 0);
   }
   local_18 = ((local_8 & 0xffff) === 0x7fff);
-  w32(true /* DEVIATION: C struct — _Ld->ld + 4 */, 0, local_14);
-  /* DEVIATION(cont): *(undefined4 *)_Ld->ld = local_10 */;
-  w16(true /* DEVIATION: C struct — _Ld->ld + 8 */, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
-  /* DEVIATION(cont): return local_18 */;
+  w32(s32(_Ld, 0) + 4, 0, local_14);
+  // DEVIATION: C pointer write — *(undefined4 *)_Ld->ld = local_10;
+  w16(s32(_Ld, 0) + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
+  return local_18;
 }
 
 
@@ -2972,48 +2972,48 @@ export function __isindst_006039B0(_Time) {
   if (v(DAT_0063b2b4) === 0) {
     return 0;
   }
-  if (true /* DEVIATION: C struct — if ((_Time->tm_year !== v(DAT_0063b350)) || (_Time->tm_year !== v(DAT_0063b360))) { */) {
+  if ((s32(_Time, 20) !== v(DAT_0063b350)) || (s32(_Time, 20) !== v(DAT_0063b360))) {
     if (v(DAT_006e55e0) === 0) {
-      true /* DEVIATION: C struct — cvtdate(1,1,_Time->tm_year,4,1,0,0,2,0,0,0); */;
-      true /* DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,10,5,0,0,2,0,0,0); */;
+      cvtdate(1,1,s32(_Time, 20),4,1,0,0,2,0,0,0);
+      cvtdate(0,1,s32(_Time, 20),10,5,0,0,2,0,0,0);
     }
     else {
       if (v(DAT_006e5680) === 0) {
-        true /* DEVIATION: C struct — cvtdate(1,1,_Time->tm_year,v(DAT_006e5682),v(DAT_006e5686),v(DAT_006e5684),0,v(DAT_006e5688), v(DAT_006e568a),v(DAT_006e568c),v(DAT_006e568e)); */;
+        cvtdate(1,1,s32(_Time, 20),v(DAT_006e5682),v(DAT_006e5686),v(DAT_006e5684),0,v(DAT_006e5688), v(DAT_006e568a),v(DAT_006e568c),v(DAT_006e568e));
                 /*JOINED*/
       }
       else {
-        true /* DEVIATION: C struct — cvtdate(1,0,_Time->tm_year,v(DAT_006e5682),0,0,v(DAT_006e5686),v(DAT_006e5688),v(DAT_006e568a), v(DAT_006e568c),v(DAT_006e568e)); */;
+        cvtdate(1,0,s32(_Time, 20),v(DAT_006e5682),0,0,v(DAT_006e5686),v(DAT_006e5688),v(DAT_006e568a), v(DAT_006e568c),v(DAT_006e568e));
                 /*JOINED*/
       }
       if (v(DAT_006e562c) === 0) {
-        true /* DEVIATION: C struct — cvtdate(0,1,_Time->tm_year,v(DAT_006e562e),v(DAT_006e5632),v(DAT_006e5630),0,v(DAT_006e5634), v(DAT_006e5636),v(DAT_006e5638),v(DAT_006e563a)); */;
+        cvtdate(0,1,s32(_Time, 20),v(DAT_006e562e),v(DAT_006e5632),v(DAT_006e5630),0,v(DAT_006e5634), v(DAT_006e5636),v(DAT_006e5638),v(DAT_006e563a));
                 /*JOINED*/
       }
       else {
-        true /* DEVIATION: C struct — cvtdate(0,0,_Time->tm_year,v(DAT_006e562e),0,0,v(DAT_006e5632),v(DAT_006e5634),v(DAT_006e5636), v(DAT_006e5638),v(DAT_006e563a)); */;
+        cvtdate(0,0,s32(_Time, 20),v(DAT_006e562e),0,0,v(DAT_006e5632),v(DAT_006e5634),v(DAT_006e5636), v(DAT_006e5638),v(DAT_006e563a));
                 /*JOINED*/
       }
     }
   }
   if (v(DAT_0063b354) < v(DAT_0063b364)) {
-    if (true /* DEVIATION: C struct — if ((_Time->tm_yday < v(DAT_0063b354)) || (v(DAT_0063b364) < _Time->tm_yday)) { */) {
+    if ((s32(_Time, 28) < v(DAT_0063b354)) || (v(DAT_0063b364) < s32(_Time, 28))) {
       return 0;
     }
-    if (true /* DEVIATION: C struct — if ((v(DAT_0063b354) < _Time->tm_yday) && (_Time->tm_yday < v(DAT_0063b364))) { */) {
+    if ((v(DAT_0063b354) < s32(_Time, 28)) && (s32(_Time, 28) < v(DAT_0063b364))) {
       return 1;
     }
   }
   else {
-    if (true /* DEVIATION: C struct — if ((_Time->tm_yday < v(DAT_0063b364)) || (v(DAT_0063b354) < _Time->tm_yday)) { */) {
+    if ((s32(_Time, 28) < v(DAT_0063b364)) || (v(DAT_0063b354) < s32(_Time, 28))) {
       return 1;
     }
-    if (true /* DEVIATION: C struct — if ((v(DAT_0063b364) < _Time->tm_yday) && (_Time->tm_yday < v(DAT_0063b354))) { */) {
+    if ((v(DAT_0063b364) < s32(_Time, 28)) && (s32(_Time, 28) < v(DAT_0063b354))) {
       return 0;
     }
   }
-  // DEVIATION: C struct — iVar1 = (_Time->tm_hour * 0xe10 + _Time->tm_min * 0x3c + _Time->tm_sec) * 1000;
-  if (true /* DEVIATION: C struct — if (_Time->tm_yday === v(DAT_0063b354)) { */) {
+  iVar1 = (s32(_Time, 8) * 0xe10 + s32(_Time, 4) * 0x3c + s32(_Time, 0)) * 1000;
+  if (s32(_Time, 28) === v(DAT_0063b354)) {
     if (iVar1 < v(DAT_0063b358)) {
       iVar1 = 0;
     }
@@ -3532,10 +3532,10 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         local_48 = local_48 | 2;
       }
       // DEVIATION: C pointer write — *(undefined2 *)pld12->ld12 = local_4c;
-      w32(true /* DEVIATION: C struct — pld12->ld12 + 2 */, 0, local_c);
-      w32(true /* DEVIATION: C struct — pld12->ld12 + 6 */, 0, local_14);
-      w16(true /* DEVIATION: C struct — pld12->ld12 + 10 */, 0, ((local_20) & 0xFFFF) | local_54);
-      /* DEVIATION(cont): return local_48 */;
+      w32(s32(pld12, 0) + 2, 0, local_c);
+      w32(s32(pld12, 0) + 6, 0, local_14);
+      w16(s32(pld12, 0) + 10, 0, ((local_20) & 0xFFFF) | local_54);
+      return local_48;
     }
     local_40 = _MEM[local_8];
     pbVar1 = local_8 + 1;

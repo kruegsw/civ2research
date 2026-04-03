@@ -4582,13 +4582,13 @@ export function handle_palette_0046EA3B() {
     }
     else {
       plpal = FUN_005dcdf9(iVar3);
-      // DEVIATION: C struct — plpal->palVersion = 0x300;
-      // DEVIATION: C struct — plpal->palNumEntries = 0x20;
+      w16(plpal, 0, 0x300);
+      w16(plpal, 2, 0x20);
       for (local_24 = 0; local_24 < 0x60; local_24 = local_24 + 3) {
-        // DEVIATION: C struct — plpal->_MEM[palPalEntry + local_24 / 3].peRed = s32(local_24, iVar2);
-        // DEVIATION: C struct — plpal->_MEM[palPalEntry + local_24 / 3].peGreen = s32(local_24, 1 + iVar2);
-        // DEVIATION: C struct — plpal->_MEM[palPalEntry + local_24 / 3].peBlue = s32(local_24, 2 + iVar2);
-        // DEVIATION: C struct — plpal->_MEM[palPalEntry + local_24 / 3].peFlags = 0x04;
+        s32(plpal, 4)[(local_24 / 3 | 0)].peRed = s32(local_24, iVar2);
+        s32(plpal, 4)[(local_24 / 3 | 0)].peGreen = s32(local_24, 1 + iVar2);
+        s32(plpal, 4)[(local_24 / 3 | 0)].peBlue = s32(local_24, 2 + iVar2);
+        s32(plpal, 4)[(local_24 / 3 | 0)].peFlags = 0x04;
       }
       h = CreatePalette(plpal);
       if (h === 0x0) {
@@ -4920,13 +4920,13 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
               local_420 = FUN_005c19d3(0,local_42c);
               for (local_428 = 0; local_45c = local_42c, local_428 < local_460[0]; local_428 = local_428 + 1) {
                   /*JOINED*/
-                // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                w32(local_43c, 0, s32(local_43c, 0) + -1);
+                if (s32(local_43c, 0) < 0) {
                   local_40c = __filbuf(local_43c);
                 }
                 else {
-                  // DEVIATION: C struct — local_40c = u8(s32(local_43c, 0))->_ptr;
-                  // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                  local_40c = u8(s32(s32(local_43c, 4), 0));
+                  w32(local_43c, 4, s32(local_43c, 4) + 1);
                 }
                 if (local_40c === -1) {
                   local_408 = s_Error_reading_bitmap_image_0062b704;
@@ -4943,23 +4943,23 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
             local_42c = local_45c + -1;
             local_420 = FUN_005c19d3(0,local_42c);
             while( true ) {
-              // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-              if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+              w32(local_43c, 0, s32(local_43c, 0) + -1);
+              if (s32(local_43c, 0) < 0) {
                 local_40c = __filbuf(local_43c);
               }
               else {
-                // DEVIATION: C struct — local_40c = u8(s32(local_43c, 0))->_ptr;
-                // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                local_40c = u8(s32(s32(local_43c, 4), 0));
+                w32(local_43c, 4, s32(local_43c, 4) + 1);
               }
               if (local_40c === -1) break;
               if (local_40c === 0) {
-                // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                w32(local_43c, 0, s32(local_43c, 0) + -1);
+                if (s32(local_43c, 0) < 0) {
                   local_40c = __filbuf(local_43c);
                 }
                 else {
-                  // DEVIATION: C struct — local_40c = u8(s32(local_43c, 0))->_ptr;
-                  // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                  local_40c = u8(s32(s32(local_43c, 4), 0));
+                  w32(local_43c, 4, s32(local_43c, 4) + 1);
                 }
                 if (local_40c === 0) {
                   local_42c = local_42c + -1;
@@ -4968,47 +4968,47 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                 else {
                   if (local_40c === 1) break;
                   if (local_40c === 2) {
-                    // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                    if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                    w32(local_43c, 0, s32(local_43c, 0) + -1);
+                    if (s32(local_43c, 0) < 0) {
                       iVar4 = __filbuf(local_43c);
                       local_42c = local_42c - iVar4;
                     }
                     else {
-                      // DEVIATION: C struct — local_42c = local_42c - u8(s32(local_43c, 0))->_ptr;
-                      // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                      local_42c = local_42c - u8(s32(s32(local_43c, 4), 0));
+                      w32(local_43c, 4, s32(local_43c, 4) + 1);
                     }
-                    // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                    if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                    w32(local_43c, 0, s32(local_43c, 0) + -1);
+                    if (s32(local_43c, 0) < 0) {
                       iVar4 = __filbuf(local_43c);
                       local_428 = local_428 + iVar4;
                     }
                     else {
-                      // DEVIATION: C struct — local_428 = local_428 + u8(s32(local_43c, 0))->_ptr;
-                      // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                      local_428 = local_428 + u8(s32(s32(local_43c, 4), 0));
+                      w32(local_43c, 4, s32(local_43c, 4) + 1);
                     }
                     local_420 = FUN_005c19d3(local_428,local_42c);
                   }
                   else {
                     for (local_430 = 0; local_430 < (local_40c); local_430 = local_430 + 1) {
-                      // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                      if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                      w32(local_43c, 0, s32(local_43c, 0) + -1);
+                      if (s32(local_43c, 0) < 0) {
                         iVar4 = __filbuf(local_43c);
                         local_468 = s8(iVar4);
                       }
                       else {
-                        // DEVIATION: C struct — local_468 = s32(local_43c, 0)->_ptr;
-                        // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                        local_468 = s32(s32(local_43c, 4), 0);
+                        w32(local_43c, 4, s32(local_43c, 4) + 1);
                       }
                       _MEM[local_420] = local_468 + cVar1;
                       local_420 = local_420 + 1;
                     }
                     if ((local_40c & 1) !== 0) {
-                      // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                      if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                      w32(local_43c, 0, s32(local_43c, 0) + -1);
+                      if (s32(local_43c, 0) < 0) {
                         __filbuf(local_43c);
                       }
                       else {
-                        // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                        w32(local_43c, 4, s32(local_43c, 4) + 1);
                       }
                     }
                     local_428 = local_428 + local_40c;
@@ -5016,13 +5016,13 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                 }
               }
               else {
-                // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                if (true /* DEVIATION: C struct — if (local_43c->_cnt < 0) { */) {
+                w32(local_43c, 0, s32(local_43c, 0) + -1);
+                if (s32(local_43c, 0) < 0) {
                   local_424 = __filbuf(local_43c);
                 }
                 else {
-                  // DEVIATION: C struct — local_424 = u8(s32(local_43c, 0))->_ptr;
-                  // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
+                  local_424 = u8(s32(s32(local_43c, 4), 0));
+                  w32(local_43c, 4, s32(local_43c, 4) + 1);
                 }
                 for (local_430 = 0; local_430 < (local_40c); local_430 = local_430 + 1) {
                   _MEM[local_420] = cVar1 + s8(local_424);

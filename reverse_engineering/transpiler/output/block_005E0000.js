@@ -10457,11 +10457,11 @@ export function FUN_005ee591(param_1, param_2) {
   
   pvVar1 = GlobalAlloc(0x40,0x408);
   plpal = GlobalLock(pvVar1);
-  // DEVIATION: C struct — plpal->palVersion = 0x300;
-  // DEVIATION: C struct — plpal->palNumEntries = 0xec;
-  true /* DEVIATION: C struct — GetPaletteEntries(param_2,10,0xec,plpal->palPalEntry); */;
+  w16(plpal, 0, 0x300);
+  w16(plpal, 2, 0xec);
+  GetPaletteEntries(param_2,10,0xec,s32(plpal, 4));
   for (local_3c = 0; local_3c < 0xec; local_3c = local_3c + 1) {
-    // DEVIATION: C struct — plpal->_MEM[palPalEntry + local_3c].peFlags = 0x04;
+    s32(plpal, 4)[local_3c].peFlags = 0x04;
   }
   wv(DAT_00639d0c, CreatePalette(plpal));
   pvVar1 = GlobalHandle(plpal);

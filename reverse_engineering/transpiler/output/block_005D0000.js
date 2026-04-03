@@ -687,10 +687,10 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
       _MEM[param_2 + 1].top = local_14[0].top;
       _MEM[param_2 + 1].right = local_14[0].right;
       _MEM[param_2 + 1].bottom = local_14[0].bottom;
-      // DEVIATION: C struct — param_2->left = local_14[0].left;
-      // DEVIATION: C struct — param_2->top = local_14[0].top;
-      // DEVIATION: C struct — param_2->right = local_14[0].right;
-      // DEVIATION: C struct — param_2->bottom = local_14[0].bottom;
+      w32(param_2, 0, local_14[0].left);
+      w32(param_2, 4, local_14[0].top);
+      w32(param_2, 8, local_14[0].right);
+      w32(param_2, 12, local_14[0].bottom);
       if (_MEM[param_2 + 3].right !== 0) {
         FUN_005cf337();
       }
@@ -3494,8 +3494,8 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                   p_Var5 = local_84[0];
                   pDVar7 = local_34 + 6;
                   for (iVar4 = 0x12; iVar4 !== 0; iVar4 = iVar4 + -1) {
-                    // DEVIATION: C struct — w32(pDVar7, 0, p_Var5->dwFlags);
-                    // DEVIATION: C struct — p_Var5 = p_Var5->fccIOProc;
+                    w32(pDVar7, 0, s32(p_Var5, 12));
+                    p_Var5 = s32(p_Var5, 4);
                     pDVar7 = pDVar7 + 1;
                   }
                   p_Var6 = local_98[0];
@@ -3637,8 +3637,8 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                     p_Var5 = local_88[0];
                     pDVar7 = local_38 + 6;
                     for (iVar4 = 0x12; iVar4 !== 0; iVar4 = iVar4 + -1) {
-                      // DEVIATION: C struct — w32(pDVar7, 0, p_Var5->dwFlags);
-                      // DEVIATION: C struct — p_Var5 = p_Var5->fccIOProc;
+                      w32(pDVar7, 0, s32(p_Var5, 12));
+                      p_Var5 = s32(p_Var5, 4);
                       pDVar7 = pDVar7 + 1;
                     }
                     p_Var6 = local_9c[0];
@@ -3793,8 +3793,8 @@ export function FUN_005d52a2(param_1) {
             p_Var3 = local_10c[0];
             pDVar4 = local_b4 + 6;
             for (iVar2 = 0x12; iVar2 !== 0; iVar2 = iVar2 + -1) {
-              // DEVIATION: C struct — w32(pDVar4, 0, p_Var3->dwFlags);
-              // DEVIATION: C struct — p_Var3 = p_Var3->fccIOProc;
+              w32(pDVar4, 0, s32(p_Var3, 12));
+              p_Var3 = s32(p_Var3, 4);
               pDVar4 = pDVar4 + 1;
             }
             _MEM[local_b4 + 1] = local_98[0];
@@ -11224,11 +11224,11 @@ export function FUN_005df931(param_1, param_2, param_3, param_4, param_5, param_
   while( true ) {
     if (param_3 === 0) break;
     FUN_005e0c90(local_8,param_6);
-    true /* DEVIATION: C struct — FUN_005e7f85(param_2->right + -1,param_2->top,param_2->right + -1,param_2->bottom + -1); */;
-    true /* DEVIATION: C struct — FUN_005e7f85(param_2->right + -1,param_2->bottom + -1,param_2->left,param_2->bottom + -1); */;
+    FUN_005e7f85(s32(param_2, 8) + -1,s32(param_2, 4),s32(param_2, 8) + -1,s32(param_2, 12) + -1);
+    FUN_005e7f85(s32(param_2, 8) + -1,s32(param_2, 12) + -1,s32(param_2, 0),s32(param_2, 12) + -1);
     FUN_005e0c90(local_c,param_6);
-    true /* DEVIATION: C struct — FUN_005e7f85(param_2->left,param_2->bottom + -1,param_2->left,param_2->top); */;
-    true /* DEVIATION: C struct — FUN_005e7f85(param_2->left,param_2->top,param_2->right + -1,param_2->top); */;
+    FUN_005e7f85(s32(param_2, 0),s32(param_2, 12) + -1,s32(param_2, 0),s32(param_2, 4));
+    FUN_005e7f85(s32(param_2, 0),s32(param_2, 4),s32(param_2, 8) + -1,s32(param_2, 4));
     InflateRect(param_2,-1,-1);
     param_3 = param_3 + -1;
   }
@@ -11261,11 +11261,11 @@ export function FUN_005dfa4d(param_1, param_2, param_3, param_4, param_5) {
   while( true ) {
     if (param_3 === 0) break;
     FUN_005c19ad(local_8);
-    true /* DEVIATION: C struct — FUN_005c11b2(param_2->right + -1,param_2->top,param_2->right + -1,param_2->bottom + -1); */;
-    true /* DEVIATION: C struct — FUN_005c11b2(param_2->right + -1,param_2->bottom + -1,param_2->left,param_2->bottom + -1); */;
+    FUN_005c11b2(s32(param_2, 8) + -1,s32(param_2, 4),s32(param_2, 8) + -1,s32(param_2, 12) + -1);
+    FUN_005c11b2(s32(param_2, 8) + -1,s32(param_2, 12) + -1,s32(param_2, 0),s32(param_2, 12) + -1);
     FUN_005c19ad(local_c);
-    true /* DEVIATION: C struct — FUN_005c11b2(param_2->left,param_2->bottom + -1,param_2->left,param_2->top); */;
-    true /* DEVIATION: C struct — FUN_005c11b2(param_2->left,param_2->top,param_2->right + -1,param_2->top); */;
+    FUN_005c11b2(s32(param_2, 0),s32(param_2, 12) + -1,s32(param_2, 0),s32(param_2, 4));
+    FUN_005c11b2(s32(param_2, 0),s32(param_2, 4),s32(param_2, 8) + -1,s32(param_2, 4));
     InflateRect(param_2,-1,-1);
     param_3 = param_3 + -1;
   }

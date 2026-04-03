@@ -1128,7 +1128,7 @@ export function FUN_00452315(param_1) {
             FUN_004a2020();
             return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);
           }
-          if (true /* DEVIATION: C struct — if ((v(DAT_0062cd20)->_flag & 0x10) !== 0) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5); */);
+          if ((s32(DAT_0062cd20, 12) & 0x10) !== 0) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);
           uStackY_20 = 0x4525eb;
           pcVar3 = _fgets(v(DAT_00679640),0x800,v(DAT_0062cd20));
           if ((pcVar3 === 0x0) || (v(DAT_00679640) === 64)) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);
@@ -6697,7 +6697,7 @@ function LAB_0045259e_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, l
             FUN_004a2020();
             return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);
           }
-          if (true /* DEVIATION: C struct — if ((v(DAT_0062cd20)->_flag & 0x10) !== 0) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5); */);
+          if ((s32(DAT_0062cd20, 12) & 0x10) !== 0) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);
           uStackY_20 = 0x4525eb;
           pcVar3 = _fgets(v(DAT_00679640),0x800,v(DAT_0062cd20));
           if ((pcVar3 === 0x0) || (v(DAT_00679640) === 64)) return LAB_00452724_helper(bVar1, extraout_ECX, iVar2, local_106, local_108, local_10c, local_110c, local_1110, param_1, pcVar3, sVar4, sVar5);

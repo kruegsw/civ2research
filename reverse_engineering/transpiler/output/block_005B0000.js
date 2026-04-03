@@ -5981,10 +5981,10 @@ export function FUN_005bcb85(param_1, param_2) {
   
   if (param_1 !== 0) {
     GetWindowRect(s32(param_1, 4),param_2);
-    // DEVIATION: C struct — local_14[0].x = param_2->left;
-    // DEVIATION: C struct — local_14[0].y = param_2->top;
-    // DEVIATION: C struct — local_c = param_2->right;
-    // DEVIATION: C struct — local_8 = param_2->bottom;
+    local_14[0].x = s32(param_2, 0);
+    local_14[0].y = s32(param_2, 4);
+    local_c = s32(param_2, 8);
+    local_8 = s32(param_2, 12);
     cPoints = 2;
     lpPoints = local_14[0];
     hWndTo = GetParent(s32(param_1, 4));

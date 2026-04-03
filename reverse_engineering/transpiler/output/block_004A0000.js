@@ -80,7 +80,7 @@ export function FUN_004a2055(param_1, param_2) {
     }
     bVar1 = false;
     while (!bVar1) {
-      if (true /* DEVIATION: C struct — if ((v(DAT_0062cd20)->_flag & 0x10) !== 0) { */) {
+      if ((s32(DAT_0062cd20, 12) & 0x10) !== 0) {
         if (!bVar2) return LAB_004a2348_helper(bVar1, bVar2, iVar5, local_10c, local_210, local_214, local_264, local_8, param_1, param_2, pcVar4, sVar3);
         bVar2 = false;
         _rewind(v(DAT_0062cd20));
@@ -143,7 +143,7 @@ export function FUN_004a23fc(param_1) {
   let local_8;
   
   local_8 = 0x0;
-  if (true /* DEVIATION: C struct — if (((v(DAT_0062cd20)->_flag & 0x10) === 0) && (pcVar1 = _fgets(v(DAT_00679640),0xff,v(DAT_0062cd20)), pcVar1 !== 0x0)) { */) {
+  if (((s32(DAT_0062cd20, 12) & 0x10) === 0) && (pcVar1 = _fgets(v(DAT_00679640),0xff,v(DAT_0062cd20)), pcVar1 !== 0x0)) {
      /*JOINED*/
     FUN_0056b810(v(DAT_00679640));
     if (param_1 === 1) {

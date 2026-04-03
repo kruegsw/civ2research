@@ -2766,7 +2766,7 @@ export function FUN_00589dc5(param_1) {
   _File = FUN_0041508c(param_1,v(DAT_0063481c));
   if (_File !== 0x0) {
     local_8 = 1;
-    while (true /* DEVIATION: C struct — while (((local_8 !== 0 && ((_File->_flag & 0x10) === 0)) && (pcVar1 = _fgets(local_58[0],0x4f,_File), pcVar1 !== 0x0))) { */) {
+    while (((local_8 !== 0 && ((s32(_File, 12) & 0x10) === 0)) && (pcVar1 = _fgets(local_58[0],0x4f,_File), pcVar1 !== 0x0))) {
            /*JOINED*/
       for (local_5c = 0; sVar2 = _strlen(local_58[0]), local_5c < (sVar2); local_5c = local_5c + 1)
       {
@@ -2839,7 +2839,7 @@ export function FUN_00589fc9(param_1, param_2, param_3) {
   _File = FUN_0041508c(param_2,v(DAT_00634840));
   if (_File !== 0x0) {
     for (local_58 = 1; local_58 <= param_3; local_58 = local_58 + 1) {
-      if (true /* DEVIATION: C struct — if (((_File->_flag & 0x10) !== 0) || (pcVar1 = _fgets(local_54[0],0x4c,_File), pcVar1 === 0x0)) return LAB_0058a0bc_helper(local_54, local_58, local_5c, param_1, param_2, param_3, pcVar1, sVar2); */);
+      if (((s32(_File, 12) & 0x10) !== 0) || (pcVar1 = _fgets(local_54[0],0x4c,_File), pcVar1 === 0x0)) return LAB_0058a0bc_helper(local_54, local_58, local_5c, param_1, param_2, param_3, pcVar1, sVar2);
          /*JOINED*/
     }
     for (local_58 = 0; sVar2 = _strlen(local_54[0]), local_58 < (sVar2); local_58 = local_58 + 1) {

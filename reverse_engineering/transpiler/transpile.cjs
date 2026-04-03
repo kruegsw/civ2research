@@ -463,6 +463,50 @@ function transformLine(line, ctx) {
     // Also handles destructors: ClassName::~ClassName → ClassName___ClassName
     out = out.replace(/(\w+)::~?(\w+)/g, '$1__$2');
 
+    // ── C struct member access: expr->member → memory read at known offset ──
+    // MSVC struct layouts for Win32/CRT types used by Civ2
+    {
+      const structOffsets = {
+        // FILE (_iobuf) — MSVC 6.0
+        '_cnt': { off: 0, width: 4 }, '_ptr': { off: 4, width: 4 }, '_base': { off: 8, width: 4 },
+        '_flag': { off: 12, width: 4 }, '_file': { off: 16, width: 4 }, '_charbuf': { off: 20, width: 4 },
+        '_bufsiz': { off: 24, width: 4 }, '_tmpfname': { off: 28, width: 4 },
+        // RECT
+        'left': { off: 0, width: 4 }, 'top': { off: 4, width: 4 },
+        'right': { off: 8, width: 4 }, 'bottom': { off: 12, width: 4 },
+        // LOGPALETTE
+        'palVersion': { off: 0, width: 2 }, 'palNumEntries': { off: 2, width: 2 },
+        'palPalEntry': { off: 4, width: 0 }, // array base
+        // PALETTEENTRY
+        'peRed': { off: 0, width: 1 }, 'peGreen': { off: 1, width: 1 },
+        'peBlue': { off: 2, width: 1 }, 'peFlags': { off: 3, width: 1 },
+        // MMIOINFO
+        'fccIOProc': { off: 4, width: 4 }, 'dwFlags': { off: 12, width: 4 },
+        'cchBuffer': { off: 28, width: 4 }, 'pchBuffer': { off: 32, width: 4 },
+        // tm (time struct)
+        'tm_sec': { off: 0, width: 4 }, 'tm_min': { off: 4, width: 4 },
+        'tm_hour': { off: 8, width: 4 }, 'tm_mday': { off: 12, width: 4 },
+        'tm_mon': { off: 16, width: 4 }, 'tm_year': { off: 20, width: 4 },
+        'tm_wday': { off: 24, width: 4 }, 'tm_yday': { off: 28, width: 4 },
+        'tm_isdst': { off: 32, width: 4 },
+        // CRT debug
+        'nBlockUse': { off: 20, width: 4 },
+        'ld12': { off: 0, width: 4 }, 'ld': { off: 0, width: 4 },
+        // EXCEPTION_RECORD
+        'ExceptionRecord': { off: 4, width: 4 },
+      };
+      // Match: expr->member (read or write)
+      out = out.replace(/(\w+)->(\w+)/g, (m, obj, member) => {
+        const info = structOffsets[member];
+        if (info) {
+          const helper = info.width === 1 ? '_MEM' : info.width === 2 ? 's16' : 's32';
+          if (helper === '_MEM') return '_MEM[' + obj + ' + ' + info.off + ']';
+          return helper + '(' + obj + ', ' + info.off + ')';
+        }
+        return m; // unknown member — leave as-is (will be caught by C-struct DEVIATION)
+      });
+    }
+
     // ── Rename JS reserved words used as C variable names ──
     out = out.replace(/\bthis\b(?!\s*\.)/g, '_this');  // this → _this (but not this.property)
 

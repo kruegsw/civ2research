@@ -5569,7 +5569,7 @@ export function FUN_004db23f(param_1, param_2) {
     wv(DAT_0062e508, 0);
   }
   else {
-    while (true /* DEVIATION: C struct — while ((_File->_flag & 0x10) === 0) { */) {
+    while ((s32(_File, 12) & 0x10) === 0) {
       lVar1 = _ftell(_File);
       pcVar2 = _fgets(local_108[0],0xff,_File);
       if (pcVar2 === 0x0) break;
