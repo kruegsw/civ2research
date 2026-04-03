@@ -3408,8 +3408,8 @@ export function FUN_0040cd64(in_ECX, unaff_ESI, param_1) {
      /*JOINED*/
     local_464[0] = 1;
   }
-  // DEVIATION: C pointer write — *(CPropertySheet *)(&DAT_0064c6b4 + param_1 * 0x594) = in_ECX[0x2e0];
-  // DEVIATION: C pointer write — *(CPropertySheet *)(&DAT_0064c6b3 + param_1 * 0x594) = in_ECX[0x2e8];
+  w32(ptrAdd(DAT_0064c6b4, param_1 * 0x594), 0, in_ECX[0x2e0]);
+  w32(ptrAdd(DAT_0064c6b3, param_1 * 0x594), 0, in_ECX[0x2e8]);
   if ((v(DAT_00655af8) < 0xb) && (u8(_MEM[DAT_0064c6b5 + param_1 * 0x594]) < 2)) {
     wv(_DAT_0064bc1a, ((u8(_MEM[DAT_0064c6b3 + param_1 * 0x594])) & 0xFFFF));
     wv(_DAT_0064bc1c, ((u8(_MEM[DAT_0064c6b4 + param_1 * 0x594])) & 0xFFFF));

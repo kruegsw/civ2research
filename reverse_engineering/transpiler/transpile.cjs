@@ -1642,6 +1642,8 @@ function processFunction(headerLines, bodyLines, ctx) {
       'undefined':1,'char':1,'byte':1,'long':1,'ulong':1,'size_t':1,'SIZE_T':1,
       'UINT':1,'DWORD':1,'BOOL':1,'HANDLE':1,'HWND':1,'HDC':1,'HBITMAP':1,
       'HBRUSH':1,'HCURSOR':1,'HFONT':1,'HICON':1,'HMODULE':1,'HPALETTE':1,
+      'CPropertySheet':1,'CCheckListBox':1,'CSocket':1,'CString':1,
+      'CArchive':1,'CRichEditDoc':1,'CRichEditView':1,'COleClientItem':1,
       'LPVOID':1,'HPSTR':1,'float':1,'code':1,'void':1
     }).join('|') + ')\\s*\\*\\s*\\)\\s*\\(');
     const writeTypeMatch = trimmed.match(writeTypeRe);
