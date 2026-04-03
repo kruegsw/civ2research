@@ -174,7 +174,7 @@ export function FUN_0043060b(param_1, param_2) {
   let uVar3;
   let local_14 = new Array(16).fill(0);
   
-  thunk_show_credits(3,3,1,600,400,0,0);
+  show_credits(3,3,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   wv(DAT_0063efac, param_2);
   FUN_004086c0(local_14[0],2,0,0x129,0x18);
@@ -787,7 +787,7 @@ export function FUN_00431c56(param_1) {
 export function FUN_00431c73(param_1) {
 
 
-  thunk_show_credits(7,7,1,600,400,0,0);
+  show_credits(7,7,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x401b45); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -1426,7 +1426,7 @@ export function FUN_00432c1c() {
 export function FUN_00433122(param_1) {
 
 
-  thunk_show_credits(8,8,1,600,400,0,0);
+  show_credits(8,8,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x401bef); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -1926,7 +1926,7 @@ export function FUN_00433434() {
 export function FUN_00434d8a(param_1) {
 
 
-  thunk_show_credits(9,9,1,600,400,0,0);
+  show_credits(9,9,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x401cda); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -2362,7 +2362,7 @@ export function FUN_00434e39() {
 export function FUN_00435d15(param_1) {
 
 
-  thunk_show_credits(10,10,1,600,400,0,0);
+  show_credits(10,10,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x402428); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -2513,7 +2513,7 @@ export function FUN_00435dc4() {
 export function FUN_004361cc(param_1) {
 
 
-  thunk_show_credits(10,10,1,600,400,0,0);
+  show_credits(10,10,1,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x402432); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -2789,7 +2789,7 @@ export function FUN_00436bb7(param_1) {
   let local_14 = new Array(16).fill(0);
   
   FUN_00436e28();
-  thunk_show_credits(8,8,1,600,400,0,0);
+  show_credits(8,8,1,600,400,0,0);
   wv(DAT_0063efac, param_1);
   wv(DAT_0063ef6c, 0);
   if (param_1 < 0) {
@@ -3378,10 +3378,10 @@ export function FUN_00437a4a(param_1) {
     wv(DAT_00625ed0, 0);
     wv(DAT_0063ef6c, 0);
     if (param_1 === 3) {
-      thunk_show_credits(10000,8,1,600,400,0,0);
+      show_credits(10000,8,1,600,400,0,0);
     }
     else {
-      thunk_show_credits(0xffffffa1,8,1,600,400,0,0);
+      show_credits(0xffffffa1,8,1,600,400,0,0);
     }
     FUN_0042acb0();
     true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x401c6c); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -3662,7 +3662,7 @@ export function FUN_0043856b(param_1) {
   let local_14 = new Array(16).fill(0);
   
   if (v(DAT_0063e948) < 0) {
-    thunk_show_credits(2,0xc,0,600,400,0,0);
+    show_credits(2,0xc,0,600,400,0,0);
     wv(DAT_0063e954, param_1);
     wv(_DAT_0063e994, 0);
     FUN_004086c0(local_14[0],2,0,0x254,0x18);

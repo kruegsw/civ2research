@@ -1209,7 +1209,7 @@ export function FUN_005a3cca(param_1) {
       }
     }
     else {
-      iVar2 = (*s32(DAT_006cec84, 0x23c))(s32(local_c, 0));
+      iVar2 = (s32(s32(DAT_006cec84, 0x23c), 0))(s32(local_c, 0));
       FUN_005a577e();
       if (iVar2 !== 0) {
         w32(DAT_006cec84, 0x3c, u32(DAT_006cec84, 0x3c) | 0x2000);
@@ -1233,7 +1233,7 @@ export function FUN_005a3df3() {
   let iVar1;
   
   if (s32(DAT_006cec84, 0x240) !== 0) {
-    iVar1 = (*s32(DAT_006cec84, 0x240))(0);
+    iVar1 = (s32(s32(DAT_006cec84, 0x240), 0))(0);
     if (iVar1 === 0) {
       FUN_005a577e();
     }
@@ -1367,7 +1367,7 @@ export function FUN_005a407f(param_1) {
       break;
     case 0xd1:
       if (s32(DAT_006cec84, 0x224) !== 0) {
-        FUN_005a3cca(*s32(DAT_006cec84, 0x224));
+        FUN_005a3cca(s32(s32(DAT_006cec84, 0x224), 0));
       }
     }
   }
@@ -1580,7 +1580,7 @@ export function FUN_005a49c1(param_1) {
             local_10 = s32(DAT_006cec84, 0x228);
           }
         } while (s32(DAT_006cec84, 0x48) !== s32(local_10, 0xc));
-        uVar3 = __toupper_lk((*s32(local_10, 8)));
+        uVar3 = __toupper_lk((s32(s32(local_10, 8), 0)));
         if (uVar3 === (uVar2 & 0xff)) {
           local_18 = local_10;
         }
@@ -1623,7 +1623,7 @@ export function FUN_005a49c1(param_1) {
       if (s32(DAT_006cec84, 0x34) !== 0) {
         local_1c = -1;
         for (local_c = 0; local_c < s32(DAT_006cec84, 0x34); local_c = local_c + 1) {
-          uVar3 = __toupper_lk((*s32(DAT_006cec84, 0x294 + local_c * 4)));
+          uVar3 = __toupper_lk((s32(s32(DAT_006cec84, 0x294 + local_c * 4), 0)));
           if (uVar3 === (uVar2 & 0xff)) {
             local_1c = local_c;
             break;
@@ -1640,7 +1640,7 @@ export function FUN_005a49c1(param_1) {
         local_1c = 0;
         for (local_10 = s32(DAT_006cec84, 0x228); local_10 !== 0; local_10 = s32(local_10, 0x10)) {
             /*JOINED*/
-          uVar3 = __toupper_lk((*s32(local_10, 8)));
+          uVar3 = __toupper_lk((s32(s32(local_10, 8), 0)));
           if (uVar3 === (uVar2 & 0xff)) {
             local_18 = local_10;
             break;
@@ -2174,7 +2174,7 @@ export function FUN_005a5f34(in_ECX, param_1, param_2) {
       }
       else {
         while ((u8(_MEM[in_ECX + 0x3d]) & 4) === 0) {
-          iVar1 = (*s32(in_ECX, 0x250))(in_ECX);
+          iVar1 = (s32(s32(in_ECX, 0x250), 0))(in_ECX);
           if (iVar1 !== 0) {
             FUN_005a3c58();
           }
@@ -4872,7 +4872,7 @@ export function FUN_005ae580() {
   return LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2);
 // switchD_005aea9a_caseD_4: (code below also in switchD_005aea9a_caseD_4_helper, kept for 1:1 audit)
   wv(DAT_006a9110, 0);
-  iVar1 = thunk_load_verify_units(0,2,1);
+  iVar1 = load_verify_units(0,2,1);
   if (iVar1 === 0) {
     if (v(DAT_00655b02) === 0x02) {
       FUN_004a73d9();
@@ -5283,7 +5283,7 @@ export function show_messagebox_F9E3_005AF9E3() {
     }
     FUN_005af140();
     FUN_004ccab9(s_UNITS_00635f78,0 /* ADDR:LAB_004036de */);
-    iVar1 = thunk_show_messagebox_CF2D();
+    iVar1 = show_messagebox_CF2D();
     if (iVar1 === 0) {
       _sprintf(local_4c[0],s_Error_updating_RULES__s_00635f80,v(DAT_0062cd24));
       UVar5 = 0x10;
@@ -6278,7 +6278,7 @@ function LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2) 
   return LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2);
   // switchD_005aea9a_caseD_4:
   wv(DAT_006a9110, 0);
-  iVar1 = thunk_load_verify_units(0,2,1);
+  iVar1 = load_verify_units(0,2,1);
   if (iVar1 === 0) {
     if (v(DAT_00655b02) === 0x02) {
       FUN_004a73d9();
@@ -6300,7 +6300,7 @@ function LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2) 
 
 function switchD_005aea9a_caseD_4_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2) {
   wv(DAT_006a9110, 0);
-  iVar1 = thunk_load_verify_units(0,2,1);
+  iVar1 = load_verify_units(0,2,1);
   if (iVar1 === 0) {
     if (v(DAT_00655b02) === 0x02) {
       FUN_004a73d9();
@@ -6361,7 +6361,7 @@ function switchD_005aea9a_default_helper(iVar1, iVar3, local_18, local_310, loca
   return LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, local_8, uVar2);
   // switchD_005aea9a_caseD_4:
   wv(DAT_006a9110, 0);
-  iVar1 = thunk_load_verify_units(0,2,1);
+  iVar1 = load_verify_units(0,2,1);
   if (iVar1 === 0) {
     if (v(DAT_00655b02) === 0x02) {
       FUN_004a73d9();

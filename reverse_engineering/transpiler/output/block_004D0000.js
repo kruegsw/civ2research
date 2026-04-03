@@ -4792,7 +4792,7 @@ export function show_messagebox_929A_004D929A() {
     FUN_004d8caa();
     FUN_004ccab9(s_IMPROVE_0062e420,0 /* ADDR:LAB_004016f9 */);
     FUN_004ccaed(s_ENDWONDER_0062e428,0 /* ADDR:LAB_00402ef5 */);
-    iVar1 = thunk_show_messagebox_CF2D();
+    iVar1 = show_messagebox_CF2D();
     if (iVar1 === 0) {
       _sprintf(local_24[0],s_Error_updating_RULES__s_0062e434,v(DAT_0062cd24));
       uType = 0x10;
@@ -6517,11 +6517,11 @@ export function FUN_004dd285(param_1) {
     }
     if ((s32(DAT_0064b9e8, iVar2 * 4) === 0) && (s16(DAT_0064c708, iVar2 * 0x594) === 0)) {
        /*JOINED*/
-      thunk_kill_civ(iVar2,iVar1);
+      kill_civ(iVar2,iVar1);
     }
     if ((s32(DAT_0064b9e8, iVar1 * 4) === 0) && (s16(DAT_0064c708, iVar1 * 0x594) === 0)) {
        /*JOINED*/
-      thunk_kill_civ(iVar1,iVar2);
+      kill_civ(iVar1,iVar2);
     }
     FUN_005d2279(s_End_ExecuteParleyTransaction_Mes_0062ea30,v(DAT_00628468));
   }

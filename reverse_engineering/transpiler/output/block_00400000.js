@@ -89,7 +89,7 @@ export function FUN_00406aeb() {
 export function FUN_00406b02() {
 
 
-  thunk_citywin_9545();
+  citywin_9545();
   wv(DAT_00624ee0, 0);
   FUN_0040733c();
   return;
@@ -653,7 +653,7 @@ export function FUN_004079a6() {
   FUN_00408130(0 /* ADDR:LAB_004022de */);
   FUN_00408170(0 /* ADDR:LAB_00401942 */);
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID(v(DAT_0063c870),0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  tie(thunk_map_ascii);
+  tie(map_ascii);
   FUN_00408010(0x1ff);
   FUN_00408050(1);
   FUN_00408270(0 /* ADDR:LAB_00403d05 */);
@@ -3495,7 +3495,7 @@ export function FUN_0040ddc6(param_1) {
   }
   if ((v(DAT_00655b02) < 3) || (v(DAT_006d1da0) === param_1)) {
     FUN_0040cd64(param_1);
-    thunk_citywin_9429();
+    citywin_9429();
   }
   else {
     FUN_0046b14d(0x9d,s32(DAT_006ad30c, s32(DAT_006ad558, param_1 * 4) * 0x54),0,0,0,0, 0,0,0,0);
@@ -3655,7 +3655,7 @@ export function FUN_0040e017() {
                          /*JOINED*/
       if ((local_22c !== 0) && (((s8(_MEM[DAT_0064f348 + iVar5 * 0x58])) === uVar2 || (v(DAT_00655b07) !== 0)))) {
          /*JOINED*/
-        thunk_handle_city_disorder_00509590(iVar5);
+        handle_city_disorder_00509590(iVar5);
       }
       // DEVIATION: SEH
       FUN_0040e38d();

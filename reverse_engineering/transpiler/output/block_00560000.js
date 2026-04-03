@@ -1948,7 +1948,7 @@ export function load_civ2_art_005681c9_005681C9() {
   // DEVIATION: SEH
   // DEVIATION: SEH
   // DEVIATION: SEH
-  thunk_handle_palette();
+  handle_palette();
   FUN_005bd630();
   local_8 = 0;
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_4c[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -2480,7 +2480,7 @@ export function FUN_00568c41() {
 export function FUN_00568c58() {
 
 
-  thunk_citywin_9545();
+  citywin_9545();
   wv(DAT_00633e00, 0);
   FUN_0056a787();
   return;
@@ -3424,7 +3424,7 @@ export function FUN_0056aacb() {
   FUN_00408130(0 /* ADDR:LAB_00401e06 */);
   FUN_00408170(0 /* ADDR:LAB_00401e06 */);
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID(v(DAT_006abcc0),0x402cd4); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  tie(thunk_map_ascii);
+  tie(map_ascii);
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_006abc68),0x401c30); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   FUN_004082f0(0 /* ADDR:LAB_00403ada */);
   FUN_00408330(0 /* ADDR:LAB_00402973 */);
@@ -5606,7 +5606,7 @@ export function FUN_0056fce4() {
   local_8 = 0;
   __getcwd(local_118[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_UNITS_BMP_00634010,10,0xc0,local_54c[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_UNITS_BMP_00634010,10,0xc0,local_54c[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_UNITS_GIF_0063401c,10,0xc0,local_54c[0]);
     if (iVar2 === 0) {
@@ -5648,7 +5648,7 @@ export function FUN_0056fce4() {
     iVar2 = _remove(s_UNITS_BMP_00634040);
     if (iVar2 !== 0) return LAB_0056ff8c_helper(iVar2, local_118, local_14, local_54c, local_550, local_554, local_558, local_55c, local_560, local_570, local_580, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_UNITS_BMP_0063404c,10,0xc0,local_54c[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_UNITS_BMP_0063404c,10,0xc0,local_54c[0]);
 // LAB_0056ff8c: (code below also in LAB_0056ff8c_helper, kept for 1:1 audit)
   __chdir(local_118[0]);
   FUN_004083f0();
@@ -5740,7 +5740,7 @@ export function FUN_0056ffda() {
   local_8 = 0;
   __getcwd(local_118[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_CITIES_BMP_00634058,10,0xc0,local_54c[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_CITIES_BMP_00634058,10,0xc0,local_54c[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_CITIES_GIF_00634064,10,0xc0,local_54c[0]);
     if (iVar2 === 0) {
@@ -5821,7 +5821,7 @@ export function FUN_0056ffda() {
     iVar2 = _remove(s_CITIES_BMP_00634088);
     if (iVar2 !== 0) return LAB_00570732_helper(iVar2, local_118, local_14, local_54c, local_550, local_554, local_558, local_55c, local_560, local_564, local_568, local_56c, local_57c, local_58c, local_59c, local_5ac, local_5bc, local_5cc, local_5dc, local_5ec, local_5fc, local_60c, local_61c, local_62c, local_63c, local_64c, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_CITIES_BMP_00634094,10,0xc0,local_54c[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_CITIES_BMP_00634094,10,0xc0,local_54c[0]);
 // LAB_00570732: (code below also in LAB_00570732_helper, kept for 1:1 audit)
   __chdir(local_118[0]);
   FUN_004083f0();

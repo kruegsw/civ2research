@@ -4598,7 +4598,7 @@ export function FUN_0042b67d(param_1) {
   let uVar3;
   let local_14 = new Array(16).fill(0);
   
-  thunk_show_credits(6,6,0,600,400,0,0);
+  show_credits(6,6,0,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_004086c0(local_14[0],2,0,0x129,0x18);
   iVar1 = v(DAT_0063ec38);
@@ -5203,7 +5203,7 @@ export function FUN_0042cd2f(param_1) {
   let uVar3;
   let local_14 = new Array(16).fill(0);
   
-  thunk_show_credits(5,5,0,600,400,0,0);
+  show_credits(5,5,0,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_004086c0(local_14[0],2,0,0x129,0x18);
   iVar1 = v(DAT_0063ec38);
@@ -5441,7 +5441,7 @@ export function FUN_0042d635(param_1, param_2) {
       if (((s32(DAT_0064f394, local_c * 0x58) !== 0) && (s8(_MEM[DAT_0064f348 + local_c * 0x58]) === v(DAT_0063ef6c))) && (bVar2 = local_8 === iVar1 + v(DAT_0063ef70), local_8 = local_8 + 1, bVar2)) {
           /*JOINED*/
          /*JOINED*/
-        thunk_handle_city_disorder_00509590(local_c);
+        handle_city_disorder_00509590(local_c);
         return;
       }
     }
@@ -5459,7 +5459,7 @@ export function FUN_0042d635(param_1, param_2) {
 export function FUN_0042d71e(param_1) {
 
 
-  thunk_show_credits(1,1,0,600,400,0,0);
+  show_credits(1,1,0,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x4029f5); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -5718,7 +5718,7 @@ export function FUN_0042e09c(param_1, param_2) {
       if (((s32(DAT_0064f394, local_c * 0x58) !== 0) && (s8(_MEM[DAT_0064f348 + local_c * 0x58]) === v(DAT_0063ef6c))) && (bVar2 = local_8 === iVar1 + v(DAT_0063ef70), local_8 = local_8 + 1, bVar2)) {
           /*JOINED*/
          /*JOINED*/
-        thunk_handle_city_disorder_00509590(local_c);
+        handle_city_disorder_00509590(local_c);
         return;
       }
     }
@@ -5736,7 +5736,7 @@ export function FUN_0042e09c(param_1, param_2) {
 export function FUN_0042e185(param_1) {
 
 
-  thunk_show_credits(4,4,0,600,400,0,0);
+  show_credits(4,4,0,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   FUN_0042acb0();
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(v(DAT_0063eb10),0x402838); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
@@ -6119,7 +6119,7 @@ export function FUN_0042f079(param_1) {
   let uVar3;
   let local_14 = new Array(16).fill(0);
   
-  thunk_show_credits(2,2,0,600,400,0,0);
+  show_credits(2,2,0,600,400,0,0);
   wv(DAT_0063ef6c, param_1);
   wv(DAT_0063efac, 0);
   FUN_004086c0(local_14[0],2,0,0x129,0x18);

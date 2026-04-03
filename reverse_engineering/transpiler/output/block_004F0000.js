@@ -298,7 +298,7 @@ export function FUN_004f0a9c(param_1) {
   if (iVar6 === 0) {
     FUN_004eb4ed(param_1,1);
     if ((v(DAT_0062ee00) !== 0) && (v(DAT_0062ee04) !== 0)) {
-      thunk_citywin_9429();
+      citywin_9429();
     }
     if ((v(DAT_006a65dc) !== 0) && (v(DAT_00654fa8) === 0)) {
       FUN_004eb571(s_DECREASE_0062ef84,param_1,0,0);
@@ -383,7 +383,7 @@ export function FUN_004f0a9c(param_1) {
       sVar4 = FUN_005adfa0(iVar6 * (1 - local_8),0,99);
       w16(DAT_0064ca7e, iVar5 * 0x594, sVar3 - sVar4 * local_c);
     }
-    thunk_handle_city_disorder_004ef578(param_1);
+    handle_city_disorder_004ef578(param_1);
     FUN_004efbc6(param_1);
     if ((1 << (bVar1 & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
       FUN_004efd44(param_1);
@@ -398,10 +398,10 @@ export function FUN_004f0a9c(param_1) {
     wv(DAT_0062ee08, -1);
     if (v(DAT_0062ee00) !== 0) {
       FUN_004e7492(param_1);
-      thunk_citywin_9429();
+      citywin_9429();
     }
     if (v(DAT_006a65a0) !== 0) {
-      thunk_handle_city_disorder_00509590(param_1);
+      handle_city_disorder_00509590(param_1);
     }
     wv(DAT_0062edf8, 0);
     iVar5 = v(DAT_006a6550) - v(DAT_006a65a8);
@@ -1191,56 +1191,56 @@ export function FUN_004f4809(in_ECX) {
   
   while (s32(in_ECX, 0x16dc) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16dc) + 8, 0);
-    if (*s32(in_ECX, 0x16dc) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16dc));
+    if (s32(s32(in_ECX, 0x16dc), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16dc), 0));
     }
     operator_delete(s32(in_ECX, 0x16dc));
     w32(in_ECX, 0x16dc, uVar1);
   }
   while (s32(in_ECX, 0x16e0) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16e0) + 8, 0);
-    if (*s32(in_ECX, 0x16e0) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16e0));
+    if (s32(s32(in_ECX, 0x16e0), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16e0), 0));
     }
     operator_delete(s32(in_ECX, 0x16e0));
     w32(in_ECX, 0x16e0, uVar1);
   }
   while (s32(in_ECX, 0x16e4) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16e4) + 8, 0);
-    if (*s32(in_ECX, 0x16e4) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16e4));
+    if (s32(s32(in_ECX, 0x16e4), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16e4), 0));
     }
     operator_delete(s32(in_ECX, 0x16e4));
     w32(in_ECX, 0x16e4, uVar1);
   }
   while (s32(in_ECX, 0x16e8) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16e8) + 8, 0);
-    if (*s32(in_ECX, 0x16e8) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16e8));
+    if (s32(s32(in_ECX, 0x16e8), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16e8), 0));
     }
     operator_delete(s32(in_ECX, 0x16e8));
     w32(in_ECX, 0x16e8, uVar1);
   }
   while (s32(in_ECX, 0x16ec) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16ec) + 8, 0);
-    if (*s32(in_ECX, 0x16ec) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16ec));
+    if (s32(s32(in_ECX, 0x16ec), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16ec), 0));
     }
     operator_delete(s32(in_ECX, 0x16ec));
     w32(in_ECX, 0x16ec, uVar1);
   }
   while (s32(in_ECX, 0x16f0) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16f0) + 8, 0);
-    if (*s32(in_ECX, 0x16f0) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16f0));
+    if (s32(s32(in_ECX, 0x16f0), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16f0), 0));
     }
     operator_delete(s32(in_ECX, 0x16f0));
     w32(in_ECX, 0x16f0, uVar1);
   }
   while (s32(in_ECX, 0x16f4) !== 0) {
     uVar1 = s32(s32(in_ECX, 0x16f4) + 8, 0);
-    if (*s32(in_ECX, 0x16f4) !== 0) {
-      operator_delete(*s32(in_ECX, 0x16f4));
+    if (s32(s32(in_ECX, 0x16f4), 0) !== 0) {
+      operator_delete(s32(s32(in_ECX, 0x16f4), 0));
     }
     operator_delete(s32(in_ECX, 0x16f4));
     w32(in_ECX, 0x16f4, uVar1);
@@ -4016,7 +4016,7 @@ export function FUN_004fb5b2(param_1) {
       if (iVar2 !== 0) {
         iVar2 = FUN_0043cf76(local_30,local_38);
         if (-1 < iVar2) {
-          thunk_delete_city(iVar2,0);
+          delete_city(iVar2,0);
         }
         for (local_44 = FUN_005b2e69(local_30,local_38); -1 < local_44; local_44 = FUN_005b2c82(local_44)) {
             /*JOINED*/
@@ -4076,7 +4076,7 @@ export function FUN_004fb5b2(param_1) {
           _MEM[iVar2 + 4] = u8(_MEM[iVar2 + 4]) & ~u8(1 << (u8(local_48) & 0x1f));
         }
       }
-      thunk_new_civ(local_48);
+      new_civ(local_48);
       FUN_0047cf9e(v(DAT_006d1da0),1);
     }
   }

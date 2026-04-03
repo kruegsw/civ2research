@@ -1847,7 +1847,7 @@ export function FUN_00487371(param_1) {
         FUN_00511880(5,0xff,0,0,0,0);
       }
       if (v(DAT_00655b02) === 1) {
-        thunk_citywin_994F();
+        citywin_994F();
         FUN_004503d0();
         FUN_004503d0();
         for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
@@ -1961,7 +1961,7 @@ export function FUN_00487a41(param_1) {
     _MEM[DAT_0063f580 + param_1 * 0x1c + local_14] = 0;
   }
   wv(DAT_00655aee, v(DAT_00655aee) & 0xfffb);
-  thunk_citywin_DADA();
+  citywin_DADA();
   local_24 = (v(DAT_00655b18));
   while( true ) {
     local_24 = local_24 + -1;
@@ -1989,12 +1989,12 @@ export function FUN_00487a41(param_1) {
         }
         // DEVIATION: MFC — iVar4 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
         if ((iVar4 === local_24) && (v(DAT_006a65a0) === 0)) {
-          thunk_citywin_9429();
+          citywin_9429();
         }
       }
     }
   }
-  thunk_citywin_DB36();
+  citywin_DB36();
   w16(DAT_0064ca74, param_1 * 0x594, s16(DAT_0064ca74, param_1 * 0x594) + s16(DAT_0064ca76, param_1 * 0x594) * 2);
        /*JOINED*/
   /*JOINED*/
@@ -2969,7 +2969,7 @@ export function FUN_0048a416() {
       if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((v(DAT_006aa75c) === 0) && (iVar2 = CSplitterWnd::IsTracking(v(DAT_006a91b8)), s8(_MEM[DAT_0064f348 + iVar2 * 0x58]) !== v(DAT_006d1da0))) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
          /*JOINED*/
          /*JOINED*/
-        thunk_citywin_994F();
+        citywin_994F();
       }
       FUN_00421bd0();
       wv(DAT_0064b9bc, 0);
@@ -3321,7 +3321,7 @@ export function FUN_0048b340() {
           wv(DAT_006c31a9, v(DAT_00655b0b));
           wv(_DAT_006ad578, local_32c);
           local_24 = 1;
-          thunk_citywin_994F();
+          citywin_994F();
           FUN_004503d0();
           FUN_004503d0();
           for (local_1c = 0; local_1c < 8; local_1c = local_1c + 1) {
@@ -3374,7 +3374,7 @@ export function FUN_0048b340() {
           wv(DAT_006d1da0, local_32c);
           if (v(DAT_00655b02) === 0x02) {
             if (bVar1) {
-              thunk_save_game(0);
+              save_game(0);
               if (_MEM[DAT_00654da4 + local_32c * 0x20] === 0) {
                 uVar5 = FUN_00493b10(local_32c);
                 FUN_0040ff60(0,uVar5);

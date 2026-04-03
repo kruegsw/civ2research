@@ -177,6 +177,31 @@ function replaceTypedPtrDerefOnce(line) {
   out = out.replace(/\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*(\w+)/g,
     (m, varName) => 's32(' + varName + ', 0)');
 
+  // Fifth pass: **(TYPE **)(expr) — double deref (deref pointer, then deref result)
+  // After passes 3-4 convert *(TYPE **) → s32(), a leading * remains: *s32(addr, off)
+  // This means: read pointer at addr, then read 4 bytes at that pointer.
+  // *s32(x, off) → s32(s32(x, off), 0)
+  {
+    const dblDerefRe = /(?<![a-zA-Z0-9_])\*(s32|s16|u32|u16)\s*\(/g;
+    let ddResult = '';
+    let ddLastIdx = 0;
+    let ddMatch;
+    while ((ddMatch = dblDerefRe.exec(out)) !== null) {
+      const helper = ddMatch[1];
+      const parenStart = out.indexOf('(', ddMatch.index + ddMatch[0].length - 1);
+      const balanced = extractBalancedParens(out, parenStart);
+      if (!balanced) continue;
+      ddResult += out.substring(ddLastIdx, ddMatch.index);
+      ddResult += 's32(' + helper + '(' + balanced.content + '), 0)';
+      ddLastIdx = balanced.end + 1;
+      dblDerefRe.lastIndex = ddLastIdx;
+    }
+    if (ddLastIdx > 0) {
+      ddResult += out.substring(ddLastIdx);
+      out = ddResult;
+    }
+  }
+
   return out;
 }
 
@@ -425,8 +450,8 @@ function transformLine(line, ctx) {
     out = out.replace(/\b(0x[0-9a-fA-F]+)U\b/g, '$1');
     out = out.replace(/\b(\d+)U\b/g, '$1');
 
-    // ── Drop thunk_ prefix ──
-    out = out.replace(/\bthunk_(FUN_[0-9a-fA-F]+)/g, '$1');
+    // ── Drop thunk_ prefix (from ALL function calls, not just FUN_) ──
+    out = out.replace(/\bthunk_(\w+)/g, '$1');
 
     // ── Rename JS reserved words used as C variable names ──
     out = out.replace(/\bthis\b(?!\s*\.)/g, '_this');  // this → _this (but not this.property)

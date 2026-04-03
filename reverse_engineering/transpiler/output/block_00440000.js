@@ -498,10 +498,10 @@ export function delete_city_004413D1(param_1, param_2) {
                     FUN_0043f7a7(local_24);
                   }
                 }
-                thunk_citywin_C449(param_1);
+                citywin_C449(param_1);
                 wv(DAT_006aa760, iVar2);
                 if (iVar2 === 0) {
-                  thunk_citywin_9429();
+                  citywin_9429();
                 }
                 if ((param_2 === 0) && (2 < v(DAT_00655b02))) {
                   FUN_004b0b53(0xff,2,0,0,0);
@@ -1287,7 +1287,7 @@ export function FUN_00444310(param_1) {
     break;
   case 4:
     wv(DAT_006a9110, 0);
-    iVar4 = thunk_load_verify_units(0,3,1);
+    iVar4 = load_verify_units(0,3,1);
     if (iVar4 === 0) {
       if (2 < v(DAT_00655b02)) break;
       FUN_005f22d0(v(DAT_0063cc48),v(DAT_006ad63c));
@@ -1775,7 +1775,7 @@ export function FUN_00445712() {
     FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);
     FUN_00419be0(v(DAT_0063cbd0));
     FUN_00419ba0(0x9e);
-    iVar1 = thunk_load_verify_units(1,3,1);
+    iVar1 = load_verify_units(1,3,1);
     if (iVar1 !== 0) {
       FUN_0046e020(0x6a,0,0,0);
       FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);
@@ -6017,7 +6017,7 @@ export function FUN_00449030() {
   true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CString::CString(local_ac[0]); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   local_8 = ((1) & 0xFF);
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_TERRAIN1_BMP_006266e0,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_TERRAIN1_BMP_006266e0,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_TERRAIN1_GIF_006266f0,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -6109,7 +6109,7 @@ export function FUN_00449030() {
   }
   FUN_004083f0();
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_TERRAIN2_BMP_00626710,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_TERRAIN2_BMP_00626710,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_TERRAIN2_GIF_00626720,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -6296,7 +6296,7 @@ export function FUN_00449a0e() {
   }
   FUN_004083f0();
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_ICONS_BMP_00626740,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_ICONS_BMP_00626740,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_ICONS_GIF_0062674c,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -6473,7 +6473,7 @@ export function FUN_00449a0e() {
   FUN_005cedad(v(DAT_0063fe08),7,0x23f,0x32,0x40,0x20);
   FUN_004083f0();
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_PEOPLE_BMP_00626774,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_PEOPLE_BMP_00626774,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_PEOPLE_GIF_00626780,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -6735,7 +6735,7 @@ export function FUN_0044ae4c() {
   let local_8;
   
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_CITIES_BMP_00626798,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_CITIES_BMP_00626798,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_CITIES_GIF_006267a4,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -6838,7 +6838,7 @@ export function FUN_0044b30e() {
   let local_8;
   
   __chdir(v(DAT_0064bb08));
-  iVar1 = thunk_load_bitmap(v(DAT_0063fe08),s_UNITS_BMP_006267bc,10,0xc0,v(DAT_006a8c00));
+  iVar1 = load_bitmap(v(DAT_0063fe08),s_UNITS_BMP_006267bc,10,0xc0,v(DAT_006a8c00));
   if (iVar1 === 0) {
     iVar1 = FUN_005bf071(s_UNITS_GIF_006267c8,10,0xc0,v(DAT_006a8c00));
     if (iVar1 === 0) {
@@ -8821,7 +8821,7 @@ function joined_r0x00444b3b_helper(iVar2, iVar4, local_14, local_18, local_1c, l
     return; // (was break)
   // (orphan case) case 4:
     wv(DAT_006a9110, 0);
-    iVar4 = thunk_load_verify_units(0,3,1);
+    iVar4 = load_verify_units(0,3,1);
     if (iVar4 === 0) {
       if (2 < v(DAT_00655b02)) return; // (was break)
       FUN_005f22d0(v(DAT_0063cc48),v(DAT_006ad63c));
@@ -9116,7 +9116,7 @@ function LAB_0044465c_helper(iVar2, iVar4, local_14, local_18, local_1c, local_2
     break;
   case 4:
     wv(DAT_006a9110, 0);
-    iVar4 = thunk_load_verify_units(0,3,1);
+    iVar4 = load_verify_units(0,3,1);
     if (iVar4 === 0) {
       if (2 < v(DAT_00655b02)) break;
       FUN_005f22d0(v(DAT_0063cc48),v(DAT_006ad63c));
@@ -9520,7 +9520,7 @@ function LAB_00445759_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
     FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);
     FUN_00419be0(v(DAT_0063cbd0));
     FUN_00419ba0(0x9e);
-    iVar1 = thunk_load_verify_units(1,3,1);
+    iVar1 = load_verify_units(1,3,1);
     if (iVar1 !== 0) {
       FUN_0046e020(0x6a,0,0,0);
       FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);

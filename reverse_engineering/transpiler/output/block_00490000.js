@@ -1479,7 +1479,7 @@ export function FUN_00493f0f(param_1, param_2) {
   }
   // DEVIATION: SEH
   wv(DAT_0062ca34, local_24);
-  if (((local_24 !== 0) && ((v(DAT_00655aea) & 4) !== 0)) && (iVar2 = thunk_init_tile(param_1,param_2), iVar2 !== 0)) {
+  if (((local_24 !== 0) && ((v(DAT_00655aea) & 4) !== 0)) && (iVar2 = init_tile(param_1,param_2), iVar2 !== 0)) {
      /*JOINED*/
     wv(DAT_0062ca38, 1);
     if (v(DAT_0062ca34) === -200) {

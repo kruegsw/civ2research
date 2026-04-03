@@ -83,7 +83,7 @@ export function FUN_00570780() {
   local_8 = 0;
   __getcwd(local_11c[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_TERRAIN1_BMP_006340a0,10,0xc0,local_550[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_TERRAIN1_BMP_006340a0,10,0xc0,local_550[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_TERRAIN1_GIF_006340b0,10,0xc0,local_550[0]);
     if (iVar2 === 0) {
@@ -176,7 +176,7 @@ export function FUN_00570780() {
     iVar2 = _remove(s_TERRAIN1_BMP_006340e0);
     if (iVar2 !== 0) return LAB_00570f78_helper(iVar2, local_11c, local_14, local_18, local_550, local_554, local_558, local_55c, local_560, local_570, local_580, local_590, local_5a0, local_5b0, local_5c0, local_5d0, local_5e0, local_5f0, local_600, local_610, local_620, local_630, local_640, local_650, local_660, local_670, local_680, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_TERRAIN1_BMP_006340f0,10,0xc0,local_550[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_TERRAIN1_BMP_006340f0,10,0xc0,local_550[0]);
 // LAB_00570f78: (code below also in LAB_00570f78_helper, kept for 1:1 audit)
   __chdir(local_11c[0]);
   FUN_004083f0();
@@ -265,7 +265,7 @@ export function FUN_00570fc6() {
   local_8 = 0;
   __getcwd(local_118[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_TERRAIN2_BMP_00634100,10,0xc0,local_54c[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_TERRAIN2_BMP_00634100,10,0xc0,local_54c[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_TERRAIN2_GIF_00634110,10,0xc0,local_54c[0]);
     if (iVar2 === 0) {
@@ -351,7 +351,7 @@ export function FUN_00570fc6() {
     iVar2 = _remove(s_TERRAIN2_BMP_00634140);
     if (iVar2 !== 0) return LAB_005718c2_helper(iVar2, local_118, local_14, local_54c, local_550, local_554, local_558, local_55c, local_560, local_570, local_580, local_590, local_5a0, local_5b0, local_5c0, local_5d0, local_5e0, local_5f0, local_600, local_610, local_620, local_630, local_640, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_TERRAIN2_BMP_00634150,10,0xc0,local_54c[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_TERRAIN2_BMP_00634150,10,0xc0,local_54c[0]);
 // LAB_005718c2: (code below also in LAB_005718c2_helper, kept for 1:1 audit)
   __chdir(local_118[0]);
   FUN_004083f0();
@@ -425,7 +425,7 @@ export function FUN_00571910() {
   local_8 = 0;
   __getcwd(local_11c[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_ICONS_BMP_00634160,10,0xc0,local_554[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_ICONS_BMP_00634160,10,0xc0,local_554[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_ICONS_GIF_0063416c,10,0xc0,local_554[0]);
     if (iVar2 === 0) {
@@ -458,7 +458,7 @@ export function FUN_00571910() {
     iVar2 = _remove(s_ICONS_BMP_00634190);
     if (iVar2 !== 0) return LAB_00571b80_helper(iVar2, local_11c, local_120, local_14, local_18, local_554, local_558, local_568, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_ICONS_BMP_0063419c,10,0xc0,local_554[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_ICONS_BMP_0063419c,10,0xc0,local_554[0]);
 // LAB_00571b80: (code below also in LAB_00571b80_helper, kept for 1:1 audit)
   __chdir(local_11c[0]);
   FUN_004083f0();
@@ -535,7 +535,7 @@ export function FUN_00571bce() {
   local_8 = 0;
   __getcwd(local_118[0],0x104);
   __chdir(v(DAT_0064bb08));
-  iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),s_ICONS_BMP_006341a8,10,0xc0,local_550[0]);
+  iVar2 = load_bitmap(v(DAT_006ac0a8),s_ICONS_BMP_006341a8,10,0xc0,local_550[0]);
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_ICONS_GIF_006341b4,10,0xc0,local_550[0]);
     if (iVar2 === 0) {
@@ -604,7 +604,7 @@ export function FUN_00571bce() {
     iVar2 = _remove(s_ICONS_BMP_006341d8);
     if (iVar2 !== 0) return LAB_0057203b_helper(iVar2, local_118, local_11c, local_14, local_550, local_554, local_558, local_568, local_578, local_588, local_598, local_8, uVar1, uVar3);
   }
-  thunk_write_bitmap_data(v(DAT_006ac0a8),s_ICONS_BMP_006341e4,10,0xc0,local_550[0]);
+  write_bitmap_data(v(DAT_006ac0a8),s_ICONS_BMP_006341e4,10,0xc0,local_550[0]);
 // LAB_0057203b: (code below also in LAB_0057203b_helper, kept for 1:1 audit)
   __chdir(local_118[0]);
   FUN_004083f0();
@@ -1236,7 +1236,7 @@ export function FUN_00572fff(param_1, param_2) {
       FUN_005bb574();
     }
     wv(DAT_006ac120, v(DAT_006ac118));
-    thunk_show_messagebox_6267();
+    show_messagebox_6267();
     break;
   case 9:
     if (v(DAT_006ac120) === 3) {
@@ -2544,7 +2544,7 @@ export function show_messagebox_6267_00576267() {
     _sprintf(local_948[0],s__s__BMP__s__GIF_0063423c,local_844,local_844);
     uVar1 = FUN_00428b0c(s32(DAT_00628420, 0x95c),local_844);
     _sprintf(local_9d0[0],s__s__s_0063424c,uVar1);
-    iVar2 = thunk_show_open_dialog_31D2(v(DAT_006ac1f8),local_9d0[0],local_948[0],local_840[0],s_BMP_GIF_00634254,1,0);
+    iVar2 = show_open_dialog_31D2(v(DAT_006ac1f8),local_9d0[0],local_948[0],local_840[0],s_BMP_GIF_00634254,1,0);
     if (iVar2 === 0) return LAB_00576783_helper(UVar6, iVar2, local_14, local_73c, local_8, local_840, local_844, local_948, local_94c, local_9d0, pCVar4, pCVar5, pcVar3, uVar1);
     __strupr(local_948[0]);
     local_94c = 1;
@@ -2598,7 +2598,7 @@ export function show_messagebox_6267_00576267() {
           }
         }
         else {
-          iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),local_948[0],10,0xc0,local_73c[0]);
+          iVar2 = load_bitmap(v(DAT_006ac0a8),local_948[0],10,0xc0,local_73c[0]);
           if (iVar2 === 0) {
             UVar6 = 0x10;
             pCVar5 = 0x0;
@@ -4294,7 +4294,7 @@ export function FUN_0057a904(param_1) {
       }
       else {
         wv(DAT_00655b0a, v(DAT_00655b0a) & ~u8(1 << (u8(local_24) & 0x1f)));
-        iVar2 = thunk_new_civ(local_24);
+        iVar2 = new_civ(local_24);
         if (iVar2 === 0) {
           uVar3 = 0;
         }
@@ -4836,7 +4836,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       _MEM[DAT_0064f349 + param_1 * 0x58] = _MEM[DAT_0064f349 + param_1 * 0x58] + -1;
     }
     if (_MEM[DAT_0064f349 + param_1 * 0x58] === 0) {
-      thunk_delete_city(param_1,0);
+      delete_city(param_1,0);
       param_1 = -1;
     }
   }
@@ -5096,12 +5096,12 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
   }
   FUN_005b9f1c();
   wv(DAT_0062edf8, 1);
-  thunk_citywin_DADA();
-  thunk_handle_city_disorder_00509590(param_1);
-  thunk_citywin_DB36();
+  citywin_DADA();
+  handle_city_disorder_00509590(param_1);
+  citywin_DB36();
   wv(DAT_0062edf8, 0);
 // LAB_0057da76: (code below also in LAB_0057da76_helper, kept for 1:1 audit)
-  iVar6 = thunk_kill_civ(local_84,param_2);
+  iVar6 = kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < (param_1))) && (local_7c === 0)) && (((_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x03 || (_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x06) ) || ((v(DAT_00655b40) !== 0 || (iVar6 = FUN_004bd9f0(local_84,0xf), iVar6 !== 0)))))) {
      /*JOINED*/
        /*JOINED*/
@@ -6096,7 +6096,7 @@ function LAB_00576631_helper(UVar6, iVar2, local_14, local_73c, local_8, local_8
           }
         }
         else {
-          iVar2 = thunk_load_bitmap(v(DAT_006ac0a8),local_948[0],10,0xc0,local_73c[0]);
+          iVar2 = load_bitmap(v(DAT_006ac0a8),local_948[0],10,0xc0,local_73c[0]);
           if (iVar2 === 0) {
             UVar6 = 0x10;
             pCVar5 = 0x0;
@@ -6136,7 +6136,7 @@ function LAB_0057c990_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, lo
       _MEM[DAT_0064f349 + param_1 * 0x58] = _MEM[DAT_0064f349 + param_1 * 0x58] + -1;
   // (outer block close)
     if (_MEM[DAT_0064f349 + param_1 * 0x58] === 0) {
-      thunk_delete_city(param_1,0);
+      delete_city(param_1,0);
       param_1 = -1;
     }
   // (outer block close)
@@ -6396,12 +6396,12 @@ function LAB_0057c990_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, lo
   }
   FUN_005b9f1c();
   wv(DAT_0062edf8, 1);
-  thunk_citywin_DADA();
-  thunk_handle_city_disorder_00509590(param_1);
-  thunk_citywin_DB36();
+  citywin_DADA();
+  handle_city_disorder_00509590(param_1);
+  citywin_DB36();
   wv(DAT_0062edf8, 0);
   // LAB_0057da76:
-  iVar6 = thunk_kill_civ(local_84,param_2);
+  iVar6 = kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < (param_1))) && (local_7c === 0)) && (((_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x03 || (_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x06) ) || ((v(DAT_00655b40) !== 0 || (iVar6 = FUN_004bd9f0(local_84,0xf), iVar6 !== 0)))))) {
      /*JOINED*/
        /*JOINED*/
@@ -6561,7 +6561,7 @@ function LAB_0057c990_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, lo
 }
 
 function LAB_0057da76_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, local_14, local_18, local_1c, local_38c, local_390, local_394, local_398, local_3b0, local_3b4, local_3bc, local_3c0, local_3c4, local_3c8, local_3cc, local_3d8, local_3e0, local_3e4, local_3e8, local_3ec, local_6c, local_70, local_74, local_78, local_7c, local_8, local_80, local_84, local_88, local_8c, local_90, local_94, local_98, param_1, param_2, param_3, uVar10, uVar8, uVar9) {
-  iVar6 = thunk_kill_civ(local_84,param_2);
+  iVar6 = kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < (param_1))) && (local_7c === 0)) && (((_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x03 || (_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x06) ) || ((v(DAT_00655b40) !== 0 || (iVar6 = FUN_004bd9f0(local_84,0xf), iVar6 !== 0)))))) {
      /*JOINED*/
        /*JOINED*/
@@ -6816,12 +6816,12 @@ function LAB_0057d48e_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, lo
   }
   FUN_005b9f1c();
   wv(DAT_0062edf8, 1);
-  thunk_citywin_DADA();
-  thunk_handle_city_disorder_00509590(param_1);
-  thunk_citywin_DB36();
+  citywin_DADA();
+  handle_city_disorder_00509590(param_1);
+  citywin_DB36();
   wv(DAT_0062edf8, 0);
   // LAB_0057da76:
-  iVar6 = thunk_kill_civ(local_84,param_2);
+  iVar6 = kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < (param_1))) && (local_7c === 0)) && (((_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x03 || (_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x06) ) || ((v(DAT_00655b40) !== 0 || (iVar6 = FUN_004bd9f0(local_84,0xf), iVar6 !== 0)))))) {
      /*JOINED*/
        /*JOINED*/
@@ -7013,12 +7013,12 @@ function LAB_0057d7a9_helper(bVar2, bVar3, cVar1, iVar4, iVar5, iVar6, iVar7, lo
   }
   FUN_005b9f1c();
   wv(DAT_0062edf8, 1);
-  thunk_citywin_DADA();
-  thunk_handle_city_disorder_00509590(param_1);
-  thunk_citywin_DB36();
+  citywin_DADA();
+  handle_city_disorder_00509590(param_1);
+  citywin_DB36();
   wv(DAT_0062edf8, 0);
   // LAB_0057da76:
-  iVar6 = thunk_kill_civ(local_84,param_2);
+  iVar6 = kill_civ(local_84,param_2);
   if ((((iVar6 === 0) && (-1 < (param_1))) && (local_7c === 0)) && (((_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x03 || (_MEM[DAT_0064c6b5 + local_84 * 0x594] === 0x06) ) || ((v(DAT_00655b40) !== 0 || (iVar6 = FUN_004bd9f0(local_84,0xf), iVar6 !== 0)))))) {
      /*JOINED*/
        /*JOINED*/

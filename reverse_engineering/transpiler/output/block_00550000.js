@@ -1334,7 +1334,7 @@ export function FUN_00554460(param_1) {
     _MEM[DAT_0064c6b0 + param_1 * 0x594] = 1;
     FUN_00444270(s_TOOKTECH_00633768);
   }
-  thunk_citywin_9429();
+  citywin_9429();
   return;
 }
 
@@ -1419,7 +1419,7 @@ export function FUN_005545d3() {
             _MEM[DAT_0064c6b0 + iVar1 * 0x594] = _MEM[DAT_0064c6b0 + iVar1 * 0x594] + 0x01;
           }
         }
-        thunk_citywin_9429();
+        citywin_9429();
       }
       else {
         FUN_00554460(iVar1);
@@ -2099,7 +2099,7 @@ export function FUN_00555a02() {
     wv(DAT_00655af8, local_8[0]);
     wv(DAT_00655afa, FUN_00484fec((local_8[0])));
     FUN_0056a65e(1);
-    thunk_citywin_9429();
+    citywin_9429();
   }
   return;
 }
@@ -2150,10 +2150,10 @@ export function FUN_00555a8b() {
     while (local_308 = local_308 + -1, -1 < local_308) {
       if ((s32(DAT_0064f394, local_308 * 0x58) !== 0) && (s8(_MEM[DAT_0064f348 + local_308 * 0x58]) === iVar2)) {
          /*JOINED*/
-        thunk_delete_city(local_308,0);
+        delete_city(local_308,0);
       }
     }
-    thunk_kill_civ(iVar2,v(DAT_006d1da0));
+    kill_civ(iVar2,v(DAT_006d1da0));
     // DEVIATION: SEH
     FUN_00555c8d();
     FUN_00555ca3();
@@ -2373,7 +2373,7 @@ export function FUN_0055615c() {
         local_8[0] = 0;
       }
       w32(DAT_0064c6a2, iVar1 * 0x594, local_8);
-      thunk_citywin_9429();
+      citywin_9429();
       FUN_0056a65e(1);
     }
   }
@@ -2706,7 +2706,7 @@ export function set_city_shields_005569E3() {
               /*JOINED*/
             }
             FUN_0043d289(iVar3,1,uVar4);
-            thunk_citywin_9429();
+            citywin_9429();
           }
         }
         if (iVar5 !== 5) break;
@@ -2718,7 +2718,7 @@ export function set_city_shields_005569E3() {
         FUN_0047cea6((s16(DAT_0064f340, iVar3 * 0x58)), (s16(DAT_0064f342, iVar3 * 0x58)));
                            /*JOINED*/
         FUN_0056a65e(1);
-        thunk_citywin_9429();
+        citywin_9429();
       }
       if (iVar5 !== 6) break;
       w32(DAT_0064f344, iVar3 * 0x58, u32(DAT_0064f344, iVar3 * 0x58) ^ 0x4000000);
@@ -3269,7 +3269,7 @@ export function FUN_005582ad() {
   while( true ) {
     wv(DAT_00655afa, FUN_00484fec((v(DAT_00655af8))));
     FUN_0056a65e(1);
-    thunk_citywin_9429();
+    citywin_9429();
     FUN_00421da0(0,(v(DAT_0064bcb2)));
     FUN_00421da0(1,(v(DAT_0064bcb4)));
     FUN_00421da0(2,(v(DAT_0064bcb6)));
@@ -3404,7 +3404,7 @@ export function FUN_005582ad() {
 export function FUN_0055891d() {
 
 
-  thunk_save_game(1);
+  save_game(1);
   return;
 }
 
@@ -4306,7 +4306,7 @@ export function FUN_0055ae80(param_1) {
 
 
   if (v(_DAT_006ad578) === v(DAT_006d1da0)) {
-    thunk_citywin_994F();
+    citywin_994F();
     FUN_00437c6f();
     FUN_0044f799();
     FUN_004f8d51();
@@ -4340,7 +4340,7 @@ export function FUN_0055af2e(param_1) {
   let local_8;
   
   if (v(_DAT_006ad578) === v(DAT_006d1da0)) {
-    thunk_citywin_994F();
+    citywin_994F();
     FUN_00437c6f();
     FUN_0044f799();
     FUN_004f8d51();
@@ -4377,7 +4377,7 @@ export function FUN_0055af2e(param_1) {
 export function FUN_0055b046(param_1) {
 
 
-  thunk_citywin_994F();
+  citywin_994F();
   FUN_00437c6f();
   FUN_0044f799();
   FUN_004f8d51();
@@ -4426,7 +4426,7 @@ export function FUN_0055b0fb() {
         wv(_DAT_00633a7c, FUN_00421bb0());
       }
       if (v(DAT_00633a78) === 0) {
-        thunk_citywin_994F();
+        citywin_994F();
         FUN_00437c6f();
         FUN_0044f799();
         FUN_004f8d51();
@@ -6063,7 +6063,7 @@ export function FUN_0055f7d1(param_1) {
                    /*JOINED*/
                                                /*JOINED*/
                    /*JOINED*/
-                  thunk_pick_up_unit_005b319e(local_34,1);
+                  pick_up_unit_005b319e(local_34,1);
                   _MEM[DAT_0064c778 + param_1 * 0x594 + u8(_MEM[DAT_006560f6 + local_34 * 0x20])] = (v(DAT_0064c778))
                        /*JOINED*/
                        [param_1 * 0x594 + u8(_MEM[DAT_006560f6 + local_34 * 0x20])] + -1;
@@ -6074,10 +6074,10 @@ export function FUN_0055f7d1(param_1) {
                        /*JOINED*/
                        [local_10 * 0x594 + u8(_MEM[DAT_006560f6 + local_34 * 0x20])] + 0x01;
                   FUN_005b345f(local_34,iVar3,iVar4,1);
-                  thunk_citywin_C679(local_28);
+                  citywin_C679(local_28);
                   FUN_0047cea6((s16(DAT_0064f340, local_28 * 0x58)), (s16(DAT_0064f342, local_28 * 0x58)));
                                      /*JOINED*/
-                  thunk_citywin_C679(iVar5);
+                  citywin_C679(iVar5);
                   FUN_0047cea6((s16(DAT_0064f340, iVar5 * 0x58)), (s16(DAT_0064f342, iVar5 * 0x58)));
                                      /*JOINED*/
                   if (((1 << (u8(local_2c) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) && (v(DAT_00654fa8) === 0)) {

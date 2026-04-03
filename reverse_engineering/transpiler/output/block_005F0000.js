@@ -2316,7 +2316,7 @@ export function TranslatorGuardHandler_005F20A0(param_1, param_2, param_3, param
   }
                     // /* WARNING: Could not recover jumptable at 0x005f20ff. Too many branches */
                     // /* WARNING: Treating indirect jump as call */
-  _Var1 = (*s32(param_2, 0x18))();
+  _Var1 = (s32(s32(param_2, 0x18), 0))();
   return _Var1;
 }
 
@@ -7934,7 +7934,7 @@ export function ___InternalCxxFrameHandler_005F79A0(param_1, param_2, param_3, p
     if (s32(param_5, 0xc) !== 0) {
       if (((s32(param_1, 0) === -0x1f928c9d) && (0x19930520 < u32(param_1, 0x14))) && (s32(s32(param_1, 0x1c) + 8, 0) !== 0)) {
          /*JOINED*/
-        uVar1 = (*s32(s32(param_1, 0x1c) + 8, 0))
+        uVar1 = (s32(s32(s32(param_1, 0x1c) + 8, 0), 0))
                           (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
         return uVar1;
       }
@@ -8005,7 +8005,7 @@ export function FindHandler_005F7AC0(param_1, param_2, param_3, param_4, param_5
         local_18 = s32(local_10, 0x10);
         for (local_1c = s32(local_10, 0xc); local_1c !== 0; local_1c = local_1c + -1) {
           local_20 = s32(s32(param_1, 0x1c) + 0xc, 0);
-          for (local_24 = *s32(s32(param_1, 0x1c) + 0xc, 0); local_20 = local_20 + 1, local_24 !== 0; local_24 = local_24 + -1) {
+          for (local_24 = s32(s32(s32(param_1, 0x1c) + 0xc, 0), 0); local_20 = local_20 + 1, local_24 !== 0; local_24 = local_24 + -1) {
               /*JOINED*/
             iVar2 = TypeMatch(local_18,s32(local_20, 0), s32(param_1, 0x1c));
                               /*JOINED*/
@@ -11582,7 +11582,7 @@ export function __heap_init_005FCD00() {
 export function __heap_term_005FCD60() {
 
 
-  undefined *s32(local_8, 0);
+  undefined s32(s32(local_8, 0), 0);
   
   local_8 = PTR_LOOP_0063a438;
   do {
@@ -11648,7 +11648,7 @@ export function ___sbh_new_region_005FCE30() {
 
 
   let pvVar1;
-  undefined *s32(local_10, 0);
+  undefined s32(s32(local_10, 0), 0);
   let local_c;
   let local_8;
   
@@ -11815,7 +11815,7 @@ export function ___sbh_find_block_005FD250(param_1, param_2, param_3) {
 
 
   let uVar1;
-  undefined *s32(local_c, 0);
+  undefined s32(s32(local_c, 0), 0);
   
   local_c = PTR_LOOP_0063a438;
   while (((_MEM[local_c + 0x204] === 0x0 || (param_1 <= _MEM[local_c + 0x204])) || (_MEM[local_c + 0x204] + 0x400000 <= param_1))) {
@@ -11879,7 +11879,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
   let puVar3;
   let puVar4;
   let puVar5;
-  undefined *s32(local_18, 0);
+  undefined s32(s32(local_18, 0), 0);
   let local_14;
   let local_10;
   let local_8;
@@ -12189,7 +12189,7 @@ export function ___sbh_heap_check_005FDD20() {
   let local_2c;
   let local_28;
   let local_24;
-  undefined *s32(local_20, 0);
+  undefined s32(s32(local_20, 0), 0);
   let local_1c;
   let local_18;
   let local_14;

@@ -2001,7 +2001,7 @@ export function __fpreset_00602670() {
   
   iVar1 = v(DAT_0063af90);
   __setdefaultprecision();
-  if ((iVar1 !== 0) && ((*s32(iVar1, 4) & 0x10008) !== 0)) {
+  if ((iVar1 !== 0) && ((s32(s32(iVar1, 4), 0) & 0x10008) !== 0)) {
     iVar1 = s32(iVar1, 4);
     w32(iVar1, 0x20, 0);
     w32(iVar1, 0x24, 0xffff);
@@ -4577,7 +4577,7 @@ export function ___wtomb_environ_00606260() {
 
 
   let iVar1;
-  char *s32(_POption, 0);
+  char s32(s32(_POption, 0), 0);
   let local_8;
   
   local_8 = v(DAT_00639f44);
@@ -4922,7 +4922,7 @@ export function _strncnt_00606AF0(_String, _Cnt) {
 export function ___crtsetenv_00606B60(_POption, _Primary) {
 
 
-  char *s32(ppcVar1, 0);
+  char s32(s32(ppcVar1, 0), 0);
   let iVar2;
   let piVar3;
   let sVar4;

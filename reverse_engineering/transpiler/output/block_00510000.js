@@ -3921,7 +3921,7 @@ export function show_messagebox_9D67_00519D67() {
   if (iVar1 === 0) {
     FUN_005193ed();
     FUN_004ccab9(s_TERRAIN_00631d2c,0 /* ADDR:LAB_00402f2c */);
-    iVar1 = thunk_show_messagebox_CF2D();
+    iVar1 = show_messagebox_CF2D();
     if (iVar1 === 0) {
       _sprintf(local_24[0],s_Error_updating_RULES__s_00631d34,v(DAT_0062cd24));
       uType = 0x10;

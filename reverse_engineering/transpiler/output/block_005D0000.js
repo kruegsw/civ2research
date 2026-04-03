@@ -2008,7 +2008,7 @@ export function FUN_005d30e0(in_ECX, param_1) {
     uVar1 = 1;
   }
   else {
-    uVar1 = (*s32(in_ECX, 0x34))(s32(in_ECX, 4),param_1);
+    uVar1 = (s32(s32(in_ECX, 0x34), 0))(s32(in_ECX, 4),param_1);
   }
   return uVar1;
 }

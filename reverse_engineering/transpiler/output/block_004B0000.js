@@ -2448,7 +2448,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
     uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,*s32(in_ECX, 0x150), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
   else {
@@ -2456,7 +2456,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
     uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,*s32(in_ECX, 0x150), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
   FUN_004b4cf0();
@@ -2532,7 +2532,7 @@ export function FUN_004b4c09() {
     local_8 = local_8 + -0x48;
   }
   FUN_004080f0(s32(local_8, 0x150));
-  w32(local_8, 0x11c, *s32(local_8, 0x150));
+  w32(local_8, 0x11c, s32(s32(local_8, 0x150), 0));
   w32(local_8, 0x120, s32(s32(local_8, 0x150) + 4, 0));
   return;
 }
@@ -4961,7 +4961,7 @@ export function FUN_004bb8e0(param_1) {
   local_8 = 0;
   wv(DAT_0062804c, 0);
   FUN_0046e6a9();
-  thunk_load_civ2_art_004bbb3f(param_1);
+  load_civ2_art_004bbb3f(param_1);
   FUN_004bbdfb();
   FUN_005d6a2c();
   FUN_0046e6c8();
@@ -7066,13 +7066,94 @@ export function FUN_004bfe5a(param_1, param_2, param_3) {
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_004b4982_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '*'
-  // Original code had structural issues from DEVIATION lines
+  if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
+    FUN_004b4c81();
+  }
+  FUN_005f22d0(in_ECX + 0x15c,v(DAT_0062d920));
+  if (s32(in_ECX, 0x1ec) === 4) {
+    puVar5 = v(DAT_006553d8);
+    puVar4 = v(DAT_006a8c00);
+    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
+    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+                 /*JOINED*/
+  }
+  else {
+    puVar5 = v(DAT_006553d8);
+    puVar4 = v(DAT_006a8c00);
+    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
+    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+                 /*JOINED*/
+  }
+  FUN_004b4cf0();
+  FUN_004bb570(s32(in_ECX, 0x150));
+  w32(in_ECX, 0x158, -1);
+  w32(in_ECX, 0x1f0, v(DAT_0062d7e8));
+  w32(in_ECX, 500, v(DAT_0062d7ec));
+  w32(in_ECX, 0x1f8, 0x15);
+  w32(in_ECX, 0x1fc, 0x15);
+  FUN_00408230(FUN_004b76d5);
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402680); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  FUN_00408330(0 /* ADDR:LAB_00403d32 */);
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x401203); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  FUN_004b4e8a();
+  FUN_004b4fb2();
+  if (((s32(in_ECX, 0x1ec) === 3) || (s32(in_ECX, 0x1ec) === 2)) || (s32(in_ECX, 0x1ec) === 1)) {
+     /*JOINED*/
+    FUN_00453c40();
+  }
+  FUN_0052e971();
+  FUN_004b4bf9(unaff_ESI);
+  return;
 }
 
 function LAB_004b496e_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '*'
-  // Original code had structural issues from DEVIATION lines
+    w32(DAT_0062d870, 0, 0);
+  // (outer block close)
+  // DEVIATION: SEH
+  FUN_004b4be3();
+  // LAB_004b4982:
+  if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
+    FUN_004b4c81();
+  }
+  FUN_005f22d0(in_ECX + 0x15c,v(DAT_0062d920));
+  if (s32(in_ECX, 0x1ec) === 4) {
+    puVar5 = v(DAT_006553d8);
+    puVar4 = v(DAT_006a8c00);
+    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
+    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+                 /*JOINED*/
+  }
+  else {
+    puVar5 = v(DAT_006553d8);
+    puVar4 = v(DAT_006a8c00);
+    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
+    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
+    FUN_005bb4ae(0,0x602,s32(s32(in_ECX, 0x150), 0), s32(s32(in_ECX, 0x150) + 4, 0),uVar3,uVar2,puVar4,puVar5);
+                 /*JOINED*/
+  }
+  FUN_004b4cf0();
+  FUN_004bb570(s32(in_ECX, 0x150));
+  w32(in_ECX, 0x158, -1);
+  w32(in_ECX, 0x1f0, v(DAT_0062d7e8));
+  w32(in_ECX, 500, v(DAT_0062d7ec));
+  w32(in_ECX, 0x1f8, 0x15);
+  w32(in_ECX, 0x1fc, 0x15);
+  FUN_00408230(FUN_004b76d5);
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402680); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  FUN_00408330(0 /* ADDR:LAB_00403d32 */);
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x401203); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  FUN_004b4e8a();
+  FUN_004b4fb2();
+  if (((s32(in_ECX, 0x1ec) === 3) || (s32(in_ECX, 0x1ec) === 2)) || (s32(in_ECX, 0x1ec) === 1)) {
+     /*JOINED*/
+    FUN_00453c40();
+  }
+  FUN_0052e971();
+  FUN_004b4bf9(unaff_ESI);
+  return;
 }
 
 function LAB_004b9295_helper(iVar1, in_ECX, local_8, param_1, param_2, param_3, param_4, sVar2, uVar3) {

@@ -100,7 +100,7 @@ export function FUN_005218cb(param_1) {
     FUN_00419be0(v(DAT_0063cbd0));
     FUN_00419ba0(0x9e);
     FUN_00419b80();
-    iVar1 = thunk_load_verify_units(1,param_1,1);
+    iVar1 = load_verify_units(1,param_1,1);
     if (iVar1 !== 0) {
       FUN_0046e020(0x6a,0,0,0);
       FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);
@@ -672,7 +672,7 @@ export function FUN_00522b2b() {
   local_8 = 0;
   wv(DAT_00655b0b, v(DAT_006c31a9));
   FUN_0055ae80(1);
-  thunk_citywin_994F();
+  citywin_994F();
   FUN_004503d0();
   FUN_004503d0();
   for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {
@@ -4878,7 +4878,7 @@ function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
     FUN_00419be0(v(DAT_0063cbd0));
     FUN_00419ba0(0x9e);
     FUN_00419b80();
-    iVar1 = thunk_load_verify_units(1,param_1,1);
+    iVar1 = load_verify_units(1,param_1,1);
     if (iVar1 !== 0) {
       FUN_0046e020(0x6a,0,0,0);
       FUN_005bf5e1(0x5a,10,0xc0,local_844[0]);
