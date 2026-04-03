@@ -3006,7 +3006,7 @@ export function FUN_005787bd(unaff_EBP) {
 
   // unaff_EBP → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(unaff_EBP + -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(unaff_EBP, -0x10)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   return;
 }
 
@@ -3226,14 +3226,14 @@ export function FUN_00578b06(in_ECX, param_1, param_2) {
   
   puVar1 = FUN_00498159(in_ECX + 4,0x1c);
   if (s32(in_ECX, 0x1c) === 0) {
-    // DEVIATION: C pointer write — *(undefined4 **)(in_ECX + 0x1c) = puVar1;
+    w32(in_ECX, 0x1c, puVar1);
     _MEM[puVar1 + 5] = 0;
   }
   else {
     for (local_c = s32(in_ECX, 0x1c); s32(local_c, 0x10) !== 0; local_c = s32(local_c, 0x10)) {
         /*JOINED*/
     }
-    // DEVIATION: C pointer write — *(undefined4 **)(local_c + 0x10) = puVar1;
+    w32(local_c, 0x10, puVar1);
     _MEM[puVar1 + 5] = local_c;
   }
   _MEM[puVar1 + 4] = 0;
@@ -3273,14 +3273,14 @@ export function FUN_00578c12(in_ECX, param_1, param_2, param_3, param_4) {
   if (iVar1 !== 0) {
     local_c = FUN_00498159(in_ECX + 4,0x1c);
     if (s32(iVar1, 0x18) === 0) {
-      // DEVIATION: C pointer write — *(undefined4 **)(iVar1 + 0x18) = local_c;
+      w32(iVar1, 0x18, local_c);
       _MEM[local_c + 5] = 0;
     }
     else {
       for (local_8 = s32(iVar1, 0x18); s32(local_8, 0x10) !== 0; local_8 = s32(local_8, 0x10)) {
           /*JOINED*/
       }
-      // DEVIATION: C pointer write — *(undefined4 **)(local_8 + 0x10) = local_c;
+      w32(local_8, 0x10, local_c);
       _MEM[local_c + 5] = local_8;
     }
     _MEM[local_c + 6] = iVar1;
@@ -3438,7 +3438,7 @@ export function FUN_00578f2c(in_ECX, param_1) {
   
   if ((u8(_MEM[in_ECX + 0x19]) & 0x80) === 0) {
     local_104[0] = 0;
-    local_118 = true /* DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x1c) */;
+    local_118 = s32(in_ECX, 0x1c);
     local_114 = 1;
     for (; local_118 !== 0x0; local_118 = _MEM[local_118 + 4]) {
       if ((u8(_MEM[local_118 + 2]) & 2) === 0) {
@@ -3456,14 +3456,14 @@ export function FUN_00578f2c(in_ECX, param_1) {
     if (param_1 !== 0) {
       FUN_005799c0(local_104[0]);
     }
-    local_118 = true /* DEVIATION: C pointer — *(undefined4 **)(in_ECX + 0x1c) */;
+    local_118 = s32(in_ECX, 0x1c);
     local_114 = 1;
-    for (; local_118 !== 0x0; local_118 = true /* DEVIATION: C pointer — *(undefined4 **)((local_118) + 0x10) */) {
+    for (; local_118 !== 0x0; local_118 = s32((local_118) + 0x10, 0)) {
       if ((u8(_MEM[(local_118) + 8]) & 2) === 0) {
         if (param_1 !== 0) {
           FUN_00579a40(local_114,1);
         }
-        local_10c = true /* DEVIATION: C pointer — *(undefined4 **)((local_118) + 0x18) */;
+        local_10c = s32((local_118) + 0x18, 0);
         local_110 = 1;
         for (; local_10c !== 0x0; local_10c = _MEM[local_10c + 4]) {
           if ((u8(_MEM[local_10c + 2]) & 2) === 0) {
@@ -4064,7 +4064,7 @@ export function FUN_0057a27a(param_1, param_2) {
     }
     for (local_314 = 0; local_314 < 100; local_314 = local_314 + 1) {
       iVar1 = FUN_004bd9f0(param_1,local_314);
-      if (true /* DEVIATION: C-syntax — if ((((iVar1 === 0) && (iVar1 = FUN_004bd9f0(param_2,local_314), iVar1 !== 0)) && ((((v(DAT_00655af0) & 0x80) === 0 || ((v(DAT_0064bc60) & 0x10) === 0)) || ((((local_314 !== 0x1f && (local_314 !== 0x36)) && (local_314 !== 0xf)) && ((local_314 !== 0x47 && (local_314 !== 0x15)))))))) && ((_MEM[DAT_0062768e + local_314 * 0x10] !== 0xfe /* -2 as unsigned byte * / || (_MEM[DAT_0062768f + local_314 * 0x10] !== 0xfe /* -2 as unsigned byte * /)))) { */) {
+      if ((((iVar1 === 0) && (iVar1 = FUN_004bd9f0(param_2,local_314), iVar1 !== 0)) && ((((v(DAT_00655af0) & 0x80) === 0 || ((v(DAT_0064bc60) & 0x10) === 0)) || ((((local_314 !== 0x1f && (local_314 !== 0x36)) && (local_314 !== 0xf)) && ((local_314 !== 0x47 && (local_314 !== 0x15)))))))) && ((_MEM[DAT_0062768e + local_314 * 0x10] !== 0xfe || (_MEM[DAT_0062768f + local_314 * 0x10] !== 0xfe)))) {
           /*JOINED*/
            /*JOINED*/
             /*JOINED*/
@@ -4408,7 +4408,7 @@ export function FUN_0057a904(param_1) {
                /*JOINED*/
               local_140 = FUN_0043cf76((s16(DAT_006560f0, local_150 * 0x20)), (s16(DAT_006560f2, local_150 * 0x20)));
                                              /*JOINED*/
-              if (true /* DEVIATION: C-syntax — if (((local_140) < 0) && (_MEM[DAT_00656100 + local_150 * 0x20] !== 0xff /* -1 as unsigned byte * /)) { */) {
+              if (((local_140) < 0) && (_MEM[DAT_00656100 + local_150 * 0x20] !== 0xff)) {
                 local_140 = u8(_MEM[DAT_00656100 + local_150 * 0x20]);
               }
               if (-1 < (local_140)) {
@@ -4421,7 +4421,7 @@ export function FUN_0057a904(param_1) {
                   for (local_150 = FUN_005b2d39(local_150); -1 < local_150; local_150 = FUN_005b2c82(local_150)) {
                       /*JOINED*/
                     _MEM[DAT_006560f7 + local_150 * 0x20] = cVar1;
-                    if (true /* DEVIATION: C-syntax — if ((_MEM[DAT_00656100 + local_150 * 0x20] !== 0xff /* -1 as unsigned byte * /) && (s8(_MEM[DAT_0064f348 + u8(_MEM[DAT_00656100 + local_150 * 0x20]) * 0x58]) !== iVar2)) { */) {
+                    if ((_MEM[DAT_00656100 + local_150 * 0x20] !== 0xff) && (s8(_MEM[DAT_0064f348 + u8(_MEM[DAT_00656100 + local_150 * 0x20]) * 0x58]) !== iVar2)) {
                        /*JOINED*/
                         /*JOINED*/
                       _MEM[DAT_00656100 + local_150 * 0x20] = u8(local_140);

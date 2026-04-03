@@ -65,7 +65,7 @@ export function FUN_00551cd0(in_ECX, param_1) {
 export function egptr_00551D20(_this) {
 
 
-  return true /* DEVIATION: C pointer — *(char **)(_this + 0x2c) */;
+  return s32(_this, 0x2c);
 }
 
 
@@ -945,9 +945,9 @@ export function FUN_005534bc(in_ECX, param_1, param_2, param_3, param_4, param_5
   else {
     FUN_005f22d0(in_ECX + 0x134,param_1);
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x2d4) = &DAT_006ab1a0;
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x2cc) = &DAT_006ab190;
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x2d0) = &DAT_006ab178;
+  w32(in_ECX, 0x2d4, v(DAT_006ab1a0));
+  w32(in_ECX, 0x2cc, v(DAT_006ab190));
+  w32(in_ECX, 0x2d0, v(DAT_006ab178));
   w32(in_ECX, 0x1e0, 0);
   w32(in_ECX, 0x1e4, 0);
   w32(in_ECX, 0x114, param_2);
@@ -2448,7 +2448,7 @@ export function FUN_0055625b() {
       }
       FUN_0040fe10();
       FUN_0040fea0();
-      if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00656100 + local_31c * 0x20] === 0xff /* -1 as unsigned byte * /) { */) {
+      if (_MEM[DAT_00656100 + local_31c * 0x20] === 0xff) {
         FUN_0040bc10(0xe);
       }
       else {
@@ -5352,7 +5352,7 @@ export function FUN_0055d1e2(param_1, param_2) {
       bVar1 = true;
     }
     for (local_1c = 0; local_1c < 100; local_1c = local_1c + 1) {
-      if (true /* DEVIATION: C-syntax — if ((_MEM[DAT_0062768e + local_1c * 0x10] !== 0xfe /* -2 as unsigned byte * /) || (_MEM[DAT_0062768f + local_1c * 0x10] !== 0xfe /* -2 as unsigned byte * /)) { */) {
+      if ((_MEM[DAT_0062768e + local_1c * 0x10] !== 0xfe) || (_MEM[DAT_0062768f + local_1c * 0x10] !== 0xfe)) {
         iVar3 = FUN_004bd9f0(param_1,local_1c);
         if ((iVar3 === 0) && (iVar3 = FUN_004bd9f0(param_2,local_1c), iVar3 !== 0)) {
           iVar3 = _rand();

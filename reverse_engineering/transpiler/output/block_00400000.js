@@ -1384,7 +1384,7 @@ export function FUN_0040897f() {
     if (iVar3 !== 2) {
       aiStack_80[local_1c] = aiStack_80[local_1c] + s8(_MEM[DAT_00627ccb + local_1c * 0x18]) * 2;
     }
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00627ccf + iVar3 * 0x18] === 0xfe /* -2 as unsigned byte * /) { */) {
+    if (_MEM[DAT_00627ccf + iVar3 * 0x18] === 0xfe) {
       if (iVar3 === 4) {
         aiStack_80[local_1c] = aiStack_80[local_1c] + 3;
       }
@@ -1392,7 +1392,7 @@ export function FUN_0040897f() {
         aiStack_80[local_1c] = aiStack_80[local_1c] + 1;
       }
     }
-    else if (true /* DEVIATION: C-syntax — else if (_MEM[DAT_00627cce + iVar3 * 0x18] === 0xfe /* -2 as unsigned byte * /) { */) {
+    else if (_MEM[DAT_00627cce + iVar3 * 0x18] === 0xfe) {
       aiStack_80[local_1c] = aiStack_80[local_1c] + 2;
     }
   }
@@ -4228,7 +4228,7 @@ export function FUN_0040f680(in_ECX, param_1, param_2, param_3, param_4) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e60;
+  w32(in_ECX, 0x38, PTR_DAT_00637e60);
   FUN_0040f730(param_1,6,param_2,param_3);
   w32(in_ECX, 0x30, 0);
   uVar1 = draw_text_9740(param_3,in_ECX,param_4,1,s32(in_ECX, 0x38));
@@ -4430,7 +4430,7 @@ export function FUN_0040f9d0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = new Array(16).fill(0);
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e68;
+  w32(in_ECX, 0x38, PTR_DAT_00637e68);
   measure_text_BF40(param_5,param_3,param_4,local_14[0],s32(in_ECX, 0x38));
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();

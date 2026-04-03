@@ -4094,7 +4094,7 @@ export function FUN_00418910(in_ECX, param_1, param_2, param_3, param_4) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  w32(in_ECX, 0x40, PTR_DAT_00637e6c);
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,1,1,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -4494,7 +4494,7 @@ export function FUN_00418f40(in_ECX, param_1, param_2, param_3) {
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x38) = PTR_DAT_00637e70;
+  w32(in_ECX, 0x38, PTR_DAT_00637e70);
   FUN_0040f730(param_1,7,param_2,param_3);
   uVar1 = register_wndclass_37A0(param_3,in_ECX,1,0,s32(in_ECX, 0x38));
   w32(in_ECX, 0x1c, uVar1);
@@ -5150,7 +5150,7 @@ export function FUN_0041a046(param_1) {
   for (local_14 = 0; local_14 < 100; local_14 = local_14 + 1) {
     _MEM[DAT_0062768f + local_14 * 0x10] = 0xfe;
     _MEM[DAT_0062768e + local_14 * 0x10] = _MEM[DAT_0062768f + local_14 * 0x10];
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe /* -2 as unsigned byte * /) { */) {
+    if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe) {
       _MEM[DAT_00627689 + local_14 * 0x10] = 0;
     }
     else {
@@ -5176,7 +5176,7 @@ export function FUN_0041a046(param_1) {
       uVar4 = FUN_004a24b1();
       uVar2 = FUN_004b0720(uVar4);
       _MEM[DAT_0062768e + local_14 * 0x10 + local_c] = uVar2;
-      if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0062768e + local_14 * 0x10 + local_c] === 0xfd /* -3 as unsigned byte * /) { */) {
+      if (_MEM[DAT_0062768e + local_14 * 0x10 + local_c] === 0xfd) {
         FUN_00589ef8(0xfffffffc,3,v(DAT_00679640),local_14,local_c);
       }
     }
@@ -5184,7 +5184,7 @@ export function FUN_0041a046(param_1) {
     _MEM[DAT_0062768d + local_14 * 0x10] = uVar2;
     uVar2 = FUN_004a2534();
     _MEM[DAT_0062768c + local_14 * 0x10] = uVar2;
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe /* -2 as unsigned byte * /) { */) {
+    if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe) {
       _MEM[DAT_00627689 + local_14 * 0x10] = 0;
     }
     else {
@@ -5204,7 +5204,7 @@ export function FUN_0041a046(param_1) {
     }
     _MEM[DAT_0062768d + local_14 * 0x10] = 0;
     _MEM[DAT_0062768c + local_14 * 0x10] = 0;
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe /* -2 as unsigned byte * /) { */) {
+    if (_MEM[DAT_0062768e + local_14 * 0x10] === 0xfe) {
       _MEM[DAT_00627689 + local_14 * 0x10] = 0;
     }
     else {
@@ -5263,7 +5263,7 @@ export function FUN_0041a422(param_1) {
     uVar2 = FUN_004a24b1();
     uVar1 = FUN_004b0720(uVar2);
     _MEM[DAT_0064c48e + local_8 * 8] = uVar1;
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0064c48e + local_8 * 8] === 0xfd /* -3 as unsigned byte * /) { */) {
+    if (_MEM[DAT_0064c48e + local_8 * 8] === 0xfd) {
       FUN_00589ef8(0xfffffffb,3,v(DAT_00679640),local_8,0);
     }
     while ((-1 < s8(_MEM[DAT_0064c48e + local_8 * 8]) && (_MEM[DAT_00627689 + s8(_MEM[DAT_0064c48e + local_8 * 8]) * 0x10] === 0))) {
@@ -5277,7 +5277,7 @@ export function FUN_0041a422(param_1) {
     uVar2 = FUN_004a24b1();
     uVar1 = FUN_004b0720(uVar2);
     _MEM[DAT_0064ba28 + local_8] = uVar1;
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0064ba28 + local_8] === 0xfd /* -3 as unsigned byte * /) { */) {
+    if (_MEM[DAT_0064ba28 + local_8] === 0xfd) {
       FUN_00589ef8(0xfffffffc,3,v(DAT_00679640),local_8,0);
     }
   }
@@ -5346,7 +5346,7 @@ export function FUN_0041a5c4(param_1) {
     _MEM[DAT_0064b1cb + local_8 * 0x14] = uVar1;
     uVar4 = FUN_004a25d5();
     w32(DAT_0064b1bc, local_8 * 0x14, uVar4 & 0xffff);
-    if (true /* DEVIATION: C-syntax — if ((_MEM[DAT_0064b1c0 + local_8 * 0x14] === 0xfd /* -3 as unsigned byte * /) || (_MEM[DAT_0064b1cb + local_8 * 0x14] === 0xfd /* -3 as unsigned byte * /)) { */) {
+    if ((_MEM[DAT_0064b1c0 + local_8 * 0x14] === 0xfd) || (_MEM[DAT_0064b1cb + local_8 * 0x14] === 0xfd)) {
       FUN_00589ef8(0xfffffffa,3,v(DAT_00679640),local_8,0);
     }
   }
@@ -5369,7 +5369,7 @@ export function FUN_0041a5c4(param_1) {
     _MEM[DAT_0064b1ca + local_8 * 0x14] = 0;
     _MEM[DAT_0064b1cb + local_8 * 0x14] = 0xfe;
     w32(DAT_0064b1bc, local_8 * 0x14, 0);
-    if (true /* DEVIATION: C-syntax — if ((_MEM[DAT_0064b1c0 + local_8 * 0x14] === 0xfd /* -3 as unsigned byte * /) || (_MEM[DAT_0064b1cb + local_8 * 0x14] === 0xfd /* -3 as unsigned byte * /)) { */) {
+    if ((_MEM[DAT_0064b1c0 + local_8 * 0x14] === 0xfd) || (_MEM[DAT_0064b1cb + local_8 * 0x14] === 0xfd)) {
       FUN_00589ef8(0xfffffffa,3,v(DAT_00679640),local_8,0);
     }
   }
@@ -5415,14 +5415,14 @@ export function FUN_0041a95f() {
         _MEM[DAT_00627cd2 + local_c * 0x18 + local_8] = uVar1;
         uVar1 = FUN_004a2534();
         _MEM[DAT_00627cd4 + local_c * 0x18 + local_8] = uVar1;
-        if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00627cce + local_c * 0x18 + local_8] === 0xfd /* -3 as unsigned byte * /) { */) {
+        if (_MEM[DAT_00627cce + local_c * 0x18 + local_8] === 0xfd) {
           FUN_00589ef8(0xfffffff9,3,v(DAT_00679640),local_c,local_8);
         }
       }
       uVar2 = FUN_004a24b1();
       uVar1 = FUN_004b07d1(uVar2);
       _MEM[DAT_00627ccd + local_c * 0x18] = uVar1;
-      if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00627ccd + local_c * 0x18] === 0xfd /* -3 as unsigned byte * /) { */) {
+      if (_MEM[DAT_00627ccd + local_c * 0x18] === 0xfd) {
         FUN_00589ef8(0xfffffff9,3,v(DAT_00679640),local_c,99);
       }
     }
@@ -5924,7 +5924,7 @@ export function FUN_0041b8ff(param_1) {
   local_3c = 100;
   local_38 = 0;
   while ((0 < local_3c && (local_38 < 0xc))) {
-    if (true /* DEVIATION: C-syntax — if (((_MEM[DAT_0062768e + local_3c * 0x10] !== 0xfe /* -2 as unsigned byte * /) || (_MEM[DAT_0062768f + local_3c * 0x10] !== 0xfe /* -2 as unsigned byte * /)) && (iVar1 = FUN_004bd9f0(param_1,local_3c), iVar1 !== 0)) { */) {
+    if (((_MEM[DAT_0062768e + local_3c * 0x10] !== 0xfe) || (_MEM[DAT_0062768f + local_3c * 0x10] !== 0xfe)) && (iVar1 = FUN_004bd9f0(param_1,local_3c), iVar1 !== 0)) {
        /*JOINED*/
       aiStack_34[local_38] = local_3c;
       local_38 = local_38 + 1;
@@ -6841,7 +6841,7 @@ export function FUN_0041dd0e() {
           local_10 = local_10 + 6;
         }
         for (local_120 = 1; local_120 < 8; local_120 = local_120 + 1) {
-          _memset(true /* DEVIATION: C pointer — *(void **)(ptrAdd(DAT_006365c0, local_120 * 4)) */,0,(v(DAT_006d1164)));
+          _memset(s32(DAT_006365c0, local_120 * 4),0,(v(DAT_006d1164)));
         }
         if (v(DAT_006d1168) < 2) {
           FUN_005b85fe();
@@ -7711,7 +7711,7 @@ export function FUN_0041f8d9() {
     _memset(v(DAT_006ad22c),0,0xc4);
     pLVar5 = v(DAT_006ad22c);
     iVar2 = FUN_00414d10();
-    iVar2 = XD_LaunchedByLobby(true /* DEVIATION: C pointer — *(void **)(iVar2 + 4) */,pLVar5);
+    iVar2 = XD_LaunchedByLobby(s32(iVar2, 4),pLVar5);
     if ((iVar2 === 2) || (iVar2 === 1)) {
       wv(DAT_006ad228, iVar2);
       debug_log(s_LobbyLaunchInfo__gNetMgr_IGZInfo_00625698);

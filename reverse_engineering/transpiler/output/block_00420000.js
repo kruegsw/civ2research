@@ -1410,7 +1410,7 @@ export function FUN_004241f8() {
   FUN_0047e94e(1,0);
   if ((v(DAT_006c9004) === 0) && (v(DAT_006c900c) === 0)) {
     if (2 < iVar1) {
-      pcVar4 = true /* DEVIATION: C pointer — *(char **)(s32(_MEM[DAT_006ad678 + 0x8c] + 0x1c, 0) + 8) */;
+      pcVar4 = s32(s32(_MEM[DAT_006ad678 + 0x8c] + 0x1c, 0) + 8, 0);
       sVar2 = _strlen(pcVar4);
       pcVar3 = _strchr(pcVar4,0x3e);
       if (pcVar4 + (sVar2 - 1) === pcVar3) {
@@ -1680,38 +1680,38 @@ export function FUN_0042486f(in_ECX) {
   iVar1 = s32(s32(in_ECX, 0) + 0xd0, 0) + s32(s32(in_ECX, 0) + 0xb8, 0) + 2;
   piVar2 = FUN_0059e18b(v(DAT_00625d14),0xe6,iVar1,0x80,0);
   in_ECX[0x4a] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX;
   piVar2 = FUN_0059e18b(v(DAT_00625d18),0xe6,iVar1,0x80,0);
   in_ECX[0x4b] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_00;
   piVar2 = FUN_0059e18b(v(DAT_00625d1c),0xe6,iVar1,0x80,0);
   in_ECX[0x4c] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_01;
   piVar2 = FUN_0059e18b(v(DAT_00625d20),0xe6,iVar1,0x80,0);
   in_ECX[0x4d] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_02;
   piVar2 = FUN_0059e18b(v(DAT_00625d24),0xe6,iVar1,0x80,0);
   in_ECX[0x4e] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_03;
   piVar2 = FUN_0059e18b(v(DAT_00625d28),0xe6,iVar1,0x80,0);
   in_ECX[0x4f] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_04;
   piVar2 = FUN_0059e18b(v(DAT_00625d2c),0xe6,iVar1,0x80,0);
   in_ECX[0x50] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   iVar1 = iVar1 + extraout_EAX_05;
   piVar2 = FUN_0059e18b(v(DAT_00625d30),0xe6,iVar1,0x80,0);
   in_ECX[0x51] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   piVar2 = FUN_0059e18b(v(DAT_00625d34),0xe6,iVar1 + extraout_EAX_06,0x80,0);
   in_ECX[0x52] = s32(piVar2, 0);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(s32(in_ECX, 0) + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(s32(in_ECX, 0) + 8, 0)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   return;
 }
 
@@ -1893,8 +1893,8 @@ export function FUN_004253ef(in_ECX) {
   local_c = in_ECX[0x53];
   FUN_0042472a();
   while (local_c !== 0x0) {
-    pvVar1 = true /* DEVIATION: C pointer — *(void **)((local_c) + 0x10) */;
-    operator_delete(true /* DEVIATION: C pointer — *(void **)((local_c) + 8) */);
+    pvVar1 = s32((local_c) + 0x10, 0);
+    operator_delete(s32((local_c) + 8, 0));
     operator_delete(local_c);
     local_c = pvVar1;
   }
@@ -1933,10 +1933,10 @@ export function FUN_004254a8(in_ECX, param_1, param_2) {
   _MEM[puVar1 + 5] = local_10;
   if (local_10 === 0) {
     in_ECX[0x53] = (puVar1);
-    // DEVIATION: C pointer write — *(uint **)(*in_ECX + 0x228) = puVar1;
+    w32(s32(in_ECX, 0) + 0x228, 0, puVar1);
   }
   else {
-    // DEVIATION: C pointer write — *(uint **)(local_10 + 0x10) = puVar1;
+    w32(local_10, 0x10, puVar1);
   }
   w32(puVar1, 0, 0);
   sVar2 = _strlen(param_1);
@@ -2043,7 +2043,7 @@ export function FUN_0042570c() {
   while (local_c !== 0x0) {
     if (v(DAT_006ad8b8) * 0x3c < iVar3 - s32((local_c) + 0x28, 0)) {
       if (v(DAT_006c31d4) === local_c) {
-        wv(DAT_006c31d4, true /* DEVIATION: C pointer — *(void **)((local_c) + 0x20) */);
+        wv(DAT_006c31d4, s32((local_c) + 0x20, 0));
       }
       if (s32((local_c) + 0x24, 0) !== 0) {
         // DEVIATION: C pointer write — *(undefined4 *)(*(int *)((int)local_c + 0x24) + 0x20) = *(undefined4 *)((int)local_c + 0x20);
@@ -2053,13 +2053,13 @@ export function FUN_0042570c() {
         // DEVIATION: C pointer write — *(undefined4 *)(*(int *)((int)local_c + 0x20) + 0x24) = *(undefined4 *)((int)local_c + 0x24);
         /*JOINED*/
       }
-      pvVar1 = true /* DEVIATION: C pointer — *(void **)((local_c) + 0x20) */;
+      pvVar1 = s32((local_c) + 0x20, 0);
       operator_delete(local_c);
       bVar2 = true;
       local_c = pvVar1;
     }
     else {
-      local_c = true /* DEVIATION: C pointer — *(void **)((local_c) + 0x20) */;
+      local_c = s32((local_c) + 0x20, 0);
     }
   }
   if (bVar2) {
@@ -4167,11 +4167,11 @@ export function show_credits_0042A7BC(unaff_EBX, unaff_ESI, param_1, param_2, pa
   FUN_00407ff0();
   if (param_4 < 1) {
     // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((iVar5 + 0x2d8));
-    // DEVIATION: C pointer write — *(CView **)(iVar5 + 0x48c) = pCVar2;
+    w32(iVar5, 0x48c, pCVar2);
   }
   if (param_5 < 1) {
     // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((iVar5 + 0x2d8));
-    // DEVIATION: C pointer write — *(CView **)(iVar5 + 0x474) = pCVar2;
+    w32(iVar5, 0x474, pCVar2);
   }
   w32(iVar5, 0x490, param_6);
   w32(iVar5, 0x478, param_7);
@@ -6257,7 +6257,7 @@ export function FUN_0042f293() {
     FUN_0040bc10(0x92);
     FUN_0040fe10();
   }
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_006554f8 + local_8c * 0x30] === 0xff /* -1 as unsigned byte * /) { */) {
+  if (_MEM[DAT_006554f8 + local_8c * 0x30] === 0xff) {
     FUN_0040bc10(0x93);
     FUN_0040fe10();
   }
@@ -6265,7 +6265,7 @@ export function FUN_0042f293() {
     FUN_0040bc10(0x96);
     FUN_0040fe10();
   }
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_006554fa + local_8c * 0x30] === 0xff /* -1 as unsigned byte * /) { */) {
+  if (_MEM[DAT_006554fa + local_8c * 0x30] === 0xff) {
     FUN_0040bc10(0x97);
     FUN_0040fe10();
   }
@@ -6273,7 +6273,7 @@ export function FUN_0042f293() {
     FUN_0040bc10(0x94);
     FUN_0040fe10();
   }
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_006554f9 + local_8c * 0x30] === 0xff /* -1 as unsigned byte * /) { */) {
+  if (_MEM[DAT_006554f9 + local_8c * 0x30] === 0xff) {
     FUN_0040bc10(0x95);
     FUN_0040fe10();
   }

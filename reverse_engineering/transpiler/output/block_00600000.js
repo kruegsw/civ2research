@@ -2001,7 +2001,7 @@ export function __fpreset_00602670() {
   
   iVar1 = v(DAT_0063af90);
   __setdefaultprecision();
-  if ((iVar1 !== 0) && ((true /* DEVIATION: C pointer — **(uint **)(iVar1 + 4) */ & 0x10008) !== 0)) {
+  if ((iVar1 !== 0) && ((*s32(iVar1, 4) & 0x10008) !== 0)) {
     iVar1 = s32(iVar1, 4);
     w32(iVar1, 0x20, 0);
     w32(iVar1, 0x24, 0xffff);
@@ -2688,7 +2688,7 @@ export function __fptostr_00603300(_Buf, _SizeInBytes, _Digits, _PtFlt) {
   let local_c;
   let local_8;
   
-  local_c = true /* DEVIATION: C pointer — *(char **)(_Digits + 0xc) */;
+  local_c = s32(_Digits, 0xc);
   w32(_Buf, 0, 48);
   pcVar1 = _Buf;
   for (; local_8 = pcVar1 + 1, 0 < (_SizeInBytes); _SizeInBytes = _SizeInBytes - 1) {

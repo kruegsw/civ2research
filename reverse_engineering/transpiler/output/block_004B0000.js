@@ -43,7 +43,7 @@ export function FUN_004b0157(param_1, param_2, param_3, param_4, param_5) {
       if (iVar1 !== 0) {
         local_8 = local_8 + 200;
       }
-      if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0064f379 + local_28 * 0x58] === 0xff /* -1 as unsigned byte * /) { */) {
+      if (_MEM[DAT_0064f379 + local_28 * 0x58] === 0xff) {
         local_8 = local_8 + 100;
       }
       if (local_c < local_8) {
@@ -2448,7 +2448,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
     uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
+    FUN_005bb4ae(0,0x602,*s32(in_ECX, 0x150), s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
   else {
@@ -2456,7 +2456,7 @@ export function FUN_004b4735(in_ECX, unaff_ESI, param_1) {
     puVar4 = v(DAT_006a8c00);
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
     uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
+    FUN_005bb4ae(0,0x602,*s32(in_ECX, 0x150), s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
                  /*JOINED*/
   }
   FUN_004b4cf0();
@@ -2532,7 +2532,7 @@ export function FUN_004b4c09() {
     local_8 = local_8 + -0x48;
   }
   FUN_004080f0(s32(local_8, 0x150));
-  w32(local_8, 0x11c, true /* DEVIATION: C pointer — **(undefined4 **)(local_8 + 0x150) */);
+  w32(local_8, 0x11c, *s32(local_8, 0x150));
   w32(local_8, 0x120, s32(true /* DEVIATION: C pointer — s32(local_8, 0x150) */ + 4, 0));
   return;
 }
@@ -2636,9 +2636,9 @@ export function FUN_004b4e8a(in_ECX) {
   let local_8;
   
   // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: C pointer write — *(CRichEditView **)(in_ECX + 0x124) = pCVar1;
+  w32(in_ECX, 0x124, pCVar1);
   // DEVIATION: MFC — pCVar1 = CRichEditCntrItem::GetActiveView(in_ECX);
-  // DEVIATION: C pointer write — *(CRichEditView **)(in_ECX + 0x128) = pCVar1;
+  w32(in_ECX, 0x128, pCVar1);
   if (s32(in_ECX, 0x154) === 0) {
     local_8 = FUN_0040ef70();
   }
@@ -2703,7 +2703,7 @@ export function FUN_004b50cf(in_ECX) {
   let local_8;
   
   if (s32(in_ECX, 0x234) !== 0) {
-    operator_delete(true /* DEVIATION: C pointer — *(void **)(in_ECX + 0x234) */);
+    operator_delete(s32(in_ECX, 0x234));
     w32(in_ECX, 0x234, 0);
   }
   for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
@@ -2983,13 +2983,13 @@ export function FUN_004b5c93(in_ECX) {
   local_34 = v(DAT_0062d860);
   for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
     if (local_2c === 0) {
-      // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x250) = &DAT_00645120;
+      w32(in_ECX, 0x250, v(DAT_00645120));
     }
     else if (local_2c === 1) {
-      // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x26c) = &DAT_00648820;
+      w32(in_ECX, 0x26c, v(DAT_00648820));
     }
     else {
-      // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x250 + local_2c * 0x1c) = &DAT_00647788;
+      w32(in_ECX, 0x250 + local_2c * 0x1c, v(DAT_00647788));
     }
     w32(in_ECX, 0x23c + local_2c * 0x1c, local_2c + 1);
     uVar3 = FUN_004a6980();
@@ -4789,7 +4789,7 @@ export function FUN_004bb620(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  w32(in_ECX, 0x40, PTR_DAT_00637e6c);
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,param_5,param_6,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -7066,94 +7066,13 @@ export function FUN_004bfe5a(param_1, param_2, param_3) {
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_004b4982_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
-  if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
-    FUN_004b4c81();
-  }
-  FUN_005f22d0(in_ECX + 0x15c,v(DAT_0062d920));
-  if (s32(in_ECX, 0x1ec) === 4) {
-    puVar5 = v(DAT_006553d8);
-    puVar4 = v(DAT_006a8c00);
-    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
-    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
-                 /*JOINED*/
-  }
-  else {
-    puVar5 = v(DAT_006553d8);
-    puVar4 = v(DAT_006a8c00);
-    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
-    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
-                 /*JOINED*/
-  }
-  FUN_004b4cf0();
-  FUN_004bb570(s32(in_ECX, 0x150));
-  w32(in_ECX, 0x158, -1);
-  w32(in_ECX, 0x1f0, v(DAT_0062d7e8));
-  w32(in_ECX, 500, v(DAT_0062d7ec));
-  w32(in_ECX, 0x1f8, 0x15);
-  w32(in_ECX, 0x1fc, 0x15);
-  FUN_00408230(FUN_004b76d5);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402680); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  FUN_00408330(0 /* ADDR:LAB_00403d32 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x401203); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  FUN_004b4e8a();
-  FUN_004b4fb2();
-  if (((s32(in_ECX, 0x1ec) === 3) || (s32(in_ECX, 0x1ec) === 2)) || (s32(in_ECX, 0x1ec) === 1)) {
-     /*JOINED*/
-    FUN_00453c40();
-  }
-  FUN_0052e971();
-  FUN_004b4bf9(unaff_ESI);
-  return;
+  // HELPER_SYNTAX_ERROR: Unexpected token '*'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_004b496e_helper(iVar1, in_ECX, local_8, local_b0, param_1, puVar4, puVar5, uVar2, uVar3, unaff_ESI) {
-    w32(DAT_0062d870, 0, 0);
-  // (outer block close)
-  // DEVIATION: SEH
-  FUN_004b4be3();
-  // LAB_004b4982:
-  if ((s32(in_ECX, 0x11c) === 0) && (s32(in_ECX, 0x120) === 0)) {
-    FUN_004b4c81();
-  }
-  FUN_005f22d0(in_ECX + 0x15c,v(DAT_0062d920));
-  if (s32(in_ECX, 0x1ec) === 4) {
-    puVar5 = v(DAT_006553d8);
-    puVar4 = v(DAT_006a8c00);
-    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
-    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
-                 /*JOINED*/
-  }
-  else {
-    puVar5 = v(DAT_006553d8);
-    puVar4 = v(DAT_006a8c00);
-    uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),v(DAT_006a8c00),v(DAT_006553d8));
-    uVar3 = FUN_00407f90(s32(in_ECX, 0x150),uVar2);
-    FUN_005bb4ae(0,0x602,true /* DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x150) */, s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x150) */ + 4, 0),uVar3,uVar2,puVar4,puVar5);
-                 /*JOINED*/
-  }
-  FUN_004b4cf0();
-  FUN_004bb570(s32(in_ECX, 0x150));
-  w32(in_ECX, 0x158, -1);
-  w32(in_ECX, 0x1f0, v(DAT_0062d7e8));
-  w32(in_ECX, 500, v(DAT_0062d7ec));
-  w32(in_ECX, 0x1f8, 0x15);
-  w32(in_ECX, 0x1fc, 0x15);
-  FUN_00408230(FUN_004b76d5);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — CPropertySheet::EnableStackedTabs(in_ECX,0x402680); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  FUN_00408330(0 /* ADDR:LAB_00403d32 */);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — COleControlSite::SetDlgCtrlID((in_ECX + 0x58),0x401203); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
-  FUN_004b4e8a();
-  FUN_004b4fb2();
-  if (((s32(in_ECX, 0x1ec) === 3) || (s32(in_ECX, 0x1ec) === 2)) || (s32(in_ECX, 0x1ec) === 1)) {
-     /*JOINED*/
-    FUN_00453c40();
-  }
-  FUN_0052e971();
-  FUN_004b4bf9(unaff_ESI);
-  return;
+  // HELPER_SYNTAX_ERROR: Unexpected token '*'
+  // Original code had structural issues from DEVIATION lines
 }
 
 function LAB_004b9295_helper(iVar1, in_ECX, local_8, param_1, param_2, param_3, param_4, sVar2, uVar3) {

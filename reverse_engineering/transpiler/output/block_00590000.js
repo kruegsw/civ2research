@@ -3048,7 +3048,7 @@ export function FUN_0059ad40(in_ECX) {
   // DEVIATION: SEH
   local_8 = 0;
   if (s32(in_ECX, 0x534) !== 0) {
-    operator_delete(true /* DEVIATION: C pointer — *(void **)(in_ECX + 0x534) */);
+    operator_delete(s32(in_ECX, 0x534));
     w32(in_ECX, 0x534, 0);
   }
   FUN_0059b293(1);
@@ -3345,12 +3345,12 @@ export function FUN_0059b571(in_ECX, param_1) {
   let local_8;
   
   if (s8(_MEM[in_ECX + 0x1ee]) !== 0) {
-    local_c = true /* DEVIATION: C pointer — *(char **)(in_ECX + 0x160cc) */;
+    local_c = s32(in_ECX, 0x160cc);
     local_8 = 0;
-    for (; local_c !== 0x0; local_c = true /* DEVIATION: C pointer — *(char **)(local_c + 0x20) */) {
+    for (; local_c !== 0x0; local_c = s32(local_c, 0x20)) {
       iVar1 = _strncmp(local_c,(param_1 + 0x74),0x20);
       if (iVar1 === 0) {
-        if (true /* DEVIATION: C pointer — *(char **)(in_ECX + 0x160cc) */ === local_c) {
+        if (s32(in_ECX, 0x160cc) === local_c) {
           w32(in_ECX, 0x160cc, s32(local_c, 0x20));
         }
         if (s32(local_c, 0x24) !== 0) {
@@ -3364,18 +3364,18 @@ export function FUN_0059b571(in_ECX, param_1) {
         break;
       }
     }
-    local_c = true /* DEVIATION: C pointer — *(char **)(in_ECX + 0x160cc) */;
+    local_c = s32(in_ECX, 0x160cc);
     local_10 = 0x0;
     while ((local_c !== 0x0 && (iVar1 = __strcmpi((param_1 + 0xe4),local_c + 0x70), 0 < iVar1))) {
            /*JOINED*/
       local_10 = local_c;
-      local_c = true /* DEVIATION: C pointer — *(char **)(local_c + 0x20) */;
+      local_c = s32(local_c, 0x20);
     }
     while (((local_c !== 0x0 && (iVar1 = __strcmpi((param_1 + 0xe4),local_c + 0x70), iVar1 === 0)) && (iVar1 = __strcmpi((param_1 + 0x74),local_c), 0 < iVar1))) {
             /*JOINED*/
            /*JOINED*/
       local_10 = local_c;
-      local_c = true /* DEVIATION: C pointer — *(char **)(local_c + 0x20) */;
+      local_c = s32(local_c, 0x20);
     }
     _Dst = operator_new(0x124);
     if (_Dst === 0x0) {
@@ -3388,12 +3388,12 @@ export function FUN_0059b571(in_ECX, param_1) {
       if (s32(in_ECX, 0x160cc) !== 0) {
         // DEVIATION: C pointer write — *(void **)(*(int *)(in_ECX + 0x160cc) + 0x24) = _Dst;
       }
-      // DEVIATION: C pointer write — *(void **)(in_ECX + 0x160cc) = _Dst;
+      w32(in_ECX, 0x160cc, _Dst);
     }
     else {
       // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x20) = *(undefined4 *)(local_10 + 0x20);
       // DEVIATION: C pointer write — *(char **)((int)_Dst + 0x24) = local_10;
-      // DEVIATION: C pointer write — *(void **)(local_10 + 0x20) = _Dst;
+      w32(local_10, 0x20, _Dst);
       if (s32((_Dst) + 0x20, 0) !== 0) {
         // DEVIATION: C pointer write — *(void **)(*(int *)((int)_Dst + 0x20) + 0x24) = _Dst;
       }
@@ -3488,7 +3488,7 @@ export function FUN_0059baf0(in_ECX) {
   
   while (s32(in_ECX, 0x160cc) !== 0) {
     uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x160cc) */ + 0x20, 0);
-    operator_delete(true /* DEVIATION: C pointer — *(void **)(in_ECX + 0x160cc) */);
+    operator_delete(s32(in_ECX, 0x160cc));
     w32(in_ECX, 0x160cc, uVar1);
   }
   return;
@@ -4803,7 +4803,7 @@ export function FUN_0059e0eb(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = true /* DEVIATION: C pointer — *(int **)(in_ECX + 0x230) */; (s32(local_8, 0) !== param_1 && (local_8 !== 0x0)); local_8 = _MEM[local_8 + 7]) {
+  for (local_8 = s32(in_ECX, 0x230); (s32(local_8, 0) !== param_1 && (local_8 !== 0x0)); local_8 = _MEM[local_8 + 7]) {
       /*JOINED*/
   }
   if (((local_8 !== 0x0) && (-1 < _MEM[local_8 + 3])) && (sVar1 = _strlen(param_2), (sVar1 + 1) <= _MEM[local_8 + 3])) {
@@ -4832,12 +4832,12 @@ export function FUN_0059e18b(in_ECX, param_1, param_2, param_3, param_4, param_5
   let local_8;
   
   local_c = 0x0;
-  for (local_8 = true /* DEVIATION: C pointer — *(int **)(in_ECX + 0x230) */; local_8 !== 0x0; local_8 = _MEM[local_8 + 7]) {
+  for (local_8 = s32(in_ECX, 0x230); local_8 !== 0x0; local_8 = _MEM[local_8 + 7]) {
     local_c = local_8;
   }
   piVar1 = FUN_00498159(in_ECX + 0x254,0x20);
   if (local_c === 0x0) {
-    // DEVIATION: C pointer write — *(int **)(in_ECX + 0x230) = piVar1;
+    w32(in_ECX, 0x230, piVar1);
     w32(piVar1, 0, 1);
   }
   else {
@@ -4926,17 +4926,17 @@ export function FUN_0059e376(in_ECX) {
   let local_8;
   
   local_8 = FUN_0059e356();
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   if (extraout_EAX * 5 >> 2 <= local_8) {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
     local_8 = extraout_EAX_00 * 5 >> 2;
   }
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   if (extraout_EAX_01 < local_8) {
     local_c = local_8;
   }
   else {
-    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+    true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
     local_c = extraout_EAX_02;
   }
   return local_c;
@@ -4978,7 +4978,7 @@ export function FUN_0059e448(in_ECX) {
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   return extraout_EAX + 10;
 }
 
@@ -5152,7 +5152,7 @@ export function FUN_0059e648(in_ECX) {
   let extraout_EAX;
   // in_ECX → promoted to parameter
   
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   return extraout_EAX + 4 + s32(in_ECX, 0xb8) * 2;
 }
 
@@ -5317,7 +5317,7 @@ export function FUN_0059e877(in_ECX, param_1) {
   let local_8;
   
   local_8 = 0x0;
-  local_c = true /* DEVIATION: C pointer — *(int **)(in_ECX + 0x234) */;
+  local_c = s32(in_ECX, 0x234);
   while ((local_c !== 0x0 && (local_8 === 0x0))) {
     if (s32(local_c, 0) === param_1) {
       local_8 = local_c;
@@ -5388,7 +5388,7 @@ export function FUN_0059e973(in_ECX) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = true /* DEVIATION: C pointer — *(uint **)(in_ECX + 0x228) */; local_8 !== 0x0; local_8 = _MEM[local_8 + 4]) {
+  for (local_8 = s32(in_ECX, 0x228); local_8 !== 0x0; local_8 = _MEM[local_8 + 4]) {
     w32(local_8, 0, s32(local_8, 0) & 0xfffffffe);
   }
   return;
@@ -5407,7 +5407,7 @@ export function FUN_0059e9b3(in_ECX) {
   // in_ECX → promoted to parameter
   let local_8;
   
-  for (local_8 = true /* DEVIATION: C pointer — *(uint **)(in_ECX + 0x228) */; local_8 !== 0x0; local_8 = _MEM[local_8 + 4]) {
+  for (local_8 = s32(in_ECX, 0x228); local_8 !== 0x0; local_8 = _MEM[local_8 + 4]) {
     w32(local_8, 0, s32(local_8, 0) & 0xfffffffd);
   }
   return;
@@ -5696,13 +5696,13 @@ export function FUN_0059ec88(in_ECX, param_1, param_2, param_3) {
   }
   puVar1 = FUN_00498159(in_ECX + 0x254,0x14);
   if (local_10 === 0) {
-    // DEVIATION: C pointer write — *(undefined4 **)(in_ECX + 0x234) = puVar1;
+    w32(in_ECX, 0x234, puVar1);
     if (s32(in_ECX, 0x224) === 0) {
-      // DEVIATION: C pointer write — *(undefined4 **)(in_ECX + 0x224) = puVar1;
+      w32(in_ECX, 0x224, puVar1);
     }
   }
   else {
-    // DEVIATION: C pointer write — *(undefined4 **)(local_10 + 0x10) = puVar1;
+    w32(local_10, 0x10, puVar1);
   }
   _MEM[puVar1 + 4] = 0;
   _MEM[puVar1 + 1] = 0;
@@ -5758,7 +5758,7 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
     }
   }
   else {
-    while ((local_c !== 0 && (iVar1 = __strcmpi(param_1,true /* DEVIATION: C pointer — *(char **)(local_c + 8) */), 0 < iVar1))) {
+    while ((local_c !== 0 && (iVar1 = __strcmpi(param_1,s32(local_c, 8)), 0 < iVar1))) {
       local_10 = local_c;
       local_c = u32(local_c, 0x10);
     }
@@ -5768,24 +5768,24 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
     _MEM[puVar2 + 4] = u32(in_ECX, 0x228);
     _MEM[puVar2 + 5] = 0;
     if (s32(in_ECX, 0x228) === 0) {
-      // DEVIATION: C pointer write — *(uint **)(in_ECX + 0x22c) = puVar2;
+      w32(in_ECX, 0x22c, puVar2);
     }
     else {
       // DEVIATION: C pointer write — *(uint **)(*(int *)(in_ECX + 0x228) + 0x14) = puVar2;
     }
-    // DEVIATION: C pointer write — *(uint **)(in_ECX + 0x228) = puVar2;
-    // DEVIATION: C pointer write — *(uint **)(in_ECX + 0x220) = puVar2;
+    w32(in_ECX, 0x228, puVar2);
+    w32(in_ECX, 0x220, puVar2);
   }
   else {
     _MEM[puVar2 + 4] = u32(local_10, 0x10);
     _MEM[puVar2 + 5] = local_10;
     if (_MEM[puVar2 + 4] === 0) {
-      // DEVIATION: C pointer write — *(uint **)(in_ECX + 0x22c) = puVar2;
+      w32(in_ECX, 0x22c, puVar2);
     }
     else {
-      // DEVIATION: C pointer write — *(uint **)(puVar2[4] + 0x14) = puVar2;
+      w32(_MEM[puVar2 + 4] + 0x14, 0, puVar2);
     }
-    // DEVIATION: C pointer write — *(uint **)(local_10 + 0x10) = puVar2;
+    w32(local_10, 0x10, puVar2);
   }
   w32(puVar2, 0, 0);
   sVar3 = _strlen(param_1);
@@ -5856,10 +5856,10 @@ export function FUN_0059f06d(in_ECX, param_1, param_2, param_3) {
   }
   puVar1 = FUN_00498159(in_ECX + 0x254,0x1c);
   if (local_14 === 0) {
-    // DEVIATION: C pointer write — *(undefined4 **)(in_ECX + 0x238) = puVar1;
+    w32(in_ECX, 0x238, puVar1);
   }
   else {
-    // DEVIATION: C pointer write — *(undefined4 **)(local_14 + 0x18) = puVar1;
+    w32(local_14, 0x18, puVar1);
   }
   _MEM[puVar1 + 6] = 0;
   w32(puVar1, 0, 0);
@@ -6083,13 +6083,13 @@ export function FUN_0059f64a(in_ECX, param_1) {
   iVar5 = s32(in_ECX, 0x11c);
   local_17c = 0;
   local_174 = s32(in_ECX, 0xfc);
-  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(*(_Timevec **)(in_ECX + 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
+  true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — true /* DEVIATION: MFC — _Timevec::~_Timevec(s32(in_ECX, 8)); * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; * /; */;
   local_160[0] = 0;
   local_10 = 0;
   local_8 = extraout_EAX;
   for (; iVar6 = iVar5 >> 1, local_c !== 0; local_c = s32(local_c, 0x1c)) {
     if (s32(local_c, 0x10) < 1) {
-      local_180 = true /* DEVIATION: C pointer — *(char **)(local_c + 8) */;
+      local_180 = s32(local_c, 8);
       if ((u8(_MEM[local_c + 4]) & 3) !== 0) {
         if (local_160[0] !== 0) {
           if (param_1 !== 0) {

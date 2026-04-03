@@ -5677,7 +5677,7 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
           uVar6 = FUN_005ae052(s8(_MEM[DAT_00628370 + local_14]) + param_1);
           iVar4 = s8(_MEM[DAT_006283a0 + local_14]) + param_2;
           iVar5 = FUN_004087c0(uVar6,iVar4);
-          if (true /* DEVIATION: C-syntax — if ((((iVar5 !== 0) && (FUN_005b976d(uVar6,iVar4,1 << (u8(param_3) & 0x1f),1,1), 0x27 < v(DAT_00655af8) )) && (local_14 < 8)) && ((iVar5 = FUN_005b8931(uVar6,iVar4), (v(DAT_00655b0b) & u8(_MEM[iVar5 + 4])) === 0 && (bVar2 = FUN_005b89bb(uVar6,iVar4), _MEM[DAT_00627cce + ((bVar2) >>> 0) * 0x18] === 0xfe /* -2 as unsigned byte * / )))) { */) {
+          if ((((iVar5 !== 0) && (FUN_005b976d(uVar6,iVar4,1 << (u8(param_3) & 0x1f),1,1), 0x27 < v(DAT_00655af8) )) && (local_14 < 8)) && ((iVar5 = FUN_005b8931(uVar6,iVar4), (v(DAT_00655b0b) & u8(_MEM[iVar5 + 4])) === 0 && (bVar2 = FUN_005b89bb(uVar6,iVar4), _MEM[DAT_00627cce + ((bVar2) >>> 0) * 0x18] === 0xfe )))) {
                /*JOINED*/
                /*JOINED*/
              /*JOINED*/

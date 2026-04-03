@@ -4078,8 +4078,8 @@ export function FUN_0052d9a1(param_1) {
   else {
     local_8 = local_8 + -0x48;
   }
-  // DEVIATION: MFC — pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x348));
-  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((pcVar1 !== 0x0) || (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== 0x0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
+  // DEVIATION: MFC — pcVar1 = streambuf::egptr(s32(local_8, 0x348));
+  if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if (true /* DEVIATION: MFC — if ((pcVar1 !== 0x0) || (pcVar1 = streambuf::egptr(s32(local_8, 0x34c)), pcVar1 !== 0x0)) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { * /) { */) {
      /*JOINED*/
     FUN_004518d0();
     FUN_0052dd73(param_1);
@@ -4295,7 +4295,7 @@ export function FUN_0052dd73() {
   case 0xe:
   case 0xf:
     if (s32(local_8, 0x234) !== 0) {
-      operator_delete(true /* DEVIATION: C pointer — *(void **)(local_8 + 0x234) */);
+      operator_delete(s32(local_8, 0x234));
       w32(local_8, 0x234, 0);
     }
     uVar2 = FUN_004db690(s32(local_8, 0x1ec));
@@ -4491,7 +4491,7 @@ export function FUN_0052e71a(param_1) {
   FUN_005c62ee();
   FUN_004518d0();
   if ((0x428 < param_1) && (param_1 < 0x430)) {
-    // DEVIATION: MFC — iVar1 = ios::width(*(ios **)(ptrAdd(DAT_0068aeb0, (param_1 + -0x428) * 4)));
+    // DEVIATION: MFC — iVar1 = ios::width(s32(DAT_0068aeb0, (param_1 + -0x428) * 4));
     // DEVIATION: C pointer write — *(int *)(&DAT_0068af08 + (param_1 + -0x428) * 4) = iVar1;
   }
   return;
@@ -4536,7 +4536,7 @@ export function FUN_0052e7b7(param_1) {
   case 0x41c:
   case 0x41d:
     param_1 = param_1 + -0x416;
-    // DEVIATION: MFC — iVar1 = ios::width(*(ios **)(ptrAdd(DAT_0068ae90, param_1 * 4)));
+    // DEVIATION: MFC — iVar1 = ios::width(s32(DAT_0068ae90, param_1 * 4));
     w32(DAT_0068aee8, param_1 * 4, iVar1);
     if ((s32(DAT_0068aee8, param_1 * 4) === 0) && (v(DAT_0068aee4) !== 0)) {
       FUN_0040fad0(0);

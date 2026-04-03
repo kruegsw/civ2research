@@ -2320,18 +2320,18 @@ export function FUN_004741be(param_1, param_2) {
                   iVar3 = _fputs(v(DAT_0062bad8),local_11c);
                   if (iVar3 === -1) return LAB_0047530a_helper(iVar3, local_108, local_10c, local_110, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, param_1, param_2, pcVar1, sVar2);
                   local_130[0] = 0;
-                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = true /* DEVIATION: C pointer — *(void **)((local_120) + 0x1bc) */) {
+                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = s32((local_120) + 0x1bc, 0)) {
                       /*JOINED*/
                     local_130[0] = local_130[0] + 1;
                   }
                   sVar2 = _fwrite(local_130[0],4,1,local_11c);
                   if (sVar2 === 0) return LAB_0047530a_helper(iVar3, local_108, local_10c, local_110, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, param_1, param_2, pcVar1, sVar2);
-                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = true /* DEVIATION: C pointer — *(void **)((local_120) + 0x1bc) */) {
+                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = s32((local_120) + 0x1bc, 0)) {
                       /*JOINED*/
                     sVar2 = _fwrite(local_120,0x1bc,1,local_11c);
                     if (sVar2 === 0) return LAB_0047530a_helper(iVar3, local_108, local_10c, local_110, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, param_1, param_2, pcVar1, sVar2);
                   }
-                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = true /* DEVIATION: C pointer — *(void **)((local_120) + 0x1bc) */) {
+                  for (local_120 = v(DAT_0064b99c); local_120 !== 0x0; local_120 = s32((local_120) + 0x1bc, 0)) {
                       /*JOINED*/
                     if (((((s32((local_120) + 8, 0) !== 0) && (iVar3 = FUN_00473c12(s32((local_120) + 8, 0),local_11c) , iVar3 === -1)) || ((s32((local_120) + 0x10, 0) !== 0 && (iVar3 = FUN_00473c12(s32((local_120) + 0x10, 0), local_11c), iVar3 === -1)))) || ((s32((local_120) + 0x14, 0) !== 0 && (iVar3 = FUN_00473c12(s32((local_120) + 0x14, 0), local_11c), iVar3 === -1)))) || ((s32((local_120) + 0x20, 0) !== 0 && (iVar3 = FUN_00473c12(s32((local_120) + 0x20, 0),local_11c ), iVar3 === -1)))) return LAB_0047530a_helper(iVar3, local_108, local_10c, local_110, local_114, local_118, local_11c, local_120, local_124, local_128, local_12c, local_130, param_1, param_2, pcVar1, sVar2);
                           /*JOINED*/

@@ -150,7 +150,7 @@ export function FUN_00440750(param_1, param_2) {
   iVar4 = (s8(bVar1));
   bVar2 = _MEM[DAT_0064f348 + param_2 * 0x58];
   iVar5 = (s8(bVar2));
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00656100 + param_1 * 0x20] === 0xff /* -1 as unsigned byte * /) { */) {
+  if (_MEM[DAT_00656100 + param_1 * 0x20] === 0xff) {
     local_14 = -1;
   }
   else {

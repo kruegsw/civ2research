@@ -270,7 +270,7 @@ export function FUN_00548e23(param_1, param_2) {
         }
         for (local_58 = 0; (local_58 < 0x14 && (s32(param_2, 0x38 + local_58 * 4) !== 0)); local_58 = local_58 + 1) {
             /*JOINED*/
-          iVar1 = _fputs(true /* DEVIATION: C pointer — *(char **)(param_2 + 0x38 + local_58 * 4) */,param_1);
+          iVar1 = _fputs(s32(param_2, 0x38 + local_58 * 4),param_1);
           if (iVar1 === -1) {
             return;
           }
@@ -1319,7 +1319,7 @@ export function FUN_0054ae93() {
     FUN_00453c80();
     local_14 = v(DAT_0064b99c);
     while ((local_14 !== 0x0 && (local_8 !== 0))) {
-      local_14 = true /* DEVIATION: C pointer — *(byte **)(local_14 + 0x1bc) */;
+      local_14 = s32(local_14, 0x1bc);
       local_8 = local_8 + -1;
     }
     if ((_MEM[local_14] & 0x20) === 0) {
@@ -3134,7 +3134,7 @@ export function FUN_0054d7ef() {
                     local_1d8 = v(DAT_006a4f88) + 0x48;
                   }
                   FUN_0059d3c9(local_1d8);
-                  if (true /* DEVIATION: C-syntax — if (_MEM[local_1b8 + 0x26] === 0xfe /* -2 as unsigned byte * /) { */) {
+                  if (_MEM[local_1b8 + 0x26] === 0xfe) {
                     local_1dc = -1;
                   }
                   else {

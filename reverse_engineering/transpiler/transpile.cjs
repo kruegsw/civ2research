@@ -75,13 +75,13 @@ function extractExpression(str, start) {
   return { expr: str.substring(exprStart, i), end: i };
 }
 
-// Replace *(TYPE *)(expr) with helper(base, offset) using balanced parens
-// REJECTS double-pointer types (char **, int **) — those go to DEVIATION
+// Replace *(TYPE *)(expr) and *(TYPE **)(expr) with helper(base, offset) using balanced parens
+// Double pointers (TYPE **) are pointer reads → always 4 bytes (s32/w32)
 function replaceTypedPtrDeref(line) {
   const typeMap = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
                     'undefined4': 's32', 'undefined2': 's16', 'undefined1': null,
                     'char': 's8_arr', 'byte': 'u8_arr' };
-  // Match *(TYPE *) but NOT *(TYPE **) — negative lookahead for second *
+  // Match *(TYPE *)(expr) — single pointer
   const typePattern = /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|char|byte)\s*\*(?!\s*\*)\s*\)\s*\(/g;
   let result = '';
   let lastIdx = 0;
@@ -133,6 +133,38 @@ function replaceTypedPtrDeref(line) {
       }
       return h + '(' + varName + ', 0)';
     });
+
+  // Third pass: *(TYPE **)(expr) — double pointer = 4-byte pointer read
+  // All pointers are 4 bytes in the flat memory model, regardless of TYPE
+  {
+    const dblPtrPattern = /\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(/g;
+    let dblResult = '';
+    let dblLastIdx = 0;
+    let dblMatch;
+    while ((dblMatch = dblPtrPattern.exec(out)) !== null) {
+      const parenStart = out.lastIndexOf('(', dblMatch.index + dblMatch[0].length - 1);
+      const balanced = extractBalancedParens(out, parenStart);
+      if (!balanced) continue;
+      dblResult += out.substring(dblLastIdx, dblMatch.index);
+      const inner = balanced.content.trim();
+      const parts = splitBaseOffset(inner);
+      if (parts) {
+        dblResult += 's32(' + parts.base + ', ' + parts.offset + ')';
+      } else {
+        dblResult += 's32(' + inner + ', 0)';
+      }
+      dblLastIdx = balanced.end + 1;
+      dblPtrPattern.lastIndex = dblLastIdx;
+    }
+    if (dblLastIdx > 0) {
+      dblResult += out.substring(dblLastIdx);
+      out = dblResult;
+    }
+  }
+
+  // Fourth pass: *(TYPE **)variable (no parens) — double pointer
+  out = out.replace(/\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*(\w+)/g,
+    (m, varName) => 's32(' + varName + ', 0)');
 
   return out;
 }
@@ -879,7 +911,7 @@ function transformLine(line, ctx) {
         if (val >= 0) return m; // not negative, skip
         const unsignedVal = ((val % 256) + 256) % 256;
         const hexVal = '0x' + unsignedVal.toString(16).padStart(2, '0');
-        return '_MEM[' + idx + '] ' + op + ' ' + hexVal + ' /* ' + negVal + ' as unsigned byte */';
+        return '_MEM[' + idx + '] ' + op + ' ' + hexVal;
       });
 
     if (out !== prev) changed = true;
@@ -1540,6 +1572,25 @@ function processFunction(headerLines, bodyLines, ctx) {
           const base = stripV(transformLine('  ' + inner, ctx).trim());
           result.push(line.replace(trimmed, wHelper + '(' + base + ', 0, ' + val + ');'));
         }
+      }
+      continue;
+    }
+
+    // ── Double-pointer WRITE: *(TYPE **)(base + off) = expr → w32 (pointer = 4 bytes) ──
+    const dblWriteMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(([^)]+)\)\s*=\s*(.+);$/);
+    if (dblWriteMatch) {
+      const inner = dblWriteMatch[1].trim();
+      let val = dblWriteMatch[2].trim();
+      val = transformLine('  ' + val, ctx).trim();
+      const parts = splitBaseOffset(inner);
+      const stripV = (s) => s.replace(/^v\(([^)]+)\)$/, '$1');
+      if (parts) {
+        const base = stripV(transformLine('  ' + parts.base, ctx).trim());
+        const offset = transformLine('  ' + parts.offset, ctx).trim();
+        result.push(line.replace(trimmed, 'w32(' + base + ', ' + offset + ', ' + val + ');'));
+      } else {
+        const base = stripV(transformLine('  ' + inner, ctx).trim());
+        result.push(line.replace(trimmed, 'w32(' + base + ', 0, ' + val + ');'));
       }
       continue;
     }

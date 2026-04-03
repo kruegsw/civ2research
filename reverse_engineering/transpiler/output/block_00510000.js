@@ -1187,7 +1187,7 @@ export function FUN_00514272(in_ECX) {
   
   for (local_8 = 0; local_8 < 2000; local_8 = local_8 + 1) {
     if (s32(in_ECX, 4 + local_8 * 0xc) !== 0) {
-      operator_delete(true /* DEVIATION: C pointer — *(void **)(in_ECX + 4 + local_8 * 0xc) */);
+      operator_delete(s32(in_ECX, 4 + local_8 * 0xc));
       w32(in_ECX, 4 + local_8 * 0xc, 0);
     }
     w32(in_ECX, 8 + local_8 * 0xc, 0);
@@ -1288,7 +1288,7 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
         FUN_005dae6b(7,s_msgQueue_tail__pData_006319a8,s_D__Ss_Franklinton_NetMessageQueu_00631980, 0x136);
                      /*JOINED*/
       }
-      _memcpy(true /* DEVIATION: C pointer — *(void **)(in_ECX + 4 + s32(in_ECX, 0x5dc4) * 0xc) */,param_2,param_3);
+      _memcpy(s32(in_ECX, 4 + s32(in_ECX, 0x5dc4) * 0xc),param_2,param_3);
       /*JOINED*/
       // DEVIATION: C pointer write — *(int *)(in_ECX + *(int *)(in_ECX + 0x5dc4) * 0xc) = param_1;
       // DEVIATION: C pointer write — *(uint *)(in_ECX + 8 + *(int *)(in_ECX + 0x5dc4) * 0xc) = param_3;
@@ -1330,7 +1330,7 @@ export function FUN_0051438f(in_ECX, param_1, param_2, param_3) {
         FUN_005dae6b(7,s_msgQueue_alphaTail__pData_00631844, s_D__Ss_Franklinton_NetMessageQueu_0063181c,0x112);
                      /*JOINED*/
       }
-      _memcpy(true /* DEVIATION: C pointer — *(void **)(in_ECX + 4 + s32(in_ECX, 0x5dd0) * 0xc) */,param_2,param_3);
+      _memcpy(s32(in_ECX, 4 + s32(in_ECX, 0x5dd0) * 0xc),param_2,param_3);
       /*JOINED*/
       // DEVIATION: C pointer write — *(int *)(in_ECX + *(int *)(in_ECX + 0x5dd0) * 0xc) = param_1;
       // DEVIATION: C pointer write — *(uint *)(in_ECX + 8 + *(int *)(in_ECX + 0x5dd0) * 0xc) = param_3;

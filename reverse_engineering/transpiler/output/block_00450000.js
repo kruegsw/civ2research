@@ -1489,7 +1489,7 @@ export function FUN_00452c14(in_ECX, param_1, param_2, param_3, param_4) {
   _MEM[local_2c + 0x11] = 0;
   local_1c = 0;
   if (s32(in_ECX, 8000) === 0) {
-    // DEVIATION: C pointer write — *(int **)(in_ECX + 8000) = local_2c;
+    w32(in_ECX, 8000, local_2c);
   }
   else {
     local_1c = 1;
@@ -1497,7 +1497,7 @@ export function FUN_00452c14(in_ECX, param_1, param_2, param_3, param_4) {
         /*JOINED*/
       local_1c = local_1c + 1;
     }
-    // DEVIATION: C pointer write — *(int **)(local_18 + 0x44) = local_2c;
+    w32(local_18, 0x44, local_2c);
   }
   if (in_ECX === 0) {
     local_34 = 0;
@@ -3474,8 +3474,8 @@ export function tie_00456EE0(_this, param_1) {
 
   let poVar1;
   
-  poVar1 = true /* DEVIATION: C pointer — *(ostream **)(_this + 0x20) */;
-  // DEVIATION: C pointer write — *(ostream **)(this + 0x20) = param_1;
+  poVar1 = s32(_this, 0x20);
+  w32(_this, 0x20, param_1);
   return poVar1;
 }
 
@@ -4378,7 +4378,7 @@ export function handle_exchange_gift_0045950B(param_1, param_2, param_3, param_4
     wv(DAT_0064b124, -1);
     wv(DAT_0064b144, -1);
     for (local_388 = 0; local_388 < 100; local_388 = local_388 + 1) {
-      if (true /* DEVIATION: C-syntax — if ((_MEM[DAT_0062768e + local_388 * 0x10] !== 0xfe /* -2 as unsigned byte * /) || (_MEM[DAT_0062768f + local_388 * 0x10] !== 0xfe /* -2 as unsigned byte * /)) { */) {
+      if ((_MEM[DAT_0062768e + local_388 * 0x10] !== 0xfe) || (_MEM[DAT_0062768f + local_388 * 0x10] !== 0xfe)) {
         iVar6 = FUN_004bd9f0(param_1,local_388);
         iVar7 = FUN_004bd9f0(param_2,local_388);
         if ((iVar6 !== 0) && (local_39c = local_39c + 1, local_380 < 0)) {

@@ -207,7 +207,7 @@ export function FUN_005f0391(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   if ((s32(in_ECX, 0xcc) !== 0) && (param_1 === 0x200)) {
-    // DEVIATION: MFC — p_Var1 = ios::lockptr(*(ios **)(in_ECX + 0xcc));
+    // DEVIATION: MFC — p_Var1 = ios::lockptr(s32(in_ECX, 0xcc));
     if ((param_2 < s32(p_Var1, 0)) || (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) || (s32(p_Var1, 0xc) < param_3)))) {
        /*JOINED*/
         /*JOINED*/
@@ -1747,7 +1747,7 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   if ((s32(in_ECX, 0x1c) !== 0) && (param_1 === 0x200)) {
-    // DEVIATION: MFC — p_Var1 = ios::lockptr(*(ios **)(in_ECX + 0x1c));
+    // DEVIATION: MFC — p_Var1 = ios::lockptr(s32(in_ECX, 0x1c));
     if ((param_2 < s32(p_Var1, 0)) || (((s32(p_Var1, 8) < param_2 || (param_3 < s32(p_Var1, 4))) || (s32(p_Var1, 0xc) < param_3)))) {
        /*JOINED*/
         /*JOINED*/
@@ -1956,7 +1956,7 @@ export function __abnormal_termination_005F1D72() {
   
   iVar2 = 0;
   // DEVIATION: SEH
-  if ((true /* DEVIATION: C pointer — *(undefined1 **)(iVar1 + 4) */ === 0 /* ADDR:LAB_005f1ce8 */) && (s32(iVar1, 8) === s32(true /* DEVIATION: C pointer — s32(iVar1, 0xc) */ + 0xc, 0))) {
+  if ((s32(iVar1, 4) === 0 /* ADDR:LAB_005f1ce8 */) && (s32(iVar1, 8) === s32(true /* DEVIATION: C pointer — s32(iVar1, 0xc) */ + 0xc, 0))) {
      /*JOINED*/
     iVar2 = 1;
   }
@@ -2316,7 +2316,7 @@ export function TranslatorGuardHandler_005F20A0(param_1, param_2, param_3, param
   }
                     // /* WARNING: Could not recover jumptable at 0x005f20ff. Too many branches */
                     // /* WARNING: Treating indirect jump as call */
-  _Var1 = (true /* DEVIATION: C pointer — **(code **)(param_2 + 0x18) */)();
+  _Var1 = (*s32(param_2, 0x18))();
   return _Var1;
 }
 
@@ -5735,7 +5735,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
               (s32(pcVar1, 0))();
               return;
             }
-            wv(DAT_006e5470, true /* DEVIATION: C pointer — *(int **)((param_1) + -0x1c) */);
+            wv(DAT_006e5470, s32((param_1) + -0x1c, 0));
           }
           else {
             w32(s32(_Dst, 0) + 4, 0, s32((param_1) + -0x1c, 0));
@@ -7934,7 +7934,7 @@ export function ___InternalCxxFrameHandler_005F79A0(param_1, param_2, param_3, p
     if (s32(param_5, 0xc) !== 0) {
       if (((s32(param_1, 0) === -0x1f928c9d) && (0x19930520 < u32(param_1, 0x14))) && (s32(true /* DEVIATION: C pointer — s32(param_1, 0x1c) */ + 8, 0) !== 0)) {
          /*JOINED*/
-        uVar1 = (true /* DEVIATION: C pointer — **(code **)(s32(param_1, 0x1c) + 8) */)
+        uVar1 = (*s32(s32(param_1, 0x1c) + 8, 0))
                           (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
         return uVar1;
       }
@@ -8002,12 +8002,12 @@ export function FindHandler_005F7AC0(param_1, param_2, param_3, param_4, param_5
     local_10 = GetRangeOfTrysToCheck(param_5,param_7,local_8,local_14[0],local_c[0]);
     for (; local_14[0] < local_c[0]; local_14[0] = local_14[0] + 1) {
       if ((s32(local_10, 0) <= local_8) && (local_8 <= s32(local_10, 4))) {
-        local_18 = true /* DEVIATION: C pointer — *(_s_HandlerType **)(local_10 + 0x10) */;
+        local_18 = s32(local_10, 0x10);
         for (local_1c = s32(local_10, 0xc); local_1c !== 0; local_1c = local_1c + -1) {
-          local_20 = true /* DEVIATION: C pointer — *(undefined4 **)(s32(param_1, 0x1c) + 0xc) */;
-          for (local_24 = true /* DEVIATION: C pointer — **(int **)(s32(param_1, 0x1c) + 0xc) */; local_20 = local_20 + 1, local_24 !== 0; local_24 = local_24 + -1) {
+          local_20 = s32(s32(param_1, 0x1c) + 0xc, 0);
+          for (local_24 = *s32(s32(param_1, 0x1c) + 0xc, 0); local_20 = local_20 + 1, local_24 !== 0; local_24 = local_24 + -1) {
               /*JOINED*/
-            iVar2 = TypeMatch(local_18,s32(local_20, 0), true /* DEVIATION: C pointer — *(_s_ThrowInfo **)(param_1 + 0x1c) */);
+            iVar2 = TypeMatch(local_18,s32(local_20, 0), s32(param_1, 0x1c));
                               /*JOINED*/
             if (iVar2 !== 0) {
               CatchIt(param_1,param_2,param_3,param_4,param_5,local_18,s32(local_20, 0) ,local_10,param_7,param_8);
@@ -8255,7 +8255,7 @@ export function CatchIt_005F81B0(param_1, param_2, param_3, param_4, param_5, pa
   }
   ___FrameUnwindToState(param_2,param_4,param_5,s32(param_8, 0));
   w32(param_2, 8, s32(param_8, 4) + 1);
-  pvVar1 = CallCatchBlock(param_1,param_2,param_3,param_5,true /* DEVIATION: C pointer — *(void **)(param_6 + 0xc) */,param_9,0x100);
+  pvVar1 = CallCatchBlock(param_1,param_2,param_3,param_5,s32(param_6, 0xc),param_9,0x100);
   if (pvVar1 !== 0x0) {
     _JumpToContinuation(pvVar1,param_2);
   }
@@ -8385,55 +8385,55 @@ export function BuildCatchObject_005F8460(param_1, param_2, param_3, param_4) {
     if ((u8(s32(param_3, 0)) & 8) === 0) {
       if ((u8(s32(param_4, 0)) & 1) === 0) {
         if (s32(param_4, 0x18) === 0) {
-          iVar1 = _ValidateRead(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,1);
+          iVar1 = _ValidateRead(s32(param_1, 0x18),1);
           if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
             _inconsistency();
           }
           else {
             _Size = true /* DEVIATION: C pointer — *(size_t *)(param_4 + 0x14) */;
-            pvVar2 = AdjustPointer(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,(param_4 + 8));
+            pvVar2 = AdjustPointer(s32(param_1, 0x18),(param_4 + 8));
             _memcpy(_Dst,pvVar2,_Size);
           }
         }
         else {
-          iVar1 = _ValidateRead(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,1);
-          if (((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) || (iVar1 = _ValidateExecute(true /* DEVIATION: C pointer — *(_func_int **)(param_4 + 0x18) */), iVar1 === 0)) {
+          iVar1 = _ValidateRead(s32(param_1, 0x18),1);
+          if (((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) || (iVar1 = _ValidateExecute(s32(param_4, 0x18)), iVar1 === 0)) {
              /*JOINED*/
             _inconsistency();
           }
           else if ((u8(s32(param_4, 0)) & 4) === 0) {
-            pvVar2 = AdjustPointer(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,(param_4 + 8));
+            pvVar2 = AdjustPointer(s32(param_1, 0x18),(param_4 + 8));
             _CallMemberFunction1(_Dst,s32(param_4, 0x18),pvVar2);
           }
           else {
             uVar3 = 1;
-            pvVar2 = AdjustPointer(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,(param_4 + 8));
+            pvVar2 = AdjustPointer(s32(param_1, 0x18),(param_4 + 8));
             _CallMemberFunction1(_Dst,s32(param_4, 0x18),pvVar2,uVar3);
           }
         }
       }
       else {
-        iVar1 = _ValidateRead(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,1);
+        iVar1 = _ValidateRead(s32(param_1, 0x18),1);
         if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
           _inconsistency();
         }
         else {
-          _memcpy(_Dst,true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,true /* DEVIATION: C pointer — *(size_t *)(param_4 + 0x14) */);
+          _memcpy(_Dst,s32(param_1, 0x18),true /* DEVIATION: C pointer — *(size_t *)(param_4 + 0x14) */);
           if ((s32(param_4, 0x14) === 4) && (s32(_Dst, 0) !== 0)) {
-            pvVar2 = AdjustPointer(true /* DEVIATION: C pointer — *(void **)_Dst */,(param_4 + 8));
+            pvVar2 = AdjustPointer(s32(_Dst, 0),(param_4 + 8));
             // DEVIATION: C pointer write — *(void **)_Dst = pvVar2;
           }
         }
       }
     }
     else {
-      iVar1 = _ValidateRead(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,1);
+      iVar1 = _ValidateRead(s32(param_1, 0x18),1);
       if ((iVar1 === 0) || (iVar1 = _ValidateWrite(_Dst,1), iVar1 === 0)) {
         _inconsistency();
       }
       else {
         // DEVIATION: C pointer write — *(int *)_Dst = *(int *)(param_1 + 0x18);
-        pvVar2 = AdjustPointer(true /* DEVIATION: C pointer — *(void **)_Dst */,(param_4 + 8));
+        pvVar2 = AdjustPointer(s32(_Dst, 0),(param_4 + 8));
         // DEVIATION: C pointer write — *(void **)_Dst = pvVar2;
       }
     }
@@ -8469,7 +8469,7 @@ export function DestructExceptionObject_005F8740(param_1, param_2) {
   // DEVIATION: SEH
   if ((param_1 !== 0x0) && (s32(true /* DEVIATION: C pointer — s32(param_1, 0x1c) */ + 4, 0) !== 0)) {
     local_8 = 0;
-    _CallMemberFunction0(true /* DEVIATION: C pointer — *(void **)(param_1 + 0x18) */,true /* DEVIATION: C pointer — *(void **)(s32(param_1, 0x1c) + 4) */);
+    _CallMemberFunction0(s32(param_1, 0x18),s32(s32(param_1, 0x1c) + 4, 0));
   }
   // DEVIATION: SEH
   return;
@@ -10077,12 +10077,12 @@ export function __output_005FA6B0(param_1, param_2, param_3) {
         else if ((local_8 & 0x800) === 0) {
           local_20 = 0;
           local_28 = s16(local_250, 0);
-          pwVar2 = true /* DEVIATION: C pointer — *(wchar_t **)(local_250 + 2) */;
+          pwVar2 = s32(local_250, 2);
         }
         else {
           local_28 = ((s16(local_250, 0)) >>> 0) >> 1;
           local_20 = 1;
-          pwVar2 = true /* DEVIATION: C pointer — *(wchar_t **)(local_250 + 2) */;
+          pwVar2 = s32(local_250, 2);
         }
         break;
       case 100:
@@ -10461,7 +10461,7 @@ export function __stbuf_005FB620(_File) {
           return 0;
         }
       }
-      // DEVIATION: C struct — _File->_base = *(char **)(ptrAdd(DAT_0063a2b0, local_c * 4));
+      // DEVIATION: C struct — _File->_base = s32(DAT_0063a2b0, local_c * 4);
       // DEVIATION: C struct — _File->_ptr = _File->_base;
       // DEVIATION: C struct — _File->_bufsiz = 0x1000;
       // DEVIATION: C struct — _File->_cnt = _File->_bufsiz;
@@ -11731,7 +11731,7 @@ export function ___sbh_release_region_005FD040(param_1) {
   }
   else {
     // DEVIATION: C pointer write — *(undefined **)param_1[1] = *param_1;
-    // DEVIATION: C pointer write — *(undefined **)(*param_1 + 4) = param_1[1];
+    w32(_MEM[param_1] + 4, 0, _MEM[param_1 + 1]);
     HeapFree(v(DAT_006e69e4),0,param_1);
   }
   return;
@@ -11766,7 +11766,7 @@ export function ___sbh_decommit_pages_005FD0D0(param_1) {
       local_14 = 0;
       local_c = local_18 + 0x40f;
       for (local_10 = 0x3ff; -1 < local_10; local_10 = local_10 + -1) {
-        if (true /* DEVIATION: C-syntax — if ((_MEM[local_c] === 0xf0 /* -0x10 as unsigned byte * /) && (BVar2 = VirtualFree((s32(local_18, 0x810) + local_10 * 0x1000),0x1000, 0x4000), BVar2 !== 0)) { */) {
+        if ((_MEM[local_c] === 0xf0) && (BVar2 = VirtualFree((s32(local_18, 0x810) + local_10 * 0x1000),0x1000, 0x4000), BVar2 !== 0)) {
            /*JOINED*/
                                 /*JOINED*/
           _MEM[local_c] = -1;
@@ -11780,10 +11780,10 @@ export function ___sbh_decommit_pages_005FD0D0(param_1) {
         }
         local_c = local_c + -1;
       }
-      puVar1 = true /* DEVIATION: C pointer — *(undefined **)(local_18 + 4) */;
-      if (true /* DEVIATION: C-syntax — if ((local_14 !== 0) && (_MEM[local_18 + 0x10] === 0xff /* -1 as unsigned byte * /)) { */) {
+      puVar1 = s32(local_18, 4);
+      if ((local_14 !== 0) && (_MEM[local_18 + 0x10] === 0xff)) {
         local_10 = 1;
-        for (;;) { /* DEVIATION: C-syntax — for (local_c = local_18 + 0x11; (local_10 < 0x400 && (_MEM[local_c] === 0xff /* -1 as unsigned byte * /)); local_c = local_c + 1) { */
+        for (local_c = local_18 + 0x11; (local_10 < 0x400 && (_MEM[local_c] === 0xff)); local_c = local_c + 1) {
             /*JOINED*/
           local_10 = local_10 + 1;
         }
@@ -11929,12 +11929,12 @@ export function ___sbh_alloc_block_005FD390(param_1) {
     local_18 = s32(local_18, 0);
   } while (local_18 !== PTR_LOOP_0063ac4c);
   local_18 = PTR_LOOP_0063a438;
-  while (true /* DEVIATION: C-syntax — while ((_MEM[local_18 + 0x204] === 0x0 || (_MEM[local_18 + 3] === 0xff /* -1 as unsigned byte * /))) { */) {
+  while ((_MEM[local_18 + 0x204] === 0x0 || (_MEM[local_18 + 3] === 0xff))) {
     local_18 = s32(local_18, 0);
     if (local_18 === PTR_LOOP_0063a438) {
       puVar2 = ___sbh_new_region();
       if (puVar2 !== 0x0) {
-        piVar1 = true /* DEVIATION: C pointer — *(int **)(puVar2 + 0x810) */;
+        piVar1 = s32(puVar2, 0x810);
         _MEM[piVar1 + 2] = s8(param_1);
         PTR_LOOP_0063ac4c = puVar2;
         w32(piVar1, 0, (piVar1) + param_1 + 8);
@@ -11955,7 +11955,7 @@ export function ___sbh_alloc_block_005FD390(param_1) {
     if ((puVar3) <= (local_10)) break;
     puVar4 = puVar2 + 0x11;
     puVar2 = local_10;
-  } while (_MEM[puVar4 + (local_18)] === 0xff /* -1 as unsigned byte */);
+  } while (_MEM[puVar4 + (local_18)] === 0xff);
   puVar2 = _MEM[local_18 + 3];
   puVar3 = _MEM[local_18 + 0x204];
   puVar4 = VirtualAlloc(_MEM[local_18 + 0x204] + (_MEM[local_18 + 3]) * 0x1000, ((local_10) - (_MEM[local_18 + 3])) * 0x1000,0x1000,4);

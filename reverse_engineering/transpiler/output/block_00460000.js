@@ -745,7 +745,7 @@ export function FUN_00460129(param_1, param_2, param_3, param_4, param_5) {
             bVar10 = true;
             for (local_60 = 0; local_60 < 100; local_60 = local_60 + 1) {
               iVar13 = FUN_004bd9f0(param_2,local_60);
-              if (true /* DEVIATION: C-syntax — if (((iVar13 !== 0) && (iVar13 = FUN_004bd9f0(param_1,local_60), iVar13 === 0)) && ((_MEM[DAT_0062768e + local_60 * 0x10] !== 0xfe /* -2 as unsigned byte * / || (_MEM[DAT_0062768f + local_60 * 0x10] !== 0xfe /* -2 as unsigned byte * /)))) { */) {
+              if (((iVar13 !== 0) && (iVar13 = FUN_004bd9f0(param_1,local_60), iVar13 === 0)) && ((_MEM[DAT_0062768e + local_60 * 0x10] !== 0xfe || (_MEM[DAT_0062768f + local_60 * 0x10] !== 0xfe)))) {
                  /*JOINED*/
                   /*JOINED*/
                 FUN_004bf05b(param_1,local_60,param_2,0,0);
@@ -2450,7 +2450,7 @@ export function FUN_0046968b(param_1, param_2, param_3) {
     wv(DAT_0066be78, 0);
     for (local_10 = param_1; local_14 = local_10, local_10 < param_2; local_10 = local_10 + 1) {
       while (local_14 = local_14 + 1, local_14 <= param_2) {
-        iVar2 = _strcmp(true /* DEVIATION: C pointer — *(char **)(ptrAdd(DAT_0066be90, u8(_MEM[DAT_006560f6 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20]) * 4)) */, true /* DEVIATION: C pointer — *(char **)(ptrAdd(DAT_0066be90, u8(_MEM[DAT_006560f6 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20]) * 4)) */);
+        iVar2 = _strcmp(s32(DAT_0066be90, u8(_MEM[DAT_006560f6 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20]) * 4), s32(DAT_0066be90, u8(_MEM[DAT_006560f6 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20]) * 4));
                                   /*JOINED*/
                                               /*JOINED*/
                                                        /*JOINED*/
@@ -2517,9 +2517,9 @@ export function FUN_0046990a(param_1, param_2, param_3) {
   do {
     local_14 = local_14 + 1;
     if (param_2 < local_14) break;
-    if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00656100 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff /* -1 as unsigned byte * /) { */) {
-      if (true /* DEVIATION: C-syntax — if (_MEM[DAT_00656100 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff /* -1 as unsigned byte * /) */)
-       /* DEVIATION(cont) */ {
+    if (_MEM[DAT_00656100 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff) {
+      if (_MEM[DAT_00656100 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff)
+      {
         _Str2 = FUN_005b6898(s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
                                             /*JOINED*/
         _Str1 = FUN_005b6898(s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
@@ -6329,13 +6329,72 @@ function LAB_00468c0c_helper(iVar1, iVar2, iVar4, local_18, local_1c, local_2c, 
 }
 
 function LAB_00469989_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '}'
-  // Original code had structural issues from DEVIATION lines
+  do {
+    local_14 = local_14 + 1;
+    if (param_2 < local_14) break;
+    if (_MEM[DAT_00656100 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff) {
+      if (_MEM[DAT_00656100 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff)
+      {
+        _Str2 = FUN_005b6898(s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+                                            /*JOINED*/
+        _Str1 = FUN_005b6898(s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+                                            /*JOINED*/
+        iVar2 = _strcmp(_Str1,_Str2);
+        if (iVar2 < 1) return LAB_00469989_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1);
+      }
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, uVar1);
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0, uVar1);
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0, uVar1);
+    }
+  } while( true );
+  local_10 = local_10 + 1;
+  return LAB_0046996e_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1);
 }
 
 function LAB_0046996e_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '}'
-  // Original code had structural issues from DEVIATION lines
+  local_14 = local_10;
+  if (param_2 <= local_10) {
+    return;
+  }
+  // LAB_00469989:
+  do {
+    local_14 = local_14 + 1;
+    if (param_2 < local_14) break;
+    if (_MEM[DAT_00656100 + s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff) {
+      if (_MEM[DAT_00656100 + s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0) * 0x20] !== 0xff)
+      {
+        _Str2 = FUN_005b6898(s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+                                            /*JOINED*/
+        _Str1 = FUN_005b6898(s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+                                            /*JOINED*/
+        iVar2 = _strcmp(_Str1,_Str2);
+        if (iVar2 < 1) return LAB_00469989_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1);
+      }
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8, 0, uVar1);
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x43f8 + local_8, 0, uVar1);
+      uVar1 = s32(local_10 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0);
+      w32(local_10 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0, s32(local_14 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0));
+           /*JOINED*/
+      w32(local_14 * 4 + param_3 * 0x2004 + 0x8400 + local_8, 0, uVar1);
+    }
+  } while( true );
+  local_10 = local_10 + 1;
+  return LAB_0046996e_helper(iVar2, local_10, local_14, local_8, param_1, param_2, param_3, uVar1);
 }
 
 function LAB_0046ac67_helper(in_ECX, local_8, local_c, param_1, param_2) {

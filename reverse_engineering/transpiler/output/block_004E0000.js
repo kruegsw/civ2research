@@ -3232,7 +3232,7 @@ export function FUN_004e8c8c(param_1, param_2, param_3, param_4, param_5) {
   if (((v(DAT_0062edf4) !== 0) && (v(DAT_0062edf8) !== 0)) && (v(DAT_0062ee0c) === 0)) {
     bVar1 = FUN_005b89bb(param_4,param_5);
     uVar3 = ((bVar1) >>> 0);
-    if (true /* DEVIATION: C-syntax — if (((_MEM[DAT_00627cce + uVar3 * 0x18 + param_3] !== 0xff /* -1 as unsigned byte * /) && (_MEM[DAT_00627cd4 + uVar3 * 0x18 + param_3] !== 0)) && ((param_3 !== 0 || (iVar2 = FUN_0058c56c(param_4,param_5), iVar2 !== 0)))) { */) {
+    if (((_MEM[DAT_00627cce + uVar3 * 0x18 + param_3] !== 0xff) && (_MEM[DAT_00627cd4 + uVar3 * 0x18 + param_3] !== 0)) && ((param_3 !== 0 || (iVar2 = FUN_0058c56c(param_4,param_5), iVar2 !== 0)))) {
         /*JOINED*/
        /*JOINED*/
       uVar4 = u8(_MEM[DAT_0064c6b5 + param_2 * 0x594]);
@@ -3789,7 +3789,7 @@ export function FUN_004e9c14(param_1) {
   if (v(DAT_006a656c) < 1) {
     wv(DAT_006a656c, 0);
   }
-  if (true /* DEVIATION: C-syntax — if ((((iVar1 === 0) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x06)) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x04)) || ((_MEM[DAT_0064f379 + param_1 * 0x58] === 0xff /* -1 as unsigned byte * / && (v(DAT_006a6600) < 0)))) { */) {
+  if ((((iVar1 === 0) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x06)) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x04)) || ((_MEM[DAT_0064f379 + param_1 * 0x58] === 0xff && (v(DAT_006a6600) < 0)))) {
       /*JOINED*/
      /*JOINED*/
     wv(DAT_006a656c, 0);
@@ -3860,7 +3860,7 @@ export function FUN_004ea1f6(param_1, param_2, param_3, param_4) {
   let local_c;
   let local_8;
   
-  if (true /* DEVIATION: C-syntax — if ((param_3 === 1) && (_MEM[DAT_0064f379 + param_1 * 0x58] === 0xda /* -0x26 as unsigned byte * /)) { */) {
+  if ((param_3 === 1) && (_MEM[DAT_0064f379 + param_1 * 0x58] === 0xda)) {
     local_c = param_2;
     param_2 = (s16(DAT_0064f38e, param_1 * 0x58));
   }
@@ -3975,7 +3975,7 @@ export function FUN_004ea1f6(param_1, param_2, param_3, param_4) {
   if (iVar2 === param_1) {
     wv(DAT_006a6578, v(DAT_006a6578) << 1);
   }
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0064f379 + param_1 * 0x58] === 0xda /* -0x26 as unsigned byte * /) { */) {
+  if (_MEM[DAT_0064f379 + param_1 * 0x58] === 0xda) {
     if (param_3 === 0) {
       if (v(DAT_006a6568) < v(DAT_006a65cc)) {
         wv(DAT_006a6554, v(DAT_006a6554) + (v(DAT_006a65cc) - v(DAT_006a6568)));
@@ -4847,7 +4847,7 @@ export function FUN_004ec3fe(param_1) {
   if (local_2c < 1) {
     local_2c = 0;
   }
-  if (true /* DEVIATION: C-syntax — if (_MEM[DAT_0064f379 + param_1 * 0x58] !== 0xda /* -0x26 as unsigned byte * /) { */) {
+  if (_MEM[DAT_0064f379 + param_1 * 0x58] !== 0xda) {
     w16(DAT_0064f35c, param_1 * 0x58, s16(DAT_0064f35c, param_1 * 0x58) + ((local_2c) << 16 >> 16));
          /*JOINED*/
   }
@@ -6104,8 +6104,81 @@ function LAB_004e9651_helper(aiStack_58, bVar1, bVar3, cVar2, iVar4, iVar5, iVar
 }
 
 function LAB_004e9d15_helper(iVar1, iVar2, local_8, local_c, param_1) {
-  // HELPER_SYNTAX_ERROR: Unexpected token '}'
-  // Original code had structural issues from DEVIATION lines
+  iVar2 = FUN_0043d20a(param_1,0x12);
+  if (iVar2 !== 0) {
+    wv(DAT_006a65f8, 3);
+  }
+  iVar2 = FUN_0043d20a(param_1,0x1d);
+  if (iVar2 !== 0) {
+    local_c = 2;
+    wv(DAT_006a65f8, 3);
+  }
+  if (local_8 <= local_c) {
+    local_c = local_8;
+  }
+  wv(DAT_006a65cc, v(DAT_006a65cc) + ((v(DAT_006a65cc) * local_8) >> 2) + ((v(DAT_006a65cc) * local_c) >> 2));
+                 /*JOINED*/
+  wv(DAT_006a65c4, 0);
+  iVar2 = FUN_0043d20a(param_1,0xd);
+  if (iVar2 === 0) {
+    iVar2 = FUN_004bd9f0(iVar1,0x25);
+    if (iVar2 !== 0) {
+      wv(DAT_006a65c4, v(DAT_006a65c4) + 1);
+    }
+    iVar2 = FUN_004bd9f0(iVar1,5);
+    if (iVar2 !== 0) {
+      wv(DAT_006a65c4, v(DAT_006a65c4) + 1);
+    }
+    iVar2 = FUN_004bd9f0(iVar1,0x30);
+    if (iVar2 !== 0) {
+      wv(DAT_006a65c4, v(DAT_006a65c4) + 1);
+    }
+    iVar2 = FUN_004bd9f0(iVar1,0x3e);
+    if (iVar2 !== 0) {
+      wv(DAT_006a65c4, v(DAT_006a65c4) + 1);
+    }
+    if (v(DAT_006a65c4) !== 0) {
+      iVar2 = FUN_004bd9f0(iVar1,0x4a);
+      if (iVar2 === 0) {
+        wv(DAT_006a65c4, v(DAT_006a65c4) + 1);
+      }
+    }
+    if (v(DAT_006a65c4) !== 0) {
+      iVar2 = FUN_004bd9f0(iVar1,0x1a);
+      if (iVar2 !== 0) {
+        wv(DAT_006a65c4, v(DAT_006a65c4) + -1);
+      }
+    }
+    if (v(DAT_006a65c4) !== 0) {
+      iVar2 = FUN_0043d20a(param_1,0x1d);
+      if (iVar2 !== 0) {
+        wv(DAT_006a65c4, v(DAT_006a65c4) + -1);
+      }
+    }
+  }
+  wv(DAT_006a6584, (v(DAT_006a65cc) / v(DAT_006a65f8) | 0) + -0x14);
+  iVar2 = FUN_0043d20a(param_1,0x1d);
+  if (iVar2 !== 0) {
+    wv(DAT_006a6584, 0);
+  }
+  wv(DAT_006a6584, v(DAT_006a6584) + (s8(_MEM[DAT_0064f349 + param_1 * 0x58]) * v(DAT_006a65c4) >> 2));
+  iVar2 = FUN_004e989a(param_1,v(DAT_006a65cc) - v(DAT_006a6568),1,1);
+  iVar2 = (((((3 - v(DAT_006a6574)) * iVar2) / 3 | 0)) / ((u8(_MEM[DAT_0064c6b5 + iVar1 * 0x594]) >> 1) + 1) | 0);
+          /*JOINED*/
+  wv(DAT_006a656c, v(DAT_006a65cc) - (v(DAT_006a6568) + 1));
+  if (iVar2 <= v(DAT_006a656c)) {
+    wv(DAT_006a656c, iVar2);
+  }
+  if (v(DAT_006a656c) < 1) {
+    wv(DAT_006a656c, 0);
+  }
+  if ((((iVar1 === 0) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x06)) || (_MEM[DAT_0064c6b5 + iVar1 * 0x594] === 0x04)) || ((_MEM[DAT_0064f379 + param_1 * 0x58] === 0xff && (v(DAT_006a6600) < 0)))) {
+      /*JOINED*/
+     /*JOINED*/
+    wv(DAT_006a656c, 0);
+  }
+  wv(DAT_006a65cc, v(DAT_006a65cc) - v(DAT_006a656c));
+  return;
 }
 
 function LAB_004ec264_helper(iVar1, iVar2, local_8, param_1, param_2) {

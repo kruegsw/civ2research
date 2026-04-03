@@ -752,7 +752,7 @@ export function FUN_005d1bb8(in_ECX, param_1, param_2) {
   }
   else {
     param_1 = param_1 - s32(in_ECX, 0x10);
-    local_14 = true /* DEVIATION: C pointer — *(int **)(in_ECX + 0x38) */;
+    local_14 = s32(in_ECX, 0x38);
     local_c = param_2 - s32(in_ECX, 0x14);
     while( true ) {
       if (local_c === 0) break;
@@ -1422,7 +1422,7 @@ export function FUN_005d25c0(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  w32(in_ECX, 0x40, PTR_DAT_00637e6c);
   w32(in_ECX, 0x2c, 0);
   SetRect(local_14[0],param_3,param_4,param_5 + param_3,param_4 + 0x1e);
   FUN_00418910(param_1,param_2,local_14[0],param_6);
@@ -1443,7 +1443,7 @@ export function FUN_005d2625(in_ECX, param_1, param_2, param_3, param_4, param_5
   // in_ECX → promoted to parameter
   let local_14 = [0];
   
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  w32(in_ECX, 0x40, PTR_DAT_00637e6c);
   w32(in_ECX, 0x2c, 0);
   SetRect(local_14[0],param_3,param_4,param_5 + param_3,param_4 + 0x1e);
   FUN_005d26b0(param_1,param_2,local_14[0],param_6,param_7);
@@ -1481,7 +1481,7 @@ export function FUN_005d26b0(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (s32(in_ECX, 0x1c) !== 0) {
     FUN_0040f610();
   }
-  // DEVIATION: C pointer write — *(undefined **)(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  w32(in_ECX, 0x40, PTR_DAT_00637e6c);
   FUN_0040f730(param_1,4,param_2,param_3);
   uVar1 = register_wndclass_2740(param_3,in_ECX,1,param_5,s32(in_ECX, 0x40));
   w32(in_ECX, 0x1c, uVar1);
@@ -2008,7 +2008,7 @@ export function FUN_005d30e0(in_ECX, param_1) {
     uVar1 = 1;
   }
   else {
-    uVar1 = (true /* DEVIATION: C pointer — **(code **)(in_ECX + 0x34) */)(s32(in_ECX, 4),param_1);
+    uVar1 = (*s32(in_ECX, 0x34))(s32(in_ECX, 4),param_1);
   }
   return uVar1;
 }
@@ -4405,7 +4405,7 @@ export function FUN_005d645e(param_1, param_2, param_3) {
       w32(s32(local_8, 0) + 4, 0, local_c);
       _MEM[local_8 + 6] = s32(s32(local_8, 0) + 4, 0);
       _MEM[local_8 + 5] = true /* DEVIATION: C pointer — s32(s32, 0)(local_8, 0) */ + _MEM[local_8 + 6];
-      // DEVIATION: C pointer write — *(int **)(*local_8 + 0xc) = local_8;
+      w32(s32(local_8, 0) + 0xc, 0, local_8);
       _MEM[local_8 + 1] = local_1c[0];
       _MEM[local_8 + 3] = _MEM[local_8 + 3] & 0xffff807f | (local_14 & 0xff) << 7;
       local_10 = waveOutPrepareHeader(param_2,s32(local_8, 0),0x20);
@@ -4550,7 +4550,7 @@ export function FUN_005d6947(param_1) {
   
   local_10 = local_10 & 0xffff0000;
   while ((((_MEM[param_1 + 3]) >>> 0) >> 6 & 1) !== 0) {
-    local_c = true /* DEVIATION: C pointer — *(byte **)s32(param_1, 0) */;
+    local_c = true /* DEVIATION: C pointer — s32(s32, 0)(param_1, 0) */;
     for (local_14 = 0; local_14 < u32(s32(param_1, 0) + 4, 0); local_14 = local_14 + 1) {
       _MEM[local_c] = _MEM[local_c] ^ 0x80;
       local_c = local_c + 1;
@@ -4712,7 +4712,7 @@ export function FUN_005d6c99(param_1, param_2) {
   local_8 = 0x0;
   uVar1 = 0;
   if (v(DAT_006385b0) !== 0) {
-    local_20 = true /* DEVIATION: C pointer — *(int **)(param_2 + 0xc) */;
+    local_20 = s32(param_2, 0xc);
     local_2c = 0;
     while ((local_2c < v(DAT_00638588) && (wv(DAT_006385c8, s32(DAT_006385c8, 0x1c)), (u32(DAT_006385c8, 0xc) >> 5 & 1) === 0))) {
            /*JOINED*/
@@ -4728,7 +4728,7 @@ export function FUN_005d6c99(param_1, param_2) {
       }
       do {
         puVar2 = s32(local_20, 0);
-        local_28 = true /* DEVIATION: C pointer — *(byte **)s32(local_20, 0) */;
+        local_28 = true /* DEVIATION: C pointer — s32(s32, 0)(local_20, 0) */;
         while ((local_30 !== 0x0 && ((((_MEM[local_30 + 0x1c]) >>> 0) >> 1 & 1) !== 0))) {
           local_30 = _MEM[local_30 + 0x2e];
         }
@@ -4754,7 +4754,7 @@ export function FUN_005d6c99(param_1, param_2) {
             else {
               FUN_005d753e(local_30,s32(puVar2, 0),_MEM[puVar2 + 1]);
             }
-            for (local_30 = _MEM[local_30 + 0x2e]; local_30 !== 0x0; local_30 = true /* DEVIATION: C pointer — *(undefined4 **)((local_30) + 0xb8) */) {
+            for (local_30 = _MEM[local_30 + 0x2e]; local_30 !== 0x0; local_30 = s32((local_30) + 0xb8, 0)) {
                 /*JOINED*/
               if ((u32((local_30) + 0x70, 0) >> 1 & 1) === 0) {
                 FUN_005d778c(local_30,s32(puVar2, 0),_MEM[puVar2 + 1]);
@@ -5467,13 +5467,13 @@ export function FUN_005d8270(param_1, param_2) {
   else {
     HVar2 = OpenFile(local_108[0],(param_2 + 2),2);
     _MEM[param_2 + 1] = HVar2;
-    if (true /* DEVIATION: C-syntax — if (_MEM[param_2 + 1] === 0xff /* -1 as unsigned byte * /) { */) {
+    if (_MEM[param_2 + 1] === 0xff) {
       w32(param_2, 0, 0);
       HVar2 = OpenFile(local_108[0],(param_2 + 2),0);
       _MEM[param_2 + 1] = HVar2;
       _MEM[param_2 + 0x25] = 0;
       _MEM[param_2 + 0x24] = 0;
-      if (true /* DEVIATION: C-syntax — if (_MEM[param_2 + 1] === 0xff /* -1 as unsigned byte * /) { */) {
+      if (_MEM[param_2 + 1] === 0xff) {
         _MEM[param_2 + 1] = 0;
         return 0;
       }
@@ -6237,7 +6237,7 @@ export function create_window_8E3F_005D8E3F(param_1, param_2, param_3, param_4, 
     SetRect((local_28 * 0xa4 + iVar6 + 4),local_44,(iVar10 - iVar13) + local_8, local_44 + iVar7,(iVar10 - iVar13) + local_8 + nHeight);
             /*JOINED*/
     w32(iVar6, 0x14 + local_28 * 0xa4, local_28);
-    local_10 = true /* DEVIATION: C pointer — *(char **)(param_6 + local_28 * 4) */;
+    local_10 = s32(param_6, local_28 * 4);
     if (_MEM[local_10] === 33) {
       w32(iVar6, 0x18 + local_28 * 0xa4, 0);
       local_10 = local_10 + 1;
