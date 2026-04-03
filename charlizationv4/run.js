@@ -14,7 +14,9 @@ import './globals-init.js';
 import { G } from './globals.js';
 import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, getTileOffset, tileRead } from './mem.js';
 // v(addr)=read value, wv(addr,val)=write value
-import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
+import { FUN_004087c0 } from './blocks/block_00400000.js';
+import { FUN_005ae052 } from './blocks/block_005A0000.js';
+import { FUN_005b89bb } from './blocks/block_005B0000.js';
 import { loadSav } from './sav-loader.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
 import { printLog, resetLog } from './devlog.js';
