@@ -113,8 +113,18 @@ def get_func_name_at(addr, program):
             name = name[6:]
         if name.startswith('FID_conflict_'):
             name = name[13:]
-        return name
+        return _sanitize_js_name(name)
     return 'FUN_%08x' % addr.getOffset()
+
+def _sanitize_js_name(name):
+    """Replace characters invalid in JS identifiers with underscores."""
+    result = []
+    for ch in name:
+        if ch.isalnum() or ch == '_' or ch == '$':
+            result.append(ch)
+        else:
+            result.append('_')
+    return ''.join(result)
 
 def get_symbol_name_at(offset, program):
     """Look up symbol name at a raw address offset."""
@@ -123,7 +133,7 @@ def get_symbol_name_at(offset, program):
         addr = space.getAddress(offset)
         sym = program.getSymbolTable().getPrimarySymbol(addr)
         if sym is not None:
-            return sym.getName()
+            return _sanitize_js_name(sym.getName())
     except:
         pass
     return 'DAT_%08x' % offset
@@ -632,9 +642,9 @@ class JSEmitter(object):
         # State
         self.in_signature = False
         self.first_param = True
-        self.emitted_ops = set()  # PcodeOps already emitted
-        self.skip_until_brace = False  # After emitting if(cond), skip until {
+        self.emitted_ops = set()  # PcodeOps already emitted (by stable key)
         self._comment_words = []  # Accumulator for consecutive comment tokens
+        self._skip_close_parens = 0  # Count of ) to suppress (from skipped casts)
 
         # Pre-analysis
         self.register_params = []
@@ -690,6 +700,18 @@ class JSEmitter(object):
                 self.lines.append(line)
             self.cur = []
 
+    def _undo_last_open_paren(self):
+        """Remove the last '(' from current line (for cast paren suppression)."""
+        for i in range(len(self.cur) - 1, -1, -1):
+            s = self.cur[i].strip()
+            if s == '(':
+                self.cur[i] = ''
+                return
+            elif s == '':
+                continue
+            else:
+                break
+
     def _add_comment_word(self, word):
         """Collect consecutive ClangCommentToken words into one comment."""
         self._comment_words.append(word)
@@ -698,6 +720,8 @@ class JSEmitter(object):
         """Emit collected comment words as a single /* ... */ block."""
         if self._comment_words:
             text = ' '.join(self._comment_words)
+            # Escape any */ inside the comment to prevent early close
+            text = text.replace('*/', '* /')
             comment = '/* %s */' % text
             # Append directly to cur to avoid recursion with _text
             if self.cur:
@@ -715,146 +739,170 @@ class JSEmitter(object):
     # ── Tree walker ───────────────────────────────────────────────
 
     def _walk(self, node):
-        # Group nodes
+        # ── Group nodes ───────────────────────────────────────────
         if isinstance(node, ClangFunction):
             self._emit_function(node)
         elif isinstance(node, ClangReturnType):
-            pass  # skip
+            pass
         elif isinstance(node, ClangVariableDecl):
             if self.in_signature:
                 self._emit_param_decl(node)
             else:
                 self._emit_var_decl(node)
         elif isinstance(node, ClangStatement):
-            if not self.skip_until_brace:
-                self._emit_statement(node)
+            self._emit_statement(node)
         elif is_group(node):
-            self._walk_children(node)  # Always recurse — skip_until_brace checked at leaf level
-        # Leaf tokens — only reached for non-statement contexts (control flow)
+            self._walk_children(node)
+
+        # ── Leaf tokens ───────────────────────────────────────────
+        # These are reached in control flow contexts (if conditions,
+        # for headers, etc.). Structural tokens pass through as-is.
+        # Expression tokens use PcodeOp annotations for conversions.
         elif isinstance(node, ClangBreak):
-            if not self.skip_until_brace:
-                self._newline(node.getIndent())
-        elif isinstance(node, ClangFuncNameToken):
-            if not self.skip_until_brace:
-                self._text(get_token_text(node))
+            self._newline(node.getIndent())
         elif isinstance(node, ClangOpToken):
-            if not self.skip_until_brace:
-                self._emit_token_with_pcode(node)
+            self._emit_leaf_op(node)
+        elif isinstance(node, ClangVariableToken):
+            self._emit_leaf_var(node)
+        elif isinstance(node, ClangFuncNameToken):
+            name = _sanitize_js_name(get_token_text(node))
+            if name.startswith('thunk_'):
+                name = name[6:]
+            self._text(name)
         elif isinstance(node, ClangSyntaxToken):
             text = get_token_text(node)
-            if self.skip_until_brace:
-                if text == '{':
-                    self.skip_until_brace = False
-                    self._text('{')
-                elif text == ';':
-                    # End of a single-statement if/while/for (no braces)
-                    self.skip_until_brace = False
-                    self._text(';')
-                return
-            if text != '':
-                self._text(text)
-        elif isinstance(node, ClangVariableToken):
-            if not self.skip_until_brace:
-                self._emit_token_with_pcode(node)
-        elif isinstance(node, ClangTypeToken):
-            pass  # Cast type tokens — handled by P-code, skip
-        elif isinstance(node, ClangLabelToken):
-            if not self.skip_until_brace:
-                self._text(get_token_text(node) + ':')
-        elif isinstance(node, ClangCommentToken):
-            if not self.skip_until_brace:
-                self._add_comment_word(get_token_text(node))
-        elif isinstance(node, ClangFieldToken):
-            if not self.skip_until_brace:
-                self._text(get_token_text(node))
-        else:
-            if not self.skip_until_brace:
-                text = get_token_text(node)
-                if text.strip():
+            if text == '':
+                pass  # Ghidra separator, skip
+            elif text == 'goto':
+                self._text('// goto')  # C goto → comment (not valid JS)
+            elif text.startswith("'\\"):
+                # Character literal: '\0' → 0, '\xNN' → 0xNN
+                if text == "'\\0'":
+                    self._text('0')
+                elif text.startswith("'\\x"):
+                    self._text('0x' + text[3:-1])
+                elif text == "'\\n'":
+                    self._text('0xa')
+                elif text == "'\\a'":
+                    self._text('7')
+                else:
                     self._text(text)
+            else:
+                self._text(text)
+        elif isinstance(node, ClangTypeToken):
+            # Cast type skipped — suppress the surrounding ( and )
+            self._undo_last_open_paren()
+            self._skip_close_parens += 1
+        elif isinstance(node, ClangLabelToken):
+            self._text('// label: ' + get_token_text(node))
+        elif isinstance(node, ClangCommentToken):
+            self._add_comment_word(get_token_text(node))
+        elif isinstance(node, ClangFieldToken):
+            self._text(get_token_text(node))
+        else:
+            text = get_token_text(node)
+            if text.strip():
+                self._text(text)
 
     def _walk_children(self, node):
-        for i in range(node.numChildren()):
-            self._walk(node.Child(i))
+        """Walk children of a group node. Detects control flow patterns
+        (if/while/for/do) and handles them at the group level — emitting
+        keyword + P-code condition + recursing into body subgroups.
+        Leaf tokens in conditions are NOT walked individually."""
+        children = get_children(node)
+        i = 0
+        while i < len(children):
+            child = children[i]
 
-    def _emit_token_with_pcode(self, node):
-        """For tokens in non-statement contexts (e.g., if conditions),
-        emit the full P-code expression tree if this token has an op."""
+            # Detect control flow keyword: ClangOpToken with text if/while/for
+            if isinstance(child, ClangOpToken):
+                text = get_token_text(child)
+                pcop = child.getPcodeOp()
+
+                if text in ('if', 'while') and pcop and pcop.getOpcode() == PcodeOp.CBRANCH:
+                    # Emit: keyword (condition) then walk remaining children
+                    cond = self.pcode.emit(pcop)
+                    self._text('%s (%s)' % (text, cond))
+                    # Skip all tokens until we hit a group node or {
+                    i += 1
+                    while i < len(children):
+                        c = children[i]
+                        if is_group(c) and not isinstance(c, ClangStatement):
+                            break  # Body group — walk it normally
+                        if isinstance(c, ClangSyntaxToken) and get_token_text(c) == '{':
+                            break
+                        if isinstance(c, ClangBreak):
+                            self._walk(c)  # Preserve line breaks
+                        i += 1
+                    continue  # Process body from current i
+
+                if text == 'for' and pcop and pcop.getOpcode() == PcodeOp.CBRANCH:
+                    cond = self.pcode.emit(pcop)
+                    # Collect init and update from surrounding ClangStatements
+                    # For now, emit as while-equivalent
+                    self._text('for (; %s ;)' % cond)
+                    i += 1
+                    while i < len(children):
+                        c = children[i]
+                        if is_group(c) and not isinstance(c, ClangStatement):
+                            break
+                        if isinstance(c, ClangSyntaxToken) and get_token_text(c) == '{':
+                            break
+                        if isinstance(c, ClangBreak):
+                            self._walk(c)
+                        i += 1
+                    continue
+
+                if text == 'do':
+                    self._text('do')
+                    i += 1
+                    continue
+
+            # Everything else — walk normally
+            self._walk(children[i])
+            i += 1
+
+    def _emit_leaf_op(self, node):
+        """Handle an operator token in a non-statement context.
+        Uses PcodeOp annotation for type-aware substitutions."""
+        text = get_token_text(node)
         pcop = node.getPcodeOp()
-        if pcop is None:
-            self._text(get_token_text(node))
+
+        # Keywords that are ClangOpTokens — pass through as-is
+        if text in ('if', 'while', 'for', 'do', 'return', 'switch', 'case'):
+            self._text(text)
             return
 
-        opc = pcop.getOpcode()
-
-        # "if" keyword — ClangOpToken with text "if" and pcode CBRANCH
-        if opc == PcodeOp.CBRANCH and get_token_text(node) == 'if':
-            cond = self.pcode.emit(pcop)
-            self._text('if (%s)' % cond)
-            self._mark_op_emitted(pcop)
-            self.skip_until_brace = True  # Skip the original (cond) tokens
+        # == → ===, != → !==
+        if text == '==':
+            self._text('===')
+            return
+        if text == '!=':
+            self._text('!==')
             return
 
-        # "while" keyword — also CBRANCH
-        if opc == PcodeOp.CBRANCH and get_token_text(node) == 'while':
-            cond = self.pcode.emit(pcop)
-            self._text('while (%s)' % cond)
-            self._mark_op_emitted(pcop)
-            self.skip_until_brace = True
+        # & with PTRSUB → skip (address-of on global)
+        if text == '&' and pcop and pcop.getOpcode() == PcodeOp.PTRSUB:
             return
 
-        # "for" keyword — CBRANCH, skip to { (init/cond/update are between)
-        if opc == PcodeOp.CBRANCH and get_token_text(node) == 'for':
-            cond = self.pcode.emit(pcop)
-            self._text('for (/* cond: %s */)' % cond)
-            self._mark_op_emitted(pcop)
-            self.skip_until_brace = True
+        # * as pointer deref (LOAD) → skip (the value is read by surrounding context)
+        # In conditions, this appears in patterns like *(type *)(addr) which
+        # should ideally be s16/s32 but we can't restructure from leaf tokens.
+        # Skip the * — the surrounding parens and address pass through.
+        if text == '*' and pcop and pcop.getOpcode() == PcodeOp.LOAD:
             return
 
-        # "do" keyword — CBRANCH for do-while
-        if opc == PcodeOp.CBRANCH and get_token_text(node) == 'do':
-            self._text('do')
-            self._mark_op_emitted(pcop)
-            return
+        # * in pointer cast type like (short *) → skip
+        if text == '*' and pcop is None:
+            return  # Likely part of a pointer type cast
 
-        # "return" keyword — RETURN op (when it appears as a leaf token)
-        if opc == PcodeOp.RETURN and get_token_text(node) == 'return':
-            if pcop.getNumInputs() > 1:
-                val = self.pcode._emit_varnode(pcop.getInput(1))
-                self._text('return %s' % val)
-            else:
-                self._text('return')
-            self._mark_op_emitted(pcop)
-            return
+        # Everything else passes through
+        self._text(text)
 
-        # Regular expression token — emit P-code expression if not yet emitted
-        op_key = self._op_key(pcop)
-        if op_key not in self.emitted_ops:
-            self.emitted_ops.add(op_key)
-            js = self.pcode.emit(pcop)
-            self._text(js)
-            self._mark_op_emitted(pcop)
-        # else: already emitted, skip
-
-    def _op_key(self, op):
-        """Stable key for a PcodeOp (Java id() is unreliable via JPype)."""
-        try:
-            seq = op.getSeqnum()
-            return (int(seq.getTarget().getOffset()), int(seq.getTime()))
-        except:
-            return id(op)  # fallback
-
-    def _mark_op_emitted(self, op):
-        """Mark a PcodeOp and its input tree as emitted."""
-        key = self._op_key(op)
-        if key in self.emitted_ops:
-            return
-        self.emitted_ops.add(key)
-        for i in range(op.getNumInputs()):
-            vn = op.getInput(i)
-            def_op = vn.getDef()
-            if def_op is not None:
-                self._mark_op_emitted(def_op)
+    def _emit_leaf_var(self, node):
+        """Handle a variable token in a non-statement context.
+        Just emit the variable name."""
+        self._text(get_token_text(node))
 
     # ── Function signature ────────────────────────────────────────
 
@@ -882,11 +930,9 @@ class JSEmitter(object):
             if isinstance(child, ClangReturnType):
                 continue
             if isinstance(child, ClangFuncNameToken):
-                name = get_token_text(child)
+                name = _sanitize_js_name(get_token_text(child))
                 if name.startswith('thunk_'):
                     name = name[6:]
-                if name.startswith('FID_conflict_'):
-                    name = name[13:]
                 self._text('export function %s' % name)
                 continue
             if isinstance(child, ClangVariableDecl):
@@ -958,6 +1004,16 @@ class JSEmitter(object):
 
         # Classify the statement by looking at its PcodeOps
 
+        # Check for goto/label/joined statements by looking at token text
+        first_text = get_token_text(tokens[0]).strip() if tokens else ''
+        if first_text in ('goto', 'break', 'continue'):
+            self._text('// %s' % ' '.join(get_token_text(t) for t in tokens if get_token_text(t).strip()))
+            return
+        # Ghidra joined blocks and switch labels
+        if first_text.startswith('joined_') or first_text.startswith('switchD_') or first_text.startswith('caseD_'):
+            self._text('// %s' % first_text)
+            return
+
         # RETURN
         for op in ops:
             if op.getOpcode() == PcodeOp.RETURN:
@@ -1013,12 +1069,9 @@ class JSEmitter(object):
                 self._text('%s = %s' % (lhs_name, js))
             return
 
-        # Fallback — emit tokens as-is with marker
-        self._text('/* UNHANDLED_STMT */')
-        for tok in tokens:
-            text = get_token_text(tok)
-            if text.strip():
-                self._text(text)
+        # Fallback — comment out the raw C tokens (not valid JS)
+        raw = ' '.join(get_token_text(t) for t in tokens if get_token_text(t).strip())
+        self._text('// UNHANDLED: %s' % raw)
 
     def _collect_leaf_tokens(self, node):
         """Collect all leaf tokens from a node tree, in order."""
@@ -1112,11 +1165,9 @@ def process_block(decomp, block_addr, funcs, output_dir, program, all_blocks):
     # Build set of function names defined in THIS block
     local_fn_names = set()
     for func in funcs:
-        name = func.getName()
+        name = _sanitize_js_name(func.getName())
         if name.startswith('thunk_'):
             name = name[6:]
-        if name.startswith('FID_conflict_'):
-            name = name[13:]
         local_fn_names.add(name)
 
     # Build registry: function name → block filename (for all blocks)
@@ -1125,10 +1176,9 @@ def process_block(decomp, block_addr, funcs, output_dir, program, all_blocks):
         bfile = 'block_%08X.js' % ba
         for f in bfuncs:
             n = f.getName()
+            n = _sanitize_js_name(n)
             if n.startswith('thunk_'):
                 n = n[6:]
-            if n.startswith('FID_conflict_'):
-                n = n[13:]
             fn_registry[n] = bfile
 
     # Transpile all functions, collecting metadata
