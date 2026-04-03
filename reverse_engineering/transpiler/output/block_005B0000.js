@@ -1516,8 +1516,8 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
           wv(DAT_00655af4, v(DAT_00655af4) | 0x10);
         }
       }
-      else if (true /* DEVIATION: C-syntax — else if (((v(DAT_00655aea) & 1) !== 0) && (s8(_MEM[DAT_0064b1ca + param_1 * 0x14]) < 0x05)) */)
-       /* DEVIATION(cont) */ {
+      else if (((v(DAT_00655aea) & 1) !== 0) && (s8(_MEM[DAT_0064b1ca + param_1 * 0x14]) < 0x05))
+      {
         if (s16(DAT_0064c706, param_2 * 0x594) === 1) {
           FUN_00490530(PTR_s_TUTORIAL_00627678,s_FIRSTUNIT1_00636314,local_10);
         }

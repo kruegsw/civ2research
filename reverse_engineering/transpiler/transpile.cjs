@@ -1873,10 +1873,10 @@ function processFunction(headerLines, bodyLines, ctx) {
     const ft = transformed.trim();
     if (ft && !ft.startsWith('//') && !ft.startsWith('/*') && !ft.startsWith('}') && !ft.startsWith('{') && !/DEVIATION/.test(ft)) {
       // Check for patterns that are invalid JS
-      if (/\*\s*\(\s*\w+\s*\*/.test(ft) ||  // *(type *) — including handled types that failed (multi-line)
+      if (/(?<![a-zA-Z0-9_\])])\*\s*\(\s*\w+\s*\*/.test(ft) ||  // *(type *) — but NOT multiplication like iVar * 0x58
           /\(\s*void\s*\)\s*\w/.test(ft) ||  // (void)expr
           /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
-          /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) ||  // C function signature
+          /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) && !/^(else|if|for|while|do|switch|case|return|break|continue)\b/.test(ft) ||  // C function signature (not JS keywords)
           /^[A-Z]\w+\s*::\s*~?[A-Z]/.test(ft)) {  // C++ class::method
         transformed = makeDeviation(transformed, 'C-syntax', ctx);
       }

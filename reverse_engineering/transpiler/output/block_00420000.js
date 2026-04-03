@@ -2703,8 +2703,8 @@ export function FUN_004274a6(param_1, param_2) {
                 if ((uVar23 & (s8(_MEM[DAT_0064f34c + iVar16 * 0x58]))) === 0) {
                   local_30 = local_30 | 10;
                 }
-                else if (true /* DEVIATION: C-syntax — else if (_MEM[DAT_0064f34d + iVar16 * 0x58 + uVar10] !== _MEM[DAT_0064f349 + iVar16 * 0x58]) */)
-                 /* DEVIATION(cont) */ {
+                else if (_MEM[DAT_0064f34d + iVar16 * 0x58 + uVar10] !== _MEM[DAT_0064f349 + iVar16 * 0x58])
+                {
                   local_30 = local_30 | 2;
                 }
               }

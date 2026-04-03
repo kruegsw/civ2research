@@ -5779,11 +5779,11 @@ export function FUN_0055d8d8(param_1, param_2, param_3, param_4) {
                     break;
                   }
                 }
-                else if (true /* DEVIATION: C-syntax — else if (((!bVar1) && (iVar3 = FUN_00467af0(param_1,local_28), iVar3 !== 0)) && ((u8(_MEM[DAT_00655c22 + param_1]) <= u8(_MEM[DAT_00655c22 + local_28]) && ((iVar3 = FUN_00467af0(param_2,local_28), iVar3 !== 0 && (u8(_MEM[DAT_00655c22 + param_2]) <= u8(_MEM[DAT_00655c22 + local_28]))))))) */)
+                else if (((!bVar1) && (iVar3 = FUN_00467af0(param_1,local_28), iVar3 !== 0)) && ((u8(_MEM[DAT_00655c22 + param_1]) <= u8(_MEM[DAT_00655c22 + local_28]) && ((iVar3 = FUN_00467af0(param_2,local_28), iVar3 !== 0 && (u8(_MEM[DAT_00655c22 + param_2]) <= u8(_MEM[DAT_00655c22 + local_28])))))))
                         /*JOINED*/
                          /*JOINED*/
                           /*JOINED*/
-                /* DEVIATION(cont): goto LAB_0055ecb6 */;
+                return LAB_0055ecb6_helper(bVar1, bVar2, bVar6, bVar7, iVar3, local_14, local_1c, local_28, local_2c, param_1, param_2, param_3, param_4, uVar4, uVar5);
               }
             }
             else {
@@ -6219,7 +6219,7 @@ function LAB_0055ecb6_helper(bVar1, bVar2, bVar6, bVar7, iVar3, local_14, local_
   // (skipped else cont) /*JOINED*/
   // (skipped else cont) /*JOINED*/
   // (skipped else cont) /*JOINED*/
-  // (skipped else cont) /* DEVIATION(cont): goto LAB_0055ecb6 */;
+  // (skipped else cont) goto LAB_0055ecb6;
   // (outer block close)
   // (outer block close)
   // (skipped orphan else)

@@ -3460,8 +3460,8 @@ export function FUN_0058afb6(param_1) {
       else if (param_1 === 0x11) {
         wv(_DAT_006acd38, 0x19);
       }
-      else if (true /* DEVIATION: C-syntax — else if ((((param_1 === 0xf) || (param_1 === 0x10)) || (param_1 === 0x13)) || (param_1 === 0x12)) */)
-       /* DEVIATION(cont) */ {
+      else if ((((param_1 === 0xf) || (param_1 === 0x10)) || (param_1 === 0x13)) || (param_1 === 0x12))
+      {
         wv(_DAT_006acd38, 0x4a);
       }
       else if ((param_1 === 0x14) || (param_1 === 0x15)) {
