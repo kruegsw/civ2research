@@ -96,10 +96,10 @@ function placeUnit(idx, type, owner, x, y) {
   w16(u, 4, veteranBit); // status (with veteran flag if applicable)
   _MEM[u + 6] = type;   // unit type
   _MEM[u + 7] = owner;
-  _MEM[u + 10] = 3;     // moves remain
-  _MEM[u + 14] = 0;     // alive
-  _MEM[u + 15] = 0xFF;  // no order
-  _MEM[u + 16] = 0xFF;  // no home city
+  _MEM[u + 8] = 3;      // moves_remaining (was 0x0A — WRONG, fixed per byte_verification_plan)
+  _MEM[u + 0x0A] = 0;   // damage_taken (0 = full health)
+  _MEM[u + 0x0D] = 0xFF; // home_city (was 0x10 — WRONG, fixed per byte_verification_plan)
+  _MEM[u + 0x0F] = 0xFF; // orders (255 = none)
   w16(u, 0x16, -1);     // prev in stack
   w16(u, 0x18, -1);     // next in stack
   w32(u, 0x1A, idx + 1); // unit ID (non-zero)
@@ -151,6 +151,14 @@ placeUnit(3, 2, 2, 70, 30);
 w16(DAT_00655b16, 0, 4);   // 4 units total
 w16(DAT_00655b18, 0, 2);   // 2 cities total
 wv(DAT_00655b0b, 0);        // all AI
+wv(DAT_00655af8, 1);        // turn counter = 1 (gates tech assignment + AI decisions)
+
+// ── Civ struct initialization (from game_logic_insights.md, session 4) ──
+for (let civ = 1; civ <= 2; civ++) {
+  const cb = DAT_0064c600 + civ * 0x594;
+  // Tech list: 93 bytes at civ+0x74, init all to 0xFF = "not discovered"
+  for (let t = 0; t < 93; t++) _MEM[cb + 0x74 + t] = 0xFF;
+}
 
 // Set visibility near cities (sight range ~3 tiles, like real Civ2 start)
 function revealAround(cx, cy, owner, radius) {
@@ -216,9 +224,11 @@ function readUnit(idx) {
     owner: _MEM[u + 7],
     x: s16(u, 0),
     y: s16(u, 2),
-    alive: _MEM[u + 14] === 0 && s32(u, 0x1A) !== 0,
-    moves: _MEM[u + 10],
-    order: _MEM[u + 15],
+    alive: s32(u, 0x1A) !== 0,        // unique_id != 0
+    moves: _MEM[u + 8],               // was 0x0A — fixed
+    order: _MEM[u + 0x0F],
+    homeCity: _MEM[u + 0x0D],         // was 0x10 — fixed
+    damage: _MEM[u + 0x0A],
   };
 }
 

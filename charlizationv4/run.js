@@ -208,8 +208,8 @@ if (turns > 0) {
     const units = [];
     for (let i = 0; i < s16(DAT_00655b16, 0); i++) {
       const b = i * 0x20;
-      const alive = DAT_006560f0[b + 14] === 0 && u32(DAT_006560f0, b + 26) !== 0;
-      if (alive) units.push({ idx: i, owner: DAT_006560f0[b + 7] });
+      const alive = u32(DAT_006560f0, b + 26) !== 0;
+      if (alive) units.push({ idx: i, owner: G._MEM[DAT_006560f0 + b + 7] });
     }
     return { cities, units, turn: s16(DAT_00655af8, 0) };
   };
@@ -236,7 +236,10 @@ if (turns > 0) {
           console.error(`    ${msg}`);
         } else {
           console.error(`    ERROR: ${msg}`);
-          if (e.stack) console.error('    ' + e.stack.split('\n')[1]?.trim());
+          if (e.stack) {
+            const frames = e.stack.split('\n').slice(1, 15);
+            for (const f of frames) console.error('    ' + f.trim());
+          }
         }
       }
       memDiff(`Civ ${civ}`, memBefore, G._MEM);
@@ -268,7 +271,7 @@ if (turns > 0) {
   // Treasury changes
   console.log(`\n  Treasury:`);
   for (let civ = 1; civ < 8; civ++) {
-    const treasB = s16(DAT_0064c600, civ * 0x594 + 0x50);
+    const treasB = s32(DAT_0064c600, civ * 0x594 + 0xA2);
     console.log(`    Civ ${civ}: ${treasB}g`);
   }
 
@@ -285,6 +288,59 @@ if (turns > 0) {
       console.log(`    "${a.name}" (no change)`);
     }
   }
+}
+
+// ── Save snapshot ──
+// Dumps key memory regions in the same format as sniff-game.py CIV2SNAP
+if (true) {
+  const { writeFileSync, mkdirSync } = await import('fs');
+  const snapDir = new URL('./snapshots/', import.meta.url).pathname;
+  try { mkdirSync(snapDir, { recursive: true }); } catch {}
+
+  const mw2 = s16(DAT_006d1160, 0);
+  const mh = s16(DAT_006d1162, 0);
+  const tilePtr = v(globalThis.DAT_00636598);
+  const tileSize = (mw2 / 2) * mh * 6;
+  const turn = s16(DAT_00655af8, 0);
+
+  // Region definitions matching sniff-game.py SNAPSHOT_REGIONS
+  const regions = [
+    { name: 'globals',  addr: DAT_00655af8, size: 0x40 },
+    { name: 'units',    addr: DAT_006560f0, size: 512 * 0x20 },
+    { name: 'cities',   addr: globalThis.DAT_0064f340, size: 256 * 0x58 },
+    { name: 'civs',     addr: DAT_0064c600, size: 8 * 0x594 },
+    { name: 'cosmic',   addr: globalThis.DAT_0064bcc8, size: 22 },
+    { name: 'map_dims', addr: DAT_006d1160, size: 32 },
+    { name: 'tiles',    addr: tilePtr, size: tileSize },
+  ];
+
+  // Build CIV2SNAP binary
+  const headerSize = 8 + 4 + regions.length * 24;
+  const dataSize = regions.reduce((s, r) => s + r.size, 0);
+  const snapBuf = new Uint8Array(headerSize + dataSize);
+  const dv = new DataView(snapBuf.buffer);
+
+  // Header
+  for (let i = 0; i < 8; i++) snapBuf[i] = 'CIV2SNAP'.charCodeAt(i);
+  dv.setUint32(8, regions.length, true);
+
+  // Region table + data
+  let tableOff = 12;
+  let dataOff = headerSize;
+  for (const r of regions) {
+    // Name (16 bytes, null-padded)
+    for (let i = 0; i < 16; i++) snapBuf[tableOff + i] = i < r.name.length ? r.name.charCodeAt(i) : 0;
+    dv.setUint32(tableOff + 16, r.addr + 0x61c068, true); // convert to absolute address
+    dv.setUint32(tableOff + 20, r.size, true);
+    tableOff += 24;
+    // Copy data from _MEM
+    for (let i = 0; i < r.size; i++) snapBuf[dataOff + i] = G._MEM[r.addr + i] || 0;
+    dataOff += r.size;
+  }
+
+  const snapFile = `${snapDir}turn_${String(turn).padStart(4, '0')}_${mw2/2}x${mh}_v4.bin`;
+  writeFileSync(snapFile, snapBuf);
+  console.log(`\nSnapshot: ${snapFile} (${snapBuf.length} bytes)`);
 }
 
 // ── Save output ──

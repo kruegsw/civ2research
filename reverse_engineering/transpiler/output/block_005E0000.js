@@ -193,12 +193,12 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   local_628 = gdi_8514(uVar3);
   SetRect(local_134[0],0,0,local_684[0] + 0x5a,local_628 * local_63c + local_5c0 * local_5c4 + 0x1e);
   if (param_3 === 0) {
-    FUN_005bb3f0(v(DAT_00638d7c),0x442,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8[0]);
+    FUN_005bb3f0(v(DAT_00638d7c),0x442,s32(local_134[0], 0),s32(local_134[0], 4),s32(local_134[0], 8),s32(local_134[0], 12), local_5a8[0]);
                  /*JOINED*/
     FUN_00450400();
   }
   else {
-    FUN_005bb4ae(v(DAT_00638d80),0xc01,local_134[0].left,local_134[0].top,local_134[0].right,local_134[0].bottom, local_5a8[0],param_3);
+    FUN_005bb4ae(v(DAT_00638d80),0xc01,s32(local_134[0], 0),s32(local_134[0], 4),s32(local_134[0], 8),s32(local_134[0], 12), local_5a8[0],param_3);
                  /*JOINED*/
     FUN_005a9600(local_5bc[0]);
     iVar2 = FUN_00407fc0(local_5bc[0]);
@@ -217,7 +217,7 @@ export function FUN_005e026a(param_1, param_2, param_3) {
   SetRect(local_638[0],10,10,(pCVar5 + -10),iVar2);
   FUN_005c1167(local_680[0],local_5ac,local_638[0],1);
   pCVar5 = CRichEditCntrItem__GetActiveView(local_124[0]);
-  SetRect(local_624[0],local_638[0].left,local_638[0].bottom + 10,local_638[0].right + -0x46,(pCVar5 + -10) );
+  SetRect(local_624[0],s32(local_638[0], 0),s32(local_638[0], 12) + 10,s32(local_638[0], 8) + -0x46,(pCVar5 + -10) );
          /*JOINED*/
   FUN_005e0bc0(local_dc[0],100,local_624[0],1,local_174);
   FUN_005311b0(FUN_005e010a);
@@ -1429,10 +1429,10 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
       BVar2 = IsWindowVisible(param_1);
       if (BVar2 !== 0) {
         BeginPaint(param_1,local_68[0]);
-        local_14[0] = local_68[0].rcPaint.left;
-        local_10 = local_68[0].rcPaint.top;
-        local_c = local_68[0].rcPaint.right;
-        local_8 = local_68[0].rcPaint.bottom;
+        local_14[0] = s32(local_68[0], 8);
+        local_10 = s32(local_68[0], 12);
+        local_c = s32(local_68[0], 16);
+        local_8 = s32(local_68[0], 20);
         if (local_74 === 0x0) {
           local_74 = 0x0;
         }
@@ -1450,10 +1450,10 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
         return uVar1;
       }
       local_28 = BeginPaint(param_1,local_68[0]);
-      local_14[0] = local_68[0].rcPaint.left;
-      local_10 = local_68[0].rcPaint.top;
-      local_c = local_68[0].rcPaint.right;
-      local_8 = local_68[0].rcPaint.bottom;
+      local_14[0] = s32(local_68[0], 8);
+      local_10 = s32(local_68[0], 12);
+      local_c = s32(local_68[0], 16);
+      local_8 = s32(local_68[0], 20);
       SetRect(local_24[0],0,0,0,0);
       pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
       pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
@@ -1461,15 +1461,15 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
         pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
         iVar3 = FUN_00407f90(local_14[0]);
         pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
-        local_24[0].right = (((pCVar4) * iVar3) / (pCVar5) | 0);
-        local_24[0].bottom = FUN_00407fc0(local_14[0]);
+        w32(local_24[0], 8, (((pCVar4) * iVar3) / (pCVar5) | 0));
+        w32(local_24[0], 12, FUN_00407fc0(local_14[0]));
       }
       else {
-        local_24[0].right = FUN_00407f90(local_14[0]);
+        w32(local_24[0], 8, FUN_00407f90(local_14[0]));
         pCVar4 = CRichEditCntrItem__GetActiveView(local_74);
         iVar3 = FUN_00407fc0(local_14[0]);
         pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
-        local_24[0].bottom = (((pCVar4) * iVar3) / (pCVar5) | 0);
+        w32(local_24[0], 12, (((pCVar4) * iVar3) / (pCVar5) | 0));
       }
       uVar6 = CCheckListBox__GetCheckStyle(local_74);
       hdcSrc = s32(uVar6, 4);
@@ -1478,8 +1478,8 @@ export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
       pCVar5 = CRichEditCntrItem__GetActiveView(local_74);
       ySrc = 0;
       xSrc = 0;
-      wDest = local_24[0].right;
-      hDest = local_24[0].bottom;
+      wDest = s32(local_24[0], 8);
+      hDest = s32(local_24[0], 12);
       iVar3 = FUN_00407fc0(local_14[0]);
       iVar7 = FUN_00407fc0(local_24[0]);
       yDest = iVar3 - iVar7 >> 1;
@@ -2194,16 +2194,16 @@ export function FUN_005e2cd1(param_1) {
         FUN_00408460();
       }
       else {
-        local_1c[0].left = v(DAT_006e50c8);
-        local_1c[0].top = v(DAT_006e50cc);
-        local_1c[0].right = v(DAT_006e50c8) + v(_DAT_006e50d0);
-        local_1c[0].bottom = v(DAT_006e50cc) + v(_DAT_006e50d4);
+        w32(local_1c[0], 0, v(DAT_006e50c8));
+        w32(local_1c[0], 4, v(DAT_006e50cc));
+        w32(local_1c[0], 8, v(DAT_006e50c8) + v(_DAT_006e50d0));
+        w32(local_1c[0], 12, v(DAT_006e50cc) + v(_DAT_006e50d4));
         UnionRect(local_1c[0],local_1c[0],v(DAT_00638dd8));
         FUN_00408490(local_1c[0]);
-        wv(DAT_00638dd8, local_1c[0].left);
-        wv(DAT_00638ddc, local_1c[0].top);
-        wv(DAT_00638de0, local_1c[0].right);
-        wv(DAT_00638de4, local_1c[0].bottom);
+        wv(DAT_00638dd8, s32(local_1c[0], 0));
+        wv(DAT_00638ddc, s32(local_1c[0], 4));
+        wv(DAT_00638de0, s32(local_1c[0], 8));
+        wv(DAT_00638de4, s32(local_1c[0], 12));
       }
     }
     if (u32(param_1, 0xa18) < local_20) {
@@ -2340,10 +2340,10 @@ export function FUN_005e32b2(param_1, param_2) {
       yBottom = CRichEditCntrItem__GetActiveView(param_1);
       xRight = CRichEditCntrItem__GetActiveView(param_1);
       SetRect(local_1c[0],0,0,(xRight),(yBottom));
-      local_2c[0].left = local_1c[0].left;
-      local_2c[0].top = local_1c[0].top;
-      local_2c[0].right = local_1c[0].right;
-      local_2c[0].bottom = local_1c[0].bottom;
+      w32(local_2c[0], 0, s32(local_1c[0], 0));
+      w32(local_2c[0], 4, s32(local_1c[0], 4));
+      w32(local_2c[0], 8, s32(local_1c[0], 8));
+      w32(local_2c[0], 12, s32(local_1c[0], 12));
       OffsetRect(local_2c[0],s32(param_1, 0x5b8),s32(param_1, 0x5bc));
       if (s32(param_1, 0x5b4) !== 0) {
         FUN_005c0593(param_1 + 0x558,local_2c[0],local_1c[0]);
@@ -2372,7 +2372,7 @@ export function FUN_005e3550(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x114) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x114))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x114))(); */;
   }
   return;
 }
@@ -2390,7 +2390,7 @@ export function FUN_005e3580(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x118) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x118))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x118))(); */;
   }
   return;
 }
@@ -2428,25 +2428,25 @@ export function create_dib_35B0_005E35B0(param_1) {
     }
     else {
       _memset(local_434[0],0,0x28);
-      local_434[0].bmiHeader.biSize = 0x28;
-      local_434[0].bmiHeader.biPlanes = 1;
-      local_434[0].bmiHeader.biBitCount = 8;
-      local_434[0].bmiHeader.biHeight = 1;
-      local_434[0].bmiHeader.biWidth = FUN_005c55a0(iVar1);
-      if (0 < local_434[0].bmiHeader.biHeight) {
+      w32(local_434[0], 0, 0x28);
+      w16(local_434[0], 12, 1);
+      w16(local_434[0], 14, 8);
+      w32(local_434[0], 8, 1);
+      w32(local_434[0], 4, FUN_005c55a0(iVar1));
+      if (0 < s32(local_434[0], 8)) {
         if (v(DAT_00638e1c) === 0) {
           debug_log(s_Bottom_up_orientation_recommende_00638e20);
         }
         wv(DAT_00638e1c, 1);
       }
       if (v(DAT_00638e18) === -1) {
-        local_434[0].bmiHeader.biHeight = local_c;
+        w32(local_434[0], 8, local_c);
       }
       else if (v(DAT_00638e18) === 1) {
-        local_434[0].bmiHeader.biHeight = -local_c;
+        w32(local_434[0], 8, -local_c);
       }
       else {
-        local_434[0].bmiHeader.biHeight = local_434[0].bmiHeader.biHeight * local_c;
+        w32(local_434[0], 8, s32(local_434[0], 8) * local_c);
       }
       _memset(local_434[0].bmiColors,0,0x400);
       h = CreateDIBSection(hdc,local_434[0],0,local_8[0],0x0,0);
@@ -2461,13 +2461,13 @@ export function create_dib_35B0_005E35B0(param_1) {
         _MEM[local_444 + 1] = hdc;
         _MEM[local_444 + 2] = 0;
         _MEM[local_444 + 3] = h;
-        _MEM[local_444 + 8] = local_434[0].bmiHeader.biWidth;
+        _MEM[local_444 + 8] = s32(local_434[0], 4);
         _MEM[local_444 + 6] = iVar1;
         _MEM[local_444 + 7] = local_c;
         pvVar2 = SelectObject(hdc,h);
         _MEM[local_444 + 4] = pvVar2;
         _MEM[local_444 + 9] = local_8[0];
-        if (local_434[0].bmiHeader.biHeight < 0) {
+        if (s32(local_434[0], 8) < 0) {
           _MEM[local_444 + 5] = 1;
         }
         else {
@@ -2553,7 +2553,7 @@ export function FUN_005e392a(param_1) {
 export function FUN_005e395a(param_1) {
 
 
-  return s32(param_1, 0x14) === 1;
+  return ((s32(param_1, 0x14) === 1) ? 1 : 0);
 }
 
 
@@ -2739,7 +2739,7 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
     SetRect(local_18[0],param_4,param_5,param_4 + iVar2,iVar1);
     local_20 = SelectObject(s32(param_1, 4),s32(local_8, 0));
     GetDIBColorTable(s32(param_1, 4),((v(DAT_00637e78)) >>> 0),1,local_24[0]);
-    SetTextColor(s32(param_1, 4), ((((local_24[0].rgbBlue) << 16 | (((local_24[0].rgbGreen) << 8 | (local_24[0].rgbRed))))) >>> 0));
+    SetTextColor(s32(param_1, 4), ((((_MEM[local_24[0] + 0]) << 16 | (((_MEM[local_24[0] + 1]) << 8 | (_MEM[local_24[0] + 2]))))) >>> 0));
                  /*JOINED*/
     iVar1 = FUN_00407fc0(local_18[0]);
     iVar1 = (iVar1 / 2 | 0);
@@ -2760,7 +2760,7 @@ export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_
     }
     local_1c = GetTextAlign(s32(param_1, 4));
     SetTextAlign(s32(param_1, 4),1);
-    MoveToEx(s32(param_1, 4),local_18[0].left,local_18[0].top,0x0);
+    MoveToEx(s32(param_1, 4),s32(local_18[0], 0),s32(local_18[0], 4),0x0);
     IntersectRect(local_18[0],local_18[0],param_6);
     format = 0;
     lprc = local_18[0];
@@ -2796,7 +2796,7 @@ export function handle_colortable_3ECA_005E3ECA(param_1, param_2, param_3, param
     local_8 = FUN_005dcdf9(param_2);
     local_c = SelectObject(s32(param_1, 4),s32(local_8, 0));
     GetDIBColorTable(s32(param_1, 4),((v(DAT_00637e78)) >>> 0),1,local_10[0]);
-    SetTextColor(s32(param_1, 4), ((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
+    SetTextColor(s32(param_1, 4), ((((_MEM[local_10[0] + 0]) << 16 | (((_MEM[local_10[0] + 1]) << 8 | (_MEM[local_10[0] + 2]))))) >>> 0));
                  /*JOINED*/
     local_14 = 0;
     if (param_5 === 0) {
@@ -2841,7 +2841,7 @@ export function handle_colortable_3FEB_005E3FEB(param_1, param_2, param_3, param
     local_8 = FUN_005dcdf9(param_2);
     local_c = SelectObject(s32(param_1, 4),s32(local_8, 0));
     GetDIBColorTable(s32(param_1, 4),((v(DAT_00637e78)) >>> 0),1,local_10[0]);
-    SetTextColor(s32(param_1, 4), ((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
+    SetTextColor(s32(param_1, 4), ((((_MEM[local_10[0] + 0]) << 16 | (((_MEM[local_10[0] + 1]) << 8 | (_MEM[local_10[0] + 2]))))) >>> 0));
                  /*JOINED*/
     local_14 = 0x10;
     if (param_5 === 0) {
@@ -2874,7 +2874,7 @@ export function handle_colortable_40FB_005E40FB(param_1, param_2, param_3, param
   
   if (param_1 !== 0) {
     GetDIBColorTable(s32(param_1, 4),((v(DAT_00637e78)) >>> 0),1,local_10[0]);
-    local_c = CreatePen(0,1,((((local_10[0].rgbBlue) << 16 | (((local_10[0].rgbGreen) << 8 | (local_10[0].rgbRed))))) >>> 0));
+    local_c = CreatePen(0,1,((((_MEM[local_10[0] + 0]) << 16 | (((_MEM[local_10[0] + 1]) << 8 | (_MEM[local_10[0] + 2]))))) >>> 0));
                                            /*JOINED*/
     local_8 = SelectObject(s32(param_1, 4),local_c);
     MoveToEx(s32(param_1, 4),param_2,param_3,0x0);
@@ -2921,28 +2921,28 @@ export function create_dib_41BA_005E41BA(param_1) {
     }
     else {
       _memset(local_3c[0],0,0x34);
-      local_3c[0].bmiHeader.biSize = 0x28;
-      local_3c[0].bmiHeader.biPlanes = 1;
-      local_3c[0].bmiHeader.biBitCount = 0x10;
-      local_3c[0].bmiHeader.biHeight = 1;
-      local_3c[0].bmiHeader.biCompression = 3;
+      w32(local_3c[0], 0, 0x28);
+      w16(local_3c[0], 12, 1);
+      w16(local_3c[0], 14, 0x10);
+      w32(local_3c[0], 8, 1);
+      w32(local_3c[0], 16, 3);
       local_3c[0]._MEM[bmiColors + 0].rgbBlue = 0;
       local_3c[0]._MEM[bmiColors + 0].rgbGreen = 124;
       local_3c[0]._MEM[bmiColors + 0].rgbRed = 0;
       local_3c[0]._MEM[bmiColors + 0].rgbReserved = 0;
       local_10 = 0x3e0;
       local_c = 0x1f;
-      local_3c[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
+      w32(local_3c[0], 4, FUN_005c55a0(iVar2));
       iVar1 = iVar3;
       if (v(DAT_00638e18) !== -1) {
         if (v(DAT_00638e18) === 1) {
           iVar1 = -iVar3;
         }
         else {
-          iVar1 = local_3c[0].bmiHeader.biHeight * iVar3;
+          iVar1 = s32(local_3c[0], 8) * iVar3;
         }
       }
-      local_3c[0].bmiHeader.biHeight = iVar1;
+      w32(local_3c[0], 8, iVar1);
       h = CreateDIBSection(hdc,local_3c[0],0,local_8[0],0x0,0);
       if (h === 0x0) {
         debug_log(s_Error__Unable_to_create_Bitmap_i_00638f08);
@@ -2955,13 +2955,13 @@ export function create_dib_41BA_005E41BA(param_1) {
         _MEM[local_50 + 1] = hdc;
         _MEM[local_50 + 2] = 0;
         _MEM[local_50 + 3] = h;
-        _MEM[local_50 + 8] = local_3c[0].bmiHeader.biWidth * 2;
+        _MEM[local_50 + 8] = s32(local_3c[0], 4) * 2;
         _MEM[local_50 + 6] = iVar2;
         _MEM[local_50 + 7] = iVar3;
         pvVar4 = SelectObject(hdc,h);
         _MEM[local_50 + 4] = pvVar4;
         _MEM[local_50 + 9] = local_8[0];
-        if (local_3c[0].bmiHeader.biHeight < 0) {
+        if (s32(local_3c[0], 8) < 0) {
           _MEM[local_50 + 5] = 1;
         }
         else {
@@ -3008,21 +3008,21 @@ export function create_dib_43C5_005E43C5(param_1) {
     }
     else {
       _memset(local_34[0],0,0x2c);
-      local_34[0].bmiHeader.biSize = 0x28;
-      local_34[0].bmiHeader.biPlanes = 1;
-      local_34[0].bmiHeader.biBitCount = 0x18;
-      local_34[0].bmiHeader.biHeight = 1;
-      local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
+      w32(local_34[0], 0, 0x28);
+      w16(local_34[0], 12, 1);
+      w16(local_34[0], 14, 0x18);
+      w32(local_34[0], 8, 1);
+      w32(local_34[0], 4, FUN_005c55a0(iVar2));
       iVar1 = iVar3;
       if (v(DAT_00638e18) !== -1) {
         if (v(DAT_00638e18) === 1) {
           iVar1 = -iVar3;
         }
         else {
-          iVar1 = local_34[0].bmiHeader.biHeight * iVar3;
+          iVar1 = s32(local_34[0], 8) * iVar3;
         }
       }
-      local_34[0].bmiHeader.biHeight = iVar1;
+      w32(local_34[0], 8, iVar1);
       h = CreateDIBSection(hdc,local_34[0],0,local_8[0],0x0,0);
       if (h === 0x0) {
         debug_log(s_Error__Unable_to_create_Bitmap_i_00638f64);
@@ -3035,13 +3035,13 @@ export function create_dib_43C5_005E43C5(param_1) {
         _MEM[local_48 + 1] = hdc;
         _MEM[local_48 + 2] = 0;
         _MEM[local_48 + 3] = h;
-        _MEM[local_48 + 8] = local_34[0].bmiHeader.biWidth * 3;
+        _MEM[local_48 + 8] = s32(local_34[0], 4) * 3;
         _MEM[local_48 + 6] = iVar2;
         _MEM[local_48 + 7] = iVar3;
         pvVar4 = SelectObject(hdc,h);
         _MEM[local_48 + 4] = pvVar4;
         _MEM[local_48 + 9] = local_8[0];
-        if (local_34[0].bmiHeader.biHeight < 0) {
+        if (s32(local_34[0], 8) < 0) {
           _MEM[local_48 + 5] = 1;
         }
         else {
@@ -3088,21 +3088,21 @@ export function create_dib_45B5_005E45B5(param_1) {
     }
     else {
       _memset(local_34[0],0,0x2c);
-      local_34[0].bmiHeader.biSize = 0x28;
-      local_34[0].bmiHeader.biPlanes = 1;
-      local_34[0].bmiHeader.biBitCount = 0x20;
-      local_34[0].bmiHeader.biHeight = 1;
-      local_34[0].bmiHeader.biWidth = FUN_005c55a0(iVar2);
+      w32(local_34[0], 0, 0x28);
+      w16(local_34[0], 12, 1);
+      w16(local_34[0], 14, 0x20);
+      w32(local_34[0], 8, 1);
+      w32(local_34[0], 4, FUN_005c55a0(iVar2));
       iVar1 = iVar3;
       if (v(DAT_00638e18) !== -1) {
         if (v(DAT_00638e18) === 1) {
           iVar1 = -iVar3;
         }
         else {
-          iVar1 = local_34[0].bmiHeader.biHeight * iVar3;
+          iVar1 = s32(local_34[0], 8) * iVar3;
         }
       }
-      local_34[0].bmiHeader.biHeight = iVar1;
+      w32(local_34[0], 8, iVar1);
       h = CreateDIBSection(hdc,local_34[0],0,local_8[0],0x0,0);
       if (h === 0x0) {
         debug_log(s_Error__Unable_to_create_Bitmap_i_00638fc0);
@@ -3115,13 +3115,13 @@ export function create_dib_45B5_005E45B5(param_1) {
         _MEM[local_48 + 1] = hdc;
         _MEM[local_48 + 2] = 0;
         _MEM[local_48 + 3] = h;
-        _MEM[local_48 + 8] = local_34[0].bmiHeader.biWidth << 2;
+        _MEM[local_48 + 8] = s32(local_34[0], 4) << 2;
         _MEM[local_48 + 6] = iVar2;
         _MEM[local_48 + 7] = iVar3;
         pvVar4 = SelectObject(hdc,h);
         _MEM[local_48 + 4] = pvVar4;
         _MEM[local_48 + 9] = local_8[0];
-        if (local_34[0].bmiHeader.biHeight < 0) {
+        if (s32(local_34[0], 8) < 0) {
           _MEM[local_48 + 5] = 1;
         }
         else {
@@ -3185,7 +3185,7 @@ export function FUN_005e47a5(param_1, param_2, param_3, param_4, param_5, param_
     }
     align = GetTextAlign(s32(param_1, 4));
     SetTextAlign(s32(param_1, 4),1);
-    MoveToEx(s32(param_1, 4),local_18[0].left,local_18[0].top,0x0);
+    MoveToEx(s32(param_1, 4),s32(local_18[0], 0),s32(local_18[0], 4),0x0);
     IntersectRect(local_18[0],local_18[0],param_6);
     format = 0;
     lprc = local_18[0];
@@ -4512,7 +4512,7 @@ export function FUN_005e6018(in_ECX, param_1, param_2) {
       in_ECX[0xe] = iVar1;
       pvVar2 = operator_new(in_ECX[1] << 2);
       in_ECX[0xf] = (pvVar2);
-      // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
+      w32(in_ECX[0xf], 0, 0);
       for (local_c = 1; local_c < in_ECX[1]; local_c = local_c + 1) {
         w32(in_ECX[0xf] + local_c * 4, 0, s32(in_ECX[0xf] + -4 + local_c * 4, 0) + in_ECX[3]);
       }
@@ -4562,7 +4562,7 @@ export function FUN_005e61e9(in_ECX) {
   if (in_ECX[0xc] === 0) {
     iVar1 = FUN_005e9091(s32(in_ECX, 0));
     if ((iVar1 !== 0) && (in_ECX[0x10] !== 0)) {
-      true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)in_ECX[0x10])(); */;
+      true /* DEVIATION: function pointer call — (*(code *)in_ECX[0x10])(); */;
     }
   }
   else {
@@ -4628,7 +4628,7 @@ export function FUN_005e6297(in_ECX, param_1, param_2) {
     in_ECX[0xe] = iVar2;
     FUN_005e9783(s32(in_ECX, 0),param_1,v(DAT_00638b40));
   }
-  return iVar1 !== 0;
+  return ((iVar1 !== 0) ? 1 : 0);
 }
 
 
@@ -4658,7 +4658,7 @@ export function FUN_005e635f(in_ECX, param_1, param_2, param_3) {
     in_ECX[0xc] = 1;
     pvVar2 = operator_new(in_ECX[1] << 2);
     in_ECX[0xf] = (pvVar2);
-    // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)in_ECX[0xf] = 0;
+    w32(in_ECX[0xf], 0, 0);
     for (local_8 = 1; local_8 < in_ECX[1]; local_8 = local_8 + 1) {
       w32(in_ECX[0xf] + local_8 * 4, 0, s32(in_ECX[0xf] + -4 + local_8 * 4, 0) + in_ECX[3]);
     }
@@ -5288,13 +5288,13 @@ export function FUN_005e728a(in_ECX, param_1, param_2, param_3) {
   
   IntersectRect(local_20[0],param_2,(in_ECX + 4));
   IntersectRect(local_30[0],param_3,(param_1 + 0x10));
-  local_c = local_20[0].right - local_20[0].left;
-  if (local_30[0].right - local_30[0].left <= local_20[0].right - local_20[0].left) {
-    local_c = local_30[0].right - local_30[0].left;
+  local_c = s32(local_20[0], 8) - s32(local_20[0], 0);
+  if (s32(local_30[0], 8) - s32(local_30[0], 0) <= s32(local_20[0], 8) - s32(local_20[0], 0)) {
+    local_c = s32(local_30[0], 8) - s32(local_30[0], 0);
   }
-  local_10 = local_30[0].bottom - local_30[0].top;
-  if (local_20[0].bottom - local_20[0].top <= local_30[0].bottom - local_30[0].top) {
-    local_10 = local_20[0].bottom - local_20[0].top;
+  local_10 = s32(local_30[0], 12) - s32(local_30[0], 4);
+  if (s32(local_20[0], 12) - s32(local_20[0], 4) <= s32(local_30[0], 12) - s32(local_30[0], 4)) {
+    local_10 = s32(local_20[0], 12) - s32(local_20[0], 4);
   }
   if ((local_c !== 0) && (local_10 !== 0)) {
     uVar1 = FUN_005c5740(local_30[0]);
@@ -5332,13 +5332,13 @@ export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
   IntersectRect(local_30[0],param_3,(param_1 + 0x14));
   local_8 = FUN_005e6188();
   if (local_8 !== 0) {
-    local_c = local_30[0].right - local_30[0].left;
-    if (local_20[0].right - local_20[0].left <= local_30[0].right - local_30[0].left) {
-      local_c = local_20[0].right - local_20[0].left;
+    local_c = s32(local_30[0], 8) - s32(local_30[0], 0);
+    if (s32(local_20[0], 8) - s32(local_20[0], 0) <= s32(local_30[0], 8) - s32(local_30[0], 0)) {
+      local_c = s32(local_20[0], 8) - s32(local_20[0], 0);
     }
-    local_10 = local_30[0].bottom - local_30[0].top;
-    if (local_20[0].bottom - local_20[0].top <= local_30[0].bottom - local_30[0].top) {
-      local_10 = local_20[0].bottom - local_20[0].top;
+    local_10 = s32(local_30[0], 12) - s32(local_30[0], 4);
+    if (s32(local_20[0], 12) - s32(local_20[0], 4) <= s32(local_30[0], 12) - s32(local_30[0], 4)) {
+      local_10 = s32(local_20[0], 12) - s32(local_20[0], 4);
     }
     if ((local_c !== 0) && (local_10 !== 0)) {
       uVar1 = CCheckListBox__GetCheckStyle(param_1);
@@ -5347,7 +5347,7 @@ export function FUN_005e7355(in_ECX, param_1, param_2, param_3) {
       uVar4 = FUN_005c56a0(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3);
       pCVar5 = COleClientItem__GetActiveView(param_1);
       uVar4 = FUN_005c5660(pCVar5,uVar4);
-      uVar4 = FUN_005c5640(local_20[0].left,local_20[0].top,local_30[0].left,local_30[0].top,local_c,local_10, uVar4);
+      uVar4 = FUN_005c5640(s32(local_20[0], 0),s32(local_20[0], 4),s32(local_30[0], 0),s32(local_30[0], 4),local_c,local_10, uVar4);
                            /*JOINED*/
       FUN_005e4f9b(local_8,uVar4);
     }
@@ -5398,13 +5398,13 @@ export function FUN_005e74c8(in_ECX, param_1, param_2, param_3) {
   
   IntersectRect(local_20[0],param_2,(in_ECX + 4));
   IntersectRect(local_30[0],param_3,(param_1 + 0x10));
-  local_c = local_30[0].right - local_30[0].left;
-  if (local_20[0].right - local_20[0].left <= local_30[0].right - local_30[0].left) {
-    local_c = local_20[0].right - local_20[0].left;
+  local_c = s32(local_30[0], 8) - s32(local_30[0], 0);
+  if (s32(local_20[0], 8) - s32(local_20[0], 0) <= s32(local_30[0], 8) - s32(local_30[0], 0)) {
+    local_c = s32(local_20[0], 8) - s32(local_20[0], 0);
   }
-  local_10 = local_30[0].bottom - local_30[0].top;
-  if (local_20[0].bottom - local_20[0].top <= local_30[0].bottom - local_30[0].top) {
-    local_10 = local_20[0].bottom - local_20[0].top;
+  local_10 = s32(local_30[0], 12) - s32(local_30[0], 4);
+  if (s32(local_20[0], 12) - s32(local_20[0], 4) <= s32(local_30[0], 12) - s32(local_30[0], 4)) {
+    local_10 = s32(local_20[0], 12) - s32(local_20[0], 4);
   }
   if ((local_c !== 0) && (local_10 !== 0)) {
     uVar1 = FUN_005c5740(local_30[0]);
@@ -5495,10 +5495,10 @@ export function FUN_005e76dd(in_ECX, param_1, param_2, param_3) {
     if ((param_3 & 0x10) !== 0) {
       iVar1 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = s32(param_2, 0);
-      local_18[0].top = _MEM[param_2 + 1];
-      local_18[0].right = _MEM[param_2 + 2];
-      local_18[0].bottom = _MEM[param_2 + 3];
+      w32(local_18[0], 0, s32(param_2, 0));
+      w32(local_18[0], 4, _MEM[param_2 + 1]);
+      w32(local_18[0], 8, _MEM[param_2 + 2]);
+      w32(local_18[0], 12, _MEM[param_2 + 3]);
       OffsetRect(local_18[0],iVar1,iVar1);
       local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(PTR_DAT_00637e5c, 0),param_1,local_18[0],param_3,0,0,0 );
                             /*JOINED*/
@@ -5564,10 +5564,10 @@ export function FUN_005e78c6(in_ECX, param_1, param_2, param_3, param_4) {
     if ((param_4 & 0x10) !== 0) {
       iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = s32(param_3, 0);
-      local_18[0].top = _MEM[param_3 + 1];
-      local_18[0].right = _MEM[param_3 + 2];
-      local_18[0].bottom = _MEM[param_3 + 3];
+      w32(local_18[0], 0, s32(param_3, 0));
+      w32(local_18[0], 4, _MEM[param_3 + 1]);
+      w32(local_18[0], 8, _MEM[param_3 + 2]);
+      w32(local_18[0], 12, _MEM[param_3 + 3]);
       OffsetRect(local_18[0],iVar1,iVar1);
       local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(param_1, 0),param_2,local_18[0],param_4,0,0,0);
       if (local_8 === -1) {
@@ -5685,10 +5685,10 @@ export function FUN_005e7b98(in_ECX, param_1, param_2, param_3, param_4, param_5
     if ((param_3 & 0x10) !== 0) {
       iVar1 = gdi_847F(s32(PTR_DAT_00637e5c, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = s32(param_2, 0);
-      local_18[0].top = _MEM[param_2 + 1];
-      local_18[0].right = _MEM[param_2 + 2];
-      local_18[0].bottom = _MEM[param_2 + 3];
+      w32(local_18[0], 0, s32(param_2, 0));
+      w32(local_18[0], 4, _MEM[param_2 + 1]);
+      w32(local_18[0], 8, _MEM[param_2 + 2]);
+      w32(local_18[0], 12, _MEM[param_2 + 3]);
       OffsetRect(local_18[0],iVar1,iVar1);
       local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(PTR_DAT_00637e5c, 0),param_1,local_18[0],param_3,0,0,0 );
                             /*JOINED*/
@@ -5758,10 +5758,10 @@ export function FUN_005e7d99(in_ECX, param_1, param_2, param_3, param_4, param_5
     if ((param_4 & 0x10) !== 0) {
       iVar1 = gdi_847F(s32(param_1, 0));
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      local_18[0].left = s32(param_3, 0);
-      local_18[0].top = _MEM[param_3 + 1];
-      local_18[0].right = _MEM[param_3 + 2];
-      local_18[0].bottom = _MEM[param_3 + 3];
+      w32(local_18[0], 0, s32(param_3, 0));
+      w32(local_18[0], 4, _MEM[param_3 + 1]);
+      w32(local_18[0], 8, _MEM[param_3 + 2]);
+      w32(local_18[0], 12, _MEM[param_3 + 3]);
       OffsetRect(local_18[0],iVar1,iVar1);
       local_8 = FUN_005ea1dd(s32(in_ECX, 0),s32(param_1, 0),param_2,local_18[0],param_4,0,0,0);
       if (local_8 === -1) {
@@ -6210,22 +6210,22 @@ export function register_wndclass_89D0_005E89D0() {
   let uVar2;
   let local_2c = [0];
   
-  local_2c[0].style = 0xb;
-  local_2c[0].lpfnWndProc = FUN_005ef6cb;
-  local_2c[0].cbClsExtra = 8;
-  local_2c[0].cbWndExtra = 0;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = LoadCursorA(0x0,0x7f00);
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSDirectWindow_006394c4;
+  w32(local_2c[0], 40, 0xb);
+  w32(local_2c[0], 0, FUN_005ef6cb);
+  w32(local_2c[0], 8, 8);
+  w32(local_2c[0], 12, 0);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, LoadCursorA(0x0,0x7f00));
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSDirectWindow_006394c4);
   RegisterClassA(local_2c[0]);
   iVar1 = DirectDrawCreate(0,v(DAT_006394c0),0);
   if (iVar1 === 0) {
     wv(_DAT_006e50e8, 0x13c);
     wv(_DAT_006e5228, 0x13c);
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x2c))(DAT_006394c0,&DAT_006e50e8,&DAT_006e5228); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x2c))(DAT_006394c0,&DAT_006e50e8,&DAT_006e5228); */;
     if ((v(DAT_006e50ec) & 0x40) === 0) {
       debug_log(s_Direct_Draw__Doesn_t_Supports_Ha_006394f8);
     }
@@ -6258,7 +6258,7 @@ export function FUN_005e8b04() {
 
 
   if (v(DAT_006394c0) !== 0x0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 8))(DAT_006394c0); */;
     wv(DAT_006394c0, 0x0);
     UnregisterClassA(s_MSDirectWindow_006395a0,v(DAT_006e4ff0));
   }
@@ -6310,7 +6310,7 @@ export function FUN_005e8c29(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
   }
   return;
 }
@@ -6385,7 +6385,7 @@ export function FUN_005e8e06(param_1, param_2) {
 
 
   if ((param_1 !== 0x0) && (param_2 !== 0)) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x7c))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x7c))(param_1,param_2); */;
   }
   return;
 }
@@ -6532,7 +6532,7 @@ export function FUN_005e906b(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 8))(param_1); */;
   }
   return;
 }
@@ -6593,7 +6593,7 @@ export function FUN_005e910b(param_1) {
   else {
     local_70[0] = 0x6c;
     local_6c = 8;
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x58))(param_1,&local_70); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x58))(param_1,&local_70); */;
   }
   return local_60;
 }
@@ -6686,7 +6686,7 @@ export function FUN_005e92c9(param_1) {
 
 
   if (param_1 !== 0x0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
   }
   return 0;
 }
@@ -6706,7 +6706,7 @@ export function FUN_005e92fd(param_1, param_2, param_3) {
   
   local_c[0] = param_2;
   local_8 = param_2 + param_3;
-  true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x74))(param_1,8,&local_c); */;
+  true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x74))(param_1,8,&local_c); */;
   return;
 }
 
@@ -6734,7 +6734,7 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
   if (iVar1 === 0) {
     local_84 = GetPixel(local_78[0],0,0);
     SetPixel(local_78[0],0,0,((((param_4) << 16 | (((param_3) << 8 | (param_2))))) >>> 0));
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
   }
   local_70[0] = 0x6c;
   while( true ) {
@@ -6744,12 +6744,12 @@ export function FUN_005e9331(param_1, param_2, param_3, param_4) {
   }
   if (local_74 === 0) {
     local_7c = s32(local_4c, 0) & (1 << (local_1c & 0x1f)) - 1;
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x80))(param_1,0); */;
   }
   iVar1 = (s32(s32(s32(param_1, 0) + 0x44, 0), 0))(param_1,local_78[0]);
   if (iVar1 === 0) {
     SetPixel(local_78[0],0,0,local_84);
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_78); */;
   }
   return local_7c;
 }
@@ -6936,7 +6936,7 @@ export function blit_9838_005E9838(param_1, param_2, param_3, param_4, param_5, 
     if (iVar1 === 0) {
       BitBlt(local_8[0],param_7,param_8,param_4,param_5,s32(param_1, 4),param_2,param_3,0xcc0020);
       /*JOINED*/
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
     }
   }
   return;
@@ -6961,7 +6961,7 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
     if (iVar1 === 0) {
       StretchBlt(local_8[0],param_7,param_8,param_9,param_10,s32(param_1, 4),param_2,param_3, param_4,param_5,0xcc0020);
                  /*JOINED*/
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_6 + 0x68))(param_6,local_8); */;
     }
   }
   return;
@@ -6977,7 +6977,7 @@ export function stretch_blit_98BA_005E98BA(param_1, param_2, param_3, param_4, p
 export function FUN_005e9944(param_1, param_2) {
 
 
-  true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_2 + 0x10))(param_2,0,param_1,1,&DAT_006e5224); */;
+  true /* DEVIATION: function pointer call — (**(code **)(*param_2 + 0x10))(param_2,0,param_1,1,&DAT_006e5224); */;
   return;
 }
 
@@ -7039,7 +7039,7 @@ export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_
       }
       local_1c = GetTextAlign(local_20[0]);
       SetTextAlign(local_20[0],1);
-      MoveToEx(local_20[0],local_18[0].left,local_18[0].top,0x0);
+      MoveToEx(local_20[0],s32(local_18[0], 0),s32(local_18[0], 4),0x0);
       IntersectRect(local_18[0],local_18[0],param_6);
       format = 0;
       lprc = local_18[0];
@@ -7048,7 +7048,7 @@ export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_
       SetTextAlign(local_20[0],local_1c);
       SelectObject(local_20[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7109,7 +7109,7 @@ export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7165,7 +7165,7 @@ export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7207,7 +7207,7 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
       LineTo(local_10[0],param_4,param_5);
       SelectObject(local_10[0],local_8);
       DeleteObject(local_c);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7278,7 +7278,7 @@ export function FUN_005e9f8a(param_1, param_2, param_3, param_4, param_5, param_
       }
       local_1c = GetTextAlign(local_20[0]);
       SetTextAlign(local_20[0],1);
-      MoveToEx(local_20[0],local_18[0].left,local_18[0].top,0x0);
+      MoveToEx(local_20[0],s32(local_18[0], 0),s32(local_18[0], 4),0x0);
       IntersectRect(local_18[0],local_18[0],param_6);
       format = 0;
       lprc = local_18[0];
@@ -7287,7 +7287,7 @@ export function FUN_005e9f8a(param_1, param_2, param_3, param_4, param_5, param_
       SetTextAlign(local_20[0],local_1c);
       SelectObject(local_20[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_20); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7350,7 +7350,7 @@ export function FUN_005ea1dd(param_1, param_2, param_3, param_4, param_5, param_
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7408,7 +7408,7 @@ export function FUN_005ea32f(param_1, param_2, param_3, param_4, param_5, param_
       DrawTextA(local_c[0],param_3,cchText,param_4,local_18);
       SelectObject(local_c[0],h);
       FUN_005dce29(param_2);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_c); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe3e) {
@@ -7452,7 +7452,7 @@ export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_
       LineTo(local_10[0],param_4,param_5);
       SelectObject(local_10[0],local_8);
       DeleteObject(local_c);
-      true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
+      true /* DEVIATION: function pointer call — (**(code **)(*param_1 + 0x68))(param_1,local_10); */;
       uVar1 = 1;
     }
     else if (iVar2 === -0x7789fe52) {
@@ -7540,7 +7540,7 @@ export function FUN_005ea610(param_1) {
     else {
       local_8 = 1;
     }
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x58))(DAT_006394c0,local_8,0); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x58))(DAT_006394c0,local_8,0); */;
   }
   return;
 }
@@ -8006,7 +8006,7 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
       return LVar3;
     }
     if (param_2 === 0x46) {
-      if ((_MEM[param_4 + 6].unused & 4) === 0) {
+      if ((s32(_MEM[param_4 + 6], 0) & 4) === 0) {
         local_24 = GetWindowLongA(param_1,0);
         local_28 = FUN_00414d10();
         uVar4 = FUN_005bd610();
@@ -8018,7 +8018,7 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
           local_1c = GetWindowLongA(s32(local_8, 4),8);
           if ((local_1c !== 0) && (local_38 = FUN_005eac6d(s32(local_1c, 0xb8)), local_38 !== 0)) {
              /*JOINED*/
-            _MEM[param_4 + 1].unused = local_38;
+            w32(_MEM[param_4 + 1], 0, local_38);
             LVar3 = DefWindowProcA(param_1,0x46,param_3,param_4);
             return LVar3;
           }
@@ -8092,9 +8092,9 @@ export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
           iVar9 = GetSystemMetrics(4);
           GetWindowRect(local_3c,local_4c[0]);
           local_2c = FUN_00407f90(param_4);
-          if (local_4c[0].top - iVar9 <= _MEM[param_4 + 1].unused) {
-            _MEM[param_4 + 1].unused = local_4c[0].top - iVar9;
-            _MEM[param_4 + 3].unused = (local_4c[0].top - iVar9) + local_2c;
+          if (s32(local_4c[0], 4) - iVar9 <= s32(_MEM[param_4 + 1], 0)) {
+            w32(_MEM[param_4 + 1], 0, s32(local_4c[0], 4) - iVar9);
+            w32(_MEM[param_4 + 3], 0, (s32(local_4c[0], 4) - iVar9) + local_2c);
           }
         }
       }
@@ -8120,7 +8120,7 @@ export function FUN_005eb2f0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -8138,7 +8138,7 @@ export function FUN_005eb330(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -8995,7 +8995,7 @@ export function FUN_005ecef0() {
   let SVar1;
   
   SVar1 = GetKeyState(0x10);
-  return ((SVar1) & 0x8000) !== 0;
+  return ((((SVar1) & 0x8000) !== 0) ? 1 : 0);
 }
 
 
@@ -9011,7 +9011,7 @@ export function FUN_005ecf20() {
   let SVar1;
   
   SVar1 = GetKeyState(0x11);
-  return ((SVar1) & 0x8000) !== 0;
+  return ((((SVar1) & 0x8000) !== 0) ? 1 : 0);
 }
 
 
@@ -9027,7 +9027,7 @@ export function FUN_005ecf50(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (*(code *)*in_ECX)(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (*(code *)*in_ECX)(param_1,param_2); */;
   }
   return;
 }
@@ -9045,7 +9045,7 @@ export function FUN_005ecf90(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 4) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 4))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 4))(param_1,param_2); */;
   }
   return;
 }
@@ -9063,7 +9063,7 @@ export function FUN_005ecfd0(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 8) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 8))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 8))(param_1,param_2); */;
   }
   return;
 }
@@ -9081,7 +9081,7 @@ export function FUN_005ed010(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xc) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xc))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xc))(param_1,param_2); */;
   }
   return;
 }
@@ -9099,7 +9099,7 @@ export function FUN_005ed050(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x10) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x10))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x10))(param_1,param_2); */;
   }
   return;
 }
@@ -9117,7 +9117,7 @@ export function FUN_005ed090(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x14) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x14))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x14))(param_1,param_2); */;
   }
   return;
 }
@@ -9135,7 +9135,7 @@ export function FUN_005ed0d0(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x18) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x18))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x18))(param_1,param_2); */;
   }
   return;
 }
@@ -9153,7 +9153,7 @@ export function FUN_005ed110(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x1c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x1c))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x1c))(param_1,param_2); */;
   }
   return;
 }
@@ -9171,7 +9171,7 @@ export function FUN_005ed150(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x20) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x20))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x20))(param_1); */;
   }
   return;
 }
@@ -9189,7 +9189,7 @@ export function FUN_005ed190(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x24) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x24))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x24))(param_1); */;
   }
   return;
 }
@@ -9207,7 +9207,7 @@ export function FUN_005ed1d0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x28) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x28))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x28))(param_1); */;
   }
   return;
 }
@@ -9225,7 +9225,7 @@ export function FUN_005ed210(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1); */;
   }
   return;
 }
@@ -9265,7 +9265,7 @@ export function FUN_005ed290(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(); */;
   }
   return;
 }
@@ -9283,7 +9283,7 @@ export function FUN_005ed2c0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x38) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x38))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x38))(); */;
   }
   return;
 }
@@ -9301,7 +9301,7 @@ export function FUN_005ed2f0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x3c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x3c))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x3c))(); */;
   }
   return;
 }
@@ -9319,7 +9319,7 @@ export function FUN_005ed320(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x40) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x40))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x40))(param_1); */;
   }
   return;
 }
@@ -9337,7 +9337,7 @@ export function FUN_005ed360(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x44) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x44))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x44))(param_1,param_2); */;
   }
   return;
 }
@@ -9355,7 +9355,7 @@ export function FUN_005ed3a0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x48) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x48))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x48))(param_1); */;
   }
   return;
 }
@@ -9373,7 +9373,7 @@ export function FUN_005ed3e0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x4c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x4c))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x4c))(param_1); */;
   }
   return;
 }
@@ -9391,7 +9391,7 @@ export function FUN_005ed420(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x50) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x50))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x50))(param_1); */;
   }
   return;
 }
@@ -9409,7 +9409,7 @@ export function FUN_005ed460(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x54) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x54))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x54))(param_1); */;
   }
   return;
 }
@@ -9427,7 +9427,7 @@ export function FUN_005ed4a0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x58) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x58))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x58))(param_1); */;
   }
   return;
 }
@@ -9445,7 +9445,7 @@ export function FUN_005ed4e0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x5c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x5c))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x5c))(param_1); */;
   }
   return;
 }
@@ -9463,7 +9463,7 @@ export function FUN_005ed520(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x60) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x60))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x60))(); */;
   }
   return;
 }
@@ -9481,7 +9481,7 @@ export function FUN_005ed550(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 100) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 100))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 100))(); */;
   }
   return;
 }
@@ -9514,7 +9514,7 @@ export function FUN_005ed5a0(in_ECX, param_1, param_2) {
   
   bVar1 = s32(in_ECX, 0x98) !== 0;
   if (bVar1) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x98))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x98))(param_1,param_2); */;
   }
   return bVar1;
 }
@@ -9534,7 +9534,7 @@ export function FUN_005ed5f0(in_ECX, param_1) {
   
   bVar1 = s32(in_ECX, 0x9c) !== 0;
   if (bVar1) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x9c))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x9c))(param_1); */;
   }
   return bVar1;
 }
@@ -9642,7 +9642,7 @@ export function FUN_005ed6e0(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xbc) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xbc))(); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xbc))(); */;
   }
   return;
 }
@@ -10013,7 +10013,7 @@ export function FUN_005eddd0() {
   local_c = 0;
   local_8 = 0;
   MVar1 = mciSendCommandA(0,0x803,0x2000,local_20[0]);
-  return MVar1 === 0;
+  return ((MVar1 === 0) ? 1 : 0);
 }
 
 
@@ -10977,7 +10977,7 @@ export function FUN_005eed43(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  return (s16(in_ECX, 0) & 4) !== 0;
+  return (((s16(in_ECX, 0) & 4) !== 0) ? 1 : 0);
 }
 
 
@@ -11421,7 +11421,7 @@ export function FUN_005ef65a(param_1) {
     ShowWindow(s32(param_1, 4),5);
     UpdateWindow(s32(param_1, 4));
   }
-  return param_1 !== 0;
+  return ((param_1 !== 0) ? 1 : 0);
 }
 
 
@@ -11437,7 +11437,7 @@ export function FUN_005ef699(param_1) {
   if (param_1 !== 0) {
     ShowWindow(s32(param_1, 4),0);
   }
-  return param_1 !== 0;
+  return ((param_1 !== 0) ? 1 : 0);
 }
 
 
@@ -11612,9 +11612,9 @@ export function FUN_005efcde(param_1, param_2) {
 
 
   if (((v(DAT_006394c0) !== 0x0) && (param_1 !== 0)) && (param_2 !== 0)) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),0x55); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x20))(DAT_006394c0,0,0,param_2,FUN_005efca3); */;
+    true /* DEVIATION: function pointer call — (**(code **)(*DAT_006394c0 + 0x50))(DAT_006394c0,*(undefined4 *)(param_1 + 4),8); */;
   }
   return;
 }
@@ -11632,7 +11632,7 @@ export function FUN_005efd70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0xbc) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0xbc))(param_1); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0xbc))(param_1); */;
   }
   return;
 }
@@ -11995,9 +11995,9 @@ function LAB_005eb1df_helper(BVar7, DVar8, LVar3, SVar2, cVar1, iVar9, local_10,
           iVar9 = GetSystemMetrics(4);
           GetWindowRect(local_3c,local_4c[0]);
           local_2c = FUN_00407f90(param_4);
-          if (local_4c[0].top - iVar9 <= _MEM[param_4 + 1].unused) {
-            _MEM[param_4 + 1].unused = local_4c[0].top - iVar9;
-            _MEM[param_4 + 3].unused = (local_4c[0].top - iVar9) + local_2c;
+          if (s32(local_4c[0], 4) - iVar9 <= s32(_MEM[param_4 + 1], 0)) {
+            w32(_MEM[param_4 + 1], 0, s32(local_4c[0], 4) - iVar9);
+            w32(_MEM[param_4 + 3], 0, (s32(local_4c[0], 4) - iVar9) + local_2c);
           }
         }
       }

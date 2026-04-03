@@ -360,29 +360,52 @@ export function loadRules(text) {
     // ══════════════════════════════════════════════════════════
     if (section === '@LEADERS' && leaderIdx < 21) {
       const fields = trimmed.split(',').map(s => s.trim());
-      if (fields.length < 11) continue;
+      if (fields.length < 10) continue;
 
-      // Fields: leader, female_leader, female_flag, color, style, tribe, adjective,
-      //         attack, expand, civilize, [govt overrides...]
-      const femaleFlag = parseInt(fields[2]);
-      const color = parseInt(fields[3]);
-      const style = parseInt(fields[4]);
-      // fields[5] = tribe name, fields[6] = adjective (string refs, skip)
-      const attack = parseInt(fields[7]);
-      const expand = parseInt(fields[8]);
-      const civilize = parseInt(fields[9]);
+      // RULES.TXT CSV: name, female_name, aggression, city_style, color,
+      //                tribe, adjective, expand, civilize, militarism, [govt...]
+      //
+      // Binary layout (from C source FUN_0041ab18, block_00410000.c:5464):
+      //   +0x00 (006554f8): expand (signed byte)
+      //   +0x01 (006554f9): civilize (signed byte)
+      //   +0x02 (006554fa): militarism (signed byte) — AI sci/tax personality
+      //   +0x03 (006554fb): used_count (runtime, init 0)
+      //   +0x04 (006554fc): aggression (byte, 0 or 1)
+      //   +0x05 (006554fd): (runtime)
+      //   +0x06 (006554fe): city_style (int16, clamped 1-7)
+      //   +0x08 (00655500): color (int16, clamped 0-3)
+      //   +0x10 (00655508): male name ref (int16)
+      //   +0x12 (0065550a): female name ref (int16)
+      const aggression = parseInt(fields[2]) || 0;
+      const cityStyle = Math.max(1, Math.min(7, parseInt(fields[3]) || 1));
+      const color = Math.max(0, Math.min(3, parseInt(fields[4]) || 0));
+      // fields[5] = tribe name, fields[6] = adjective
+      const expand = parseInt(fields[7]) || 0;
+      const civilize = parseInt(fields[8]) || 0;
+      const militarism = parseInt(fields[9]) || 0;
 
       const base = leaderIdx * 0x30;
-      G.DAT_006554f8[base] = color;       // +0x00
-      G.DAT_006554f8[base + 1] = style;   // +0x01 (DAT_006554f9)
-      G.DAT_006554f8[base + 2] = civilize & 0xFF; // +0x02 (DAT_006554fa)
-      // Store attack/expand as int16 LE
-      const feOff = base + 6;  // DAT_006554fe offset
-      G.DAT_006554f8[feOff] = attack & 0xFF;
-      G.DAT_006554f8[feOff + 1] = (attack >> 8) & 0xFF;
-      const exOff = base + 8;  // DAT_00655500 offset
-      G.DAT_006554f8[exOff] = expand & 0xFF;
-      G.DAT_006554f8[exOff + 1] = (expand >> 8) & 0xFF;
+      _MEM[DAT_006554f8 + base + 0] = expand & 0xFF;       // +0x00: expand
+      _MEM[DAT_006554f8 + base + 1] = civilize & 0xFF;     // +0x01: civilize
+      _MEM[DAT_006554f8 + base + 2] = militarism & 0xFF;   // +0x02: militarism (DAT_006554fa)
+      _MEM[DAT_006554f8 + base + 3] = 0;                   // +0x03: used_count
+      _MEM[DAT_006554f8 + base + 4] = aggression & 0xFF;   // +0x04: aggression (DAT_006554fc)
+      _MEM[DAT_006554f8 + base + 5] = 0;                   // +0x05: runtime
+      // +0x06: city_style (int16 LE)
+      _MEM[DAT_006554f8 + base + 6] = cityStyle & 0xFF;
+      _MEM[DAT_006554f8 + base + 7] = (cityStyle >> 8) & 0xFF;
+      // +0x08: color (int16 LE)
+      _MEM[DAT_006554f8 + base + 8] = color & 0xFF;
+      _MEM[DAT_006554f8 + base + 9] = (color >> 8) & 0xFF;
+
+      // Store leader/tribe names as string refs in _MEM
+      // The binary stores name table offsets; we store the string directly
+      // in a reserved area for now. Names are used for display only.
+      // For the leader name, store index as the name ref (simple approach)
+      _MEM[DAT_006554f8 + base + 0x10] = leaderIdx & 0xFF;  // male name ref
+      _MEM[DAT_006554f8 + base + 0x11] = 0;
+      _MEM[DAT_006554f8 + base + 0x12] = leaderIdx & 0xFF;  // female name ref
+      _MEM[DAT_006554f8 + base + 0x13] = 0;
 
       leaderIdx++;
       continue;

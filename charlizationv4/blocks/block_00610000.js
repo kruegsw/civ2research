@@ -247,7 +247,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
     sVar25 = s16(iVar22, -2);
     psVar4 = segment(in_SS,sVar17 + -0x16);
     w16(psVar4, 0, sVar25);
-    if (sVar25 !== 0) {
+    if (sVar25 != 0) {
       psVar4 = segment(in_SS,sVar17 + 0x28);
       psVar5 = segment(in_SS,sVar17 + 0x30);
       psVar8 = segment(in_SS,sVar17 + -8);
@@ -291,7 +291,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
           sVar25 = sVar25 + 2;
           pcVar26 = pcVar26 + 1;
           iVar20 = iVar20 + -1;
-        } while (iVar20 !== 0);
+        } while (iVar20 != 0);
       }
       pcVar26 = s32(iVar24, -0xe);
     }

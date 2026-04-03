@@ -139,10 +139,10 @@ export function ___loctotime_t_006002E0(param_1, param_2, param_3, param_4, para
                /*JOINED*/
     ___tzset();
     local_8 = local_8 + v(DAT_0063b2b0);
-    local_2c[0].tm_yday = local_30;
-    local_2c[0].tm_mon = param_2 + -1;
-    local_2c[0].tm_hour = param_4;
-    if ((param_7 === 1) || (((param_7 === -1 && (v(DAT_0063b2b4) !== 0)) && (local_2c[0].tm_year = uVar1, iVar2 = __isindst(local_2c[0]), iVar2 !== 0)))) {
+    w32(local_2c[0], 28, local_30);
+    w32(local_2c[0], 16, param_2 + -1);
+    w32(local_2c[0], 8, param_4);
+    if ((param_7 === 1) || (((param_7 === -1 && (v(DAT_0063b2b4) !== 0)) && (w32r(local_2c[0], 20, uVar1), iVar2 = __isindst(local_2c[0]), iVar2 !== 0)))) {
        /*JOINED*/
         /*JOINED*/
       local_8 = local_8 + v(DAT_0063b2b8);
@@ -815,7 +815,7 @@ export function __CxxUnhandledExceptionFilter_00600FA0(param_1) {
   let lVar1;
   let iVar2;
   
-  if (true /* DEVIATION: TODO_FIXME: C struct — if (((s32(param_1, 4)->ExceptionCode === 0xe06d7363) && (s32(param_1, 4)->NumberParameters === 3)) && (s32(param_1, 4)->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
+  if (true /* DEVIATION: C struct — if (((s32(param_1, 4)->ExceptionCode === 0xe06d7363) && (s32(param_1, 4)->NumberParameters === 3)) && (s32(param_1, 4)->_MEM[ExceptionInformation + 0] === 0x19930520)) { */) {
       /*JOINED*/
      /*JOINED*/
     terminate();
@@ -951,17 +951,17 @@ export function __snprintf_00601120(_Dest, _Count, _Format) {
       return iVar2;
     }
   }
-  local_24[0]._flag = 0x42;
-  local_24[0]._base = _Dest;
-  local_24[0]._ptr = _Dest;
-  local_24[0]._cnt = _Count;
+  w32(local_24[0], 12, 0x42);
+  w32(local_24[0], 8, _Dest);
+  w32(local_24[0], 4, _Dest);
+  w32(local_24[0], 0, _Count);
   iVar2 = __output(local_24[0],_Format,0 /* ADDR:stack0x00000010 */);
-  local_24[0]._cnt = local_24[0]._cnt - 1;
-  if (local_24[0]._cnt < 0) {
+  w32(local_24[0], 0, s32(local_24[0], 0) - 1);
+  if (s32(local_24[0], 0) < 0) {
     __flsbuf(0,local_24[0]);
   }
   else {
-    s32(local_24[0], 0)._ptr = 0;
+    s32(s32(local_24[0], 4), 0) = 0;
   }
   return iVar2;
 }
@@ -1001,17 +1001,17 @@ export function __vsnprintf_00601210(_Dest, _Count, _Format, _Args) {
       return iVar2;
     }
   }
-  local_24[0]._flag = 0x42;
-  local_24[0]._base = _Dest;
-  local_24[0]._ptr = _Dest;
-  local_24[0]._cnt = _Count;
+  w32(local_24[0], 12, 0x42);
+  w32(local_24[0], 8, _Dest);
+  w32(local_24[0], 4, _Dest);
+  w32(local_24[0], 0, _Count);
   iVar2 = __output(local_24[0],_Format,_Args);
-  local_24[0]._cnt = local_24[0]._cnt - 1;
-  if (local_24[0]._cnt < 0) {
+  w32(local_24[0], 0, s32(local_24[0], 0) - 1);
+  if (s32(local_24[0], 0) < 0) {
     __flsbuf(0,local_24[0]);
   }
   else {
-    s32(local_24[0], 0)._ptr = 0;
+    s32(s32(local_24[0], 4), 0) = 0;
   }
   return iVar2;
 }
@@ -1423,25 +1423,25 @@ export function __alloc_osfhnd_00601CF0() {
     if (0x3f < local_10) {
       return local_c;
     }
-    if (_MEM[DAT_006e69f0 + local_10] === 0) {
+    if (s32(DAT_006e69f0, (local_10) * 4) === 0) {
       local_8 = __malloc_dbg(0x100,2,"osfinfo.c",0x79);
       if (local_8 === 0x0) {
         return local_c;
       }
-      _MEM[DAT_006e69f0 + local_10] = local_8;
+      w32(DAT_006e69f0, (local_10) * 4, local_8);
       wv(DAT_006e6b2c, v(DAT_006e6b2c) + 0x20);
-      for (; local_8 < (_MEM[DAT_006e69f0 + local_10] + 0x100); local_8 = local_8 + 2) {
+      for (; local_8 < (s32(DAT_006e69f0, (local_10) * 4) + 0x100); local_8 = local_8 + 2) {
         _MEM[local_8 + 1] = 0;
         w32(local_8, 0, -1);
         _MEM[(local_8) + 5] = 10;
       }
       return local_10 << 5;
     }
-    for (local_8 = _MEM[DAT_006e69f0 + local_10]; local_8 < (_MEM[DAT_006e69f0 + local_10] + 0x100); local_8 = local_8 + 2) {
+    for (local_8 = s32(DAT_006e69f0, (local_10) * 4); local_8 < (s32(DAT_006e69f0, (local_10) * 4) + 0x100); local_8 = local_8 + 2) {
         /*JOINED*/
       if ((u8(_MEM[local_8 + 1]) & 1) === 0) {
         w32(local_8, 0, -1);
-        local_c = ((local_8) - _MEM[DAT_006e69f0 + local_10] >> 3) + local_10 * 0x20;
+        local_c = ((local_8) - s32(DAT_006e69f0, (local_10) * 4) >> 3) + local_10 * 0x20;
         break;
       }
     }
@@ -1483,7 +1483,7 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
         SetStdHandle(0xfffffff4,param_2);
       }
     }
-    // DEVIATION: TODO_FIXME: C pointer write — *(intptr_t *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = param_2;
+    w32(s32(ptrAdd(DAT_006e69f0, ((param_1 & 0xffffffe0) >> 3)), 0) + (param_1 & 0x1f) * 8, 0, param_2);
      /*JOINED*/
          /*JOINED*/
     iVar1 = 0;
@@ -1562,7 +1562,7 @@ export function __get_osfhandle_00602060(_FileHandle) {
   if ((((_FileHandle) >>> 0) < v(DAT_006e6b2c)) && ((u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8]) & 1) !== 0)) {
      /*JOINED*/
                 /*JOINED*/
-    // DEVIATION: TODO_FIXME: C-syntax — iVar1 = true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — *(intptr_t *) (s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + (_FileHandle & 0x1f) * 8) */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */;
+    iVar1 = true /* DEVIATION: C pointer —*(intptr_t *) (s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + (_FileHandle & 0x1f) * 8) */;
              /*JOINED*/
              /*JOINED*/
   }
@@ -2590,7 +2590,7 @@ export function __ld12told_00603170(_Ifp, _Ld) {
   }
   local_18 = ((local_8 & 0xffff) === 0x7fff);
   w32(s32(_Ld, 0) + 4, 0, local_14);
-  // DEVIATION: TODO_FIXME: C pointer write — *(undefined4 *)_Ld->ld = local_10;
+  w32(s32(_Ld, 0), 0, local_10);
   w16(s32(_Ld, 0) + 8, 0, uVar1 & 0x8000 | ((local_8) & 0xFFFF));
   return local_18;
 }
@@ -2739,7 +2739,7 @@ export function __fltout_006033E0() {
   
   ___dtold(local_10[0],0 /* ADDR:stack0x00000004 */);
   wv(_DAT_006e55d8, _I10_OUTPUT(local_10[0],local_c,local_8,0x11,0,v(DAT_006e55b0)));
-  wv(_DAT_006e55d0, (v(DAT_006e55b2)));
+  wv(_DAT_006e55d0, (u8(_MEM[DAT_006e55b2])));
   wv(_DAT_006e55d4, (v(DAT_006e55b0)));
   wv(_DAT_006e55dc, 0x6e55b4);
   return v(DAT_006e55d0);
@@ -3054,7 +3054,7 @@ export function cvtdate_00603D20(param_1, param_2, param_3, param_4, param_5, pa
   
   if (param_2 === 1) {
     if ((param_3 & 3) === 0) {
-      local_10 = _MEM[DAT_0063b36c + param_4];
+      local_10 = s32(DAT_0063b36c, (param_4) * 4);
     }
     else {
       local_10 = s32(DAT_0063b3a4, param_4 * 4);
@@ -3081,7 +3081,7 @@ export function cvtdate_00603D20(param_1, param_2, param_3, param_4, param_5, pa
   }
   else {
     if ((param_3 & 3) === 0) {
-      local_c = _MEM[DAT_0063b36c + param_4];
+      local_c = s32(DAT_0063b36c, (param_4) * 4);
     }
     else {
       local_c = s32(DAT_0063b3a4, param_4 * 4);
@@ -3531,7 +3531,7 @@ export function ___strgtold12_00604520(pld12, p_end_ptr, str, mult12, scale, dec
         local_4c = 0;
         local_48 = local_48 | 2;
       }
-      // DEVIATION: TODO_FIXME: C pointer write — *(undefined2 *)pld12->ld12 = local_4c;
+      w16(s32(pld12, 0), 0, local_4c);
       w32(s32(pld12, 0) + 2, 0, local_c);
       w32(s32(pld12, 0) + 6, 0, local_14);
       w16(s32(pld12, 0) + 10, 0, ((local_20) & 0xFFFF) | local_54);
@@ -4577,7 +4577,7 @@ export function ___wtomb_environ_00606260() {
 
 
   let iVar1;
-  char s32(s32(_POption, 0), 0);
+  let _POption;
   let local_8;
   
   local_8 = v(DAT_00639f44);
@@ -4922,7 +4922,7 @@ export function _strncnt_00606AF0(_String, _Cnt) {
 export function ___crtsetenv_00606B60(_POption, _Primary) {
 
 
-  char s32(s32(ppcVar1, 0), 0);
+  let ppcVar1;
   let iVar2;
   let piVar3;
   let sVar4;
@@ -4939,7 +4939,7 @@ export function ___crtsetenv_00606B60(_POption, _Primary) {
      /*JOINED*/
     return -1;
   }
-  // DEVIATION: TODO_FIXME: C-syntax — bVar5 = true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — true /* TODO_FIXME: C pointer — *(uchar *)((ppcVar1) + 1) */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ */ === 0;
+  bVar5 = true /* DEVIATION: C pointer —*(uchar *)((ppcVar1) + 1) */ === 0;
   if (v(DAT_00639f40) === v(DAT_00639f3c)) {
     wv(DAT_00639f3c, copy_environ(v(DAT_00639f3c)));
   }

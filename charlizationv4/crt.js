@@ -11,6 +11,7 @@
 
 import { G } from './globals.js';
 import { s8, s32, w32, _MEM } from './mem.js';
+import { GlobalAlloc } from './extern-stubs.js';
 
 // ── Random number generator (MSVC-compatible) ──
 // Binary uses MSVC's rand(): seed = seed * 214013 + 2531011
@@ -250,7 +251,9 @@ export function _exit() {}
 export function _atexit() {}
 export function __chdir() { return 0; }
 export function __getcwd() { return 0; }
-export function _malloc() { return new Uint8Array(65536); }
+export function _malloc(size) {
+  return GlobalAlloc(0, size || 65536);
+}
 export function _wcslen() { return 0; }
 export function _wcstombs() { return 0; }
 export function _wctomb() { return 0; }
@@ -276,18 +279,18 @@ export function GetTickCount() { return Date.now() & 0x7FFFFFFF; }
 
 
 // ── C++ memory management ──
-export function operator_new(size) { return new Uint8Array(size || 1024); }
+export function operator_new(size) { return GlobalAlloc(0, size || 1024); }
 export function operator_delete() {}
-export function __nh_malloc(size) { return new Uint8Array(size || 1024); }
-export function __nh_malloc_dbg(size) { return new Uint8Array(size || 1024); }
-export function __nh_malloc_base(size) { return new Uint8Array(size || 1024); }
-export function __malloc_dbg(size) { return new Uint8Array(size || 1024); }
-export function __malloc_base(size) { return new Uint8Array(size || 1024); }
-export function __calloc_dbg(num, size) { return new Uint8Array((num * size) || 1024); }
-export function __heap_alloc_dbg(size) { return new Uint8Array(size || 1024); }
-export function __heap_alloc_base(size) { return new Uint8Array(size || 1024); }
-export function __realloc_dbg(ptr, size) { return new Uint8Array(size || 1024); }
-export function __realloc_base(ptr, size) { return new Uint8Array(size || 1024); }
+export function __nh_malloc(size) { return GlobalAlloc(0, size || 1024); }
+export function __nh_malloc_dbg(size) { return GlobalAlloc(0, size || 1024); }
+export function __nh_malloc_base(size) { return GlobalAlloc(0, size || 1024); }
+export function __malloc_dbg(size) { return GlobalAlloc(0, size || 1024); }
+export function __malloc_base(size) { return GlobalAlloc(0, size || 1024); }
+export function __calloc_dbg(num, size) { return GlobalAlloc(0, (num * size) || 1024); }
+export function __heap_alloc_dbg(size) { return GlobalAlloc(0, size || 1024); }
+export function __heap_alloc_base(size) { return GlobalAlloc(0, size || 1024); }
+export function __realloc_dbg(ptr, size) { return GlobalAlloc(0, size || 1024); }
+export function __realloc_base(ptr, size) { return GlobalAlloc(0, size || 1024); }
 export function __free_dbg() {}
 export function __free_base() {}
 export function __expand() { return 0; }

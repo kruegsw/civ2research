@@ -742,7 +742,7 @@ export function FUN_004d0d64(in_ECX) {
     FUN_00414c20(0 /* ADDR:LAB_00402d83 */);
     FUN_00414c60(0 /* ADDR:LAB_004038b9 */);
   }
-  return iVar1 !== 0;
+  return ((iVar1 !== 0) ? 1 : 0);
 }
 
 
@@ -829,7 +829,7 @@ export function FUN_004d0ea6(in_ECX) {
     w32(in_ECX, 0x1db4, 1);
     FUN_00414ce0();
     FUN_00421bd0();
-    if (2 < v(DAT_00655b02)) {
+    if (2 < u8(_MEM[DAT_00655b02])) {
       CPropertySheet__EnableStackedTabs((in_ECX + 0x100),0x4014d3);
     }
     wv(_DAT_006a5b08, FUN_00421bb0());
@@ -976,7 +976,7 @@ export function FUN_004d13b8(in_ECX) {
         w32(in_ECX, 0x1db4, 1);
         FUN_00414ce0();
         FUN_00421bd0();
-        if (2 < v(DAT_00655b02)) {
+        if (2 < u8(_MEM[DAT_00655b02])) {
           CPropertySheet__EnableStackedTabs((in_ECX + 0x100),0x4014d3);
         }
         wv(_DAT_006a5b08, FUN_00421bb0());
@@ -3939,7 +3939,7 @@ export function FUN_004d5b21(in_ECX) {
     FUN_005dd3c2();
     FUN_00421bd0();
     FUN_00414ce0();
-    if (2 < v(DAT_00655b02)) {
+    if (2 < u8(_MEM[DAT_00655b02])) {
       CPropertySheet__EnableStackedTabs
                 ((s32(in_ECX, 0x1da8) + 0x48),0x403585);
     }
@@ -4029,13 +4029,13 @@ export function FUN_004d5f79(in_ECX, param_1, param_2) {
     SetRect(local_14[0],0x22f,0x1a1,0x272,0x1c5);
   }
   if (param_2 === 0) {
-    FUN_005cef31(local_24[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+    FUN_005cef31(local_24[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
   }
   else if (param_1 === 0) {
-    FUN_005cef31(local_44[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+    FUN_005cef31(local_44[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
   }
   else {
-    FUN_005cef31(local_34[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+    FUN_005cef31(local_34[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
   }
   FUN_00408490(local_14[0]);
   FUN_00419b80();
@@ -4062,13 +4062,13 @@ export function FUN_004d60a5(in_ECX, param_1, param_2) {
       /*JOINED*/
     SetRect(local_14[0],0x22f,0x1a1,0x272,0x1c5);
     if (param_2 === 0) {
-      FUN_005cef31(local_24[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+      FUN_005cef31(local_24[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
     }
     else if (param_1 === 0) {
-      FUN_005cef31(local_44[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+      FUN_005cef31(local_44[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
     }
     else {
-      FUN_005cef31(local_34[0],in_ECX + 0xb8,local_14[0].left,local_14[0].top);
+      FUN_005cef31(local_34[0],in_ECX + 0xb8,s32(local_14[0], 0),s32(local_14[0], 4));
     }
     FUN_00408490(local_14[0]);
     FUN_00419b80();
@@ -5092,7 +5092,7 @@ export function FUN_004d9a9f(in_ECX, param_1) {
   let local_24;
   let local_14 = new Array(16).fill(0);
   
-  FUN_004086c0(local_14[0],_MEM[DAT_0062e3b0 + param_1 * 2] + s32(in_ECX, 0x124), _MEM[DAT_0062e3b4 + param_1 * 2] + s32(in_ECX, 0x128),0x30, s32(in_ECX, 0x2e8) + 6);
+  FUN_004086c0(local_14[0],s32(DAT_0062e3b0, (param_1 * 2) * 4) + s32(in_ECX, 0x124), s32(DAT_0062e3b4, (param_1 * 2) * 4) + s32(in_ECX, 0x128),0x30, s32(in_ECX, 0x2e8) + 6);
                      /*JOINED*/
                      /*JOINED*/
   iVar1 = v(DAT_006a1d80);
@@ -5784,7 +5784,7 @@ export function FUN_004dbab4(in_ECX, param_1, param_2, param_3, param_4) {
     _MEM[param_1 + 2] = s32(in_ECX, 0x10428 + param_4 * 4);
     local_34 = param_1 + 3;
     local_30 = 0;
-    for (local_2c = 0; local_2c < (_MEM[DAT_0067ab90 + param_4]); local_2c = local_2c + 1) {
+    for (local_2c = 0; local_2c < (s32(DAT_0067ab90, (param_4) * 4)); local_2c = local_2c + 1) {
       if (s32(DAT_00682ba8, local_2c * 4 + param_4 * 0x2004) === 1) {
         w32(local_34, 0, s32(param_4 * 0x2004 + local_2c * 4 + 0x3f0 + in_ECX, 0));
         local_34 = local_34 + 1;
@@ -5808,7 +5808,7 @@ export function FUN_004dbab4(in_ECX, param_1, param_2, param_3, param_4) {
     _MEM[param_1 + 2] = s32(in_ECX, 0x10428 + param_4 * 4);
     local_28 = param_1 + 3;
     local_30 = 0;
-    for (local_2c = 0; local_2c < (_MEM[DAT_0067ab90 + param_4]); local_2c = local_2c + 1) {
+    for (local_2c = 0; local_2c < (s32(DAT_0067ab90, (param_4) * 4)); local_2c = local_2c + 1) {
       if (s32(DAT_00682ba8, local_2c * 4 + param_4 * 0x2004) === 1) {
         w32(local_28, 0, s32(param_4 * 0x2004 + local_2c * 4 + 0x43f8 + in_ECX, 0));
         local_28 = local_28 + 1;
@@ -5825,7 +5825,7 @@ export function FUN_004dbab4(in_ECX, param_1, param_2, param_3, param_4) {
     _MEM[param_1 + 2] = s32(in_ECX, 0x10428 + param_4 * 4);
     local_34 = param_1 + 3;
     local_30 = 0;
-    for (local_2c = 0; local_2c < (_MEM[DAT_0067ab90 + param_4]); local_2c = local_2c + 1) {
+    for (local_2c = 0; local_2c < (s32(DAT_0067ab90, (param_4) * 4)); local_2c = local_2c + 1) {
       if (s32(DAT_00682ba8, local_2c * 4 + param_4 * 0x2004) === 1) {
         w32(local_34, 0, s32(param_4 * 0x2004 + local_2c * 4 + 0x3f0 + in_ECX, 0));
         local_34 = local_34 + 1;
@@ -5847,7 +5847,7 @@ export function FUN_004dbab4(in_ECX, param_1, param_2, param_3, param_4) {
     _MEM[param_1 + 2] = s32(in_ECX, 0x10428 + param_4 * 4);
     local_28 = param_1 + 3;
     local_30 = 0;
-    for (local_2c = 0; local_2c < (_MEM[DAT_0067ab90 + param_4]); local_2c = local_2c + 1) {
+    for (local_2c = 0; local_2c < (s32(DAT_0067ab90, (param_4) * 4)); local_2c = local_2c + 1) {
       if (s32(DAT_00682ba8, local_2c * 4 + param_4 * 0x2004) === 1) {
         w32(local_28, 0, s32(param_4 * 0x2004 + local_2c * 4 + 0x43f8 + in_ECX, 0));
         _MEM[local_28 + 1] = s32(param_4 * 0x2004 + local_2c * 4 + 0xc408 + in_ECX, 0);
@@ -6560,7 +6560,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
   local_1c = 0;
   local_14 = 0;
   FUN_005b9ec6();
-  for (local_c = 0; local_c < v(DAT_006d1164); local_c = local_c + 1) {
+  for (local_c = 0; local_c < s16(DAT_006d1164, 0); local_c = local_c + 1) {
     iVar5 = FUN_005b8931(local_14,local_1c);
     pbVar6 = FUN_005b898b(local_14,local_1c,param_1);
     pbVar7 = FUN_005b898b(local_14,local_1c,param_2);
@@ -6588,14 +6588,14 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
       }
     }
     local_14 = local_14 + 2;
-    if ((v(DAT_006d1160)) <= (local_14)) {
+    if ((s16(DAT_006d1160, 0)) <= (local_14)) {
       local_1c = local_1c + 1;
       local_14 = local_1c & 1;
     }
   }
   local_24 = u8(uVar3);
   if (param_3 === 0) {
-    for (local_34 = 0; local_34 < v(DAT_00655b16); local_34 = local_34 + 1) {
+    for (local_34 = 0; local_34 < s16(DAT_00655b16, 0); local_34 = local_34 + 1) {
       if ((s32(DAT_0065610a, local_34 * 0x20) !== 0) && (((uVar4 & u8(_MEM[DAT_006560f9 + local_34 * 0x20])) !== 0 || (s8(_MEM[DAT_006560f7 + local_34 * 0x20]) === param_2)))) {
          /*JOINED*/
           /*JOINED*/
@@ -6617,7 +6617,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
     }
   }
   if ((param_3 === 0) || (param_3 === 1)) {
-    for (local_20 = 0; local_20 < v(DAT_00655b18); local_20 = local_20 + 1) {
+    for (local_20 = 0; local_20 < s16(DAT_00655b18, 0); local_20 = local_20 + 1) {
       if ((s32(DAT_0064f394, local_20 * 0x58) !== 0) && (((uVar4 & (s8(_MEM[DAT_0064f34c + local_20 * 0x58]))) !== 0 || (s8(_MEM[DAT_0064f348 + local_20 * 0x58]) === param_2)))) {
          /*JOINED*/
           /*JOINED*/
@@ -6791,7 +6791,7 @@ export function FUN_004de0e2(param_1, param_2) {
   FUN_0043d289(param_1,4,0);
   FUN_0043d289(param_1,0xb,0);
   FUN_0043d289(param_1,7,0);
-  w16(ptrAdd(DAT_0064c6ae, param_2 * 0x594), 0, v(DAT_00655af8));
+  w16(ptrAdd(DAT_0064c6ae, param_2 * 0x594), 0, s16(DAT_00655af8, 0));
   w16(ptrAdd(DAT_0064c708, param_2 * 0x594), 0, s16(DAT_0064c708, param_2 * 0x594) + 1);
   if (s16(DAT_0064c708, iVar2 * 0x594) !== 0) {
     w16(ptrAdd(DAT_0064c708, iVar2 * 0x594), 0, s16(DAT_0064c708, iVar2 * 0x594) + -1);
@@ -6812,7 +6812,7 @@ export function FUN_004de0e2(param_1, param_2) {
     FUN_004fc2bb(ptrAdd(DAT_0064f360, param_1 * 0x58),param_2,iVar2);
   }
   FUN_005b99e8(iVar3,iVar4,param_2,1);
-  local_2c = (v(DAT_00655b16));
+  local_2c = (s16(DAT_00655b16, 0));
   while (local_2c = local_2c + -1, -1 < local_2c) {
     if ((s32(DAT_0065610a, local_2c * 0x20) !== 0) && (s8(_MEM[DAT_006560f7 + local_2c * 0x20]) === iVar2)) {
        /*JOINED*/

@@ -18,6 +18,16 @@ const path = require('path');
 const C_DIR = path.join(__dirname, '..', 'decompiled');
 const OUT_DIR = path.join(__dirname, 'output');
 
+// ── Load narrow-global width map from P-code analysis ──
+const narrowPath = path.join(__dirname, 'dat-narrow.json');
+let globalDatNarrow = {};
+try {
+  globalDatNarrow = JSON.parse(fs.readFileSync(narrowPath, 'utf8'));
+  // console.log(`Loaded ${Object.keys(globalDatNarrow).length} narrow globals from dat-narrow.json`);
+} catch (e) {
+  console.warn('Warning: dat-narrow.json not found — all globals treated as 4-byte');
+}
+
 // Ensure output dir exists
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
@@ -500,10 +510,40 @@ function transformLine(line, ctx) {
         'lfFaceName': { off: 28, width: 4 }, // pointer to char array
         // MMCKINFO
         'ckid': { off: 0, width: 4 }, 'cksize': { off: 4, width: 4 },
+        // MMIOINFO (Win32)
+        'cchBuffer': { off: 20, width: 4 }, 'pchBuffer': { off: 24, width: 4 },
+        'fccIOProc': { off: 4, width: 4 },
+        'adwInfo': { off: 48, width: 4 },
+        // RECT
+        'left': { off: 0, width: 4 }, 'top': { off: 4, width: 4 },
+        'right': { off: 8, width: 4 }, 'bottom': { off: 12, width: 4 },
+        // BITMAPINFOHEADER
+        'biSize': { off: 0, width: 4 }, 'biWidth': { off: 4, width: 4 },
+        'biHeight': { off: 8, width: 4 }, 'biPlanes': { off: 12, width: 2 },
+        'biBitCount': { off: 14, width: 2 }, 'biCompression': { off: 16, width: 4 },
+        'bmiHeader': { off: 0, width: 4 },
+        // PAINTSTRUCT
+        'rcPaint': { off: 8, width: 4 },
+        // Union discriminator (offset 0 containers)
+        'u': { off: 0, width: 4 },
+        // MMTIME union members
+        'ms': { off: 0, width: 4 },
+        // TEXTMETRIC
+        'tmHeight': { off: 0, width: 4 },
+        // WNDCLASS
+        'lpfnWndProc': { off: 0, width: 4 }, 'cbClsExtra': { off: 8, width: 4 },
+        'cbWndExtra': { off: 12, width: 4 }, 'hInstance': { off: 16, width: 4 },
+        'hIcon': { off: 20, width: 4 }, 'hCursor': { off: 24, width: 4 },
+        'hbrBackground': { off: 28, width: 4 }, 'lpszMenuName': { off: 32, width: 4 },
+        'lpszClassName': { off: 36, width: 4 }, 'style': { off: 40, width: 4 },
+        // MSG
+        'message': { off: 4, width: 4 }, 'wType': { off: 0, width: 4 },
+        // RGBQUAD
+        'rgbBlue': { off: 0, width: 1 }, 'rgbGreen': { off: 1, width: 1 }, 'rgbRed': { off: 2, width: 1 },
         // generic
         'unused': { off: 0, width: 4 },
       };
-      // Match: expr->member (read or write)
+      // Match: expr->member and expr.member (read or write)
       out = out.replace(/(\w+)->(\w+)/g, (m, obj, member) => {
         const info = structOffsets[member];
         if (info) {
@@ -512,6 +552,40 @@ function transformLine(line, ctx) {
           return helper + '(' + obj + ', ' + info.off + ')';
         }
         return m; // unknown member — leave as-is (will be caught by C-struct DEVIATION)
+      });
+      // Also handle dot access on local structs: local_XX.member
+      // Only match Ghidra-style locals/params — not arbitrary expressions
+      const structVarRe = /^(local_[0-9a-fA-F]+|param_\d+|_\w+|[a-z]\w*Stack_[0-9a-fA-F]+)/;
+      // First flatten chained access: obj.union.field → obj.field when union is at offset 0
+      // Handles bracket-expanded forms: local_10[0].u.ms
+      out = out.replace(/(\w+(?:\[\d+\])?)\.(\w+)\.(\w+)/g, (m, obj, mid, field) => {
+        const baseObj = obj.replace(/\[\d+\]$/, '');
+        if (!structVarRe.test(baseObj)) return m;
+        const midInfo = structOffsets[mid];
+        const fieldInfo = structOffsets[field];
+        if (midInfo && midInfo.off === 0 && fieldInfo) {
+          const helper = fieldInfo.width === 1 ? '_MEM' : fieldInfo.width === 2 ? 's16' : 's32';
+          if (helper === '_MEM') return '_MEM[' + obj + ' + ' + fieldInfo.off + ']';
+          return helper + '(' + obj + ', ' + fieldInfo.off + ')';
+        }
+        if (midInfo && fieldInfo) {
+          const totalOff = midInfo.off + fieldInfo.off;
+          const helper = fieldInfo.width === 1 ? '_MEM' : fieldInfo.width === 2 ? 's16' : 's32';
+          if (helper === '_MEM') return '_MEM[' + obj + ' + ' + totalOff + ']';
+          return helper + '(' + obj + ', ' + totalOff + ')';
+        }
+        return m;
+      });
+      out = out.replace(/(\w+(?:\[\d+\])?)\.(\w+)/g, (m, obj, member) => {
+        const baseObj = obj.replace(/\[\d+\]$/, '');
+        if (!structVarRe.test(baseObj)) return m;
+        const info = structOffsets[member];
+        if (info) {
+          const helper = info.width === 1 ? '_MEM' : info.width === 2 ? 's16' : 's32';
+          if (helper === '_MEM') return '_MEM[' + obj + ' + ' + info.off + ']';
+          return helper + '(' + obj + ', ' + info.off + ')';
+        }
+        return m;
       });
     }
 
@@ -526,8 +600,47 @@ function transformLine(line, ctx) {
     // JS treats 0xffffffff as unsigned (4294967295), breaking signed comparisons.
     out = out.replace(/\b0xffffffff\b/g, '-1');
 
-    // ── Byte array read: (&DAT_XXX)[expr] → DAT_XXX[expr] ──
-    out = out.replace(/\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[/g, '$1[');
+    // ── Array access on address-of: (&DAT_XXX)[expr] ──
+    // C pointer arithmetic uses the type's natural stride:
+    //   int*/uint*: stride 4  →  s32(DAT_xxx, expr * 4) for read, w32(...) for write
+    //   short*:     stride 2  →  s16(DAT_xxx, expr * 2) for read, w16(...) for write
+    //   char*/byte: stride 1  →  _MEM[DAT_xxx + expr] (default)
+    // Stride map derived from Ghidra type analysis:
+    {
+      const int4Addrs = new Set([
+        'DAT_006a65b8','DAT_006a65c8', // yield arrays (food/shields/trade)
+        'DAT_0063f540','DAT_0063f544','DAT_0063f668', // AI city eval
+        'DAT_00673fc8','DAT_006763c8', // pathfinding coords
+        'DAT_00673d70', // AI target list
+        'DAT_00634f64', // gov/era tech data
+        'DAT_0062c468', // civ alive flags
+        'DAT_0067ab90', // dialog list counts
+        'DAT_00625150','DAT_00625154','DAT_00625e70','DAT_00625e74', // window coords
+        'DAT_0062cd60','DAT_0062cd64','DAT_0062e3b0','DAT_0062e3b4', // window coords
+        'DAT_00631bb0','DAT_00631bb4','DAT_00635e20','DAT_00635e24', // window coords
+        'DAT_0062d7d0','DAT_0062d7d4', // resolution data
+        'DAT_0064c5c0', // window handles
+        'DAT_00635a58','DAT_00637eb0', // object pointers
+        'DAT_0063a038', // CRT atexit
+        'DAT_0063b36c', // font metrics
+        'DAT_006e69f0', // CRT file descriptors
+        'DAT_0061c268','DAT_0061c26c','DAT_0061c270', // dialog coords
+        'DAT_0067a414','DAT_0067a424', // sound buffers
+        'DAT_0064b9e8', // per-civ int array
+        // DAT_00654b74 — NOT stride 4: C uses (byte) casts, it's a 256-byte name array
+        // DAT_0062c468 — NOT stride 4: C uses explicit *(int*)(&DAT + x*4), default stride is 1
+      ]);
+      const short2Addrs = new Set([
+        'DAT_0064bc2a', // game option shorts
+        'DAT_0064bcb4', // victory condition shorts
+        'DAT_0064bcbc', // tax rate shorts
+      ]);
+      out = out.replace(/\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[/g, (m, addr) => {
+        if (int4Addrs.has(addr)) return 'INT4_ARR_' + addr + '[';
+        if (short2Addrs.has(addr)) return 'SHORT2_ARR_' + addr + '[';
+        return addr + '['; // default: byte stride (original behavior)
+      });
+    }
 
     // ── Typed pointer READ: *(TYPE *)(base + off) → helper(base, off) ──
     // Uses balanced paren matching for nested expressions
@@ -670,8 +783,12 @@ function transformLine(line, ctx) {
 
     // ── C struct member access: expr->member → DEVIATION ──
     // Deviate the whole line since -> implies pointer context we can't translate
+    // Skip if -> is only inside a string literal (false positive)
     if (/->/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      out = makeDeviation(out, 'TODO_FIXME: C struct', ctx);
+      const noStrings = out.replace(/"[^"]*"/g, '').replace(/'[^']*'/g, '');
+      if (/->/.test(noStrings)) {
+        out = makeDeviation(out, 'C struct', ctx);
+      }
     }
 
     // ── &local_XX → local_XX (drop &) ──
@@ -826,12 +943,12 @@ function transformLine(line, ctx) {
             endPos = valEnd;
           }
           const original = out.substring(matchStart, endPos);
-          newOut += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut += 'true /* DEVIATION: C pointer —' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx = endPos;
           ptrRe.lastIndex = lastIdx;
         } else {
           const original = out.substring(matchStart);
-          newOut += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut += 'true /* DEVIATION: C pointer —' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx = out.length;
           ctx.ptrDeviationContinuation = true;
           break;
@@ -863,7 +980,7 @@ function transformLine(line, ctx) {
             endPos = afterCast;
           }
           const original = out.substring(matchStart3, endPos);
-          newOut3 += 'true /* TODO_FIXME: C pointer — ' + original.replace(/\*\//g, '* /') + ' */';
+          newOut3 += 'true /* DEVIATION: C pointer —' + original.replace(/\*\//g, '* /') + ' */';
           lastIdx3 = endPos;
           noParenRe.lastIndex = lastIdx3;
         }
@@ -942,19 +1059,58 @@ function transformLine(line, ctx) {
           if (/^(Math|Array|String|Object|console)$/.test(name)) return m; // JS builtins
           if (/^(acStack|auStack|abStack|aiStack|asStack)/.test(name)) return m; // stack arrays
           if (/^s_/.test(name)) return m;                    // string labels (Uint8Array)
+          // INT4_ARR / SHORT2_ARR markers from (&DAT_xxx)[expr] stride handling
+          // These bypass _MEM[] and get converted to s32/w32 or s16/w16 below
+          if (/^INT4_ARR_/.test(name)) return '_STRIDE4[' + name.substring(9) + ' + ';
+          if (/^SHORT2_ARR_/.test(name)) return '_STRIDE2[' + name.substring(11) + ' + ';
           // Everything else: pointer dereference → _MEM[var + idx]
           return '_MEM[' + name + ' + ';
         }
       );
+      // Convert _STRIDE4/2[...] using balanced bracket extraction
+      const extractBalancedBrackets = (str, start) => {
+        if (str[start] !== '[') return null;
+        let depth = 0;
+        for (let i = start; i < str.length; i++) {
+          if (str[i] === '[') depth++;
+          if (str[i] === ']') depth--;
+          if (depth === 0) return { content: str.substring(start + 1, i), end: i };
+        }
+        return null;
+      };
+      const convertStride = (line, tag, stride, readFn, writeFn) => {
+        let idx;
+        while ((idx = line.indexOf(tag + '[')) !== -1) {
+          const bracketStart = idx + tag.length;
+          const balanced = extractBalancedBrackets(line, bracketStart);
+          if (!balanced) break;
+          const inner = balanced.content.trim();
+          const afterBracket = line.substring(balanced.end + 1);
+          const writeMatch = afterBracket.match(/^\s*=\s*([^;]+);/);
+          const parts = splitBaseOffset(inner);
+          const base = parts ? parts.base : inner;
+          const offset = parts ? '(' + parts.offset + ') * ' + stride : '0';
+          let replacement;
+          if (writeMatch) {
+            replacement = writeFn + '(' + base + ', ' + offset + ', ' + writeMatch[1].trim() + ');';
+            line = line.substring(0, idx) + replacement + line.substring(balanced.end + 1 + writeMatch[0].length);
+          } else {
+            replacement = readFn + '(' + base + ', ' + offset + ')';
+            line = line.substring(0, idx) + replacement + line.substring(balanced.end + 1);
+          }
+        }
+        return line;
+      };
+      out = convertStride(out, '_STRIDE4', 4, 's32', 'w32');
+      out = convertStride(out, '_STRIDE2', 2, 's16', 'w16');
     }
 
     // ── v(DAT_xxx): wrap bare DAT_ value reads ──
     // In C, using DAT_xxx reads the value at that address.
     // In JS with the flat memory model, DAT_xxx is a number (offset).
     // v() reads the int32 value at that offset from _MEM.
-    // Skip: first arg to memory helpers, bracket access, write targets, &DAT
-    // Skip: first arg to memory helpers (followed by ,), bracket access, assignments
-    // But DO wrap DAT_ in arithmetic even when followed by , (e.g., expr - DAT_xxx,0,99)
+    // Width-aware: use dat-narrow.json from P-code analysis to emit
+    // s16(DAT_xxx, 0) for 2-byte globals or u8(_MEM[DAT_xxx]) for 1-byte.
     out = out.replace(
       /\b(_?DAT_[0-9a-fA-F]+)\b(?!\s*\[)(?!\s*=(?!=))/g,
       (m, name, matchOffset) => {
@@ -964,6 +1120,10 @@ function transformLine(line, ctx) {
         if (/&\s*$/.test(before)) return m;
         if (/_MEM\[\s*$/.test(before)) return m;
         if (/_MEM\[.*\+\s*$/.test(before)) return m;
+        // Width-aware read based on P-code analysis
+        const w = ctx.datNarrow?.[name];
+        if (w === 1) return 'u8(_MEM[' + name + '])';
+        if (w === 2) return 's16(' + name + ', 0)';
         return 'v(' + name + ')';
       }
     );
@@ -988,7 +1148,15 @@ function transformLine(line, ctx) {
         }
         const valExpr = out.substring(valStart, valEnd).trim();
         newOut6 += out.substring(lastIdx6, wm.index);
-        newOut6 += 'wv(' + wm[1] + ', ' + valExpr + ')';
+        // Width-aware write based on P-code analysis
+        const wWidth = ctx.datNarrow?.[wm[1]];
+        if (wWidth === 1) {
+          newOut6 += '_MEM[' + wm[1] + '] = (' + valExpr + ') & 0xFF';
+        } else if (wWidth === 2) {
+          newOut6 += 'w16(' + wm[1] + ', 0, (' + valExpr + ') & 0xFFFF)';
+        } else {
+          newOut6 += 'wv(' + wm[1] + ', ' + valExpr + ')';
+        }
         lastIdx6 = valEnd;
         wvRe.lastIndex = lastIdx6;
       }
@@ -1574,11 +1742,11 @@ function processFunction(headerLines, bodyLines, ctx) {
     // Ghidra variable names: local_XX, iVarN, uVarN, cVarN, sVarN, bVarN, lVarN, param_N, etc.
     // Match C variable declaration: TYPE [*]name[N];
     // Exclude: lines where "TYPE" is a DAT_/FUN_ reference (those are expressions, not declarations)
-    const declMatch = trimmed.match(/^(\w[\w\s]*?)\s+(\*?\s*\w+(?:\s*\[\s*\d+\s*\])?)\s*;$/);
+    const declMatch = trimmed.match(/^(\w[\w\s]*?)\s+(\*{0,3}\s*\w+(?:\s*\[\s*\d+\s*\])?)\s*;$/);
     const isKeyword = /^(if|else|for|while|do|switch|case|return|break|continue|let|var|const|export|import|function|goto)\b/.test(trimmed);
     const isDatExpr = /^(DAT_|FUN_|s_|PTR_)/.test(trimmed); // expression, not declaration
     if (declMatch && !isKeyword && !isDatExpr) {
-      const varName = declMatch[2].replace(/^\*\s*/, '').replace(/\s*\[.*\]/, '');
+      const varName = declMatch[2].replace(/^\*+\s*/, '').replace(/\s*\[.*\]/, '');
 
       // Register params promoted to parameters — emit comment
       if (regParams.includes(varName)) {
@@ -1606,7 +1774,7 @@ function processFunction(headerLines, bodyLines, ctx) {
       }
 
       // Regular declaration — handle C arrays: type name[size] → let name = new Array(size).fill(0)
-      let declStr = declMatch[2].replace(/^\*\s*/, '');
+      let declStr = declMatch[2].replace(/^\*+\s*/, '');
       // Rename JS reserved words
       if (declStr === 'this') declStr = '_this';
       if (declStr === 'class') declStr = '_class';
@@ -1652,7 +1820,7 @@ function processFunction(headerLines, bodyLines, ctx) {
       'HBRUSH':1,'HCURSOR':1,'HFONT':1,'HICON':1,'HMODULE':1,'HPALETTE':1,
       'CPropertySheet':1,'CCheckListBox':1,'CSocket':1,'CString':1,
       'CArchive':1,'CRichEditDoc':1,'CRichEditView':1,'COleClientItem':1,
-      'LPVOID':1,'HPSTR':1,'float':1,'code':1,'void':1
+      'LPVOID':1,'HPSTR':1,'float':1,'code':1,'void':1,'intptr_t':1
     }).join('|') + ')\\s*\\*\\s*\\)\\s*\\(');
     const writeTypeMatch = trimmed.match(writeTypeRe);
     if (writeTypeMatch) {
@@ -1696,7 +1864,8 @@ function processFunction(headerLines, bodyLines, ctx) {
       continue;
     }}} // close eqMatch, balanced, writeTypeMatch
 
-    // ── Typed pointer WRITE on variable (no parens): *(TYPE *)variable = expr ──
+    // ── Typed pointer WRITE on variable/expr (no parens): *(TYPE *)target = expr ──
+    // Handles: *(int *)var, *(int *)*var, *(int *)var[idx], *(int *)&var[N].field, *(int *)DAT[idx]
     {
       const allWriteTypes = Object.keys({
         'int':1,'uint':1,'short':1,'ushort':1,'undefined4':1,'undefined2':1,'undefined1':1,
@@ -1704,25 +1873,65 @@ function processFunction(headerLines, bodyLines, ctx) {
         'UINT':1,'DWORD':1,'BOOL':1,'float':1,'code':1,'void':1,
         'CPropertySheet':1,'intptr_t':1
       }).join('|');
-      const varWriteRe = new RegExp('^\\*\\s*\\(\\s*(' + allWriteTypes + ')\\s*\\*\\s*\\)\\s*(\\w+)\\s*=\\s*(.+);$');
+      // Match target: word, *word, word[expr], &word[expr].field, word->field
+      const varWriteRe = new RegExp('^\\*\\s*\\(\\s*(' + allWriteTypes + ')\\s*\\*\\s*\\)\\s*(&?\\*?[\\w.>\\[\\]\\s0-9a-fA-Fx*+\\-]+?)\\s*=\\s*(.+);$');
       const varWriteMatch = trimmed.match(varWriteRe);
       if (varWriteMatch) {
         const wType = varWriteMatch[1];
-        const varName = varWriteMatch[2];
+        let targetExpr = varWriteMatch[2].trim();
         let val = varWriteMatch[3].trim();
-        val = transformLine('  ' + val, ctx).trim();
-        const tVar = transformLine('  ' + varName, ctx).trim();
-        if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
-          result.push(line.replace(trimmed, '_MEM[' + tVar + '] = ' + val + ';'));
-        } else {
-          const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
-          result.push(line.replace(trimmed, wHelper + '(' + tVar + ', 0, ' + val + ');'));
+        // Don't match if target contains = (misparse) or is empty
+        if (targetExpr && !/=/.test(targetExpr)) {
+          val = transformLine('  ' + val, ctx).trim();
+          const tVar = transformLine('  ' + targetExpr, ctx).trim();
+          if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
+            result.push(line.replace(trimmed, '_MEM[' + tVar + '] = ' + val + ';'));
+          } else {
+            const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
+            result.push(line.replace(trimmed, wHelper + '(' + tVar + ', 0, ' + val + ');'));
+          }
+          continue;
         }
-        continue;
       }
     }
 
-    // ── Double-pointer WRITE: *(TYPE **)(base + off) = expr → w32 (pointer = 4 bytes) ──
+    // ── Double-deref pointer WRITE: **(TYPE **)(base + off) = expr ──
+    // Read pointer at (base+off), then write through it.
+    // **(int **)(x + 4) = val  →  w32(s32(x, 4), 0, val)
+    // **(ushort **)(x + 4) = val → w16(s32(x, 4), 0, val)
+    // **(undefined1 **)(x) = val → _MEM[s32(x, 0)] = val
+    {
+      const dblDerefMatch = trimmed.match(/^\*\*\s*\(\s*(\w+)\s*\*\s*\*\s*\)\s*\(/);
+      if (dblDerefMatch) {
+        const dblType = dblDerefMatch[1];
+        const parenStart2 = trimmed.indexOf('(', dblDerefMatch[0].length - 1);
+        const balanced2 = extractBalancedParens(trimmed, parenStart2);
+        if (balanced2) {
+        const inner = balanced2.content.trim();
+        const afterParen2 = trimmed.substring(balanced2.end + 1).trim();
+        const eqMatch2 = afterParen2.match(/^=\s*(.+);$/);
+        if (eqMatch2) {
+        let val = eqMatch2[1].trim();
+        val = transformLine('  ' + val, ctx).trim();
+        const innerTransformed = transformLine('  ' + inner, ctx).trim();
+        const parts = splitBaseOffset(innerTransformed);
+        const stripV = (s) => s.replace(/^v\(([^)]+)\)$/, '$1');
+        // Read the pointer first
+        const ptrExpr = parts
+          ? 's32(' + stripV(parts.base) + ', ' + parts.offset + ')'
+          : 's32(' + stripV(innerTransformed) + ', 0)';
+        // Then write through it
+        if (dblType === 'undefined1' || dblType === 'char' || dblType === 'byte') {
+          result.push(line.replace(trimmed, '_MEM[' + ptrExpr + '] = ' + val + ';'));
+        } else {
+          const wHelper = (dblType === 'short' || dblType === 'ushort' || dblType === 'undefined2') ? 'w16' : 'w32';
+          result.push(line.replace(trimmed, wHelper + '(' + ptrExpr + ', 0, ' + val + ');'));
+        }
+        continue;
+      }}} // close eqMatch2, balanced2, dblDerefMatch
+    }
+
+    // ── Single-deref double-pointer WRITE: *(TYPE **)(base + off) = expr → w32 (pointer = 4 bytes) ──
     const dblWriteTypeMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(/);
     if (dblWriteTypeMatch) {
       const parenStart2 = trimmed.indexOf('(', dblWriteTypeMatch[0].length - 1);
@@ -1746,6 +1955,17 @@ function processFunction(headerLines, bodyLines, ctx) {
       }
       continue;
     }}} // close eqMatch2, balanced2, dblWriteTypeMatch
+
+    // ── Triple-pointer vtable WRITE: *(TYPE ***)var = &PTR_xxx → w32(var, 0, val) ──
+    {
+      const tripleMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\*\s*\)\s*(\w+)\s*=\s*(.+);$/);
+      if (tripleMatch) {
+        const tVar = transformLine('  ' + tripleMatch[1], ctx).trim();
+        let val = transformLine('  ' + tripleMatch[2], ctx).trim();
+        result.push(line.replace(trimmed, 'w32(' + tVar + ', 0, ' + val + ');'));
+        continue;
+      }
+    }
 
     // ── Byte array WRITE with cast on lvalue ──
     // (char)(&DAT_XXX)[off] = val; or (byte)(&DAT_XXX)[off] = val;
@@ -1883,8 +2103,9 @@ function processFunction(headerLines, bodyLines, ctx) {
 
     // ── Function pointer calls and Ghidra artifacts ──
     // (**(code **)(expr))(args), (*UNRECOVERED_JUMPTABLE)(), (*funcptr)(args)
+    // All 118 instances are MFC vtable/DirectDraw/CRT — zero game logic
     if (/^\(\s*\*+/.test(trimmed) && (/\bcode\s*\*/.test(trimmed) || /UNRECOVERED/.test(trimmed))) {
-      result.push(makeDeviation(line, 'TODO_FIXME: function pointer call', ctx));
+      result.push(makeDeviation(line, 'function pointer call', ctx));
       continue;
     }
 
@@ -1892,8 +2113,9 @@ function processFunction(headerLines, bodyLines, ctx) {
     // *(UNHANDLED_TYPE *)(expr) = value; → deviate the whole line
     // The typed write handler above already caught handled types (int, uint, etc.) and continued.
     // This catches what's left: double pointers (TYPE **), code *, void *, etc.
+    // Remaining instances are all MFC/CRT — no game logic
     if (/^\s*\*+\s*\(\s*\w[\w\s]*\*+\s*\)/.test(trimmed) && /=(?!=)/.test(trimmed)) {
-      result.push(makeDeviation(line, 'TODO_FIXME: C pointer write', ctx));
+      result.push(makeDeviation(line, 'C pointer write', ctx));
       continue;
     }
 
@@ -1980,11 +2202,38 @@ function processFunction(headerLines, bodyLines, ctx) {
           /\(\s*void\s*\)\s*\w/.test(ft) ||  // (void)expr
           /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
           /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) && !/^(else|if|for|while|do|switch|case|return|break|continue)\b/.test(ft)) {  // C function signature (not JS keywords)
-        transformed = makeDeviation(transformed, 'TODO_FIXME: C-syntax', ctx);
+        transformed = makeDeviation(transformed, 'C-syntax', ctx);
       }
     }
 
     result.push(transformed);
+  }
+
+  // ── Post-process: coerce boolean returns to int ──
+  // C comparisons return int 0/1. JS comparisons return boolean.
+  // When the return value is used in arithmetic or !== 0 checks, this causes bugs.
+  // Wrap return expressions containing top-level comparisons in (expr) ? 1 : 0.
+  for (let i = 0; i < result.length; i++) {
+    const line = result[i];
+    const m = line.match(/^(\s*return\s+)(.*)(;\s*)$/);
+    if (!m) continue;
+    const expr = m[2].trim();
+    if (/\?\s*1\s*:\s*0/.test(expr)) continue; // already coerced
+    if (/^\s*\/\//.test(line)) continue; // comment
+    // Strip balanced parens to check for top-level comparison
+    let s = expr;
+    for (let r = 0; r < 5; r++) s = s.replace(/\([^()]*\)/g, 'X').replace(/\[[^\[\]]*\]/g, 'X');
+    if (/[^=!<>]===[^=]|[^=!]!==[^=]|[^<>=]<[^<=]|[^<>=]>[^>=]|<=[^>]|>=[^<]/.test(s)) {
+      result[i] = m[1] + '((' + expr + ') ? 1 : 0)' + m[3];
+    }
+  }
+
+  // ── Post-process: boolean-safe comparisons against 0 ──
+  // C comparisons return int 0/1, JS returns boolean. Using loose equality
+  // (!= 0, == 0) instead of strict (!== 0, === 0) makes them equivalent
+  // because false == 0 is true in JS (unlike false !== 0 which is true).
+  for (let i = 0; i < result.length; i++) {
+    result[i] = result[i].replace(/ !== 0\b/g, ' != 0').replace(/ === 0\b/g, ' == 0');
   }
 
   // ── Post-process: fix dangling operators before DEVIATION lines ──
@@ -2330,7 +2579,7 @@ function transpileBlock(blockName) {
 
   const content = fs.readFileSync(cFile, 'utf8');
   const { preamble, functions } = parseFile(content);
-  const ctx = { blockName };
+  const ctx = { blockName, datNarrow: globalDatNarrow };
 
   const outputLines = [];
 

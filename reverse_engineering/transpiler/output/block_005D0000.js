@@ -54,15 +54,15 @@ export function FUN_005d056c(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_30 = 0;
       uVar5 = FUN_00407f90(local_1c[0]);
-      if (local_28 < local_1c[0].left) {
-        local_30 = local_1c[0].left - local_28;
-        local_28 = local_1c[0].left;
+      if (local_28 < s32(local_1c[0], 0)) {
+        local_30 = s32(local_1c[0], 0) - local_28;
+        local_28 = s32(local_1c[0], 0);
       }
       local_c = 0;
       uVar8 = FUN_00407fc0(local_1c[0]);
-      if (local_2c < local_1c[0].top) {
-        local_c = local_1c[0].top - local_2c;
-        local_2c = local_1c[0].top;
+      if (local_2c < s32(local_1c[0], 4)) {
+        local_c = s32(local_1c[0], 4) - local_2c;
+        local_2c = s32(local_1c[0], 4);
       }
       iVar4 = local_c;
       iVar6 = local_8;
@@ -74,18 +74,18 @@ export function FUN_005d056c(in_ECX, param_1, param_2, param_3, param_4, param_5
                            /*JOINED*/
       FUN_005e518e(in_ECX[0xe],uVar5);
     }
-    w32(param_1, 0, local_1c[0].left);
-    _MEM[param_1 + 1] = local_1c[0].top;
-    _MEM[param_1 + 2] = local_1c[0].right;
-    _MEM[param_1 + 3] = local_1c[0].bottom;
+    w32(param_1, 0, s32(local_1c[0], 0));
+    _MEM[param_1 + 1] = s32(local_1c[0], 4);
+    _MEM[param_1 + 2] = s32(local_1c[0], 8);
+    _MEM[param_1 + 3] = s32(local_1c[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_006381cc);
   SetRect(local_1c[0],0,0,0,0);
-  w32(param_1, 0, local_1c[0].left);
-  _MEM[param_1 + 1] = local_1c[0].top;
-  _MEM[param_1 + 2] = local_1c[0].right;
-  _MEM[param_1 + 3] = local_1c[0].bottom;
+  w32(param_1, 0, s32(local_1c[0], 0));
+  _MEM[param_1 + 1] = s32(local_1c[0], 4);
+  _MEM[param_1 + 2] = s32(local_1c[0], 8);
+  _MEM[param_1 + 3] = s32(local_1c[0], 12);
   return param_1;
 }
 
@@ -143,15 +143,15 @@ export function FUN_005d080d(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_34 = 0;
       uVar6 = FUN_00407f90(local_1c[0]);
-      if (local_28 < local_1c[0].left) {
-        local_34 = local_1c[0].left - local_28;
-        local_28 = local_1c[0].left;
+      if (local_28 < s32(local_1c[0], 0)) {
+        local_34 = s32(local_1c[0], 0) - local_28;
+        local_28 = s32(local_1c[0], 0);
       }
       local_c = 0;
       uVar8 = FUN_00407fc0(local_1c[0]);
-      if (local_2c < local_1c[0].top) {
-        local_c = local_1c[0].top - local_2c;
-        local_2c = local_1c[0].top;
+      if (local_2c < s32(local_1c[0], 4)) {
+        local_c = s32(local_1c[0], 4) - local_2c;
+        local_2c = s32(local_1c[0], 4);
       }
       iVar5 = FUN_005e6188();
       if (iVar5 !== 0) {
@@ -161,18 +161,18 @@ export function FUN_005d080d(in_ECX, param_1, param_2, param_3, param_4, param_5
         _Timevec___Timevec(param_2);
       }
     }
-    w32(param_1, 0, local_1c[0].left);
-    _MEM[param_1 + 1] = local_1c[0].top;
-    _MEM[param_1 + 2] = local_1c[0].right;
-    _MEM[param_1 + 3] = local_1c[0].bottom;
+    w32(param_1, 0, s32(local_1c[0], 0));
+    _MEM[param_1 + 1] = s32(local_1c[0], 4);
+    _MEM[param_1 + 2] = s32(local_1c[0], 8);
+    _MEM[param_1 + 3] = s32(local_1c[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_006381f8);
   SetRect(local_1c[0],0,0,0,0);
-  w32(param_1, 0, local_1c[0].left);
-  _MEM[param_1 + 1] = local_1c[0].top;
-  _MEM[param_1 + 2] = local_1c[0].right;
-  _MEM[param_1 + 3] = local_1c[0].bottom;
+  w32(param_1, 0, s32(local_1c[0], 0));
+  _MEM[param_1 + 1] = s32(local_1c[0], 4);
+  _MEM[param_1 + 2] = s32(local_1c[0], 8);
+  _MEM[param_1 + 3] = s32(local_1c[0], 12);
   return param_1;
 }
 
@@ -230,15 +230,15 @@ export function FUN_005d0aac(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_30 = 0;
       uVar5 = FUN_00407f90(local_1c[0]);
-      if (local_28 < local_1c[0].left) {
-        local_30 = local_1c[0].left - local_28;
-        local_28 = local_1c[0].left;
+      if (local_28 < s32(local_1c[0], 0)) {
+        local_30 = s32(local_1c[0], 0) - local_28;
+        local_28 = s32(local_1c[0], 0);
       }
       local_c = 0;
       uVar8 = FUN_00407fc0(local_1c[0]);
-      if (local_2c < local_1c[0].top) {
-        local_c = local_1c[0].top - local_2c;
-        local_2c = local_1c[0].top;
+      if (local_2c < s32(local_1c[0], 4)) {
+        local_c = s32(local_1c[0], 4) - local_2c;
+        local_2c = s32(local_1c[0], 4);
       }
       iVar4 = local_c;
       iVar6 = local_8;
@@ -250,18 +250,18 @@ export function FUN_005d0aac(in_ECX, param_1, param_2, param_3, param_4, param_5
                            /*JOINED*/
       FUN_0061a759(in_ECX[0xe],uVar5);
     }
-    w32(param_1, 0, local_1c[0].left);
-    _MEM[param_1 + 1] = local_1c[0].top;
-    _MEM[param_1 + 2] = local_1c[0].right;
-    _MEM[param_1 + 3] = local_1c[0].bottom;
+    w32(param_1, 0, s32(local_1c[0], 0));
+    _MEM[param_1 + 1] = s32(local_1c[0], 4);
+    _MEM[param_1 + 2] = s32(local_1c[0], 8);
+    _MEM[param_1 + 3] = s32(local_1c[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_00638224);
   SetRect(local_1c[0],0,0,0,0);
-  w32(param_1, 0, local_1c[0].left);
-  _MEM[param_1 + 1] = local_1c[0].top;
-  _MEM[param_1 + 2] = local_1c[0].right;
-  _MEM[param_1 + 3] = local_1c[0].bottom;
+  w32(param_1, 0, s32(local_1c[0], 0));
+  _MEM[param_1 + 1] = s32(local_1c[0], 4);
+  _MEM[param_1 + 2] = s32(local_1c[0], 8);
+  _MEM[param_1 + 3] = s32(local_1c[0], 12);
   return param_1;
 }
 
@@ -320,15 +320,15 @@ export function FUN_005d0dbf(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_34 = 0;
       uVar6 = FUN_00407f90(local_20[0]);
-      if (local_2c < local_20[0].left) {
-        local_34 = local_20[0].left - local_2c;
-        local_2c = local_20[0].left;
+      if (local_2c < s32(local_20[0], 0)) {
+        local_34 = s32(local_20[0], 0) - local_2c;
+        local_2c = s32(local_20[0], 0);
       }
       local_10 = 0;
       uVar8 = FUN_00407fc0(local_20[0]);
-      if (local_30 < local_20[0].top) {
-        local_10 = local_20[0].top - local_30;
-        local_30 = local_20[0].top;
+      if (local_30 < s32(local_20[0], 4)) {
+        local_10 = s32(local_20[0], 4) - local_30;
+        local_30 = s32(local_20[0], 4);
       }
       local_c = FUN_005e6188();
       if (local_c !== 0) {
@@ -339,18 +339,18 @@ export function FUN_005d0dbf(in_ECX, param_1, param_2, param_3, param_4, param_5
         _Timevec___Timevec(param_2);
       }
     }
-    w32(param_1, 0, local_20[0].left);
-    _MEM[param_1 + 1] = local_20[0].top;
-    _MEM[param_1 + 2] = local_20[0].right;
-    _MEM[param_1 + 3] = local_20[0].bottom;
+    w32(param_1, 0, s32(local_20[0], 0));
+    _MEM[param_1 + 1] = s32(local_20[0], 4);
+    _MEM[param_1 + 2] = s32(local_20[0], 8);
+    _MEM[param_1 + 3] = s32(local_20[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_00638250);
   SetRect(local_20[0],0,0,0,0);
-  w32(param_1, 0, local_20[0].left);
-  _MEM[param_1 + 1] = local_20[0].top;
-  _MEM[param_1 + 2] = local_20[0].right;
-  _MEM[param_1 + 3] = local_20[0].bottom;
+  w32(param_1, 0, s32(local_20[0], 0));
+  _MEM[param_1 + 1] = s32(local_20[0], 4);
+  _MEM[param_1 + 2] = s32(local_20[0], 8);
+  _MEM[param_1 + 3] = s32(local_20[0], 12);
   return param_1;
 }
 
@@ -409,15 +409,15 @@ export function FUN_005d10cd(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_30 = 0;
       uVar5 = FUN_00407f90(local_1c[0]);
-      if (local_28 < local_1c[0].left) {
-        local_30 = local_1c[0].left - local_28;
-        local_28 = local_1c[0].left;
+      if (local_28 < s32(local_1c[0], 0)) {
+        local_30 = s32(local_1c[0], 0) - local_28;
+        local_28 = s32(local_1c[0], 0);
       }
       local_c = 0;
       uVar8 = FUN_00407fc0(local_1c[0]);
-      if (local_2c < local_1c[0].top) {
-        local_c = local_1c[0].top - local_2c;
-        local_2c = local_1c[0].top;
+      if (local_2c < s32(local_1c[0], 4)) {
+        local_c = s32(local_1c[0], 4) - local_2c;
+        local_2c = s32(local_1c[0], 4);
       }
       iVar4 = local_c;
       iVar6 = local_8;
@@ -430,18 +430,18 @@ export function FUN_005d10cd(in_ECX, param_1, param_2, param_3, param_4, param_5
                            /*JOINED*/
       FUN_005e52bf(in_ECX[0xe],uVar5);
     }
-    w32(param_1, 0, local_1c[0].left);
-    _MEM[param_1 + 1] = local_1c[0].top;
-    _MEM[param_1 + 2] = local_1c[0].right;
-    _MEM[param_1 + 3] = local_1c[0].bottom;
+    w32(param_1, 0, s32(local_1c[0], 0));
+    _MEM[param_1 + 1] = s32(local_1c[0], 4);
+    _MEM[param_1 + 2] = s32(local_1c[0], 8);
+    _MEM[param_1 + 3] = s32(local_1c[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_0063827c);
   SetRect(local_1c[0],0,0,0,0);
-  w32(param_1, 0, local_1c[0].left);
-  _MEM[param_1 + 1] = local_1c[0].top;
-  _MEM[param_1 + 2] = local_1c[0].right;
-  _MEM[param_1 + 3] = local_1c[0].bottom;
+  w32(param_1, 0, s32(local_1c[0], 0));
+  _MEM[param_1 + 1] = s32(local_1c[0], 4);
+  _MEM[param_1 + 2] = s32(local_1c[0], 8);
+  _MEM[param_1 + 3] = s32(local_1c[0], 12);
   return param_1;
 }
 
@@ -501,15 +501,15 @@ export function FUN_005d1372(in_ECX, param_1, param_2, param_3, param_4, param_5
     if (BVar7 !== 0) {
       local_34 = 0;
       uVar6 = FUN_00407f90(local_20[0]);
-      if (local_2c < local_20[0].left) {
-        local_34 = local_20[0].left - local_2c;
-        local_2c = local_20[0].left;
+      if (local_2c < s32(local_20[0], 0)) {
+        local_34 = s32(local_20[0], 0) - local_2c;
+        local_2c = s32(local_20[0], 0);
       }
       local_10 = 0;
       uVar8 = FUN_00407fc0(local_20[0]);
-      if (local_30 < local_20[0].top) {
-        local_10 = local_20[0].top - local_30;
-        local_30 = local_20[0].top;
+      if (local_30 < s32(local_20[0], 4)) {
+        local_10 = s32(local_20[0], 4) - local_30;
+        local_30 = s32(local_20[0], 4);
       }
       local_c = FUN_005e6188();
       if (local_c !== 0) {
@@ -520,18 +520,18 @@ export function FUN_005d1372(in_ECX, param_1, param_2, param_3, param_4, param_5
         _Timevec___Timevec(param_2);
       }
     }
-    w32(param_1, 0, local_20[0].left);
-    _MEM[param_1 + 1] = local_20[0].top;
-    _MEM[param_1 + 2] = local_20[0].right;
-    _MEM[param_1 + 3] = local_20[0].bottom;
+    w32(param_1, 0, s32(local_20[0], 0));
+    _MEM[param_1 + 1] = s32(local_20[0], 4);
+    _MEM[param_1 + 2] = s32(local_20[0], 8);
+    _MEM[param_1 + 3] = s32(local_20[0], 12);
     return param_1;
   }
   debug_log(s_Error__Sprite_size_exceeds_scale_006382a8);
   SetRect(local_20[0],0,0,0,0);
-  w32(param_1, 0, local_20[0].left);
-  _MEM[param_1 + 1] = local_20[0].top;
-  _MEM[param_1 + 2] = local_20[0].right;
-  _MEM[param_1 + 3] = local_20[0].bottom;
+  w32(param_1, 0, s32(local_20[0], 0));
+  _MEM[param_1 + 1] = s32(local_20[0], 4);
+  _MEM[param_1 + 2] = s32(local_20[0], 8);
+  _MEM[param_1 + 3] = s32(local_20[0], 12);
   return param_1;
 }
 
@@ -567,29 +567,29 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
   let local_14 = [0];
   
   if (_MEM[param_1 + 0xd] !== 0) {
-    if (_MEM[param_2 + 3].top === 0) {
+    if (s32(_MEM[param_2 + 3], 4) === 0) {
       SetRect(param_2,s32(param_1, 0),_MEM[param_1 + 1],_MEM[param_1 + 2] + param_4,_MEM[param_1 + 3] + param_5);
-      _MEM[param_2 + 1].left = _MEM[param_1 + 4];
-      _MEM[param_2 + 1].top = _MEM[param_1 + 5];
-      _MEM[param_2 + 1].right = _MEM[param_1 + 6];
-      _MEM[param_2 + 1].bottom = _MEM[param_1 + 7];
+      w32(_MEM[param_2 + 1], 0, _MEM[param_1 + 4]);
+      w32(_MEM[param_2 + 1], 4, _MEM[param_1 + 5]);
+      w32(_MEM[param_2 + 1], 8, _MEM[param_1 + 6]);
+      w32(_MEM[param_2 + 1], 12, _MEM[param_1 + 7]);
       OffsetRect(param_2 + 1,param_4,param_5);
-      _MEM[param_2 + 2].left = _MEM[param_1 + 8] + param_4;
-      _MEM[param_2 + 2].top = _MEM[param_1 + 9] + param_5;
-      _MEM[param_2 + 2].right = _MEM[param_1 + 10];
-      _MEM[param_2 + 2].bottom = _MEM[param_1 + 0xb];
-      // DEVIATION: TODO_FIXME: C pointer write — *(char *)&param_2[3].left = (char)param_1[0xc];
-      _MEM[param_2 + 3].top = _MEM[param_1 + 0xd];
-      FUN_005dcd70(_MEM[param_2 + 3].top);
+      w32(_MEM[param_2 + 2], 0, _MEM[param_1 + 8] + param_4);
+      w32(_MEM[param_2 + 2], 4, _MEM[param_1 + 9] + param_5);
+      w32(_MEM[param_2 + 2], 8, _MEM[param_1 + 10]);
+      w32(_MEM[param_2 + 2], 12, _MEM[param_1 + 0xb]);
+      _MEM[s32(_MEM[param_2 + 3], 0)] = s8(_MEM[param_1 + 0xc]);
+      w32(_MEM[param_2 + 3], 4, _MEM[param_1 + 0xd]);
+      FUN_005dcd70(s32(_MEM[param_2 + 3], 4));
       FUN_005cf2ff();
     }
     else {
-      iVar3 = (_MEM[param_1 + 5] + param_5) - _MEM[param_2 + 1].top;
+      iVar3 = (_MEM[param_1 + 5] + param_5) - s32(_MEM[param_2 + 1], 4);
       iVar4 = FUN_00407f90(param_1 + 4);
       iVar8 = _MEM[param_1 + 4];
       iVar5 = FUN_00407fc0(param_1 + 4);
       iVar6 = FUN_00407f90(param_2 + 1);
-      iVar6 = _MEM[param_2 + 1].left + iVar6;
+      iVar6 = s32(_MEM[param_2 + 1], 0) + iVar6;
       iVar7 = FUN_00407fc0(param_2 + 1);
       iVar11 = iVar5 + iVar3;
       if (iVar5 + iVar3 <= iVar7) {
@@ -600,12 +600,12 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
         iVar8 = iVar6;
       }
       SetRect(local_14[0],0,0,iVar8,iVar11);
-      LVar2 = local_14[0].bottom;
-      LVar12 = local_14[0].right;
+      LVar2 = s32(local_14[0], 12);
+      LVar12 = s32(local_14[0], 8);
       FUN_005cf2ff();
       FUN_005cf2ff();
       local_54 = _MEM[param_1 + 0xe];
-      local_5c = _MEM[param_2 + 3].right;
+      local_5c = s32(_MEM[param_2 + 3], 8);
       LVar9 = FUN_005dce4f(LVar12 * LVar2 + LVar2 * 8);
       local_20 = FUN_005dcdf9(LVar9);
       for (local_40 = 0; local_40 < LVar2; local_40 = local_40 + 1) {
@@ -665,7 +665,7 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
             if ((iVar6 <= local_34) && (local_34 < iVar10)) {
               if (u8(_MEM[param_1 + 0xc]) === (s8(s32(local_54, 0)))) {
                 if (local_60 === 0) {
-                  _MEM[local_20] = s8(_MEM[param_2 + 3]).left;
+                  _MEM[local_20] = s8(s32(_MEM[param_2 + 3], 0));
                 }
               }
               else {
@@ -682,24 +682,24 @@ export function FUN_005d1612(param_1, param_2, param_3, param_4, param_5) {
           }
         }
       }
-      OffsetRect(local_14[0],_MEM[param_2 + 1].left,_MEM[param_2 + 1].top);
-      _MEM[param_2 + 1].left = local_14[0].left;
-      _MEM[param_2 + 1].top = local_14[0].top;
-      _MEM[param_2 + 1].right = local_14[0].right;
-      _MEM[param_2 + 1].bottom = local_14[0].bottom;
-      w32(param_2, 0, local_14[0].left);
-      w32(param_2, 4, local_14[0].top);
-      w32(param_2, 8, local_14[0].right);
-      w32(param_2, 12, local_14[0].bottom);
-      if (_MEM[param_2 + 3].right !== 0) {
+      OffsetRect(local_14[0],s32(_MEM[param_2 + 1], 0),s32(_MEM[param_2 + 1], 4));
+      w32(_MEM[param_2 + 1], 0, s32(local_14[0], 0));
+      w32(_MEM[param_2 + 1], 4, s32(local_14[0], 4));
+      w32(_MEM[param_2 + 1], 8, s32(local_14[0], 8));
+      w32(_MEM[param_2 + 1], 12, s32(local_14[0], 12));
+      w32(param_2, 0, s32(local_14[0], 0));
+      w32(param_2, 4, s32(local_14[0], 4));
+      w32(param_2, 8, s32(local_14[0], 8));
+      w32(param_2, 12, s32(local_14[0], 12));
+      if (s32(_MEM[param_2 + 3], 8) !== 0) {
         FUN_005cf337();
       }
-      if (_MEM[param_2 + 3].top !== 0) {
-        LVar12 = FUN_005dce96(_MEM[param_2 + 3].top);
-        _MEM[param_2 + 3].top = LVar12;
+      if (s32(_MEM[param_2 + 3], 4) !== 0) {
+        LVar12 = FUN_005dce96(s32(_MEM[param_2 + 3], 4));
+        w32(_MEM[param_2 + 3], 4, LVar12);
       }
       FUN_005dce29(LVar9);
-      _MEM[param_2 + 3].top = LVar9;
+      w32(_MEM[param_2 + 3], 4, LVar9);
       FUN_005cf2ff();
     }
   }
@@ -724,7 +724,7 @@ export function FUN_005d1b38(in_ECX) {
   in_ECX[2].top = 0;
   in_ECX[2].right = 1;
   in_ECX[2].bottom = 1;
-  // DEVIATION: TODO_FIXME: C pointer write — *(undefined1 *)&in_ECX[3].left = 0;
+  _MEM[in_ECX[3].left] = 0;
   in_ECX[3].top = 0;
   in_ECX[3].right = 0;
   return;
@@ -1559,17 +1559,17 @@ export function register_wndclass_2740_005D2740(param_1, param_2, param_3, param
     local_c = CreateWindowExA(4,v(DAT_0063831c),v(DAT_00638318),local_8,s32(param_1, 0),_MEM[param_1 + 1],iVar2,iVar1, pHVar5,pHVar6,pHVar7,pvVar8);
                               /*JOINED*/
     wv(DAT_006e47dc, GetWindowLongA(local_c,-4));
-    local_34[0].style = 0x88;
-    local_34[0].cbClsExtra = 0;
-    local_34[0].lpfnWndProc = v(DAT_006e47dc);
+    w32(local_34[0], 40, 0x88);
+    w32(local_34[0], 8, 0);
+    w32(local_34[0], 0, v(DAT_006e47dc));
     wv(DAT_006e47d8, GetClassLongA(local_c,-0x12));
-    local_34[0].cbWndExtra = v(DAT_006e47d8) + 8;
-    local_34[0].hInstance = v(DAT_006e4ff0);
-    local_34[0].hIcon = 0x0;
-    local_34[0].hCursor = LoadCursorA(0x0,0x7f01);
-    local_34[0].hbrBackground = 0x0;
-    local_34[0].lpszMenuName = 0x0;
-    local_34[0].lpszClassName = s_MSEditBoxClass_00638324;
+    w32(local_34[0], 12, v(DAT_006e47d8) + 8);
+    w32(local_34[0], 16, v(DAT_006e4ff0));
+    w32(local_34[0], 20, 0x0);
+    w32(local_34[0], 24, LoadCursorA(0x0,0x7f01));
+    w32(local_34[0], 28, 0x0);
+    w32(local_34[0], 32, 0x0);
+    w32(local_34[0], 36, s_MSEditBoxClass_00638324);
     RegisterClassA(local_34[0]);
     wv(DAT_00638314, 1);
     DestroyWindow(local_c);
@@ -1988,7 +1988,7 @@ export function FUN_005d305a(param_1) {
   uVar2 = send_msg_2E77(param_1,iVar1);
   iVar3 = send_msg_2E9C(param_1,uVar2);
   iVar4 = send_msg_2EC1(param_1,iVar3);
-  return iVar1 === iVar3 + iVar4;
+  return ((iVar1 === iVar3 + iVar4) ? 1 : 0);
 }
 
 
@@ -2049,17 +2049,17 @@ export function register_wndclass_3130_005D3130(param_1, param_2, param_3) {
     local_8 = CreateWindowExA(4,s_COMBOBOX_00638350,v(DAT_0063834c),local_34,s32(param_1, 0),_MEM[param_1 + 1],iVar2 ,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
                               /*JOINED*/
     wv(DAT_006e47ec, GetWindowLongA(local_8,-4));
-    local_30[0].style = 0x88;
-    local_30[0].cbClsExtra = 0;
-    local_30[0].lpfnWndProc = v(DAT_006e47ec);
+    w32(local_30[0], 40, 0x88);
+    w32(local_30[0], 8, 0);
+    w32(local_30[0], 0, v(DAT_006e47ec));
     wv(DAT_006e47e4, GetClassLongA(local_8,-0x12));
-    local_30[0].cbWndExtra = v(DAT_006e47e4) + 8;
-    local_30[0].hInstance = v(DAT_006e4ff0);
-    local_30[0].hIcon = 0x0;
-    local_30[0].hCursor = LoadCursorA(0x0,0x7f00);
-    local_30[0].hbrBackground = 0x0;
-    local_30[0].lpszMenuName = 0x0;
-    local_30[0].lpszClassName = s_MSComboBoxClass_0063835c;
+    w32(local_30[0], 12, v(DAT_006e47e4) + 8);
+    w32(local_30[0], 16, v(DAT_006e4ff0));
+    w32(local_30[0], 20, 0x0);
+    w32(local_30[0], 24, LoadCursorA(0x0,0x7f00));
+    w32(local_30[0], 28, 0x0);
+    w32(local_30[0], 32, 0x0);
+    w32(local_30[0], 36, s_MSComboBoxClass_0063835c);
     RegisterClassA(local_30[0]);
     wv(DAT_00638348, 1);
     DestroyWindow(local_8);
@@ -2317,7 +2317,7 @@ export function FUN_005d3720(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -2335,7 +2335,7 @@ export function FUN_005d3760(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -2384,17 +2384,17 @@ export function register_wndclass_37A0_005D37A0(param_1, param_2, param_3, param
     local_8 = CreateWindowExA(4,s_LISTBOX_0063838c,v(DAT_00638388),local_38,s32(param_1, 0),_MEM[param_1 + 1],iVar3, iVar2,pHVar6,pHVar7,pHVar8,pvVar9);
                               /*JOINED*/
     wv(DAT_006e47f0, GetWindowLongA(local_8,-4));
-    local_30[0].style = 0x88;
-    local_30[0].cbClsExtra = 0;
-    local_30[0].lpfnWndProc = v(DAT_006e47f0);
+    w32(local_30[0], 40, 0x88);
+    w32(local_30[0], 8, 0);
+    w32(local_30[0], 0, v(DAT_006e47f0));
     wv(DAT_006e47f4, GetClassLongA(local_8,-0x12));
-    local_30[0].cbWndExtra = v(DAT_006e47f4) + 8;
-    local_30[0].hInstance = v(DAT_006e4ff0);
-    local_30[0].hIcon = 0x0;
-    local_30[0].hCursor = LoadCursorA(0x0,0x7f00);
-    local_30[0].hbrBackground = 0x0;
-    local_30[0].lpszMenuName = 0x0;
-    local_30[0].lpszClassName = s_MSListBoxClass_00638394;
+    w32(local_30[0], 12, v(DAT_006e47f4) + 8);
+    w32(local_30[0], 16, v(DAT_006e4ff0));
+    w32(local_30[0], 20, 0x0);
+    w32(local_30[0], 24, LoadCursorA(0x0,0x7f00));
+    w32(local_30[0], 28, 0x0);
+    w32(local_30[0], 32, 0x0);
+    w32(local_30[0], 36, s_MSListBoxClass_00638394);
     RegisterClassA(local_30[0]);
     wv(DAT_00638384, 1);
     DestroyWindow(local_8);
@@ -2755,7 +2755,7 @@ export function FUN_005d3f30(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -2773,7 +2773,7 @@ export function FUN_005d3f70(in_ECX) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(*(undefined4 *)(in_ECX + 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(*(undefined4 *)(in_ECX + 4)); */;
   }
   return;
 }
@@ -3200,7 +3200,7 @@ export function FUN_005d47d0(in_ECX, param_1) {
       piVar1 = (in_ECX + 0x48 + param_1 * 4);
       w32(piVar1, 0, s32(piVar1, 0) + -1);
     }
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 4 + param_1 * 4))(param_1,*(undefined4 *)(in_ECX + 0x48 + param_1 * 4)); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 4 + param_1 * 4))(param_1,*(undefined4 *)(in_ECX + 0x48 + param_1 * 4)); */;
     if (s32(in_ECX, 0x48 + param_1 * 4) === 0) {
       FUN_005d20e6(param_1);
     }
@@ -3453,7 +3453,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
   let local_8;
   
   _memset(local_84[0],0,0x48);
-  local_84[0].cchBuffer = v(DAT_006385cc);
+  w32(local_84[0], 20, v(DAT_006385cc));
   local_8 = mmioOpenA(param_1,local_84[0],0x10000);
   if (local_8 === 0x0) {
     uVar1 = 7;
@@ -3462,15 +3462,15 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
     local_1c[0].fccType = 0x45564157;
     MVar2 = mmioDescend(local_8,local_1c[0],0x0,0x20);
     if (MVar2 === 0) {
-      local_98[0].ckid = 0x20746d66;
+      w32(local_98[0], 0, 0x20746d66);
       MVar2 = mmioDescend(local_8,local_98[0],local_1c[0],0x10);
       if (MVar2 === 0) {
-        local_38 = local_98[0].cksize;
-        DVar3 = mmioRead(local_8,local_2c[0],local_98[0].cksize);
+        local_38 = s32(local_98[0], 4);
+        DVar3 = mmioRead(local_8,local_2c[0],s32(local_98[0], 4));
         if (DVar3 === local_38) {
           if ((local_28 === 0x5622) && (local_20 === 8)) {
             mmioAscend(local_8,local_98[0],0);
-            local_98[0].ckid = 0x61746164;
+            w32(local_98[0], 0, 0x61746164);
             MVar2 = mmioDescend(local_8,local_98[0],local_1c[0],0x10);
             if (MVar2 === 0) {
               mmioGetInfo(local_8,local_84[0],0);
@@ -3593,21 +3593,21 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
     local_20[0].fccType = 0x45564157;
     MVar2 = mmioDescend(local_c,local_20[0],0x0,0x20);
     if (MVar2 === 0) {
-      local_9c[0].ckid = 0x20746d66;
+      w32(local_9c[0], 0, 0x20746d66);
       MVar2 = mmioDescend(local_c,local_9c[0],local_20[0],0x10);
       if (MVar2 === 0) {
-        local_3c = local_9c[0].cksize;
-        DVar3 = mmioRead(local_c,local_30[0],local_9c[0].cksize);
+        local_3c = s32(local_9c[0], 4);
+        DVar3 = mmioRead(local_c,local_30[0],s32(local_9c[0], 4));
         if (DVar3 === local_3c) {
           if ((local_2c === 0x5622) && (local_24 === 8)) {
             mmioAscend(local_c,local_9c[0],0);
-            local_9c[0].ckid = 0x61746164;
+            w32(local_9c[0], 0, 0x61746164);
             MVar2 = mmioDescend(local_c,local_9c[0],local_20[0],0x10);
             if (MVar2 === 0) {
               _memset(local_88[0],0,0x48);
-              local_88[0].cchBuffer = v(DAT_006385cc);
-              local_88[0].fccIOProc = 0x204d454d;
-              local_88[0]._MEM[adwInfo + 0] = 0;
+              w32(local_88[0], 20, v(DAT_006385cc));
+              w32(local_88[0], 4, 0x204d454d);
+              s32(local_88[0], 48)[0] = 0;
               local_8 = mmioOpenA(0x0,local_88[0],0x11002);
               if (local_8 === 0x0) {
                 uVar1 = 7;
@@ -3754,17 +3754,17 @@ export function FUN_005d52a2(param_1) {
       }
       _memset(local_10c[0],0,0x48);
       if ((local_8 & 0xffff) === 1) {
-        local_10c[0].cchBuffer = v(DAT_006385cc) * 2;
+        w32(local_10c[0], 20, v(DAT_006385cc) * 2);
       }
       else if ((local_8 & 0xffff) === 3) {
-        local_10c[0].cchBuffer = v(DAT_006385cc) >> 1;
+        w32(local_10c[0], 20, v(DAT_006385cc) >> 1);
       }
       else {
-        local_10c[0].cchBuffer = v(DAT_006385cc);
+        w32(local_10c[0], 20, v(DAT_006385cc));
       }
-      local_a8 = ((local_10c[0]) >>> 0).(cchBuffer / v(DAT_00638584) | 0);
-      local_10c[0].fccIOProc = 0x204d454d;
-      local_10c[0]._MEM[adwInfo + 0] = 0;
+      local_a8 = (((s32(local_10c[0], 20)) >>> 0) / v(DAT_00638584) | 0);
+      w32(local_10c[0], 4, 0x204d454d);
+      s32(local_10c[0], 48)[0] = 0;
       local_c = mmioOpenA(0x0,local_10c[0],0x11002);
       if (local_c === 0x0) {
         uVar1 = 7;
@@ -3802,7 +3802,7 @@ export function FUN_005d52a2(param_1) {
             _MEM[local_b4 + 0x21] = param_1;
             _MEM[local_b4 + 0x1c] = _MEM[local_b4 + 0x1c] | 2;
             _MEM[local_b4 + 0x27] = local_a8;
-            for (local_9c = local_10c[0].cchBuffer; 1 < local_9c; local_9c = local_9c >> 1) {
+            for (local_9c = s32(local_10c[0], 20); 1 < local_9c; local_9c = local_9c >> 1) {
               _MEM[local_b4 + 0x2a] = _MEM[local_b4 + 0x2a] << 1;
               _MEM[local_b4 + 0x2a] = _MEM[local_b4 + 0x2a] + 1;
             }
@@ -3836,22 +3836,22 @@ export function FUN_005d5643() {
 
   let local_10 = [0];
   
-  local_10[0].wType = 2;
+  w32(local_10[0], 0, 2);
   if (v(DAT_006385b0) !== 0) {
     waveOutGetPosition(v(DAT_00638578),local_10[0],0xc);
   }
-  if (local_10[0].wType !== 1) {
-    if (local_10[0].wType === 2) {
-      local_10[0].u.ms = __ftol();
+  if (s32(local_10[0], 0) !== 1) {
+    if (s32(local_10[0], 0) === 2) {
+      w32(local_10[0], 0, __ftol());
     }
-    else if (local_10[0].wType === 4) {
-      local_10[0].u.ms = __ftol();
+    else if (s32(local_10[0], 0) === 4) {
+      w32(local_10[0], 0, __ftol());
     }
     else {
-      local_10[0].u.ms = 0;
+      w32(local_10[0], 0, 0);
     }
   }
-  return local_10[0].u.ms;
+  return s32(local_10[0], 0);
 }
 
 
@@ -3866,22 +3866,22 @@ export function FUN_005d5706() {
 
   let local_10 = [0];
   
-  local_10[0].wType = 2;
+  w32(local_10[0], 0, 2);
   if (v(DAT_006385b0) !== 0) {
     waveOutGetPosition(v(DAT_00638578),local_10[0],0xc);
   }
-  if (local_10[0].wType === 1) {
-    local_10[0].u.ms = __ftol();
+  if (s32(local_10[0], 0) === 1) {
+    w32(local_10[0], 0, __ftol());
   }
-  else if (local_10[0].wType !== 2) {
-    if (local_10[0].wType === 4) {
-      local_10[0].u.ms = local_10[0].u.(ms / ((v(DAT_006385ac)) & 0xFFFF) | 0);
+  else if (s32(local_10[0], 0) !== 2) {
+    if (s32(local_10[0], 0) === 4) {
+      w32(local_10[0], 0, (s32(local_10[0], 0) / ((v(DAT_006385ac)) & 0xFFFF) | 0));
     }
     else {
-      local_10[0].u.ms = 0;
+      w32(local_10[0], 0, 0);
     }
   }
-  return local_10[0].u.ms;
+  return s32(local_10[0], 0);
 }
 
 
@@ -3961,7 +3961,7 @@ export function FUN_005d57b1(param_1) {
         for (local_20 = 0; local_20 < ((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0); local_20 = local_20 + 1) {
             /*JOINED*/
             /*JOINED*/
-          // DEVIATION: TODO_FIXME: C pointer write — **(undefined1 **)(iVar1 + 0x34) = 0x80;
+          _MEM[s32(iVar1, 0x34)] = 0x80;
           w32(iVar1, 0x34, s32(iVar1, 0x34) + 1);
         }
         if (s32(iVar1, 0x3c) === s32(iVar1, 0x34)) {
@@ -4107,7 +4107,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
         _MEM[local_8 + 3] = _MEM[local_8 + 3] & 0xffffffef;
         _MEM[local_8 + 3] = _MEM[local_8 + 3] & 0xffffffdf;
         _MEM[local_8 + 3] = _MEM[local_8 + 3] & 0xffffffbf;
-        _MEM[local_8 + 4] = true /* TODO_FIXME: C pointer — s32(s32, 0)(local_8, 0) */;
+        _MEM[local_8 + 4] = true /* DEVIATION: C pointer —s32(s32, 0)(local_8, 0) */;
         iVar2 = FUN_005d717f(s32(local_8, 0));
         if (iVar2 === 1) break;
         local_8 = _MEM[local_8 + 7];
@@ -4139,7 +4139,7 @@ export function FUN_005d5f91() {
     FUN_005d6947(v(DAT_006385c0));
     w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) | 0x10);
     if (s32(DAT_006385d0, 0x8c) !== 0) {
-      // DEVIATION: TODO_FIXME: C pointer write — **(ushort **)(DAT_006385d0 + 0x8c) = **(ushort **)(DAT_006385d0 + 0x8c) | 4;
+      w16(s32(v(DAT_006385d0) + 0x8c, 0), 0, s32(s32(DAT_006385d0, 0x8c), 0) | 4);
     }
   }
   wv(DAT_006385bc, 1);
@@ -4400,11 +4400,11 @@ export function FUN_005d645e(param_1, param_2, param_3) {
         return 4;
       }
       _memset(s32(local_8, 0),0,0x20);
-      // DEVIATION: TODO_FIXME: C pointer write — *(int *)*local_8 = *local_8 + 0x20;
-      _MEM[local_8 + 4] = true /* TODO_FIXME: C pointer — s32(s32, 0)(local_8, 0) */;
+      w32(s32(local_8, 0), 0, s32(local_8, 0) + 0x20);
+      _MEM[local_8 + 4] = true /* DEVIATION: C pointer —s32(s32, 0)(local_8, 0) */;
       w32(s32(local_8, 0) + 4, 0, local_c);
       _MEM[local_8 + 6] = s32(s32(local_8, 0) + 4, 0);
-      _MEM[local_8 + 5] = true /* TODO_FIXME: C pointer — s32(s32, 0)(local_8, 0) */ + _MEM[local_8 + 6];
+      _MEM[local_8 + 5] = true /* DEVIATION: C pointer —s32(s32, 0)(local_8, 0) */ + _MEM[local_8 + 6];
       w32(s32(local_8, 0) + 0xc, 0, local_8);
       _MEM[local_8 + 1] = local_1c[0];
       _MEM[local_8 + 3] = _MEM[local_8 + 3] & 0xffff807f | (local_14 & 0xff) << 7;
@@ -4550,7 +4550,7 @@ export function FUN_005d6947(param_1) {
   
   local_10 = local_10 & 0xffff0000;
   while ((((_MEM[param_1 + 3]) >>> 0) >> 6 & 1) !== 0) {
-    local_c = true /* TODO_FIXME: C pointer — s32(s32, 0)(param_1, 0) */;
+    local_c = true /* DEVIATION: C pointer —s32(s32, 0)(param_1, 0) */;
     for (local_14 = 0; local_14 < u32(s32(param_1, 0) + 4, 0); local_14 = local_14 + 1) {
       _MEM[local_c] = _MEM[local_c] ^ 0x80;
       local_c = local_c + 1;
@@ -4723,17 +4723,17 @@ export function FUN_005d6c99(param_1, param_2) {
       local_30 = v(DAT_006385d0);
       if ((((v(DAT_006385d0) !== 0x0) && (s16(DAT_006385d0, 0x22) === 4)) && ((((_MEM[local_20 + 3]) >>> 0) >> 1 & 1) !== 0)) && ((((_MEM[local_20 + 3]) >>> 0) >> 4 & 1) !== 0)) {
           /*JOINED*/
-        // DEVIATION: TODO_FIXME: C pointer write — *(ushort *)DAT_006385d0[0x23] = *(ushort *)DAT_006385d0[0x23] & 0xfffb;
+        w16(_MEM[DAT_006385d0 + 0x23], 0, u16(DAT_006385d0, 0)[0x23] & 0xfffb);
         _MEM[puVar2 + 0x1c] = _MEM[puVar2 + 0x1c] | 2;
       }
       do {
         puVar2 = s32(local_20, 0);
-        local_28 = true /* TODO_FIXME: C pointer — s32(s32, 0)(local_20, 0) */;
+        local_28 = true /* DEVIATION: C pointer —s32(s32, 0)(local_20, 0) */;
         while ((local_30 !== 0x0 && ((((_MEM[local_30 + 0x1c]) >>> 0) >> 1 & 1) !== 0))) {
           local_30 = _MEM[local_30 + 0x2e];
         }
         if (local_30 === 0x0) {
-          FUN_005d6b4c(true /* TODO_FIXME: C pointer — s32(s32, 0)(local_20, 0) */,s32(s32(local_20, 0) + 4, 0));
+          FUN_005d6b4c(true /* DEVIATION: C pointer —s32(s32, 0)(local_20, 0) */,s32(s32(local_20, 0) + 4, 0));
           _MEM[local_20 + 3] = _MEM[local_20 + 3] & 0xffffffdf;
         }
         else {
@@ -5129,7 +5129,7 @@ export function FUN_005d791b(param_1, param_2) {
       local_10 = 0;
       while ((local_10 < ((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0) && (u32(iVar1, 0x34) < u32(iVar1, 0x3c)))) {
              /*JOINED*/
-        // DEVIATION: TODO_FIXME: C pointer write — **(undefined1 **)(iVar1 + 0x34) = 0x80;
+        _MEM[s32(iVar1, 0x34)] = 0x80;
         w32(iVar1, 0x34, s32(iVar1, 0x34) + 1);
         local_10 = local_10 + 1;
       }
@@ -5299,16 +5299,16 @@ export function FUN_005d7cb0(in_ECX, param_1, param_2, param_3, param_4, param_5
   pCVar2 = pCVar2 + param_4 + -1;
   pCVar3 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   SetRect(local_3c[0],param_3,param_4,(pCVar3 + param_3 + -1),(pCVar2));
-  OffsetRect(local_3c[0],-local_3c[0].left,-local_3c[0].top);
-  local_24[0].left = local_3c[0].left;
-  local_24[0].top = local_3c[0].top;
-  local_24[0].right = local_3c[0].right;
-  local_24[0].bottom = local_3c[0].bottom;
-  SetRect(local_24[0],local_3c[0].left,local_3c[0].top,local_3c[0].right + -2,local_3c[0].bottom + -2);
-  local_14[0] = local_24[0].left;
-  local_10 = local_24[0].top;
-  local_c = local_24[0].right;
-  local_8 = local_24[0].bottom;
+  OffsetRect(local_3c[0],-s32(local_3c[0], 0),-s32(local_3c[0], 4));
+  w32(local_24[0], 0, s32(local_3c[0], 0));
+  w32(local_24[0], 4, s32(local_3c[0], 4));
+  w32(local_24[0], 8, s32(local_3c[0], 8));
+  w32(local_24[0], 12, s32(local_3c[0], 12));
+  SetRect(local_24[0],s32(local_3c[0], 0),s32(local_3c[0], 4),s32(local_3c[0], 8) + -2,s32(local_3c[0], 12) + -2);
+  local_14[0] = s32(local_24[0], 0);
+  local_10 = s32(local_24[0], 4);
+  local_c = s32(local_24[0], 8);
+  local_8 = s32(local_24[0], 12);
   OffsetRect(local_24[0],2,2);
   FUN_005c041f(v(DAT_00638b40));
   FUN_005c0593(in_ECX + 0x7c,local_14[0],local_24[0]);
@@ -5384,16 +5384,16 @@ export function FUN_005d7f72(in_ECX, param_1, param_2, param_3, param_4, param_5
   pCVar2 = pCVar2 + param_4 + -1;
   pCVar3 = COleClientItem__GetActiveView((in_ECX + 0x7c));
   SetRect(local_3c[0],param_3,param_4,(pCVar3 + param_3 + -1),(pCVar2));
-  OffsetRect(local_3c[0],-local_3c[0].left,-local_3c[0].top);
-  local_24[0].left = local_3c[0].left;
-  local_24[0].top = local_3c[0].top;
-  local_24[0].right = local_3c[0].right;
-  local_24[0].bottom = local_3c[0].bottom;
-  SetRect(local_24[0],local_3c[0].left,local_3c[0].top,local_3c[0].right + -2,local_3c[0].bottom + -2);
-  local_14[0] = local_24[0].left;
-  local_10 = local_24[0].top;
-  local_c = local_24[0].right;
-  local_8 = local_24[0].bottom;
+  OffsetRect(local_3c[0],-s32(local_3c[0], 0),-s32(local_3c[0], 4));
+  w32(local_24[0], 0, s32(local_3c[0], 0));
+  w32(local_24[0], 4, s32(local_3c[0], 4));
+  w32(local_24[0], 8, s32(local_3c[0], 8));
+  w32(local_24[0], 12, s32(local_3c[0], 12));
+  SetRect(local_24[0],s32(local_3c[0], 0),s32(local_3c[0], 4),s32(local_3c[0], 8) + -2,s32(local_3c[0], 12) + -2);
+  local_14[0] = s32(local_24[0], 0);
+  local_10 = s32(local_24[0], 4);
+  local_c = s32(local_24[0], 8);
+  local_8 = s32(local_24[0], 12);
   OffsetRect(local_24[0],2,2);
   FUN_005c041f(v(DAT_00638b40));
   FUN_005c0593(in_ECX + 0x7c,local_14[0],local_24[0]);
@@ -5527,7 +5527,7 @@ export function FUN_005d83d6(param_1, param_2) {
     _MEM[param_2 + 0x25] = 0;
     _MEM[param_2 + 0x24] = 0;
   }
-  return iVar1 !== -1;
+  return ((iVar1 !== -1) ? 1 : 0);
 }
 
 
@@ -6142,9 +6142,9 @@ export function gdi_8DA1_005D8DA1() {
   uVar1 = FUN_004d8af0();
   FUN_005dce29(uVar1);
   GetTextMetricsA(hdc_00,local_40[0]);
-  local_4c = local_40[0].tmHeight;
+  local_4c = s32(local_40[0], 0);
   DeleteDC(hdc_00);
-  if (local_40[0].tmHeight < 0x14) {
+  if (s32(local_40[0], 0) < 0x14) {
     local_4c = 0x14;
   }
   return local_4c;
@@ -6580,22 +6580,22 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
         local_128 = s32(local_124, 0xc);
       }
       GetBitmapDimensionEx(local_128,local_dc[0]);
-      local_138[0].left = s32(local_bc, 4);
-      local_138[0].top = s32(local_bc, 8);
-      local_138[0].right = s32(local_bc, 0xc);
-      local_138[0].bottom = s32(local_bc, 0x10);
-      local_b8 = local_138[0].left;
-      local_b4 = local_138[0].top;
-      local_b0 = local_138[0].right;
-      local_ac = local_138[0].bottom;
+      w32(local_138[0], 0, s32(local_bc, 4));
+      w32(local_138[0], 4, s32(local_bc, 8));
+      w32(local_138[0], 8, s32(local_bc, 0xc));
+      w32(local_138[0], 12, s32(local_bc, 0x10));
+      local_b8 = s32(local_138[0], 0);
+      local_b4 = s32(local_138[0], 4);
+      local_b0 = s32(local_138[0], 8);
+      local_ac = s32(local_138[0], 12);
       if (v(DAT_006386fc) !== 0) {
-        local_b0 = local_138[0].left + 0x20;
+        local_b0 = s32(local_138[0], 0) + 0x20;
         iVar4 = FUN_00407fc0(local_138[0]);
-        local_b4 = iVar4 + -0x14 + local_138[0].top >> 1;
-        local_ac = local_138[0].top + 0x14;
+        local_b4 = iVar4 + -0x14 + s32(local_138[0], 4) >> 1;
+        local_ac = s32(local_138[0], 4) + 0x14;
       }
       InvalidateRect(param_1,0x0,1);
-      OffsetRect(local_138[0],-local_138[0].left,-local_138[0].top);
+      OffsetRect(local_138[0],-s32(local_138[0], 0),-s32(local_138[0], 4));
       local_d0 = BeginPaint(param_1,local_120[0]);
       update_palette_90CA(local_120[0],param_1);
       uVar7 = FUN_004d8af0();
@@ -6604,8 +6604,8 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
       uVar7 = FUN_004d8af0();
       FUN_005dce29(uVar7);
       SetBkMode(local_d0,1);
-      FUN_005ed710(local_d0,local_128,local_138[0].left,local_138[0].bottom + -0x14 >> 1,0x20,0x14,0,7);
-      local_138[0].left = local_138[0].left + 0x25;
+      FUN_005ed710(local_d0,local_128,s32(local_138[0], 0),s32(local_138[0], 12) + -0x14 >> 1,0x20,0x14,0,7);
+      w32(local_138[0], 0, s32(local_138[0], 0) + 0x25);
       if ((v(DAT_00637e84) !== 0) || (v(DAT_00637e88) !== 0)) {
         OffsetRect(local_138[0],((v(DAT_00637e84)) >>> 0),((v(DAT_00637e88)) >>> 0));
         puVar12 = local_a0[0];
@@ -6673,39 +6673,39 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
       if (s32(local_bc, 0xa0) !== -1) {
         FUN_005f22d0(local_84[0],local_bc + 0x1c);
         local_84[s32(local_bc, 0xa0)] = 0;
-        local_94[0].left = local_138[0].left;
-        local_94[0].top = local_138[0].top;
-        local_94[0].right = local_138[0].right;
-        local_94[0].bottom = local_138[0].bottom;
+        w32(local_94[0], 0, s32(local_138[0], 0));
+        w32(local_94[0], 4, s32(local_138[0], 4));
+        w32(local_94[0], 8, s32(local_138[0], 8));
+        w32(local_94[0], 12, s32(local_138[0], 12));
         sVar5 = _strlen(local_84[0]);
         if (sVar5 === 0) {
-          local_c0 = local_94[0].left;
+          local_c0 = s32(local_94[0], 0);
         }
         else {
           UVar13 = 0x424;
           ptVar10 = local_94[0];
           sVar5 = _strlen(local_84[0]);
           DrawTextA(local_d0,local_84[0],sVar5,ptVar10,UVar13);
-          local_c0 = local_94[0].right + -1;
+          local_c0 = s32(local_94[0], 8) + -1;
         }
         FUN_005f22d0(local_84[0],local_bc + 0x1c);
         local_84[s32(local_bc, 0xa0) + 1] = 0;
-        local_94[0].left = local_138[0].left;
-        local_94[0].top = local_138[0].top;
-        local_94[0].right = local_138[0].right;
-        local_94[0].bottom = local_138[0].bottom;
+        w32(local_94[0], 0, s32(local_138[0], 0));
+        w32(local_94[0], 4, s32(local_138[0], 4));
+        w32(local_94[0], 8, s32(local_138[0], 8));
+        w32(local_94[0], 12, s32(local_138[0], 12));
         UVar13 = 0x424;
         ptVar10 = local_94[0];
         sVar5 = _strlen(local_84[0]);
         DrawTextA(local_d0,local_84[0],sVar5,ptVar10,UVar13);
-        local_c0 = local_c0 + ((local_94[0].right + 1) - local_c0 >> 1) + -5;
+        local_c0 = local_c0 + ((s32(local_94[0], 8) + 1) - local_c0 >> 1) + -5;
         local_cc = local_c0 + 10;
         local_a8 = GetStockObject(3);
         SelectObject(local_d0,local_a8);
-        MoveToEx(local_d0,local_c0,local_138[0].bottom + -3,0x0);
-        LineTo(local_d0,local_cc,local_138[0].bottom + -3);
-        MoveToEx(local_d0,local_c0,local_138[0].bottom + -2,0x0);
-        LineTo(local_d0,local_cc,local_138[0].bottom + -2);
+        MoveToEx(local_d0,local_c0,s32(local_138[0], 12) + -3,0x0);
+        LineTo(local_d0,local_cc,s32(local_138[0], 12) + -3);
+        MoveToEx(local_d0,local_c0,s32(local_138[0], 12) + -2,0x0);
+        LineTo(local_d0,local_cc,s32(local_138[0], 12) + -2);
       }
       SelectObject(local_d0,local_e0);
       EndPaint(param_1,local_120[0]);
@@ -6731,7 +6731,7 @@ export function draw_text_9B86_005D9B86(param_1, param_2, param_3, param_4) {
     local_a8 = GetStockObject(3);
     GetClientRect(param_1,local_138[0]);
     SelectObject(local_d0,local_a8);
-    local_138[0].left = local_138[0].left + 0x20;
+    w32(local_138[0], 0, s32(local_138[0], 0) + 0x20);
     FrameRect(local_d0,local_138[0],local_a8);
     DeleteObject(local_a8);
     ReleaseDC(param_1,local_d0);
@@ -6974,7 +6974,7 @@ export function FUN_005dabe5(param_1) {
   iVar2 = FUN_005c9563(param_1);
   iVar1 = s32(iVar2, 0x24);
   uVar3 = CCheckListBox__GetCheckStyle(s32(iVar2, 4));
-  return uVar3 === u32(iVar1, 0x14);
+  return ((uVar3 === u32(iVar1, 0x14)) ? 1 : 0);
 }
 
 
@@ -7052,7 +7052,7 @@ export function FUN_005dad40(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x2c))(param_1,param_2); */;
   }
   return;
 }
@@ -7070,7 +7070,7 @@ export function FUN_005dad80(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x30))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x30))(param_1,param_2); */;
   }
   return;
 }
@@ -7088,7 +7088,7 @@ export function FUN_005dadc0(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    true /* DEVIATION: TODO_FIXME: function pointer call — (**(code **)(in_ECX + 0x34))(param_1,param_2); */;
+    true /* DEVIATION: function pointer call — (**(code **)(in_ECX + 0x34))(param_1,param_2); */;
   }
   return;
 }
@@ -8098,49 +8098,49 @@ export function register_wndclass_BC5A_005DBC5A() {
 
   let local_2c = [0];
   
-  local_2c[0].style = 0x28;
-  local_2c[0].lpfnWndProc = fill_rect_BE88;
-  local_2c[0].cbClsExtra = 0;
-  local_2c[0].cbWndExtra = 0x14;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = 0x0;
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSWindowClass_00638810;
+  w32(local_2c[0], 40, 0x28);
+  w32(local_2c[0], 0, fill_rect_BE88);
+  w32(local_2c[0], 8, 0);
+  w32(local_2c[0], 12, 0x14);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, 0x0);
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSWindowClass_00638810);
   RegisterClassA(local_2c[0]);
-  local_2c[0].style = 0x28;
-  local_2c[0].lpfnWndProc = FUN_005ec317;
-  local_2c[0].cbClsExtra = 0;
-  local_2c[0].cbWndExtra = 0x14;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = 0x0;
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSMovieClass_00638820;
+  w32(local_2c[0], 40, 0x28);
+  w32(local_2c[0], 0, FUN_005ec317);
+  w32(local_2c[0], 8, 0);
+  w32(local_2c[0], 12, 0x14);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, 0x0);
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSMovieClass_00638820);
   RegisterClassA(local_2c[0]);
-  local_2c[0].style = 0x88;
-  local_2c[0].lpfnWndProc = send_msg_9307;
-  local_2c[0].cbClsExtra = 0;
-  local_2c[0].cbWndExtra = 0x10;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = LoadCursorA(0x0,0x7f00);
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSControlClass_00638830;
+  w32(local_2c[0], 40, 0x88);
+  w32(local_2c[0], 0, send_msg_9307);
+  w32(local_2c[0], 8, 0);
+  w32(local_2c[0], 12, 0x10);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, LoadCursorA(0x0,0x7f00));
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSControlClass_00638830);
   RegisterClassA(local_2c[0]);
-  local_2c[0].style = 0;
-  local_2c[0].lpfnWndProc = FUN_005d4700;
-  local_2c[0].cbClsExtra = 0;
-  local_2c[0].cbWndExtra = 4;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = 0x0;
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSMrTimerClass_00638840;
+  w32(local_2c[0], 40, 0);
+  w32(local_2c[0], 0, FUN_005d4700);
+  w32(local_2c[0], 8, 0);
+  w32(local_2c[0], 12, 4);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, 0x0);
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSMrTimerClass_00638840);
   RegisterClassA(local_2c[0]);
   return;
 }
@@ -8244,7 +8244,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         iVar6 = FUN_00414d10();
         if (s32(iVar6, 0x14) !== 0) {
           iVar6 = FUN_00414d10();
-          FillRect(local_50,local_98[0].rcPaint,s32(iVar6, 0x14));
+          FillRect(local_50,s32(local_98[0], 8),s32(iVar6, 0x14));
         }
       }
       else {
@@ -8253,14 +8253,14 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         iVar6 = FUN_00414d10();
         local_44 = COleClientItem__GetActiveView(s32(iVar6, 0x24));
         if ((local_3c !== 0x0) && (local_44 !== 0x0)) {
-          local_38[0].left = local_98[0].rcPaint.left;
-          local_38[0].top = local_98[0].rcPaint.top;
-          local_38[0].right = local_98[0].rcPaint.right;
-          local_38[0].bottom = local_98[0].rcPaint.bottom;
+          w32(local_38[0], 0, s32(local_98[0], 8));
+          w32(local_38[0], 4, s32(local_98[0], 12));
+          w32(local_38[0], 8, s32(local_98[0], 16));
+          w32(local_38[0], 12, s32(local_98[0], 20));
           SetRect(local_14[0],0,0,(local_3c),(local_44));
-          for (local_58 = local_38[0].(top / (local_44) | 0); local_58 < local_38[0].(bottom / (local_44) | 0) + 1; local_58 = local_58 + 1) {
+          for (local_58 = (s32(local_38[0], 4) / (local_44) | 0); local_58 < (s32(local_38[0], 12) / (local_44) | 0) + 1; local_58 = local_58 + 1) {
               /*JOINED*/
-            for (local_4c = local_38[0].(left / (local_3c) | 0); local_4c < local_38[0].(right / (local_3c) | 0) + 1; local_4c = local_4c + 1) {
+            for (local_4c = (s32(local_38[0], 0) / (local_3c) | 0); local_4c < (s32(local_38[0], 8) / (local_3c) | 0) + 1; local_4c = local_4c + 1) {
                 /*JOINED*/
               SetRect(local_28[0],local_4c * (local_3c),local_58 * (local_44), (local_3c + local_4c * local_3c), (local_44 + local_58 * local_44));
                       /*JOINED*/
@@ -8280,10 +8280,10 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         local_3c = COleClientItem__GetActiveView(s32(iVar6, 0x2c));
         iVar6 = FUN_00414d10();
         local_44 = COleClientItem__GetActiveView(s32(iVar6, 0x2c));
-        local_38[0].left = local_98[0].rcPaint.left;
-        local_38[0].top = local_98[0].rcPaint.top;
-        local_38[0].right = local_98[0].rcPaint.right;
-        local_38[0].bottom = local_98[0].rcPaint.bottom;
+        w32(local_38[0], 0, s32(local_98[0], 8));
+        w32(local_38[0], 4, s32(local_98[0], 12));
+        w32(local_38[0], 8, s32(local_98[0], 16));
+        w32(local_38[0], 12, s32(local_98[0], 20));
         SetRect(local_14[0],0,0,(local_3c),(local_44));
         iVar6 = FUN_00414bb0();
         iVar6 = iVar6 - (local_44) >> 1;
@@ -8291,10 +8291,10 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
         OffsetRect(local_14[0],iVar7 - (local_3c) >> 1,iVar6);
         BVar4 = IntersectRect(local_28[0],local_14[0],local_38[0]);
         if (BVar4 !== 0) {
-          local_14[0].left = local_28[0].left;
-          local_14[0].top = local_28[0].top;
-          local_14[0].right = local_28[0].right;
-          local_14[0].bottom = local_28[0].bottom;
+          w32(local_14[0], 0, s32(local_28[0], 0));
+          w32(local_14[0], 4, s32(local_28[0], 4));
+          w32(local_14[0], 8, s32(local_28[0], 8));
+          w32(local_14[0], 12, s32(local_28[0], 12));
           iVar6 = FUN_00414bb0();
           iVar6 = -(iVar6 - (local_44) >> 1);
           iVar7 = FUN_004080c0();
@@ -8435,8 +8435,8 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
     iVar6 = FUN_00414d10();
     if ((s32(iVar6, 0x34) !== 0) && (local_a0 === 1)) {
       GetWindowRect(param_1,local_14[0]);
-      local_40 = (param_4 & 0xffff) - local_14[0].left;
-      local_48 = (param_4 >> 0x10) - local_14[0].top;
+      local_40 = (param_4 & 0xffff) - s32(local_14[0], 0);
+      local_48 = (param_4 >> 0x10) - s32(local_14[0], 4);
       if (s32(iVar6, 0x3c) === 0) {
         local_3c = 0x5;
       }
@@ -8549,7 +8549,7 @@ export function fill_rect_BE88_005DBE88(param_1, param_2, param_3, param_4) {
     }
     if ((s32(iVar6, 0x30) !== 0) && (local_a0 === 1)) {
       GetWindowRect(param_1,local_14[0]);
-      local_48 = (param_4 >> 0x10) - local_14[0].top;
+      local_48 = (param_4 >> 0x10) - s32(local_14[0], 4);
       if ((s32(iVar6, 0x38) === 0) || (local_48 < s32(iVar6, 0x38))) {
         local_a0 = 2;
       }
@@ -9027,7 +9027,7 @@ export function FUN_005dcfb5() {
 export function FUN_005dcfca(param_1) {
 
 
-  return 0x100000 < param_1 << 10;
+  return ((0x100000 < param_1 << 10) ? 1 : 0);
 }
 
 
@@ -9532,10 +9532,10 @@ export function FUN_005dd7de(in_ECX) {
   yBottom = CRichEditCntrItem__GetActiveView(in_ECX);
   xRight = CRichEditCntrItem__GetActiveView(in_ECX);
   SetRect(local_14[0],0,0,(xRight),(yBottom));
-  local_24[0].left = local_14[0].left;
-  local_24[0].top = local_14[0].top;
-  local_24[0].right = local_14[0].right;
-  local_24[0].bottom = local_14[0].bottom;
+  w32(local_24[0], 0, s32(local_14[0], 0));
+  w32(local_24[0], 4, s32(local_14[0], 4));
+  w32(local_24[0], 8, s32(local_14[0], 8));
+  w32(local_24[0], 12, s32(local_14[0], 12));
   OffsetRect(local_24[0],s32(in_ECX, 0x5b8),s32(in_ECX, 0x5bc));
   if (s32(in_ECX, 0x5b4) !== 0) {
     FUN_005c0593(in_ECX + 0x558,local_24[0],local_14[0]);
@@ -9568,16 +9568,16 @@ export function register_wndclass_D8A0_005DD8A0() {
 
   let local_2c = [0];
   
-  local_2c[0].style = 0;
-  local_2c[0].lpfnWndProc = FUN_005dd93f;
-  local_2c[0].cbClsExtra = 0;
-  local_2c[0].cbWndExtra = 0;
-  local_2c[0].hInstance = v(DAT_006e4ff0);
-  local_2c[0].hIcon = 0x0;
-  local_2c[0].hCursor = 0x0;
-  local_2c[0].hbrBackground = 0x0;
-  local_2c[0].lpszMenuName = 0x0;
-  local_2c[0].lpszClassName = s_MSMMWindow_006389e4;
+  w32(local_2c[0], 40, 0);
+  w32(local_2c[0], 0, FUN_005dd93f);
+  w32(local_2c[0], 8, 0);
+  w32(local_2c[0], 12, 0);
+  w32(local_2c[0], 16, v(DAT_006e4ff0));
+  w32(local_2c[0], 20, 0x0);
+  w32(local_2c[0], 24, 0x0);
+  w32(local_2c[0], 28, 0x0);
+  w32(local_2c[0], 32, 0x0);
+  w32(local_2c[0], 36, s_MSMMWindow_006389e4);
   RegisterClassA(local_2c[0]);
   wv(DAT_006e4ff8, CreateWindowExA(0,s_MSMMWindow_006389f0,0x0,0,-0x80000000,-0x80000000, -0x80000000,-0x80000000,0x0,0x0,v(DAT_006e4ff0), 0x0));
                                  /*JOINED*/
@@ -10818,10 +10818,10 @@ export function FUN_005dee28(param_1, param_2, param_3) {
     local_60 = _MEM[pLVar2 + 1];
     local_5c = _MEM[pLVar2 + 2];
     local_58 = _MEM[pLVar2 + 3];
-    local_24[0].left = local_64;
-    local_24[0].top = local_60;
-    local_24[0].right = local_5c;
-    local_24[0].bottom = local_58;
+    w32(local_24[0], 0, local_64);
+    w32(local_24[0], 4, local_60);
+    w32(local_24[0], 8, local_5c);
+    w32(local_24[0], 12, local_58);
     local_14 = FUN_00407f90(local_24[0]);
     local_14 = local_14 + 0x20;
     local_44 = FUN_00407fc0(local_24[0]);
@@ -11581,8 +11581,8 @@ function switchD_005dc5f2_caseD_4_helper(BVar4, LVar5, LVar8, iVar6, iVar7, loca
     iVar6 = FUN_00414d10();
     if ((s32(iVar6, 0x34) !== 0) && (local_a0 === 1)) {
       GetWindowRect(param_1,local_14[0]);
-      local_40 = (param_4 & 0xffff) - local_14[0].left;
-      local_48 = (param_4 >> 0x10) - local_14[0].top;
+      local_40 = (param_4 & 0xffff) - s32(local_14[0], 0);
+      local_48 = (param_4 >> 0x10) - s32(local_14[0], 4);
       if (s32(iVar6, 0x3c) === 0) {
         local_3c = 0x5;
       }
@@ -11695,7 +11695,7 @@ function switchD_005dc5f2_caseD_4_helper(BVar4, LVar5, LVar8, iVar6, iVar7, loca
     }
     if ((s32(iVar6, 0x30) !== 0) && (local_a0 === 1)) {
       GetWindowRect(param_1,local_14[0]);
-      local_48 = (param_4 >> 0x10) - local_14[0].top;
+      local_48 = (param_4 >> 0x10) - s32(local_14[0], 4);
       if ((s32(iVar6, 0x38) === 0) || (local_48 < s32(iVar6, 0x38))) {
         local_a0 = 2;
       }

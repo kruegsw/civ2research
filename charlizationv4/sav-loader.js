@@ -11,7 +11,7 @@
 
 import './globals-init.js';
 import { G } from './globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, initMapTiles } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, v, wv, w16, w32, initMapTiles } from './mem.js';
 
 // ── Constants ──
 const SAV_UNIT_REC = 32;   // 0x20 bytes per unit
@@ -85,8 +85,15 @@ export function loadSav(buf) {
   const unitOff     = paddingOff + 1024;               // unit records
   const cityOff     = unitOff + totalUnits * SAV_UNIT_REC;  // city records
 
-  // ── Load tile data ──
+  // ── Load tile data into flat memory ──
+  // The binary accesses tiles via _MEM[v(DAT_00636598) + offset].
+  // Allocate tile region at end of _MEM buffer.
   const tileDataSize = ms * 6;
+  const TILE_DATA_BASE = G._MEM.length - 100000; // 100KB region at end of buffer
+  wv(DAT_00636598, TILE_DATA_BASE);              // tile array pointer
+  wv(DAT_006d1188, TILE_DATA_BASE);              // "bad tile" fallback pointer
+  G._MEM.set(buf.slice(tileDataOff, tileDataOff + tileDataSize), TILE_DATA_BASE);
+  // Also set the legacy tileData for any code using tileRead()
   const tileData = new Uint8Array(tileDataSize);
   tileData.set(buf.slice(tileDataOff, tileDataOff + tileDataSize));
   initMapTiles(tileData);
