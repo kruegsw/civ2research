@@ -4982,7 +4982,7 @@ export function FUN_00419c3a() {
 export function FUN_00419c54() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00419c71);
+  _atexit(FUN_00419c71);
   return;
 }
 

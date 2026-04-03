@@ -792,7 +792,7 @@ export function _E2_00600F50() {
 export function _E1_00600F70() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00601040);
+  _atexit(FUN_00601040);
   wv(DAT_006e55ac, SetUnhandledExceptionFilter(__CxxUnhandledExceptionFilter));
   return;
 }

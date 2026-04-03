@@ -1437,7 +1437,7 @@ export function FUN_00514e2a() {
 export function FUN_00514e44() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00514e61);
+  _atexit(FUN_00514e61);
   return;
 }
 
@@ -3523,7 +3523,7 @@ export function FUN_005190ea() {
 export function FUN_00519109() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00519126);
+  _atexit(FUN_00519126);
   return;
 }
 

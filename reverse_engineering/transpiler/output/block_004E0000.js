@@ -39,7 +39,7 @@ export function FUN_004e015a() {
 export function FUN_004e0179() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_004e0196);
+  _atexit(FUN_004e0196);
   return;
 }
 

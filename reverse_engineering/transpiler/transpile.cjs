@@ -1916,9 +1916,9 @@ function processFunction(headerLines, bodyLines, ctx) {
       transformed = transformed.replace(la + '[0][0]', la + '[0]');
     }
 
-    // ── _atexit → // DEVIATION: C runtime ──
-    if (/\b_atexit\b/.test(transformed)) {
-      result.push(line.replace(trimmed, '// DEVIATION: C runtime — ' + trimmed));
+    // ── _atexit — now passes through as a regular function call ──
+    // The extern stubs provide _atexit as a no-op.
+    if (false) {  // DISABLED: was '// DEVIATION: C runtime'
       continue;
     }
 

@@ -1550,7 +1550,7 @@ export function FUN_00472f2a() {
 export function FUN_00472f44() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00472f61);
+  _atexit(FUN_00472f61);
   return;
 }
 
@@ -3452,7 +3452,7 @@ export function FUN_00479d3a() {
 export function FUN_00479d65() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00479d82);
+  _atexit(FUN_00479d82);
   return;
 }
 
@@ -3517,7 +3517,7 @@ export function FUN_00479dc2() {
 export function FUN_00479ddc() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00479df9);
+  _atexit(FUN_00479df9);
   return;
 }
 
@@ -3582,7 +3582,7 @@ export function FUN_00479e2d() {
 export function FUN_00479e47() {
 
 
-  // DEVIATION: C runtime — _atexit(FUN_00479e64);
+  _atexit(FUN_00479e64);
   return;
 }
 
