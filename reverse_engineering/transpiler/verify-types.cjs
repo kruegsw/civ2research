@@ -151,21 +151,27 @@ function compareFunctions(regexBody, pcodeBody, fnName) {
   }
 
   // Compare memory reads: check for width/sign mismatches
+  // Only report divergence if ALL P-code instances agree on a different helper.
+  // If P-code uses both s8 and u8 for the same expression, it's context-dependent
+  // and not a regex transpiler bug.
   for (const [addr, regexList] of regexReads) {
     const pcodeList = pcodeReads.get(addr);
-    if (!pcodeList) continue; // address not found in P-code — could be structural difference
+    if (!pcodeList) continue;
 
+    // Check if P-code is unanimous on one helper for this address
+    const pcodeHelpers = new Set(pcodeList.map(p => p.helper));
+    if (pcodeHelpers.size !== 1) continue; // mixed signs in P-code — skip
+
+    const pcodeHelper = [...pcodeHelpers][0];
     for (const ro of regexList) {
-      for (const po of pcodeList) {
-        if (ro.helper !== po.helper) {
-          divergences.push({
-            fn: fnName,
-            category: getCategory(ro.helper, po.helper),
-            regex: ro.raw,
-            pcode: po.raw,
-            addr,
-          });
-        }
+      if (ro.helper !== pcodeHelper) {
+        divergences.push({
+          fn: fnName,
+          category: getCategory(ro.helper, pcodeHelper),
+          regex: ro.raw,
+          pcode: pcodeList[0].raw,
+          addr,
+        });
       }
     }
   }

@@ -974,7 +974,7 @@ export function FUN_005233fc(param_1, param_2) {
     iVar1 = s32(param_1, 0x18);
     uVar5 = s32(param_1, 0x14);
     local_24 = s32(param_1, 0x10);
-    wv(DAT_00655b03, u8(local_24));
+    wv(DAT_00655b03, s8(local_24));
     // DEVIATION: C pointer write — *(short *)(&DAT_0064c6a6 + (char)(byte)local_24 * 0x594) = (short)uVar5;
     local_8 = u8(uVar5);
     _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = local_8;
@@ -984,10 +984,10 @@ export function FUN_005233fc(param_1, param_2) {
     }
     wv(DAT_006d1da0, (s8(_MEM[DAT_00655b03])));
     if (v(DAT_006ad640) < 3) {
-      wv(DAT_00655b0b, v(DAT_00655b0b) | u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_00655b0b, v(DAT_00655b0b) | u8(1 << (s8(local_24) & 0x1f)));
     }
     else {
-      wv(DAT_006c31a8, v(DAT_006c31a8) | u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_006c31a8, v(DAT_006c31a8) | u8(1 << (s8(local_24) & 0x1f)));
     }
     local_1c = u8(iVar1);
     _MEM[DAT_006554fc + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30] = local_1c;
@@ -1053,15 +1053,15 @@ export function FUN_005233fc(param_1, param_2) {
   else {
     local_24 = s32(param_1, 0x10);
     if (v(DAT_006ad640) < 3) {
-      wv(DAT_00655b0b, v(DAT_00655b0b) | u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_00655b0b, v(DAT_00655b0b) | u8(1 << (s8(local_24) & 0x1f)));
     }
     else {
-      wv(DAT_006c31a8, v(DAT_006c31a8) | u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_006c31a8, v(DAT_006c31a8) | u8(1 << (s8(local_24) & 0x1f)));
     }
-    wv(DAT_00655b03, u8(local_24));
-    wv(DAT_00655b05, u8(local_24));
+    wv(DAT_00655b03, s8(local_24));
+    wv(DAT_00655b05, s8(local_24));
     wv(DAT_006d1da0, local_24);
-    FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(u8(local_24)) * 0xf2),param_1 + 0x20);
+    FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(s8(local_24)) * 0xf2),param_1 + 0x20);
     if (0 < s16(DAT_00655502, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594), 0) */ * 0x30)) {
                       /*JOINED*/
       // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 );
@@ -1095,10 +1095,10 @@ export function FUN_005233fc(param_1, param_2) {
   }
   else {
     if (v(DAT_006ad640) < 3) {
-      wv(DAT_00655b0b, v(DAT_00655b0b) & ~u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_00655b0b, v(DAT_00655b0b) & ~u8(1 << (s8(local_24) & 0x1f)));
     }
     else {
-      wv(DAT_006c31a8, v(DAT_006c31a8) & ~u8(1 << (u8(local_24) & 0x1f)));
+      wv(DAT_006c31a8, v(DAT_006c31a8) & ~u8(1 << (s8(local_24) & 0x1f)));
     }
     FUN_0046b14d(0x31,0,s32(param_1, 0x14),s32(param_1, 0x10),0,0,0, 0,0,0);
                        /*JOINED*/
