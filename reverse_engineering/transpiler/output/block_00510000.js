@@ -6516,10 +6516,10 @@ export function FUN_0051f19c(param_1, param_2, param_3) {
                                                               /*JOINED*/
                                                     /*JOINED*/
           FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_1c * 0x18),uVar2);
-          // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4) =
+          w16(ptrAdd(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4), 0, -s16(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4));
                     /*JOINED*/
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4);
+               /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
@@ -8330,10 +8330,10 @@ function LAB_0051fdd1_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
                                                               /*JOINED*/
                                                     /*JOINED*/
           FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_1c * 0x18),uVar2);
-          // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4) =
+          w16(ptrAdd(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4), 0, -s16(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4));
                     /*JOINED*/
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4);
+               /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
@@ -8893,10 +8893,10 @@ function LAB_0051f8c0_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
                                                               /*JOINED*/
                                                     /*JOINED*/
           FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_1c * 0x18),uVar2);
-          // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4) =
+          w16(ptrAdd(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4), 0, -s16(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4));
                     /*JOINED*/
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4);
+               /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
@@ -9579,10 +9579,10 @@ function LAB_0051f1f6_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
                                                               /*JOINED*/
                                                     /*JOINED*/
           FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_1c * 0x18),uVar2);
-          // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4) =
+          w16(ptrAdd(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4), 0, -s16(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4));
                     /*JOINED*/
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4);
+               /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
@@ -9995,10 +9995,10 @@ function LAB_0051ffec_helper(iVar1, iVar3, local_14, local_18, local_1c, local_2
                                                               /*JOINED*/
                                                     /*JOINED*/
           FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_1c * 0x18),uVar2);
-          // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4) =
+          w16(ptrAdd(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4), 0, -s16(DAT_0065550c, iVar1 * 2 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_1c * 4));
                     /*JOINED*/
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_0065550c + iVar1 * 2 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_1c * 4);
+               /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/

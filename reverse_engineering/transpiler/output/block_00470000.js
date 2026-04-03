@@ -2823,9 +2823,9 @@ export function FUN_00475666(param_1) {
       for (local_748 = 0; wv(DAT_00655b03, cVar1), local_748 < 8; local_748 = local_748 + 1) {
         if ((1 << (u8(local_748) & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
           wv(DAT_00655b03, u8(local_748));
-          // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)(byte)local_748 * 0x594) * 0x30) =
+          w16(ptrAdd(DAT_00655502, s16(DAT_0064c6a6, s8(u8(local_748)) * 0x594) * 0x30), 0, -s16(DAT_00655502, s16(DAT_0064c6a6, s8(u8(local_748)) * 0x594) * 0x30));
                     /*JOINED*/
-               // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)(byte)local_748 * 0x594) * 0x30);
+               /*JOINED*/
                           /*JOINED*/
           if (local_71c[s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x18] < 0) {
             w16(ptrAdd(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30), 0, -s16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
@@ -2843,11 +2843,11 @@ export function FUN_00475666(param_1) {
                             /*JOINED*/
                             /*JOINED*/
               {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_21c * 4 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_738 * 2) =
+                w16(ptrAdd(DAT_0065550c, local_21c * 4 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_738 * 2), 0, -s16(DAT_0065550c, local_21c * 4 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_738 * 2));
                           /*JOINED*/
                           /*JOINED*/
                           /*JOINED*/
-                     // DEVIATION(cont): -*(short *)(&DAT_0065550c + local_21c * 4 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_738 * 2);
+                     /*JOINED*/
                                 /*JOINED*/
                                 /*JOINED*/
                                 /*JOINED*/
@@ -2883,10 +2883,10 @@ export function FUN_00475666(param_1) {
       if (iVar3 === 0) {
         for (local_21c = 0; local_21c < 7; local_21c = local_21c + 1) {
           for (local_738 = 0; local_738 < 2; local_738 = local_738 + 1) {
-            // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_21c * 4 + *(short *)(&DAT_0064c6a6 + local_748 * 0x594) * 0x30 + local_738 * 2) =
+            w16(ptrAdd(DAT_0065550c, local_21c * 4 + s16(DAT_0064c6a6, local_748 * 0x594) * 0x30 + local_738 * 2), 0, ((s32(DAT_00654fe0, local_738 * 4 + local_21c * 8)) << 16 >> 16));
                       /*JOINED*/
                       /*JOINED*/
-                 // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_738 * 4 + local_21c * 8);
+                 /*JOINED*/
           }
         }
       }

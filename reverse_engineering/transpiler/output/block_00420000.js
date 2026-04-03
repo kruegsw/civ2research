@@ -693,10 +693,10 @@ export function FUN_00421fcd(param_1) {
           if (iVar1 === 0) {
             for (local_a6c = 0; local_a6c < 7; local_a6c = local_a6c + 1) {
               for (local_1198 = 0; local_1198 < 2; local_1198 = local_1198 + 1) {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_a6c * 4 + *(short *)(&DAT_0064c6a6 + local_11a0 * 0x594) * 0x30 + local_1198 * 2) =
+                w16(ptrAdd(DAT_0065550c, local_a6c * 4 + s16(DAT_0064c6a6, local_11a0 * 0x594) * 0x30 + local_1198 * 2), 0, ((s32(DAT_00654fe0, local_1198 * 4 + local_a6c * 8)) << 16 >> 16));
                           /*JOINED*/
                           /*JOINED*/
-                     // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_1198 * 4 + local_a6c * 8);
+                     /*JOINED*/
               }
             }
           }
@@ -6888,10 +6888,10 @@ function LAB_00422d3d_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, loca
           if (iVar1 === 0) {
             for (local_a6c = 0; local_a6c < 7; local_a6c = local_a6c + 1) {
               for (local_1198 = 0; local_1198 < 2; local_1198 = local_1198 + 1) {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_a6c * 4 + *(short *)(&DAT_0064c6a6 + local_11a0 * 0x594) * 0x30 + local_1198 * 2) =
+                w16(ptrAdd(DAT_0065550c, local_a6c * 4 + s16(DAT_0064c6a6, local_11a0 * 0x594) * 0x30 + local_1198 * 2), 0, ((s32(DAT_00654fe0, local_1198 * 4 + local_a6c * 8)) << 16 >> 16));
                           /*JOINED*/
                           /*JOINED*/
-                     // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_1198 * 4 + local_a6c * 8);
+                     /*JOINED*/
               }
             }
           }
@@ -7742,10 +7742,10 @@ function LAB_00422109_helper(extraout_ECX, iVar1, iVar5, iVar6, local_1198, loca
           if (iVar1 === 0) {
             for (local_a6c = 0; local_a6c < 7; local_a6c = local_a6c + 1) {
               for (local_1198 = 0; local_1198 < 2; local_1198 = local_1198 + 1) {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_a6c * 4 + *(short *)(&DAT_0064c6a6 + local_11a0 * 0x594) * 0x30 + local_1198 * 2) =
+                w16(ptrAdd(DAT_0065550c, local_a6c * 4 + s16(DAT_0064c6a6, local_11a0 * 0x594) * 0x30 + local_1198 * 2), 0, ((s32(DAT_00654fe0, local_1198 * 4 + local_a6c * 8)) << 16 >> 16));
                           /*JOINED*/
                           /*JOINED*/
-                     // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_1198 * 4 + local_a6c * 8);
+                     /*JOINED*/
               }
             }
           }

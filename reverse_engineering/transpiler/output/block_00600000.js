@@ -1387,9 +1387,9 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) =
+          _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8]) | 0x20;
                    /*JOINED*/
-               // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) | 0x20;
+               /*JOINED*/
                         /*JOINED*/
         }
       }
@@ -4282,9 +4282,9 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
     cVar1 = s8(_MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8]);
                      /*JOINED*/
     if (_Mode === 0x8000) {
-      // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) =
+      _MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8]) & 0x7f;
                /*JOINED*/
-           // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) & 0x7f;
+           /*JOINED*/
                     /*JOINED*/
     }
     else {
@@ -4292,9 +4292,9 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
         wv(DAT_00639f14, 0x16);
         return -1;
       }
-      // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) =
+      _MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((_FileHandle & 0xffffffe0) >> 3)), 0) + 4 + (_FileHandle & 0x1f) * 8]) | 0x80;
                /*JOINED*/
-           // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 + (_FileHandle & 0x1fU) * 8) | 0x80;
+           /*JOINED*/
                     /*JOINED*/
     }
     if (((cVar1) & 0x80) === 0) {
@@ -5430,9 +5430,9 @@ function LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) =
+          _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8]) | 0x20;
                    /*JOINED*/
-               // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) | 0x20;
+               /*JOINED*/
                         /*JOINED*/
         }
       }
@@ -5558,9 +5558,9 @@ function LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) =
+          _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8]) | 0x20;
                    /*JOINED*/
-               // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) | 0x20;
+               /*JOINED*/
                         /*JOINED*/
         }
       }
@@ -5672,9 +5672,9 @@ function LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           }
         }
         if (((local_3c & 0x48) === 0) && ((_OpenFlag & 8) !== 0)) {
-          // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) =
+          _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = u8(_MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8]) | 0x20;
                    /*JOINED*/
-               // DEVIATION(cont): *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) | 0x20;
+               /*JOINED*/
                         /*JOINED*/
         }
       }

@@ -5079,9 +5079,9 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/
@@ -7169,9 +7169,9 @@ function LAB_00499ca3_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/
@@ -8691,9 +8691,9 @@ function LAB_0049aab5_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/
@@ -10229,9 +10229,9 @@ function LAB_0049a9d5_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/
@@ -11697,9 +11697,9 @@ function LAB_0049ae3e_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/
@@ -13176,9 +13176,9 @@ function LAB_0049aba3_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
               local_10c = local_10c + (s16(DAT_0064caa8, uVar4 * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                           /*JOINED*/
                           /*JOINED*/
-              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2))
+              local_88 = local_88 + (s16(DAT_0064caa8, ((v(DAT_00655c20)) >>> 0) * 0x594 + local_94 * 2)) * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
                          /*JOINED*/
-                         * u8(_MEM[DAT_0064c5a4 + local_110 * 8]);
+                         /*JOINED*/
             }
             if (((local_40 === 0) || (((local_40 <= local_64 && (local_10c <= local_88)) || (local_248 !== 0)))) && ((((_MEM[DAT_0064f344 + param_1 * 0x58] & 1) === 0 && (v(DAT_00655b08) !== 0)) && (((s16(DAT_0064ca72, uVar4 * 0x594)) >> 1 <= local_48 || (0x13 < local_48)))))) {
                 /*JOINED*/

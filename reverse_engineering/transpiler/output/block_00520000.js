@@ -409,10 +409,10 @@ export function FUN_00521fe0(param_1) {
     }
     for (local_34 = 0; local_34 < 7; local_34 = local_34 + 1) {
       for (local_43c = 0; local_43c < 2; local_43c = local_43c + 1) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_34 * 4 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + local_43c * 2) =
+        w16(ptrAdd(DAT_0065550c, local_34 * 4 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + local_43c * 2), 0, ((s32(DAT_00654fe0, local_34 * 8 + local_43c * 4)) << 16 >> 16));
                   /*JOINED*/
                   /*JOINED*/
-             // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_34 * 8 + local_43c * 4);
+             /*JOINED*/
       }
     }
     local_330 = local_330 + 1;
@@ -1032,10 +1032,10 @@ export function FUN_005233fc(param_1, param_2) {
         }
         uVar5 = FUN_00428b0c(local_28);
         FUN_005f22d0(ptrAdd(DAT_0064bd42, s8(_MEM[DAT_00655b03]) * 0xf2 + local_c * 0x18),uVar5);
-        // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_c * 4 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + iVar1 * 2) =
+        w16(ptrAdd(DAT_0065550c, local_c * 4 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + iVar1 * 2), 0, -s16(DAT_0065550c, local_c * 4 + s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30 + iVar1 * 2));
                   /*JOINED*/
                   /*JOINED*/
-             // DEVIATION(cont): -*(short *)(&DAT_0065550c + local_c * 4 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 + iVar1 * 2);
+             /*JOINED*/
                         /*JOINED*/
                         /*JOINED*/
       }
@@ -1294,10 +1294,10 @@ export function FUN_00523f02(param_1) {
             }
             for (local_34 = 0; local_34 < 7; local_34 = local_34 + 1) {
               for (local_444 = 0; local_444 < 2; local_444 = local_444 + 1) {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_34 * 4 + *(short *)(&DAT_0064c6a6 + DAT_00655b03 * 0x594) * 0x30 + local_444 * 2) =
+                w16(ptrAdd(DAT_0065550c, local_34 * 4 + s16(DAT_0064c6a6, v(DAT_00655b03) * 0x594) * 0x30 + local_444 * 2), 0, ((s32(DAT_00654fe0, local_444 * 4 + local_34 * 8)) << 16 >> 16));
                           /*JOINED*/
                           /*JOINED*/
-                     // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_444 * 4 + local_34 * 8);
+                     /*JOINED*/
               }
             }
             // DEVIATION: SEH

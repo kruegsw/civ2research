@@ -1942,9 +1942,9 @@ export function FUN_00536c4c(param_1) {
                 FUN_00467825(iVar2,(s8(_MEM[DAT_0064f348 + local_30 * 0x58])),0x10000);
               }
               else {
-                // DEVIATION: C pointer write — *(short *)(&DAT_0064ca82 + (char)(&DAT_0064f348)[local_30 * 0x58] * 0x594 + iVar2 * 2) =
+                w16(ptrAdd(DAT_0064ca82, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 0x594 + iVar2 * 2), 0, s16(DAT_0064ca82, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 0x594 + iVar2 * 2) + -2);
                           /*JOINED*/
-                     // DEVIATION(cont): *(short *)(&DAT_0064ca82 + (char)(&DAT_0064f348)[local_30 * 0x58] * 0x594 + iVar2 * 2) + -2;
+                     /*JOINED*/
                                /*JOINED*/
               }
             }

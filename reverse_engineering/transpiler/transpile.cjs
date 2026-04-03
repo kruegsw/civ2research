@@ -1391,8 +1391,8 @@ function processFunction(headerLines, bodyLines, ctx) {
           bodyLines[j] = nextIndent + '/*JOINED*/';
           j++;
         }
-        // After paren join, continue if result ends with trailing operator
-        while (/[+\-*/,&|]\s*$/.test(joined) && j < bodyLines.length) {
+        // After paren join, continue if result ends with trailing operator (including =)
+        while (/[+\-*/,&|=]\s*$/.test(joined) && j < bodyLines.length) {
           const nextT = bodyLines[j].trim();
           if (nextT === '' || nextT === '{' || nextT === '}') break;
           joined += ' ' + nextT;
@@ -1428,8 +1428,10 @@ function processFunction(headerLines, bodyLines, ctx) {
           // Stop when we hit ; or { or depth returns to 0 after closing
           if (/;\s*$/.test(nextT) || /\{\s*$/.test(nextT)) break;
           if (runningDepth <= 0 && !/[+\-*/,&|=]\s*$/.test(nextT)) {
-            // Check if the NEXT line starts with ( or & — expression continuation
-            if (j < bodyLines.length && /^\s*[(&]/.test(bodyLines[j])) {
+            // Check if the NEXT line is part of the same expression:
+            // starts with (, &, -, ~, or a word (variable/function continuation)
+            // AND the joined result so far doesn't end with ;
+            if (j < bodyLines.length && !/;\s*$/.test(joined) && /^\s*[(&\-~a-zA-Z*]/.test(bodyLines[j])) {
               continue; // keep joining
             }
             // But if the next line is just ";", grab it too

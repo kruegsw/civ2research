@@ -2988,10 +2988,10 @@ export function FUN_00556f54() {
         }
         for (local_18 = 0; local_18 < 7; local_18 = local_18 + 1) {
           for (local_318 = 0; local_318 < 2; local_318 = local_318 + 1) {
-            // DEVIATION: C pointer write — *(short *)(&DAT_0065550c + local_18 * 4 + *(short *)(&DAT_0064c6a6 + iVar1 * 0x594) * 0x30 + local_318 * 2) =
+            w16(ptrAdd(DAT_0065550c, local_18 * 4 + s16(DAT_0064c6a6, iVar1 * 0x594) * 0x30 + local_318 * 2), 0, ((s32(DAT_00654fe0, local_318 * 4 + local_18 * 8)) << 16 >> 16));
                       /*JOINED*/
                       /*JOINED*/
-                 // DEVIATION(cont): (short)*(undefined4 *)(&DAT_00654fe0 + local_318 * 4 + local_18 * 8);
+                 /*JOINED*/
           }
         }
         FUN_0040ff60(1,ptrAdd(DAT_0064bd12, iVar1 * 0xf2));
