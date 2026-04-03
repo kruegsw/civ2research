@@ -8663,7 +8663,7 @@ export function __CrtSetReportMode_005F8A10(param_1, param_2) {
   }
   else if ((param_2 & 0xfffffff8) === 0) {
     uVar1 = s32(DAT_0063a038, param_1 * 4);
-    w32(DAT_0063a038, param_1 * 4, param_2);
+    w32(ptrAdd(DAT_0063a038, param_1 * 4), 0, param_2);
   }
   else {
     uVar1 = -1;
@@ -8699,14 +8699,14 @@ export function __CrtSetReportFile_005F8A90(param_1, param_2) {
     uVar1 = s32(DAT_0063a048, param_1 * 4);
     if (param_2 === -4) {
       pvVar2 = GetStdHandle(0xfffffff5);
-      w32(DAT_0063a048, param_1 * 4, pvVar2);
+      w32(ptrAdd(DAT_0063a048, param_1 * 4), 0, pvVar2);
     }
     else if (param_2 === -5) {
       pvVar2 = GetStdHandle(0xfffffff4);
-      w32(DAT_0063a048, param_1 * 4, pvVar2);
+      w32(ptrAdd(DAT_0063a048, param_1 * 4), 0, pvVar2);
     }
     else {
-      w32(DAT_0063a048, param_1 * 4, param_2);
+      w32(ptrAdd(DAT_0063a048, param_1 * 4), 0, param_2);
     }
   }
   return uVar1;
@@ -9442,7 +9442,7 @@ export function __getstream_005F9EF0() {
     }
     if (s32(DAT_006e5694, local_8 * 4) === 0) {
       uVar1 = __malloc_dbg(0x20,2,"stream.c",0x55);
-      w32(DAT_006e5694, local_8 * 4, uVar1);
+      w32(v(DAT_006e5694) + local_8 * 4, 0, uVar1);
       if (s32(DAT_006e5694, local_8 * 4) !== 0) {
         local_c = s32(DAT_006e5694, local_8 * 4);
       }
@@ -10456,7 +10456,7 @@ export function __stbuf_005FB620(_File) {
     if ((s32(_File, 12) & 0x10c) === 0) {
       if (s32(DAT_0063a2b0, local_c * 4) === 0) {
         uVar3 = __malloc_dbg(0x1000,2,"_sftbuf.c",0x5e);
-        w32(DAT_0063a2b0, local_c * 4, uVar3);
+        w32(ptrAdd(DAT_0063a2b0, local_c * 4), 0, uVar3);
         if (s32(DAT_0063a2b0, local_c * 4) === 0) {
           return 0;
         }
@@ -12374,7 +12374,7 @@ export function ___initstdio_005FE0B0() {
                  /*JOINED*/
        /*JOINED*/
                 /*JOINED*/
-      w32(DAT_0063ac68, local_8 * 0x20, -1);
+      w32(ptrAdd(DAT_0063ac68, local_8 * 0x20), 0, -1);
     }
   }
   return;
@@ -13762,7 +13762,7 @@ export function __setmbcp_005FFAC0(_CodePage) {
         wv(DAT_0063b0a4, CodePage);
         wv(DAT_0063b0a8, _CPtoLCID(CodePage));
         for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-          w16(DAT_0063b0b0, local_10 * 2, s16(DAT_0063b0cc, local_10 * 2 + local_8 * 0x30));
+          w16(ptrAdd(DAT_0063b0b0, local_10 * 2), 0, s16(DAT_0063b0cc, local_10 * 2 + local_8 * 0x30));
                /*JOINED*/
         }
         return 0;
@@ -13791,7 +13791,7 @@ export function __setmbcp_005FFAC0(_CodePage) {
         wv(DAT_0063b0a8, _CPtoLCID(CodePage));
       }
       for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-        w16(DAT_0063b0b0, local_10 * 2, 0);
+        w16(ptrAdd(DAT_0063b0b0, local_10 * 2), 0, 0);
       }
       iVar1 = 0;
     }
@@ -13896,7 +13896,7 @@ export function setSBCS_005FFF20() {
   wv(DAT_0063b0a4, 0);
   wv(DAT_0063b0a8, 0);
   for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    w16(DAT_0063b0b0, local_8 * 2, 0);
+    w16(ptrAdd(DAT_0063b0b0, local_8 * 2), 0, 0);
   }
   return;
 }
@@ -15722,7 +15722,7 @@ function LAB_005f9fab_helper(local_8, local_c, uVar1) {
   // (outer block close)
     if (s32(DAT_006e5694, local_8 * 4) === 0) {
       uVar1 = __malloc_dbg(0x20,2,"stream.c",0x55);
-      w32(DAT_006e5694, local_8 * 4, uVar1);
+      w32(v(DAT_006e5694) + local_8 * 4, 0, uVar1);
       if (s32(DAT_006e5694, local_8 * 4) !== 0) {
         local_c = s32(DAT_006e5694, local_8 * 4);
       }

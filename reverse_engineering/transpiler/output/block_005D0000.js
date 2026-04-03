@@ -3944,17 +3944,17 @@ export function FUN_005d57b1(param_1) {
                     /*JOINED*/
                     /*JOINED*/
                     /*JOINED*/
-      w32(DAT_006385d0, 0x90, s32(DAT_006385d0, 0x90) + local_8);
+      w32(v(DAT_006385d0) + 0x90, 0, s32(DAT_006385d0, 0x90) + local_8);
       w32(iVar1, 0x34, s32(iVar1, 0x34) + local_8);
       if (s32(iVar1, 0x3c) === s32(iVar1, 0x34)) {
         w32(iVar1, 0x34, s32(iVar1, 0x30));
       }
-      w32(DAT_006385d0, 0x68, s32(DAT_006385d0, 0x68) + local_8);
+      w32(v(DAT_006385d0) + 0x68, 0, s32(DAT_006385d0, 0x68) + local_8);
       if (u32(DAT_006385d0, 0x9c) <= u32(DAT_006385d0, 0x68)) {
         w32(local_c, 0xc, u32(local_c, 0xc) | 8);
-        w32(DAT_006385d0, 0x98, s32(local_c, 0x1c));
+        w32(v(DAT_006385d0) + 0x98, 0, s32(local_c, 0x1c));
         local_c = s32(DAT_006385d0, 0x98);
-        w32(DAT_006385d0, 0x68, 0);
+        w32(v(DAT_006385d0) + 0x68, 0, 0);
       }
       if (u32(DAT_006385d0, 8) <= ((s32(DAT_006385d0, 0x90) - s32(DAT_006385d0, 0x94)) >>> 0)) {
           /*JOINED*/
@@ -3969,9 +3969,9 @@ export function FUN_005d57b1(param_1) {
         }
         w32(local_c, 0xc, u32(local_c, 0xc) | 8);
         w32(local_c, 0xc, u32(local_c, 0xc) | 2);
-        w32(DAT_006385d0, 0x98, s32(local_c, 0x1c));
-        w32(DAT_006385d0, 0x68, 0);
-        w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) | 1);
+        w32(v(DAT_006385d0) + 0x98, 0, s32(local_c, 0x1c));
+        w32(v(DAT_006385d0) + 0x68, 0, 0);
+        w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) | 1);
       }
       wv(_DAT_00638590, v(_DAT_00638590) + 1);
       uVar2 = 0;
@@ -4088,16 +4088,16 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
     }
     else {
       FUN_005d6a2c();
-      w32(DAT_006385d0, 8, local_10);
-      w32(DAT_006385d0, 0x90, iVar2);
-      w32(DAT_006385d0, 0x94, iVar2);
-      w32(DAT_006385d0, 100, 0);
-      w32(DAT_006385d0, 0x68, 0);
-      w32(DAT_006385d0, 0x34, s32(DAT_006385d0, 0x3c));
+      w32(v(DAT_006385d0) + 8, 0, local_10);
+      w32(v(DAT_006385d0) + 0x90, 0, iVar2);
+      w32(v(DAT_006385d0) + 0x94, 0, iVar2);
+      w32(v(DAT_006385d0) + 100, 0, 0);
+      w32(v(DAT_006385d0) + 0x68, 0, 0);
+      w32(v(DAT_006385d0) + 0x34, 0, s32(DAT_006385d0, 0x3c));
       FUN_005d5bec(v(DAT_006385d0));
-      w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) & 0xfffffffd);
-      w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) & 0xfffffffe);
-      w32(DAT_006385d0, 0x8c, param_3);
+      w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) & 0xfffffffd);
+      w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) & 0xfffffffe);
+      w32(v(DAT_006385d0) + 0x8c, 0, param_3);
       wv(DAT_006385bc, 0);
       local_8 = v(DAT_006385c0);
       for (local_c = 0; local_c < v(DAT_00638584); local_c = local_c + 1) {
@@ -4137,13 +4137,13 @@ export function FUN_005d5f91() {
 
   if ((v(DAT_006385d0) !== 0) && (s16(DAT_006385d0, 0x88) === 4)) {
     FUN_005d6947(v(DAT_006385c0));
-    w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) | 0x10);
+    w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) | 0x10);
     if (s32(DAT_006385d0, 0x8c) !== 0) {
       // DEVIATION: C pointer write — **(ushort **)(DAT_006385d0 + 0x8c) = **(ushort **)(DAT_006385d0 + 0x8c) | 4;
     }
   }
   wv(DAT_006385bc, 1);
-  w32(DAT_006385d0, 0x98, v(DAT_006385c0));
+  w32(v(DAT_006385d0) + 0x98, 0, v(DAT_006385c0));
   return;
 }
 
@@ -4443,7 +4443,7 @@ export function FUN_005d6685(param_1) {
   let local_8;
   
   local_8 = v(DAT_006385c4);
-  w32(DAT_006385c4, 0xc, u32(DAT_006385c4, 0xc) & 0xfffffffe);
+  w32(v(DAT_006385c4) + 0xc, 0, u32(DAT_006385c4, 0xc) & 0xfffffffe);
   for (local_10 = 0; (local_10) < param_1 + -1; local_10 = local_10 + 1) {
     local_8 = s32(local_8, 0x1c);
     w32(local_8, 0xc, u32(local_8, 0xc) & 0xfffffffe);
@@ -5112,17 +5112,17 @@ export function FUN_005d791b(param_1, param_2) {
                   /*JOINED*/
                   /*JOINED*/
                   /*JOINED*/
-    w32(DAT_006385d0, 0x90, s32(DAT_006385d0, 0x90) + local_8);
+    w32(v(DAT_006385d0) + 0x90, 0, s32(DAT_006385d0, 0x90) + local_8);
     w32(iVar1, 0x34, s32(iVar1, 0x34) + local_8);
-    w32(DAT_006385d0, 0x68, s32(DAT_006385d0, 0x68) + local_8);
+    w32(v(DAT_006385d0) + 0x68, 0, s32(DAT_006385d0, 0x68) + local_8);
     if (s32(iVar1, 0x3c) === s32(iVar1, 0x34)) {
       w32(iVar1, 0x34, s32(iVar1, 0x30));
     }
     if (u32(DAT_006385d0, 0x9c) <= u32(DAT_006385d0, 0x68)) {
       w32(param_1, 0xc, u32(param_1, 0xc) | 8);
-      w32(DAT_006385d0, 0x98, s32(param_1, 0x1c));
+      w32(v(DAT_006385d0) + 0x98, 0, s32(param_1, 0x1c));
       param_1 = s32(DAT_006385d0, 0x98);
-      w32(DAT_006385d0, 0x68, 0);
+      w32(v(DAT_006385d0) + 0x68, 0, 0);
     }
     if (u32(DAT_006385d0, 8) <= ((s32(DAT_006385d0, 0x90) - s32(DAT_006385d0, 0x94)) >>> 0)) {
         /*JOINED*/
@@ -5138,9 +5138,9 @@ export function FUN_005d791b(param_1, param_2) {
       }
       w32(param_1, 0xc, u32(param_1, 0xc) & 0xfffffff7);
       w32(param_1, 0xc, u32(param_1, 0xc) | 2);
-      w32(DAT_006385d0, 0x70, u32(DAT_006385d0, 0x70) | 1);
-      w32(DAT_006385d0, 0x98, s32(param_1, 0x1c));
-      w32(DAT_006385d0, 0x68, 0);
+      w32(v(DAT_006385d0) + 0x70, 0, u32(DAT_006385d0, 0x70) | 1);
+      w32(v(DAT_006385d0) + 0x98, 0, s32(param_1, 0x1c));
+      w32(v(DAT_006385d0) + 0x68, 0, 0);
     }
     uVar2 = 0;
   }
@@ -7427,7 +7427,7 @@ export function FUN_005db140(param_1) {
     pHVar1 = 0x0;
   }
   else {
-    w32(DAT_006e4f60, v(DAT_006387cc) * 4, pHVar1);
+    w32(ptrAdd(DAT_006e4f60, v(DAT_006387cc) * 4), 0, pHVar1);
     wv(DAT_006387cc, v(DAT_006387cc) + 1);
   }
   return pHVar1;
@@ -7638,7 +7638,7 @@ export function FUN_005db55b(param_1) {
   }
   if (local_8 < v(DAT_006387cc)) {
     for (; local_8 < v(DAT_006387cc); local_8 = local_8 + 1) {
-      w32(DAT_006e4f60, local_8 * 4, s32(DAT_006e4f64, local_8 * 4));
+      w32(ptrAdd(DAT_006e4f60, local_8 * 4), 0, s32(DAT_006e4f64, local_8 * 4));
     }
     wv(DAT_006387cc, v(DAT_006387cc) - 1);
     FreeLibrary(param_1);

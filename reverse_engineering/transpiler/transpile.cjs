@@ -1650,28 +1650,30 @@ function processFunction(headerLines, bodyLines, ctx) {
         if (!eqMatch) { /* fall through */ } else {
         let val = eqMatch[1].trim();
       val = transformLine('  ' + val, ctx).trim();
-      const parts = splitBaseOffset(inner);
+      // Transform inner address expression to resolve nested pointer derefs
+      const innerTransformed = transformLine('  ' + inner, ctx).trim();
+      const parts = splitBaseOffset(innerTransformed);
       // Strip v() from base — it's an ADDRESS, not a value read.
       // transformLine converts &DAT_xxx → v(DAT_xxx) because & is stripped before v() runs.
       const stripV = (s) => s.replace(/^v\(([^)]+)\)$/, '$1');
       if (wType === 'undefined1' || wType === 'char' || wType === 'byte') {
         // Byte write → _MEM[base + offset] = value
         if (parts) {
-          const base = stripV(transformLine('  ' + parts.base, ctx).trim());
-          const offset = transformLine('  ' + parts.offset, ctx).trim();
+          const base = stripV(parts.base);
+          const offset = parts.offset;
           result.push(line.replace(trimmed, '_MEM[' + base + ' + ' + offset + '] = ' + val + ';'));
         } else {
-          const base = stripV(transformLine('  ' + inner, ctx).trim());
+          const base = stripV(innerTransformed);
           result.push(line.replace(trimmed, '_MEM[' + base + '] = ' + val + ';'));
         }
       } else {
         const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
         if (parts) {
-          const base = stripV(transformLine('  ' + parts.base, ctx).trim());
-          const offset = transformLine('  ' + parts.offset, ctx).trim();
+          const base = stripV(parts.base);
+          const offset = parts.offset;
           result.push(line.replace(trimmed, wHelper + '(' + base + ', ' + offset + ', ' + val + ');'));
         } else {
-          const base = stripV(transformLine('  ' + inner, ctx).trim());
+          const base = stripV(innerTransformed);
           result.push(line.replace(trimmed, wHelper + '(' + base + ', 0, ' + val + ');'));
         }
       }

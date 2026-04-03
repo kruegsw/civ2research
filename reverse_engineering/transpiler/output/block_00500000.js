@@ -1181,7 +1181,7 @@ export function FUN_005022c0(param_1, param_2) {
       if (-1 < local_1c) {
         if (local_1c === 0x14) {
           iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-          w32(DAT_0064f370, iVar1 * 0x58, 0);
+          w32(ptrAdd(DAT_0064f370, iVar1 * 0x58), 0, 0);
         }
         else {
           iVar1 = local_1c;
@@ -1193,7 +1193,7 @@ export function FUN_005022c0(param_1, param_2) {
             }
             if (v(DAT_006a6604) === 0) {
               iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-              w32(DAT_0064f370, iVar1 * 0x58, 0);
+              w32(ptrAdd(DAT_0064f370, iVar1 * 0x58), 0, 0);
             }
             else {
               uVar5 = 1;
@@ -2652,11 +2652,11 @@ export function FUN_00505d3d(param_1) {
             iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
             FUN_0043d289(iVar3,local_10,uVar6);
             iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-            w32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594, s32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594) + bVar1 * uVar5);
+            w32(ptrAdd(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594), 0, s32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594) + bVar1 * uVar5);
                  /*JOINED*/
                  /*JOINED*/
             iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-            w32(DAT_0064f344, iVar3 * 0x58, u32(DAT_0064f344, iVar3 * 0x58) | 4);
+            w32(ptrAdd(DAT_0064f344, iVar3 * 0x58), 0, u32(DAT_0064f344, iVar3 * 0x58) | 4);
             citywin_9429();
             FUN_00569363(1);
             FUN_00436287(5);
@@ -2914,17 +2914,17 @@ export function FUN_00506637(param_1) {
         if (iVar1 === 3) {
           _MEM[DAT_006560ff + param_1 * 0x20] = 0xb;
           iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-          w16(DAT_00656102, param_1 * 0x20, s16(DAT_0064f340, iVar1 * 0x58));
+          w16(ptrAdd(DAT_00656102, param_1 * 0x20), 0, s16(DAT_0064f340, iVar1 * 0x58));
                /*JOINED*/
           iVar1 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-          w16(DAT_00656104, param_1 * 0x20, s16(DAT_0064f342, iVar1 * 0x58));
+          w16(ptrAdd(DAT_00656104, param_1 * 0x20), 0, s16(DAT_0064f342, iVar1 * 0x58));
                /*JOINED*/
         }
         else if (iVar1 === 4) {
           iVar1 = FUN_0043cf76((s16(DAT_006560f0, param_1 * 0x20)), (s16(DAT_006560f2, param_1 * 0x20)));
                                      /*JOINED*/
           if (-1 < iVar1) {
-            w16(DAT_0064f35c, iVar1 * 0x58, ((((s8(_MEM[DAT_0064b1c8 + u8(_MEM[DAT_006560f6 + param_1 * 0x20]) * 0x14]) * ((v(DAT_0064bccc)) >>> 0)) / 2 | 0)) << 16 >> 16) + s16(DAT_0064f35c, iVar1 * 0x58));
+            w16(ptrAdd(DAT_0064f35c, iVar1 * 0x58), 0, ((((s8(_MEM[DAT_0064b1c8 + u8(_MEM[DAT_006560f6 + param_1 * 0x20]) * 0x14]) * ((v(DAT_0064bccc)) >>> 0)) / 2 | 0)) << 16 >> 16) + s16(DAT_0064f35c, iVar1 * 0x58));
                  /*JOINED*/
                                           /*JOINED*/
                               /*JOINED*/
@@ -3161,7 +3161,7 @@ export function FUN_00506a42(param_1) {
     return LAB_0050708f_helper(iVar1, iVar2, iVar3, local_340, local_4c, local_8, param_1, uVar4, uVar5, uVar6, uVar7);
   case 7:
     iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-    w16(DAT_0064f35c, iVar2 * 0x58, ((((s8(_MEM[DAT_0064b1c8 + u8(_MEM[DAT_006560f6 + iVar1 * 0x20]) * 0x14]) * ((v(DAT_0064bccc)) >>> 0)) / 2 | 0)) << 16 >> 16) + s16(DAT_0064f35c, iVar2 * 0x58));
+    w16(ptrAdd(DAT_0064f35c, iVar2 * 0x58), 0, ((((s8(_MEM[DAT_0064b1c8 + u8(_MEM[DAT_006560f6 + iVar1 * 0x20]) * 0x14]) * ((v(DAT_0064bccc)) >>> 0)) / 2 | 0)) << 16 >> 16) + s16(DAT_0064f35c, iVar2 * 0x58));
          /*JOINED*/
                       /*JOINED*/
     iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
@@ -4615,9 +4615,9 @@ export function city_button_buy_00509B48(param_1) {
   iVar3 = FUN_0040bc80(0);
   if (bVar1) {
     if ((iVar3 === 0) && (v(DAT_006aa75c) !== 1)) {
-      w32(DAT_0064c6a2, iVar2 * 0x594, s32(DAT_0064c6a2, iVar2 * 0x594) - local_35c);
+      w32(ptrAdd(DAT_0064c6a2, iVar2 * 0x594), 0, s32(DAT_0064c6a2, iVar2 * 0x594) - local_35c);
       iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-      w16(DAT_0064f35c, iVar2 * 0x58, ((v(DAT_0064bccc)) & 0xFFFF) * ((local_368) << 16 >> 16));
+      w16(ptrAdd(DAT_0064f35c, iVar2 * 0x58), 0, ((v(DAT_0064bccc)) & 0xFFFF) * ((local_368) << 16 >> 16));
       iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
       FUN_004e7492(iVar2);
       FUN_0046e020(0x68,1,0,0);
@@ -5056,7 +5056,7 @@ export function city_button_change_0050A473(param_1) {
       FUN_00484d52();
     }
     iVar3 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-    w32(DAT_0064f344, iVar3 * 0x58, u32(DAT_0064f344, iVar3 * 0x58) & 0xfcffffef);
+    w32(ptrAdd(DAT_0064f344, iVar3 * 0x58), 0, u32(DAT_0064f344, iVar3 * 0x58) & 0xfcffffef);
     if (local_578 === 0) break;
     if (local_578 === 1) {
       if ((1 << (bVar1 & 0x1f) & ((v(DAT_00655b0b)) >>> 0)) !== 0) {
@@ -5065,15 +5065,15 @@ export function city_button_change_0050A473(param_1) {
         local_958 = FUN_00511520(s_AUTOMODE_00630f48,1,iVar2);
         if (local_958 < 0) return LAB_0050b609_helper(bVar1, iVar2, iVar3, iVar4, local_14, local_360, local_578, local_64, local_654, local_658, local_65c, local_660, local_68, local_6c, local_8, local_954, local_958, local_95c, param_1, piVar5, piVar7, uVar6);
         iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-        w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x10);
+        w32(ptrAdd(DAT_0064f344, iVar2 * 0x58), 0, u32(DAT_0064f344, iVar2 * 0x58) | 0x10);
         if (local_958 === 1) {
           iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-          w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x1000000);
+          w32(ptrAdd(DAT_0064f344, iVar2 * 0x58), 0, u32(DAT_0064f344, iVar2 * 0x58) | 0x1000000);
                /*JOINED*/
         }
         if (local_958 === 2) {
           iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-          w32(DAT_0064f344, iVar2 * 0x58, u32(DAT_0064f344, iVar2 * 0x58) | 0x2000000);
+          w32(ptrAdd(DAT_0064f344, iVar2 * 0x58), 0, u32(DAT_0064f344, iVar2 * 0x58) | 0x2000000);
                /*JOINED*/
         }
       }
@@ -5115,7 +5115,7 @@ export function city_button_change_0050A473(param_1) {
           else {
             local_958 = local_958 + -0x65;
             iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-            w16(DAT_00655be6, local_958 * 2, ((iVar2) << 16 >> 16));
+            w16(ptrAdd(DAT_00655be6, local_958 * 2), 0, ((iVar2) << 16 >> 16));
             iVar2 = local_958;
           }
         }
@@ -5182,7 +5182,7 @@ export function city_button_change_0050A473(param_1) {
          /*JOINED*/
   }
   iVar2 = CSplitterWnd__IsTracking(v(DAT_006a91b8));
-  w16(DAT_0064f35c, iVar2 * 0x58, ((local_68) << 16 >> 16));
+  w16(ptrAdd(DAT_0064f35c, iVar2 * 0x58), 0, ((local_68) << 16 >> 16));
   FUN_00436287(1);
   FUN_00436287(2);
 // LAB_0050b5dc: (code below also in LAB_0050b5dc_helper, kept for 1:1 audit)

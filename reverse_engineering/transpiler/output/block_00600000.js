@@ -1889,7 +1889,7 @@ export function __fcloseall_006024D0() {
       }
       if (0x13 < local_c) {
         __free_dbg(s32(DAT_006e5694, local_c * 4),2);
-        w32(DAT_006e5694, local_c * 4, 0);
+        w32(v(DAT_006e5694) + local_c * 4, 0, 0);
       }
     }
   }
