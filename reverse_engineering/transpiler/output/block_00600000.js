@@ -1361,7 +1361,7 @@ export function __sopen_00601750(_Filename, _OpenFlag, _ShareFlag) {
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
-        // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) = local_3c | 1;
+        _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = local_3c | 1;
                  /*JOINED*/
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -1433,7 +1433,7 @@ export function __alloc_osfhnd_00601CF0() {
       for (; local_8 < (_MEM[DAT_006e69f0 + local_10] + 0x100); local_8 = local_8 + 2) {
         _MEM[local_8 + 1] = 0;
         w32(local_8, 0, -1);
-        // DEVIATION: C pointer write — *(undefined1 *)((int)local_8 + 5) = 10;
+        _MEM[(local_8) + 5] = 10;
       }
       return local_10 << 5;
     }
@@ -1529,7 +1529,7 @@ export function __free_osfhnd_00601F40(param_1) {
         SetStdHandle(0xfffffff4,0x0);
       }
     }
-    // DEVIATION: C pointer write — *(undefined4 *) (*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) + (param_1 & 0x1fU) * 8) = 0xffffffff;
+    w32(s32(ptrAdd(DAT_006e69f0, ((param_1 & 0xffffffe0) >> 3)), 0) + (param_1 & 0x1f) * 8, 0, -1);
      /*JOINED*/
          /*JOINED*/
     iVar1 = 0;
@@ -1621,7 +1621,7 @@ export function __open_osfhandle_006020E0(_OSFileHandle, _Flags) {
     }
     else {
       __set_osfhnd(uVar2,_OSFileHandle);
-      // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(uVar2 & 0xffffffe0) >> 3)) + 4 + (uVar2 & 0x1f) * 8) = local_10 | 1;
+      _MEM[s32(ptrAdd(DAT_006e69f0, ((uVar2 & 0xffffffe0) >> 3)), 0) + 4 + (uVar2 & 0x1f) * 8] = local_10 | 1;
                /*JOINED*/
     }
   }
@@ -3384,7 +3384,7 @@ export function ___mtold12_006043E0(param_1, param_2, param_3) {
     ___shl_12(param_3);
     local_14 = local_14 + -1;
   }
-  // DEVIATION: C pointer write — *(short *)((int)param_3 + 10) = local_14;
+  w16((param_3) + 10, 0, local_14);
   return;
 }
 
@@ -3952,9 +3952,9 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
   if ((((param_3 & 0x7fff) === 0) && (param_2 === 0)) && (param_1 === 0)) {
     w16(param_6, 0, 0);
     _MEM[param_6 + 1] = 0x20;
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
+    _MEM[(param_6) + 3] = 1;
     _MEM[param_6 + 2] = 0x30;
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 5) = 0;
+    _MEM[(param_6) + 5] = 0;
     local_5c = 1;
   }
   else if ((param_3 & 0x7fff) === 0x7fff) {
@@ -3963,21 +3963,21 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
       if ((((param_3 & 0x8000) === 0) || (param_2 !== 0xc0000000)) || (param_1 !== 0)) {
         if ((param_2 === 0x80000000) && (param_1 === 0)) {
           FUN_005f22d0(param_6 + 2,"1#INF");
-          // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 5;
+          _MEM[(param_6) + 3] = 5;
         }
         else {
           FUN_005f22d0(param_6 + 2,"1#QNAN");
-          // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 6;
+          _MEM[(param_6) + 3] = 6;
         }
       }
       else {
         FUN_005f22d0(param_6 + 2,"1#IND");
-        // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 5;
+        _MEM[(param_6) + 3] = 5;
       }
     }
     else {
       FUN_005f22d0(param_6 + 2,"1#SNAN");
-      // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 6;
+      _MEM[(param_6) + 3] = 6;
     }
     local_5c = 0;
   }
@@ -4038,9 +4038,9 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
         if (local_8 < param_6 + 2) {
           w16(param_6, 0, 0);
           _MEM[param_6 + 1] = 0x20;
-          // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
+          _MEM[(param_6) + 3] = 1;
           _MEM[param_6 + 2] = 0x30;
-          // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 5) = 0;
+          _MEM[(param_6) + 5] = 0;
           return 1;
         }
       }
@@ -4055,15 +4055,15 @@ export function _I10_OUTPUT_006051A0(param_1, param_2, param_3, param_4, param_5
         }
         // DEVIATION: C pointer write — *(char *)local_8 = (char)*local_8 + '\x01';
       }
-      // DEVIATION: C pointer write — *(char *)((int)param_6 + 3) = ((char)local_8 - ((char)param_6 + '\x04')) + '\x01';
-      // DEVIATION: C pointer write — *(undefined1 *)(*(char *)((int)param_6 + 3) + 4 + (int)param_6) = 0;
+      _MEM[(param_6) + 3] = (s8(local_8) - (s8(param_6) + 0x04)) + 0x01;
+      _MEM[s8(_MEM[(param_6) + 3]) + 4 + (param_6)] = 0;
     }
     else {
       w16(param_6, 0, 0);
       _MEM[param_6 + 1] = 0x20;
-      // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 3) = 1;
+      _MEM[(param_6) + 3] = 1;
       _MEM[param_6 + 2] = 0x30;
-      // DEVIATION: C pointer write — *(undefined1 *)((int)param_6 + 5) = 0;
+      _MEM[(param_6) + 5] = 0;
       local_5c = 1;
     }
   }
@@ -4367,7 +4367,7 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
     }
     else if ((((uVar3 & 0x7fff) === 0) && (local_38 = local_38 + 1, (_MEM[param_1 + 2] & 0x7fffffff) === 0)) && ((_MEM[param_1 + 1] === 0 && (s32(param_1, 0) === 0)))) {
             /*JOINED*/
-      // DEVIATION: C pointer write — *(undefined2 *)((int)param_1 + 10) = 0;
+      w16((param_1) + 10, 0, 0);
     }
     else if ((((uVar4 & 0x7fff) === 0) && (local_38 = local_38 + 1, (_MEM[param_2 + 2] & 0x7fffffff) === 0)) && ((_MEM[param_2 + 1] === 0 && (s32(param_2, 0) === 0)))) {
             /*JOINED*/
@@ -4385,7 +4385,7 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
                           /*JOINED*/
                           /*JOINED*/
           if (iVar6 !== 0) {
-            // DEVIATION: C pointer write — *(short *)((int)local_18 + local_30) = *(short *)((int)local_18 + local_30) + 1;
+            w16((local_18) + local_30, 0, s16((local_18) + local_30, 0) + 1);
           }
           local_2c = local_2c + 2;
           local_c = local_c + -2;
@@ -4441,9 +4441,9 @@ export function ___ld12mul_00605CE0(param_1, param_2) {
       local_18[1] = ((iVar6) << 16 >> 16);
       if (local_38 < 0x7fff) {
         // DEVIATION: C pointer write — *(undefined2 *)param_1 = uStack_1a;
-        // DEVIATION: C pointer write — *(uint *)((int)param_1 + 2) = CONCAT22(local_18[1],local_18[0]);
-        // DEVIATION: C pointer write — *(uint *)((int)param_1 + 6) = CONCAT13(bStack_11,CONCAT12(uStack_12,local_18[2]));
-        // DEVIATION: C pointer write — *(ushort *)((int)param_1 + 10) = uVar5 & 0x8000 | local_38;
+        w32((param_1) + 2, 0, ((local_18[1]) << 16 | (local_18[0])));
+        w32((param_1) + 6, 0, ((bStack_11) << 24 | (((uStack_12) << 16 | (local_18[2])))));
+        w16((param_1) + 10, 0, uVar5 & 0x8000 | local_38);
       }
       else {
         if ((uVar5 & 0x8000) === 0) {
@@ -5404,7 +5404,7 @@ function LAB_006019fc_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
-        // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) = local_3c | 1;
+        _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = local_3c | 1;
                  /*JOINED*/
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -5532,7 +5532,7 @@ function LAB_00601912_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
-        // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) = local_3c | 1;
+        _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = local_3c | 1;
                  /*JOINED*/
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);
@@ -5646,7 +5646,7 @@ function LAB_00601936_helper(DVar2, bVar5, iVar4, lVar3, local_10, local_14, loc
           local_3c = local_3c | 8;
         }
         __set_osfhnd(local_18,local_8);
-        // DEVIATION: C pointer write — *(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(local_18 & 0xffffffe0) >> 3)) + 4 + (local_18 & 0x1f) * 8) = local_3c | 1;
+        _MEM[s32(ptrAdd(DAT_006e69f0, ((local_18 & 0xffffffe0) >> 3)), 0) + 4 + (local_18 & 0x1f) * 8] = local_3c | 1;
                  /*JOINED*/
         if ((((local_3c & 0x48) === 0) && ((local_3c & 0x80) !== 0)) && ((_OpenFlag & 2) !== 0)) {
           lVar3 = __lseek(local_18,-1,2);

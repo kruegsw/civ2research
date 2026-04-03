@@ -2954,7 +2954,7 @@ export function FUN_0040c3cd(param_1, param_2) {
 
   let local_8;
   
-  // DEVIATION: C pointer write — *(int *)(DAT_0063cbb4 + 0x34c + (param_1 + -300) * 4) = param_2;
+  w32(DAT_0063cbb4, 0x34c + (param_1 + -300) * 4, param_2);
   if (param_2 !== 0) {
     for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
       if (param_1 + -300 !== local_8) {

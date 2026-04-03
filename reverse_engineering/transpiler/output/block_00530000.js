@@ -1931,11 +1931,11 @@ export function FUN_00536c4c(param_1) {
             if ((((v(DAT_00655b0b)) >>> 0) & 1 << (_MEM[DAT_0064f348 + local_30 * 0x58] & 0x1f)) !== 0) {
               if ((_MEM[DAT_0064c6c2 + s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 4 + iVar2 * 0x594] & 2) === 0) {
                   /*JOINED*/
-                // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6c0 + (char)(&DAT_0064f348)[local_30 * 0x58] * 4 + iVar2 * 0x594 ) = *(uint *)(&DAT_0064c6c0 + (char)(&DAT_0064f348)[local_30 * 0x58] * 4 + iVar2 * 0x594) | 0x20000;
+                w32(DAT_0064c6c0, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 4 + iVar2 * 0x594, u32(DAT_0064c6c0, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 4 + iVar2 * 0x594) | 0x20000);
                          /*JOINED*/
                                       /*JOINED*/
                              /*JOINED*/
-                // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6c0 + (char)(&DAT_0064f348)[local_30 * 0x58] * 4 + iVar2 * 0x594 ) = *(uint *)(&DAT_0064c6c0 + (char)(&DAT_0064f348)[local_30 * 0x58] * 4 + iVar2 * 0x594) & 0xffffffef;
+                w32(DAT_0064c6c0, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 4 + iVar2 * 0x594, u32(DAT_0064c6c0, s8(_MEM[DAT_0064f348 + local_30 * 0x58]) * 4 + iVar2 * 0x594) & 0xffffffef);
                          /*JOINED*/
                                       /*JOINED*/
                              /*JOINED*/

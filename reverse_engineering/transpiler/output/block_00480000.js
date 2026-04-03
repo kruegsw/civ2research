@@ -506,7 +506,7 @@ export function FUN_0048308f() {
       if (0 < local_c) {
         w32(local_10, 0x1c0, local_10);
         w32(local_10, 0x1c0, s32(local_10, 0x1c0) + -0x1c4);
-        // DEVIATION: C pointer write — *(char **)(*(int *)(local_10 + 0x1c0) + 0x1bc) = local_10;
+        w32(s32(local_10, 0x1c0) + 0x1bc, 0, local_10);
       }
       local_10 = local_10 + 0x1c4;
     }
@@ -1775,7 +1775,7 @@ export function FUN_0048710a(param_1) {
         if (_MEM[DAT_006560fe + local_8 * 0x20] === 0) {
           w16(DAT_006560f4, local_8 * 0x20, u16(DAT_006560f4, local_8 * 0x20) & 0xfffd);
                /*JOINED*/
-          // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6c0 + (char)(&DAT_006560fd)[local_8 * 0x20] * 4 + param_1 * 0x594) = *(uint *)(&DAT_0064c6c0 + (char)(&DAT_006560fd)[local_8 * 0x20] * 4 + param_1 * 0x594 ) & 0xfeffffff;
+          w32(DAT_0064c6c0, s8(_MEM[DAT_006560fd + local_8 * 0x20]) * 4 + param_1 * 0x594, u32(DAT_0064c6c0, s8(_MEM[DAT_006560fd + local_8 * 0x20]) * 4 + param_1 * 0x594) & 0xfeffffff);
                /*JOINED*/
                         /*JOINED*/
           FUN_004c5fae(local_8,0,(s8(_MEM[DAT_006560fd + local_8 * 0x20])));
@@ -4395,7 +4395,7 @@ export function FUN_0048de75() {
       local_c = local_c + 1;
       iVar1 = _MEM[DAT_006ad35c + local_8 * 0x15];
       w32(DAT_006c3188, iVar1 * 4, 0);
-      // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006c8fc0 + *(int *)(&DAT_006ad30c + local_8 * 0x54) * 4) = 0;
+      w32(DAT_006c8fc0, s32(DAT_006ad30c, local_8 * 0x54) * 4, 0);
       local_10 = u8(iVar1);
       wv(DAT_00655b0b, v(DAT_00655b0b) & ~u8(1 << (local_10 & 0x1f)));
       FUN_0059b96a(s32(DAT_006ad30c, local_8 * 0x54));

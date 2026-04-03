@@ -1553,11 +1553,18 @@ function processFunction(headerLines, bodyLines, ctx) {
 
     // ── Typed pointer WRITE at statement level ──
     // *(TYPE *)(base + off) = expr;
-    const writeMatch = trimmed.match(/^\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|char|byte)\s*\*\s*\)\s*\(([^)]+)\)\s*=\s*(.+);$/);
-    if (writeMatch) {
-      const wType = writeMatch[1];
-      const inner = writeMatch[2].trim();
-      let val = writeMatch[3].trim();
+    // Uses balanced paren extraction for nested expressions like ((int)in_ECX + 0x1ed)
+    const writeTypeMatch = trimmed.match(/^\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2|undefined1|undefined|char|byte|UINT|DWORD|BOOL)\s*\*\s*\)\s*\(/);
+    if (writeTypeMatch) {
+      const wType = writeTypeMatch[1];
+      const parenStart = trimmed.indexOf('(', writeTypeMatch[0].length - 1);
+      const balanced = extractBalancedParens(trimmed, parenStart);
+      if (balanced) {
+        const inner = balanced.content.trim();
+        const afterParen = trimmed.substring(balanced.end + 1).trim();
+        const eqMatch = afterParen.match(/^=\s*(.+);$/);
+        if (!eqMatch) { /* fall through */ } else {
+        let val = eqMatch[1].trim();
       val = transformLine('  ' + val, ctx).trim();
       const parts = splitBaseOffset(inner);
       // Strip v() from base — it's an ADDRESS, not a value read.
@@ -1585,13 +1592,19 @@ function processFunction(headerLines, bodyLines, ctx) {
         }
       }
       continue;
-    }
+    }}} // close eqMatch, balanced, writeTypeMatch
 
     // ── Double-pointer WRITE: *(TYPE **)(base + off) = expr → w32 (pointer = 4 bytes) ──
-    const dblWriteMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(([^)]+)\)\s*=\s*(.+);$/);
-    if (dblWriteMatch) {
-      const inner = dblWriteMatch[1].trim();
-      let val = dblWriteMatch[2].trim();
+    const dblWriteTypeMatch = trimmed.match(/^\*\s*\(\s*\w+\s*\*\s*\*\s*\)\s*\(/);
+    if (dblWriteTypeMatch) {
+      const parenStart2 = trimmed.indexOf('(', dblWriteTypeMatch[0].length - 1);
+      const balanced2 = extractBalancedParens(trimmed, parenStart2);
+      if (balanced2) {
+      const inner = balanced2.content.trim();
+      const afterParen2 = trimmed.substring(balanced2.end + 1).trim();
+      const eqMatch2 = afterParen2.match(/^=\s*(.+);$/);
+      if (eqMatch2) {
+      let val = eqMatch2[1].trim();
       val = transformLine('  ' + val, ctx).trim();
       const parts = splitBaseOffset(inner);
       const stripV = (s) => s.replace(/^v\(([^)]+)\)$/, '$1');
@@ -1604,7 +1617,7 @@ function processFunction(headerLines, bodyLines, ctx) {
         result.push(line.replace(trimmed, 'w32(' + base + ', 0, ' + val + ');'));
       }
       continue;
-    }
+    }}} // close eqMatch2, balanced2, dblWriteTypeMatch
 
     // ── Byte array WRITE with cast on lvalue ──
     // (char)(&DAT_XXX)[off] = val; or (byte)(&DAT_XXX)[off] = val;

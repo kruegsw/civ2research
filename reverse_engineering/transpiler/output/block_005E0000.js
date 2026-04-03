@@ -3891,7 +3891,7 @@ export function FUN_005e53f3(param_1, param_2, param_3, param_4, param_5, param_
         } while (local_c !== 0xffff);
         _MEM[local_24 + -1] = _MEM[puVar13];
       }
-      // DEVIATION: C pointer write — *(undefined1 *)(iVar9 + (uint)local_54) = *puVar13;
+      _MEM[iVar9 + ((local_54) >>> 0)] = _MEM[puVar13];
       local_54 = local_54 + 2;
       local_c = uVar6;
       if ((local_20 < local_54) && (local_50 !== 0xc)) {
@@ -11906,7 +11906,7 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
         } while (local_c !== 0xffff);
         _MEM[local_24 + -1] = _MEM[puVar13];
       }
-      // DEVIATION: C pointer write — *(undefined1 *)(iVar9 + (uint)local_54) = *puVar13;
+      _MEM[iVar9 + ((local_54) >>> 0)] = _MEM[puVar13];
       local_54 = local_54 + 2;
       local_c = uVar6;
       if ((local_20 < local_54) && (local_50 !== 0xc)) {

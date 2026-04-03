@@ -181,9 +181,9 @@ export function FUN_00450480(in_ECX, param_1, param_2, param_3) {
       iVar2 = FUN_004bd9f0(v(DAT_006d1da0),local_2c);
       if ((iVar2 !== 0) && ((local_18 === 0 || (iVar2 = FUN_004bd9f0(v(DAT_0067a8c0),local_2c), iVar2 === 0)))) {
          /*JOINED*/
-        // DEVIATION: C pointer write — *(int *)(param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX) = local_2c;
+        w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX, 0, local_2c);
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *) (param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX) = 0;
+        w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX, 0, 0);
          /*JOINED*/
         piVar1 = (in_ECX + 1000 + param_2 * 4);
         w32(piVar1, 0, s32(piVar1, 0) + 1);
@@ -195,18 +195,18 @@ export function FUN_00450480(in_ECX, param_1, param_2, param_3) {
       if (((v(DAT_006d1da0) === local_14) && (iVar2 = FUN_004bd9f0(v(DAT_006d1da0),local_2c), iVar2 === 0)) && ((local_2c < 0x59 && (_MEM[DAT_00627689 + local_2c * 0x10] === 0x01)))) {
           /*JOINED*/
          /*JOINED*/
-        // DEVIATION: C pointer write — *(int *)(param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX) = local_2c;
+        w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX, 0, local_2c);
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *) (param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX) = 0;
+        w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX, 0, 0);
          /*JOINED*/
         piVar1 = (in_ECX + 1000 + param_2 * 4);
         w32(piVar1, 0, s32(piVar1, 0) + 1);
       }
     }
     else {
-      // DEVIATION: C pointer write — *(int *)(param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX) = local_2c;
+      w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x3f0 + in_ECX, 0, local_2c);
            /*JOINED*/
-      // DEVIATION: C pointer write — *(undefined4 *) (param_2 * 0x2004 + *(int *)(in_ECX + 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX) = 0;
+      w32(param_2 * 0x2004 + s32(in_ECX, 1000 + param_2 * 4) * 4 + 0x8400 + in_ECX, 0, 0);
        /*JOINED*/
       piVar1 = (in_ECX + 1000 + param_2 * 4);
       w32(piVar1, 0, s32(piVar1, 0) + 1);

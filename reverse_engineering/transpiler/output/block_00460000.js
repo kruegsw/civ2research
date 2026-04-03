@@ -2587,10 +2587,10 @@ export function FUN_00469bdc(in_ECX, param_1, param_2) {
       local_2c = s32(local_8, 1000 + param_1 * 4);
       for (local_30 = 0; local_30 < local_2c; local_30 = local_30 + 1) {
         if (s32(param_1 * 0x2004 + local_30 * 4 + 0x8400 + local_8, 0) === 0) {
-          // DEVIATION: C pointer write — *(undefined4 *)((int)local_18 + local_30 * 4) = 0xffffffff;
+          w32((local_18) + local_30 * 4, 0, -1);
         }
         else {
-          // DEVIATION: C pointer write — *(undefined4 *)((int)local_18 + local_30 * 4) = *(undefined4 *)(param_1 * 0x2004 + local_30 * 4 + 0x43f8 + local_8);
+          w32((local_18) + local_30 * 4, 0, s32(param_1 * 0x2004 + local_30 * 4 + 0x43f8 + local_8, 0));
                /*JOINED*/
         }
       }
@@ -2632,18 +2632,18 @@ export function FUN_00469bdc(in_ECX, param_1, param_2) {
         }
       }
       if ((bVar5) || (iVar7 = FUN_005b50ad(local_30,2), iVar7 === 1)) {
-        // DEVIATION: C pointer write — *(int *)(param_1 * 0x2004 + *(int *)(local_8 + 1000 + param_1 * 4) * 4 + 0x3f0 + local_8) = local_30;
+        w32(param_1 * 0x2004 + s32(local_8, 1000 + param_1 * 4) * 4 + 0x3f0 + local_8, 0, local_30);
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *) (param_1 * 0x2004 + *(int *)(local_8 + 1000 + param_1 * 4) * 4 + 0x43f8 + local_8) = *(undefined4 *)(&DAT_0065610a + local_30 * 0x20);
+        w32(param_1 * 0x2004 + s32(local_8, 1000 + param_1 * 4) * 4 + 0x43f8 + local_8, 0, s32(DAT_0065610a, local_30 * 0x20));
          /*JOINED*/
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *) (param_1 * 0x2004 + *(int *)(local_8 + 1000 + param_1 * 4) * 4 + 0x8400 + local_8) = 0;
+        w32(param_1 * 0x2004 + s32(local_8, 1000 + param_1 * 4) * 4 + 0x8400 + local_8, 0, 0);
          /*JOINED*/
         if ((param_2 === 1) && (local_18 !== 0x0)) {
           for (local_28 = 0; local_28 < local_2c; local_28 = local_28 + 1) {
             if (s32(DAT_0065610a, local_30 * 0x20) === s32((local_18) + local_28 * 4, 0))
             {
-              // DEVIATION: C pointer write — *(undefined4 *) (param_1 * 0x2004 + *(int *)(local_8 + 1000 + param_1 * 4) * 4 + 0x8400 + local_8) = 1;
+              w32(param_1 * 0x2004 + s32(local_8, 1000 + param_1 * 4) * 4 + 0x8400 + local_8, 0, 1);
                /*JOINED*/
                    /*JOINED*/
               break;
@@ -3008,7 +3008,7 @@ export function FUN_0046af70(in_ECX, param_1, param_2) {
   if (s32((param_2) + 8, 0) === 0) {
     FUN_005dae6b(7,s_pMsg__size___0_0062a6f4,s_D__Ss_Franklinton_NetMgr_Send_cp_0062a6d0,0x13a);
   }
-  // DEVIATION: C pointer write — *(int *)((int)param_2 + 0xc) = DAT_00628468;
+  w32((param_2) + 0xc, 0, v(DAT_00628468));
   wv(DAT_00628468, v(DAT_00628468) + 1);
   iVar1 = XD_SendSecureData(((param_1) & 0xFFFF),param_2,true /* DEVIATION: C pointer — *(ulong *)((param_2) + 8) */,0);
   w32(in_ECX, 0x578, iVar1);
@@ -3041,7 +3041,7 @@ export function FUN_0046b0a1(in_ECX, param_1) {
   let iVar2;
   // in_ECX → promoted to parameter
   
-  // DEVIATION: C pointer write — *(int *)((int)param_1 + 0xc) = DAT_00628468;
+  w32((param_1) + 0xc, 0, v(DAT_00628468));
   wv(DAT_00628468, v(DAT_00628468) + 1);
   iVar2 = XD_SendBroadcastData(param_1,true /* DEVIATION: C pointer — *(ulong *)((param_1) + 8) */,0);
   w32(in_ECX, 0x578, iVar2);

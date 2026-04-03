@@ -1098,12 +1098,12 @@ export function pick_up_unit_005b319e_005B319E(param_1, param_2) {
   if ((v(DAT_00655b02) < 3) || (cVar3 = FUN_00421f40(), cVar3 !== 0)) {
     sVar1 = s16(DAT_00656106, param_1 * 0x20);
     if (-1 < sVar1) {
-      // DEVIATION: C pointer write — *(undefined2 *)(&DAT_00656108 + *(short *)(&DAT_00656106 + param_1 * 0x20) * 0x20) = *(undefined2 *)(&DAT_00656108 + param_1 * 0x20);
+      w16(DAT_00656108, s16(DAT_00656106, param_1 * 0x20) * 0x20, s16(DAT_00656108, param_1 * 0x20));
            /*JOINED*/
     }
     sVar2 = s16(DAT_00656108, param_1 * 0x20);
     if (-1 < sVar2) {
-      // DEVIATION: C pointer write — *(undefined2 *)(&DAT_00656106 + *(short *)(&DAT_00656108 + param_1 * 0x20) * 0x20) = *(undefined2 *)(&DAT_00656106 + param_1 * 0x20);
+      w16(DAT_00656106, s16(DAT_00656108, param_1 * 0x20) * 0x20, s16(DAT_00656106, param_1 * 0x20));
            /*JOINED*/
     }
     w16(DAT_00656106, param_1 * 0x20, 0xffff);
@@ -6906,7 +6906,7 @@ export function FUN_005bd987(in_ECX, param_1, param_2, param_3, param_4) {
                     cVar3 = s8(param_2);
                     if (local_2a === 0) {
                       for (; local_64 < (local_20); local_64 = local_64 + 1) {
-                        // DEVIATION: C pointer write — *(char *)(*(int *)(in_ECX + 0x34) + local_64) = *local_1c + cVar3;
+                        _MEM[s32(in_ECX, 0x34) + local_64] = _MEM[local_1c] + cVar3;
                         local_1c = local_1c + 1;
                       }
                     }
@@ -6920,7 +6920,7 @@ export function FUN_005bd987(in_ECX, param_1, param_2, param_3, param_4) {
                             if (-0x80 < local_68) {
                               cVar2 = _MEM[pcVar1];
                               while (pcVar1 = local_1c + 2, local_68 < 1) {
-                                // DEVIATION: C pointer write — *(char *)(*(int *)(in_ECX + 0x34) + local_64) = cVar2 + cVar3;
+                                _MEM[s32(in_ECX, 0x34) + local_64] = cVar2 + cVar3;
                                 local_64 = local_64 + 1;
                                 local_68 = local_68 + 1;
                               }
@@ -6928,7 +6928,7 @@ export function FUN_005bd987(in_ECX, param_1, param_2, param_3, param_4) {
                           }
                           else {
                             while (local_1c = pcVar1, pcVar1 = local_1c, -1 < local_68) {
-                              // DEVIATION: C pointer write — *(char *)(*(int *)(in_ECX + 0x34) + local_64) = *local_1c + cVar3;
+                              _MEM[s32(in_ECX, 0x34) + local_64] = _MEM[local_1c] + cVar3;
                               local_64 = local_64 + 1;
                               local_68 = local_68 + -1;
                               pcVar1 = local_1c + 1;

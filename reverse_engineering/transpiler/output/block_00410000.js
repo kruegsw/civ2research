@@ -2549,7 +2549,7 @@ export function FUN_0041557b() {
       iVar1 = iVar1 + -0xca;
       uVar2 = FUN_005adfa0(local_8,s32(DAT_00625188, iVar1 * 4), s32(DAT_00625190, iVar1 * 4));
                                  /*JOINED*/
-      // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006a2d28 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58 + iVar1 * 4) = uVar2;
+      w32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, uVar2);
       iVar1 = FUN_00418740();
       if (s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58) !== local_8) {
         local_14 = local_14 + 1;
@@ -2561,7 +2561,7 @@ export function FUN_0041557b() {
         local_8 = local_8 + -2;
       }
       iVar1 = FUN_00418740();
-      // DEVIATION: C pointer write — *(int *)(&DAT_006a2a00 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58 + iVar1 * 4) = local_8;
+      w32(DAT_006a2a00, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, local_8);
     }
   }
   return local_14;
@@ -6254,7 +6254,7 @@ export function FUN_0041ba52(param_1) {
     if (-1 < local_1c) {
       wv(DAT_00655b03, _MEM[DAT_006554fe + local_1c * 0x30]);
       wv(DAT_0064bc16, ((local_1c) << 16 >> 16));
-      // DEVIATION: C pointer write — *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) = DAT_0064bc16;
+      w16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594, v(DAT_0064bc16));
       _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = u8(local_1c);
       if (iVar2 !== 0) {
         _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] + 0x15;
@@ -6274,7 +6274,7 @@ export function FUN_0041ba52(param_1) {
                                                 /*JOINED*/
                                                           /*JOINED*/
       FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-      // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 );
+      w16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
            /*JOINED*/
                       /*JOINED*/
       if (local_248 === 0) {
@@ -6299,10 +6299,10 @@ export function FUN_0041ba52(param_1) {
                                                   /*JOINED*/
                                                             /*JOINED*/
         FUN_005f22d0(ptrAdd(DAT_0064bd2a, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
         for (local_20 = 0; local_20 < 7; local_20 = local_20 + 1) {
@@ -6390,7 +6390,7 @@ export function FUN_0041ba52(param_1) {
       FUN_0046e020(0x6a,0,0,0);
       FUN_0055a567();
       if (-1 < iVar2) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0064bcf8 + (char)DAT_00655b03 * 0xf2) = (short)iVar2;
+        w16(DAT_0064bcf8, s8(_MEM[DAT_00655b03]) * 0xf2, ((iVar2) << 16 >> 16));
         wv(DAT_00655b0a, v(DAT_00655b0b) | 1);
         for (local_20 = 0; local_20 < ((v(DAT_00655b0d)) >>> 0); local_20 = local_20 + 1) {
           iVar2 = _rand();
@@ -8731,7 +8731,7 @@ function LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
     if (-1 < local_1c) {
       wv(DAT_00655b03, _MEM[DAT_006554fe + local_1c * 0x30]);
       wv(DAT_0064bc16, ((local_1c) << 16 >> 16));
-      // DEVIATION: C pointer write — *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) = DAT_0064bc16;
+      w16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594, v(DAT_0064bc16));
       _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = u8(local_1c);
       if (iVar2 !== 0) {
         _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] + 0x15;
@@ -8751,7 +8751,7 @@ function LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                 /*JOINED*/
                                                           /*JOINED*/
       FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-      // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 );
+      w16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
            /*JOINED*/
                       /*JOINED*/
       if (local_248 === 0) {
@@ -8776,10 +8776,10 @@ function LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                   /*JOINED*/
                                                             /*JOINED*/
         FUN_005f22d0(ptrAdd(DAT_0064bd2a, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
         for (local_20 = 0; local_20 < 7; local_20 = local_20 + 1) {
@@ -8867,7 +8867,7 @@ function LAB_0041d3cf_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
       FUN_0046e020(0x6a,0,0,0);
       FUN_0055a567();
       if (-1 < iVar2) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0064bcf8 + (char)DAT_00655b03 * 0xf2) = (short)iVar2;
+        w16(DAT_0064bcf8, s8(_MEM[DAT_00655b03]) * 0xf2, ((iVar2) << 16 >> 16));
         wv(DAT_00655b0a, v(DAT_00655b0b) | 1);
         for (local_20 = 0; local_20 < ((v(DAT_00655b0d)) >>> 0); local_20 = local_20 + 1) {
           iVar2 = _rand();
@@ -8997,7 +8997,7 @@ function LAB_0041c35d_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
     if (-1 < local_1c) {
       wv(DAT_00655b03, _MEM[DAT_006554fe + local_1c * 0x30]);
       wv(DAT_0064bc16, ((local_1c) << 16 >> 16));
-      // DEVIATION: C pointer write — *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) = DAT_0064bc16;
+      w16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594, v(DAT_0064bc16));
       _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = u8(local_1c);
       if (iVar2 !== 0) {
         _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] + 0x15;
@@ -9017,7 +9017,7 @@ function LAB_0041c35d_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                 /*JOINED*/
                                                           /*JOINED*/
       FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-      // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 );
+      w16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
            /*JOINED*/
                       /*JOINED*/
       if (local_248 === 0) {
@@ -9042,10 +9042,10 @@ function LAB_0041c35d_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                   /*JOINED*/
                                                             /*JOINED*/
         FUN_005f22d0(ptrAdd(DAT_0064bd2a, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
         for (local_20 = 0; local_20 < 7; local_20 = local_20 + 1) {
@@ -9133,7 +9133,7 @@ function LAB_0041c35d_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
       FUN_0046e020(0x6a,0,0,0);
       FUN_0055a567();
       if (-1 < iVar2) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0064bcf8 + (char)DAT_00655b03 * 0xf2) = (short)iVar2;
+        w16(DAT_0064bcf8, s8(_MEM[DAT_00655b03]) * 0xf2, ((iVar2) << 16 >> 16));
         wv(DAT_00655b0a, v(DAT_00655b0b) | 1);
         for (local_20 = 0; local_20 < ((v(DAT_00655b0d)) >>> 0); local_20 = local_20 + 1) {
           iVar2 = _rand();
@@ -9447,7 +9447,7 @@ function LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
     if (-1 < local_1c) {
       wv(DAT_00655b03, _MEM[DAT_006554fe + local_1c * 0x30]);
       wv(DAT_0064bc16, ((local_1c) << 16 >> 16));
-      // DEVIATION: C pointer write — *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) = DAT_0064bc16;
+      w16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594, v(DAT_0064bc16));
       _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = u8(local_1c);
       if (iVar2 !== 0) {
         _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] = _MEM[DAT_0064ca92 + s8(_MEM[DAT_00655b03]) * 0x594] + 0x15;
@@ -9467,7 +9467,7 @@ function LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                 /*JOINED*/
                                                           /*JOINED*/
       FUN_005f22d0(ptrAdd(DAT_0064bcfa, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-      // DEVIATION: C pointer write — *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30 );
+      w16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655502, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
            /*JOINED*/
                       /*JOINED*/
       if (local_248 === 0) {
@@ -9492,10 +9492,10 @@ function LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
                                                   /*JOINED*/
                                                             /*JOINED*/
         FUN_005f22d0(ptrAdd(DAT_0064bd2a, s8(_MEM[DAT_00655b03]) * 0xf2),uVar4);
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655504 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655504, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
-        // DEVIATION: C pointer write — *(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30) = -*(short *)(&DAT_00655506 + *(short *)(&DAT_0064c6a6 + (char)DAT_00655b03 * 0x594) * 0x30);
+        w16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30, -s16(DAT_00655506, s16(DAT_0064c6a6, s8(_MEM[DAT_00655b03]) * 0x594) * 0x30));
              /*JOINED*/
                         /*JOINED*/
         for (local_20 = 0; local_20 < 7; local_20 = local_20 + 1) {
@@ -9583,7 +9583,7 @@ function LAB_0041bab3_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
       FUN_0046e020(0x6a,0,0,0);
       FUN_0055a567();
       if (-1 < iVar2) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0064bcf8 + (char)DAT_00655b03 * 0xf2) = (short)iVar2;
+        w16(DAT_0064bcf8, s8(_MEM[DAT_00655b03]) * 0xf2, ((iVar2) << 16 >> 16));
         wv(DAT_00655b0a, v(DAT_00655b0b) | 1);
         for (local_20 = 0; local_20 < ((v(DAT_00655b0d)) >>> 0); local_20 = local_20 + 1) {
           iVar2 = _rand();
@@ -9670,7 +9670,7 @@ function LAB_0041cfad_helper(bVar1, iVar2, iVar5, local_14, local_18, local_1c, 
       FUN_0046e020(0x6a,0,0,0);
       FUN_0055a567();
       if (-1 < iVar2) {
-        // DEVIATION: C pointer write — *(short *)(&DAT_0064bcf8 + (char)DAT_00655b03 * 0xf2) = (short)iVar2;
+        w16(DAT_0064bcf8, s8(_MEM[DAT_00655b03]) * 0xf2, ((iVar2) << 16 >> 16));
         wv(DAT_00655b0a, v(DAT_00655b0b) | 1);
         for (local_20 = 0; local_20 < ((v(DAT_00655b0d)) >>> 0); local_20 = local_20 + 1) {
           iVar2 = _rand();

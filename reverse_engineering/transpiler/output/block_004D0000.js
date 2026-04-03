@@ -4676,7 +4676,7 @@ export function FUN_004d8ed6() {
       local_8 = _atoi(local_10[0]);
       uVar2 = FUN_005adfa0(local_8,s32(DAT_0062e3e8, iVar1 * 4), s32(DAT_0062e3f0, iVar1 * 4));
                                  /*JOINED*/
-      // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006a2d28 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58 + iVar1 * 4) = uVar2;
+      w32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, uVar2);
       if (s32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) !== local_8) {
         local_14 = local_14 + 1;
       }
@@ -4685,7 +4685,7 @@ export function FUN_004d8ed6() {
       local_8 = FUN_00418d60();
       local_8 = local_8 + -2;
       iVar1 = FUN_00418740();
-      // DEVIATION: C pointer write — *(int *)(&DAT_006a2a00 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58 + iVar1 * 4) = local_8;
+      w32(DAT_006a2a00, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, local_8);
     }
   }
   return local_14;

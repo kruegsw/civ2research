@@ -2167,10 +2167,10 @@ export function FUN_0054c36e() {
       local_c = local_c + -1;
     }
     if (s32(local_10, 0x1c0) !== 0) {
-      // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(local_10 + 0x1c0) + 0x1bc) = *(undefined4 *)(local_10 + 0x1bc);
+      w32(s32(local_10, 0x1c0) + 0x1bc, 0, s32(local_10, 0x1bc));
     }
     if (s32(local_10, 0x1bc) !== 0) {
-      // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(local_10 + 0x1bc) + 0x1c0) = *(undefined4 *)(local_10 + 0x1c0);
+      w32(s32(local_10, 0x1bc) + 0x1c0, 0, s32(local_10, 0x1c0));
     }
     if (iVar1 === 0) {
       wv(DAT_0064b99c, s32(local_10, 0x1bc));
@@ -2883,7 +2883,7 @@ export function show_messagebox_D4E6_0054D4E6() {
           wv(DAT_0064b99c, s32(local_10, 0x1bc));
         }
         else {
-          // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(local_10 + 0x1c0) + 0x1bc) = *(undefined4 *)(local_10 + 0x1bc);
+          w32(s32(local_10, 0x1c0) + 0x1bc, 0, s32(local_10, 0x1bc));
         }
         FUN_004cef35();
         FUN_0054b635();

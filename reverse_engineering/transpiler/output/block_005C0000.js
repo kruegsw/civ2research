@@ -156,14 +156,14 @@ export function FUN_005c01c1(in_ECX) {
       if (iVar3 === 0) {
         // DEVIATION: C pointer write — **(int **)(in_ECX + 0x38) = (*(int *)(in_ECX + 8) + -1) * *(int *)(in_ECX + 0xc);
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
-          // DEVIATION: C pointer write — *(int *)(*(int *)(in_ECX + 0x38) + local_8 * 4) = *(int *)(*(int *)(in_ECX + 0x38) + -4 + local_8 * 4) - *(int *)(in_ECX + 0xc);
+          w32(s32(in_ECX, 0x38) + local_8 * 4, 0, s32(s32(in_ECX, 0x38) + -4 + local_8 * 4, 0) - s32(in_ECX, 0xc));
                /*JOINED*/
         }
       }
       else {
         // DEVIATION: C pointer write — **(undefined4 **)(in_ECX + 0x38) = 0;
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
-          // DEVIATION: C pointer write — *(int *)(*(int *)(in_ECX + 0x38) + local_8 * 4) = *(int *)(*(int *)(in_ECX + 0x38) + -4 + local_8 * 4) + *(int *)(in_ECX + 0xc);
+          w32(s32(in_ECX, 0x38) + local_8 * 4, 0, s32(s32(in_ECX, 0x38) + -4 + local_8 * 4, 0) + s32(in_ECX, 0xc));
                /*JOINED*/
         }
       }
@@ -5497,12 +5497,12 @@ export function FUN_005c7c7b(in_ECX, param_1, param_2) {
   local_14 = s32(s32(in_ECX, 4) + 0xc, 0);
   local_8 = -1;
   bVar1 = true;
-  // DEVIATION: C pointer write — *(undefined1 *)(*(int *)(in_ECX + 4) + 1 + param_2 * 0x10) = param_1[1];
-  // DEVIATION: C pointer write — *(undefined1 *)(*(int *)(in_ECX + 4) + param_2 * 0x10) = *param_1;
-  // DEVIATION: C pointer write — *(undefined1 *)(*(int *)(in_ECX + 4) + 2 + param_2 * 0x10) = param_1[2];
-  // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(in_ECX + 4) + 4 + param_2 * 0x10) = *(undefined4 *)(param_1 + 4);
-  // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(in_ECX + 4) + 0xc + param_2 * 0x10) = *(undefined4 *)(in_ECX + 8);
-  // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(in_ECX + 4) + 8 + param_2 * 0x10) = *(undefined4 *)(*(int *)(in_ECX + 4) + 0xc + param_2 * 0x10);
+  _MEM[s32(in_ECX, 4) + 1 + param_2 * 0x10] = _MEM[param_1 + 1];
+  _MEM[s32(in_ECX, 4) + param_2 * 0x10] = _MEM[param_1];
+  _MEM[s32(in_ECX, 4) + 2 + param_2 * 0x10] = _MEM[param_1 + 2];
+  w32(s32(in_ECX, 4) + 4 + param_2 * 0x10, 0, s32(param_1, 4));
+  w32(s32(in_ECX, 4) + 0xc + param_2 * 0x10, 0, s32(in_ECX, 8));
+  w32(s32(in_ECX, 4) + 8 + param_2 * 0x10, 0, s32(s32(in_ECX, 4) + 0xc + param_2 * 0x10, 0));
        /*JOINED*/
   while (s32(in_ECX, 8) !== local_14) {
     local_c = local_14;
@@ -5522,10 +5522,10 @@ export function FUN_005c7c7b(in_ECX, param_1, param_2) {
     bVar1 = !bVar1;
   }
   if (bVar1) {
-    // DEVIATION: C pointer write — *(int *)(*(int *)(in_ECX + 4) + 0xc + local_c * 0x10) = param_2;
+    w32(s32(in_ECX, 4) + 0xc + local_c * 0x10, 0, param_2);
   }
   else {
-    // DEVIATION: C pointer write — *(int *)(*(int *)(in_ECX + 4) + 8 + local_c * 0x10) = param_2;
+    w32(s32(in_ECX, 4) + 8 + local_c * 0x10, 0, param_2);
   }
   return;
 }
@@ -5569,9 +5569,9 @@ export function FUN_005c7e06(in_ECX, param_1, param_2, param_3, param_4) {
     local_38[3] = ((param_1) >>> 0) + param_4;
     local_28 = ((param_3) >>> 0) - param_4;
     local_24 = ((param_3) >>> 0) + param_4;
-    // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x14 + *(int *)(in_ECX + 0x814) * 4) = 0xffffffff;
+    w32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4, -1);
     w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
-    // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x14 + *(int *)(in_ECX + 0x814) * 4) = 0;
+    w32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4, 0);
     w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
     while ((s32(in_ECX, 0x814) !== 0 && (local_3c !== 0))) {
       w32(in_ECX, 0x814, s32(in_ECX, 0x814) + -1);
@@ -5590,9 +5590,9 @@ export function FUN_005c7e06(in_ECX, param_1, param_2, param_3, param_4) {
         local_14 = u8(_MEM[s32(in_ECX, 4) + local_8 + local_40 * 0x10]);
         if (local_38[local_8 * 2] < (local_14)) {
           if ((local_14) <= local_38[local_8 * 2 + 1]) {
-            // DEVIATION: C pointer write — *(int *)(in_ECX + 0x14 + *(int *)(in_ECX + 0x814) * 4) = local_8;
+            w32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4, local_8);
             w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
-            // DEVIATION: C pointer write — *(int *)(in_ECX + 0x14 + *(int *)(in_ECX + 0x814) * 4) = local_40;
+            w32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4, local_40);
             w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
             local_1c = u8(_MEM[s32(in_ECX, 4) + 1 + local_40 * 0x10]);
             local_20 = u8(_MEM[s32(in_ECX, 4) + local_40 * 0x10]);
@@ -10656,13 +10656,13 @@ export function FUN_005cf64c(in_ECX, param_1, param_2, param_3) {
         local_44 = 0;
         while (local_44 < local_10 - local_18) {
           local_c = local_c + 8;
-          // DEVIATION: C pointer write — *(undefined4 *)((int)local_20 + local_44 * 4) = 0;
-          // DEVIATION: C pointer write — *(undefined4 *)((int)local_38 + local_44 * 4) = 0;
+          w32((local_20) + local_44 * 4, 0, 0);
+          w32((local_38) + local_44 * 4, 0, 0);
           local_54 = local_2c;
           for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
             if ((_MEM[local_54] !== local_40) || (param_2 === -2)) {
-              // DEVIATION: C pointer write — *(char **)((int)local_8 + local_44 * 4) = local_54;
-              // DEVIATION: C pointer write — *(int *)((int)local_20 + local_44 * 4) = local_3c;
+              w32((local_8) + local_44 * 4, 0, local_54);
+              w32((local_20) + local_44 * 4, 0, local_3c);
               break;
             }
             local_54 = local_54 + 1;
@@ -10674,7 +10674,7 @@ export function FUN_005cf64c(in_ECX, param_1, param_2, param_3) {
           for (local_3c = 0; local_54 = local_54 + -1, local_3c < local_24; local_3c = local_3c + 1)
           {
             if ((_MEM[local_54] !== local_40) || (param_2 === -2)) {
-              // DEVIATION: C pointer write — *(int *)((int)local_38 + local_44 * 4) = (local_24 - local_3c) - *(int *)((int)local_20 + local_44 * 4);
+              w32((local_38) + local_44 * 4, 0, (local_24 - local_3c) - s32((local_20) + local_44 * 4, 0));
                    /*JOINED*/
               local_c = local_c + s32((local_38) + local_44 * 4, 0);
               break;
@@ -10874,13 +10874,13 @@ export function FUN_005cfdeb(in_ECX, param_1, param_2, param_3) {
           local_48 = 0;
           while (local_48 < local_14 - local_1c) {
             local_10 = local_10 + 8;
-            // DEVIATION: C pointer write — *(undefined4 *)((int)local_24 + local_48 * 4) = 0;
-            // DEVIATION: C pointer write — *(undefined4 *)((int)local_3c + local_48 * 4) = 0;
+            w32((local_24) + local_48 * 4, 0, 0);
+            w32((local_3c) + local_48 * 4, 0, 0);
             local_58 = local_30;
             for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
               if ((_MEM[local_58] !== local_44) || (param_2 === -2)) {
-                // DEVIATION: C pointer write — *(char **)((int)local_c + local_48 * 4) = local_58;
-                // DEVIATION: C pointer write — *(int *)((int)local_24 + local_48 * 4) = local_40;
+                w32((local_c) + local_48 * 4, 0, local_58);
+                w32((local_24) + local_48 * 4, 0, local_40);
                 break;
               }
               local_58 = local_58 + 1;
@@ -10892,7 +10892,7 @@ export function FUN_005cfdeb(in_ECX, param_1, param_2, param_3) {
             for (local_40 = 0; local_58 = local_58 + -1, local_40 < local_28; local_40 = local_40 + 1) {
                 /*JOINED*/
               if ((_MEM[local_58] !== local_44) || (param_2 === -2)) {
-                // DEVIATION: C pointer write — *(int *)((int)local_3c + local_48 * 4) = (local_28 - local_40) - *(int *)((int)local_24 + local_48 * 4);
+                w32((local_3c) + local_48 * 4, 0, (local_28 - local_40) - s32((local_24) + local_48 * 4, 0));
                      /*JOINED*/
                 local_10 = local_10 + s32((local_3c) + local_48 * 4, 0);
                 break;

@@ -2647,8 +2647,8 @@ export function FUN_004f7c99(in_ECX) {
     local_1c = 0;
     while (local_14 !== -2) {
       if (_MEM[DAT_00627689 + local_1c * 0x10] !== 0) {
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0x65c + *(int *)(in_ECX + 0x658) * 4) = local_14;
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0x7ec + *(int *)(in_ECX + 0x658) * 4) = local_1c;
+        w32(in_ECX, 0x65c + s32(in_ECX, 0x658) * 4, local_14);
+        w32(in_ECX, 0x7ec + s32(in_ECX, 0x658) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0x658);
         if (s32(in_ECX, 0x16dc) === 0) {
@@ -2686,8 +2686,8 @@ export function FUN_004f7c99(in_ECX) {
     local_1c = 1;
     while (local_14 !== -2) {
       if (-2 < s8(_MEM[DAT_0064c48e + local_1c * 8])) {
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0x980 + *(int *)(in_ECX + 0x97c) * 4) = local_14;
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xa1c + *(int *)(in_ECX + 0x97c) * 4) = local_1c;
+        w32(in_ECX, 0x980 + s32(in_ECX, 0x97c) * 4, local_14);
+        w32(in_ECX, 0xa1c + s32(in_ECX, 0x97c) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0x97c);
         if (s32(in_ECX, 0x16e0) === 0) {
@@ -2724,8 +2724,8 @@ export function FUN_004f7c99(in_ECX) {
     local_1c = 0x27;
     while (local_14 !== -2) {
       if (-2 < s8(_MEM[DAT_0064c48e + local_1c * 8])) {
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xabc + *(int *)(in_ECX + 0xab8) * 4) = local_14;
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xb2c + *(int *)(in_ECX + 0xab8) * 4) = local_1c;
+        w32(in_ECX, 0xabc + s32(in_ECX, 0xab8) * 4, local_14);
+        w32(in_ECX, 0xb2c + s32(in_ECX, 0xab8) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0xab8);
         if (s32(in_ECX, 0x16e4) === 0) {
@@ -2762,8 +2762,8 @@ export function FUN_004f7c99(in_ECX) {
     local_1c = 0;
     while (local_14 !== -2) {
       if (-2 < s8(_MEM[DAT_0064b1cb + local_1c * 0x14])) {
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xba0 + *(int *)(in_ECX + 0xb9c) * 4) = local_14;
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xc98 + *(int *)(in_ECX + 0xb9c) * 4) = local_1c;
+        w32(in_ECX, 0xba0 + s32(in_ECX, 0xb9c) * 4, local_14);
+        w32(in_ECX, 0xc98 + s32(in_ECX, 0xb9c) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0xb9c);
         if (s32(in_ECX, 0x16e8) === 0) {
@@ -2799,8 +2799,8 @@ export function FUN_004f7c99(in_ECX) {
     w32(in_ECX, 0xd90, 0);
     local_1c = 0;
     while (local_14 !== -2) {
-      // DEVIATION: C pointer write — *(int *)(in_ECX + 0xd94 + *(int *)(in_ECX + 0xd90) * 4) = local_14;
-      // DEVIATION: C pointer write — *(int *)(in_ECX + 0xdb0 + *(int *)(in_ECX + 0xd90) * 4) = local_1c;
+      w32(in_ECX, 0xd94 + s32(in_ECX, 0xd90) * 4, local_14);
+      w32(in_ECX, 0xdb0 + s32(in_ECX, 0xd90) * 4, local_1c);
       local_c = operator_new(0xc);
       _MEM[local_c + 1] = s32(in_ECX, 0xd90);
       if (s32(in_ECX, 0x16ec) === 0) {
@@ -2836,8 +2836,8 @@ export function FUN_004f7c99(in_ECX) {
     local_1c = 0;
     while (local_14 !== -2) {
       if (local_1c !== 0x18) {
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xdd0 + *(int *)(in_ECX + 0xdcc) * 4) = local_14;
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0xe54 + *(int *)(in_ECX + 0xdcc) * 4) = local_1c;
+        w32(in_ECX, 0xdd0 + s32(in_ECX, 0xdcc) * 4, local_14);
+        w32(in_ECX, 0xe54 + s32(in_ECX, 0xdcc) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0xdcc);
         if (s32(in_ECX, 0x16f0) === 0) {
@@ -2884,9 +2884,9 @@ export function FUN_004f7c99(in_ECX) {
       _strncpy(local_10[0],v(DAT_00679640),2);
       iVar2 = _strcmp(local_10[0],v(DAT_0062f120));
       if (iVar2 === 0) {
-        // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0xedc + *(int *)(in_ECX + 0xed8) * 4) = *(undefined4 *)(in_ECX + 0xed8);
+        w32(in_ECX, 0xedc + s32(in_ECX, 0xed8) * 4, s32(in_ECX, 0xed8));
              /*JOINED*/
-        // DEVIATION: C pointer write — *(int *)(in_ECX + 0x12dc + *(int *)(in_ECX + 0xed8) * 4) = local_1c;
+        w32(in_ECX, 0x12dc + s32(in_ECX, 0xed8) * 4, local_1c);
         local_c = operator_new(0xc);
         _MEM[local_c + 1] = s32(in_ECX, 0xed8);
         if (s32(in_ECX, 0x16f4) === 0) {
@@ -3010,22 +3010,22 @@ export function FUN_004f8af9(in_ECX) {
          /*JOINED*/
           /*JOINED*/
         if (-1 < v(DAT_0062f010)) {
-          // DEVIATION: C pointer write — *(int *)(in_ECX + 300 + *(int *)(in_ECX + 0x128) * 4) = DAT_0062f010;
-          // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 700 + *(int *)(in_ECX + 0x128) * 4) = DAT_006a85b0;
-          // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x44c + *(int *)(in_ECX + 0x128) * 4) = DAT_006a85ac;
+          w32(in_ECX, 300 + s32(in_ECX, 0x128) * 4, v(DAT_0062f010));
+          w32(in_ECX, 700 + s32(in_ECX, 0x128) * 4, v(DAT_006a85b0));
+          w32(in_ECX, 0x44c + s32(in_ECX, 0x128) * 4, v(DAT_006a85ac));
           w32(in_ECX, 0x128, s32(in_ECX, 0x128) + 1);
         }
-        // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 300 + *(int *)(in_ECX + 0x128) * 4) = *(undefined4 *)(in_ECX + 0x120);
+        w32(in_ECX, 300 + s32(in_ECX, 0x128) * 4, s32(in_ECX, 0x120));
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 700 + *(int *)(in_ECX + 0x128) * 4) = *(undefined4 *)(in_ECX + 0x11c);
+        w32(in_ECX, 700 + s32(in_ECX, 0x128) * 4, s32(in_ECX, 0x11c));
              /*JOINED*/
-        // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x44c + *(int *)(in_ECX + 0x128) * 4) = *(undefined4 *)(in_ECX + 0x118);
+        w32(in_ECX, 0x44c + s32(in_ECX, 0x128) * 4, s32(in_ECX, 0x118));
              /*JOINED*/
         w32(in_ECX, 0x128, s32(in_ECX, 0x128) + 1);
       }
     }
     else {
-      // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x128 + *(int *)(in_ECX + 0x128) * 4) = *(undefined4 *)(in_ECX + 0x120);
+      w32(in_ECX, 0x128 + s32(in_ECX, 0x128) * 4, s32(in_ECX, 0x120));
            /*JOINED*/
     }
   }
@@ -3484,13 +3484,13 @@ export function FUN_004fa617(in_ECX) {
     _memset(_Dst,0,0x1c4);
     if (local_8 === 0) {
       w32(in_ECX, 0x30c, _Dst);
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x1bc) = 0;
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x1c0) = 0;
+      w32((_Dst) + 0x1bc, 0, 0);
+      w32((_Dst) + 0x1c0, 0, 0);
     }
     else {
       w32(local_8, 0x1bc, _Dst);
-      // DEVIATION: C pointer write — *(int *)((int)_Dst + 0x1c0) = local_8;
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x1bc) = 0;
+      w32((_Dst) + 0x1c0, 0, local_8);
+      w32((_Dst) + 0x1bc, 0, 0);
     }
     w32(in_ECX, 0x308, s32(in_ECX, 0x308) + 1);
   }

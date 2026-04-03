@@ -2953,9 +2953,9 @@ export function FUN_0059a998(in_ECX) {
   let local_8;
   
   _MEM[in_ECX + 0x7b] = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x1ed) = 0;
+  _MEM[(in_ECX) + 0x1ed] = 0;
   in_ECX[0x15d] = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x1ee) = 0;
+  _MEM[(in_ECX) + 0x1ee] = 0;
   in_ECX[0x14e] = 0;
   in_ECX[0x5833] = 0;
   w32(in_ECX, 0, 0);
@@ -2967,15 +2967,15 @@ export function FUN_0059a998(in_ECX) {
   wv(DAT_006c9288, -1);
   in_ECX[0x7c] = -1;
   in_ECX[0x11c] = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x57d) = 0;
+  _MEM[(in_ECX) + 0x57d] = 0;
   in_ECX[0x160] = 0;
   in_ECX[0x161] = 0;
   in_ECX[0x162] = 0;
   in_ECX[0x163] = 0;
   _MEM[in_ECX + 0x164] = 0;
   _MEM[in_ECX + 0x15f] = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x591) = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x592) = 0;
+  _MEM[(in_ECX) + 0x591] = 0;
+  _MEM[(in_ECX) + 0x592] = 0;
   in_ECX[0x165] = 8;
   in_ECX[0x166] = 0;
   in_ECX[0x1ec] = 0x3c;
@@ -3008,7 +3008,7 @@ export function FUN_0059a998(in_ECX) {
     in_ECX[local_8 + 0x856] = 0;
     in_ECX[local_8 + 0x85e] = 0;
   }
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x160a1) = 0;
+  _MEM[(in_ECX) + 0x160a1] = 0;
   in_ECX[0x1fc] = 0;
   in_ECX[0x1fd] = 0;
   in_ECX[0x1fe] = 0;
@@ -3130,7 +3130,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
         w32(in_ECX, 0x7b0, 0x3c);
       }
       else {
-        // DEVIATION: C pointer write — *(UINT *)(in_ECX + 0x7b0) = UVar2;
+        w32(in_ECX, 0x7b0, UVar2);
       }
     }
     else {
@@ -3144,7 +3144,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
         w32(in_ECX, 0x7b0, 0xf);
       }
       else {
-        // DEVIATION: C pointer write — *(UINT *)(in_ECX + 0x7b0) = UVar2;
+        w32(in_ECX, 0x7b0, UVar2);
       }
     }
     break;
@@ -3162,7 +3162,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
       w32(in_ECX, 0x7b0, 0xf);
     }
     else {
-      // DEVIATION: C pointer write — *(UINT *)(in_ECX + 0x7b0) = UVar2;
+      w32(in_ECX, 0x7b0, UVar2);
     }
     break;
   case 2:
@@ -3176,7 +3176,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
       w32(in_ECX, 0x7b0, 0x1e);
     }
     else {
-      // DEVIATION: C pointer write — *(UINT *)(in_ECX + 0x7b0) = UVar2;
+      w32(in_ECX, 0x7b0, UVar2);
     }
     local_c = XD_InitializeModem((param_2));
     break;
@@ -3192,7 +3192,7 @@ export function FUN_0059adef(in_ECX, param_1, param_2) {
       w32(in_ECX, 0x7b0, 0x1e);
     }
     else {
-      // DEVIATION: C pointer write — *(UINT *)(in_ECX + 0x7b0) = UVar2;
+      w32(in_ECX, 0x7b0, UVar2);
     }
     local_c = XD_InitializeSerial((param_2));
     break;
@@ -3354,10 +3354,10 @@ export function FUN_0059b571(in_ECX, param_1) {
           w32(in_ECX, 0x160cc, s32(local_c, 0x20));
         }
         if (s32(local_c, 0x24) !== 0) {
-          // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(local_c + 0x24) + 0x20) = *(undefined4 *)(local_c + 0x20);
+          w32(s32(local_c, 0x24) + 0x20, 0, s32(local_c, 0x20));
         }
         if (s32(local_c, 0x20) !== 0) {
-          // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(local_c + 0x20) + 0x24) = *(undefined4 *)(local_c + 0x24);
+          w32(s32(local_c, 0x20) + 0x24, 0, s32(local_c, 0x24));
         }
         local_8 = s32(local_c, 0x2c);
         operator_delete(local_c);
@@ -3383,24 +3383,24 @@ export function FUN_0059b571(in_ECX, param_1) {
     }
     _memcpy(_Dst,(param_1 + 0x74),0x124);
     if (local_10 === 0x0) {
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x20) = *(undefined4 *)(in_ECX + 0x160cc);
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x24) = 0;
+      w32((_Dst) + 0x20, 0, s32(in_ECX, 0x160cc));
+      w32((_Dst) + 0x24, 0, 0);
       if (s32(in_ECX, 0x160cc) !== 0) {
-        // DEVIATION: C pointer write — *(void **)(*(int *)(in_ECX + 0x160cc) + 0x24) = _Dst;
+        w32(s32(in_ECX, 0x160cc) + 0x24, 0, _Dst);
       }
       w32(in_ECX, 0x160cc, _Dst);
     }
     else {
-      // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x20) = *(undefined4 *)(local_10 + 0x20);
-      // DEVIATION: C pointer write — *(char **)((int)_Dst + 0x24) = local_10;
+      w32((_Dst) + 0x20, 0, s32(local_10, 0x20));
+      w32((_Dst) + 0x24, 0, local_10);
       w32(local_10, 0x20, _Dst);
       if (s32((_Dst) + 0x20, 0) !== 0) {
-        // DEVIATION: C pointer write — *(void **)(*(int *)((int)_Dst + 0x20) + 0x24) = _Dst;
+        w32(s32((_Dst) + 0x20, 0) + 0x24, 0, _Dst);
       }
     }
     uVar2 = FUN_00421bb0();
-    // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x28) = uVar2;
-    // DEVIATION: C pointer write — *(undefined4 *)((int)_Dst + 0x2c) = local_8;
+    w32((_Dst) + 0x28, 0, uVar2);
+    w32((_Dst) + 0x2c, 0, local_8);
   }
   return;
 }
@@ -3466,7 +3466,7 @@ export function FUN_0059b96a(in_ECX, param_1) {
     _MEM[in_ECX + 0x208 + local_8 * 0x54] = 0;
     _MEM[in_ECX + 0x250 + local_8 * 0x54] = 0;
     _MEM[in_ECX + 0x251 + local_8 * 0x54] = 0;
-    // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x450 + *(int *)(in_ECX + 0x254 + local_8 * 0x54) * 4) = 0xffffffff;
+    w32(in_ECX, 0x450 + s32(in_ECX, 0x254 + local_8 * 0x54) * 4, -1);
     w32(in_ECX, 0x254 + local_8 * 0x54, -1);
     w32(in_ECX, 0x200, s32(in_ECX, 0x200) + -1);
   }
@@ -3659,7 +3659,7 @@ export function FUN_0059c04b(param_1) {
   FUN_005d2279(s_LostConnectionFunc__Connection_t_006357e0,param_1);
   wv(DAT_006c8fb4, v(DAT_006c8fb4) + 1);
   if (param_1 < 7) {
-    // DEVIATION: C pointer write — *(int *)(&DAT_006c8fc0 + (uint)param_1 * 4) = *(int *)(&DAT_006c8fc0 + (uint)param_1 * 4) + 1;
+    w32(DAT_006c8fc0, ((param_1) >>> 0) * 4, s32(DAT_006c8fc0, ((param_1) >>> 0) * 4) + 1);
   }
   return;
 }
@@ -3881,25 +3881,25 @@ export function FUN_0059c575(param_1, param_2, param_3, param_4, param_5) {
   let _Source;
   let _Count;
   
-  // DEVIATION: C pointer write — *(ushort *) (&DAT_006af2a0 + (char)(&DAT_006560f7)[param_1 * 0x20] * 0x27d8 + *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) * 0x22) = (ushort)(byte)(&DAT_006560f6)[param_1 * 0x20];
+  w16(DAT_006af2a0, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22, ((u8(_MEM[DAT_006560f6 + param_1 * 0x20])) & 0xFFFF));
    /*JOINED*/
    /*JOINED*/
    /*JOINED*/
        /*JOINED*/
-  // DEVIATION: C pointer write — *(undefined2 *) (&DAT_006af2a2 + (char)(&DAT_006560f7)[param_1 * 0x20] * 0x27d8 + *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) * 0x22) = param_4;
+  w16(DAT_006af2a2, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22, param_4);
    /*JOINED*/
    /*JOINED*/
    /*JOINED*/
-  // DEVIATION: C pointer write — *(undefined2 *) (&DAT_006af2a4 + (char)(&DAT_006560f7)[param_1 * 0x20] * 0x27d8 + *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) * 0x22) = param_5;
+  w16(DAT_006af2a4, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22, param_5);
    /*JOINED*/
    /*JOINED*/
    /*JOINED*/
-  // DEVIATION: C pointer write — *(undefined2 *) (&DAT_006af2a6 + (char)(&DAT_006560f7)[param_1 * 0x20] * 0x27d8 + *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) * 0x22) = param_3;
+  w16(DAT_006af2a6, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22, param_3);
    /*JOINED*/
    /*JOINED*/
    /*JOINED*/
   uVar1 = FUN_0043cb30((s8(_MEM[DAT_006560f7 + param_2 * 0x20])));
-  // DEVIATION: C pointer write — *(undefined2 *) (&DAT_006af2a8 + (char)(&DAT_006560f7)[param_1 * 0x20] * 0x27d8 + *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) * 0x22) = uVar1;
+  w16(DAT_006af2a8, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22, uVar1);
    /*JOINED*/
    /*JOINED*/
    /*JOINED*/
@@ -3910,21 +3910,21 @@ export function FUN_0059c575(param_1, param_2, param_3, param_4, param_5) {
   (v(DAT_006af2c1))
   [s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 0x27d8 + s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) * 0x22] = 0;
    /*JOINED*/
-  // DEVIATION: C pointer write — *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) = *(int *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) + 1;
+  w32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4, s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) + 1);
        /*JOINED*/
   if (s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) === 300) {
-    // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006af280 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) = 0;
+    w32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4, 0);
   }
   if (s32(DAT_006af280, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) === s32(DAT_006af260, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4)) {
       /*JOINED*/
-    // DEVIATION: C pointer write — *(int *)(&DAT_006af260 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) = *(int *)(&DAT_006af260 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) + 1;
+    w32(DAT_006af260, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4, s32(DAT_006af260, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) + 1);
          /*JOINED*/
     if (s32(DAT_006af260, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) === 300) {
-      // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006af260 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) = 0;
+      w32(DAT_006af260, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4, 0);
     }
   }
   else {
-    // DEVIATION: C pointer write — *(int *)(&DAT_006af220 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) = *(int *)(&DAT_006af220 + (char)(&DAT_006560f7)[param_1 * 0x20] * 4) + 1;
+    w32(DAT_006af220, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4, s32(DAT_006af220, s8(_MEM[DAT_006560f7 + param_1 * 0x20]) * 4) + 1);
          /*JOINED*/
   }
   if (-1 < v(DAT_0063e948)) {
@@ -4500,7 +4500,7 @@ export function FUN_0059d5f5(in_ECX) {
   
   w32(in_ECX, 0, 0);
   in_ECX[1] = 0;
-  // DEVIATION: C pointer write — *(undefined1 *)((int)in_ECX + 0x255) = 0;
+  _MEM[(in_ECX) + 0x255] = 0;
   in_ECX[4] = 0;
   in_ECX[3] = in_ECX[4];
   in_ECX[2] = in_ECX[3];
@@ -5066,14 +5066,14 @@ export function FUN_0059e507(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   w32(in_ECX, 0x3c, u32(in_ECX, 0x3c) | 0x1000);
-  // DEVIATION: C pointer write — *(int *)(in_ECX + 0x5c + *(int *)(in_ECX + 0x48) * 4) = param_1;
+  w32(in_ECX, 0x5c + s32(in_ECX, 0x48) * 4, param_1);
   if ((u8(_MEM[in_ECX + 0x3e]) & 4) === 0) {
     iVar1 = FUN_0059e3fa();
-    // DEVIATION: C pointer write — *(int *)(in_ECX + 0x54 + *(int *)(in_ECX + 0x48) * 4) = iVar1 * param_1 + 2;
+    w32(in_ECX, 0x54 + s32(in_ECX, 0x48) * 4, iVar1 * param_1 + 2);
   }
   else {
     iVar1 = FUN_0040ef70();
-    // DEVIATION: C pointer write — *(int *)(in_ECX + 0x54 + *(int *)(in_ECX + 0x48) * 4) = iVar1 * param_1 + 2;
+    w32(in_ECX, 0x54 + s32(in_ECX, 0x48) * 4, iVar1 * param_1 + 2);
   }
   return;
 }
@@ -5112,8 +5112,8 @@ export function FUN_0059e5c9(in_ECX, param_1, param_2, param_3) {
   // in_ECX → promoted to parameter
   
   w32(in_ECX, 0x3c, u32(in_ECX, 0x3c) | 0x1000);
-  // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x4c + *(int *)(in_ECX + 0x48) * 4) = param_2;
-  // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x1e0 + *(int *)(in_ECX + 0x48) * 4) = param_3;
+  w32(in_ECX, 0x4c + s32(in_ECX, 0x48) * 4, param_2);
+  w32(in_ECX, 0x1e0 + s32(in_ECX, 0x48) * 4, param_3);
   if (param_1 !== 0) {
     FUN_0059e507(param_1);
   }
@@ -5771,7 +5771,7 @@ export function FUN_0059edf0(in_ECX, param_1, param_2, param_3) {
       w32(in_ECX, 0x22c, puVar2);
     }
     else {
-      // DEVIATION: C pointer write — *(uint **)(*(int *)(in_ECX + 0x228) + 0x14) = puVar2;
+      w32(s32(in_ECX, 0x228) + 0x14, 0, puVar2);
     }
     w32(in_ECX, 0x228, puVar2);
     w32(in_ECX, 0x220, puVar2);
@@ -5920,7 +5920,7 @@ export function FUN_0059f2a3(in_ECX, param_1) {
   if (s32(in_ECX, 0x34) < 6) {
     sVar1 = _strlen(param_1);
     uVar2 = FUN_00498159(in_ECX + 0x254,sVar1 + 1);
-    // DEVIATION: C pointer write — *(undefined4 *)(in_ECX + 0x294 + *(int *)(in_ECX + 0x34) * 4) = uVar2;
+    w32(in_ECX, 0x294 + s32(in_ECX, 0x34) * 4, uVar2);
     FUN_005f22d0(s32(in_ECX, 0x294 + s32(in_ECX, 0x34) * 4),param_1);
     w32(in_ECX, 0x34, s32(in_ECX, 0x34) + 1);
   }

@@ -2652,7 +2652,7 @@ export function FUN_00505d3d(param_1) {
             // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
             FUN_0043d289(iVar3,local_10,uVar6);
             // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));
-            // DEVIATION: C pointer write — *(uint *)(&DAT_0064c6a2 + (char)(&DAT_0064f348)[iVar3 * 0x58] * 0x594) = *(int *)(&DAT_0064c6a2 + (char)(&DAT_0064f348)[iVar3 * 0x58] * 0x594) + bVar1 * uVar5;
+            w32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594, s32(DAT_0064c6a2, s8(_MEM[DAT_0064f348 + iVar3 * 0x58]) * 0x594) + bVar1 * uVar5);
                  /*JOINED*/
                  /*JOINED*/
             // DEVIATION: MFC — iVar3 = CSplitterWnd::IsTracking(v(DAT_006a91b8));

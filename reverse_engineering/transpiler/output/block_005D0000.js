@@ -1795,7 +1795,7 @@ export function send_msg_2DED_005D2DED(param_1, param_2, param_3, param_4) {
   
   w16(param_3, 0, param_4 + -1);
   LVar1 = SendMessageA(param_1,0xc4,param_2,param_3);
-  // DEVIATION: C pointer write — *(undefined1 *)(LVar1 + (int)param_3) = 0;
+  _MEM[LVar1 + (param_3)] = 0;
   return LVar1;
 }
 
@@ -3504,7 +3504,7 @@ export function FUN_005d4c5f(param_1, param_2, param_3, param_4) {
                     // DEVIATION: C struct — w32(pFVar8, 0, p_Var6->ckid);
                     // DEVIATION: C struct — p_Var6 = p_Var6->cksize;
                   }
-                  // DEVIATION: C pointer write — *(undefined2 *)((int)local_34 + 0x8a) = param_3;
+                  w16((local_34) + 0x8a, 0, param_3);
                   _MEM[local_34 + 0x1d] = local_2c[0];
                   _MEM[local_34 + 0x1e] = local_28;
                   _MEM[local_34 + 0x1f] = local_24;
@@ -3648,7 +3648,7 @@ export function FUN_005d4f6a(param_1, param_2, param_3) {
                       // DEVIATION: C struct — p_Var6 = p_Var6->cksize;
                     }
                     _MEM[local_38 + 0x1c] = _MEM[local_38 + 0x1c] | 4;
-                    // DEVIATION: C pointer write — *(undefined2 *)((int)local_38 + 0x8a) = param_3;
+                    w16((local_38) + 0x8a, 0, param_3);
                     FUN_005d6283(local_38);
                     if (v(DAT_006385d0) === 0x0) {
                       wv(DAT_006385d0, local_38);
@@ -10490,28 +10490,28 @@ export function gdi_E780_005DE780(param_1) {
     GetSystemPaletteEntries(hdc,0,0x100,(param_1 + 2));
   }
   for (local_c = 0; local_c < v(DAT_006e500c); local_c = local_c + 1) {
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 7) = 0;
+    _MEM[(param_1) + local_c * 4 + 7] = 0;
   }
   for (; local_c < 0x100 - v(DAT_006e500c); local_c = local_c + 1) {
     _MEM[param_1 + local_c * 2 + 2] = 0;
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 5) = 0;
+    _MEM[(param_1) + local_c * 4 + 5] = 0;
     _MEM[param_1 + local_c * 2 + 3] = 0;
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 7) = 4;
+    _MEM[(param_1) + local_c * 4 + 7] = 4;
   }
   for (; local_c < 0x100; local_c = local_c + 1) {
-    // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 7) = 0;
+    _MEM[(param_1) + local_c * 4 + 7] = 0;
   }
   if (v(DAT_00638b48) === 0) {
     local_10 = v(DAT_00638b50);
     for (local_c = 0; local_c < 10; local_c = local_c + 1) {
       _MEM[param_1 + local_c * 2 + 2] = _MEM[local_10];
-      // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 5) = local_10[1];
+      _MEM[(param_1) + local_c * 4 + 5] = _MEM[local_10 + 1];
       _MEM[param_1 + local_c * 2 + 3] = _MEM[local_10 + 2];
       local_10 = local_10 + 3;
     }
     for (local_c = 0xf6; local_c < 0x100; local_c = local_c + 1) {
       _MEM[param_1 + local_c * 2 + 2] = _MEM[local_10];
-      // DEVIATION: C pointer write — *(undefined1 *)((int)param_1 + local_c * 4 + 5) = local_10[1];
+      _MEM[(param_1) + local_c * 4 + 5] = _MEM[local_10 + 1];
       _MEM[param_1 + local_c * 2 + 3] = _MEM[local_10 + 2];
       local_10 = local_10 + 3;
     }
@@ -11167,21 +11167,21 @@ export function FUN_005df6e1(param_1, param_2, param_3, param_4, param_5, param_
   pvVar7 = operator_new((iVar4 + iVar3) * 4);
   pvVar8 = (iVar4 * 4 + (pvVar7));
   for (local_44 = 0; local_44 < iVar3; local_44 = local_44 + 1) {
-    // DEVIATION: C pointer write — *(int *)((int)pvVar8 + local_44 * 4) = local_44;
+    w32((pvVar8) + local_44 * 4, 0, local_44);
   }
   for (local_48 = 0; local_48 < iVar4; local_48 = local_48 + 1) {
-    // DEVIATION: C pointer write — *(int *)((int)pvVar7 + local_48 * 4) = local_48;
+    w32((pvVar7) + local_48 * 4, 0, local_48);
   }
   for (local_44 = 0; local_44 < iVar3; local_44 = local_44 + 1) {
     uVar9 = FUN_005e0b50(iVar4);
-    // DEVIATION: C pointer write — *(undefined4 *)((int)pvVar8 + local_44 * 4) = uVar9;
+    w32((pvVar8) + local_44 * 4, 0, uVar9);
   }
   for (local_48 = 0; local_48 < iVar4; local_48 = local_48 + 1) {
     local_8 = FUN_005e0b50(iVar4);
     local_c = FUN_005e0b50(iVar4);
     uVar9 = s32((pvVar7) + local_8 * 4, 0);
-    // DEVIATION: C pointer write — *(undefined4 *)((int)pvVar7 + local_8 * 4) = *(undefined4 *)((int)pvVar7 + local_c * 4);
-    // DEVIATION: C pointer write — *(undefined4 *)((int)pvVar7 + local_c * 4) = uVar9;
+    w32((pvVar7) + local_8 * 4, 0, s32((pvVar7) + local_c * 4, 0));
+    w32((pvVar7) + local_c * 4, 0, uVar9);
   }
   for (local_48 = 0; local_48 < iVar4; local_48 = local_48 + param_7) {
     uVar9 = FUN_005c5640(pvVar8,pvVar7,uVar5,uVar6,local_48,iVar3,iVar4,param_7,uVar1,uVar2,param_4, param_5,param_6);

@@ -2144,9 +2144,9 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
       for (local_3c = 0; local_3c < uVar2; local_3c = local_3c + 1) {
         for (local_44 = 0; local_44 < uVar3; local_44 = local_44 + 1) {
           FUN_00407ff0();
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_3c * uVar3 + local_44) * 8) = ((uVar2 - local_3c) + -1) * param_3;
+          w32((local_8) + (local_3c * uVar3 + local_44) * 8, 0, ((uVar2 - local_3c) + -1) * param_3);
                /*JOINED*/
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_3c * uVar3 + local_44) * 8 + 4) = local_44 * param_3;
+          w32((local_8) + (local_3c * uVar3 + local_44) * 8 + 4, 0, local_44 * param_3);
         }
       }
       break;
@@ -2155,8 +2155,8 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
       for (local_3c = 0; local_3c < uVar2; local_3c = local_3c + 1) {
         for (local_44 = 0; local_44 < uVar3; local_44 = local_44 + 1) {
           FUN_00407ff0();
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_3c * uVar3 + local_44) * 8) = local_3c * param_3;
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_3c * uVar3 + local_44) * 8 + 4) = local_44 * param_3;
+          w32((local_8) + (local_3c * uVar3 + local_44) * 8, 0, local_3c * param_3);
+          w32((local_8) + (local_3c * uVar3 + local_44) * 8 + 4, 0, local_44 * param_3);
         }
       }
       break;
@@ -2164,8 +2164,8 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
       for (local_44 = 0; local_44 < uVar3; local_44 = local_44 + 1) {
         for (local_3c = 0; local_3c < uVar2; local_3c = local_3c + 1) {
           FUN_00407ff0();
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_44 * uVar2 + local_3c) * 8) = local_3c * param_3;
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_44 * uVar2 + local_3c) * 8 + 4) = local_44 * param_3;
+          w32((local_8) + (local_44 * uVar2 + local_3c) * 8, 0, local_3c * param_3);
+          w32((local_8) + (local_44 * uVar2 + local_3c) * 8 + 4, 0, local_44 * param_3);
         }
       }
       break;
@@ -2173,8 +2173,8 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
       for (local_44 = 0; local_44 < uVar3; local_44 = local_44 + 1) {
         for (local_3c = 0; local_3c < uVar2; local_3c = local_3c + 1) {
           FUN_00407ff0();
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_44 * uVar2 + local_3c) * 8) = local_3c * param_3;
-          // DEVIATION: C pointer write — *(uint *)((int)local_8 + (local_44 * uVar2 + local_3c) * 8 + 4) = ((uVar3 - local_44) + -1) * param_3;
+          w32((local_8) + (local_44 * uVar2 + local_3c) * 8, 0, local_3c * param_3);
+          w32((local_8) + (local_44 * uVar2 + local_3c) * 8 + 4, 0, ((uVar3 - local_44) + -1) * param_3);
                /*JOINED*/
         }
       }
@@ -2197,8 +2197,8 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
         SetRect(local_18[0],iVar7,iVar8,iVar9,iVar1);
         FUN_00408490(local_18[0]);
         local_34 = local_34 + -1;
-        // DEVIATION: C pointer write — *(undefined4 *)((int)local_8 + iVar6 * 8) = *(undefined4 *)((int)local_8 + local_34 * 8);
-        // DEVIATION: C pointer write — *(undefined4 *)((int)local_8 + iVar6 * 8 + 4) = *(undefined4 *)((int)local_8 + local_34 * 8 + 4);
+        w32((local_8) + iVar6 * 8, 0, s32((local_8) + local_34 * 8, 0));
+        w32((local_8) + iVar6 * 8 + 4, 0, s32((local_8) + local_34 * 8 + 4, 0));
              /*JOINED*/
       }
     }
@@ -2224,8 +2224,8 @@ export function FUN_005683c5(param_1, param_2, param_3, param_4) {
         SetRect(local_18[0],iVar7,iVar8,iVar9,iVar1);
         FUN_00408490(local_18[0]);
         local_34 = local_34 + -1;
-        // DEVIATION: C pointer write — *(undefined4 *)((int)local_8 + iVar6 * 8) = *(undefined4 *)((int)local_8 + local_34 * 8);
-        // DEVIATION: C pointer write — *(undefined4 *)((int)local_8 + iVar6 * 8 + 4) = *(undefined4 *)((int)local_8 + local_34 * 8 + 4);
+        w32((local_8) + iVar6 * 8, 0, s32((local_8) + local_34 * 8, 0));
+        w32((local_8) + iVar6 * 8 + 4, 0, s32((local_8) + local_34 * 8 + 4, 0));
              /*JOINED*/
       }
     }
@@ -4882,10 +4882,10 @@ export function FUN_0056eed7(in_ECX, param_1) {
       in_ECX[10] = s32(s32(in_ECX, 0) + 0x228, 0);
     }
     else {
-      // DEVIATION: C pointer write — *(undefined4 *)(*(int *)((int)param_1 + 0x14) + 0x10) = *(undefined4 *)((int)param_1 + 0x10);
+      w32(s32((param_1) + 0x14, 0) + 0x10, 0, s32((param_1) + 0x10, 0));
     }
     if (s32((param_1) + 0x10, 0) !== 0) {
-      // DEVIATION: C pointer write — *(undefined4 *)(*(int *)((int)param_1 + 0x10) + 0x14) = *(undefined4 *)((int)param_1 + 0x14);
+      w32(s32((param_1) + 0x10, 0) + 0x14, 0, s32((param_1) + 0x14, 0));
     }
     operator_delete(s32((param_1) + 8, 0));
     operator_delete(param_1);

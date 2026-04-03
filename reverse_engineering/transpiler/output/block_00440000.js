@@ -2277,7 +2277,7 @@ export function FUN_00447210(in_ECX, param_1) {
     if (s32(in_ECX, 0x40) === param_1) {
       w32(in_ECX, 0x40, -1);
     }
-    // DEVIATION: C pointer write — *(undefined4 *)(*(int *)(in_ECX + 0x48) + 0x18 + param_1 * 0xa4) = 0;
+    w32(s32(in_ECX, 0x48) + 0x18 + param_1 * 0xa4, 0, 0);
     invalidate_ABC7(s32(s32(in_ECX, 0x48) + param_1 * 0xa4, 0));
   }
   return;
