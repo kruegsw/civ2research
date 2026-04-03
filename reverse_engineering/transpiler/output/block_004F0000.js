@@ -1166,7 +1166,7 @@ export function FUN_004f4793(in_ECX) {
   // in_ECX → promoted to parameter
   
   while (s32(in_ECX, 8000) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 8000) */ + 0x44, 0);
+    uVar1 = s32(s32(in_ECX, 8000) + 0x44, 0);
     if (s32(in_ECX, 8000) !== 0) {
       _scalar_deleting_destructor_(1);
     }
@@ -1190,7 +1190,7 @@ export function FUN_004f4809(in_ECX) {
   // in_ECX → promoted to parameter
   
   while (s32(in_ECX, 0x16dc) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16dc) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16dc) + 8, 0);
     if (*s32(in_ECX, 0x16dc) !== 0) {
       operator_delete(*s32(in_ECX, 0x16dc));
     }
@@ -1198,7 +1198,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16dc, uVar1);
   }
   while (s32(in_ECX, 0x16e0) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16e0) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16e0) + 8, 0);
     if (*s32(in_ECX, 0x16e0) !== 0) {
       operator_delete(*s32(in_ECX, 0x16e0));
     }
@@ -1206,7 +1206,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16e0, uVar1);
   }
   while (s32(in_ECX, 0x16e4) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16e4) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16e4) + 8, 0);
     if (*s32(in_ECX, 0x16e4) !== 0) {
       operator_delete(*s32(in_ECX, 0x16e4));
     }
@@ -1214,7 +1214,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16e4, uVar1);
   }
   while (s32(in_ECX, 0x16e8) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16e8) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16e8) + 8, 0);
     if (*s32(in_ECX, 0x16e8) !== 0) {
       operator_delete(*s32(in_ECX, 0x16e8));
     }
@@ -1222,7 +1222,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16e8, uVar1);
   }
   while (s32(in_ECX, 0x16ec) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16ec) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16ec) + 8, 0);
     if (*s32(in_ECX, 0x16ec) !== 0) {
       operator_delete(*s32(in_ECX, 0x16ec));
     }
@@ -1230,7 +1230,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16ec, uVar1);
   }
   while (s32(in_ECX, 0x16f0) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16f0) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16f0) + 8, 0);
     if (*s32(in_ECX, 0x16f0) !== 0) {
       operator_delete(*s32(in_ECX, 0x16f0));
     }
@@ -1238,7 +1238,7 @@ export function FUN_004f4809(in_ECX) {
     w32(in_ECX, 0x16f0, uVar1);
   }
   while (s32(in_ECX, 0x16f4) !== 0) {
-    uVar1 = s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x16f4) */ + 8, 0);
+    uVar1 = s32(s32(in_ECX, 0x16f4) + 8, 0);
     if (*s32(in_ECX, 0x16f4) !== 0) {
       operator_delete(*s32(in_ECX, 0x16f4));
     }
@@ -2002,7 +2002,7 @@ export function FUN_004f66c6(in_ECX) {
       SetRect(local_2c[0],local_50,local_58,local_74 + local_50 + -2,local_1c + local_58);
       if ((s32(in_ECX, 0x1f3c) !== -1) && (s32(in_ECX, 0x1f3c) + local_60 + local_5c < s32(in_ECX, 0x1b34))) {
          /*JOINED*/
-        local_78 = s32(in_ECX, 0x1b38 + (true /* DEVIATION: C pointer — s32(in_ECX, 0x1f3c) */ + local_60 + local_5c) * 4);
+        local_78 = s32(in_ECX, 0x1b38 + (s32(in_ECX, 0x1f3c) + local_60 + local_5c) * 4);
         /*JOINED*/
         local_30 = ((s32(in_ECX, 0x1f3c) + local_60 + local_5c === v(DAT_006a85a0)) >>> 0);
         if (local_30 === 0) {
@@ -3000,12 +3000,12 @@ export function FUN_004f8af9(in_ECX) {
   // in_ECX → promoted to parameter
   
   if ((s32(in_ECX, 0x128) < 99) && (v(DAT_0062f00c) === 0)) {
-    if (((s32(in_ECX, 0x128) === 0) || (((s32(in_ECX, 0x2b8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x2b8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== 0)) || (s32(in_ECX, 0x448 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) === 8)))) || (s32(in_ECX, 0x118) === 8)) {
+    if (((s32(in_ECX, 0x128) === 0) || (((s32(in_ECX, 0x2b8 + s32(in_ECX, 0x128) * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x2b8 + s32(in_ECX, 0x128) * 4) !== 0)) || (s32(in_ECX, 0x448 + s32(in_ECX, 0x128) * 4) === 8)))) || (s32(in_ECX, 0x118) === 8)) {
         /*JOINED*/
           /*JOINED*/
          /*JOINED*/
        /*JOINED*/
-      if (((s32(in_ECX, 0x128) === 0) || (s32(in_ECX, 0x448 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x118))) || ((s32(in_ECX, 0x2b8 + true /* DEVIATION: C pointer — s32(in_ECX, 0x128) */ * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x128 + v(DAT_006a6790) * 4) !== s32(in_ECX, 0x120))))) {
+      if (((s32(in_ECX, 0x128) === 0) || (s32(in_ECX, 0x448 + s32(in_ECX, 0x128) * 4) !== s32(in_ECX, 0x118))) || ((s32(in_ECX, 0x2b8 + s32(in_ECX, 0x128) * 4) !== s32(in_ECX, 0x11c) || (s32(in_ECX, 0x128 + v(DAT_006a6790) * 4) !== s32(in_ECX, 0x120))))) {
           /*JOINED*/
          /*JOINED*/
           /*JOINED*/

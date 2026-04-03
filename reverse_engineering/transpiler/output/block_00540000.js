@@ -2069,7 +2069,7 @@ export function FUN_0054bc1a() {
       }
       else if (uVar2 < 0x201) {
         if (uVar2 === 0x200) {
-          uVar3 = FUN_00428b0c(s32(DAT_00627cc4, true /* DEVIATION: C pointer — s32(local_10c, 0x18c) */ * 0x18));
+          uVar3 = FUN_00428b0c(s32(DAT_00627cc4, s32(local_10c, 0x18c) * 0x18));
                                       /*JOINED*/
           _sprintf(local_104[0],s_CHANGETERRAIN___s__00633004,uVar3);
         }
@@ -2112,12 +2112,12 @@ export function FUN_0054bc1a() {
           else {
             _sprintf(local_11c[0],s_TRIGGERRECEIVER_006330d8);
           }
-          uVar3 = FUN_00428b0c(s32(DAT_00627684, true /* DEVIATION: C pointer — s32(local_10c, 0x1b4) */ * 0x10));
+          uVar3 = FUN_00428b0c(s32(DAT_00627684, s32(local_10c, 0x1b4) * 0x10));
                                       /*JOINED*/
           _sprintf(local_104[0],s_GIVETECHNOLOGY__receiver__s_tech_00633108,local_11c[0],uVar3);
         }
         else {
-          uVar3 = FUN_00428b0c(s32(DAT_00627684, true /* DEVIATION: C pointer — s32(local_10c, 0x1b4) */ * 0x10));
+          uVar3 = FUN_00428b0c(s32(DAT_00627684, s32(local_10c, 0x1b4) * 0x10));
                                       /*JOINED*/
           uVar3 = FUN_00493c7d(s32(local_10c, 0x1b8),uVar3);
           _sprintf(local_104[0],s_GIVETECHNOLOGY__receiver__s_tech_006330ac,uVar3);

@@ -77,7 +77,18 @@ function extractExpression(str, start) {
 
 // Replace *(TYPE *)(expr) and *(TYPE **)(expr) with helper(base, offset) using balanced parens
 // Double pointers (TYPE **) are pointer reads → always 4 bytes (s32/w32)
+// Processes INSIDE-OUT: repeats until no more *(TYPE *) patterns remain,
+// so nested derefs like *(short *)(&DAT + *(short *)(&DAT2 + x)) resolve correctly.
 function replaceTypedPtrDeref(line) {
+  let prev = '';
+  while (prev !== line) {
+    prev = line;
+    line = replaceTypedPtrDerefOnce(line);
+  }
+  return line;
+}
+
+function replaceTypedPtrDerefOnce(line) {
   const typeMap = { 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
                     'undefined4': 's32', 'undefined2': 's16', 'undefined1': null,
                     'char': 's8_arr', 'byte': 'u8_arr' };

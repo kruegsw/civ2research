@@ -2796,7 +2796,7 @@ export function FUN_005d3fb0(in_ECX, param_1) {
     if (s32(in_ECX, 0x38) <= local_8) {
       return 0;
     }
-    if (s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ + local_8 * 0xa4, 0) === param_1) break;
+    if (s32(s32(in_ECX, 0x48) + local_8 * 0xa4, 0) === param_1) break;
     local_8 = local_8 + 1;
   }
   return 1;
@@ -2816,8 +2816,8 @@ export function FUN_005d4014(in_ECX) {
   let local_8;
   
   for (local_8 = 0; local_8 < s32(in_ECX, 0x38); local_8 = local_8 + 1) {
-    manage_window_8B2D(s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ + local_8 * 0xa4, 0));
-    invalidate_8B00(s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ + local_8 * 0xa4, 0));
+    manage_window_8B2D(s32(s32(in_ECX, 0x48) + local_8 * 0xa4, 0));
+    invalidate_8B00(s32(s32(in_ECX, 0x48) + local_8 * 0xa4, 0));
   }
   return;
 }
@@ -2836,7 +2836,7 @@ export function FUN_005d4087(in_ECX) {
   let local_8;
   
   for (local_8 = 0; local_8 < s32(in_ECX, 0x38); local_8 = local_8 + 1) {
-    manage_window_8B58(s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x48) */ + local_8 * 0xa4, 0));
+    manage_window_8B58(s32(s32(in_ECX, 0x48) + local_8 * 0xa4, 0));
   }
   return;
 }
@@ -3915,8 +3915,8 @@ export function FUN_005d57b1(param_1) {
     uVar2 = 5;
   }
   else if ((u8(_MEM[DAT_006385d0 + 0x70]) & 1) === 0) {
-    if ((u32(true /* DEVIATION: C pointer — s32(v(DAT_006385d0) + 0x98, 0) */ + 0xc, 0) >> 3 & 1) === 0) {
-      if (((u32(true /* DEVIATION: C pointer — s32(v(DAT_006385d0) + 0x98, 0) */ + 0xc, 0) >> 7) - (u32(DAT_006385c8, 0xc) >> 7) & 7) === 0) {
+    if ((u32(s32(DAT_006385d0, 0x98) + 0xc, 0) >> 3 & 1) === 0) {
+      if (((u32(s32(DAT_006385d0, 0x98) + 0xc, 0) >> 7) - (u32(DAT_006385c8, 0xc) >> 7) & 7) === 0) {
            /*JOINED*/
         param_1 = (((s32(DAT_006385d0, 0x9c) - s32(DAT_006385d0, 0x68)) >>> 0) / u16(DAT_006385d0, 0x80) | 0);
                   /*JOINED*/
@@ -6269,7 +6269,7 @@ export function create_window_8E3F_005D8E3F(param_1, param_2, param_3, param_4, 
 // LAB_005d9226: (code below also in LAB_005d9226_helper, kept for 1:1 audit)
     sVar12 = _strlen((local_28 * 0xa4 + iVar6 + 0x1c));
     if (u32(iVar6, 0xa0 + local_28 * 0xa4) < sVar12) {
-      local_c[0] = s8(_MEM[true /* DEVIATION: C pointer — s32(iVar6, 0xa0 + local_28 * 0xa4) */ + local_28 * 0xa4 + 0x1c + iVar6]);
+      local_c[0] = s8(_MEM[s32(iVar6, 0xa0 + local_28 * 0xa4) + local_28 * 0xa4 + 0x1c + iVar6]);
                             /*JOINED*/
       local_c[1] = 0;
       __strlwr(local_c[0]);
@@ -6419,7 +6419,7 @@ export function create_window_931B_005D931B(param_1, param_2, param_3, param_4, 
 // LAB_005d9893: (code below also in LAB_005d9893_helper, kept for 1:1 audit)
     sVar13 = _strlen((local_42c * 0xa4 + iVar7 + 0x1c));
     if (u32(iVar7, 0xa0 + local_42c * 0xa4) < sVar13) {
-      local_40c[0] = s8(_MEM[true /* DEVIATION: C pointer — s32(iVar7, 0xa0 + local_42c * 0xa4) */ + local_42c * 0xa4 + 0x1c + iVar7]);
+      local_40c[0] = s8(_MEM[s32(iVar7, 0xa0 + local_42c * 0xa4) + local_42c * 0xa4 + 0x1c + iVar7]);
                               /*JOINED*/
       local_40c[1] = 0;
       __strlwr(local_40c[0]);
@@ -11525,7 +11525,7 @@ function LAB_005d2c05_helper(DVar1, LVar6, iVar3, local_20, local_8, pHVar4, par
 function LAB_005d9226_helper(iVar10, iVar13, iVar6, iVar7, iVar8, iVar9, local_10, local_18, local_28, local_40, local_44, local_8, local_c, pHVar11, pHVar2, pHVar3, pHVar4, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, piVar1, sVar12, uVar5) {
     sVar12 = _strlen((local_28 * 0xa4 + iVar6 + 0x1c));
     if (u32(iVar6, 0xa0 + local_28 * 0xa4) < sVar12) {
-      local_c[0] = s8(_MEM[true /* DEVIATION: C pointer — s32(iVar6, 0xa0 + local_28 * 0xa4) */ + local_28 * 0xa4 + 0x1c + iVar6]);
+      local_c[0] = s8(_MEM[s32(iVar6, 0xa0 + local_28 * 0xa4) + local_28 * 0xa4 + 0x1c + iVar6]);
                             /*JOINED*/
       local_c[1] = 0;
       __strlwr(local_c[0]);
@@ -11546,7 +11546,7 @@ function LAB_005d9226_helper(iVar10, iVar13, iVar6, iVar7, iVar8, iVar9, local_1
 function LAB_005d9893_helper(iVar10, iVar11, iVar14, iVar7, iVar8, iVar9, local_408, local_40c, local_410, local_418, local_428, local_42c, local_430, local_448, local_44c, local_8, pHVar12, pHVar2, pHVar3, pHVar4, param_1, param_2, param_3, param_4, param_5, param_6, param_7, piVar1, sVar13, uVar15, uVar5, uVar6) {
     sVar13 = _strlen((local_42c * 0xa4 + iVar7 + 0x1c));
     if (u32(iVar7, 0xa0 + local_42c * 0xa4) < sVar13) {
-      local_40c[0] = s8(_MEM[true /* DEVIATION: C pointer — s32(iVar7, 0xa0 + local_42c * 0xa4) */ + local_42c * 0xa4 + 0x1c + iVar7]);
+      local_40c[0] = s8(_MEM[s32(iVar7, 0xa0 + local_42c * 0xa4) + local_42c * 0xa4 + 0x1c + iVar7]);
                               /*JOINED*/
       local_40c[1] = 0;
       __strlwr(local_40c[0]);

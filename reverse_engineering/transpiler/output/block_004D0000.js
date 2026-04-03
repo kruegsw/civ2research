@@ -679,7 +679,7 @@ export function FUN_004d0b58(in_ECX) {
     FUN_00408010(0x1fc);
     FUN_00596eec(s32(in_ECX, 0x1cc),1);
     FUN_004d4a7b();
-    if ((s16(DAT_0064caae, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594) !== 0) && (v(DAT_006ad0ec) !== 0))
+    if ((s16(DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594) !== 0) && (v(DAT_006ad0ec) !== 0))
     {
       w32(in_ECX, 0xae0, 1);
     }
@@ -3527,17 +3527,17 @@ export function FUN_004d4a7b(in_ECX) {
   bVar2 = false;
   FUN_004aef20(in_ECX + 0x638);
   for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    sVar1 = s16(DAT_0064caa8, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594 + local_c * 2);
+    sVar1 = s16(DAT_0064caa8, s32(in_ECX, 0x1cc) * 0x594 + local_c * 2);
     iVar3 = FUN_00596b00(s32(in_ECX, 0x1cc),local_c);
     if (iVar3 < sVar1) {
       bVar2 = true;
     }
   }
   for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    FUN_004af122(in_ECX + 0x638, s32(DAT_00628420, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_00634f60, local_c * 0xc), 0) */ * 4));
+    FUN_004af122(in_ECX + 0x638, s32(DAT_00628420, s32(DAT_00634f60, local_c * 0xc) * 4));
                        /*JOINED*/
     FUN_004aefb7(in_ECX + 0x638);
-    FUN_004af1d5(in_ECX + 0x638, (s16(DAT_0064caa8, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594 + local_c * 2)));
+    FUN_004af1d5(in_ECX + 0x638, (s16(DAT_0064caa8, s32(in_ECX, 0x1cc) * 0x594 + local_c * 2)));
                        /*JOINED*/
                                       /*JOINED*/
     if ((bVar2) && (local_c === 0)) {
@@ -3547,7 +3547,7 @@ export function FUN_004d4a7b(in_ECX) {
   }
   FUN_004af14b(in_ECX + 0x638,0x22);
   FUN_004aefb7(in_ECX + 0x638);
-  FUN_004af1d5(in_ECX + 0x638, (s16(DAT_0064caae, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594)));
+  FUN_004af1d5(in_ECX + 0x638, (s16(DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594)));
                      /*JOINED*/
   FUN_0043c840(in_ECX + 0x638,s_0_000_0062e2fc);
   FUN_0043c840(in_ECX + 0x638,v(DAT_0062e304));
@@ -3621,7 +3621,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
     uVar2 = FUN_004d8af0();
     iVar1 = gdi_847F(uVar2);
     FUN_00407ff0();
-    local_18[0] = _MEM[true /* DEVIATION: C pointer — s32(in_ECX, 0x8c0) */ + 0x638 + in_ECX];
+    local_18[0] = _MEM[s32(in_ECX, 0x8c0) + 0x638 + in_ECX];
     local_17 = 0;
     FUN_005c19ad(0xf9);
     if (s32(in_ECX, 0x1db4) === 0) {
@@ -3640,11 +3640,11 @@ export function FUN_004d4fd1(in_ECX, param_1) {
     uVar2 = FUN_004d8af0(local_18[0]);
     iVar1 = measure_text_858E(uVar2);
     w32(in_ECX, 0x8b8, s32(in_ECX, 0x8b8) + iVar1);
-    if (s8(_MEM[true /* DEVIATION: C pointer — s32(in_ECX, 0x8c0) */ + 0x638 + in_ECX]) === 58) {
+    if (s8(_MEM[s32(in_ECX, 0x8c0) + 0x638 + in_ECX]) === 58) {
       w32(in_ECX, 0x1db4, 0);
     }
     w32(in_ECX, 0x8c0, s32(in_ECX, 0x8c0) + 1);
-    while (s8(_MEM[true /* DEVIATION: C pointer — s32(in_ECX, 0x8c0) */ + 0x638 + in_ECX]) === 0xa) {
+    while (s8(_MEM[s32(in_ECX, 0x8c0) + 0x638 + in_ECX]) === 0xa) {
       w32(in_ECX, 0x1db4, 1);
       w32(in_ECX, 0x8b8, 10);
       uVar2 = FUN_004d8af0();
@@ -3652,7 +3652,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
       w32(in_ECX, 0x8bc, s32(in_ECX, 0x8bc) + iVar1);
       w32(in_ECX, 0x8c0, s32(in_ECX, 0x8c0) + 1);
     }
-    if (s8(_MEM[true /* DEVIATION: C pointer — s32(in_ECX, 0x8c0) */ + 0x638 + in_ECX]) === 0) {
+    if (s8(_MEM[s32(in_ECX, 0x8c0) + 0x638 + in_ECX]) === 0) {
       if (s32(in_ECX, 0x62c) !== 0) {
         FUN_005d2004(s32(in_ECX, 0x62c));
         w32(in_ECX, 0x62c, 0);
@@ -3683,7 +3683,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
       w32(in_ECX, 0x8f0, 1);
     }
     FUN_00408490(local_14[0]);
-    bVar4 = s8(_MEM[true /* DEVIATION: C pointer — s32(in_ECX, 0x8c0) */ + 0x638 + in_ECX]) !== 0;
+    bVar4 = s8(_MEM[s32(in_ECX, 0x8c0) + 0x638 + in_ECX]) !== 0;
   }
   else {
     bVar4 = true;
@@ -3860,7 +3860,7 @@ export function FUN_004d570b(in_ECX) {
   FUN_0043c840(in_ECX + 0x838,uVar1);
   FUN_004aefb7(in_ECX + 0x838);
   FUN_004aef36(in_ECX + 0x838);
-  FUN_00485208(in_ECX + 0x838, (s16(DAT_0064caa2, true /* DEVIATION: C pointer — s32(in_ECX, 0x1cc) */ * 0x594)));
+  FUN_00485208(in_ECX + 0x838, (s16(DAT_0064caa2, s32(in_ECX, 0x1cc) * 0x594)));
                      /*JOINED*/
   SetRect((in_ECX + 0x8dc),0,0x1c1,0x27f,0x1df);
   FUN_0043c790(in_ECX + 0x8dc,1,1);
@@ -4637,13 +4637,13 @@ export function FUN_004d8d80() {
   for (local_14 = 1; local_14 < 5; local_14 = local_14 + 1) {
     if (s32(DAT_0062e3c0, local_14 * 8) === 9) {
       iVar1 = FUN_00418740();
-      _sprintf(local_10[0],v(DAT_0062e3f8), s32(DAT_006a2a00, iVar1 * 4 + true /* DEVIATION: C pointer — s32(v(DAT_006a4f88) + 0x2ec, 0) */ * 0x58));
+      _sprintf(local_10[0],v(DAT_0062e3f8), s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58));
                /*JOINED*/
       FUN_00418a30(local_10[0]);
     }
     else if (s32(DAT_0062e3c0, local_14 * 8) === 0xc) {
       iVar1 = FUN_00418740();
-      local_8 = s32(DAT_006a2a00, iVar1 * 4 + true /* DEVIATION: C pointer — s32(v(DAT_006a4f88) + 0x2ec, 0) */ * 0x58) + 2;
+      local_8 = s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58) + 2;
       FUN_00418d90(local_8);
     }
   }
@@ -4677,7 +4677,7 @@ export function FUN_004d8ed6() {
       uVar2 = FUN_005adfa0(local_8,s32(DAT_0062e3e8, iVar1 * 4), s32(DAT_0062e3f0, iVar1 * 4));
                                  /*JOINED*/
       // DEVIATION: C pointer write — *(undefined4 *)(&DAT_006a2d28 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58 + iVar1 * 4) = uVar2;
-      if (s32(DAT_006a2d28, true /* DEVIATION: C pointer — s32(v(DAT_006a4f88) + 0x2ec, 0) */ * 0x58 + iVar1 * 4) !== local_8) {
+      if (s32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) !== local_8) {
         local_14 = local_14 + 1;
       }
     }
@@ -5670,7 +5670,7 @@ export function FUN_004db690(in_ECX, param_1) {
   uVar1 = s32(DAT_0062e658, param_1 * 4);
   wv(_DAT_0068abd0, 0);
   wv(_DAT_0068abd4, 0);
-  local_c = s32(DAT_0062e698, true /* DEVIATION: C pointer — s32(in_ECX, 0x204) */ * 4);
+  local_c = s32(DAT_0062e698, s32(in_ECX, 0x204) * 4);
   switch(s32(in_ECX, 0x204)) {
   case 8:
   case 0xc:
@@ -5695,7 +5695,7 @@ export function FUN_004db690(in_ECX, param_1) {
   }
   local_10 = local_c + 0x20;
   if (param_1 === 0xe) {
-    local_8 = s32(DAT_0062e698, true /* DEVIATION: C pointer — s32(in_ECX, 0x200) */ * 4);
+    local_8 = s32(DAT_0062e698, s32(in_ECX, 0x200) * 4);
     switch(s32(in_ECX, 0x200)) {
     case 8:
     case 0xc:
@@ -5746,7 +5746,7 @@ export function FUN_004db690(in_ECX, param_1) {
       }
       FUN_004dbab4(iVar3,s32(in_ECX, 0x200),local_8,0);
     }
-    FUN_0046b14d(0x82,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, v(DAT_0067a8c0) * 4), 0) */ * 0x54),0,0 ,0,0,0,0,0,puVar2);
+    FUN_0046b14d(0x82,s32(DAT_006ad30c, s32(DAT_006ad558, v(DAT_0067a8c0) * 4) * 0x54),0,0 ,0,0,0,0,0,puVar2);
                              /*JOINED*/
                        /*JOINED*/
   }
@@ -6503,7 +6503,7 @@ export function FUN_004dd285(param_1) {
       FUN_0056a65e(1);
     }
     else {
-      FUN_0046b14d(0x79,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, iVar2 * 4), 0) */ * 0x54),0,0,0,0, 0,0,0,0);
+      FUN_0046b14d(0x79,s32(DAT_006ad30c, s32(DAT_006ad558, iVar2 * 4) * 0x54),0,0,0,0, 0,0,0,0);
                                /*JOINED*/
                          /*JOINED*/
     }
@@ -6511,7 +6511,7 @@ export function FUN_004dd285(param_1) {
       FUN_0056a65e(1);
     }
     else {
-      FUN_0046b14d(0x79,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, iVar1 * 4), 0) */ * 0x54),0,0,0,0, 0,0,0,0);
+      FUN_0046b14d(0x79,s32(DAT_006ad30c, s32(DAT_006ad558, iVar1 * 4) * 0x54),0,0,0,0, 0,0,0,0);
                                /*JOINED*/
                          /*JOINED*/
     }
@@ -6650,7 +6650,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
     FUN_0047cf9e(v(DAT_006d1da0),1);
   }
   else {
-    FUN_0046b14d(0x74,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, param_1 * 4), 0) */ * 0x54),0,0,0,0, 0,0,0,0);
+    FUN_0046b14d(0x74,s32(DAT_006ad30c, s32(DAT_006ad558, param_1 * 4) * 0x54),0,0,0,0, 0,0,0,0);
                              /*JOINED*/
                        /*JOINED*/
   }

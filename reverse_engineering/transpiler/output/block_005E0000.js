@@ -5167,7 +5167,7 @@ export function FUN_005e7028(in_ECX, param_1, param_2, param_3) {
 
   // in_ECX → promoted to parameter
   
-  return s32(true /* DEVIATION: C pointer — s32(in_ECX, 0x3c) */ + param_2 * 4, 0) + param_1 + param_3;
+  return s32(s32(in_ECX, 0x3c) + param_2 * 4, 0) + param_1 + param_3;
 }
 
 

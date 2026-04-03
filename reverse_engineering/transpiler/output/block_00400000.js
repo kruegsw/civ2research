@@ -3059,7 +3059,7 @@ export function FUN_0040c7d0(in_ECX) {
   FUN_0040bbb0();
   FUN_0040bc10(0x98);
   FUN_0040fe40();
-  FUN_0040ff00(s32(DAT_0064b9a0, u8(_MEM[DAT_0064c6b5 + true /* DEVIATION: C pointer — s32(in_ECX, 0x2d8) */ * 0x594]) * 4));
+  FUN_0040ff00(s32(DAT_0064b9a0, u8(_MEM[DAT_0064c6b5 + s32(in_ECX, 0x2d8) * 0x594]) * 4));
                       /*JOINED*/
                       /*JOINED*/
   FUN_0040fe10();
@@ -3498,7 +3498,7 @@ export function FUN_0040ddc6(param_1) {
     thunk_citywin_9429();
   }
   else {
-    FUN_0046b14d(0x9d,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, param_1 * 4), 0) */ * 0x54),0,0,0,0, 0,0,0,0);
+    FUN_0046b14d(0x9d,s32(DAT_006ad30c, s32(DAT_006ad558, param_1 * 4) * 0x54),0,0,0,0, 0,0,0,0);
                              /*JOINED*/
                        /*JOINED*/
   }
@@ -3566,7 +3566,7 @@ export function FUN_0040decc(param_1) {
       }
     }
     else {
-      FUN_0046b14d(0x9e,s32(DAT_006ad30c, true /* DEVIATION: C pointer — s32(ptrAdd(DAT_006ad558, param_1 * 4), 0) */ * 0x54),0,0,0, 0,0,0,0,0);
+      FUN_0046b14d(0x9e,s32(DAT_006ad30c, s32(DAT_006ad558, param_1 * 4) * 0x54),0,0,0, 0,0,0,0,0);
                                /*JOINED*/
                          /*JOINED*/
     }

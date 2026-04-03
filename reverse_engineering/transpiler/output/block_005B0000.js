@@ -651,7 +651,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656106, local_24 * 0x20)) {
       iVar3 = (s16(DAT_00656106, local_24 * 0x20));
-      if (s32(DAT_0065610a, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) === 0) {
+      if (s32(DAT_0065610a, s16(DAT_00656106, local_24 * 0x20) * 0x20) === 0) {
         FUN_005d2279(s_Dead_unit_in_unit_stack__id____d_006360c8,local_24);
         local_8 = 0;
         w16(DAT_00656106, local_24 * 0x20, 0xffff);
@@ -677,7 +677,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656106, local_24 * 0x20)) {
       iVar3 = (s16(DAT_00656106, local_24 * 0x20));
-      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656106, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
+      if ((s16(DAT_006560f0, s16(DAT_00656106, local_24 * 0x20) * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, s16(DAT_00656106, local_24 * 0x20) * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
            /*JOINED*/
          /*JOINED*/
           /*JOINED*/
@@ -693,7 +693,7 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (local_24 = iVar3, -1 < s16(DAT_00656108, local_24 * 0x20)) {
       iVar3 = (s16(DAT_00656108, local_24 * 0x20));
-      if ((s16(DAT_006560f0, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656108, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, true /* DEVIATION: C pointer — s16(ptrAdd(DAT_00656108, local_24 * 0x20), 0) */ * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
+      if ((s16(DAT_006560f0, s16(DAT_00656108, local_24 * 0x20) * 0x20) !== s16(DAT_006560f0, local_24 * 0x20)) || (s16(DAT_006560f2, s16(DAT_00656108, local_24 * 0x20) * 0x20) !== s16(DAT_006560f2, local_24 * 0x20))) {
            /*JOINED*/
          /*JOINED*/
           /*JOINED*/
