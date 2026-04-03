@@ -38,7 +38,6 @@ from ghidra.app.decompiler import (
 from ghidra.program.model.pcode import PcodeOp
 from ghidra.util.task import TaskMonitor
 import os
-import re
 import sys
 
 # ── PyGhidra compatibility ────────────────────────────────────────
