@@ -31,6 +31,12 @@
       "fn": "FUN_00601040",
       "from": "s8(local_40)",
       "to": "u8(local_40)"
+    },
+    {
+      "block": "block_00490000",
+      "fn": "FUN_00498e8b",
+      "from": "u8(_MEM[DAT_00655b82])",
+      "to": "s8(_MEM[DAT_00655b82])"
     }
   ]
 }

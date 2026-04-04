@@ -75,7 +75,7 @@ export function loadSav(buf) {
   w32(DAT_00655b0b, 0, 0);             // human player bitmask (32-bit)
   w16(DAT_00655b16, 0, totalUnits);    // total unit count (16-bit)
   w16(DAT_00655b18, 0, totalCities);   // total city count (16-bit)
-  w32(DAT_0064bcc8, 0, 3);             // movement multiplier (32-bit)
+  G._MEM[DAT_0064bcc8] = 3;            // movement multiplier (1-byte cosmic param)
 
   // ── Compute section offsets ──
   const block1Off   = MAP_HEADER + 14;               // known improvements

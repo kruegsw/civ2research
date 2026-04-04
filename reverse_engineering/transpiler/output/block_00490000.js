@@ -4843,7 +4843,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
@@ -6965,7 +6965,7 @@ function LAB_00499ca3_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
@@ -8510,7 +8510,7 @@ function LAB_0049aab5_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
@@ -10071,7 +10071,7 @@ function LAB_0049a9d5_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
@@ -11560,7 +11560,7 @@ function LAB_0049ae3e_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
@@ -13060,7 +13060,7 @@ function LAB_0049aba3_helper(aiStack_364, auStack_cc, bVar1, bVar3, cVar2, iVar5
             if (v(DAT_00655bca) != 0) {
               local_1c = local_1c + 2;
             }
-            if (u8(_MEM[DAT_00655b82]) != 0) {
+            if (s8(_MEM[DAT_00655b82]) != 0) {
               local_1c = local_1c + 2;
             }
             if (v(DAT_00655bcb) != 0) {
