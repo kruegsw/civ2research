@@ -11,9 +11,14 @@
 
 import { G } from './globals.js';
 import { setWidths } from './mem.js';
-import { readFileSync, readdirSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+// Node.js-only imports — guarded for browser compatibility
+const _isNode = typeof process !== 'undefined' && process.versions?.node;
+let readFileSync, readdirSync, fileURLToPath, dirname, join;
+if (_isNode) {
+  ({ readFileSync, readdirSync } = await import('fs'));
+  ({ fileURLToPath } = await import('url'));
+  ({ dirname, join } = await import('path'));
+}
 
 // The base address and _MEM buffer
 // Compute BASE from the actual minimum address across all keys
@@ -41,7 +46,7 @@ for (const key of Object.keys(G)) {
 // Compute offsets from the known BASE. Addresses outside the buffer
 // range get offset anyway — they'll access _MEM harmlessly (out-of-bounds
 // reads return undefined, which the null guards handle).
-{
+if (_isNode) {
   const __dir = dirname(fileURLToPath(import.meta.url));
   const srcDir = join(__dir, '..', 'reverse_engineering', 'transpiler', 'output');
   try {
@@ -70,7 +75,7 @@ for (const key of Object.keys(G)) {
 }
 
 // Load address widths from dat-classify.json and register with v()/wv()
-try {
+if (_isNode) try {
   const __dir = dirname(fileURLToPath(import.meta.url));
   const classify = JSON.parse(readFileSync(join(__dir, 'dat-classify.json'), 'utf8'));
   if (classify.widths) {
