@@ -126,6 +126,7 @@ console.log('\n=== TEST 1: City Shield Production (+2/turn, Warriors=10) ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   // Use Rome at (36,36) — we know from earlier testing it produces shields
   const FUN_00489553 = (await import('./blocks/block_00480000.js')).FUN_00489553;
@@ -167,6 +168,7 @@ console.log('\n=== TEST 2: Food Accumulation (+2/turn for size 1) ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   const FUN_00489553 = (await import('./blocks/block_00480000.js')).FUN_00489553;
 
@@ -210,6 +212,7 @@ console.log('\n=== TEST 3: Beakers Sentinel (0xFFFF = no research) ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   for (let c = 0; c < 7; c++) {
     const coff = c * 0x594;
@@ -238,6 +241,7 @@ console.log('\n=== TEST 4: Shield Overflow (carry forward) ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   const FUN_00489553 = (await import('./blocks/block_00480000.js')).FUN_00489553;
 
@@ -288,6 +292,7 @@ console.log('\n=== TEST 5: Unit Creation on Production Completion ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   const FUN_00489553 = (await import('./blocks/block_00480000.js')).FUN_00489553;
 
@@ -330,6 +335,7 @@ console.log('\n=== TEST 6: Treasury Accumulation ===');
   const { loadSav } = await import('./sav-loader.js');
   const savBuf = new Uint8Array(readFileSync('20260301_early-game-data/20260301_research_02_early game few cities.sav'));
   loadSav(savBuf);
+  _MEM[DAT_00655b0b] = 0; // headless: treat all civs as AI
 
   const FUN_00489553 = (await import('./blocks/block_00480000.js')).FUN_00489553;
 

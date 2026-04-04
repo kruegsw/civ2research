@@ -185,6 +185,7 @@ for (const savPath of savFiles) {
 
   try {
     loadSav(readFileSync(savPath));
+  _MEM[DAT_00655b0b] = 0; // headless: all AI
   } catch (e) {
     trackError(e, name, 0, 0, 'loadSav');
     continue;

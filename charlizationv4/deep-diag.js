@@ -26,6 +26,7 @@ const savPath = process.argv.find((a,i,arr) => arr[i-1] === '--sav') ||
 initBinaryConstants();
 loadRules(readFileSync('/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT', 'utf8'));
 loadSav(readFileSync(savPath));
+_MEM[DAT_00655b0b] = 0; // headless: all AI
 
 const { FUN_00488cef, FUN_00489292 } = await import('./blocks/block_00480000.js');
 const { FUN_004f0a9c } = await import('./blocks/block_004F0000.js');
