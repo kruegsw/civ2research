@@ -56,6 +56,11 @@ export function setMainCanvas(canvas) {
   mainCtx = canvas ? canvas.getContext('2d') : null;
 }
 
+// Expose handle lookup for sprite-loader.js
+export function getHandleForSprite(h) {
+  return getHandle(h);
+}
+
 // ── COLORREF helpers ──────────────────────────────────────────────
 // Win32 COLORREF: 0x00BBGGRR (note: BGR not RGB)
 function colorrefToCSS(cr) {

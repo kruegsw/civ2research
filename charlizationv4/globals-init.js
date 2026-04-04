@@ -94,11 +94,19 @@ if (_isNode) try {
 // Also expose G and _MEM for infrastructure
 globalThis.G = G;
 
-// CPU register globals
-globalThis.in_ECX = new Uint8Array(8192);
-globalThis.in_ECX[0x1ef] = 1;   // "is host" flag — FUN_00421f40 checks this for unit/city creation
-globalThis.in_ECX[0x450] = 0xFF; globalThis.in_ECX[0x451] = 0xFF;
-globalThis.in_ECX[0x452] = 0xFF; globalThis.in_ECX[0x453] = 0xFF;
+// CPU register globals — in_ECX must be a NUMERIC OFFSET into _MEM,
+// not a separate Uint8Array. The binary uses both _MEM[in_ECX + off]
+// and s32(in_ECX, off) interchangeably. If in_ECX is an object,
+// _MEM[object + number] = _MEM[NaN] = undefined, causing infinite loops.
+const _ECX_BASE = G._MEM.length - 16384; // 16KB at end of _MEM buffer
+globalThis.in_ECX = _ECX_BASE;
+G._MEM[_ECX_BASE + 0x1ef] = 1;   // "is host" flag
+G._MEM[_ECX_BASE + 0x450] = 0xFF; G._MEM[_ECX_BASE + 0x451] = 0xFF;
+G._MEM[_ECX_BASE + 0x452] = 0xFF; G._MEM[_ECX_BASE + 0x453] = 0xFF;
+{
+  const dv = new DataView(G._MEM.buffer);
+  dv.setInt32(_ECX_BASE + 0xd8, 1, true);  // non-zero skips resource list scan
+}
 globalThis.in_EAX = 0;
 globalThis.in_EDX = 0;
 

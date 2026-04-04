@@ -785,13 +785,13 @@ export function FUN_005d1b38(in_ECX = globalThis.in_ECX) {
   
   SetRect(in_ECX,0,0,0,0);
   SetRect(in_ECX + 1,0,0,0,0);
-  in_ECX[2].left = 0;
-  in_ECX[2].top = 0;
-  in_ECX[2].right = 1;
-  in_ECX[2].bottom = 1;
-  _MEM[in_ECX[3].left] = 0;
-  in_ECX[3].top = 0;
-  in_ECX[3].right = 0;
+  w32(_MEM[in_ECX + 2], 0, 0);
+  w32(_MEM[in_ECX + 2], 4, 0);
+  w32(_MEM[in_ECX + 2], 8, 1);
+  w32(_MEM[in_ECX + 2], 12, 1);
+  _MEM[s32(_MEM[in_ECX + 3], 0)] = 0;
+  w32(_MEM[in_ECX + 3], 4, 0);
+  w32(_MEM[in_ECX + 3], 8, 0);
   return;
 }
 

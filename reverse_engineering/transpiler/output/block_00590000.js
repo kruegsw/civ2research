@@ -4829,7 +4829,7 @@ export function FUN_0059dfb9(in_ECX = globalThis.in_ECX, param_1, param_2, param
   let iVar2;
   // in_ECX → promoted to parameter
   
-  if ((u8(in_ECX[0x3c]) & 0x20) == 0) {
+  if ((u8(_MEM[in_ECX + 0x3c]) & 0x20) == 0) {
     FUN_00497ea0(in_ECX + 0x254,9,s16(in_ECX, 0x262));
   }
   else {

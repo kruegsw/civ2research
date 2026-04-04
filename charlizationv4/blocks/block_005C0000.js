@@ -10879,12 +10879,12 @@ export function FUN_005cf64c(in_ECX = globalThis.in_ECX, param_1, param_2, param
           local_44 = local_44 + 1;
           local_2c = FUN_005c5610(local_2c);
         }
-        if (in_ECX[3].right != 0) {
+        if (s32(_MEM[in_ECX + 3], 8) != 0) {
           FUN_005cf337();
         }
-        if (in_ECX[3].top != 0) {
-          LVar4 = FUN_005dce96(in_ECX[3].top);
-          in_ECX[3].top = LVar4;
+        if (s32(_MEM[in_ECX + 3], 4) != 0) {
+          LVar4 = FUN_005dce96(s32(_MEM[in_ECX + 3], 4));
+          w32(_MEM[in_ECX + 3], 4, LVar4);
         }
         local_c = local_c + 8;
         local_30 = FUN_005dce4f(local_c);
@@ -10903,13 +10903,13 @@ export function FUN_005cf64c(in_ECX = globalThis.in_ECX, param_1, param_2, param
           iVar3 = FUN_00407f90(local_64);
           SetRect(in_ECX,0,0,iVar3,iVar2);
           if (param_2 === -2) {
-            _MEM[in_ECX[3].left] = 0;
+            _MEM[s32(_MEM[in_ECX + 3], 0)] = 0;
           }
           else {
-            _MEM[in_ECX[3].left] = local_40;
+            _MEM[s32(_MEM[in_ECX + 3], 0)] = local_40;
           }
-          in_ECX[2].left = 0;
-          in_ECX[2].top = 0;
+          w32(_MEM[in_ECX + 2], 0, 0);
+          w32(_MEM[in_ECX + 2], 4, 0);
           local_4c = FUN_005dcdf9(local_30);
           for (local_44 = 0; local_44 < local_10 - local_18; local_44 = local_44 + 1) {
             loopGuard('FUN_005cf64c', 10862);
@@ -10937,17 +10937,17 @@ export function FUN_005cf64c(in_ECX = globalThis.in_ECX, param_1, param_2, param
       iVar3 = FUN_00407f90(local_64);
       SetRect(in_ECX,0,0,iVar3,iVar2);
       if (param_2 === -2) {
-        _MEM[in_ECX[3].left] = 0;
+        _MEM[s32(_MEM[in_ECX + 3], 0)] = 0;
       }
       else {
-        _MEM[in_ECX[3].left] = local_40;
+        _MEM[s32(_MEM[in_ECX + 3], 0)] = local_40;
       }
-      in_ECX[2].left = 0;
-      in_ECX[2].top = 0;
+      w32(_MEM[in_ECX + 2], 0, 0);
+      w32(_MEM[in_ECX + 2], 4, 0);
       if (local_34 == 0) {
         FUN_005c02e0();
       }
-      in_ECX[3].right = 0;
+      w32(_MEM[in_ECX + 3], 8, 0);
       local_30 = 0;
     }
   }
@@ -11105,12 +11105,12 @@ export function FUN_005cfdeb(in_ECX = globalThis.in_ECX, param_1, param_2, param
             local_48 = local_48 + 1;
             local_30 = FUN_005d1ef0(local_30);
           }
-          if (in_ECX[3].right != 0) {
+          if (s32(_MEM[in_ECX + 3], 8) != 0) {
             FUN_005cf337();
           }
-          if (in_ECX[3].top != 0) {
-            LVar3 = FUN_005dce96(in_ECX[3].top);
-            in_ECX[3].top = LVar3;
+          if (s32(_MEM[in_ECX + 3], 4) != 0) {
+            LVar3 = FUN_005dce96(s32(_MEM[in_ECX + 3], 4));
+            w32(_MEM[in_ECX + 3], 4, LVar3);
           }
           local_10 = local_10 + 8;
           local_34 = FUN_005dce4f(local_10);
@@ -11127,13 +11127,13 @@ export function FUN_005cfdeb(in_ECX = globalThis.in_ECX, param_1, param_2, param
             iVar2 = FUN_00407f90(local_68);
             SetRect(in_ECX,0,0,iVar2,iVar1);
             if (param_2 === -2) {
-              _MEM[in_ECX[3].left] = 0;
+              _MEM[s32(_MEM[in_ECX + 3], 0)] = 0;
             }
             else {
-              _MEM[in_ECX[3].left] = local_44;
+              _MEM[s32(_MEM[in_ECX + 3], 0)] = local_44;
             }
-            in_ECX[2].left = 0;
-            in_ECX[2].top = 0;
+            w32(_MEM[in_ECX + 2], 0, 0);
+            w32(_MEM[in_ECX + 2], 4, 0);
             local_50 = FUN_005dcdf9(local_34);
             for (local_48 = 0; local_48 < local_14 - local_1c; local_48 = local_48 + 1) {
               loopGuard('FUN_005cfdeb', 11086);
@@ -11159,15 +11159,15 @@ export function FUN_005cfdeb(in_ECX = globalThis.in_ECX, param_1, param_2, param
         iVar2 = FUN_00407f90(local_68);
         SetRect(in_ECX,0,0,iVar2,iVar1);
         if (param_2 === -2) {
-          _MEM[in_ECX[3].left] = 0;
+          _MEM[s32(_MEM[in_ECX + 3], 0)] = 0;
         }
         else {
-          _MEM[in_ECX[3].left] = local_44;
+          _MEM[s32(_MEM[in_ECX + 3], 0)] = local_44;
         }
-        in_ECX[2].left = 0;
-        in_ECX[2].top = 0;
+        w32(_MEM[in_ECX + 2], 0, 0);
+        w32(_MEM[in_ECX + 2], 4, 0);
         _Timevec___Timevec(param_1);
-        in_ECX[3].right = 0;
+        w32(_MEM[in_ECX + 3], 8, 0);
         local_34 = 0;
       }
     }

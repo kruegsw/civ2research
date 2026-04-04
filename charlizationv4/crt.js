@@ -310,5 +310,17 @@ export function SendMessageA() { return 0; }
 
 // ── GDI message pump functions (headless: all no-ops) ──
 export function GdiFlush() { return 1; }
-export function gdi_BA4F() { return 0; }
+export function gdi_BA4F() {
+  // Called from FUN_0040ef50 (message pump) inside rendering loops.
+  // in_ECX is now a numeric offset into _MEM (not a Uint8Array).
+  // w32(in_ECX, 0x8c, 1) writes to _MEM[in_ECX + 0x8c].
+  // We clear those same locations so rendering loops exit.
+  const ecx = globalThis.in_ECX;
+  if (typeof ecx === 'number' && globalThis.G) {
+    const m = globalThis.G._MEM;
+    m[ecx + 0x8c] = 0; m[ecx + 0x8d] = 0; m[ecx + 0x8e] = 0; m[ecx + 0x8f] = 0;
+    m[ecx + 0x3d] |= 4;
+  }
+  return 0;
+}
 export function gdi_BB76() { return 0; }

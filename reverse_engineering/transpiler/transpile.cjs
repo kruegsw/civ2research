@@ -1131,15 +1131,16 @@ function transformLine(line, ctx) {
           // Keep bracket access for known arrays and non-pointer patterns
           if (arrays.has(name)) return m;                    // local array
           if (name === '_MEM' || name === 'G') return m;     // flat memory / globals object
-          // Register variables: only keep as array if NOT declared as typed pointer
+          // Register variables: in_ECX is a numeric _MEM offset, not an array.
+          // Typed pointer (undefined4*) → stride-aware s32/w32 conversion.
+          // Non-pointer → byte access via _MEM[name + idx].
           if (/^(in_ECX|in_EAX|in_EDX)$/.test(name)) {
             const w = ptrW.get(name);
             if (w && w > 1) {
-              // Pointer type: use stride marker for proper s32/w32 conversion
               if (w === 4) return '_STRIDE4[' + name + ' + ';
               if (w === 2) return '_STRIDE2[' + name + ' + ';
             }
-            return m; // byte pointer or no type info → treat as Uint8Array
+            return '_MEM[' + name + ' + '; // byte access through _MEM
           }
           if (/^(Math|Array|String|Object|console)$/.test(name)) return m; // JS builtins
           if (/^(acStack|auStack|abStack|aiStack|asStack)/.test(name)) return m; // stack arrays

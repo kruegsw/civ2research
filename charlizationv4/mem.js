@@ -99,7 +99,7 @@ export function ptrAdd(addr, off) { return addr + off; }
 // ── Loop guard: prevents infinite loops, logs diagnostic info ──
 // Per-loop guard using a flat object for fast lookup
 let _loopCounts = Object.create(null);
-const _PER_LOOP_LIMIT = 500000;
+let _PER_LOOP_LIMIT = 500000;
 export function loopGuard(fnName, line) {
   const key = fnName + ':' + line;
   const count = (_loopCounts[key] = (_loopCounts[key] || 0) + 1);
@@ -109,6 +109,7 @@ export function loopGuard(fnName, line) {
   }
 }
 export function loopReset() { _loopCounts = Object.create(null); }
+export function setLoopLimit(n) { _PER_LOOP_LIMIT = n; }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

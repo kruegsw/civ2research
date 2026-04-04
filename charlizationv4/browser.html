@@ -16,9 +16,10 @@
 import { setMainCanvas } from './gdi.js';
 import './globals-init.js';
 import './symbols.js';  // PTR_ and s_ symbol offsets (pre-generated for browser)
-import { v, wv, w16, s16, s32, u8, ptrAdd, _MEM, loopReset } from './mem.js';
+import { v, wv, w16, w32, s16, s32, u8, ptrAdd, _MEM, loopReset } from './mem.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
 import { loadSav } from './sav-loader.js';
+import { loadAllSprites } from './sprite-loader.js';
 
 const canvas = document.getElementById('display');
 const status = document.getElementById('status');
@@ -47,39 +48,43 @@ async function boot() {
     const turn = s16(DAT_00655af8, 0);
     const units = s16(DAT_00655b16, 0);
     const cities = s16(DAT_00655b18, 0);
-    status.textContent = `Loaded: turn ${turn}, ${units} units, ${cities} cities. Running...`;
+    status.textContent = `Loaded: turn ${turn}, ${units} units, ${cities} cities. Loading sprites...`;
+
+    // Load sprite sheets into MSBitmap structs
+    const sprites = await loadAllSprites('/assets');
+    status.textContent += ' Sprites loaded. Running...';
+
+    // Raise loop guard limit for browser — rendering calls accumulate many
+    // message pump iterations that are harmless (each exits after 1 iteration
+    // thanks to gdi_BA4F clearing the flag)
+    const memModule = await import('./mem.js');
+    memModule.setLoopLimit(5000000); // 5M for browser (headless uses 500K)
 
     // Import turn pipeline
-    const { FUN_00488cef, FUN_00489292 } = await import('./blocks/block_00480000.js');
-    const { FUN_004f0a9c } = await import('./blocks/block_004F0000.js');
-    const { FUN_00560084 } = await import('./blocks/block_00560000.js');
-    const { FUN_0053184d } = await import('./blocks/block_00530000.js');
+    const { FUN_00489553 } = await import('./blocks/block_00480000.js');
 
-    status.textContent += ' Engine ready.';
-
-    // Run one turn and see what the GDI layer captures
     const alive = _MEM[DAT_00655b0a];
     for (let civ = 1; civ < 8; civ++) {
       if (!(alive & (1 << civ))) continue;
       _MEM[DAT_00655b05] = civ;
       wv(DAT_006d1da0, civ);
-      loopReset();
-      try { FUN_00488cef(civ); } catch(e) { console.warn('FUN_00488cef:', e.message); }
-      let idx = s16(DAT_00655b18, 0);
-      while (--idx >= 0) {
-        if (s32(DAT_0064f394, idx * 0x58) !== 0 && _MEM[DAT_0064f348 + idx * 0x58] === (civ & 0xFF))
-          try { FUN_004f0a9c(idx); } catch(e) { console.warn('FUN_004f0a9c(' + idx + '):', e.message); }
+      loopReset(); // reset loop guard counters between civs
+      // Clear MFC rendering flags before each civ to prevent loop accumulation
+      globalThis.in_ECX[0x8c] = 0; globalThis.in_ECX[0x8d] = 0;
+      globalThis.in_ECX[0x8e] = 0; globalThis.in_ECX[0x8f] = 0;
+      globalThis.in_ECX[0x3d] |= 4;
+      try {
+        FUN_00489553(civ);
+      } catch(e) {
+        console.warn('Civ ' + civ + ':', e.message);
       }
-      try { FUN_00560084(civ); } catch(e) {}
-      try { FUN_0053184d(civ); } catch(e) {}
-      try { FUN_00489292(civ, 0); } catch(e) {}
     }
     wv(DAT_00655af8, s16(DAT_00655af8, 0) + 1);
 
     const t2 = s16(DAT_00655af8, 0);
     const u2 = s16(DAT_00655b16, 0);
     const c2 = s16(DAT_00655b18, 0);
-    status.textContent = `Turn ${t2}: ${u2} units, ${c2} cities. Check console for GDI calls.`;
+    status.textContent = `Turn ${t2}: ${u2} units, ${c2} cities. Binary rendering active.`;
 
   } catch(e) {
     status.textContent = 'Error: ' + e.message;

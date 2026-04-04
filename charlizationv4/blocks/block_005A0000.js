@@ -2580,7 +2580,7 @@ export function FUN_005a632a(in_ECX = globalThis.in_ECX, param_1, param_2, param
         else if (local_7c === 2) {
           FUN_00426ff0(local_70,local_17c);
           if (local_74 == 0) {
-            if ((u8(in_ECX[0x3c]) & 4) == 0) {
+            if ((u8(_MEM[in_ECX + 0x3c]) & 4) == 0) {
               local_14 = FUN_0059edf0(in_ECX, local_17c,local_10,0);
             }
             else {
