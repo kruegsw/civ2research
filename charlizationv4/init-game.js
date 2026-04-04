@@ -256,7 +256,7 @@ if (turns > 0) {
       if (!(civMask & (1 << civ))) continue;
       loopReset();
       try {
-        wv(DAT_00655b05, civ);
+        _MEM[DAT_00655b05] = civ;
         wv(DAT_006d1da0, civ);
         FUN_00489553(civ);
         if (((1 << (civ & 0x1f)) & v(DAT_00655b0b)) === 0) {

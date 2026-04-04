@@ -72,7 +72,7 @@ export function loadSav(buf) {
 
   // ── Set game state globals ──
   w16(DAT_00655af8, 0, turnsPassed);   // turn counter (16-bit)
-  w32(DAT_00655b0b, 0, 0);             // human player bitmask (32-bit)
+  G._MEM[DAT_00655b0b] = 0;            // human player bitmask (1-byte)
   w16(DAT_00655b16, 0, totalUnits);    // total unit count (16-bit)
   w16(DAT_00655b18, 0, totalCities);   // total city count (16-bit)
   G._MEM[DAT_0064bcc8] = 3;            // movement multiplier (1-byte cosmic param)

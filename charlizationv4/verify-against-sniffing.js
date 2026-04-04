@@ -29,7 +29,7 @@ const { FUN_0053184d } = await import('./blocks/block_00530000.js');
 const { FUN_00543cd6 } = await import('./blocks/block_00540000.js');
 
 function runTurnHeadless(civ) {
-  wv(DAT_00655b05, civ);
+  _MEM[DAT_00655b05] = civ;
   wv(DAT_006d1da0, civ);
   loopReset();
   if (s32(DAT_0064c6a2, civ * 0x594) > 30000) w32(ptrAdd(DAT_0064c6a2, civ * 0x594), 0, 30000);

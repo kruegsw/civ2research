@@ -147,7 +147,7 @@ placeUnit(3, 2, 2, 70, 30);
 
 w16(DAT_00655b16, 0, 4);   // 4 units total
 w16(DAT_00655b18, 0, 2);   // 2 cities total
-wv(DAT_00655b0b, 0);        // all AI
+_MEM[DAT_00655b0b] = 0;     // all AI (1-byte — wv would clobber neighbors)
 wv(DAT_00655af8, 1);        // turn counter = 1 (gates tech assignment + AI decisions)
 wv(DAT_00627fd8, 5);        // unit ID counter (next ID = 5, since we placed 4 units with IDs 1-4)
 
@@ -267,7 +267,7 @@ for (let t = 0; t < turns; t++) {
 
   const turnStart = Date.now();
   for (let civ = 1; civ <= 2; civ++) {
-    wv(DAT_00655b05, civ);
+    _MEM[DAT_00655b05] = civ; // 1-byte — wv would clobber neighbors
     wv(DAT_006d1da0, civ);
     loopReset();
     try { runTurn(civ); } catch(e) {}

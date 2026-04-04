@@ -63,7 +63,7 @@ if (savPath) {
   w16(DAT_006d116c, 0, mapH);
   wv(DAT_006d1168, Date.now() & 0x7FFF);
   wv(DAT_00655b0a, 0x7F);
-  wv(DAT_00655b0b, 0);
+  _MEM[DAT_00655b0b] = 0;
 
   // Map gen
   const { FUN_00408d33 } = await import('./blocks/block_00400000.js');

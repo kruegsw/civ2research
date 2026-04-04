@@ -89,7 +89,7 @@ const { FUN_00543cd6 } = await import('./blocks/block_00540000.js');
 console.log('Turn pipeline loaded');
 
 function runTurnHeadless(civ) {
-  wv(DAT_00655b05, civ); wv(DAT_006d1da0, civ); loopReset();
+  _MEM[DAT_00655b05] = civ; wv(DAT_006d1da0, civ); loopReset();
   if (s32(DAT_0064c6a2, civ*0x594) > 30000) w32(ptrAdd(DAT_0064c6a2, civ*0x594), 0, 30000);
   if (s32(DAT_0064c6a2, civ*0x594) < 0) w32(ptrAdd(DAT_0064c6a2, civ*0x594), 0, 0);
   try { FUN_00488cef(civ); } catch(e) {}

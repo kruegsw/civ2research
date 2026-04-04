@@ -67,7 +67,7 @@ function trackLoopGuard(msg) {
 
 // ── Headless turn runner with error capture ──
 function runTurnHeadless(civ, saveName, turnNum) {
-  wv(DAT_00655b05, civ);
+  _MEM[DAT_00655b05] = civ;
   wv(DAT_006d1da0, civ);
   loopReset();
 

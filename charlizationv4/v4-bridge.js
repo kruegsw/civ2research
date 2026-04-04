@@ -163,7 +163,7 @@ export async function v4EndTurn(v3State, civSlot) {
   }
 
   // Run v4 binary per-civ processing
-  wv(DAT_00655b05, civSlot);
+  _MEM[DAT_00655b05] = civSlot;
   wv(DAT_006d1da0, civSlot);
   loopReset();
   try {
