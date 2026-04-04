@@ -97,19 +97,18 @@ export function w32r(addr, off, val) { w32(addr, off, val); return val; }
 export function ptrAdd(addr, off) { return addr + off; }
 
 // ── Loop guard: prevents infinite loops, logs diagnostic info ──
-// Per-loop guard using a Map keyed by function+line
-const _loopCounts = new Map();
-const _PER_LOOP_LIMIT = 1000000;
+// Per-loop guard using a flat object for fast lookup
+let _loopCounts = Object.create(null);
+const _PER_LOOP_LIMIT = 500000;
 export function loopGuard(fnName, line) {
   const key = fnName + ':' + line;
-  const count = (_loopCounts.get(key) || 0) + 1;
-  _loopCounts.set(key, count);
+  const count = (_loopCounts[key] = (_loopCounts[key] || 0) + 1);
   if (count > _PER_LOOP_LIMIT) {
-    _loopCounts.set(key, 0);
+    _loopCounts[key] = 0;
     throw new Error('LOOP_GUARD: ' + fnName + ' line ' + line + ' exceeded ' + _PER_LOOP_LIMIT + ' iterations');
   }
 }
-export function loopReset() { _loopCounts.clear(); }
+export function loopReset() { _loopCounts = Object.create(null); }
 
 // ── Tile data initialization ──
 export function initMapTiles(tileArray) {

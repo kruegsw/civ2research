@@ -37,6 +37,41 @@ const PCODE_CORRECTIONS = fs.existsSync(CORRECTIONS_FILE)
   ? JSON.parse(fs.readFileSync(CORRECTIONS_FILE, 'utf8')).corrections
   : [];
 
+// ── Pre-scan: build set of functions that use in_ECX (thiscall convention) ──
+// These functions have `in_ECX` promoted to their first parameter in JS.
+// When C code calls them via thunk_FUN_xxx(...), JS must prepend in_ECX.
+const ECX_FUNCTIONS = new Set();
+{
+  const cFiles = fs.readdirSync(C_DIR).filter(f => f.endsWith('.c'));
+  for (const cf of cFiles) {
+    const src = fs.readFileSync(path.join(C_DIR, cf), 'utf8');
+    // Match function definitions that contain an in_ECX declaration
+    const funcRe = /^(?:\w[\w\s*]*\s+)?((?:thunk_)?(?:FUN_[0-9a-fA-F]+|\w+_[0-9A-F]+))\s*\(/gm;
+    let fm;
+    while ((fm = funcRe.exec(src)) !== null) {
+      const funcStart = fm.index;
+      // Find the function body (next { ... })
+      const braceIdx = src.indexOf('{', funcStart);
+      if (braceIdx < 0) continue;
+      // Find the closing brace (simple depth count)
+      let depth = 1, j = braceIdx + 1;
+      while (j < src.length && depth > 0) {
+        if (src[j] === '{') depth++;
+        else if (src[j] === '}') depth--;
+        j++;
+      }
+      const body = src.substring(braceIdx, j);
+      // Check for in_ECX declaration in the body
+      if (/^\s*\w[\w\s*]*\s+\*?in_ECX\s*;/m.test(body)) {
+        // Strip thunk_ prefix if present
+        const name = fm[1].replace(/^thunk_/, '');
+        ECX_FUNCTIONS.add(name);
+      }
+    }
+  }
+  // console.log(`Pre-scan: ${ECX_FUNCTIONS.size} functions with in_ECX`);
+}
+
 // ── Balanced extraction helpers ────────────────────────────────────
 
 // Extract the contents of a balanced (...) starting at position `start`
@@ -466,7 +501,18 @@ function transformLine(line, ctx) {
     out = out.replace(/\b(0x[0-9a-fA-F]+)U\b/g, '$1');
     out = out.replace(/\b(\d+)U\b/g, '$1');
 
-    // ── Drop thunk_ prefix (from ALL function calls, not just FUN_) ──
+    // ── Drop thunk_ prefix and inject in_ECX for thiscall functions ──
+    // In C, thunk_ means ECX register is preserved across the call.
+    // If the target function has in_ECX, we must pass it explicitly in JS.
+    out = out.replace(/\bthunk_(\w+)\s*\(/g, (m, name) => {
+      if (ECX_FUNCTIONS.has(name) && ctx.hasECX) {
+        return name + '(in_ECX, ';
+      }
+      return name + '(';
+    });
+    // Fix trailing comma from zero-arg thiscall: FUN_xxx(in_ECX, ) → FUN_xxx(in_ECX)
+    out = out.replace(/\(in_ECX, \)/g, '(in_ECX)');
+    // Also strip remaining thunk_ that aren't function calls (rare)
     out = out.replace(/\bthunk_(\w+)/g, '$1');
 
     // ── C++ scope resolution: ClassName::Method → ClassName__Method ──
@@ -506,7 +552,17 @@ function transformLine(line, ctx) {
         // EXCEPTION_RECORD
         'ExceptionCode': { off: 0, width: 4 }, 'ExceptionRecord': { off: 4, width: 4 },
         'NumberParameters': { off: 20, width: 4 },
+        // RGBQUAD
+        'rgbBlue': { off: 0, width: 1 }, 'rgbGreen': { off: 1, width: 1 },
+        'rgbRed': { off: 2, width: 1 }, 'rgbReserved': { off: 3, width: 1 },
         // LOGFONT
+        'lfHeight': { off: 0, width: 4 }, 'lfWidth': { off: 4, width: 4 },
+        'lfEscapement': { off: 8, width: 4 }, 'lfOrientation': { off: 12, width: 4 },
+        'lfWeight': { off: 16, width: 4 }, 'lfItalic': { off: 20, width: 1 },
+        'lfUnderline': { off: 21, width: 1 }, 'lfStrikeOut': { off: 22, width: 1 },
+        'lfCharSet': { off: 23, width: 1 }, 'lfOutPrecision': { off: 24, width: 1 },
+        'lfClipPrecision': { off: 25, width: 1 }, 'lfQuality': { off: 26, width: 1 },
+        'lfPitchAndFamily': { off: 27, width: 1 },
         'lfFaceName': { off: 28, width: 4 }, // pointer to char array
         // MMCKINFO
         'ckid': { off: 0, width: 4 }, 'cksize': { off: 4, width: 4 },
@@ -557,9 +613,9 @@ function transformLine(line, ctx) {
       // Only match Ghidra-style locals/params — not arbitrary expressions
       const structVarRe = /^(local_[0-9a-fA-F]+|param_\d+|_\w+|[a-z]\w*Stack_[0-9a-fA-F]+)/;
       // First flatten chained access: obj.union.field → obj.field when union is at offset 0
-      // Handles bracket-expanded forms: local_10[0].u.ms
-      out = out.replace(/(\w+(?:\[\d+\])?)\.(\w+)\.(\w+)/g, (m, obj, mid, field) => {
-        const baseObj = obj.replace(/\[\d+\]$/, '');
+      // Handles bracket-expanded forms: local_10[0].u.ms, local_408[local_8].rgbRed.etc
+      out = out.replace(/(\w+(?:\[[\w\s+\-*\/x0]+\])?)\.(\w+)\.(\w+)/g, (m, obj, mid, field) => {
+        const baseObj = obj.replace(/\[[\w\s+\-*\/x0]+\]$/, '');
         if (!structVarRe.test(baseObj)) return m;
         const midInfo = structOffsets[mid];
         const fieldInfo = structOffsets[field];
@@ -576,8 +632,8 @@ function transformLine(line, ctx) {
         }
         return m;
       });
-      out = out.replace(/(\w+(?:\[\d+\])?)\.(\w+)/g, (m, obj, member) => {
-        const baseObj = obj.replace(/\[\d+\]$/, '');
+      out = out.replace(/(\w+(?:\[[\w\s+\-*\/x0]+\])?)\.(\w+)/g, (m, obj, member) => {
+        const baseObj = obj.replace(/\[[\w\s+\-*\/x0]+\]$/, '');
         if (!structVarRe.test(baseObj)) return m;
         const info = structOffsets[member];
         if (info) {
@@ -594,6 +650,13 @@ function transformLine(line, ctx) {
 
     // ── Drop FID_conflict_ prefix ──
     out = out.replace(/\bFID_conflict_(\w+)/g, '$1');
+
+    // ── cRam symbols → DAT_ equivalent (Ghidra RAM labels) ──
+    out = out.replace(/\bcRam([0-9a-fA-F]{8})/g, 'DAT_$1');
+
+    // ── Strip leading underscore from _DAT_ globals ──
+    // Ghidra adds _ prefix for overlapping/aliased globals; our globals-init has no underscore
+    out = out.replace(/\b_DAT_([0-9a-fA-F]+)\b/g, 'DAT_$1');
 
     // ── Ghidra 0xffffffff → -1 (signed sentinel) ──
     // In C, 0xFFFFFFFF as signed int = -1. Ghidra decompiles -1 as 0xffffffff.
@@ -704,6 +767,10 @@ function transformLine(line, ctx) {
     // ── Cast: (longlong), (float10), (float), (double) → drop ──
     out = out.replace(/\(\s*(?:u?longlong|float10|float|double)\s*\)/g, '');
 
+    // ── Safety net: strip any remaining C-style casts that weren't caught ──
+    // Matches (TypeName) or (TypeName *) where TypeName starts with uppercase or underscore
+    out = out.replace(/\(\s*(?:uint|int|char|byte|short|ushort|uchar|undefined[1248]?|bool|void|long|ulong|code)\s*\)/g, '');
+
     // ── C calling conventions and keywords → drop ──
     out = out.replace(/\b(__cdecl|__stdcall|__fastcall|__thiscall)\b/g, '');
 
@@ -791,8 +858,10 @@ function transformLine(line, ctx) {
       }
     }
 
-    // ── &local_XX → local_XX (drop &) ──
-    out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
+    // ── &local_XX → __REF_local_XX (drop &, mark as reference) ──
+    // Marker prevents the [0] post-pass from adding [0] to pointer args.
+    // Stripped to bare local_XX after [0] pass.
+    out = out.replace(/&(local_[0-9a-fA-F]+)/g, '__REF_$1');
 
     // ── &DAT_xxx + expr → ptrAdd(DAT_xxx, expr) — pointer arithmetic ──
     // Must run BEFORE the blanket & drop. Converts address+offset to subarray helper.
@@ -833,7 +902,9 @@ function transformLine(line, ctx) {
     }
 
     // ── & (address-of) → drop or placeholder ──
-    out = out.replace(/&(DAT_[0-9a-fA-F]+)/g, '$1');
+    // Use /*&*/ sentinel so the v() wrapper below knows NOT to wrap these in v().
+    // &DAT_xxx means "address of DAT_xxx" → the JS value IS the address (numeric offset).
+    out = out.replace(/&(DAT_[0-9a-fA-F]+)/g, '/*&*/$1');
     out = out.replace(/&(s_\w+)/g, '$1');
     out = out.replace(/&(PTR_\w+)/g, '$1');
     out = out.replace(/&(LAB_[0-9a-fA-F]+)/g, '0 /* ADDR:$1 */');
@@ -901,8 +972,10 @@ function transformLine(line, ctx) {
     out = out.replace(/\(\s*[A-Z]\w+\s*\*+\s*\)/g, '');
     // (lowercase *) pointer casts WITHOUT leading * (not deref): (undefined *), (code *), (void *), etc.
     out = out.replace(/(?<!\*\s*)\(\s*(?:undefined|code|void|ios)\s*\**\s*\)/g, '');
-    // C-runtime type casts: (_onexit_t), (intptr_t), (size_t), (wchar_t), etc.
-    out = out.replace(/\(\s*\w+_t\s*\)/g, '');
+    // C-runtime type casts: (_onexit_t), (intptr_t), (size_t), (wchar_t *), etc.
+    out = out.replace(/\(\s*\w+_t\s*\**\s*\)/g, '');
+    // C++ class pointer casts: (_Timevec *), (ios_base *), (streambuf *), etc.
+    out = out.replace(/\(\s*(?:_Timevec|ios_base|streambuf|CPropertySheet|CCheckListBox|CListBox)\s*\**\s*\)/g, '');
     // Other lowercase C types not already handled
     out = out.replace(/\(\s*(?:long|ulong)\s*\)/g, '');
 
@@ -1045,17 +1118,29 @@ function transformLine(line, ctx) {
     // on them must go through _MEM.
     //
     // Array locals (declared with new Array() or [0]) keep normal bracket access.
-    // Known arrays: localArrays (from ctx), in_ECX/in_EAX (register buffers),
-    //               _MEM itself, s_ string labels, acStack/local arrays.
+    // Known arrays: localArrays (from ctx), _MEM itself, s_ string labels, acStack/local arrays.
+    // Register variables (in_ECX etc.) are preserved as arrays UNLESS declared as
+    // a typed pointer (e.g., undefined4 *in_ECX), in which case bracket access
+    // uses stride-aware memory access (e.g., in_ECX[N] → s32(in_ECX, N*4)).
     {
       const arrays = ctx.localArrays || new Set();
+      const ptrW = ctx.ptrWidths || new Map();
       out = out.replace(
         /\b([a-zA-Z_]\w*)\[/g,
         (m, name) => {
           // Keep bracket access for known arrays and non-pointer patterns
           if (arrays.has(name)) return m;                    // local array
           if (name === '_MEM' || name === 'G') return m;     // flat memory / globals object
-          if (/^(in_ECX|in_EAX|in_EDX)$/.test(name)) return m; // register buffers
+          // Register variables: only keep as array if NOT declared as typed pointer
+          if (/^(in_ECX|in_EAX|in_EDX)$/.test(name)) {
+            const w = ptrW.get(name);
+            if (w && w > 1) {
+              // Pointer type: use stride marker for proper s32/w32 conversion
+              if (w === 4) return '_STRIDE4[' + name + ' + ';
+              if (w === 2) return '_STRIDE2[' + name + ' + ';
+            }
+            return m; // byte pointer or no type info → treat as Uint8Array
+          }
           if (/^(Math|Array|String|Object|console)$/.test(name)) return m; // JS builtins
           if (/^(acStack|auStack|abStack|aiStack|asStack)/.test(name)) return m; // stack arrays
           if (/^s_/.test(name)) return m;                    // string labels (Uint8Array)
@@ -1086,7 +1171,7 @@ function transformLine(line, ctx) {
           if (!balanced) break;
           const inner = balanced.content.trim();
           const afterBracket = line.substring(balanced.end + 1);
-          const writeMatch = afterBracket.match(/^\s*=\s*([^;]+);/);
+          const writeMatch = afterBracket.match(/^\s*=(?!=)\s*([^;]+);/);
           const parts = splitBaseOffset(inner);
           const base = parts ? parts.base : inner;
           const offset = parts ? '(' + parts.offset + ') * ' + stride : '0';
@@ -1118,6 +1203,8 @@ function transformLine(line, ctx) {
         // Skip if first arg to a memory helper: s32(DAT_xxx, ...)
         if (/(?:s32|u32|s16|u16|s8|u8|w32|w16|w32r|w16r|ptrAdd|v|wv)\(\s*$/.test(before)) return m;
         if (/&\s*$/.test(before)) return m;
+        // Skip if preceded by /*&*/ sentinel — this was &DAT_xxx (address-of), not a value read
+        if (/\/\*&\*\/\s*$/.test(before)) return m;
         if (/_MEM\[\s*$/.test(before)) return m;
         if (/_MEM\[.*\+\s*$/.test(before)) return m;
         // Width-aware read based on P-code analysis
@@ -1166,6 +1253,10 @@ function transformLine(line, ctx) {
       }
     }
 
+    // NOTE: /*&*/ sentinels are NOT stripped inside the loop — they must survive
+    // all iterations to prevent v() wrapping on subsequent passes. They are
+    // valid JS comments and are stripped after the while loop below.
+
     // ── Fix negative comparisons with _MEM[] byte values ──
     // _MEM[] returns Uint8Array values (0-255). Comparing to negative literals
     // is always false. Convert: -1 → 0xFF, -2 → 0xFE, -0x26 → 0xDA, etc.
@@ -1180,6 +1271,10 @@ function transformLine(line, ctx) {
 
     if (out !== prev) changed = true;
   }
+
+  // ── Strip /*&*/ sentinels — address-of DAT_ markers ──
+  // Must happen AFTER the while loop so sentinels survive all iterations.
+  out = out.replace(/\/\*&\*\//g, '');
 
   // ── Integer division truncation (final pass, runs once) ──
   // C integer division truncates toward zero. JS division produces floats.
@@ -1485,9 +1580,11 @@ function processFunction(headerLines, bodyLines, ctx) {
     if (!regParams.includes(m[1])) regParams.push(m[1]);
   }
 
-  // Find &local_XX patterns
+  // Find &local_XX patterns (address-of scalar → needs [0] for value reads)
+  const refLocals = new Set(); // locals whose address is taken (scalar→array)
   for (const m of bodyText.matchAll(/&(local_[0-9a-fA-F]+)/g)) {
     localArrays.add(m[1]);
+    refLocals.add(m[1]);
   }
 
   // Scan body declarations for pointer types: "short *local_20;" or "byte *pbVar6;"
@@ -1500,8 +1597,15 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
   }
 
-  // Build JS signature — rename reserved words
-  const allParams = [...regParams, ...sigParams].map(p => p === 'this' ? '_this' : p);
+  // Build JS signature — rename reserved words, add defaults for register params
+  const allParams = [...regParams, ...sigParams].map(p => {
+    if (p === 'this') return '_this';
+    // Register params default to globalThis value (MFC this-pointer, etc.)
+    if (/^(in_ECX|in_EAX|in_EDX|unaff_ESI|unaff_EDI|unaff_EBP|unaff_EBX)$/.test(p)) {
+      return p + ' = globalThis.' + p;
+    }
+    return p;
+  });
   const jsSig = 'export function ' + funcName + '(' + allParams.join(', ') + ') {';
 
   // Check if function returns a value
@@ -1649,6 +1753,7 @@ function processFunction(headerLines, bodyLines, ctx) {
   ctx.deviationContinuation = false;
   ctx.localArrays = localArrays; // pass to transformLine for bracket access conversion
   ctx.ptrWidths = ptrWidths; // pass to transformLine for typed pointer derefs
+  ctx.hasECX = regParams.includes('in_ECX'); // does current function have in_ECX?
   let inBlockComment = false;
   for (let i = 0; i < bodyLines.length; i++) {
     const line = bodyLines[i];
@@ -2130,25 +2235,29 @@ function processFunction(headerLines, bodyLines, ctx) {
       ctx.ptrDeviationContinuation = false;
     }
 
-    // ── &local_XX → local_XX (drop &) ──
-    transformed = transformed.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
+    // ── &local_XX → __REF_local_XX (preserve reference marker) ──
+    transformed = transformed.replace(/&(local_[0-9a-fA-F]+)/g, '__REF_$1');
 
     // ── *param_N → param_N[0] for pointer params ──
     for (const pp of ptrParams) {
       transformed = transformed.replace(new RegExp('\\*' + pp + '\\b', 'g'), pp + '[0]');
     }
 
-    // ── local_XX access: if it's an array local, add [0] ──
-    for (const la of localArrays) {
+    // ── local_XX access: if it's a ref local (scalar with &taken), add [0] ──
+    // True array locals (declared as local_XX[N]) don't get [0] — bare use = pointer
+    for (const la of refLocals) {
       // Replace standalone local_XX reads/writes with local_XX[0]
-      // But not when already followed by [ or when it's &local_XX (already handled)
+      // But not __REF_local_XX (reference passing — keep as array)
       transformed = transformed.replace(
-        new RegExp('\\b' + la + '\\b(?!\\s*\\[|\\s*→)', 'g'),
+        new RegExp('(?<!__REF_)\\b' + la + '\\b(?!\\s*\\[|\\s*→)', 'g'),
         la + '[0]'
       );
       // Fix double [0] — if the replacement produced local_XX[0][0]
       transformed = transformed.replace(la + '[0][0]', la + '[0]');
     }
+
+    // ── Strip __REF_ markers → bare local_XX (pass the array by reference) ──
+    transformed = transformed.replace(/__REF_(local_[0-9a-fA-F]+)/g, '$1');
 
     // ── _atexit — now passes through as a regular function call ──
     // The extern stubs provide _atexit as a no-op.
@@ -2499,16 +2608,16 @@ function processGotos(lines) {
       if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {
         hl = hl.replace(
           new RegExp('\\bgoto\\s+' + label + '\\s*;'),
-          'return ' + helperName + '(' + varList + ');'
+          'return { _t: () => ' + helperName + '(' + varList + ') };'
         );
       }
-      // Replace goto to OTHER labels with their helper calls
+      // Replace goto to OTHER labels with their helper calls (trampoline thunks)
       for (const otherLabel of gotoTargets) {
         if (otherLabel === label) continue;
         if (new RegExp('\\bgoto\\s+' + otherLabel + '\\b').test(hl)) {
           hl = hl.replace(
             new RegExp('\\bgoto\\s+' + otherLabel + '\\s*;'),
-            'return ' + otherLabel + '_helper(' + allVarList + ');'
+            'return { _t: () => ' + otherLabel + '_helper(' + allVarList + ') };'
           );
         }
       }
@@ -2553,7 +2662,7 @@ function processGotos(lines) {
       // Collect vars for this helper (same as above)
       const labelIdx = labelPositions[label];
       // Use ALL function variables — consistent with helper definition
-      line = line.replace(gotoRe, 'return ' + label + '_helper(' + allVarList + ');');
+      line = line.replace(gotoRe, 'return { _t: () => ' + label + '_helper(' + allVarList + ') };');
     }
 
     // Mark label sites with comment (code stays in place for audit)
@@ -2593,6 +2702,38 @@ function transpileBlock(blockName) {
   for (const func of functions) {
     const result = processFunction(func.headerLines, func.bodyLines, ctx);
     const { lines: processedLines, helpers } = processGotos(result);
+
+    // If this function has goto helpers, wrap it with a trampoline unwrapper.
+    // The function may return { _t: () => helper(...) } from goto conversions.
+    // Wrap the body so these are automatically unwrapped to plain return values.
+    if (helpers.length > 0) {
+      // Find the opening brace of the function
+      let funcOpenIdx = -1;
+      for (let i = 0; i < processedLines.length; i++) {
+        if (/^export function \w+.*\{/.test(processedLines[i].trim())) {
+          funcOpenIdx = i;
+          break;
+        }
+      }
+      if (funcOpenIdx >= 0) {
+        // Extract function name for trampoline warning
+        const fnNameMatch = processedLines[funcOpenIdx].match(/export function (\w+)/);
+        const fnName = fnNameMatch ? fnNameMatch[1] : 'unknown';
+        // Insert trampoline wrapper after opening brace
+        processedLines.splice(funcOpenIdx + 1, 0,
+          '  // Trampoline: goto helpers return { _t: thunk } instead of recursing',
+          '  const _self = () => {');
+        // Find closing brace and wrap
+        // The closing brace is the LAST } at indent level 0
+        let closingIdx = processedLines.length - 1;
+        while (closingIdx > 0 && processedLines[closingIdx].trim() !== '}') closingIdx--;
+        processedLines.splice(closingIdx, 1,
+          '  };',
+          '  let _r = _self(), _tc = 0; while (_r && _r._t) { if (++_tc > 500) { return 0; } _r = _r._t(); } return _r;',
+          '}');
+      }
+    }
+
     for (const line of processedLines) {
       outputLines.push(line);
     }
@@ -2633,12 +2774,132 @@ function transpileBlock(blockName) {
   // Helpers start on the line AFTER the last C line — no extra blank lines added
   if (gotoHelpers.length > 0) {
     outputLines.push('// ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──');
-    for (const helper of gotoHelpers) {
-      outputLines.push(helper);
+    for (let i = 0; i < gotoHelpers.length; i++) {
+      // Apply same post-processing as main function bodies:
+      // 1. Boolean-safe comparisons against 0
+      let h = gotoHelpers[i];
+      h = h.replace(/ !== 0\b/g, ' != 0').replace(/ === 0\b/g, ' == 0');
+      // 2. Boolean return coercion (comparison returns → int)
+      h = h.replace(/^(\s*return\s+)(.*)(;\s*)$/gm, (m, pre, expr, semi) => {
+        if (/\?\s*1\s*:\s*0/.test(expr)) return m;
+        if (/^\s*\/\//.test(m)) return m;
+        let s = expr;
+        for (let r = 0; r < 5; r++) s = s.replace(/\([^()]*\)/g, 'X').replace(/\[[^\[\]]*\]/g, 'X');
+        if (/[^=!<>]===[^=]|[^=!]!==[^=]|[^<>=]<[^<=]|[^<>=]>[^>=]|<=[^>]|>=[^<]/.test(s)) {
+          return pre + '((' + expr + ') ? 1 : 0)' + semi;
+        }
+        return m;
+      });
+      outputLines.push(h);
+    }
+  }
+
+  // ── Insert loop guards into for/while/do-while loops ──
+  // Prevents infinite loops from hanging headless execution.
+  // Inserts loopGuard(funcName, lineNum) after every { that opens a loop body.
+  {
+    let currentFunc = '';
+    for (let i = 0; i < outputLines.length; i++) {
+      const trimmed = outputLines[i].trim();
+      // Track current function name
+      const funcMatch = trimmed.match(/^export function (\w+)\s*\(/);
+      if (funcMatch) currentFunc = funcMatch[1];
+      // Match loop openings: for(...) {, while(...) {, do {
+      if (/\b(for|while)\s*\(.*\)\s*\{$/.test(trimmed) || /\bdo\s*\{$/.test(trimmed)) {
+        const indent = outputLines[i].match(/^\s*/)[0] + '  ';
+        outputLines.splice(i + 1, 0, indent + `loopGuard('${currentFunc}', ${i});`);
+        i++; // skip inserted line
+      }
     }
   }
 
   let outputContent = outputLines.join('\n');
+
+  // ── Strip any remaining __REF_ markers that escaped per-line processing ──
+  outputContent = outputContent.replace(/__REF_(local_[0-9a-fA-F]+)/g, '$1');
+
+  // ── Neutralize C++ virtual function dispatch calls ──
+  // Pattern: (s32(s32(expr, off), off2))(args...) — vtable call, not possible in JS
+  // Uses balanced paren extraction to handle multi-arg calls like (vtable)(in_ECX, param_1)
+  {
+    const vtableRe = /\(*\(s32\(s32\(/g;
+    let vm;
+    while ((vm = vtableRe.exec(outputContent)) !== null) {
+      // Find the closing of the outer s32(s32(...), N))
+      let depth = 0, i = vm.index;
+      for (; i < outputContent.length; i++) {
+        if (outputContent[i] === '(') depth++;
+        if (outputContent[i] === ')') { depth--; if (depth <= 0) break; }
+      }
+      // Now skip past the args: )(args...)
+      if (i < outputContent.length - 1 && outputContent[i + 1] === '(') {
+        let argDepth = 0;
+        let j = i + 1;
+        for (; j < outputContent.length; j++) {
+          if (outputContent[j] === '(') argDepth++;
+          if (outputContent[j] === ')') { argDepth--; if (argDepth <= 0) { j++; break; } }
+        }
+        const replacement = '0 /* DEVIATION: C++ virtual call */';
+        outputContent = outputContent.substring(0, vm.index) + replacement + outputContent.substring(j);
+        vtableRe.lastIndex = vm.index + replacement.length;
+      }
+    }
+  }
+
+  // ── Fix u32/s32 used as assignment target in comma expressions ──
+  // Pattern: u32(base, expr) = u32(base, expr) | value
+  // Should be: w32(base, expr, u32(base, expr) | value)
+  // Uses balanced paren extraction since offsets can contain nested function calls.
+  {
+    const readAsWriteRe = /\b(u32|s32)\(/g;
+    let rm;
+    while ((rm = readAsWriteRe.exec(outputContent)) !== null) {
+      // Find the balanced closing paren
+      const start = rm.index + rm[0].length - 1; // index of (
+      const bp = extractBalancedParens(outputContent, start);
+      if (!bp) continue;
+      const afterClose = outputContent.substring(bp.end + 1);
+      // Check if followed by = (assignment, not ==)
+      const assignMatch = afterClose.match(/^\s*=(?!=)/);
+      if (!assignMatch) continue;
+      // Extract the RHS up to , or ;
+      const rhsStart = bp.end + 1 + assignMatch[0].length;
+      // Find end of RHS: next , at depth 0, or ;
+      let depth = 0, rhsEnd = rhsStart;
+      for (let ci = rhsStart; ci < outputContent.length; ci++) {
+        if (outputContent[ci] === '(' || outputContent[ci] === '[') depth++;
+        if (outputContent[ci] === ')' || outputContent[ci] === ']') { if (depth === 0) { rhsEnd = ci; break; } depth--; }
+        if ((outputContent[ci] === ',' || outputContent[ci] === ';') && depth === 0) { rhsEnd = ci; break; }
+        rhsEnd = ci + 1;
+      }
+      const rhs = outputContent.substring(rhsStart, rhsEnd).trim();
+      const args = bp.content;
+      // Split args into base and offset at the LAST comma (since offset can contain commas in nested calls)
+      const lastComma = args.lastIndexOf(',');
+      if (lastComma < 0) continue;
+      const base = args.substring(0, lastComma).trim();
+      const off = args.substring(lastComma + 1).trim();
+      const replacement = `w32(${base}, ${off}, ${rhs})`;
+      outputContent = outputContent.substring(0, rm.index) + replacement + outputContent.substring(rhsEnd);
+      readAsWriteRe.lastIndex = rm.index + replacement.length;
+    }
+  }
+
+  // ── Fix intra-block function name mismatches ──
+  // Functions renamed to name_ADDRESS at definition but called as name at call sites.
+  // Find all exports with address suffixes and rename ALL references (calls and value refs).
+  {
+    const exportRe = /^export function (\w+?)_([0-9A-F]{8})\s*\(/gm;
+    let em;
+    while ((em = exportRe.exec(outputContent)) !== null) {
+      const shortName = em[1];
+      const fullName = em[1] + '_' + em[2];
+      // Rename all references to the short name (calls and value references)
+      // but not the definition itself
+      const refRe = new RegExp('(?<!export function )(?<!function )\\b' + shortName + '\\b(?!_[0-9A-F])', 'g');
+      outputContent = outputContent.replace(refRe, fullName);
+    }
+  }
 
   // ── Apply P-code type corrections ──
   // These are specific sign/width fixes derived from the P-code oracle

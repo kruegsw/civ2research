@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import './globals-init.js';
-import { v, wv, w16, w32, s16, s32, u8, _MEM } from './mem.js';
+import { v, wv, w16, w32, s16, s32, u8, ptrAdd, _MEM } from './mem.js';
 import { G } from './globals.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
 import { readFileSync, existsSync } from 'fs';
@@ -37,14 +37,13 @@ const MW = 50, MH = 40, mw2 = MW * 2;
 w16(DAT_006d1160, 0, mw2);
 w16(DAT_006d1162, 0, MH);
 wv(DAT_006d1168, 42);      // seed
-// Difficulty — multiple addresses used:
-// DAT_00655b02: Ghidra C code checks (if DAT_00655b02 < 3, etc.)
+// DAT_00655b02: game MODE (0=SP, 3=MP) — NOT difficulty!
 // DAT_00655b04: sniffing confirmed live difficulty selector (0=Chieftain..5=Deity)
 // DAT_00655b08: AI food box formula uses this (food_rows = 13 - difficulty)
 const DIFFICULTY = 3; // prince
-wv(DAT_00655b02, DIFFICULTY);
-_MEM[DAT_00655b02 + 2] = DIFFICULTY; // 0x00655B04
-_MEM[DAT_00655b02 + 6] = DIFFICULTY; // DAT_00655b08 — AI food box adjustment
+_MEM[DAT_00655b02] = 0;             // game mode = single player (CRITICAL: not difficulty!)
+_MEM[DAT_00655b02 + 2] = DIFFICULTY; // 0x00655B04 = difficulty
+_MEM[DAT_00655b02 + 6] = DIFFICULTY; // DAT_00655b08 = AI food box adjustment
 
 // [FIX 4] Set ALL map dimension derived values (confirmed by sniffing: tile_array.md)
 w16(DAT_006d1164, 0, (mw2 / 2) * MH);        // ms = total tiles (e.g. 2000 for 100×40)
@@ -58,16 +57,13 @@ wv(DAT_00636598, TILE_DATA_BASE);             // store pointer to tile data
 wv(DAT_006d1188, TILE_DATA_BASE);             // also set "bad tile" pointer (fallback)
 
 // Allocate per-civ exploration maps (DAT_006365c0 array of pointers)
-// Each civ gets DAT_006d1164 bytes (total_tiles = 2000 for 100x40 map)
 const totalTiles = s32(DAT_006d1164, 0);
-const EXPLORE_BASE = TILE_DATA_BASE - 8 * totalTiles - 1000; // before tile data
+const EXPLORE_BASE = TILE_DATA_BASE - 8 * totalTiles - 1000;
 for (let civ = 0; civ < 8; civ++) {
   const explorePtr = EXPLORE_BASE + civ * totalTiles;
   w32(DAT_006365c0, civ * 4, explorePtr);
-  // Initialize: 0 = unexplored (AI will want to explore these)
-  for (let j = 0; j < totalTiles; j++) _MEM[explorePtr + j] = 0;
+  for (let j = 0; j < totalTiles; j++) _MEM[explorePtr + j] = 1; // fully explored
 }
-// Set the main exploration map pointer (used by some functions)
 wv(DAT_006365ec, s32(DAT_006365c0, 0));
 
 // Fill tiles with grassland (terrain type 2)
@@ -119,6 +115,7 @@ function placeCity(idx, owner, name, x, y, size) {
   for (let i = 0; i < size; i++) tileBits |= (1 << i);
   w32(c, 0x30, tileBits);
   w32(c, 0x54, 1);       // exists flag
+  _MEM[c + 0x39] = 2;   // production item = Warriors (unit type 2, cost 10 shields)
 
   // Stamp city on tile data (confirmed by sniffing session 1)
   const tileOff = TILE_DATA_BASE + (s16(DAT_006d1160, 0) & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
@@ -152,38 +149,32 @@ w16(DAT_00655b16, 0, 4);   // 4 units total
 w16(DAT_00655b18, 0, 2);   // 2 cities total
 wv(DAT_00655b0b, 0);        // all AI
 wv(DAT_00655af8, 1);        // turn counter = 1 (gates tech assignment + AI decisions)
+wv(DAT_00627fd8, 5);        // unit ID counter (next ID = 5, since we placed 4 units with IDs 1-4)
 
-// ── Civ struct initialization (from game_logic_insights.md, session 4) ──
+// ── Civ struct initialization (corrected offsets from binary analysis) ──
 for (let civ = 1; civ <= 2; civ++) {
   const cb = DAT_0064c600 + civ * 0x594;
-  // Tech list: 93 bytes at civ+0x74, init all to 0xFF = "not discovered"
-  for (let t = 0; t < 93; t++) _MEM[cb + 0x74 + t] = 0xFF;
-}
-
-// Set visibility near cities (sight range ~3 tiles, like real Civ2 start)
-function revealAround(cx, cy, owner, radius) {
-  const exploreMap = s32(DAT_006365c0, owner * 4); // per-civ exploration map
-  const stride = s16(DAT_006d116a, 0);
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius * 2; dx <= radius * 2; dx += 2) {
-      const tx = cx + dx, ty = cy + dy;
-      if (tx >= 0 && tx < mw2 && ty >= 0 && ty < MH) {
-        // Set tile visibility byte
-        const off = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * ty * 3 + (tx & 0xFFFFFFFE) * 3;
-        _MEM[off + 4] |= (1 << owner);
-        // Set per-civ exploration map
-        if (exploreMap) {
-          const ei = stride * ty + (tx >> 2);  // exploration map index
-          if (ei >= 0 && ei < totalTiles) _MEM[exploreMap + ei] = 1;
-        }
-      }
-    }
+  // Tech list: 93 bytes at offset 0xF8 from civ base (DAT_0064c6f8 - DAT_0064c600)
+  // Set NO techs discovered (0x00) — all-discovered causes upgrade chain madness
+  // Tech -1 means "no prereq" so basic units (Settlers, Warriors) are still buildable
+  for (let t = 0; t < 93; t++) _MEM[cb + 0xF8 + t] = 0x00;
+  // Civ active flag at offset 0x185 (DAT_0064c785 - DAT_0064c600)
+  _MEM[cb + 0x185] = 1;
+  // Clear diplomacy relation bytes (offset 0xC1 from civ base = DAT_0064c6c1 - DAT_0064c600)
+  // Prevents FUN_0053184d from entering foreign city unit scan which can infinite loop
+  // Bit 0x20 = "at war" — clearing it skips the captured city transfer logic
+  for (let other = 0; other < 8; other++) {
+    _MEM[cb + 0xC1 + other * 4] = 0;
   }
 }
-revealAround(20, 10, 1, 3); // civ 1 sees around Alpha
-revealAround(30, 10, 1, 2); // civ 1 sees around warrior
-revealAround(60, 30, 2, 3); // civ 2 sees around Beta
-revealAround(70, 30, 2, 2); // civ 2 sees around warrior
+
+// Set all tiles visible (headless mode — no fog of war)
+for (let y = 0; y < MH; y++) {
+  for (let x = 0; x < mw2; x += 2) {
+    const off = TILE_DATA_BASE + (mw2 & 0xFFFFFFFE) * y * 3 + (x & 0xFFFFFFFE) * 3;
+    _MEM[off + 4] = 0xFF;
+  }
+}
 
 // ── Civ initialization (confirmed by sniffing session 1) ──
 for (let civ = 1; civ <= 2; civ++) {
@@ -199,8 +190,45 @@ for (let civ = 1; civ <= 2; civ++) {
 console.log(`\n═══ Fresh Game: ${MW}x${MH} grassland, 2 civs, ${turns} turns ═══\n`);
 
 // ── Run turns ──
-const { FUN_00489553 } = await import('./blocks/block_00480000.js');
+// For headless mode: use sub-functions directly, skipping UI-only citywin calls
+// FUN_00487a41 calls citywin_DB36 which has infinite paint loops in headless mode
+const { FUN_00488cef, FUN_00487a41, FUN_00489292, FUN_00489553 } = await import('./blocks/block_00480000.js');
+const { FUN_00560084 } = await import('./blocks/block_00560000.js');
+const { FUN_0053184d } = await import('./blocks/block_00530000.js');
 const { FUN_00543cd6 } = await import('./blocks/block_00540000.js');
+
+// Import per-city processing function (called by FUN_00487a41 for each city)
+const { FUN_004f0a9c } = await import('./blocks/block_004F0000.js');
+
+// Headless turn processing: same as FUN_00489553 but replaces FUN_00487a41
+// with a stripped version that skips citywin_DB36 (UI-only infinite loop)
+function runTurn(civ) {
+  // Same preamble as FUN_00489553 — treasury cap and bounds
+  if (s32(DAT_0064c6a2, civ * 0x594) > 30000) w32(ptrAdd(DAT_0064c6a2, civ * 0x594), 0, 30000);
+  if (s32(DAT_0064c6a2, civ * 0x594) < 0) w32(ptrAdd(DAT_0064c6a2, civ * 0x594), 0, 0);
+  const uVar1 = s32(DAT_0064c6a2, civ * 0x594);
+  try { FUN_00488cef(civ); } catch(e) {}
+
+  // Inline FUN_00487a41 game logic (skip citywin_DB36/DADA UI calls)
+  w16(ptrAdd(DAT_0064ca72, civ * 0x594), 0, 0);
+  for (let i = 0; i < 7; i++) w16(ptrAdd(DAT_0064ca74, civ * 0x594 + i * 2), 0, 0);
+  // Per-city processing loop
+  let local_24 = s16(DAT_00655b18, 0);
+  while (true) {
+    local_24 = local_24 - 1;
+    if (local_24 < 0) break;
+    const cityExists = s32(DAT_0064f394, local_24 * 0x58);
+    const cityOwner = _MEM[DAT_0064f348 + local_24 * 0x58];
+    if (cityExists !== 0 && cityOwner === (civ & 0xFF)) {
+      try { FUN_004f0a9c(local_24); } catch(e) {}
+    }
+  }
+  // Skip citywin_DB36() — UI-only display update
+
+  try { FUN_00560084(civ); } catch(e) {}
+  try { FUN_0053184d(civ); } catch(e) {}
+  try { FUN_00489292(civ, uVar1); } catch(e) {}
+}
 
 function readCity(idx) {
   const c = DAT_0064f340 + idx * 0x58;
@@ -208,13 +236,14 @@ function readCity(idx) {
   const size = _MEM[c + 9];
   const food = s16(c, 0x1a);
   const shields = s16(c, 0x1c);
+  const prod = (_MEM[c + 0x39] << 24) >> 24; // signed byte production item
   let name = '';
   for (let j = 0; j < 15; j++) {
     const ch = _MEM[c + 32 + j];
     if (ch === 0) break;
     name += String.fromCharCode(ch);
   }
-  return { name, owner, size, food, shields };
+  return { name, owner, size, food, shields, prod };
 }
 
 function readUnit(idx) {
@@ -234,62 +263,36 @@ function readUnit(idx) {
 
 for (let t = 0; t < turns; t++) {
   const turnNum = t + 1;
-  console.log(`── Turn ${turnNum} ──`);
-
-  // Snapshot before
   const citiesBefore = [readCity(0), readCity(1)];
-  const unitsBefore = [0,1,2,3].map(readUnit);
-  const memBefore = G._MEM.slice();
 
+  const turnStart = Date.now();
   for (let civ = 1; civ <= 2; civ++) {
     wv(DAT_00655b05, civ);
     wv(DAT_006d1da0, civ);
     loopReset();
-    try {
-      FUN_00489553(civ);
-    } catch(e) {
-      console.log(`  Civ ${civ} turn error: ${e.message.substring(0, 60)}`);
-    }
-    try {
-      FUN_00543cd6();
-    } catch(e) {
-      // AI dispatch errors are OK
-    }
+    try { runTurn(civ); } catch(e) {}
+    try { FUN_00543cd6(); } catch(e) {}
   }
   wv(DAT_00655af8, v(DAT_00655af8) + 1);
+  const turnMs = Date.now() - turnStart;
 
   // Report changes
   const citiesAfter = [readCity(0), readCity(1)];
-  const unitsAfter = [0,1,2,3].map(readUnit);
-
+  const changes = [];
   for (let i = 0; i < 2; i++) {
     const b = citiesBefore[i], a = citiesAfter[i];
-    const changes = [];
-    if (b.size !== a.size) changes.push(`size ${b.size}→${a.size}`);
-    if (b.food !== a.food) changes.push(`food ${b.food}→${a.food}`);
-    if (b.shields !== a.shields) changes.push(`shields ${b.shields}→${a.shields}`);
-    if (changes.length > 0) {
-      console.log(`  ${a.name}: ${changes.join(', ')}`);
-    }
-  }
-
-  for (let i = 0; i < 4; i++) {
-    const b = unitsBefore[i], a = unitsAfter[i];
-    if (b.x !== a.x || b.y !== a.y) {
-      console.log(`  Unit ${i} (type ${a.type}, civ ${a.owner}): moved (${b.x},${b.y})→(${a.x},${a.y})`);
-    }
-    if (b.alive && !a.alive) console.log(`  Unit ${i} died`);
-  }
-
-  // Count total memory changes
-  let memChanges = 0;
-  for (let i = 0; i < memBefore.length; i++) {
-    if (memBefore[i] !== G._MEM[i]) memChanges++;
+    const ch = [];
+    if (b.size !== a.size) ch.push(`size ${b.size}→${a.size}`);
+    if (b.food !== a.food) ch.push(`food ${b.food}→${a.food}`);
+    if (b.shields !== a.shields) ch.push(`shields ${b.shields}→${a.shields}`);
+    if (b.prod !== a.prod) ch.push(`prod ${b.prod}→${a.prod}`);
+    else if (turnNum <= 3 || a.shields === 0) ch.push(`prod=${a.prod}`);
+    if (ch.length > 0) changes.push(`${a.name}: ${ch.join(', ')}`);
   }
 
   const newUnits = s16(DAT_00655b16, 0);
   const newCities = s16(DAT_00655b18, 0);
-  console.log(`  Memory: ${memChanges} bytes changed | Units: ${newUnits} | Cities: ${newCities}`);
+  console.log(`Turn ${turnNum} (${turnMs}ms): ${changes.join(' | ')} | Units: ${newUnits} Cities: ${newCities}`);
 }
 
 console.log('\n═══ Final State ═══');
@@ -302,3 +305,4 @@ for (let i = 0; i < s16(DAT_00655b16, 0); i++) {
   if (u.alive) console.log(`  Unit ${i} type=${u.type} civ=${u.owner} pos=(${u.x},${u.y})`);
 }
 console.log('\nDone.');
+process.exit(0);

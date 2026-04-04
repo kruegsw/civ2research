@@ -41,9 +41,9 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   let auStack_2 = new Array(2).fill(0);
   let iVar21;
   
-  sVar20 = ((auStack_2[0]) << 16 >> 16);
-  sVar18 = ((auStack_2[0]) << 16 >> 16);
-  iVar21 = ((((((auStack_2[0]) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar20 + -0x16));
+  sVar20 = ((auStack_2) << 16 >> 16);
+  sVar18 = ((auStack_2) << 16 >> 16);
+  iVar21 = ((((((auStack_2) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar20 + -0x16));
   w16(iVar21, -4, in_DS);
   w16(iVar21, -6, unaff_SI);
   w16(iVar21, -8, unaff_DI);
@@ -64,11 +64,13 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
   psVar3 = segment(in_SS,sVar20 + 0x28);
   sVar19 = s16(psVar3, 0);
   do {
+    loopGuard('FUN_0061a000', 65);
     psVar3 = segment(in_SS,sVar20 + -0x10);
     w16(psVar3, 0, sVar19);
     psVar3 = segment(in_SS,sVar20 + 0x24);
     sVar19 = s16(psVar3, 0);
     do {
+      loopGuard('FUN_0061a000', 71);
       puVar4 = segment(in_SS,sVar20 + 0x16);
       uVar22 = ((((s32(puVar4, 0)) >>> 0) >> 0x10) & 0xFFFF);
       sVar17 = ((s32(puVar4, 0)) << 16 >> 16);
@@ -165,9 +167,9 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   let auStack_2 = new Array(2).fill(0);
   let iVar24;
   
-  sVar23 = ((auStack_2[0]) << 16 >> 16);
-  sVar17 = ((auStack_2[0]) << 16 >> 16);
-  iVar24 = ((((((auStack_2[0]) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar23 + -0x18));
+  sVar23 = ((auStack_2) << 16 >> 16);
+  sVar17 = ((auStack_2) << 16 >> 16);
+  iVar24 = ((((((auStack_2) >>> 0) >> 0x10) << 16 >> 16)) << 16 | (sVar23 + -0x18));
   w16(iVar24, -4, in_DS);
   w16(iVar24, -6, unaff_SI);
   w16(iVar24, -8, unaff_DI);
@@ -214,6 +216,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
   sVar25 = s16(psVar4, 0);
   uVar21 = 0;
   do {
+    loopGuard('FUN_0061a759', 217);
     w16(iVar24, -10, sVar25);
     piVar10 = segment(in_SS,sVar17 + -4);
     iVar22 = s32(piVar10, 0);
@@ -222,6 +225,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
     puVar3 = segment(in_SS,sVar17 + -10);
     puVar7 = segment(in_SS,sVar17 + -0x10);
     while( true ) {
+      loopGuard('FUN_0061a759', 226);
       psVar4 = segment(s16(puVar3, 0),s16(puVar7, 0));
       sVar25 = ((iVar20) << 16 >> 16);
       uVar21 = ((((iVar20) >>> 0) >> 0x10) & 0xFFFF);
@@ -238,7 +242,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
     sVar25 = s16(iVar22, -2);
     psVar4 = segment(in_SS,sVar17 + -0x16);
     w16(psVar4, 0, sVar25);
-    if (sVar25 !== 0) {
+    if (sVar25 != 0) {
       psVar4 = segment(in_SS,sVar17 + 0x28);
       psVar5 = segment(in_SS,sVar17 + 0x30);
       psVar8 = segment(in_SS,sVar17 + -8);
@@ -254,6 +258,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
       psVar5 = segment(in_SS,sVar23 + 0x24);
       sVar18 = s16(psVar5, 0);
       while (psVar5 = segment(uVar14,sVar25), s16(psVar5, 0) < s16(psVar4, 0)) {
+        loopGuard('FUN_0061a759', 259);
         sVar25 = sVar25 + 2;
         pcVar26 = pcVar26 + 1;
         sVar18 = sVar18 + -1;
@@ -269,6 +274,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
         piVar10 = segment(in_SS,sVar23 + -4);
         iVar22 = s32(piVar10, 0);
         do {
+          loopGuard('FUN_0061a759', 275);
           psVar8 = segment(uVar14,sVar25);
           psVar4 = segment(in_SS,sVar23 + -0x14);
           psVar5 = segment(in_SS,sVar23 + -0x16);
@@ -280,7 +286,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
           sVar25 = sVar25 + 2;
           pcVar26 = pcVar26 + 1;
           iVar20 = iVar20 + -1;
-        } while (iVar20 !== 0);
+        } while (iVar20 != 0);
       }
       pcVar26 = s32(iVar24, -0xe);
     }
