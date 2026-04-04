@@ -101,7 +101,7 @@ function runTurnHeadless(civ) {
   try { FUN_00560084(civ); } catch(e) {}
   try { FUN_0053184d(civ); } catch(e) {}
   try { FUN_00489292(civ, 0); } catch(e) {}
-  try { FUN_00543cd6(); } catch(e) {}
+  // FUN_00543cd6 skipped — its rendering trampoline stalls for 20s on some turns
 }
 
 // ── Auto-run turns ──
