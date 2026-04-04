@@ -23,13 +23,21 @@ This roadmap turns the headless engine into a playable web game. Each phase is s
 | Item | Description | How to verify |
 |------|-------------|---------------|
 | Save file loading | Load .sav into flat memory at correct offsets | Round-trip: load → save → load, bytes identical |
-| Turn pipeline | `FUN_00487371` (end-of-turn) + `FUN_00489553` (per-civ) called correctly | Compare turn counter, year, unit moves reset |
-| Extern stubs | Win32/MFC functions return correct defaults | No crashes, no NaN propagation |
+| Turn pipeline | `FUN_00487371` (end-of-turn) + `FUN_00489553` (per-civ) called correctly | Turn counter increments, year advances correctly |
+| Extern stubs | Win32/MFC functions return correct defaults per `findings/mfc_methods.md` | No crashes, no NaN propagation |
 | All-AI mode | `DAT_00655b0b = 0` skips human turn | 50 turns complete without hanging |
-| Snapshot comparison | Dump memory regions, compare against real Civ2 snapshot | First divergent byte identified and fixed |
+| Automated tests | Load known save file, run N turns, check expected values | Cities grow, units built, treasury changes, techs discovered |
+| TODO_FIXME cleanup | Fix remaining 190 TODO_FIXME deviations as they're encountered | `grep -r TODO_FIXME` count decreases |
+
+### Verification methodology
+No sniffing or real Civ2 comparison required. Verification is done by:
+1. **C source tracing** — read the C source for each function in the turn pipeline, verify the transpiled JS matches line-by-line (already done for game logic blocks)
+2. **P-code cross-check** — use `verify-types.cjs` and `audit-pcode.cjs` to find expression-level divergences (already at 0 for game logic)
+3. **Known-value tests** — load a save file with known city/unit state, run 1 turn, assert specific values (food box increased by expected yield, shield box increased, etc.)
+4. **Regression tests** — each fix includes a test that prevents the bug from returning
 
 ### Key insight
-The `run.js` headless runner currently hand-writes the turn loop. The other Claude session fixed 7 infrastructure bugs (thiscall ECX, pointer widths, etc.) and got 9/9 sniffing verification passing. The engine may already be closer to correct than what we tested in this session. Start by running the latest code and measuring.
+The other Claude session fixed 7 infrastructure bugs (thiscall ECX, pointer widths, etc.) and got 9/9 verification passing with units being created and treasury accumulating. The engine may already be closer to correct than early tests suggested. Start by running the latest code and measuring.
 
 ---
 
