@@ -11,6 +11,23 @@
 import { stubCall } from './devlog.js';
 import { G } from './globals.js';
 
+// ── GDI layer: real implementations replace stubCall for rendering ──
+export {
+  BitBlt, StretchBlt, CreateCompatibleDC, CreateCompatibleBitmap,
+  CreateDIBSection, SelectObject, DeleteObject, DeleteDC,
+  GetDC, ReleaseDC, GetDeviceCaps, GetStockObject,
+  CreateSolidBrush, CreatePen, FillRect, FrameRect,
+  LineTo, MoveToEx, SetPixel, GetPixel,
+  SetBkMode, SetBkColor, SetTextColor, SetTextAlign, GetTextAlign,
+  CreateFontIndirectA, DrawTextA, GetTextExtentPointA, GetTextMetricsA,
+  SetRect, CopyRect, OffsetRect, InflateRect, IntersectRect,
+  UnionRect, PtInRect, IsRectEmpty, EqualRect,
+  CreatePalette, SelectPalette, RealizePalette, AnimatePalette,
+  SetDIBColorTable, GetDIBColorTable,
+  InvalidateRect, ValidateRect, UpdateWindow, BeginPaint, EndPaint,
+  GetClientRect, GdiFlush,
+} from './gdi.js';
+
 // ── Heap bump allocator for GlobalAlloc/GlobalLock ──
 // Map gen and other init functions allocate memory via Win32 heap APIs.
 // We bump-allocate from the end of the _MEM buffer downward.
@@ -32,11 +49,11 @@ export function AVIStreamSampleToTime(...args) { return stubCall('AVIStreamSampl
 export function AVIStreamStart(...args) { return stubCall('AVIStreamStart', args); }
 export function AVIStreamTimeToSample(...args) { return stubCall('AVIStreamTimeToSample', args); }
 export function AddFontResourceA(...args) { return stubCall('AddFontResourceA', args); }
-export function AnimatePalette(...args) { return stubCall('AnimatePalette', args); }
+// GDI: export function AnimatePalette(...args) { return stubCall('AnimatePalette', args); }
 export function AppendMenuA(...args) { return stubCall('AppendMenuA', args); }
 export function ArrayUnwindFilter(...args) { return stubCall('ArrayUnwindFilter', args); }
-export function BeginPaint(...args) { return stubCall('BeginPaint', args); }
-export function BitBlt(...args) { return stubCall('BitBlt', args); }
+// GDI: export function BeginPaint(...args) { return stubCall('BeginPaint', args); }
+// GDI: export function BitBlt(...args) { return stubCall('BitBlt', args); }
 export function BringWindowToTop(...args) { return stubCall('BringWindowToTop', args); }
 export function CARRY4(...args) { return stubCall('CARRY4', args); }
 export function CArchive__SetObjectSchema(...args) { return stubCall('CArchive__SetObjectSchema', args); }
@@ -75,29 +92,29 @@ export function CloseHandle(...args) { return stubCall('CloseHandle', args); }
 export function CommDlgExtendedError(...args) { return stubCall('CommDlgExtendedError', args); }
 export function CompareStringA(...args) { return stubCall('CompareStringA', args); }
 export function CompareStringW(...args) { return stubCall('CompareStringW', args); }
-export function CopyRect(...args) { return stubCall('CopyRect', args); }
+// GDI: export function CopyRect(...args) { return stubCall('CopyRect', args); }
 export function CreateBitmap(...args) { return stubCall('CreateBitmap', args); }
-export function CreateCompatibleBitmap(...args) { return stubCall('CreateCompatibleBitmap', args); }
-export function CreateCompatibleDC(...args) { return stubCall('CreateCompatibleDC', args); }
-export function CreateDIBSection(...args) { return stubCall('CreateDIBSection', args); }
+// GDI: export function CreateCompatibleBitmap(...args) { return stubCall('CreateCompatibleBitmap', args); }
+// GDI: export function CreateCompatibleDC(...args) { return stubCall('CreateCompatibleDC', args); }
+// GDI: export function CreateDIBSection(...args) { return stubCall('CreateDIBSection', args); }
 export function CreateDirectoryA(...args) { return stubCall('CreateDirectoryA', args); }
 export function CreateFileA(...args) { return stubCall('CreateFileA', args); }
 export function CreateFileMappingA(...args) { return stubCall('CreateFileMappingA', args); }
-export function CreateFontIndirectA(...args) { return stubCall('CreateFontIndirectA', args); }
+// GDI: export function CreateFontIndirectA(...args) { return stubCall('CreateFontIndirectA', args); }
 export function CreateMenu(...args) { return stubCall('CreateMenu', args); }
 export function CreateMutexA(...args) { return stubCall('CreateMutexA', args); }
-export function CreatePalette(...args) { return stubCall('CreatePalette', args); }
-export function CreatePen(...args) { return stubCall('CreatePen', args); }
+// GDI: export function CreatePalette(...args) { return stubCall('CreatePalette', args); }
+// GDI: export function CreatePen(...args) { return stubCall('CreatePen', args); }
 export function CreatePopupMenu(...args) { return stubCall('CreatePopupMenu', args); }
-export function CreateSolidBrush(...args) { return stubCall('CreateSolidBrush', args); }
+// GDI: export function CreateSolidBrush(...args) { return stubCall('CreateSolidBrush', args); }
 export function CreateWindowExA(...args) { return stubCall('CreateWindowExA', args); }
 export function DEVIATION(...args) { return stubCall('DEVIATION', args); }
 export function DebugBreak(...args) { return stubCall('DebugBreak', args); }
 export function DefWindowProcA(...args) { return stubCall('DefWindowProcA', args); }
-export function DeleteDC(...args) { return stubCall('DeleteDC', args); }
+// GDI: export function DeleteDC(...args) { return stubCall('DeleteDC', args); }
 export function DeleteFileA(...args) { return stubCall('DeleteFileA', args); }
 export function DeleteMenu(...args) { return stubCall('DeleteMenu', args); }
-export function DeleteObject(...args) { return stubCall('DeleteObject', args); }
+// GDI: export function DeleteObject(...args) { return stubCall('DeleteObject', args); }
 export function DestroyCursor(...args) { return stubCall('DestroyCursor', args); }
 export function DestroyIcon(...args) { return stubCall('DestroyIcon', args); }
 export function DestroyMenu(...args) { return stubCall('DestroyMenu', args); }
@@ -105,19 +122,19 @@ export function DestroyWindow(...args) { return stubCall('DestroyWindow', args);
 export function DirectDrawCreate(...args) { return stubCall('DirectDrawCreate', args); }
 export function DrawIcon(...args) { return stubCall('DrawIcon', args); }
 export function DrawMenuBar(...args) { return stubCall('DrawMenuBar', args); }
-export function DrawTextA(...args) { return stubCall('DrawTextA', args); }
+// GDI: export function DrawTextA(...args) { return stubCall('DrawTextA', args); }
 export function EnableMenuItem(...args) { return stubCall('EnableMenuItem', args); }
 export function EnableWindow(...args) { return stubCall('EnableWindow', args); }
-export function EndPaint(...args) { return stubCall('EndPaint', args); }
+// GDI: export function EndPaint(...args) { return stubCall('EndPaint', args); }
 export function EnumFontFamiliesA(...args) { return stubCall('EnumFontFamiliesA', args); }
 export function ExitProcess(...args) { return stubCall('ExitProcess', args); }
-export function FillRect(...args) { return stubCall('FillRect', args); }
+// GDI: export function FillRect(...args) { return stubCall('FillRect', args); }
 export function FindFirstFileA(...args) { return stubCall('FindFirstFileA', args); }
 export function FindNextFileA(...args) { return stubCall('FindNextFileA', args); }
 export function FindResourceA(...args) { return stubCall('FindResourceA', args); }
 export function FindWindowA(...args) { return stubCall('FindWindowA', args); }
 export function FlushFileBuffers(...args) { return stubCall('FlushFileBuffers', args); }
-export function FrameRect(...args) { return stubCall('FrameRect', args); }
+// GDI: export function FrameRect(...args) { return stubCall('FrameRect', args); }
 export function FrameUnwindFilter(...args) { return stubCall('FrameUnwindFilter', args); }
 export function FreeEnvironmentStringsA(...args) { return stubCall('FreeEnvironmentStringsA', args); }
 export function FreeEnvironmentStringsW(...args) { return stubCall('FreeEnvironmentStringsW', args); }
@@ -129,14 +146,14 @@ export function GetBitmapDimensionEx(...args) { return stubCall('GetBitmapDimens
 export function GetCPInfo(...args) { return stubCall('GetCPInfo', args); }
 export function GetClassLongA(...args) { return stubCall('GetClassLongA', args); }
 export function GetClassNameA(...args) { return stubCall('GetClassNameA', args); }
-export function GetClientRect(...args) { return stubCall('GetClientRect', args); }
+// GDI: export function GetClientRect(...args) { return stubCall('GetClientRect', args); }
 export function GetCommandLineA(...args) { return stubCall('GetCommandLineA', args); }
 export function GetCurrentDirectoryA(...args) { return stubCall('GetCurrentDirectoryA', args); }
 export function GetCurrentProcess(...args) { return stubCall('GetCurrentProcess', args); }
 export function GetCursorPos(...args) { return stubCall('GetCursorPos', args); }
-export function GetDC(...args) { return stubCall('GetDC', args); }
-export function GetDIBColorTable(...args) { return stubCall('GetDIBColorTable', args); }
-export function GetDeviceCaps(...args) { return stubCall('GetDeviceCaps', args); }
+// GDI: export function GetDC(...args) { return stubCall('GetDC', args); }
+// GDI: export function GetDIBColorTable(...args) { return stubCall('GetDIBColorTable', args); }
+// GDI: export function GetDeviceCaps(...args) { return stubCall('GetDeviceCaps', args); }
 export function GetDriveTypeA(...args) { return stubCall('GetDriveTypeA', args); }
 export function GetEnvironmentStrings(...args) { return stubCall('GetEnvironmentStrings', args); }
 export function GetEnvironmentStringsW(...args) { return stubCall('GetEnvironmentStringsW', args); }
@@ -160,7 +177,7 @@ export function GetOEMCP(...args) { return stubCall('GetOEMCP', args); }
 export function GetOpenFileNameA(...args) { return stubCall('GetOpenFileNameA', args); }
 export function GetPaletteEntries(...args) { return stubCall('GetPaletteEntries', args); }
 export function GetParent(...args) { return stubCall('GetParent', args); }
-export function GetPixel(...args) { return stubCall('GetPixel', args); }
+// GDI: export function GetPixel(...args) { return stubCall('GetPixel', args); }
 export function GetPrivateProfileIntA(...args) { return stubCall('GetPrivateProfileIntA', args); }
 export function GetProcAddress(...args) { return stubCall('GetProcAddress', args); }
 export function GetSaveFileNameA(...args) { return stubCall('GetSaveFileNameA', args); }
@@ -168,15 +185,15 @@ export function GetScrollPos(...args) { return stubCall('GetScrollPos', args); }
 export function GetScrollRange(...args) { return stubCall('GetScrollRange', args); }
 export function GetStartupInfoA(...args) { return stubCall('GetStartupInfoA', args); }
 export function GetStdHandle(...args) { return stubCall('GetStdHandle', args); }
-export function GetStockObject(...args) { return stubCall('GetStockObject', args); }
+// GDI: export function GetStockObject(...args) { return stubCall('GetStockObject', args); }
 export function GetStringTypeA(...args) { return stubCall('GetStringTypeA', args); }
 export function GetStringTypeW(...args) { return stubCall('GetStringTypeW', args); }
 export function GetSubMenu(...args) { return stubCall('GetSubMenu', args); }
 export function GetSystemPaletteEntries(...args) { return stubCall('GetSystemPaletteEntries', args); }
 export function GetSystemTime(...args) { return stubCall('GetSystemTime', args); }
-export function GetTextAlign(...args) { return stubCall('GetTextAlign', args); }
-export function GetTextExtentPointA(...args) { return stubCall('GetTextExtentPointA', args); }
-export function GetTextMetricsA(...args) { return stubCall('GetTextMetricsA', args); }
+// GDI: export function GetTextAlign(...args) { return stubCall('GetTextAlign', args); }
+// GDI: export function GetTextExtentPointA(...args) { return stubCall('GetTextExtentPointA', args); }
+// GDI: export function GetTextMetricsA(...args) { return stubCall('GetTextMetricsA', args); }
 export function GetTimeZoneInformation(...args) { return stubCall('GetTimeZoneInformation', args); }
 export function GetVersion(...args) { return stubCall('GetVersion', args); }
 export function GetWindow(...args) { return stubCall('GetWindow', args); }
@@ -222,13 +239,13 @@ export function HeapValidate(...args) { return stubCall('HeapValidate', args); }
 export function ICClose(...args) { return stubCall('ICClose', args); }
 export function ICLocate(...args) { return stubCall('ICLocate', args); }
 export function ICSendMessage(...args) { return stubCall('ICSendMessage', args); }
-export function InflateRect(...args) { return stubCall('InflateRect', args); }
+// GDI: export function InflateRect(...args) { return stubCall('InflateRect', args); }
 export function InitCommonControls(...args) { return stubCall('InitCommonControls', args); }
 export function InsertMenuA(...args) { return stubCall('InsertMenuA', args); }
 export function InterlockedDecrement(...args) { return stubCall('InterlockedDecrement', args); }
 export function InterlockedIncrement(...args) { return stubCall('InterlockedIncrement', args); }
-export function IntersectRect(...args) { return stubCall('IntersectRect', args); }
-export function InvalidateRect(...args) { return stubCall('InvalidateRect', args); }
+// GDI: export function IntersectRect(...args) { return stubCall('IntersectRect', args); }
+// GDI: export function InvalidateRect(...args) { return stubCall('InvalidateRect', args); }
 export function Iostream_init(...args) { return stubCall('Iostream_init', args); }
 export function Iostream_init__Iostream_init(...args) { return stubCall('Iostream_init__Iostream_init', args); }
 export function IsBadCodePtr(...args) { return stubCall('IsBadCodePtr', args); }
@@ -244,7 +261,7 @@ export function KillTimer(...args) { return stubCall('KillTimer', args); }
 export function LCMapStringA(...args) { return stubCall('LCMapStringA', args); }
 export function LCMapStringW(...args) { return stubCall('LCMapStringW', args); }
 export function LOCK(...args) { return stubCall('LOCK', args); }
-export function LineTo(...args) { return stubCall('LineTo', args); }
+// GDI: export function LineTo(...args) { return stubCall('LineTo', args); }
 export function LoadBitmapA(...args) { return stubCall('LoadBitmapA', args); }
 export function LoadCursorA(...args) { return stubCall('LoadCursorA', args); }
 export function LoadIconA(...args) { return stubCall('LoadIconA', args); }
@@ -264,16 +281,16 @@ export function MessageBeep(...args) { return stubCall('MessageBeep', args); }
 export function MessageBoxA(...args) { return stubCall('MessageBoxA', args); }
 export function ModifyMenuA(...args) { return stubCall('ModifyMenuA', args); }
 export function MoveFileA(...args) { return stubCall('MoveFileA', args); }
-export function MoveToEx(...args) { return stubCall('MoveToEx', args); }
+// GDI: export function MoveToEx(...args) { return stubCall('MoveToEx', args); }
 export function MoveWindow(...args) { return stubCall('MoveWindow', args); }
 export function MultiByteToWideChar(...args) { return stubCall('MultiByteToWideChar', args); }
-export function OffsetRect(...args) { return stubCall('OffsetRect', args); }
+// GDI: export function OffsetRect(...args) { return stubCall('OffsetRect', args); }
 export function OpenFile(...args) { return stubCall('OpenFile', args); }
 export function OutputDebugStringA(...args) { return stubCall('OutputDebugStringA', args); }
-export function PtInRect(...args) { return stubCall('PtInRect', args); }
+// GDI: export function PtInRect(...args) { return stubCall('PtInRect', args); }
 export function ROUND(...args) { return stubCall('ROUND', args); }
 export function ReadFile(...args) { return stubCall('ReadFile', args); }
-export function RealizePalette(...args) { return stubCall('RealizePalette', args); }
+// GDI: export function RealizePalette(...args) { return stubCall('RealizePalette', args); }
 export function RegCloseKey(...args) { return stubCall('RegCloseKey', args); }
 export function RegCreateKeyExA(...args) { return stubCall('RegCreateKeyExA', args); }
 export function RegOpenKeyExA(...args) { return stubCall('RegOpenKeyExA', args); }
@@ -281,22 +298,22 @@ export function RegQueryValueExA(...args) { return stubCall('RegQueryValueExA', 
 export function RegSetValueExA(...args) { return stubCall('RegSetValueExA', args); }
 export function RegisterClassA(...args) { return stubCall('RegisterClassA', args); }
 export function ReleaseCapture(...args) { return stubCall('ReleaseCapture', args); }
-export function ReleaseDC(...args) { return stubCall('ReleaseDC', args); }
+// GDI: export function ReleaseDC(...args) { return stubCall('ReleaseDC', args); }
 export function RemoveFontResourceA(...args) { return stubCall('RemoveFontResourceA', args); }
 export function RemoveMenu(...args) { return stubCall('RemoveMenu', args); }
 export function RtlUnwind(...args) { return stubCall('RtlUnwind', args); }
 export function SCARRY1(...args) { return stubCall('SCARRY1', args); }
 export function ScreenToClient(...args) { return stubCall('ScreenToClient', args); }
-export function SelectObject(...args) { return stubCall('SelectObject', args); }
-export function SelectPalette(...args) { return stubCall('SelectPalette', args); }
-export function SetBkColor(...args) { return stubCall('SetBkColor', args); }
-export function SetBkMode(...args) { return stubCall('SetBkMode', args); }
+// GDI: export function SelectObject(...args) { return stubCall('SelectObject', args); }
+// GDI: export function SelectPalette(...args) { return stubCall('SelectPalette', args); }
+// GDI: export function SetBkColor(...args) { return stubCall('SetBkColor', args); }
+// GDI: export function SetBkMode(...args) { return stubCall('SetBkMode', args); }
 export function SetCapture(...args) { return stubCall('SetCapture', args); }
 export function SetClassLongA(...args) { return stubCall('SetClassLongA', args); }
 export function SetConsoleCtrlHandler(...args) { return stubCall('SetConsoleCtrlHandler', args); }
 export function SetCurrentDirectoryA(...args) { return stubCall('SetCurrentDirectoryA', args); }
 export function SetCursor(...args) { return stubCall('SetCursor', args); }
-export function SetDIBColorTable(...args) { return stubCall('SetDIBColorTable', args); }
+// GDI: export function SetDIBColorTable(...args) { return stubCall('SetDIBColorTable', args); }
 export function SetEndOfFile(...args) { return stubCall('SetEndOfFile', args); }
 export function SetEnvironmentVariableA(...args) { return stubCall('SetEnvironmentVariableA', args); }
 export function SetErrorMode(...args) { return stubCall('SetErrorMode', args); }
@@ -305,12 +322,12 @@ export function SetFocus(...args) { return stubCall('SetFocus', args); }
 export function SetHandleCount(...args) { return stubCall('SetHandleCount', args); }
 export function SetMenu(...args) { return stubCall('SetMenu', args); }
 export function SetPaletteEntries(...args) { return stubCall('SetPaletteEntries', args); }
-export function SetPixel(...args) { return stubCall('SetPixel', args); }
+// GDI: export function SetPixel(...args) { return stubCall('SetPixel', args); }
 export function SetScrollPos(...args) { return stubCall('SetScrollPos', args); }
 export function SetScrollRange(...args) { return stubCall('SetScrollRange', args); }
 export function SetStdHandle(...args) { return stubCall('SetStdHandle', args); }
-export function SetTextAlign(...args) { return stubCall('SetTextAlign', args); }
-export function SetTextColor(...args) { return stubCall('SetTextColor', args); }
+// GDI: export function SetTextAlign(...args) { return stubCall('SetTextAlign', args); }
+// GDI: export function SetTextColor(...args) { return stubCall('SetTextColor', args); }
 export function SetTimer(...args) { return stubCall('SetTimer', args); }
 export function SetUnhandledExceptionFilter(...args) { return stubCall('SetUnhandledExceptionFilter', args); }
 export function SetWindowLongA(...args) { return stubCall('SetWindowLongA', args); }
@@ -321,17 +338,17 @@ export function ShowCursor(...args) { return stubCall('ShowCursor', args); }
 export function ShowScrollBar(...args) { return stubCall('ShowScrollBar', args); }
 export function ShowWindow(...args) { return stubCall('ShowWindow', args); }
 export function Sleep(...args) { return stubCall('Sleep', args); }
-export function StretchBlt(...args) { return stubCall('StretchBlt', args); }
+// GDI: export function StretchBlt(...args) { return stubCall('StretchBlt', args); }
 export function TerminateProcess(...args) { return stubCall('TerminateProcess', args); }
 export function TrackPopupMenu(...args) { return stubCall('TrackPopupMenu', args); }
 export function UNLOCK(...args) { return stubCall('UNLOCK', args); }
 export function UnhandledExceptionFilter(...args) { return stubCall('UnhandledExceptionFilter', args); }
 export function UnhookWindowsHookEx(...args) { return stubCall('UnhookWindowsHookEx', args); }
-export function UnionRect(...args) { return stubCall('UnionRect', args); }
+// GDI: export function UnionRect(...args) { return stubCall('UnionRect', args); }
 export function UnmapViewOfFile(...args) { return stubCall('UnmapViewOfFile', args); }
 export function UnregisterClassA(...args) { return stubCall('UnregisterClassA', args); }
-export function UpdateWindow(...args) { return stubCall('UpdateWindow', args); }
-export function ValidateRect(...args) { return stubCall('ValidateRect', args); }
+// GDI: export function UpdateWindow(...args) { return stubCall('UpdateWindow', args); }
+// GDI: export function ValidateRect(...args) { return stubCall('ValidateRect', args); }
 export function VirtualAlloc(...args) { return stubCall('VirtualAlloc', args); }
 export function VirtualFree(...args) { return stubCall('VirtualFree', args); }
 export function WideCharToMultiByte(...args) { return stubCall('WideCharToMultiByte', args); }

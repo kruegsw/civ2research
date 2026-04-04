@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Civilization II — v4 Engine</title>
+<style>
+  body { margin: 0; background: #111; color: #ccc; font: 14px monospace; overflow: hidden; }
+  #status { position: fixed; top: 0; left: 0; right: 0; padding: 6px 12px; background: rgba(0,0,0,0.8); z-index: 10; }
+  canvas { display: block; margin: 0 auto; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<div id="status">Loading v4 engine...</div>
+<canvas id="display" width="1024" height="768"></canvas>
+
+<script type="module">
+import { setMainCanvas } from './gdi.js';
+
+const canvas = document.getElementById('display');
+const status = document.getElementById('status');
+
+// Wire the main canvas to the GDI layer
+setMainCanvas(canvas);
+
+status.textContent = 'GDI layer connected. Canvas ready. Load game to begin.';
+</script>
+</body>
+</html>
