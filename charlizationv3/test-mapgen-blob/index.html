@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Map Generator Comparison</title>
+<style>
+body { margin: 0; background: #111; color: #ccc; font: 14px monospace; display: flex; }
+#sidebar { width: 280px; padding: 10px; flex-shrink: 0; overflow-y: auto; max-height: 100vh; }
+#sidebar button { display: block; margin: 4px 0; padding: 6px 12px; cursor: pointer; width: 100%; }
+#sidebar select, #sidebar input { margin: 4px 0; padding: 4px; width: 100%; box-sizing: border-box; }
+#stats { white-space: pre; font-size: 11px; margin-top: 10px; }
+canvas { display: block; }
+#map-wrap { flex: 1; overflow: auto; }
+label { display: block; margin: 4px 0; }
+.section { border-top: 1px solid #444; margin-top: 8px; padding-top: 6px; }
+.section-title { color: #8af; font-size: 12px; margin-bottom: 4px; }
+input[type="range"] { width: 100%; }
+.range-val { color: #ff8; font-size: 11px; float: right; }
+#algo { font-size: 15px; padding: 6px; background: #225; color: #8cf; border: 2px solid #48f; }
+#gen-btn { font-size: 16px; padding: 10px; background: #4a4; color: #fff; border: none; margin-top: 8px; cursor: pointer; }
+#gen-btn:hover { background: #5b5; }
+#timing { color: #ff8; font-size: 11px; margin-top: 4px; }
+.algo-knobs { display: none; }
+.algo-knobs.active { display: block; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <h3 style="margin:0 0 8px">Map Gen Comparison</h3>
+
+  <label>Algorithm:
+    <select id="algo">
+      <option value="civ2">Civ2 (Random Walk)</option>
+      <option value="blob">Blob Growth</option>
+      <option value="noise">Simplex Noise</option>
+      <option value="plates">Plate Tectonics</option>
+      <option value="ca">Cellular Automata</option>
+      <option value="diamond">Diamond-Square</option>
+      <option value="voronoi">Voronoi Regions</option>
+      <option value="civ2tec">Civ2-Tectonics</option>
+      <option value="civ2tecRegions">Civ2-Tec Regions</option>
+      <option value="northAmerica">North America</option>
+      <option value="southAmerica">South America</option>
+      <option value="europe">Europe</option>
+      <option value="africa">Africa</option>
+      <option value="asia">Asia</option>
+      <option value="australia">Australia</option>
+      <option value="antarctica">Antarctica</option>
+      <option value="world">World</option>
+      <option value="claudeSpecial">Earthlike</option>
+      <option value="claudeSpecial2">Earthlike+</option>
+      <option value="claudeSpecial3">Organic</option>
+      <option value="claudeSpecial4">Crescent</option>
+      <option value="pangeaCrescent">Pangea-Crescent</option>
+    </select>
+  </label>
+
+  <label>Seed: <input type="number" id="seed" placeholder="(random)" style="width:120px"></label>
+  <label>Size:
+    <select id="size">
+      <option value="10,10">Tiny (10x10)</option>
+      <option value="20,20">Mini (20x20)</option>
+      <option value="40,20">Micro (40x20)</option>
+      <option value="100,50">Small (100x50)</option>
+      <option value="160,80" selected>Normal (160x80)</option>
+      <option value="240,120">Large (240x120)</option>
+    </select>
+  </label>
+  <label>Landmass:
+    <select id="landmass">
+      <option value="0">Small</option>
+      <option value="1" selected>Normal</option>
+      <option value="2">Large</option>
+    </select>
+  </label>
+  <label>Continents:
+    <select id="continents">
+      <option value="-1">Islands</option>
+      <option value="0">Small</option>
+      <option value="1" selected>Large</option>
+    </select>
+  </label>
+  <label>Temperature:
+    <select id="temperature">
+      <option value="-1">Cool</option>
+      <option value="0" selected>Temperate</option>
+      <option value="1">Warm</option>
+    </select>
+  </label>
+  <label>Climate:
+    <select id="climate">
+      <option value="-1">Arid</option>
+      <option value="0" selected>Normal</option>
+      <option value="1">Wet</option>
+    </select>
+  </label>
+  <label>Age:
+    <select id="age">
+      <option value="0">3 Billion (young)</option>
+      <option value="1" selected>4 Billion (normal)</option>
+      <option value="2">5 Billion (old)</option>
+    </select>
+  </label>
+  <label>Map shape:
+    <select id="mapShape">
+      <option value="0" selected>Wrapping</option>
+      <option value="1">Flat</option>
+    </select>
+  </label>
+
+  <!-- Blob-specific knobs -->
+  <div class="section algo-knobs" id="knobs-blob">
+    <div class="section-title">Blob Growth Knobs</div>
+    <label>Min gap: <span class="range-val" id="minGap-val">3</span>
+      <input type="range" id="minGap" min="1" max="8" value="3">
+    </label>
+    <label>Hills threshold: <span class="range-val" id="hillsFrac-val">0.45</span>
+      <input type="range" id="hillsFrac" min="15" max="75" value="45">
+    </label>
+    <label>Mountains threshold: <span class="range-val" id="mtnsFrac-val">0.70</span>
+      <input type="range" id="mtnsFrac" min="40" max="95" value="70">
+    </label>
+  </div>
+
+  <button id="gen-btn">Generate</button>
+  <div id="timing"></div>
+
+  <div class="section">
+    <div class="section-title">Debug Overlay</div>
+    <label>
+      <select id="overlay">
+        <option value="none" selected>None</option>
+        <option value="bodyid">Body IDs</option>
+        <option value="fertility">Fertility</option>
+      </select>
+    </label>
+  </div>
+
+  <pre id="stats"></pre>
+</div>
+<div id="map-wrap">
+  <canvas id="c"></canvas>
+</div>
+<script type="module">
+import { generateMap }             from '../engine/mapgen.js';
+import { generateMapBlob }         from './mapgenBlob.js';
+import { generateMapNoise }        from './mapgenNoise.js';
+import { generateMapPlates }       from './mapgenPlates.js';
+import { generateMapCA }           from './mapgenCA.js';
+import { generateMapDiamondSquare } from './mapgenDiamondSquare.js';
+import { generateMapVoronoi }      from './mapgenVoronoi.js';
+import { generateMapCiv2Tec }     from './mapgenCiv2Tec.js';
+import { generateMapCiv2TecRegions } from './mapgenCiv2TecRegions.js';
+import { generateMapNorthAmerica }   from './mapgenNorthAmerica.js';
+import { generateMapSouthAmerica, generateMapAfrica } from './mapgenSouthAmericaAfrica.js';
+import { generateMapEurope, generateMapAsia } from './mapgenEuropeAsia.js';
+import { generateMapAustralia, generateMapAntarctica } from './mapgenAustraliaAntarctica.js';
+import { generateMapWorld } from './mapgenWorld.js';
+import { generateMapClaudeSpecial } from './mapgenClaudeSpecial.js';
+import { generateMapClaudeSpecial2 } from './mapgenClaudeSpecial2.js';
+import { generateMapClaudeSpecial3 } from './mapgenClaudeSpecial3.js';
+import { generateMapClaudeSpecial4 } from './mapgenClaudeSpecial4.js';
+import { generateMapPangeaCrescent } from './mapgenPangeaCrescent.js';
+
+const GENERATORS = {
+  civ2:    generateMap,
+  blob:    generateMapBlob,
+  noise:   generateMapNoise,
+  plates:  generateMapPlates,
+  ca:      generateMapCA,
+  diamond: generateMapDiamondSquare,
+  voronoi: generateMapVoronoi,
+  civ2tec: generateMapCiv2Tec,
+  civ2tecRegions: generateMapCiv2TecRegions,
+  northAmerica: generateMapNorthAmerica,
+  southAmerica: generateMapSouthAmerica,
+  europe: generateMapEurope,
+  africa: generateMapAfrica,
+  asia: generateMapAsia,
+  australia: generateMapAustralia,
+  antarctica: generateMapAntarctica,
+  world: generateMapWorld,
+  claudeSpecial: generateMapClaudeSpecial,
+  claudeSpecial2: generateMapClaudeSpecial2,
+  claudeSpecial3: generateMapClaudeSpecial3,
+  claudeSpecial4: generateMapClaudeSpecial4,
+  pangeaCrescent: generateMapPangeaCrescent,
+};
+
+const COLORS = {
+  0:  '#e8d080', // Desert
+  1:  '#90b030', // Plains
+  2:  '#40a030', // Grassland
+  3:  '#207820', // Forest
+  4:  '#906030', // Hills
+  5:  '#808080', // Mountains
+  6:  '#a8c8c8', // Tundra
+  7:  '#e0e8f0', // Glacier
+  8:  '#408860', // Swamp
+  9:  '#186818', // Jungle
+  10: '#2040a0', // Ocean
+};
+const NAMES = ['Desert','Plains','Grass','Forest','Hills','Mtn','Tundra','Glacier','Swamp','Jungle','Ocean'];
+const TILE = 8;
+
+let lastResult = null;
+
+function draw(result) {
+  lastResult = result;
+  const { mw, mh, tileData } = result;
+  const canvas = document.getElementById('c');
+  canvas.width = (mw / 2) * TILE;
+  canvas.height = mh * TILE;
+  const ctx = canvas.getContext('2d');
+
+  const overlay = document.getElementById('overlay').value;
+
+  const counts = new Array(11).fill(0);
+  let rivers = 0, valid = 0;
+  const bodySet = new Set();
+
+  for (let y = 0; y < mh; y++) {
+    for (let x = (y & 1); x < mw; x += 2) {
+      valid++;
+      const t = tileData[y * mw + x];
+      counts[t.terrain]++;
+      if (t.river) rivers++;
+      if (t.terrain !== 10) bodySet.add(t.bodyId);
+
+      const px = Math.floor(x / 2) * TILE;
+      const py = y * TILE;
+      ctx.fillStyle = COLORS[t.terrain];
+      ctx.fillRect(px, py, TILE, TILE);
+
+      if (t.river) {
+        ctx.fillStyle = 'rgba(0,100,255,0.5)';
+        ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
+      }
+    }
+  }
+
+  // Debug overlays
+  if (overlay === 'bodyid') {
+    const BODY_COLORS = [
+      '#000','#e44','#4e4','#44e','#ee4','#e4e','#4ee','#fa0',
+      '#a4f','#f48','#4fa','#8af','#fa4','#4af','#af4','#f4a',
+    ];
+    ctx.font = '7px monospace';
+    ctx.textBaseline = 'top';
+    for (let y = 0; y < mh; y++) {
+      for (let x = (y & 1); x < mw; x += 2) {
+        const t = tileData[y * mw + x];
+        if (t.terrain === 10) continue;
+        const px = Math.floor(x / 2) * TILE;
+        const py = y * TILE;
+        ctx.fillStyle = BODY_COLORS[t.bodyId % BODY_COLORS.length];
+        ctx.globalAlpha = 0.45;
+        ctx.fillRect(px, py, TILE, TILE);
+        ctx.globalAlpha = 1.0;
+        if (TILE >= 8) {
+          ctx.fillStyle = '#fff';
+          ctx.fillText(t.bodyId, px + 1, py);
+        }
+      }
+    }
+  }
+
+  if (overlay === 'fertility') {
+    for (let y = 0; y < mh; y++) {
+      for (let x = (y & 1); x < mw; x += 2) {
+        const t = tileData[y * mw + x];
+        if (t.terrain === 10 || !t.fertility) continue;
+        const px = Math.floor(x / 2) * TILE;
+        const py = y * TILE;
+        const frac = t.fertility / 15;
+        ctx.fillStyle = `rgba(0,255,0,${frac * 0.6})`;
+        ctx.fillRect(px, py, TILE, TILE);
+        if (TILE >= 8) {
+          ctx.font = '7px monospace';
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = '#fff';
+          ctx.fillText(t.fertility, px + 1, py);
+        }
+      }
+    }
+  }
+
+  // Stats
+  const land = valid - counts[10];
+  const algo = document.getElementById('algo').value;
+  let s = `[${algo}]  Seed: ${result.mapSeed}\n`;
+  s += `${mw}x${mh}  ${valid} tiles\n`;
+  s += `Land: ${land} (${(100*land/valid).toFixed(1)}%)\n`;
+  s += `Rivers: ${rivers}\n`;
+  s += `Bodies: ${bodySet.size}\n\n`;
+  for (let i = 0; i < 11; i++) {
+    if (counts[i] > 0) {
+      const pct = (100 * counts[i] / valid).toFixed(1);
+      const lpct = i < 10 ? `  ${(100*counts[i]/Math.max(land,1)).toFixed(1)}% land` : '';
+      s += `${NAMES[i].padEnd(8)} ${String(counts[i]).padStart(5)} ${pct.padStart(5)}%${lpct}\n`;
+    }
+  }
+  const flat = counts[0]+counts[1]+counts[2]+counts[3]+counts[6]+counts[8]+counts[9];
+  const elev = counts[4]+counts[5];
+  if (land > 0) {
+    s += `\nFlat:      ${(100*flat/land).toFixed(1)}%\n`;
+    s += `Hills+Mtn: ${(100*elev/land).toFixed(1)}%\n`;
+  }
+  document.getElementById('stats').textContent = s;
+}
+
+// Show/hide algorithm-specific knobs + auto-select size for North America
+document.getElementById('algo').addEventListener('change', () => {
+  const algo = document.getElementById('algo').value;
+  document.querySelectorAll('.algo-knobs').forEach(el => el.classList.remove('active'));
+  const knobs = document.getElementById('knobs-' + algo);
+  if (knobs) knobs.classList.add('active');
+  if (algo === 'world') document.getElementById('size').value = '160,80';
+});
+
+// Range slider displays
+for (const id of ['minGap', 'hillsFrac', 'mtnsFrac']) {
+  const el = document.getElementById(id);
+  const valEl = document.getElementById(id + '-val');
+  el.addEventListener('input', () => {
+    valEl.textContent = id === 'minGap' ? el.value : (el.value / 100).toFixed(2);
+  });
+}
+
+function generate() {
+  const algo = document.getElementById('algo').value;
+  const gen = GENERATORS[algo];
+  if (!gen) return;
+
+  const [w, h] = document.getElementById('size').value.split(',').map(Number);
+  const seedVal = document.getElementById('seed').value;
+  const settings = {
+    width: w,
+    height: h,
+    landmass: +document.getElementById('landmass').value,
+    continents: +document.getElementById('continents').value,
+    temperature: +document.getElementById('temperature').value,
+    climate: +document.getElementById('climate').value,
+    age: +document.getElementById('age').value,
+    mapShape: +document.getElementById('mapShape').value,
+  };
+  if (seedVal !== '') settings.seed = +seedVal;
+
+  // Blob-specific settings
+  if (algo === 'blob') {
+    settings.minGap = +document.getElementById('minGap').value;
+    settings.hillsFrac = +document.getElementById('hillsFrac').value / 100;
+    settings.mtnsFrac = +document.getElementById('mtnsFrac').value / 100;
+  }
+
+  const t0 = performance.now();
+  const result = gen(settings);
+  const ms = (performance.now() - t0).toFixed(0);
+  document.getElementById('timing').textContent = `Generated in ${ms}ms`;
+
+  draw(result);
+}
+
+document.getElementById('gen-btn').addEventListener('click', generate);
+document.getElementById('overlay').addEventListener('change', () => { if (lastResult) draw(lastResult); });
+generate();
+</script>
+</body>
+</html>

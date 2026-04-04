@@ -1,0 +1,2312 @@
+Charlization AI Headless Simulation
+Date: 2026-03-14T23:31:51.889Z
+Settings: 50 turns, 4 AI players, 50x80 map, difficulty=prince
+Map seed: 42
+Map generated in 326ms
+Game initialized: 4 civs, 8 starting units
+  Civ 1 (Romans): starts at (6,40) on Grassland
+  Civ 2 (Babylonians): starts at (17,39) on Plains
+  Civ 3 (Germans): starts at (30,40) on Plains
+  Civ 4 (Egyptians): starts at (42,40) on Plains
+  [Civ 1] Romans turn: 6 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1), MOVE_UNIT(1), UNIT_ORDER(2)
+    SET_RESEARCH tech=Warrior Code
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=0 name="Rome"
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=0 order=skip
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Romans: researching Warrior Code (score 5). Top 3: Bronze Working=5, Warrior Code=5, Alphabet=4
+    [debug] ECON: Romans: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #0: founding FIRST city "Rome" at (6,40), score=22 (immediate)
+    [debug] UNIT: Warriors #1 at (6,40): moving E to (7,40)
+    REJECTED: UNIT_ORDER unit=0 order=skip — Unit is dead
+    1 actions REJECTED (of 6)
+  [Civ 2] Babylonians turn: 6 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1), MOVE_UNIT(1), UNIT_ORDER(2)
+    SET_RESEARCH tech=Ceremonial Burial
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=2 name="Babylon"
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=2 order=skip
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Babylonians: researching Ceremonial Burial (score 3). Top 3: Alphabet=4, Bronze Working=3, Ceremonial Burial=3
+    [debug] ECON: Babylonians: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #2: founding FIRST city "Babylon" at (17,39), score=17 (immediate)
+    [debug] UNIT: Warriors #3 at (17,39): moving W to (16,39)
+    REJECTED: UNIT_ORDER unit=2 order=skip — Unit is dead
+    1 actions REJECTED (of 6)
+  [Civ 3] Germans turn: 6 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1), MOVE_UNIT(1), UNIT_ORDER(2)
+    SET_RESEARCH tech=Ceremonial Burial
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=4 name="Berlin"
+    MOVE_UNIT unit=5 dir=W
+    UNIT_ORDER unit=4 order=skip
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Germans: researching Ceremonial Burial (score 3). Top 3: Alphabet=4, Bronze Working=3, Ceremonial Burial=3
+    [debug] ECON: Germans: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #4: founding FIRST city "Berlin" at (30,40), score=15 (immediate)
+    [debug] UNIT: Warriors #5 at (30,40): moving W to (29,40)
+    REJECTED: UNIT_ORDER unit=4 order=skip — Unit is dead
+    1 actions REJECTED (of 6)
+  [Civ 4] Egyptians turn: 6 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1), MOVE_UNIT(1), UNIT_ORDER(2)
+    SET_RESEARCH tech=Alphabet
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=6 name="Thebes"
+    MOVE_UNIT unit=7 dir=W
+    UNIT_ORDER unit=6 order=skip
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Egyptians: researching Alphabet (score 4). Top 3: Masonry=5, Alphabet=4, Bronze Working=3
+    [debug] ECON: Egyptians: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #6: founding FIRST city "Thebes" at (42,40), score=23 (immediate)
+    [debug] UNIT: Warriors #7 at (42,40): moving W to (41,40)
+    REJECTED: UNIT_ORDER unit=6 order=skip — Unit is dead
+    1 actions REJECTED (of 6)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 1 — 3980 B.C. (47ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 51g, 0 techs, researching Warrior Code (2/10)
+    Rome: size=1, prod=Warriors (3sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (0/10)
+    Babylon: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (0/10)
+    Berlin: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Alphabet (0/10)
+    Thebes: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=0
+    MOVE_UNIT unit=1 dir=NE
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Rome: chose Barracks (score 66), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #1 at (7,40): moving NE to (7,39)
+  [Civ 2] Babylonians turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=1
+    MOVE_UNIT unit=3 dir=E
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Babylon: chose Barracks (score 100), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #3 at (16,39): moving E to (17,39)
+  [Civ 3] Germans turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=2
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Berlin: chose Barracks (score 54), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #5 at (29,40): moving E to (30,40)
+  [Civ 4] Egyptians turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=3
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Thebes: chose Barracks (score 99), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #7 at (41,40): moving N to (41,38)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 2 — 3960 B.C. (21ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 52g, 0 techs, researching Warrior Code (4/10)
+    Rome: size=1, prod=building:2 (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (1/10)
+    Babylon: size=1, prod=building:2 (1sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 51g, 0 techs, researching Ceremonial Burial (2/10)
+    Berlin: size=1, prod=building:2 (1sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 51g, 0 techs, researching Alphabet (1/10)
+    Thebes: size=1, prod=building:2 (1sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #1 at (7,39): moving E to (8,39)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=fortify
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (17,39): moving W to (16,39)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=fortify
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (30,40): moving E to (31,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=W
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (41,38): moving W to (40,38)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 3 — 3940 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 53g, 0 techs, researching Warrior Code (6/10)
+    Rome: size=1, prod=building:2 (7sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (2/10)
+    Babylon: size=1, prod=building:2 (3sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 52g, 0 techs, researching Ceremonial Burial (4/10)
+    Berlin: size=1, prod=building:2 (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 52g, 0 techs, researching Alphabet (2/10)
+    Thebes: size=1, prod=building:2 (3sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #1 at (8,39): moving E to (9,39)
+  [Civ 2] Babylonians turn: 1 actions — MOVE_UNIT(1)
+    MOVE_UNIT unit=3 dir=E
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (16,39): moving E to (17,39)
+  [Civ 3] Germans turn: 1 actions — MOVE_UNIT(1)
+    MOVE_UNIT unit=5 dir=S
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (31,40): moving S to (31,42)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=W
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (40,38): moving W to (39,38)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 4 — 3920 B.C. (20ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 54g, 0 techs, researching Warrior Code (8/10)
+    Rome: size=1, prod=building:2 (10sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (3/10)
+    Babylon: size=1, prod=building:2 (5sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 53g, 0 techs, researching Ceremonial Burial (6/10)
+    Berlin: size=1, prod=building:2 (7sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 53g, 0 techs, researching Alphabet (3/10)
+    Thebes: size=1, prod=building:2 (5sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #1 at (9,39): moving E to (10,39)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=fortify
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (17,39): moving W to (16,39)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (31,42): moving E to (32,42)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (39,38): moving N to (39,36)
+    >>> Romans discovered: Warrior Code
+
+══════════════════════════════════════════════════════════════════════
+  TURN 5 — 3900 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 55g, 1 techs, researching none (0/10)
+    Rome: size=1, prod=building:2 (13sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (4/10)
+    Babylon: size=1, prod=building:2 (7sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 54g, 0 techs, researching Ceremonial Burial (8/10)
+    Berlin: size=1, prod=building:2 (10sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 54g, 0 techs, researching Alphabet (4/10)
+    Thebes: size=1, prod=building:2 (7sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Bronze Working
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Romans: researching Bronze Working (score 5). Top 3: Bronze Working=5, Alphabet=4, Ceremonial Burial=3
+    [debug] UNIT: Warriors #1 at (10,39): moving E to (11,39)
+  [Civ 2] Babylonians turn: 1 actions — MOVE_UNIT(1)
+    MOVE_UNIT unit=3 dir=SW
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (16,39): moving SW to (16,40)
+    >>> Germans discovered: Ceremonial Burial
+  [Civ 3] Germans turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Alphabet
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Germans: researching Alphabet (score 4). Top 3: Alphabet=4, Bronze Working=3, Masonry=3
+    [debug] UNIT: Warriors #5 at (32,42): moving E to (33,42)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=W
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (39,36): moving W to (38,36)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 6 — 3880 B.C. (12ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 56g, 1 techs, researching Bronze Working (2/10)
+    Rome: size=1, prod=building:2 (16sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (5/10)
+    Babylon: size=1, prod=building:2 (9sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 55g, 1 techs, researching Alphabet (0/10)
+    Berlin: size=1, prod=building:2 (13sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 55g, 0 techs, researching Alphabet (5/10)
+    Thebes: size=1, prod=building:2 (9sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #1 at (11,39): moving E to (12,39)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (16,40): moving W to (15,40)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (33,42): moving E to (34,42)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=W
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (38,36): moving W to (37,36)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 7 — 3860 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 57g, 1 techs, researching Bronze Working (4/10)
+    Rome: size=1, prod=building:2 (19sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (6/10)
+    Babylon: size=1, prod=building:2 (11sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 56g, 1 techs, researching Alphabet (2/10)
+    Berlin: size=1, prod=building:2 (16sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 56g, 0 techs, researching Alphabet (6/10)
+    Thebes: size=1, prod=building:2 (11sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=E
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #1 at (12,39): moving E to (13,39)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #3 at (15,40): moving W to (14,40)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=N
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (34,42): moving N to (34,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (37,36): moving S to (37,38)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 8 — 3840 B.C. (21ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 58g, 1 techs, researching Bronze Working (6/10)
+    Rome: size=1, prod=building:2 (22sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 50g, 0 techs, researching Ceremonial Burial (7/10)
+    Babylon: size=1, prod=building:2 (13sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 57g, 1 techs, researching Alphabet (4/10)
+    Berlin: size=1, prod=building:2 (19sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 57g, 0 techs, researching Alphabet (7/10)
+    Thebes: size=1, prod=building:2 (13sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=N
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (13,39): moving N to (13,37)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (14,40): moving N to (14,38)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (34,40): moving E to (35,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #7 at (37,38): moving S to (37,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 9 — 3820 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 59g, 1 techs, researching Bronze Working (8/10)
+    Rome: size=1, prod=building:2 (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 150g, 0 techs, researching Ceremonial Burial (8/10)
+    Babylon: size=1, prod=building:2 (15sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 58g, 1 techs, researching Alphabet (6/10)
+    Berlin: size=1, prod=building:2 (22sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 58g, 0 techs, researching Alphabet (8/10)
+    Thebes: size=1, prod=building:2 (15sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=1 dir=N
+    UNIT_ORDER unit=1 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (13,37): moving N to (13,35)
+    END_TURN REJECTED: 1 units still need orders
+      #8 Archers(Atk) @(13,35) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=SW
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (14,38): moving SW to (13,39)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] UNIT: Warriors #5 at (35,40): moving E to (36,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (37,40): moving SE to (37,41)
+    >>> Romans discovered: Bronze Working
+
+══════════════════════════════════════════════════════════════════════
+  TURN 10 — 3800 B.C. (17ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 60g, 2 techs, researching none (0/18)
+    Rome: size=2, prod=building:2 (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 150g, 0 techs, researching Ceremonial Burial (9/10)
+    Babylon: size=1, prod=building:2 (17sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 59g, 1 techs, researching Alphabet (8/10)
+    Berlin: size=1, prod=building:2 (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 59g, 0 techs, researching Alphabet (9/10)
+    Thebes: size=1, prod=building:2 (17sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 6 actions — SET_RESEARCH(1), CHANGE_PRODUCTION(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Iron Working
+    CHANGE_PRODUCTION city=0
+    MOVE_UNIT unit=1 dir=W
+    MOVE_UNIT unit=8 dir=W
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Romans: researching Iron Working (score 5). Top 3: Iron Working=5, Alphabet=4, Masonry=3
+    [debug] PROD: Rome: chose Colossus (score 379), switching from Barracks (score 60)
+    [debug] UNIT: Warriors #1 at (13,35): moving W to (12,35)
+    [debug] UNIT: Archers #8 at (13,35): moving W to (12,35)
+    >>> Babylonians discovered: Ceremonial Burial
+  [Civ 2] Babylonians turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Alphabet
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Babylonians: researching Alphabet (score 4). Top 3: Alphabet=4, Masonry=3, Mysticism=3
+    [debug] UNIT: Warriors #3 at (13,39): moving N to (13,37)
+    >>> Germans discovered: Alphabet
+  [Civ 3] Germans turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Code of Laws
+    MOVE_UNIT unit=5 dir=N
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Germans: researching Code of Laws (score 3). Top 3: Map Making=4, Code of Laws=3, Masonry=3
+    [debug] UNIT: Warriors #5 at (36,40): moving N to (36,38)
+    >>> Egyptians discovered: Alphabet
+  [Civ 4] Egyptians turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Masonry
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Egyptians: researching Masonry (score 5). Top 3: Masonry=5, Map Making=4, Code of Laws=3
+    [debug] UNIT: Warriors #7 at (37,41): moving E to (38,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 11 — 3780 B.C. (14ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 61g, 2 techs, researching Iron Working (2/18)
+    Rome: size=2, prod=Wonder41 (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 152g, 1 techs, researching Alphabet (0/10)
+    Babylon: size=2, prod=building:2 (19sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 60g, 2 techs, researching Code of Laws (0/18)
+    Berlin: size=2, prod=building:2 (28sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 60g, 1 techs, researching Masonry (0/10)
+    Thebes: size=2, prod=building:2 (19sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=W
+    MOVE_UNIT unit=8 dir=W
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (12,35): moving W to (11,35)
+    [debug] UNIT: Archers #8 at (12,35): moving W to (11,35)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (13,37): moving N to (13,35)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=N
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (36,38): moving N to (36,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (38,41): moving E to (39,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 12 — 3760 B.C. (11ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 62g, 2 techs, researching Iron Working (4/18)
+    Rome: size=2, prod=Wonder41 (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 154g, 1 techs, researching Alphabet (2/10)
+    Babylon: size=2, prod=building:2 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 61g, 2 techs, researching Code of Laws (2/18)
+    Berlin: size=2, prod=building:2 (32sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 61g, 1 techs, researching Masonry (1/10)
+    Thebes: size=2, prod=building:2 (22sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=W
+    MOVE_UNIT unit=8 dir=W
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (11,35): moving W to (10,35)
+    [debug] UNIT: Archers #8 at (11,35): moving W to (10,35)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (13,35): moving W to (12,35)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (36,36): moving E to (37,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (39,41): moving SE to (40,42)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 13 — 3740 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 63g, 2 techs, researching Iron Working (6/18)
+    Rome: size=2, prod=Wonder41 (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 156g, 1 techs, researching Alphabet (4/10)
+    Babylon: size=2, prod=building:2 (23sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 62g, 2 techs, researching Code of Laws (4/18)
+    Berlin: size=2, prod=building:2 (36sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 62g, 1 techs, researching Masonry (2/10)
+    Thebes: size=2, prod=building:2 (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=SW
+    MOVE_UNIT unit=8 dir=SW
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (10,35): moving SW to (10,36)
+    [debug] UNIT: Archers #8 at (10,35): moving SW to (10,36)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (12,35): moving W to (11,35)
+    >>> Berlin built building:2
+  [Civ 3] Germans turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=2
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Berlin: chose Warriors (score 1), switching from Barracks (score 0)
+    [debug] UNIT: Warriors #5 at (37,36): moving E to (38,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (40,42): moving SE to (40,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 14 — 3720 B.C. (16ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 64g, 2 techs, researching Iron Working (8/18)
+    Rome: size=2, prod=Wonder41 (30sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 158g, 1 techs, researching Alphabet (6/10)
+    Babylon: size=2, prod=building:2 (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 62g, 2 techs, researching Code of Laws (6/18)
+    Berlin: size=2, prod=Warriors (0sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 63g, 1 techs, researching Masonry (3/10)
+    Thebes: size=2, prod=building:2 (28sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=W
+    MOVE_UNIT unit=8 dir=W
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (10,36): moving W to (9,36)
+    [debug] UNIT: Archers #8 at (10,36): moving W to (9,36)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=S
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (11,35): moving S to (11,37)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (38,36): moving E to (39,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (40,43): moving E to (41,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 15 — 3700 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 65g, 2 techs, researching Iron Working (10/18)
+    Rome: size=2, prod=Wonder41 (34sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 160g, 1 techs, researching Alphabet (8/10)
+    Babylon: size=2, prod=building:2 (27sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 62g, 2 techs, researching Code of Laws (8/18)
+    Berlin: size=2, prod=Warriors (4sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 64g, 1 techs, researching Masonry (4/10)
+    Thebes: size=2, prod=building:2 (31sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 5 actions — DEMAND_TRIBUTE(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    DEMAND_TRIBUTE target=civ2
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,36): moving N to (9,34)
+    [debug] UNIT: Archers #8 at (9,36): moving N to (9,34)
+    >>> Babylonians discovered: Alphabet
+  [Civ 2] Babylonians turn: 4 actions — SET_RESEARCH(1), RESPOND_DEMAND(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Pottery
+    RESPOND_DEMAND
+    MOVE_UNIT unit=3 dir=S
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Babylonians: researching Pottery (score 3). Top 3: Code of Laws=4, Map Making=4, Masonry=3
+    [debug] UNIT: Warriors #3 at (11,37): moving S to (11,39)
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (39,36): moving E to (40,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (41,43): moving E to (42,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 16 — 3680 B.C. (13ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 103g, 2 techs, researching Iron Working (12/18)
+    Rome: size=2, prod=Wonder41 (38sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 125g, 2 techs, researching Pottery (0/18)
+    Babylon: size=2, prod=building:2 (29sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 62g, 2 techs, researching Code of Laws (10/18)
+    Berlin: size=2, prod=Warriors (8sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 65g, 1 techs, researching Masonry (5/10)
+    Thebes: size=2, prod=building:2 (34sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,34): moving N to (9,32)
+    [debug] UNIT: Archers #8 at (9,34): moving N to (9,32)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=S
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (11,39): moving S to (11,41)
+    >>> Berlin built Warriors
+  [Civ 3] Germans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=S
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (40,36): moving S to (40,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (42,43): moving E to (43,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 17 — 3660 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 104g, 2 techs, researching Iron Working (14/18)
+    Rome: size=2, prod=Wonder41 (42sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 127g, 2 techs, researching Pottery (2/18)
+    Babylon: size=2, prod=building:2 (31sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 62g, 2 techs, researching Code of Laws (12/18)
+    Berlin: size=2, prod=Warriors (0sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 66g, 1 techs, researching Masonry (6/10)
+    Thebes: size=2, prod=building:2 (37sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,32): moving N to (9,30)
+    [debug] UNIT: Archers #8 at (9,32): moving N to (9,30)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (11,41): moving W to (10,41)
+  [Civ 3] Germans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=fortify
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (40,38): moving E to (41,38)
+    [debug] UNIT: Warriors #9 at (30,40): moving W to (29,40)
+    >>> Thebes built building:2
+  [Civ 4] Egyptians turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=3
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Thebes: chose Warriors (score 1), switching from Barracks (score 0)
+    [debug] UNIT: Warriors #7 at (43,43): moving E to (44,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 18 — 3640 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 105g, 2 techs, researching Iron Working (16/18)
+    Rome: size=2, prod=Wonder41 (46sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 129g, 2 techs, researching Pottery (4/18)
+    Babylon: size=2, prod=building:2 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 62g, 2 techs, researching Code of Laws (14/18)
+    Berlin: size=2, prod=Warriors (4sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 66g, 1 techs, researching Masonry (7/10)
+    Thebes: size=2, prod=Warriors (0sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,30): moving N to (9,28)
+    [debug] UNIT: Archers #8 at (9,30): moving N to (9,28)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=NW
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (10,41): moving NW to (10,40)
+  [Civ 3] Germans turn: 3 actions — MOVE_UNIT(2), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=S
+    UNIT_ORDER unit=5 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (41,38): moving E to (42,38)
+    [debug] UNIT: Warriors #9 at (29,40): moving S to (29,42)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (44,43): moving N to (44,41)
+    >>> Romans discovered: Iron Working
+
+══════════════════════════════════════════════════════════════════════
+  TURN 19 — 3620 B.C. (11ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 106g, 3 techs, researching none (0/24)
+    Rome: size=2, prod=Wonder41 (50sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 131g, 2 techs, researching Pottery (6/18)
+    Babylon: size=2, prod=building:2 (35sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 62g, 2 techs, researching Code of Laws (16/18)
+    Berlin: size=2, prod=Warriors (8sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Thebes: size=2, prod=Warriors (3sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Alphabet
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Romans: researching Alphabet (score 3). Top 3: Alphabet=3, Masonry=3, Pottery=3
+    [debug] UNIT: Warriors #1 at (9,28): moving N to (9,26)
+    [debug] UNIT: Archers #8 at (9,28): moving N to (9,26)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (10,40): moving N to (10,38)
+    >>> Germans discovered: Code of Laws
+    >>> Berlin built Warriors
+  [Civ 3] Germans turn: 6 actions — SET_RESEARCH(1), CHANGE_PRODUCTION(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Map Making
+    CHANGE_PRODUCTION city=2
+    MOVE_UNIT unit=5 dir=S
+    MOVE_UNIT unit=9 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    [debug] STRAT: Germans: threat=low posture=expand economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Germans: researching Map Making (score 4). Top 3: Map Making=4, Masonry=3, Mysticism=3
+    [debug] PROD: Berlin: chose Courthouse (score 504), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #5 at (42,38): moving S to (42,40)
+    [debug] UNIT: Warriors #9 at (29,42): moving S to (29,44)
+    COMBAT: ? vs ? → capture (atkHp=undefined, defHp=undefined)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (44,41): moving N to (44,39)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 20 — 3600 B.C. (61ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 107g, 3 techs, researching Alphabet (2/24)
+    Rome: size=2, prod=Wonder41 (54sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 133g, 2 techs, researching Pottery (8/18)
+    Babylon: size=2, prod=building:2 (37sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (0/24)
+    Berlin: size=2, prod=building:7 (0sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=Warriors (0sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,26): moving N to (9,24)
+    [debug] UNIT: Archers #8 at (9,26): moving N to (9,24)
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (10,38): moving W to (9,38)
+  [Civ 3] Germans turn: 7 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(3), UNIT_ORDER(3)
+    CHANGE_PRODUCTION city=3
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=SE
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=fortify
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=fortify
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Thebes: chose Courthouse (score 378), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #5 at (42,40): moving E to (43,40)
+    [debug] UNIT: Warriors #9 at (29,44): moving SE to (29,45)
+    [debug] UNIT: Warriors #10 at (30,40): moving W to (29,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (44,39): moving E to (45,39)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 21 — 3580 B.C. (25ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 108g, 3 techs, researching Alphabet (4/24)
+    Rome: size=2, prod=Wonder41 (58sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 135g, 2 techs, researching Pottery (10/18)
+    Babylon: size=2, prod=building:2 (39sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (3/24)
+    Berlin: size=2, prod=building:7 (4sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (1sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,24): moving N to (9,22)
+    [debug] UNIT: Archers #8 at (9,24): moving N to (9,22)
+    >>> Babylon built building:2
+  [Civ 2] Babylonians turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=1
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Babylon: chose Warriors (score 1), switching from Barracks (score 0)
+    [debug] UNIT: Warriors #3 at (9,38): moving N to (9,36)
+  [Civ 3] Germans turn: 4 actions — MOVE_UNIT(3), UNIT_ORDER(1)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=9 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (43,40): moving E to (44,40)
+    [debug] UNIT: Warriors #9 at (29,45): moving W to (28,45)
+    [debug] UNIT: Warriors #10 at (29,40): moving W to (28,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (45,39): moving SE to (46,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 22 — 3560 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 109g, 3 techs, researching Alphabet (6/24)
+    Rome: size=2, prod=Wonder41 (62sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 136g, 2 techs, researching Pottery (12/18)
+    Babylon: size=2, prod=Warriors (0sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (6/24)
+    Berlin: size=2, prod=building:7 (8sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (3sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=NE
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,22): moving NE to (9,21)
+    [debug] UNIT: Archers #8 at (9,22): moving N to (9,20)
+  [Civ 2] Babylonians turn: 3 actions — RUSH_BUY(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    RUSH_BUY city=1
+    MOVE_UNIT unit=3 dir=N
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (9,36): moving N to (9,34)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=S
+    MOVE_UNIT unit=10 dir=NW
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (44,40): moving E to (45,40)
+    [debug] UNIT: Warriors #9 at (28,45): moving S to (28,47)
+    [debug] UNIT: Warriors #10 at (28,40): moving NW to (27,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=E
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (46,40): moving E to (47,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 23 — 3540 B.C. (29ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 110g, 3 techs, researching Alphabet (8/24)
+    Rome: size=2, prod=Wonder41 (66sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 118g, 2 techs, researching Pottery (14/18)
+    Babylon: size=2, prod=Warriors (10sh), bldgs=Palace, Barracks
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (9/24)
+    Berlin: size=2, prod=building:7 (12sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (5sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=NE
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,21): moving N to (9,19)
+    [debug] UNIT: Archers #8 at (9,20): moving NE to (9,19)
+    >>> Babylon built Warriors
+  [Civ 2] Babylonians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=3 dir=W
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (9,34): moving W to (8,34)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=N
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (45,40): moving N to (45,38)
+    [debug] UNIT: Warriors #9 at (28,47): moving E to (29,47)
+    [debug] UNIT: Warriors #10 at (27,39): moving W to (26,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving S to (47,42)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 24 — 3520 B.C. (10ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 111g, 3 techs, researching Alphabet (10/24)
+    Rome: size=2, prod=Wonder41 (70sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 119g, 2 techs, researching Pottery (16/18)
+    Babylon: size=2, prod=Warriors (0sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (12/24)
+    Berlin: size=2, prod=building:7 (16sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (7sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,19): moving N to (9,17)
+    [debug] UNIT: Archers #8 at (9,19): moving N to (9,17)
+    >>> Babylonians discovered: Pottery
+  [Civ 2] Babylonians turn: 6 actions — SET_RESEARCH(1), CHANGE_PRODUCTION(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Masonry
+    CHANGE_PRODUCTION city=1
+    MOVE_UNIT unit=3 dir=N
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=fortify
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Babylonians: researching Masonry (score 3). Top 3: Map Making=4, Code of Laws=3, Masonry=3
+    [debug] PROD: Babylon: chose Granary (score 426), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #3 at (8,34): moving N to (8,32)
+    [debug] UNIT: Warriors #11 at (17,39): moving E to (18,39)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=SE
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (45,38): moving E to (46,38)
+    [debug] UNIT: Warriors #9 at (29,47): moving SE to (30,48)
+    [debug] UNIT: Warriors #10 at (26,39): moving W to (25,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,42): moving S to (47,44)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 25 — 3500 B.C. (12ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 112g, 3 techs, researching Alphabet (12/24)
+    Rome: size=3, prod=Wonder41 (74sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 120g, 3 techs, researching Masonry (0/24)
+    Babylon: size=2, prod=building:3 (1sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (15/24)
+    Berlin: size=2, prod=building:7 (20sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (9sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 5 actions — DEMAND_TRIBUTE(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    DEMAND_TRIBUTE target=civ2
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,17): moving N to (9,15)
+    [debug] UNIT: Archers #8 at (9,17): moving N to (9,15)
+  [Civ 2] Babylonians turn: 4 actions — RESPOND_DEMAND(1), MOVE_UNIT(2), UNIT_ORDER(1)
+    RESPOND_DEMAND
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (8,32): moving W to (7,32)
+    [debug] UNIT: Warriors #11 at (18,39): moving E to (19,39)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,38): moving E to (47,38)
+    [debug] UNIT: Warriors #9 at (30,48): moving W to (29,48)
+    [debug] UNIT: Warriors #10 at (25,39): moving W to (24,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=NE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,44): moving NE to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 26 — 3480 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 150g, 3 techs, researching Alphabet (14/24)
+    Rome: size=3, prod=Wonder41 (78sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 84g, 3 techs, researching Masonry (2/24)
+    Babylon: size=2, prod=building:3 (3sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (18/24)
+    Berlin: size=3, prod=building:7 (24sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (11sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,15): moving N to (9,13)
+    [debug] UNIT: Archers #8 at (9,15): moving N to (9,13)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (7,32): moving W to (6,32)
+    [debug] UNIT: Warriors #11 at (19,39): moving E to (20,39)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=S
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=SW
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,38): moving S to (47,40)
+    [debug] UNIT: Warriors #9 at (29,48): moving W to (28,48)
+    [debug] UNIT: Warriors #10 at (24,39): moving SW to (24,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 27 — 3460 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 151g, 3 techs, researching Alphabet (16/24)
+    Rome: size=3, prod=Wonder41 (82sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 85g, 3 techs, researching Masonry (4/24)
+    Babylon: size=2, prod=building:3 (5sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 3 techs, researching Map Making (21/24)
+    Berlin: size=3, prod=building:7 (30sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (13sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (9,13): moving E to (10,13)
+    [debug] UNIT: Archers #8 at (9,13): moving E to (10,13)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=S
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (6,32): moving S to (6,34)
+    [debug] UNIT: Warriors #11 at (20,39): moving N to (20,37)
+    >>> Germans discovered: Map Making
+  [Civ 3] Germans turn: 7 actions — SET_RESEARCH(1), MOVE_UNIT(3), UNIT_ORDER(3)
+    SET_RESEARCH tech=Masonry
+    MOVE_UNIT unit=5 dir=N
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Germans: researching Masonry (score 2). Top 3: Horseback Riding=2, Masonry=2, Mysticism=2
+    [debug] UNIT: Warriors #5 at (47,40): moving N to (47,38)
+    [debug] UNIT: Warriors #9 at (28,48): moving W to (27,48)
+    [debug] UNIT: Warriors #10 at (24,40): moving W to (23,40)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=NW
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving NW to (47,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 28 — 3440 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 152g, 3 techs, researching Alphabet (18/24)
+    Rome: size=3, prod=Wonder41 (86sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 86g, 3 techs, researching Masonry (6/24)
+    Babylon: size=2, prod=building:3 (7sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (0/28)
+    Berlin: size=3, prod=building:7 (36sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (15sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (10,13): moving N to (10,11)
+    [debug] UNIT: Archers #8 at (10,13): moving N to (10,11)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=S
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (6,34): moving S to (6,36)
+    [debug] UNIT: Warriors #11 at (20,37): moving E to (21,37)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,38): moving W to (46,38)
+    [debug] UNIT: Warriors #9 at (27,48): moving W to (26,48)
+    [debug] UNIT: Warriors #10 at (23,40): moving N to (23,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving SE to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 29 — 3420 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 153g, 3 techs, researching Alphabet (20/24)
+    Rome: size=3, prod=Wonder41 (90sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 87g, 3 techs, researching Masonry (8/24)
+    Babylon: size=2, prod=building:3 (9sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (3/28)
+    Berlin: size=3, prod=building:7 (42sh), bldgs=Palace, Barracks
+    Thebes: size=1, prod=building:7 (17sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (10,11): moving E to (11,11)
+    [debug] UNIT: Archers #8 at (10,11): moving E to (11,11)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=S
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (6,36): moving W to (5,36)
+    [debug] UNIT: Warriors #11 at (21,37): moving S to (21,39)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,38): moving E to (47,38)
+    [debug] UNIT: Warriors #9 at (26,48): moving W to (25,48)
+    [debug] UNIT: Warriors #10 at (23,38): moving N to (23,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=NW
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving NW to (47,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 30 — 3400 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 154g, 3 techs, researching Alphabet (22/24)
+    Rome: size=3, prod=Wonder41 (94sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 88g, 3 techs, researching Masonry (10/24)
+    Babylon: size=2, prod=building:3 (11sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (6/28)
+    Berlin: size=3, prod=building:7 (48sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (19sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=NE
+    MOVE_UNIT unit=8 dir=NE
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (11,11): moving NE to (12,10)
+    [debug] UNIT: Archers #8 at (11,11): moving NE to (12,10)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=SE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (5,36): moving W to (4,36)
+    [debug] UNIT: Warriors #11 at (21,39): moving SE to (22,40)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,38): moving W to (46,38)
+    [debug] UNIT: Warriors #9 at (25,48): moving N to (25,46)
+    [debug] UNIT: Warriors #10 at (23,36): moving N to (23,34)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving SE to (47,41)
+    >>> Romans discovered: Alphabet
+
+══════════════════════════════════════════════════════════════════════
+  TURN 31 — 3380 B.C. (33ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 155g, 4 techs, researching none (0/28)
+    Rome: size=3, prod=Wonder41 (98sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 89g, 3 techs, researching Masonry (12/24)
+    Babylon: size=2, prod=building:3 (13sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (9/28)
+    Berlin: size=3, prod=building:7 (54sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (21sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Map Making
+    MOVE_UNIT unit=1 dir=N
+    MOVE_UNIT unit=8 dir=N
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Romans: researching Map Making (score 3). Top 3: Map Making=3, Masonry=3, Writing=3
+    [debug] UNIT: Warriors #1 at (12,10): moving N to (12,8)
+    [debug] UNIT: Archers #8 at (12,10): moving N to (12,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,36): moving SE to (4,37)
+    [debug] UNIT: Warriors #11 at (22,40): moving E to (23,40)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,38): moving E to (47,38)
+    [debug] UNIT: Warriors #9 at (25,46): moving W to (24,46)
+    [debug] UNIT: Warriors #10 at (23,34): moving N to (23,32)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=NW
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving NW to (47,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 32 — 3360 B.C. (19ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 156g, 4 techs, researching Map Making (2/28)
+    Rome: size=3, prod=Wonder41 (102sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 90g, 3 techs, researching Masonry (14/24)
+    Babylon: size=2, prod=building:3 (15sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (12/28)
+    Berlin: size=3, prod=building:7 (60sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (23sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (12,8): moving E to (13,8)
+    [debug] UNIT: Archers #8 at (12,8): moving E to (13,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=S
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,37): moving S to (4,39)
+    [debug] UNIT: Warriors #11 at (23,40): moving N to (23,38)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,38): moving W to (46,38)
+    [debug] UNIT: Warriors #9 at (24,46): moving W to (23,46)
+    [debug] UNIT: Warriors #10 at (23,32): moving W to (22,32)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving N to (47,38)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 33 — 3340 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 157g, 4 techs, researching Map Making (4/28)
+    Rome: size=3, prod=Wonder41 (106sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 91g, 3 techs, researching Masonry (16/24)
+    Babylon: size=2, prod=building:3 (17sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (15/28)
+    Berlin: size=3, prod=building:7 (66sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (25sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (13,8): moving E to (14,8)
+    [debug] UNIT: Archers #8 at (13,8): moving E to (14,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SW
+    MOVE_UNIT unit=11 dir=S
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,39): moving SW to (4,40)
+    [debug] UNIT: Warriors #11 at (23,38): moving S to (23,40)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=S
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,38): moving S to (46,40)
+    [debug] UNIT: Warriors #9 at (23,46): moving W to (22,46)
+    [debug] UNIT: Warriors #10 at (22,32): moving W to (21,32)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,38): moving S to (47,40)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 34 — 3320 B.C. (20ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 158g, 4 techs, researching Map Making (6/28)
+    Rome: size=3, prod=Wonder41 (110sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 92g, 3 techs, researching Masonry (18/24)
+    Babylon: size=2, prod=building:3 (19sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (18/28)
+    Berlin: size=3, prod=building:7 (72sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (27sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (14,8): moving E to (15,8)
+    [debug] UNIT: Archers #8 at (14,8): moving E to (15,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (23,40): moving N to (23,38)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=S
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,40): moving S to (46,42)
+    [debug] UNIT: Warriors #9 at (22,46): moving W to (21,46)
+    [debug] UNIT: Warriors #10 at (21,32): moving S to (21,34)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving SE to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 35 — 3300 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 159g, 4 techs, researching Map Making (8/28)
+    Rome: size=3, prod=Wonder41 (114sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 93g, 3 techs, researching Masonry (20/24)
+    Babylon: size=2, prod=building:3 (21sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 62g, 4 techs, researching Masonry (21/28)
+    Berlin: size=3, prod=building:7 (78sh), bldgs=Palace, Barracks
+    Thebes: size=2, prod=building:7 (29sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (15,8): moving E to (16,8)
+    [debug] UNIT: Archers #8 at (15,8): moving E to (16,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=E
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving E to (5,41)
+    [debug] UNIT: Warriors #11 at (23,38): moving N to (23,36)
+    >>> Berlin built building:7
+  [Civ 3] Germans turn: 7 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(3), UNIT_ORDER(3)
+    CHANGE_PRODUCTION city=2
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Berlin: chose Trireme (score 172), switching from Courthouse (score 0)
+    [debug] UNIT: Warriors #5 at (46,42): moving E to (47,42)
+    [debug] UNIT: Warriors #9 at (21,46): moving N to (21,44)
+    [debug] UNIT: Warriors #10 at (21,34): moving S to (21,36)
+  [Civ 4] Egyptians turn: 1 actions — UNIT_ORDER(1)
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+
+══════════════════════════════════════════════════════════════════════
+  TURN 36 — 3280 B.C. (22ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 160g, 4 techs, researching Map Making (10/28)
+    Rome: size=3, prod=Wonder41 (118sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 94g, 3 techs, researching Masonry (22/24)
+    Babylon: size=2, prod=building:3 (23sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 61g, 4 techs, researching Masonry (24/28)
+    Berlin: size=3, prod=Trireme (0sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (31sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (16,8): moving E to (17,8)
+    [debug] UNIT: Archers #8 at (16,8): moving E to (17,8)
+    >>> Babylonians discovered: Masonry
+  [Civ 2] Babylonians turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Code of Laws
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Babylonians: researching Code of Laws (score 3). Top 3: Code of Laws=3, Map Making=3, Mathematics=3
+    [debug] UNIT: Warriors #3 at (5,41): moving W to (4,41)
+    [debug] UNIT: Warriors #11 at (23,36): moving E to (24,36)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=S
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,42): moving S to (47,44)
+    [debug] UNIT: Warriors #9 at (21,44): moving N to (21,42)
+    [debug] UNIT: Warriors #10 at (21,36): moving N to (21,34)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 37 — 3260 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 161g, 4 techs, researching Map Making (12/28)
+    Rome: size=3, prod=Wonder41 (122sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 95g, 4 techs, researching Code of Laws (0/28)
+    Babylon: size=2, prod=building:3 (25sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 60g, 4 techs, researching Masonry (27/28)
+    Berlin: size=3, prod=Trireme (6sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (33sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=1 dir=E
+    MOVE_UNIT unit=8 dir=E
+    UNIT_ORDER unit=1 order=skip
+    UNIT_ORDER unit=8 order=skip
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #1 at (17,8): moving E to (18,8)
+    [debug] UNIT: Archers #8 at (17,8): moving E to (18,8)
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=NW
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving NW to (4,40)
+    [debug] UNIT: Warriors #11 at (24,36): moving E to (25,36)
+    >>> Germans discovered: Masonry
+  [Civ 3] Germans turn: 7 actions — SET_RESEARCH(1), MOVE_UNIT(3), UNIT_ORDER(3)
+    SET_RESEARCH tech=Mysticism
+    MOVE_UNIT unit=5 dir=SW
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Germans: researching Mysticism (score 2). Top 3: Horseback Riding=2, Mathematics=2, Mysticism=2
+    [debug] UNIT: Warriors #5 at (47,44): moving SW to (46,45)
+    [debug] UNIT: Warriors #9 at (21,42): moving E to (22,42)
+    [debug] UNIT: Warriors #10 at (21,34): moving S to (21,36)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 38 — 3240 B.C. (19ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 162g, 4 techs, researching Map Making (14/28)
+    Rome: size=3, prod=Wonder41 (126sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 96g, 4 techs, researching Code of Laws (2/28)
+    Babylon: size=2, prod=building:3 (27sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 59g, 5 techs, researching Mysticism (0/30)
+    Berlin: size=3, prod=Trireme (12sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (35sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (25,36): moving E to (26,36)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (46,45): moving E to (47,45)
+    [debug] UNIT: Warriors #9 at (22,42): moving W to (21,42)
+    [debug] UNIT: Warriors #10 at (21,36): moving S to (21,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 39 — 3220 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 163g, 4 techs, researching Map Making (16/28)
+    Rome: size=3, prod=Wonder41 (130sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 97g, 4 techs, researching Code of Laws (4/28)
+    Babylon: size=2, prod=building:3 (29sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 58g, 5 techs, researching Mysticism (3/30)
+    Berlin: size=3, prod=Trireme (18sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (37sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=NW
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving NW to (4,40)
+    [debug] UNIT: Warriors #11 at (26,36): moving E to (27,36)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=SE
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (47,45): moving SE to (48,46)
+    [debug] UNIT: Warriors #9 at (21,42): moving E to (22,42)
+    [debug] UNIT: Warriors #10 at (21,38): moving W to (20,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 40 — 3200 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 164g, 4 techs, researching Map Making (18/28)
+    Rome: size=3, prod=Wonder41 (134sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 98g, 4 techs, researching Code of Laws (6/28)
+    Babylon: size=2, prod=building:3 (31sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 57g, 5 techs, researching Mysticism (6/30)
+    Berlin: size=3, prod=Trireme (24sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (39sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=NE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (27,36): moving NE to (27,35)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=W
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (48,46): moving E to (49,46)
+    [debug] UNIT: Warriors #9 at (22,42): moving W to (21,42)
+    [debug] UNIT: Warriors #10 at (20,38): moving W to (19,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 41 — 3180 B.C. (33ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 165g, 4 techs, researching Map Making (20/28)
+    Rome: size=3, prod=Wonder41 (138sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 99g, 4 techs, researching Code of Laws (10/28)
+    Babylon: size=3, prod=building:3 (33sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 56g, 5 techs, researching Mysticism (9/30)
+    Berlin: size=3, prod=Trireme (30sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (41sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=E
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving E to (5,41)
+    [debug] UNIT: Warriors #11 at (27,35): moving E to (28,35)
+  [Civ 3] Germans turn: 6 actions — MOVE_UNIT(3), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (49,46): moving W to (48,46)
+    [debug] UNIT: Warriors #9 at (21,42): moving E to (22,42)
+    [debug] UNIT: Warriors #10 at (19,38): moving W to (18,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 42 — 3160 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 166g, 4 techs, researching Map Making (22/28)
+    Rome: size=3, prod=Wonder41 (142sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 100g, 4 techs, researching Code of Laws (14/28)
+    Babylon: size=3, prod=building:3 (35sh), bldgs=Palace, Barracks
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 2 cities, 3 units, 55g, 5 techs, researching Mysticism (12/30)
+    Berlin: size=3, prod=Trireme (36sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (43sh)
+    Units: 3x Warriors
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=W
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (5,41): moving W to (4,41)
+    [debug] UNIT: Warriors #11 at (28,35): moving E to (29,35)
+    >>> Berlin built Trireme
+  [Civ 3] Germans turn: 7 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(3), UNIT_ORDER(3)
+    CHANGE_PRODUCTION city=2
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=SW
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Berlin: chose Great Wall (score 204), switching from Trireme (score 165)
+    [debug] UNIT: Warriors #5 at (48,46): moving E to (49,46)
+    [debug] UNIT: Warriors #9 at (22,42): moving E to (23,42)
+    [debug] UNIT: Warriors #10 at (18,38): moving SW to (17,39)
+    COMBAT: ? vs ? → capture (atkHp=undefined, defHp=undefined)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 43 — 3140 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 167g, 4 techs, researching Map Making (24/28)
+    Rome: size=3, prod=Wonder41 (146sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 54g, 5 techs, researching Mysticism (15/30)
+    Babylon: size=2, prod=Warriors (0sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (0sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (45sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=NW
+    MOVE_UNIT unit=11 dir=NE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving NW to (4,40)
+    [debug] UNIT: Warriors #11 at (29,35): moving NE to (30,34)
+  [Civ 3] Germans turn: 9 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(4), UNIT_ORDER(4)
+    CHANGE_PRODUCTION city=1
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    MOVE_UNIT unit=16 dir=N
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=fortify
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] PROD: Babylon: chose Courthouse (score 504), switching from Warriors (score 0)
+    [debug] UNIT: Warriors #5 at (49,46): moving W to (48,46)
+    [debug] UNIT: Warriors #9 at (23,42): moving E to (24,42)
+    [debug] UNIT: Warriors #10 at (17,39): moving W to (16,39)
+    [debug] UNIT: Trireme #16 at (30,40): moving N to (30,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 44 — 3120 B.C. (85ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 168g, 4 techs, researching Map Making (26/28)
+    Rome: size=3, prod=Wonder41 (150sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 53g, 5 techs, researching Mysticism (19/30)
+    Babylon: size=2, prod=building:7 (1sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (6sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (47sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=E
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (30,34): moving E to (31,34)
+  [Civ 3] Germans turn: 7 actions — MOVE_UNIT(4), UNIT_ORDER(3)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    MOVE_UNIT unit=16 dir=SE
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (48,46): moving E to (49,46)
+    [debug] UNIT: Warriors #9 at (24,42): moving E to (25,42)
+    [debug] UNIT: Warriors #10 at (16,39): moving W to (15,39)
+    [debug] UNIT: Trireme #16 at (30,38): moving SE to (30,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=NW
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving NW to (47,40)
+    >>> Romans discovered: Map Making
+
+══════════════════════════════════════════════════════════════════════
+  TURN 45 — 3100 B.C. (24ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 169g, 5 techs, researching none (0/30)
+    Rome: size=4, prod=Wonder41 (154sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 52g, 5 techs, researching Mysticism (23/30)
+    Babylon: size=2, prod=building:7 (3sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (12sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (49sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Horseback Riding
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Romans: researching Horseback Riding (score 2). Top 3: Currency=2, Horseback Riding=2, Writing=2
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=NW
+    MOVE_UNIT unit=11 dir=NE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving NW to (4,40)
+    [debug] UNIT: Warriors #11 at (31,34): moving NE to (31,33)
+  [Civ 3] Germans turn: 8 actions — MOVE_UNIT(4), UNIT_ORDER(4)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=E
+    MOVE_UNIT unit=10 dir=W
+    MOVE_UNIT unit=16 dir=NW
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (49,46): moving W to (48,46)
+    [debug] UNIT: Warriors #9 at (25,42): moving E to (26,42)
+    [debug] UNIT: Warriors #10 at (15,39): moving W to (14,39)
+    [debug] UNIT: Trireme #16 at (30,39): moving NW to (30,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=SE
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,40): moving SE to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 46 — 3080 B.C. (37ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 170g, 5 techs, researching Horseback Riding (2/30)
+    Rome: size=4, prod=Wonder41 (159sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 51g, 5 techs, researching Mysticism (27/30)
+    Babylon: size=2, prod=building:7 (5sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (18sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (51sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=NE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (31,33): moving NE to (32,32)
+    >>> Germans discovered: Mysticism
+  [Civ 3] Germans turn: 9 actions — SET_RESEARCH(1), MOVE_UNIT(4), UNIT_ORDER(4)
+    SET_RESEARCH tech=Horseback Riding
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=NE
+    MOVE_UNIT unit=10 dir=NE
+    MOVE_UNIT unit=16 dir=SE
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] ECON: Germans: researching Horseback Riding (score 2). Top 3: Horseback Riding=2, Mathematics=2, Writing=2
+    [debug] UNIT: Warriors #5 at (48,46): moving E to (49,46)
+    [debug] UNIT: Warriors #9 at (26,42): moving NE to (26,41)
+    [debug] UNIT: Warriors #10 at (14,39): moving NE to (15,38)
+    [debug] UNIT: Trireme #16 at (30,38): moving SE to (30,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 47 — 3060 B.C. (55ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 171g, 5 techs, researching Horseback Riding (4/30)
+    Rome: size=4, prod=Wonder41 (164sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 50g, 6 techs, researching Horseback Riding (0/30)
+    Babylon: size=2, prod=building:7 (7sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (24sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (53sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=NW
+    MOVE_UNIT unit=11 dir=NE
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving NW to (4,40)
+    [debug] UNIT: Warriors #11 at (32,32): moving NE to (32,31)
+  [Civ 3] Germans turn: 8 actions — MOVE_UNIT(4), UNIT_ORDER(4)
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=W
+    MOVE_UNIT unit=16 dir=NW
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (49,46): moving W to (48,46)
+    [debug] UNIT: Warriors #9 at (26,41): moving N to (26,39)
+    [debug] UNIT: Warriors #10 at (15,38): moving W to (14,38)
+    [debug] UNIT: Trireme #16 at (30,39): moving NW to (30,38)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 48 — 3040 B.C. (24ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 172g, 5 techs, researching Horseback Riding (6/30)
+    Rome: size=4, prod=Wonder41 (169sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 49g, 6 techs, researching Horseback Riding (4/30)
+    Babylon: size=2, prod=building:7 (9sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (30sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (55sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=SE
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,40): moving SE to (4,41)
+    [debug] UNIT: Warriors #11 at (32,31): moving N to (32,29)
+  [Civ 3] Germans turn: 8 actions — MOVE_UNIT(4), UNIT_ORDER(4)
+    MOVE_UNIT unit=5 dir=E
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=S
+    MOVE_UNIT unit=16 dir=SE
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (48,46): moving E to (49,46)
+    [debug] UNIT: Warriors #9 at (26,39): moving N to (26,37)
+    [debug] UNIT: Warriors #10 at (14,38): moving S to (14,40)
+    [debug] UNIT: Trireme #16 at (30,38): moving SE to (30,39)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=S
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,41): moving S to (47,43)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 49 — 3020 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 0 units, 173g, 5 techs, researching Horseback Riding (8/30)
+    Rome: size=4, prod=Wonder41 (174sh), bldgs=Palace
+    Units: none
+  [Civ 2] Babylonians (despotism): 0 cities, 2 units, 101g, 4 techs, researching Code of Laws (18/28)
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 3 cities, 4 units, 48g, 6 techs, researching Horseback Riding (8/30)
+    Babylon: size=2, prod=building:7 (11sh), bldgs=Barracks
+    Berlin: size=3, prod=Wonder45 (36sh), bldgs=Palace, Barracks, Courthouse
+    Thebes: size=2, prod=building:7 (57sh)
+    Units: 3x Warriors, 1x Trireme
+  [Civ 4] Egyptians (despotism): 0 cities, 1 units, 66g, 1 techs, researching Masonry (8/10)
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+  [Civ 2] Babylonians turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    MOVE_UNIT unit=3 dir=E
+    MOVE_UNIT unit=11 dir=N
+    UNIT_ORDER unit=3 order=skip
+    UNIT_ORDER unit=11 order=skip
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #3 at (4,41): moving E to (5,41)
+    [debug] UNIT: Warriors #11 at (32,29): moving N to (32,27)
+  [Civ 3] Germans turn: 9 actions — DEMAND_TRIBUTE(1), MOVE_UNIT(4), UNIT_ORDER(4)
+    DEMAND_TRIBUTE target=civ2
+    MOVE_UNIT unit=5 dir=W
+    MOVE_UNIT unit=9 dir=N
+    MOVE_UNIT unit=10 dir=W
+    MOVE_UNIT unit=16 dir=S
+    UNIT_ORDER unit=5 order=skip
+    UNIT_ORDER unit=9 order=skip
+    UNIT_ORDER unit=10 order=skip
+    UNIT_ORDER unit=16 order=skip
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #5 at (49,46): moving W to (48,46)
+    [debug] UNIT: Warriors #9 at (26,37): moving N to (26,35)
+    [debug] UNIT: Warriors #10 at (14,40): moving W to (13,40)
+    [debug] UNIT: Trireme #16 at (30,39): moving S to (30,41)
+  [Civ 4] Egyptians turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    MOVE_UNIT unit=7 dir=N
+    UNIT_ORDER unit=7 order=skip
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=3 focus=economy
+    [debug] UNIT: Warriors #7 at (47,43): moving N to (47,41)
+
+══════════════════════════════════════════════════════════════════════
+  FINAL SUMMARY
+══════════════════════════════════════════════════════════════════════
+Game ended at turn 50 (3000 B.C.)
+
+── Civ 1: Romans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  0 (peak 2)
+  Treasury: 174g
+  Techs discovered: 5 — Warrior Code, Bronze Working, Iron Working, Alphabet, Map Making
+  Actions: 145 total, 11 idle turns
+  Breakdown: UNIT_ORDER(67), MOVE_UNIT(66), SET_RESEARCH(6), CHANGE_PRODUCTION(2), DEMAND_TRIBUTE(2), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: none
+  Rome: size=4, shields=179
+
+── Civ 2: Babylonians (despotism) ALIVE ──
+  Cities: 0 (peak 1, founded 1)
+  Units:  2 (peak 2)
+  Treasury: 101g
+  Techs discovered: 4 — Ceremonial Burial, Alphabet, Pottery, Masonry
+  Actions: 163 total, 0 idle turns
+  Breakdown: MOVE_UNIT(76), UNIT_ORDER(74), SET_RESEARCH(5), CHANGE_PRODUCTION(3), RESPOND_DEMAND(2), CHANGE_RATES(1), BUILD_CITY(1), RUSH_BUY(1)
+  Army: 2x Warriors
+
+── Civ 3: Germans (despotism) ALIVE ──
+  Cities: 3 (peak 3, founded 1)
+  Units:  4 (peak 4)
+  Treasury: 47g
+  Techs discovered: 6 — Ceremonial Burial, Alphabet, Code of Laws, Map Making, Masonry, Mysticism
+  Actions: 253 total, 0 idle turns
+  Breakdown: MOVE_UNIT(120), UNIT_ORDER(116), SET_RESEARCH(7), CHANGE_PRODUCTION(7), CHANGE_RATES(1), BUILD_CITY(1), DEMAND_TRIBUTE(1)
+  Army: 3x Warriors, 1x Trireme
+  Babylon: size=2, shields=13
+  Berlin: size=3, shields=42
+  Thebes: size=2, shields=59
+
+── Civ 4: Egyptians (despotism) ALIVE ──
+  Cities: 0 (peak 1, founded 1)
+  Units:  1 (peak 1)
+  Treasury: 66g
+  Techs discovered: 1 — Alphabet
+  Actions: 106 total, 1 idle turns
+  Breakdown: UNIT_ORDER(51), MOVE_UNIT(49), SET_RESEARCH(2), CHANGE_PRODUCTION(2), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: 1x Warriors
+
+
+══════════════════════════════════════════════════════════════════════
+  AI BEHAVIOR ANALYSIS
+══════════════════════════════════════════════════════════════════════
+[Civ 1] Romans:
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 2] Babylonians:
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 3] Germans:
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 4] Egyptians:
+  WARNING: Only 1 city after 30+ turns
+

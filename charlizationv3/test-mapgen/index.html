@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Map Gen Test</title>
+<style>
+body { margin: 0; background: #111; color: #ccc; font: 14px monospace; display: flex; }
+#sidebar { width: 260px; padding: 10px; flex-shrink: 0; overflow-y: auto; max-height: 100vh; }
+#sidebar button { display: block; margin: 4px 0; padding: 6px 12px; cursor: pointer; width: 100%; }
+#sidebar select, #sidebar input { margin: 4px 0; padding: 4px; width: 100%; box-sizing: border-box; }
+#stats { white-space: pre; font-size: 11px; margin-top: 10px; }
+canvas { display: block; }
+#map-wrap { flex: 1; overflow: auto; }
+label { display: block; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <h3 style="margin:0 0 8px">Map Gen Tester</h3>
+  <label>Size:
+    <select id="size">
+      <option value="40,50">Small (40×50)</option>
+      <option value="50,80" selected>Normal (50×80)</option>
+      <option value="75,120">Large (75×120)</option>
+    </select>
+  </label>
+  <label>Landmass:
+    <select id="landmass">
+      <option value="0">Small</option>
+      <option value="1" selected>Normal</option>
+      <option value="2">Large</option>
+    </select>
+  </label>
+  <label>Continents:
+    <select id="continents">
+      <option value="-1">Islands</option>
+      <option value="0">Small</option>
+      <option value="1" selected>Large</option>
+    </select>
+  </label>
+  <label>Temperature:
+    <select id="temperature">
+      <option value="-1">Cool</option>
+      <option value="0" selected>Temperate</option>
+      <option value="1">Warm</option>
+    </select>
+  </label>
+  <label>Climate:
+    <select id="climate">
+      <option value="-1">Arid</option>
+      <option value="0" selected>Normal</option>
+      <option value="1">Wet</option>
+    </select>
+  </label>
+  <label>Age:
+    <select id="age">
+      <option value="0">3 Billion (young)</option>
+      <option value="1" selected>4 Billion (normal)</option>
+      <option value="2">5 Billion (old)</option>
+    </select>
+  </label>
+  <label>Map shape:
+    <select id="mapShape">
+      <option value="0" selected>Wrapping</option>
+      <option value="1">Flat</option>
+    </select>
+  </label>
+  <button id="gen-btn" style="font-size:16px;padding:10px;background:#4a4;color:#fff;border:none">Generate</button>
+  <label><input type="checkbox" id="show-lc" /> Show landCount overlay</label>
+  <pre id="stats"></pre>
+</div>
+<div id="map-wrap">
+  <canvas id="c"></canvas>
+</div>
+<script type="module">
+import { generateMap } from '../engine/mapgen.js';
+
+const COLORS = {
+  0:  '#e8d080', // Desert
+  1:  '#90b030', // Plains
+  2:  '#40a030', // Grassland
+  3:  '#207820', // Forest
+  4:  '#906030', // Hills
+  5:  '#808080', // Mountains
+  6:  '#a8c8c8', // Tundra
+  7:  '#e0e8f0', // Glacier
+  8:  '#408860', // Swamp
+  9:  '#186818', // Jungle
+  10: '#2040a0', // Ocean
+};
+const NAMES = ['Desert','Plains','Grass','Forest','Hills','Mtn','Tundra','Glacier','Swamp','Jungle','Ocean'];
+
+const TILE = 8; // pixels per tile
+
+function draw(result) {
+  const { mw, mh, tileData } = result;
+  const canvas = document.getElementById('c');
+  canvas.width = (mw / 2) * TILE;
+  canvas.height = mh * TILE;
+  const ctx = canvas.getContext('2d');
+
+  const showLc = document.getElementById('show-lc').checked;
+
+  // Count stats
+  const counts = new Array(11).fill(0);
+  let rivers = 0, valid = 0;
+  const bodySet = new Set();
+
+  for (let y = 0; y < mh; y++) {
+    for (let x = (y & 1); x < mw; x += 2) {
+      valid++;
+      const t = tileData[y * mw + x];
+      counts[t.terrain]++;
+      if (t.river) rivers++;
+      if (t.terrain !== 10) bodySet.add(t.bodyId);
+
+      // Draw tile
+      const px = Math.floor(x / 2) * TILE;
+      const py = y * TILE;
+      ctx.fillStyle = COLORS[t.terrain];
+      ctx.fillRect(px, py, TILE, TILE);
+
+      // River overlay
+      if (t.river) {
+        ctx.fillStyle = 'rgba(0,100,255,0.5)';
+        ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
+      }
+    }
+  }
+
+  // Optional: show landCount as overlay (requires debug data)
+  if (showLc && result._landCount) {
+    const lc = result._landCount;
+    for (let y = 0; y < mh; y++) {
+      for (let x = (y & 1); x < mw; x += 2) {
+        const v = lc[y * mw + x];
+        if (v > 0) {
+          const px = Math.floor(x / 2) * TILE;
+          const py = y * TILE;
+          ctx.fillStyle = '#fff';
+          ctx.font = '7px monospace';
+          ctx.fillText(v, px + 1, py + 7);
+        }
+      }
+    }
+  }
+
+  // Stats
+  const land = valid - counts[10];
+  let s = `${mw}×${mh}  ${valid} tiles\n`;
+  s += `Land: ${land} (${(100*land/valid).toFixed(1)}%)\n`;
+  s += `Rivers: ${rivers}\n`;
+  s += `Bodies: ${bodySet.size}\n\n`;
+  for (let i = 0; i < 11; i++) {
+    if (counts[i] > 0) {
+      const pct = (100 * counts[i] / valid).toFixed(1);
+      const lpct = i < 10 ? `  ${(100*counts[i]/land).toFixed(1)}% land` : '';
+      s += `${NAMES[i].padEnd(8)} ${String(counts[i]).padStart(5)} ${pct.padStart(5)}%${lpct}\n`;
+    }
+  }
+  const flat = counts[0]+counts[1]+counts[2]+counts[3]+counts[6]+counts[8]+counts[9];
+  const elev = counts[4]+counts[5];
+  s += `\nFlat:      ${(100*flat/land).toFixed(1)}%\n`;
+  s += `Hills+Mtn: ${(100*elev/land).toFixed(1)}%\n`;
+  document.getElementById('stats').textContent = s;
+}
+
+function generate() {
+  const [w, h] = document.getElementById('size').value.split(',').map(Number);
+  const settings = {
+    width: w,
+    height: h,
+    landmass: +document.getElementById('landmass').value,
+    continents: +document.getElementById('continents').value,
+    temperature: +document.getElementById('temperature').value,
+    climate: +document.getElementById('climate').value,
+    age: +document.getElementById('age').value,
+    mapShape: +document.getElementById('mapShape').value,
+  };
+  const result = generateMap(settings);
+  draw(result);
+}
+
+document.getElementById('gen-btn').addEventListener('click', generate);
+document.getElementById('show-lc').addEventListener('change', generate);
+generate();
+</script>
+</body>
+</html>

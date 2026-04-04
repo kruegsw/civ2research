@@ -1,0 +1,1735 @@
+Charlization AI Headless Simulation
+Date: 2026-03-20T17:56:33.549Z
+Settings: 50 turns, 4 AI players, 50x80 map, difficulty=prince
+Map seed: 61150
+Map generated in 55ms
+Game initialized: 4 civs, 11 starting units
+  Civ 1 (Romans): starts at (17,71) on Grassland
+  Civ 2 (Babylonians): starts at (8,8) on Hills
+  Civ 3 (Germans): starts at (39,39) on Plains
+  Civ 4 (Egyptians): starts at (42,68) on Grassland
+    SET_RESEARCH tech=Iron Working
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=0 name="Rome"
+    1 actions REJECTED (of 6)
+    END_TURN REJECTED: 1 units still need orders
+      #11 Horsemen(Atk) @(17,72) mv=6 ord=none hp=full
+    SET_RESEARCH tech=Alphabet
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=2 name="Babylon"
+    BUILD_CITY unit=8 name="Babylon"
+    2 actions REJECTED (of 8)
+    SET_RESEARCH tech=Pottery
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=4 name="Berlin"
+    BUILD_CITY unit=9 name="Berlin"
+    2 actions REJECTED (of 8)
+    SET_RESEARCH tech=Masonry
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=6 name="Thebes"
+    BUILD_CITY unit=10 name="Thebes"
+    2 actions REJECTED (of 8)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 1 — 4000 B.C. (36ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 1g, 3 techs, researching Iron Working (3/39)
+    Rome: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (0/39)
+    Babylon: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 3 techs, researching Pottery (0/39)
+    Berlin: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 2 techs, researching Masonry (0/22)
+    Thebes: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    CHANGE_PRODUCTION city=1
+    CHANGE_PRODUCTION city=2
+    CHANGE_PRODUCTION city=3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 2 — 3980 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 2g, 3 techs, researching Iron Working (6/36)
+    Rome: size=1, prod=Warriors (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (1/36)
+    Babylon: size=1, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 1g, 4 techs, researching Pottery (2/52)
+    Berlin: size=1, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (2/36)
+    Thebes: size=1, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    END_TURN REJECTED: 1 units still need orders
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 3 — 3960 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 3g, 3 techs, researching Iron Working (9/36)
+    Rome: size=1, prod=Warriors (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (2/36)
+    Babylon: size=1, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 2g, 4 techs, researching Pottery (4/52)
+    Berlin: size=1, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (4/36)
+    Thebes: size=1, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 4 — 3940 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 4g, 3 techs, researching Iron Working (12/36)
+    Rome: size=1, prod=Warriors (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (3/36)
+    Babylon: size=1, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 3g, 4 techs, researching Pottery (6/52)
+    Berlin: size=1, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (6/36)
+    Thebes: size=1, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    >>> Rome built Warriors
+
+══════════════════════════════════════════════════════════════════════
+  TURN 5 — 3920 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 5g, 3 techs, researching Iron Working (15/36)
+    Rome: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (4/36)
+    Babylon: size=1, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 4g, 4 techs, researching Pottery (8/52)
+    Berlin: size=1, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (8/36)
+    Thebes: size=1, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 6 — 3900 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 6g, 3 techs, researching Iron Working (18/36)
+    Rome: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (5/36)
+    Babylon: size=1, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 5g, 4 techs, researching Pottery (10/52)
+    Berlin: size=1, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (10/36)
+    Thebes: size=1, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 7 — 3880 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 7g, 3 techs, researching Iron Working (21/36)
+    Rome: size=1, prod=Warriors (4sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (6/36)
+    Babylon: size=1, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 6g, 4 techs, researching Pottery (12/52)
+    Berlin: size=1, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (12/36)
+    Thebes: size=1, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 8 — 3860 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 8g, 3 techs, researching Iron Working (24/36)
+    Rome: size=1, prod=Warriors (6sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (7/36)
+    Babylon: size=1, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 7g, 4 techs, researching Pottery (14/52)
+    Berlin: size=1, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (14/36)
+    Thebes: size=1, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 9 — 3840 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 9g, 3 techs, researching Iron Working (27/36)
+    Rome: size=1, prod=Warriors (8sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (8/36)
+    Babylon: size=1, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 8g, 4 techs, researching Pottery (16/52)
+    Berlin: size=1, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (16/36)
+    Thebes: size=1, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    >>> Rome grew to size 2
+    >>> Rome built Warriors
+
+══════════════════════════════════════════════════════════════════════
+  TURN 10 — 3820 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 11g, 3 techs, researching Iron Working (30/36)
+    Rome: size=2, prod=Warriors (1sh), bldgs=Palace
+    Units: 3x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (9/36)
+    Babylon: size=1, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 9g, 4 techs, researching Pottery (18/52)
+    Berlin: size=1, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (18/36)
+    Thebes: size=1, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    >>> Berlin grew to size 2
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 11 — 3800 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 13g, 3 techs, researching Iron Working (33/36)
+    Rome: size=2, prod=Warriors (4sh), bldgs=Palace
+    Units: 3x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (10/36)
+    Babylon: size=2, prod=Archers (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 10g, 4 techs, researching Pottery (20/52)
+    Berlin: size=2, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (20/36)
+    Thebes: size=2, prod=Archers (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    >>> Romans discovered: Iron Working
+
+══════════════════════════════════════════════════════════════════════
+  TURN 12 — 3780 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 13g, 4 techs, researching none (0/52)
+    Rome: size=2, prod=Warriors (7sh), bldgs=Palace
+    Units: 3x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (11/36)
+    Babylon: size=2, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 11g, 4 techs, researching Pottery (22/52)
+    Berlin: size=2, prod=Archers (21sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (22/36)
+    Thebes: size=2, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Alphabet
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    >>> Rome built Warriors
+
+══════════════════════════════════════════════════════════════════════
+  TURN 13 — 3760 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 15g, 4 techs, researching Alphabet (2/52)
+    Rome: size=2, prod=Warriors (0sh), bldgs=Palace
+    Units: 4x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (12/36)
+    Babylon: size=2, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 12g, 4 techs, researching Pottery (24/52)
+    Berlin: size=2, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (24/36)
+    Thebes: size=2, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 14 — 3740 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 17g, 4 techs, researching Alphabet (4/52)
+    Rome: size=2, prod=Warriors (2sh), bldgs=Palace
+    Units: 4x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Alphabet (13/36)
+    Babylon: size=2, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 13g, 4 techs, researching Pottery (26/52)
+    Berlin: size=2, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Masonry (26/36)
+    Thebes: size=2, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 15 — 3720 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 19g, 4 techs, researching Alphabet (6/52)
+    Rome: size=2, prod=Warriors (4sh), bldgs=Palace
+    Units: 4x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (14/36)
+    Babylon: size=2, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 14g, 4 techs, researching Pottery (28/52)
+    Berlin: size=2, prod=Archers (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Masonry (28/36)
+    Thebes: size=2, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 16 — 3700 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 21g, 4 techs, researching Alphabet (8/52)
+    Rome: size=2, prod=Warriors (6sh), bldgs=Palace
+    Units: 4x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (15/36)
+    Babylon: size=2, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 15g, 4 techs, researching Pottery (30/52)
+    Berlin: size=2, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Masonry (30/36)
+    Thebes: size=2, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 17 — 3680 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 23g, 4 techs, researching Alphabet (10/52)
+    Rome: size=2, prod=Warriors (8sh), bldgs=Palace
+    Units: 4x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (16/36)
+    Babylon: size=2, prod=Archers (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 16g, 4 techs, researching Pottery (32/52)
+    Berlin: size=2, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Masonry (32/36)
+    Thebes: size=2, prod=Archers (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 18 — 3660 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 25g, 4 techs, researching Alphabet (12/52)
+    Rome: size=2, prod=Warriors (0sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (17/36)
+    Babylon: size=2, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 17g, 4 techs, researching Pottery (34/52)
+    Berlin: size=2, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Masonry (34/36)
+    Thebes: size=2, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    SET_RESEARCH tech=Pottery
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 19 — 3640 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 27g, 4 techs, researching Alphabet (14/52)
+    Rome: size=2, prod=Warriors (1sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (18/36)
+    Babylon: size=2, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 18g, 4 techs, researching Pottery (36/52)
+    Berlin: size=2, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (0/52)
+    Thebes: size=2, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 20 — 3620 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 29g, 4 techs, researching Alphabet (16/52)
+    Rome: size=2, prod=Warriors (2sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (19/36)
+    Babylon: size=2, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 19g, 4 techs, researching Pottery (38/52)
+    Berlin: size=2, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (2/52)
+    Thebes: size=2, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 21 — 3600 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 31g, 4 techs, researching Alphabet (18/52)
+    Rome: size=2, prod=Warriors (3sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (20/36)
+    Babylon: size=2, prod=Archers (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 20g, 4 techs, researching Pottery (40/52)
+    Berlin: size=2, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (4/52)
+    Thebes: size=2, prod=Archers (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 22 — 3580 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 33g, 4 techs, researching Alphabet (20/52)
+    Rome: size=2, prod=Warriors (4sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (21/36)
+    Babylon: size=2, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 21g, 4 techs, researching Pottery (42/52)
+    Berlin: size=2, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (6/52)
+    Thebes: size=2, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 23 — 3560 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 35g, 4 techs, researching Alphabet (22/52)
+    Rome: size=2, prod=Warriors (5sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (22/36)
+    Babylon: size=2, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 22g, 4 techs, researching Pottery (44/52)
+    Berlin: size=2, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (8/52)
+    Thebes: size=2, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 24 — 3540 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 37g, 4 techs, researching Alphabet (24/52)
+    Rome: size=2, prod=Warriors (6sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 3 techs, researching Alphabet (23/36)
+    Babylon: size=2, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 23g, 4 techs, researching Pottery (46/52)
+    Berlin: size=2, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 0g, 4 techs, researching Pottery (10/52)
+    Thebes: size=2, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 25 — 3520 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 39g, 4 techs, researching Alphabet (27/52)
+    Rome: size=3, prod=Warriors (9sh), bldgs=Palace
+    Units: 5x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (24/36)
+    Babylon: size=2, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 24g, 4 techs, researching Pottery (48/52)
+    Berlin: size=2, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (12/52)
+    Thebes: size=2, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 26 — 3500 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 41g, 4 techs, researching Alphabet (30/52)
+    Rome: size=3, prod=Warriors (2sh), bldgs=Palace
+    Units: 6x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (25/36)
+    Babylon: size=3, prod=Archers (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 26g, 4 techs, researching Pottery (50/52)
+    Berlin: size=3, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (15/52)
+    Thebes: size=3, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    SET_RESEARCH tech=Alphabet
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 27 — 3480 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 43g, 4 techs, researching Alphabet (33/48)
+    Rome: size=3, prod=Warriors (4sh), bldgs=Palace
+    Units: 6x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (26/36)
+    Babylon: size=3, prod=Archers (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 26g, 5 techs, researching Alphabet (0/70)
+    Berlin: size=3, prod=Archers (21sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (18/48)
+    Thebes: size=3, prod=Archers (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 7 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 28 — 3460 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 45g, 4 techs, researching Alphabet (36/48)
+    Rome: size=3, prod=Warriors (6sh), bldgs=Palace
+    Units: 6x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (27/36)
+    Babylon: size=3, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 28g, 5 techs, researching Alphabet (2/70)
+    Berlin: size=3, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (21/48)
+    Thebes: size=3, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 7 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 29 — 3440 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 47g, 4 techs, researching Alphabet (39/48)
+    Rome: size=3, prod=Warriors (8sh), bldgs=Palace
+    Units: 6x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (28/36)
+    Babylon: size=3, prod=Archers (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 30g, 5 techs, researching Alphabet (4/70)
+    Berlin: size=3, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (24/48)
+    Thebes: size=3, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 7 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 30 — 3420 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 49g, 4 techs, researching Alphabet (42/48)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (29/36)
+    Babylon: size=3, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 32g, 5 techs, researching Alphabet (6/70)
+    Berlin: size=3, prod=Archers (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 0g, 4 techs, researching Pottery (27/48)
+    Thebes: size=3, prod=Archers (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 7 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 31 — 3400 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 51g, 4 techs, researching Alphabet (45/48)
+    Rome: size=3, prod=Warriors (1sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 3 techs, researching Alphabet (30/36)
+    Babylon: size=3, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 34g, 5 techs, researching Alphabet (8/70)
+    Berlin: size=3, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (30/48)
+    Thebes: size=3, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 32 — 3380 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 51g, 5 techs, researching none (0/70)
+    Rome: size=3, prod=Warriors (2sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 3 techs, researching Alphabet (31/36)
+    Babylon: size=3, prod=Archers (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 36g, 5 techs, researching Alphabet (10/70)
+    Berlin: size=3, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (33/48)
+    Thebes: size=3, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 4 actions — SET_RESEARCH(1), ADJUST_ATTITUDE(3)
+    SET_RESEARCH tech=Writing
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 33 — 3360 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 53g, 5 techs, researching Writing (3/70)
+    Rome: size=3, prod=Warriors (3sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 3 techs, researching Alphabet (32/36)
+    Babylon: size=3, prod=Archers (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 38g, 5 techs, researching Alphabet (12/70)
+    Berlin: size=3, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (36/48)
+    Thebes: size=3, prod=Archers (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 34 — 3340 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 55g, 5 techs, researching Writing (6/70)
+    Rome: size=3, prod=Warriors (4sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 3 techs, researching Alphabet (33/36)
+    Babylon: size=3, prod=Archers (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 40g, 5 techs, researching Alphabet (14/70)
+    Berlin: size=3, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (39/48)
+    Thebes: size=3, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 35 — 3320 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 57g, 5 techs, researching Writing (9/70)
+    Rome: size=3, prod=Warriors (5sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 3 techs, researching Alphabet (34/36)
+    Babylon: size=3, prod=Archers (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 42g, 5 techs, researching Alphabet (16/70)
+    Berlin: size=3, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (42/48)
+    Thebes: size=3, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 36 — 3300 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 59g, 5 techs, researching Writing (12/70)
+    Rome: size=3, prod=Warriors (6sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 3 techs, researching Alphabet (35/36)
+    Babylon: size=3, prod=Archers (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 44g, 5 techs, researching Alphabet (18/70)
+    Berlin: size=3, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Pottery (45/48)
+    Thebes: size=3, prod=Archers (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    SET_RESEARCH tech=Ceremonial Burial
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 37 — 3280 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 61g, 5 techs, researching Writing (15/70)
+    Rome: size=3, prod=Warriors (7sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Ceremonial Burial (0/48)
+    Babylon: size=3, prod=Archers (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 46g, 5 techs, researching Alphabet (20/70)
+    Berlin: size=3, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 4 techs, researching Pottery (47/48)
+    Thebes: size=3, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    SET_RESEARCH tech=Map Making
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    SET_RESEARCH tech=Map Making
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 38 — 3260 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 63g, 5 techs, researching Writing (18/65)
+    Rome: size=3, prod=Warriors (8sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Ceremonial Burial (1/48)
+    Babylon: size=3, prod=Archers (24sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 48g, 6 techs, researching Map Making (22/84)
+    Berlin: size=3, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (0/84)
+    Thebes: size=3, prod=Archers (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 39 — 3240 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 8 units, 65g, 6 techs, researching Writing (21/84)
+    Rome: size=3, prod=Warriors (9sh), bldgs=Palace
+    Units: 7x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 4 techs, researching Ceremonial Burial (2/48)
+    Babylon: size=3, prod=Archers (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 50g, 6 techs, researching Map Making (24/84)
+    Berlin: size=3, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (2/84)
+    Thebes: size=3, prod=Archers (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 40 — 3220 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 67g, 6 techs, researching Writing (24/84)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 52g, 6 techs, researching Map Making (26/84)
+    Berlin: size=3, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (4/84)
+    Thebes: size=3, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 8 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 41 — 3200 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 69g, 6 techs, researching Writing (27/84)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 54g, 6 techs, researching Map Making (28/84)
+    Berlin: size=3, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (6/84)
+    Thebes: size=3, prod=Archers (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 42 — 3180 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 71g, 6 techs, researching Writing (30/84)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 56g, 6 techs, researching Map Making (30/84)
+    Berlin: size=3, prod=Archers (21sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (8/84)
+    Thebes: size=3, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 43 — 3160 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 73g, 6 techs, researching Writing (33/84)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 58g, 6 techs, researching Map Making (32/84)
+    Berlin: size=3, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 0g, 6 techs, researching Map Making (10/84)
+    Thebes: size=3, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 44 — 3140 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 75g, 6 techs, researching Writing (36/84)
+    Rome: size=3, prod=Warriors (0sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 60g, 6 techs, researching Map Making (34/84)
+    Berlin: size=3, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (11/84)
+    Thebes: size=3, prod=Archers (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 45 — 3120 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 77g, 6 techs, researching Writing (40/84)
+    Rome: size=4, prod=Warriors (2sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (2/65)
+    Babylon: size=3, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 62g, 6 techs, researching Map Making (36/84)
+    Berlin: size=3, prod=Archers (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (12/84)
+    Thebes: size=3, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 46 — 3100 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 79g, 6 techs, researching Writing (44/84)
+    Rome: size=4, prod=Warriors (4sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (4/65)
+    Babylon: size=4, prod=Archers (23sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 64g, 6 techs, researching Map Making (39/84)
+    Berlin: size=4, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (13/84)
+    Thebes: size=3, prod=Archers (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 47 — 3080 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 81g, 6 techs, researching Writing (48/84)
+    Rome: size=4, prod=Warriors (6sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 0g, 5 techs, researching Ceremonial Burial (6/65)
+    Babylon: size=4, prod=Archers (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 66g, 6 techs, researching Map Making (42/84)
+    Berlin: size=4, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (14/84)
+    Thebes: size=3, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #31 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 48 — 3060 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 9 units, 83g, 6 techs, researching Writing (52/84)
+    Rome: size=4, prod=Warriors (8sh), bldgs=Palace
+    Units: 8x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 0g, 5 techs, researching Ceremonial Burial (7/65)
+    Babylon: size=4, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 68g, 6 techs, researching Map Making (45/84)
+    Berlin: size=4, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (15/84)
+    Thebes: size=3, prod=Archers (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #31 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 49 — 3040 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 10 units, 85g, 6 techs, researching Writing (56/84)
+    Rome: size=4, prod=Warriors (0sh), bldgs=Palace
+    Units: 9x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 0g, 5 techs, researching Ceremonial Burial (8/65)
+    Babylon: size=4, prod=Archers (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 70g, 6 techs, researching Map Making (48/84)
+    Berlin: size=4, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 0g, 6 techs, researching Map Making (16/84)
+    Thebes: size=3, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Archers
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 9 units still need orders
+      #1 Warriors(Atk) @(19,71) mv=3 ord=none hp=full
+      #11 Horsemen(Atk) @(19,71) mv=6 ord=none hp=full
+      #13 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #14 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+      #15 Warriors(Atk) @(17,71) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(4,4) mv=3 ord=none hp=full
+      #16 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #20 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #25 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+      #28 Archers(Atk) @(8,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(39,36) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(39,36) mv=3 ord=none hp=full
+      #18 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #26 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+      #31 Archers(Atk) @(39,39) mv=3 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(41,55) mv=3 ord=none hp=full
+      #17 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #21 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #24 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+      #27 Archers(Atk) @(42,68) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  FINAL SUMMARY
+══════════════════════════════════════════════════════════════════════
+Game ended at turn 50 (3020 B.C.)
+
+── Civ 1: Romans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  10 (peak 10)
+  Treasury: 87g
+  Techs discovered: 1 — Iron Working
+  Actions: 27 total, 43 idle turns
+  Breakdown: UNIT_ORDER(10), MOVE_UNIT(9), SET_RESEARCH(3), ADJUST_ATTITUDE(3), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: 9x Warriors, 1x Horsemen
+  Rome: size=4, shields=1
+
+── Civ 2: Babylonians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  7 (peak 7)
+  Treasury: 0g
+  Techs discovered: 0 — none
+  Actions: 41 total, 34 idle turns
+  Breakdown: UNIT_ORDER(17), MOVE_UNIT(14), ADJUST_ATTITUDE(3), SET_RESEARCH(2), BUILD_CITY(2), CHANGE_RATES(1), CHANGE_PRODUCTION(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 5x Archers
+  Babylon: size=4, shields=15
+
+── Civ 3: Germans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  6 (peak 6)
+  Treasury: 72g
+  Techs discovered: 0 — none
+  Actions: 20 total, 44 idle turns
+  Breakdown: UNIT_ORDER(6), SET_RESEARCH(3), MOVE_UNIT(3), ADJUST_ATTITUDE(3), BUILD_CITY(2), CHANGE_RATES(1), CHANGE_PRODUCTION(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 4x Archers
+  Berlin: size=4, shields=7
+
+── Civ 4: Egyptians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  7 (peak 7)
+  Treasury: 0g
+  Techs discovered: 0 — none
+  Actions: 42 total, 33 idle turns
+  Breakdown: UNIT_ORDER(17), MOVE_UNIT(14), SET_RESEARCH(3), ADJUST_ATTITUDE(3), BUILD_CITY(2), CHANGE_RATES(1), CHANGE_PRODUCTION(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 5x Archers
+  Thebes: size=3, shields=18
+
+
+══════════════════════════════════════════════════════════════════════
+  AI BEHAVIOR ANALYSIS
+══════════════════════════════════════════════════════════════════════
+[Civ 1] Romans:
+  WARNING: Idle 43/50 turns (>50%)
+  WARNING: Never changed production
+  WARNING: Only 1 city after 30+ turns
+  WARNING: Low unit diversity
+
+[Civ 2] Babylonians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 34/50 turns (>50%)
+
+[Civ 3] Germans:
+  WARNING: Never discovered a tech
+  WARNING: Idle 44/50 turns (>50%)
+
+[Civ 4] Egyptians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 33/50 turns (>50%)
+

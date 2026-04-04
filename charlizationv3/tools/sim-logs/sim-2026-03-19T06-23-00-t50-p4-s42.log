@@ -1,0 +1,1056 @@
+Charlization AI Headless Simulation
+Date: 2026-03-19T06:23:00.004Z
+Settings: 50 turns, 4 AI players, 50x80 map, difficulty=prince
+Map seed: 42
+Map generated in 89ms
+Game initialized: 4 civs, 11 starting units
+  Civ 1 (Romans): starts at (9,59) on Plains
+  Civ 2 (Babylonians): starts at (32,8) on Grassland
+  Civ 3 (Germans): starts at (7,13) on Forest
+  Civ 4 (Egyptians): starts at (36,40) on Hills
+    SET_RESEARCH tech=Warrior Code
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=0 name="Rome"
+    1 actions REJECTED (of 6)
+    SET_RESEARCH tech=Bronze Working
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=2 name="Babylon"
+    BUILD_CITY unit=8 name="Babylon"
+    2 actions REJECTED (of 8)
+    SET_RESEARCH tech=Map Making
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=4 name="Berlin"
+    BUILD_CITY unit=9 name="Berlin"
+    2 actions REJECTED (of 8)
+    SET_RESEARCH tech=Mysticism
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=6 name="Thebes"
+    BUILD_CITY unit=10 name="Thebes"
+    2 actions REJECTED (of 8)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 1 — 4000 B.C. (35ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 1g, 3 techs, researching Warrior Code (2/28)
+    Rome: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Bronze Working (0/28)
+    Babylon: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 3 techs, researching Map Making (0/28)
+    Berlin: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 3 techs, researching Mysticism (0/28)
+    Thebes: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=1
+    CHANGE_PRODUCTION city=2
+    CHANGE_PRODUCTION city=3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 2 — 3980 B.C. (18ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 2g, 6 techs, researching Warrior Code (4/36)
+    Rome: size=1, prod=Warriors (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (2/36)
+    Babylon: size=1, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 1g, 5 techs, researching Map Making (2/36)
+    Berlin: size=1, prod=Archers (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (2/36)
+    Thebes: size=1, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 3 actions — SET_RESEARCH(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    SET_RESEARCH tech=Bronze Working
+
+══════════════════════════════════════════════════════════════════════
+  TURN 3 — 3960 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 3g, 6 techs, researching Bronze Working (6/36)
+    Rome: size=1, prod=Warriors (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (4/36)
+    Babylon: size=1, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 2g, 5 techs, researching Map Making (4/36)
+    Berlin: size=1, prod=Archers (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (4/36)
+    Thebes: size=1, prod=Archers (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 4 — 3940 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 4g, 6 techs, researching Bronze Working (8/36)
+    Rome: size=1, prod=Warriors (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (6/36)
+    Babylon: size=1, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 3g, 5 techs, researching Map Making (6/36)
+    Berlin: size=1, prod=Archers (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (6/36)
+    Thebes: size=1, prod=Archers (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 3 actions — CHANGE_PRODUCTION(1), UNIT_ORDER(2)
+    CHANGE_PRODUCTION city=0
+
+══════════════════════════════════════════════════════════════════════
+  TURN 5 — 3920 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 5g, 6 techs, researching Bronze Working (10/36)
+    Rome: size=1, prod=Archers (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (8/36)
+    Babylon: size=1, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 4g, 5 techs, researching Map Making (8/36)
+    Berlin: size=1, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (8/36)
+    Thebes: size=1, prod=Archers (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+
+══════════════════════════════════════════════════════════════════════
+  TURN 6 — 3900 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 6g, 6 techs, researching Bronze Working (12/36)
+    Rome: size=1, prod=Archers (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (10/36)
+    Babylon: size=1, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 5g, 5 techs, researching Map Making (10/36)
+    Berlin: size=1, prod=Archers (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (10/36)
+    Thebes: size=1, prod=Archers (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+
+══════════════════════════════════════════════════════════════════════
+  TURN 7 — 3880 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 7g, 6 techs, researching Bronze Working (14/36)
+    Rome: size=1, prod=Archers (10sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (12/36)
+    Babylon: size=1, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 6g, 5 techs, researching Map Making (12/36)
+    Berlin: size=1, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (12/36)
+    Thebes: size=1, prod=Archers (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+
+══════════════════════════════════════════════════════════════════════
+  TURN 8 — 3860 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 8g, 6 techs, researching Bronze Working (16/36)
+    Rome: size=1, prod=Archers (12sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (14/36)
+    Babylon: size=1, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 7g, 5 techs, researching Map Making (14/36)
+    Berlin: size=1, prod=Archers (26sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (14/36)
+    Thebes: size=1, prod=Archers (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    >>> Berlin built Archers
+    CHANGE_PRODUCTION city=2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 9 — 3840 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 9g, 6 techs, researching Bronze Working (18/36)
+    Rome: size=1, prod=Archers (14sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (16/36)
+    Babylon: size=1, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 8g, 5 techs, researching Map Making (16/36)
+    Berlin: size=1, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (16/36)
+    Thebes: size=1, prod=Archers (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    >>> Rome grew to size 2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 10 — 3820 B.C. (10ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 10g, 6 techs, researching Bronze Working (21/36)
+    Rome: size=2, prod=Archers (16sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (18/36)
+    Babylon: size=1, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 9g, 5 techs, researching Map Making (18/36)
+    Berlin: size=1, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mysticism (18/36)
+    Thebes: size=1, prod=Archers (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    >>> Babylon grew to size 2
+    >>> Thebes grew to size 2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 11 — 3800 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 11g, 6 techs, researching Bronze Working (24/36)
+    Rome: size=2, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (20/36)
+    Babylon: size=2, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 10g, 5 techs, researching Map Making (20/36)
+    Berlin: size=1, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 1g, 5 techs, researching Mysticism (20/36)
+    Thebes: size=2, prod=Archers (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+
+══════════════════════════════════════════════════════════════════════
+  TURN 12 — 3780 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 12g, 6 techs, researching Bronze Working (27/36)
+    Rome: size=2, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (22/36)
+    Babylon: size=2, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 11g, 5 techs, researching Map Making (22/36)
+    Berlin: size=1, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 2g, 5 techs, researching Mysticism (22/36)
+    Thebes: size=2, prod=Archers (22sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+
+══════════════════════════════════════════════════════════════════════
+  TURN 13 — 3760 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 13g, 6 techs, researching Bronze Working (30/36)
+    Rome: size=2, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (24/36)
+    Babylon: size=2, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 12g, 5 techs, researching Map Making (24/36)
+    Berlin: size=1, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 3g, 5 techs, researching Mysticism (24/36)
+    Thebes: size=2, prod=Archers (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    >>> Berlin built Horsemen
+    CHANGE_PRODUCTION city=2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 14 — 3740 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Bronze Working (33/36)
+    Rome: size=2, prod=Archers (28sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Bronze Working (26/36)
+    Babylon: size=2, prod=Archers (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 13g, 5 techs, researching Map Making (26/36)
+    Berlin: size=1, prod=building:8 (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 4g, 5 techs, researching Mysticism (26/36)
+    Thebes: size=2, prod=Archers (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 0 actions — idle
+    >>> Babylon built Archers
+    CHANGE_PRODUCTION city=1
+    >>> Thebes built Archers
+    CHANGE_PRODUCTION city=3
+    >>> Romans discovered: Bronze Working
+    >>> Rome built Archers
+
+══════════════════════════════════════════════════════════════════════
+  TURN 15 — 3720 B.C. (10ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 14g, 7 techs, researching none (0/33)
+    Rome: size=2, prod=Archers (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 5 techs, researching Bronze Working (28/36)
+    Babylon: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 14g, 5 techs, researching Map Making (28/36)
+    Berlin: size=1, prod=building:8 (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 5g, 5 techs, researching Mysticism (28/36)
+    Thebes: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — SET_RESEARCH(1), CHANGE_PRODUCTION(1)
+    SET_RESEARCH tech=Iron Working
+    CHANGE_PRODUCTION city=0
+
+══════════════════════════════════════════════════════════════════════
+  TURN 16 — 3700 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 15g, 7 techs, researching Iron Working (3/33)
+    Rome: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 5 techs, researching Bronze Working (30/36)
+    Babylon: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 15g, 5 techs, researching Map Making (30/36)
+    Berlin: size=1, prod=building:8 (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 6g, 5 techs, researching Mysticism (30/36)
+    Thebes: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 17 — 3680 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 16g, 7 techs, researching Iron Working (6/33)
+    Rome: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 5 techs, researching Bronze Working (32/36)
+    Babylon: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 16g, 5 techs, researching Map Making (32/36)
+    Berlin: size=1, prod=building:8 (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 7g, 5 techs, researching Mysticism (32/36)
+    Thebes: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 1 actions — MOVE_UNIT(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 18 — 3660 B.C. (10ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 17g, 7 techs, researching Iron Working (9/33)
+    Rome: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 5 techs, researching Bronze Working (34/36)
+    Babylon: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 17g, 5 techs, researching Map Making (34/36)
+    Berlin: size=1, prod=building:8 (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 8g, 5 techs, researching Mysticism (34/36)
+    Thebes: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Babylonians discovered: Bronze Working
+    SET_RESEARCH tech=Map Making
+    >>> Germans discovered: Map Making
+    SET_RESEARCH tech=Mathematics
+    >>> Egyptians discovered: Mysticism
+    SET_RESEARCH tech=Map Making
+
+══════════════════════════════════════════════════════════════════════
+  TURN 19 — 3640 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 18g, 7 techs, researching Iron Working (12/33)
+    Rome: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 6 techs, researching Map Making (0/36)
+    Babylon: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 17g, 6 techs, researching Mathematics (0/36)
+    Berlin: size=1, prod=building:8 (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 8g, 6 techs, researching Map Making (0/36)
+    Thebes: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 20 — 3620 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 19g, 7 techs, researching Iron Working (15/33)
+    Rome: size=2, prod=Horsemen (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 6 techs, researching Map Making (2/36)
+    Babylon: size=2, prod=Horsemen (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 18g, 7 techs, researching Mathematics (2/33)
+    Berlin: size=1, prod=building:8 (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 9g, 7 techs, researching Map Making (2/33)
+    Thebes: size=2, prod=Horsemen (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Berlin grew to size 2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 21 — 3600 B.C. (10ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 20g, 7 techs, researching Iron Working (18/33)
+    Rome: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 0g, 6 techs, researching Map Making (4/36)
+    Babylon: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 19g, 7 techs, researching Mathematics (5/33)
+    Berlin: size=2, prod=building:8 (21sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 10g, 7 techs, researching Map Making (4/33)
+    Thebes: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Babylon built Horsemen
+    CHANGE_PRODUCTION city=1
+    >>> Thebes built Horsemen
+    CHANGE_PRODUCTION city=3
+    >>> Rome built Horsemen
+
+══════════════════════════════════════════════════════════════════════
+  TURN 22 — 3580 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 21g, 7 techs, researching Iron Working (21/33)
+    Rome: size=2, prod=Horsemen (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 6 techs, researching Map Making (6/36)
+    Babylon: size=2, prod=building:8 (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 20g, 7 techs, researching Mathematics (8/33)
+    Berlin: size=2, prod=building:8 (27sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 11g, 7 techs, researching Map Making (6/33)
+    Thebes: size=2, prod=building:8 (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=0
+
+══════════════════════════════════════════════════════════════════════
+  TURN 23 — 3560 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 22g, 7 techs, researching Iron Working (24/33)
+    Rome: size=2, prod=building:8 (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 6 techs, researching Map Making (8/36)
+    Babylon: size=2, prod=building:8 (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 21g, 7 techs, researching Mathematics (11/33)
+    Berlin: size=2, prod=building:8 (33sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 12g, 7 techs, researching Map Making (8/33)
+    Thebes: size=2, prod=building:8 (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    END_TURN REJECTED: 1 units still need orders
+      #35 Horsemen(Atk) @(30,8) mv=3 ord=none hp=full
+    END_TURN REJECTED: 1 units still need orders
+      #36 Horsemen(Atk) @(37,38) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 24 — 3540 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 23g, 7 techs, researching Iron Working (27/33)
+    Rome: size=2, prod=building:8 (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 6 techs, researching Map Making (10/36)
+    Babylon: size=2, prod=building:8 (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 22g, 7 techs, researching Mathematics (14/33)
+    Berlin: size=2, prod=building:8 (39sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 13g, 7 techs, researching Map Making (10/33)
+    Thebes: size=2, prod=building:8 (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 3 actions — MOVE_UNIT(2), UNIT_ORDER(1)
+    END_TURN REJECTED: 1 units still need orders
+      #37 Horsemen(Atk) @(7,59) mv=3 ord=none hp=full
+    >>> Rome grew to size 3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 25 — 3520 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 25g, 7 techs, researching Iron Working (30/33)
+    Rome: size=3, prod=building:8 (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 0g, 6 techs, researching Map Making (12/36)
+    Babylon: size=2, prod=building:8 (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 23g, 7 techs, researching Mathematics (17/33)
+    Berlin: size=2, prod=building:8 (45sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 14g, 7 techs, researching Map Making (12/33)
+    Thebes: size=2, prod=building:8 (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Babylon grew to size 3
+    END_TURN REJECTED: 1 units still need orders
+      #38 Chariot(Atk) @(30,5) mv=6 ord=none hp=full
+    >>> Thebes grew to size 3
+    >>> Romans discovered: Iron Working
+
+══════════════════════════════════════════════════════════════════════
+  TURN 26 — 3500 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 25g, 8 techs, researching none (0/28)
+    Rome: size=3, prod=building:8 (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 0g, 6 techs, researching Map Making (14/36)
+    Babylon: size=3, prod=building:8 (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 24g, 7 techs, researching Mathematics (20/33)
+    Berlin: size=2, prod=building:8 (51sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 15g, 7 techs, researching Map Making (15/33)
+    Thebes: size=3, prod=building:8 (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Code of Laws
+    END_TURN REJECTED: 1 units still need orders
+      #39 Legion(Atk) @(30,4) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 27 — 3480 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 27g, 8 techs, researching Code of Laws (3/28)
+    Rome: size=3, prod=building:8 (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (16/36)
+    Babylon: size=3, prod=building:8 (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 25g, 7 techs, researching Mathematics (23/33)
+    Berlin: size=2, prod=building:8 (57sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 16g, 7 techs, researching Map Making (18/33)
+    Thebes: size=3, prod=building:8 (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 28 — 3460 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 29g, 8 techs, researching Code of Laws (6/28)
+    Rome: size=3, prod=building:8 (21sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (18/36)
+    Babylon: size=3, prod=building:8 (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 26g, 7 techs, researching Mathematics (26/33)
+    Berlin: size=2, prod=building:8 (63sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 17g, 7 techs, researching Map Making (21/33)
+    Thebes: size=3, prod=building:8 (20sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 29 — 3440 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 31g, 8 techs, researching Code of Laws (9/28)
+    Rome: size=3, prod=building:8 (25sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (20/36)
+    Babylon: size=3, prod=building:8 (24sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 27g, 7 techs, researching Mathematics (29/33)
+    Berlin: size=2, prod=building:8 (69sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 18g, 7 techs, researching Map Making (24/33)
+    Thebes: size=3, prod=building:8 (24sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 30 — 3420 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 33g, 8 techs, researching Code of Laws (12/28)
+    Rome: size=3, prod=building:8 (29sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (22/36)
+    Babylon: size=3, prod=building:8 (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 28g, 7 techs, researching Mathematics (32/33)
+    Berlin: size=2, prod=building:8 (75sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 19g, 7 techs, researching Map Making (27/33)
+    Thebes: size=3, prod=building:8 (28sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Germans discovered: Mathematics
+    >>> Berlin built building:8
+    SET_RESEARCH tech=Code of Laws
+    CHANGE_PRODUCTION city=2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 31 — 3400 B.C. (14ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 35g, 8 techs, researching Code of Laws (15/28)
+    Rome: size=3, prod=building:8 (33sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (24/36)
+    Babylon: size=3, prod=building:8 (32sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 28g, 8 techs, researching Code of Laws (0/28)
+    Berlin: size=2, prod=Catapult (0sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 20g, 7 techs, researching Map Making (30/33)
+    Thebes: size=3, prod=building:8 (32sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Egyptians discovered: Map Making
+    SET_RESEARCH tech=Currency
+
+══════════════════════════════════════════════════════════════════════
+  TURN 32 — 3380 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 37g, 8 techs, researching Code of Laws (18/28)
+    Rome: size=3, prod=building:8 (37sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (26/36)
+    Babylon: size=3, prod=building:8 (36sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 29g, 8 techs, researching Code of Laws (3/28)
+    Berlin: size=2, prod=Catapult (6sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 20g, 8 techs, researching Currency (0/28)
+    Thebes: size=3, prod=building:8 (36sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 7 actions — ADJUST_ATTITUDE(3), MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ4
+    COMBAT: Warriors vs Settlers → defWin (atkHp=undefined, defHp=undefined)
+    1 actions REJECTED (of 7)
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 33 — 3360 B.C. (11ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 39g, 9 techs, researching Code of Laws (21/32)
+    Rome: size=3, prod=building:8 (41sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 6 techs, researching Map Making (28/36)
+    Babylon: size=3, prod=building:8 (40sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 30g, 8 techs, researching Code of Laws (6/28)
+    Berlin: size=2, prod=Catapult (12sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 21g, 8 techs, researching Currency (3/28)
+    Thebes: size=3, prod=building:8 (40sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Code of Laws
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 34 — 3340 B.C. (12ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 41g, 9 techs, researching Code of Laws (24/32)
+    Rome: size=3, prod=building:8 (45sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 7 techs, researching Code of Laws (30/33)
+    Babylon: size=3, prod=building:8 (44sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 31g, 8 techs, researching Code of Laws (9/28)
+    Berlin: size=2, prod=Catapult (18sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 22g, 8 techs, researching Currency (6/28)
+    Thebes: size=3, prod=building:8 (44sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 35 — 3320 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 43g, 9 techs, researching Code of Laws (27/32)
+    Rome: size=3, prod=building:8 (49sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 7 techs, researching Code of Laws (32/33)
+    Babylon: size=3, prod=building:8 (48sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 32g, 8 techs, researching Code of Laws (12/28)
+    Berlin: size=2, prod=Catapult (24sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 23g, 8 techs, researching Currency (9/28)
+    Thebes: size=3, prod=building:8 (48sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Babylonians discovered: Code of Laws
+    SET_RESEARCH tech=Currency
+    PROPOSE_TREATY treaty=peace target=civ3
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ2
+    PROPOSE_TREATY treaty=ceasefire target=civ2
+    ADJUST_ATTITUDE target=civ2
+    1 actions REJECTED (of 7)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 36 — 3300 B.C. (13ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 45g, 9 techs, researching Code of Laws (30/32)
+    Rome: size=3, prod=building:8 (53sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (0/28)
+    Babylon: size=3, prod=building:8 (52sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 33g, 8 techs, researching Code of Laws (15/28)
+    Berlin: size=2, prod=Catapult (30sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 24g, 8 techs, researching Currency (12/28)
+    Thebes: size=3, prod=building:8 (52sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ2
+    >>> Romans discovered: Code of Laws
+
+══════════════════════════════════════════════════════════════════════
+  TURN 37 — 3280 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 45g, 10 techs, researching none (0/48)
+    Rome: size=3, prod=building:8 (57sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (2/28)
+    Babylon: size=3, prod=building:8 (56sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 34g, 8 techs, researching Code of Laws (18/28)
+    Berlin: size=2, prod=Catapult (36sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 25g, 8 techs, researching Currency (15/28)
+    Thebes: size=3, prod=building:8 (56sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Currency
+    ADJUST_ATTITUDE target=civ3
+    >>> Berlin built Catapult
+    CHANGE_PRODUCTION city=2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 38 — 3260 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 47g, 10 techs, researching Currency (3/48)
+    Rome: size=3, prod=building:8 (61sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (4/28)
+    Babylon: size=3, prod=building:8 (60sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 35g, 8 techs, researching Code of Laws (21/28)
+    Berlin: size=2, prod=Warriors (1sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 26g, 8 techs, researching Currency (18/28)
+    Thebes: size=3, prod=building:8 (60sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    SET_RESEARCH tech=Currency
+
+══════════════════════════════════════════════════════════════════════
+  TURN 39 — 3240 B.C. (9ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 49g, 10 techs, researching Currency (6/48)
+    Rome: size=3, prod=building:8 (65sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (6/28)
+    Babylon: size=3, prod=building:8 (64sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 36g, 9 techs, researching Currency (24/21)
+    Berlin: size=2, prod=Warriors (6sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 27g, 9 techs, researching Currency (21/21)
+    Thebes: size=3, prod=building:8 (64sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    >>> Germans discovered: Currency
+    >>> Berlin built Warriors
+    SET_RESEARCH tech=Construction
+    CHANGE_PRODUCTION city=2
+    >>> Egyptians discovered: Currency
+    SET_RESEARCH tech=Construction
+
+══════════════════════════════════════════════════════════════════════
+  TURN 40 — 3220 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 51g, 10 techs, researching Currency (9/48)
+    Rome: size=3, prod=building:8 (69sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (8/28)
+    Babylon: size=3, prod=building:8 (68sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 36g, 10 techs, researching Construction (0/48)
+    Berlin: size=2, prod=Trireme (0sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 27g, 10 techs, researching Construction (0/48)
+    Thebes: size=3, prod=building:8 (68sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 41 — 3200 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 53g, 11 techs, researching Currency (12/52)
+    Rome: size=3, prod=building:8 (73sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 8 techs, researching Currency (10/28)
+    Babylon: size=3, prod=building:8 (72sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 37g, 10 techs, researching Construction (3/24)
+    Berlin: size=2, prod=Trireme (4sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 28g, 10 techs, researching Construction (3/24)
+    Thebes: size=3, prod=building:8 (72sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 5 actions — SET_RESEARCH(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    SET_RESEARCH tech=Construction
+    SET_RESEARCH tech=The Wheel
+    ADJUST_ATTITUDE target=civ3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 42 — 3180 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 55g, 11 techs, researching Construction (15/52)
+    Rome: size=3, prod=building:8 (77sh), bldgs=Palace
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 9 techs, researching The Wheel (12/21)
+    Babylon: size=3, prod=building:8 (76sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 38g, 10 techs, researching Construction (6/24)
+    Berlin: size=2, prod=Trireme (8sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 29g, 10 techs, researching Construction (6/24)
+    Thebes: size=3, prod=building:8 (76sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Babylon built building:8
+    ADJUST_ATTITUDE target=civ3
+    CHANGE_PRODUCTION city=1
+    >>> Thebes built building:8
+    CHANGE_PRODUCTION city=3
+    >>> Rome built building:8
+
+══════════════════════════════════════════════════════════════════════
+  TURN 43 — 3160 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 57g, 11 techs, researching Construction (18/52)
+    Rome: size=3, prod=building:8 (1sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 9 techs, researching The Wheel (14/21)
+    Babylon: size=3, prod=Trireme (0sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 39g, 10 techs, researching Construction (9/24)
+    Berlin: size=2, prod=Trireme (12sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 1x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 30g, 10 techs, researching Construction (9/24)
+    Thebes: size=3, prod=Trireme (0sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 5 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(2), UNIT_ORDER(2)
+    CHANGE_PRODUCTION city=0
+    ADJUST_ATTITUDE target=civ3
+    END_TURN REJECTED: 1 units still need orders
+      #42 Horsemen(Atk) @(11,18) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 44 — 3140 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 59g, 11 techs, researching Construction (21/52)
+    Rome: size=3, prod=Legion (4sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 9 techs, researching The Wheel (16/21)
+    Babylon: size=3, prod=Trireme (4sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 40g, 10 techs, researching Construction (12/24)
+    Berlin: size=2, prod=Trireme (16sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 2x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 31g, 10 techs, researching Construction (12/24)
+    Thebes: size=3, prod=Trireme (4sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    >>> Rome grew to size 4
+
+══════════════════════════════════════════════════════════════════════
+  TURN 45 — 3120 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 61g, 11 techs, researching Construction (25/52)
+    Rome: size=4, prod=Legion (8sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 9 techs, researching The Wheel (18/21)
+    Babylon: size=3, prod=Trireme (8sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 41g, 10 techs, researching Construction (15/24)
+    Berlin: size=2, prod=Trireme (20sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 2x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 32g, 10 techs, researching Construction (15/24)
+    Thebes: size=3, prod=Trireme (8sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Babylon grew to size 4
+    ADJUST_ATTITUDE target=civ3
+    >>> Thebes grew to size 4
+
+══════════════════════════════════════════════════════════════════════
+  TURN 46 — 3100 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 63g, 11 techs, researching Construction (29/52)
+    Rome: size=4, prod=Legion (13sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 9 techs, researching The Wheel (20/21)
+    Babylon: size=4, prod=Trireme (12sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 42g, 10 techs, researching Construction (18/24)
+    Berlin: size=2, prod=Trireme (24sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 2x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 34g, 10 techs, researching Construction (17/24)
+    Thebes: size=4, prod=Trireme (12sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    >>> Babylonians discovered: The Wheel
+    SET_RESEARCH tech=Construction
+    ADJUST_ATTITUDE target=civ3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 47 — 3080 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 65g, 11 techs, researching Construction (33/52)
+    Rome: size=4, prod=Legion (18sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 10 techs, researching Construction (0/24)
+    Babylon: size=4, prod=Trireme (17sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 43g, 10 techs, researching Construction (21/24)
+    Berlin: size=2, prod=Trireme (28sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 2x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 36g, 10 techs, researching Construction (19/24)
+    Thebes: size=4, prod=Trireme (16sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    >>> Germans discovered: Construction
+    SET_RESEARCH tech=Trade
+
+══════════════════════════════════════════════════════════════════════
+  TURN 48 — 3060 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 67g, 11 techs, researching Construction (37/52)
+    Rome: size=4, prod=Legion (23sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 10 techs, researching Construction (2/24)
+    Babylon: size=4, prod=Trireme (22sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 43g, 11 techs, researching Trade (0/52)
+    Berlin: size=2, prod=Trireme (32sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 2x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 38g, 10 techs, researching Construction (21/24)
+    Thebes: size=4, prod=Trireme (20sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    END_TURN REJECTED: 1 units still need orders
+      #51 Horsemen(Atk) @(9,24) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 49 — 3040 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 69g, 11 techs, researching Construction (41/52)
+    Rome: size=4, prod=Legion (28sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Archers, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 49g, 10 techs, researching Construction (4/24)
+    Babylon: size=4, prod=Trireme (27sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 44g, 11 techs, researching Trade (3/52)
+    Berlin: size=2, prod=Trireme (36sh), bldgs=Palace, City Walls
+    Units: 1x Settlers, 1x Archers, 3x Horsemen, 1x Catapult, 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 40g, 10 techs, researching Construction (23/24)
+    Thebes: size=4, prod=Trireme (24sh), bldgs=Palace, City Walls
+    Units: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(2), UNIT_ORDER(2)
+    ADJUST_ATTITUDE target=civ3
+    >>> Berlin built Trireme
+    CHANGE_PRODUCTION city=2
+    >>> Egyptians discovered: Construction
+    SET_RESEARCH tech=Mathematics
+
+══════════════════════════════════════════════════════════════════════
+  FINAL SUMMARY
+══════════════════════════════════════════════════════════════════════
+Game ended at turn 50 (3020 B.C.)
+
+── Civ 1: Romans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  3 (peak 3)
+  Treasury: 71g
+  Techs discovered: 3 — Bronze Working, Iron Working, Code of Laws
+  Actions: 146 total, 10 idle turns
+  Breakdown: UNIT_ORDER(66), MOVE_UNIT(65), SET_RESEARCH(6), CHANGE_PRODUCTION(4), ADJUST_ATTITUDE(3), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: 1x Warriors, 1x Archers, 1x Horsemen
+  Rome: size=4, shields=33
+
+── Civ 2: Babylonians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  6 (peak 6)
+  Treasury: 49g
+  Techs discovered: 3 — Bronze Working, Code of Laws, The Wheel
+  Actions: 357 total, 0 idle turns
+  Breakdown: UNIT_ORDER(162), MOVE_UNIT(160), ADJUST_ATTITUDE(19), SET_RESEARCH(6), CHANGE_PRODUCTION(4), BUILD_CITY(2), WORKER_ORDER(2), CHANGE_RATES(1), PROPOSE_TREATY(1)
+  Army: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen, 1x Chariot, 1x Legion
+  Babylon: size=4, shields=32
+
+── Civ 3: Germans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  8 (peak 7)
+  Treasury: 45g
+  Techs discovered: 4 — Map Making, Mathematics, Currency, Construction
+  Actions: 228 total, 0 idle turns
+  Breakdown: UNIT_ORDER(100), MOVE_UNIT(99), ADJUST_ATTITUDE(11), CHANGE_PRODUCTION(7), SET_RESEARCH(6), BUILD_CITY(2), CHANGE_RATES(1), RESPOND_TREATY(1), PROPOSE_TREATY(1)
+  Army: 1x Settlers, 1x Archers, 3x Horsemen, 1x Catapult, 1x Warriors, 1x Trireme
+  Berlin: size=2, shields=0
+
+── Civ 4: Egyptians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  4 (peak 4)
+  Treasury: 40g
+  Techs discovered: 4 — Mysticism, Map Making, Currency, Construction
+  Actions: 243 total, 0 idle turns
+  Breakdown: UNIT_ORDER(114), MOVE_UNIT(113), SET_RESEARCH(5), CHANGE_PRODUCTION(4), ADJUST_ATTITUDE(3), BUILD_CITY(2), CHANGE_RATES(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 1x Archers, 1x Horsemen
+  Thebes: size=4, shields=28
+
+
+══════════════════════════════════════════════════════════════════════
+  AI BEHAVIOR ANALYSIS
+══════════════════════════════════════════════════════════════════════
+[Civ 1] Romans:
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 2] Babylonians:
+  OK — no obvious issues detected
+
+[Civ 3] Germans:
+  WARNING: 1 units stuck (busy orders outside city)
+
+[Civ 4] Egyptians:
+  OK — no obvious issues detected
+

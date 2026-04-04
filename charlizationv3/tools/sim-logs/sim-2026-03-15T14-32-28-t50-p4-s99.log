@@ -1,0 +1,1768 @@
+Charlization AI Headless Simulation
+Date: 2026-03-15T14:32:27.109Z
+Settings: 50 turns, 4 AI players, 50x80 map, difficulty=prince
+Map seed: 99
+Map generated in 243ms
+Game initialized: 4 civs, 8 starting units
+  Civ 1 (Romans): starts at (11,65) on Grassland
+  Civ 2 (Babylonians): starts at (40,8) on Forest
+  Civ 3 (Germans): starts at (23,37) on Hills
+  Civ 4 (Egyptians): starts at (14,8) on Plains
+  [Civ 1] Romans turn: 3 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1)
+    SET_RESEARCH tech=Bronze Working
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=0 name="Rome"
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Romans: researching Bronze Working (score 4). Top 3: Bronze Working=4, Map Making=4, Code of Laws=3
+    [debug] ECON: Romans: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #0: founding FIRST city "Rome" at (11,65), score=35 (immediate)
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 3 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1)
+    SET_RESEARCH tech=Alphabet
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=2 name="Babylon"
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Babylonians: researching Alphabet (score 3). Top 3: Alphabet=3, Mysticism=3, Bronze Working=2
+    [debug] ECON: Babylonians: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #2: founding FIRST city "Babylon" at (40,8), score=28 (immediate)
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 3 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1)
+    SET_RESEARCH tech=Alphabet
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=4 name="Berlin"
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Germans: researching Alphabet (score 3). Top 3: Alphabet=3, Iron Working=3, Ceremonial Burial=2
+    [debug] ECON: Germans: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #4: founding FIRST city "Berlin" at (23,37), score=28 (immediate)
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 3 actions — SET_RESEARCH(1), CHANGE_RATES(1), BUILD_CITY(1)
+    SET_RESEARCH tech=Masonry
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=6 name="Thebes"
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Egyptians: researching Masonry (score 4). Top 3: Masonry=4, Alphabet=3, Mysticism=3
+    [debug] ECON: Egyptians: rates sci=6 tax=4 lux=0
+    [debug] CITY: Settler #6: founding FIRST city "Thebes" at (14,8), score=25 (immediate)
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 1 — 3980 B.C. (134ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 1g, 3 techs, researching Bronze Working (2/28)
+    Rome: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 3 techs, researching Alphabet (0/28)
+    Babylon: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 3 techs, researching Alphabet (0/28)
+    Berlin: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 0g, 3 techs, researching Masonry (0/28)
+    Thebes: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=0
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] PROD: Rome: chose Pyramids (score 425), switching from Warriors (score 30)
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=1
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] PROD: Babylon: chose Granary (score 340), switching from Warriors (score 0)
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=2
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] PROD: Berlin: chose Granary (score 459), switching from Warriors (score 0)
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 2 actions — SET_RESEARCH(1), CHANGE_PRODUCTION(1)
+    SET_RESEARCH tech=Alphabet
+    CHANGE_PRODUCTION city=3
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Egyptians: researching Alphabet (score 3). Top 3: Alphabet=3, Iron Working=3, Mysticism=3
+    [debug] PROD: Thebes: chose Hanging Gardens (score 379), switching from Warriors (score 30)
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 2 — 3960 B.C. (55ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 2g, 6 techs, researching Bronze Working (4/36)
+    Rome: size=1, prod=Wonder39 (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (1/36)
+    Babylon: size=1, prod=building:3 (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (1/36)
+    Berlin: size=1, prod=building:3 (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 1g, 5 techs, researching Alphabet (2/36)
+    Thebes: size=1, prod=Wonder40 (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Iron Working
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    [debug] ECON: Romans: researching Iron Working (score 5). Top 3: Iron Working=5, Map Making=4, Code of Laws=3
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] GOALS: 1 tactical, 0 strategic goals active
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 3 — 3940 B.C. (24ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 3g, 6 techs, researching Iron Working (6/36)
+    Rome: size=1, prod=Wonder39 (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (2/36)
+    Babylon: size=1, prod=building:3 (3sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (2/36)
+    Berlin: size=1, prod=building:3 (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 2g, 5 techs, researching Alphabet (4/36)
+    Thebes: size=1, prod=Wonder40 (3sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 4 — 3920 B.C. (17ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 4g, 6 techs, researching Iron Working (8/36)
+    Rome: size=1, prod=Wonder39 (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (3/36)
+    Babylon: size=1, prod=building:3 (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (3/36)
+    Berlin: size=1, prod=building:3 (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 3g, 5 techs, researching Alphabet (6/36)
+    Thebes: size=1, prod=Wonder40 (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 5 — 3900 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 5g, 6 techs, researching Iron Working (10/36)
+    Rome: size=1, prod=Wonder39 (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (4/36)
+    Babylon: size=1, prod=building:3 (9sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (4/36)
+    Berlin: size=1, prod=building:3 (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 4g, 5 techs, researching Alphabet (8/36)
+    Thebes: size=1, prod=Wonder40 (9sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 6 — 3880 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 6g, 6 techs, researching Iron Working (12/36)
+    Rome: size=1, prod=Wonder39 (10sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (5/36)
+    Babylon: size=1, prod=building:3 (12sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (5/36)
+    Berlin: size=1, prod=building:3 (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 5g, 5 techs, researching Alphabet (10/36)
+    Thebes: size=1, prod=Wonder40 (12sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 7 — 3860 B.C. (19ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 7g, 6 techs, researching Iron Working (14/36)
+    Rome: size=1, prod=Wonder39 (12sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (6/36)
+    Babylon: size=1, prod=building:3 (15sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (6/36)
+    Berlin: size=1, prod=building:3 (10sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 6g, 5 techs, researching Alphabet (12/36)
+    Thebes: size=1, prod=Wonder40 (15sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 8 — 3840 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 8g, 6 techs, researching Iron Working (16/36)
+    Rome: size=1, prod=Wonder39 (14sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (7/36)
+    Babylon: size=1, prod=building:3 (18sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (7/36)
+    Berlin: size=1, prod=building:3 (12sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 7g, 5 techs, researching Alphabet (14/36)
+    Thebes: size=1, prod=Wonder40 (18sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 9 — 3820 B.C. (19ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 9g, 6 techs, researching Iron Working (18/36)
+    Rome: size=1, prod=Wonder39 (16sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (8/36)
+    Babylon: size=1, prod=building:3 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (8/36)
+    Berlin: size=1, prod=building:3 (14sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 8g, 5 techs, researching Alphabet (16/36)
+    Thebes: size=1, prod=Wonder40 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 10 — 3800 B.C. (17ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 11g, 6 techs, researching Iron Working (20/36)
+    Rome: size=2, prod=Wonder39 (18sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (9/36)
+    Babylon: size=1, prod=building:3 (24sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 0g, 5 techs, researching Alphabet (9/36)
+    Berlin: size=1, prod=building:3 (16sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 9g, 5 techs, researching Alphabet (18/36)
+    Thebes: size=1, prod=Wonder40 (24sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 11 — 3780 B.C. (14ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 13g, 6 techs, researching Iron Working (22/36)
+    Rome: size=2, prod=Wonder39 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (10/36)
+    Babylon: size=1, prod=building:3 (27sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 1g, 5 techs, researching Alphabet (10/36)
+    Berlin: size=2, prod=building:3 (18sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 10g, 5 techs, researching Alphabet (20/36)
+    Thebes: size=1, prod=Wonder40 (27sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 12 — 3760 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 15g, 6 techs, researching Iron Working (24/36)
+    Rome: size=2, prod=Wonder39 (24sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (11/36)
+    Babylon: size=1, prod=building:3 (30sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 2g, 5 techs, researching Alphabet (11/36)
+    Berlin: size=2, prod=building:3 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 11g, 5 techs, researching Alphabet (22/36)
+    Thebes: size=1, prod=Wonder40 (30sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 13 — 3740 B.C. (34ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 17g, 6 techs, researching Iron Working (26/36)
+    Rome: size=2, prod=Wonder39 (27sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (12/36)
+    Babylon: size=1, prod=building:3 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 3g, 5 techs, researching Alphabet (12/36)
+    Berlin: size=2, prod=building:3 (24sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 12g, 5 techs, researching Alphabet (24/36)
+    Thebes: size=1, prod=Wonder40 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 14 — 3720 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 19g, 6 techs, researching Iron Working (28/36)
+    Rome: size=2, prod=Wonder39 (30sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (13/36)
+    Babylon: size=1, prod=building:3 (36sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 4g, 5 techs, researching Alphabet (13/36)
+    Berlin: size=2, prod=building:3 (27sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 13g, 5 techs, researching Alphabet (26/36)
+    Thebes: size=1, prod=Wonder40 (36sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 15 — 3700 B.C. (22ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 21g, 6 techs, researching Iron Working (30/36)
+    Rome: size=2, prod=Wonder39 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (14/36)
+    Babylon: size=1, prod=building:3 (39sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 5g, 5 techs, researching Alphabet (14/36)
+    Berlin: size=2, prod=building:3 (30sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 14g, 5 techs, researching Alphabet (28/36)
+    Thebes: size=1, prod=Wonder40 (39sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 16 — 3680 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 23g, 6 techs, researching Iron Working (32/36)
+    Rome: size=2, prod=Wonder39 (36sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (15/36)
+    Babylon: size=1, prod=building:3 (42sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 6g, 5 techs, researching Alphabet (15/36)
+    Berlin: size=2, prod=building:3 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 15g, 5 techs, researching Alphabet (30/36)
+    Thebes: size=1, prod=Wonder40 (42sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 17 — 3660 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 25g, 6 techs, researching Iron Working (34/36)
+    Rome: size=2, prod=Wonder39 (39sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (16/36)
+    Babylon: size=1, prod=building:3 (45sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 7g, 5 techs, researching Alphabet (16/36)
+    Berlin: size=2, prod=building:3 (36sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 16g, 5 techs, researching Alphabet (32/36)
+    Thebes: size=1, prod=Wonder40 (45sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 18 — 3640 B.C. (62ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 25g, 7 techs, researching none (0/33)
+    Rome: size=2, prod=Wonder39 (42sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (17/36)
+    Babylon: size=1, prod=building:3 (48sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 8g, 5 techs, researching Alphabet (17/36)
+    Berlin: size=2, prod=building:3 (39sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 17g, 5 techs, researching Alphabet (34/36)
+    Thebes: size=1, prod=Wonder40 (48sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Map Making
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Romans: researching Map Making (score 4). Top 3: Map Making=4, Code of Laws=3, Mathematics=3
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Map Making
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Egyptians: researching Map Making (score 4). Top 3: Map Making=4, Code of Laws=3, Mathematics=3
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 19 — 3620 B.C. (29ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 27g, 7 techs, researching Map Making (2/33)
+    Rome: size=2, prod=Wonder39 (45sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (18/36)
+    Babylon: size=1, prod=building:3 (51sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 9g, 5 techs, researching Alphabet (18/36)
+    Berlin: size=2, prod=building:3 (42sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 17g, 6 techs, researching Map Making (0/36)
+    Thebes: size=1, prod=Wonder40 (51sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 20 — 3600 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 29g, 7 techs, researching Map Making (4/33)
+    Rome: size=2, prod=Wonder39 (48sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 6 techs, researching Alphabet (19/36)
+    Babylon: size=1, prod=building:3 (54sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 10g, 5 techs, researching Alphabet (19/36)
+    Berlin: size=2, prod=building:3 (45sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 18g, 6 techs, researching Map Making (2/36)
+    Thebes: size=1, prod=Wonder40 (54sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Map Making
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Babylonians: researching Map Making (score 4). Top 3: Code of Laws=4, Map Making=4, Mathematics=3
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Code of Laws
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Germans: researching Code of Laws (score 3). Top 3: Map Making=4, Code of Laws=3, Mathematics=3
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 21 — 3580 B.C. (29ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 31g, 7 techs, researching Map Making (6/33)
+    Rome: size=2, prod=Wonder39 (51sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 7 techs, researching Map Making (20/33)
+    Babylon: size=2, prod=building:3 (57sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 11g, 6 techs, researching Code of Laws (20/36)
+    Berlin: size=2, prod=building:3 (48sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 19g, 6 techs, researching Map Making (4/36)
+    Thebes: size=2, prod=Wonder40 (57sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 22 — 3560 B.C. (43ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 33g, 7 techs, researching Map Making (8/33)
+    Rome: size=2, prod=Wonder39 (54sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (21/33)
+    Babylon: size=2, prod=building:3 (1sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 12g, 6 techs, researching Code of Laws (21/36)
+    Berlin: size=2, prod=building:3 (51sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 20g, 6 techs, researching Map Making (6/36)
+    Thebes: size=2, prod=Wonder40 (61sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 23 — 3540 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 35g, 7 techs, researching Map Making (10/33)
+    Rome: size=2, prod=Wonder39 (57sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (22/33)
+    Babylon: size=2, prod=building:3 (5sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 13g, 6 techs, researching Code of Laws (22/36)
+    Berlin: size=2, prod=building:3 (54sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 21g, 6 techs, researching Map Making (8/36)
+    Thebes: size=2, prod=Wonder40 (65sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 24 — 3520 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 37g, 7 techs, researching Map Making (12/33)
+    Rome: size=2, prod=Wonder39 (60sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (23/33)
+    Babylon: size=2, prod=building:3 (9sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (23/36)
+    Berlin: size=2, prod=building:3 (57sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 22g, 6 techs, researching Map Making (10/36)
+    Thebes: size=2, prod=Wonder40 (69sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=2
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Berlin: chose Archers (score 379), switching from Granary (score 0)
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 25 — 3500 B.C. (33ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 39g, 7 techs, researching Map Making (15/33)
+    Rome: size=3, prod=Wonder39 (63sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (24/33)
+    Babylon: size=2, prod=building:3 (13sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (24/36)
+    Berlin: size=2, prod=Archers (0sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 23g, 6 techs, researching Map Making (12/36)
+    Thebes: size=2, prod=Wonder40 (73sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 26 — 3480 B.C. (13ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 41g, 7 techs, researching Map Making (18/33)
+    Rome: size=3, prod=Wonder39 (67sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (25/33)
+    Babylon: size=2, prod=building:3 (17sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (25/36)
+    Berlin: size=3, prod=Archers (3sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 24g, 6 techs, researching Map Making (14/36)
+    Thebes: size=2, prod=Wonder40 (77sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 27 — 3460 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 43g, 7 techs, researching Map Making (21/33)
+    Rome: size=3, prod=Wonder39 (71sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (26/33)
+    Babylon: size=2, prod=building:3 (21sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (26/36)
+    Berlin: size=3, prod=Archers (9sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 25g, 6 techs, researching Map Making (16/36)
+    Thebes: size=2, prod=Wonder40 (81sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 28 — 3440 B.C. (27ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 45g, 7 techs, researching Map Making (24/33)
+    Rome: size=3, prod=Wonder39 (75sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (27/33)
+    Babylon: size=2, prod=building:3 (25sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (27/36)
+    Berlin: size=3, prod=Archers (15sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 26g, 6 techs, researching Map Making (18/36)
+    Thebes: size=2, prod=Wonder40 (85sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 29 — 3420 B.C. (22ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 47g, 7 techs, researching Map Making (27/33)
+    Rome: size=3, prod=Wonder39 (79sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (28/33)
+    Babylon: size=2, prod=building:3 (29sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (28/36)
+    Berlin: size=3, prod=Archers (21sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 27g, 6 techs, researching Map Making (20/36)
+    Thebes: size=2, prod=Wonder40 (89sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 30 — 3400 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 49g, 7 techs, researching Map Making (30/33)
+    Rome: size=3, prod=Wonder39 (83sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (29/33)
+    Babylon: size=2, prod=building:3 (33sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 1 units, 14g, 6 techs, researching Code of Laws (29/36)
+    Berlin: size=3, prod=Archers (27sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 28g, 6 techs, researching Map Making (22/36)
+    Thebes: size=2, prod=Wonder40 (93sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=2
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Berlin: chose Colossus (score 238), switching from Archers (score 90)
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 31 — 3380 B.C. (32ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 49g, 8 techs, researching none (0/28)
+    Rome: size=3, prod=Wonder39 (87sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (30/33)
+    Babylon: size=2, prod=building:3 (37sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 6 techs, researching Code of Laws (30/36)
+    Berlin: size=3, prod=Wonder41 (0sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 29g, 6 techs, researching Map Making (24/36)
+    Thebes: size=2, prod=Wonder40 (97sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Code of Laws
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Romans: researching Code of Laws (score 2). Top 3: Code of Laws=2, Currency=2, Mathematics=2
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 32 — 3360 B.C. (27ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 51g, 8 techs, researching Code of Laws (3/28)
+    Rome: size=3, prod=Wonder39 (91sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (31/33)
+    Babylon: size=2, prod=building:3 (41sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 6 techs, researching Code of Laws (31/36)
+    Berlin: size=3, prod=Wonder41 (6sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 30g, 6 techs, researching Map Making (26/36)
+    Thebes: size=2, prod=Wonder40 (101sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 33 — 3340 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 53g, 8 techs, researching Code of Laws (6/28)
+    Rome: size=3, prod=Wonder39 (95sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 7 techs, researching Map Making (32/33)
+    Babylon: size=2, prod=building:3 (45sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 6 techs, researching Code of Laws (32/36)
+    Berlin: size=3, prod=Wonder41 (12sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 31g, 6 techs, researching Map Making (28/36)
+    Thebes: size=2, prod=Wonder40 (105sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Code of Laws
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Babylonians: researching Code of Laws (score 3). Top 3: Code of Laws=3, Currency=2, Mathematics=2
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 34 — 3320 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 55g, 8 techs, researching Code of Laws (9/28)
+    Rome: size=3, prod=Wonder39 (99sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 8 techs, researching Code of Laws (0/28)
+    Babylon: size=2, prod=building:3 (49sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 6 techs, researching Code of Laws (33/36)
+    Berlin: size=3, prod=Wonder41 (18sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 32g, 6 techs, researching Map Making (30/36)
+    Thebes: size=2, prod=Wonder40 (109sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Currency
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Egyptians: researching Currency (score 2). Top 3: Code of Laws=2, Currency=2, Mathematics=2
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 35 — 3300 B.C. (26ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 57g, 8 techs, researching Code of Laws (12/28)
+    Rome: size=3, prod=Wonder39 (103sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 8 techs, researching Code of Laws (1/28)
+    Babylon: size=2, prod=building:3 (53sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 7 techs, researching Code of Laws (34/33)
+    Berlin: size=3, prod=Wonder41 (24sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 33g, 7 techs, researching Currency (32/33)
+    Thebes: size=2, prod=Wonder40 (113sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Mathematics
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Germans: researching Mathematics (score 2). Top 3: Currency=2, Mathematics=2, Mysticism=2
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Construction
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    [debug] ECON: Egyptians: researching Construction (score 2). Top 3: Construction=2, Mathematics=2, Mysticism=2
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 36 — 3280 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 59g, 8 techs, researching Code of Laws (15/28)
+    Rome: size=3, prod=Wonder39 (107sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 59g, 8 techs, researching Code of Laws (2/28)
+    Babylon: size=2, prod=building:3 (57sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (0/28)
+    Berlin: size=3, prod=Wonder41 (30sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 33g, 8 techs, researching Construction (0/28)
+    Thebes: size=2, prod=Wonder40 (117sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=1
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Babylon: chose Archers (score 297), switching from Granary (score 0)
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 37 — 3260 B.C. (14ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 61g, 8 techs, researching Code of Laws (18/28)
+    Rome: size=3, prod=Wonder39 (111sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 58g, 8 techs, researching Code of Laws (3/28)
+    Babylon: size=2, prod=Archers (0sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (1/28)
+    Berlin: size=3, prod=Wonder41 (36sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 34g, 8 techs, researching Construction (2/28)
+    Thebes: size=2, prod=Wonder40 (121sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 38 — 3240 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 63g, 8 techs, researching Code of Laws (21/28)
+    Rome: size=3, prod=Wonder39 (115sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 57g, 8 techs, researching Code of Laws (4/28)
+    Babylon: size=2, prod=Archers (4sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (2/28)
+    Berlin: size=3, prod=Wonder41 (42sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 35g, 8 techs, researching Construction (4/28)
+    Thebes: size=2, prod=Wonder40 (125sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 39 — 3220 B.C. (21ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 65g, 8 techs, researching Code of Laws (24/28)
+    Rome: size=3, prod=Wonder39 (119sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 56g, 8 techs, researching Code of Laws (5/28)
+    Babylon: size=2, prod=Archers (8sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (3/28)
+    Berlin: size=3, prod=Wonder41 (48sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 36g, 8 techs, researching Construction (6/28)
+    Thebes: size=2, prod=Wonder40 (129sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 40 — 3200 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 67g, 8 techs, researching Code of Laws (27/28)
+    Rome: size=3, prod=Wonder39 (123sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 55g, 8 techs, researching Code of Laws (6/28)
+    Babylon: size=2, prod=Archers (12sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (4/28)
+    Berlin: size=3, prod=Wonder41 (54sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 37g, 8 techs, researching Construction (8/28)
+    Thebes: size=2, prod=Wonder40 (133sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 41 — 3180 B.C. (21ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 67g, 9 techs, researching none (0/32)
+    Rome: size=3, prod=Wonder39 (127sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 54g, 8 techs, researching Code of Laws (7/28)
+    Babylon: size=2, prod=Archers (16sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (5/28)
+    Berlin: size=3, prod=Wonder41 (60sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 38g, 8 techs, researching Construction (10/28)
+    Thebes: size=2, prod=Wonder40 (137sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Seafaring
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Romans: researching Seafaring (score 2). Top 3: Mathematics=2, Monarchy=2, Mysticism=2
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 42 — 3160 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 69g, 9 techs, researching Seafaring (3/32)
+    Rome: size=3, prod=Wonder39 (131sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 53g, 8 techs, researching Code of Laws (8/28)
+    Babylon: size=2, prod=Archers (20sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (6/28)
+    Berlin: size=3, prod=Wonder41 (66sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 39g, 8 techs, researching Construction (12/28)
+    Thebes: size=2, prod=Wonder40 (141sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=The Wheel
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] ECON: Babylonians: researching The Wheel (score 2). Top 3: Mathematics=2, Mysticism=2, Seafaring=2
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 43 — 3140 B.C. (20ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 71g, 9 techs, researching Seafaring (6/32)
+    Rome: size=3, prod=Wonder39 (135sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 52g, 9 techs, researching The Wheel (9/32)
+    Babylon: size=2, prod=Archers (24sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (7/28)
+    Berlin: size=3, prod=Wonder41 (72sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 40g, 9 techs, researching Construction (14/32)
+    Thebes: size=2, prod=Wonder40 (145sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 44 — 3120 B.C. (20ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 73g, 9 techs, researching Seafaring (9/32)
+    Rome: size=3, prod=Wonder39 (139sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 51g, 9 techs, researching The Wheel (10/32)
+    Babylon: size=2, prod=Archers (28sh), bldgs=Palace, Granary
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (8/28)
+    Berlin: size=3, prod=Wonder41 (78sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 41g, 9 techs, researching Construction (16/32)
+    Thebes: size=2, prod=Wonder40 (149sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=1
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Babylon: chose Horsemen (score 297), switching from Archers (score 160)
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 45 — 3100 B.C. (19ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 75g, 9 techs, researching Seafaring (13/32)
+    Rome: size=4, prod=Wonder39 (143sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 50g, 9 techs, researching The Wheel (11/32)
+    Babylon: size=2, prod=Horsemen (1sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (9/28)
+    Berlin: size=3, prod=Wonder41 (84sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 42g, 9 techs, researching Construction (18/32)
+    Thebes: size=2, prod=Wonder40 (153sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 46 — 3080 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 77g, 9 techs, researching Seafaring (17/32)
+    Rome: size=4, prod=Wonder39 (148sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 49g, 9 techs, researching The Wheel (12/32)
+    Babylon: size=2, prod=Horsemen (5sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (10/28)
+    Berlin: size=3, prod=Wonder41 (90sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 43g, 9 techs, researching Construction (20/32)
+    Thebes: size=2, prod=Wonder40 (157sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 47 — 3060 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 79g, 9 techs, researching Seafaring (21/32)
+    Rome: size=4, prod=Wonder39 (153sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 48g, 9 techs, researching The Wheel (13/32)
+    Babylon: size=2, prod=Horsemen (9sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (11/28)
+    Berlin: size=3, prod=Wonder41 (96sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 44g, 9 techs, researching Construction (22/32)
+    Thebes: size=2, prod=Wonder40 (161sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 48 — 3040 B.C. (40ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 81g, 9 techs, researching Seafaring (25/32)
+    Rome: size=4, prod=Wonder39 (158sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 47g, 9 techs, researching The Wheel (14/32)
+    Babylon: size=2, prod=Horsemen (13sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (12/28)
+    Berlin: size=3, prod=Wonder41 (102sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 45g, 9 techs, researching Construction (24/32)
+    Thebes: size=2, prod=Wonder40 (165sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 0 actions — idle
+    [debug] STRAT: Babylonians: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 49 — 3020 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 83g, 9 techs, researching Seafaring (29/32)
+    Rome: size=4, prod=Wonder39 (163sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 46g, 9 techs, researching The Wheel (15/32)
+    Babylon: size=2, prod=Horsemen (17sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 14g, 8 techs, researching Mathematics (13/28)
+    Berlin: size=3, prod=Wonder41 (108sh), bldgs=Palace, Granary
+    Units: 1x Warriors, 1x Archers
+  [Civ 4] Egyptians (despotism): 1 cities, 1 units, 46g, 9 techs, researching Construction (26/32)
+    Thebes: size=2, prod=Wonder40 (169sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 1] Romans turn: 0 actions — idle
+    [debug] STRAT: Romans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(11,65) mv=3 ord=none hp=full
+  [Civ 2] Babylonians turn: 1 actions — CHANGE_PRODUCTION(1)
+    CHANGE_PRODUCTION city=1
+    [debug] STRAT: Babylonians: threat=low posture=expand economy=2 diplomacy=1 focus=economy
+    [debug] PROD: Babylon: chose Courthouse (score 280), switching from Horsemen (score 0)
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(40,8) mv=3 ord=none hp=full
+      #12 Archers(Atk) @(40,8) mv=3 ord=none hp=full
+  [Civ 3] Germans turn: 0 actions — idle
+    [debug] STRAT: Germans: threat=low posture=defend economy=2 diplomacy=1 focus=economy
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(23,37) mv=3 ord=none hp=full
+      #8 Archers(Atk) @(23,37) mv=3 ord=none hp=full
+  [Civ 4] Egyptians turn: 0 actions — idle
+    [debug] STRAT: Egyptians: threat=low posture=defend economy=4 diplomacy=1 focus=military
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(14,8) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  FINAL SUMMARY
+══════════════════════════════════════════════════════════════════════
+Game ended at turn 50 (3000 B.C.)
+
+── Civ 1: Romans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  1 (peak 1)
+  Treasury: 83g
+  Techs discovered: 0 — none
+  Actions: 8 total, 44 idle turns
+  Breakdown: SET_RESEARCH(5), CHANGE_RATES(1), BUILD_CITY(1), CHANGE_PRODUCTION(1)
+  Army: 1x Warriors
+  Rome: size=4, shields=168
+
+── Civ 2: Babylonians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  3 (peak 2)
+  Treasury: 45g
+  Techs discovered: 0 — none
+  Actions: 10 total, 42 idle turns
+  Breakdown: SET_RESEARCH(4), CHANGE_PRODUCTION(4), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: 1x Warriors, 1x Archers, 1x Horsemen
+  Babylon: size=2, shields=0
+
+── Civ 3: Germans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  2 (peak 2)
+  Treasury: 14g
+  Techs discovered: 0 — none
+  Actions: 8 total, 44 idle turns
+  Breakdown: SET_RESEARCH(3), CHANGE_PRODUCTION(3), CHANGE_RATES(1), BUILD_CITY(1)
+  Army: 1x Warriors, 1x Archers
+  Berlin: size=3, shields=114
+
+── Civ 4: Egyptians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  1 (peak 1)
+  Treasury: 47g
+  Techs discovered: 0 — none
+  Actions: 8 total, 45 idle turns
+  Breakdown: SET_RESEARCH(5), CHANGE_RATES(1), BUILD_CITY(1), CHANGE_PRODUCTION(1)
+  Army: 1x Warriors
+  Thebes: size=2, shields=173
+
+
+══════════════════════════════════════════════════════════════════════
+  AI BEHAVIOR ANALYSIS
+══════════════════════════════════════════════════════════════════════
+[Civ 1] Romans:
+  WARNING: Never discovered a tech
+  WARNING: Idle 44/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 2] Babylonians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 42/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 3] Germans:
+  WARNING: Never discovered a tech
+  WARNING: Idle 44/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+
+[Civ 4] Egyptians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 45/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+

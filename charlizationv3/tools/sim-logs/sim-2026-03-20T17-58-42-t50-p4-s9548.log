@@ -1,0 +1,1712 @@
+Charlization AI Headless Simulation
+Date: 2026-03-20T17:58:42.364Z
+Settings: 50 turns, 4 AI players, 50x80 map, difficulty=prince
+Map seed: 9548
+Map generated in 82ms
+Game initialized: 4 civs, 10 starting units
+  Civ 1 (Romans): starts at (15,25) on Grassland
+  Civ 2 (Babylonians): starts at (7,71) on Grassland
+  Civ 3 (Germans): starts at (39,11) on Hills
+  Civ 4 (Egyptians): starts at (10,48) on Grassland
+    SET_RESEARCH tech=Warrior Code
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=0 name="Rome"
+    1 actions REJECTED (of 6)
+    SET_RESEARCH tech=Code of Laws
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=2 name="Babylon"
+    1 actions REJECTED (of 6)
+    SET_RESEARCH tech=Pottery
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=4 name="Berlin"
+    BUILD_CITY unit=8 name="Berlin"
+    2 actions REJECTED (of 8)
+    SET_RESEARCH tech=Mathematics
+    CHANGE_RATES sci=6 tax=4 lux=undefined
+    BUILD_CITY unit=6 name="Thebes"
+    BUILD_CITY unit=9 name="Thebes"
+    2 actions REJECTED (of 8)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 1 — 4000 B.C. (37ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 1g, 3 techs, researching Warrior Code (3/36)
+    Rome: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 0g, 3 techs, researching Code of Laws (0/36)
+    Babylon: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 3 techs, researching Pottery (0/36)
+    Berlin: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 0g, 5 techs, researching Mathematics (0/70)
+    Thebes: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=2
+    CHANGE_PRODUCTION city=3
+
+══════════════════════════════════════════════════════════════════════
+  TURN 2 — 3980 B.C. (15ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 2g, 5 techs, researching Warrior Code (6/70)
+    Rome: size=1, prod=Warriors (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 1g, 5 techs, researching Code of Laws (3/70)
+    Babylon: size=1, prod=Warriors (2sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (2/70)
+    Berlin: size=1, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 31g, 5 techs, researching Mathematics (2/70)
+    Thebes: size=1, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 3 — 3960 B.C. (7ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 3g, 5 techs, researching Warrior Code (9/70)
+    Rome: size=1, prod=Warriors (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 2g, 5 techs, researching Code of Laws (6/70)
+    Babylon: size=1, prod=Warriors (4sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (4/70)
+    Berlin: size=1, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 32g, 5 techs, researching Mathematics (4/70)
+    Thebes: size=1, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 4 — 3940 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 1 units, 4g, 5 techs, researching Warrior Code (12/70)
+    Rome: size=1, prod=Warriors (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 3g, 5 techs, researching Code of Laws (9/70)
+    Babylon: size=1, prod=Warriors (6sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (6/70)
+    Berlin: size=1, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 33g, 5 techs, researching Mathematics (6/70)
+    Thebes: size=1, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Rome built Warriors
+
+══════════════════════════════════════════════════════════════════════
+  TURN 5 — 3920 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 5g, 6 techs, researching Warrior Code (15/84)
+    Rome: size=1, prod=Warriors (0sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 1 units, 4g, 5 techs, researching Code of Laws (12/65)
+    Babylon: size=1, prod=Warriors (8sh), bldgs=Palace
+    Units: 1x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (8/65)
+    Berlin: size=1, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 34g, 5 techs, researching Mathematics (8/65)
+    Thebes: size=1, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 3 actions — CHANGE_PRODUCTION(1), MOVE_UNIT(1), UNIT_ORDER(1)
+    CHANGE_PRODUCTION city=0
+    >>> Babylon built Warriors
+    CHANGE_PRODUCTION city=1
+
+══════════════════════════════════════════════════════════════════════
+  TURN 6 — 3900 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 6g, 6 techs, researching Warrior Code (18/84)
+    Rome: size=1, prod=Horsemen (2sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 5g, 5 techs, researching Code of Laws (15/65)
+    Babylon: size=1, prod=Horsemen (0sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (10/65)
+    Berlin: size=1, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 35g, 5 techs, researching Mathematics (10/65)
+    Thebes: size=1, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 4 actions — MOVE_UNIT(1), UNIT_ORDER(3)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 7 — 3880 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 7g, 6 techs, researching Warrior Code (21/84)
+    Rome: size=1, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 6g, 5 techs, researching Code of Laws (18/65)
+    Babylon: size=1, prod=Horsemen (2sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (12/65)
+    Berlin: size=1, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 36g, 5 techs, researching Mathematics (12/65)
+    Thebes: size=1, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 8 — 3860 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 8g, 6 techs, researching Warrior Code (24/84)
+    Rome: size=1, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 7g, 5 techs, researching Code of Laws (21/65)
+    Babylon: size=1, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (14/65)
+    Berlin: size=1, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 37g, 5 techs, researching Mathematics (14/65)
+    Thebes: size=1, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+
+══════════════════════════════════════════════════════════════════════
+  TURN 9 — 3840 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 9g, 6 techs, researching Warrior Code (27/84)
+    Rome: size=1, prod=Horsemen (8sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 8g, 5 techs, researching Code of Laws (24/65)
+    Babylon: size=1, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (16/65)
+    Berlin: size=1, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 38g, 5 techs, researching Mathematics (16/65)
+    Thebes: size=1, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Rome grew to size 2
+
+══════════════════════════════════════════════════════════════════════
+  TURN 10 — 3820 B.C. (6ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 11g, 6 techs, researching Warrior Code (30/84)
+    Rome: size=2, prod=Horsemen (11sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 9g, 5 techs, researching Code of Laws (27/65)
+    Babylon: size=1, prod=Horsemen (8sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 2 units, 0g, 5 techs, researching Pottery (18/65)
+    Berlin: size=1, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 4] Egyptians (despotism): 1 cities, 2 units, 39g, 5 techs, researching Mathematics (18/65)
+    Thebes: size=1, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    >>> Babylon grew to size 2
+    >>> Berlin grew to size 2
+    >>> Berlin built Horsemen
+    END_TURN REJECTED: 1 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+    END_TURN REJECTED: 1 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 11 — 3800 B.C. (11ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 13g, 6 techs, researching Warrior Code (33/84)
+    Rome: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 11g, 5 techs, researching Code of Laws (30/65)
+    Babylon: size=2, prod=Horsemen (11sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 1g, 5 techs, researching Pottery (22/65)
+    Berlin: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 40g, 5 techs, researching Mathematics (21/65)
+    Thebes: size=2, prod=Horsemen (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 12 — 3780 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 2 units, 15g, 6 techs, researching Warrior Code (36/84)
+    Rome: size=2, prod=Horsemen (17sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 13g, 5 techs, researching Code of Laws (33/65)
+    Babylon: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 2g, 5 techs, researching Pottery (26/65)
+    Berlin: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 41g, 5 techs, researching Mathematics (24/65)
+    Thebes: size=2, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 2 actions — MOVE_UNIT(1), UNIT_ORDER(1)
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 13 — 3760 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 17g, 6 techs, researching Warrior Code (39/84)
+    Rome: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 2 units, 15g, 5 techs, researching Code of Laws (36/65)
+    Babylon: size=2, prod=Horsemen (17sh), bldgs=Palace
+    Units: 2x Warriors
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 3g, 5 techs, researching Pottery (30/65)
+    Berlin: size=2, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 42g, 5 techs, researching Mathematics (27/65)
+    Thebes: size=2, prod=Horsemen (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 1 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+    END_TURN REJECTED: 1 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 14 — 3740 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 19g, 6 techs, researching Warrior Code (42/84)
+    Rome: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 17g, 5 techs, researching Code of Laws (39/65)
+    Babylon: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 4g, 5 techs, researching Pottery (34/65)
+    Berlin: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 43g, 5 techs, researching Mathematics (30/65)
+    Thebes: size=2, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 15 — 3720 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 21g, 6 techs, researching Warrior Code (45/84)
+    Rome: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 19g, 5 techs, researching Code of Laws (42/65)
+    Babylon: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 3 units, 5g, 5 techs, researching Pottery (38/65)
+    Berlin: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 44g, 5 techs, researching Mathematics (33/65)
+    Thebes: size=2, prod=Horsemen (13sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 16 — 3700 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 23g, 6 techs, researching Warrior Code (48/84)
+    Rome: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 21g, 5 techs, researching Code of Laws (45/65)
+    Babylon: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 6g, 5 techs, researching Pottery (42/65)
+    Berlin: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 45g, 5 techs, researching Mathematics (36/65)
+    Thebes: size=2, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 17 — 3680 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 25g, 6 techs, researching Warrior Code (51/84)
+    Rome: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 23g, 5 techs, researching Code of Laws (48/65)
+    Babylon: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 7g, 5 techs, researching Pottery (46/65)
+    Berlin: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 3 units, 46g, 5 techs, researching Mathematics (39/65)
+    Thebes: size=2, prod=Horsemen (19sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 1x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 18 — 3660 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 27g, 6 techs, researching Warrior Code (54/84)
+    Rome: size=2, prod=Horsemen (15sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 25g, 5 techs, researching Code of Laws (51/65)
+    Babylon: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 8g, 5 techs, researching Pottery (50/65)
+    Berlin: size=2, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 47g, 5 techs, researching Mathematics (42/65)
+    Thebes: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 19 — 3640 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 3 units, 29g, 6 techs, researching Warrior Code (57/84)
+    Rome: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 27g, 5 techs, researching Code of Laws (54/65)
+    Babylon: size=2, prod=Horsemen (15sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 9g, 5 techs, researching Pottery (54/65)
+    Berlin: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 48g, 5 techs, researching Mathematics (45/65)
+    Thebes: size=2, prod=Horsemen (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 20 — 3620 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 31g, 6 techs, researching Warrior Code (59/84)
+    Rome: size=2, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 3 units, 29g, 5 techs, researching Code of Laws (57/65)
+    Babylon: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 2x Warriors, 1x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 4 units, 10g, 5 techs, researching Pottery (58/65)
+    Berlin: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 49g, 5 techs, researching Mathematics (48/65)
+    Thebes: size=2, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 2 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 2 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 21 — 3600 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 33g, 6 techs, researching Warrior Code (61/84)
+    Rome: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 31g, 5 techs, researching Code of Laws (59/65)
+    Babylon: size=2, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 11g, 5 techs, researching Pottery (61/65)
+    Berlin: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 50g, 5 techs, researching Mathematics (51/65)
+    Thebes: size=2, prod=Horsemen (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 22 — 3580 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 35g, 6 techs, researching Warrior Code (63/84)
+    Rome: size=2, prod=Horsemen (5sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 33g, 5 techs, researching Code of Laws (61/65)
+    Babylon: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 12g, 5 techs, researching Pottery (64/65)
+    Berlin: size=2, prod=Horsemen (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 51g, 5 techs, researching Mathematics (54/65)
+    Thebes: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    SET_RESEARCH tech=Map Making
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 23 — 3560 B.C. (5ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 37g, 6 techs, researching Warrior Code (65/84)
+    Rome: size=2, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 35g, 5 techs, researching Code of Laws (63/65)
+    Babylon: size=2, prod=Horsemen (5sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 12g, 6 techs, researching Map Making (0/84)
+    Berlin: size=2, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 4 units, 52g, 5 techs, researching Mathematics (57/65)
+    Thebes: size=2, prod=Horsemen (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 2x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    SET_RESEARCH tech=Map Making
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 24 — 3540 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 39g, 6 techs, researching Warrior Code (67/84)
+    Rome: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 35g, 6 techs, researching Map Making (0/84)
+    Babylon: size=2, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 13g, 6 techs, researching Map Making (3/84)
+    Berlin: size=2, prod=Horsemen (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 53g, 5 techs, researching Mathematics (59/65)
+    Thebes: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 25 — 3520 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 41g, 6 techs, researching Warrior Code (71/78)
+    Rome: size=3, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 37g, 6 techs, researching Map Making (2/78)
+    Babylon: size=2, prod=Horsemen (9sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 14g, 7 techs, researching Map Making (6/105)
+    Berlin: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 54g, 6 techs, researching Mathematics (61/78)
+    Thebes: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 26 — 3500 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 4 units, 43g, 6 techs, researching Warrior Code (75/78)
+    Rome: size=3, prod=Horsemen (17sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 39g, 6 techs, researching Map Making (6/78)
+    Babylon: size=3, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 5 units, 15g, 7 techs, researching Map Making (9/105)
+    Berlin: size=2, prod=Horsemen (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 55g, 6 techs, researching Mathematics (64/78)
+    Thebes: size=3, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 27 — 3480 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 43g, 7 techs, researching none (0/105)
+    Rome: size=3, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 4 units, 41g, 6 techs, researching Map Making (10/78)
+    Babylon: size=3, prod=Horsemen (17sh), bldgs=Palace
+    Units: 2x Warriors, 2x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 16g, 7 techs, researching Map Making (11/105)
+    Berlin: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 56g, 6 techs, researching Mathematics (67/78)
+    Thebes: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 1 actions — SET_RESEARCH(1)
+    SET_RESEARCH tech=Iron Working
+    END_TURN REJECTED: 3 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 3 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 28 — 3460 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 45g, 7 techs, researching Iron Working (3/105)
+    Rome: size=3, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 43g, 6 techs, researching Map Making (13/78)
+    Babylon: size=3, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 17g, 7 techs, researching Map Making (13/105)
+    Berlin: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 57g, 6 techs, researching Mathematics (70/78)
+    Thebes: size=3, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 29 — 3440 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 47g, 7 techs, researching Iron Working (6/105)
+    Rome: size=3, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 45g, 6 techs, researching Map Making (16/78)
+    Babylon: size=3, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 18g, 7 techs, researching Map Making (15/105)
+    Berlin: size=2, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 5 units, 58g, 6 techs, researching Mathematics (73/78)
+    Thebes: size=3, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 3x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 30 — 3420 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 49g, 7 techs, researching Iron Working (9/105)
+    Rome: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 47g, 6 techs, researching Map Making (19/78)
+    Babylon: size=3, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 19g, 7 techs, researching Map Making (17/105)
+    Berlin: size=2, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 59g, 6 techs, researching Mathematics (75/78)
+    Thebes: size=3, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 31 — 3400 B.C. (8ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 51g, 7 techs, researching Iron Working (12/105)
+    Rome: size=3, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 49g, 6 techs, researching Map Making (22/78)
+    Babylon: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 20g, 7 techs, researching Map Making (19/105)
+    Berlin: size=2, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 60g, 6 techs, researching Mathematics (77/78)
+    Thebes: size=3, prod=Horsemen (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    SET_RESEARCH tech=Map Making
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 32 — 3380 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 53g, 7 techs, researching Iron Working (15/105)
+    Rome: size=3, prod=Horsemen (16sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 51g, 6 techs, researching Map Making (25/78)
+    Babylon: size=3, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 21g, 7 techs, researching Map Making (21/105)
+    Berlin: size=2, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 60g, 7 techs, researching Map Making (0/105)
+    Thebes: size=3, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 3 actions — ADJUST_ATTITUDE(3)
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ3
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ4
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    ADJUST_ATTITUDE target=civ1
+    ADJUST_ATTITUDE target=civ2
+    ADJUST_ATTITUDE target=civ3
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 33 — 3360 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 5 units, 55g, 7 techs, researching Iron Working (18/105)
+    Rome: size=3, prod=Horsemen (19sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 53g, 6 techs, researching Map Making (28/78)
+    Babylon: size=3, prod=Horsemen (16sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 22g, 7 techs, researching Map Making (23/105)
+    Berlin: size=2, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 61g, 7 techs, researching Map Making (2/105)
+    Thebes: size=3, prod=Horsemen (11sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 34 — 3340 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 57g, 7 techs, researching Iron Working (21/105)
+    Rome: size=3, prod=Horsemen (2sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 5 units, 55g, 6 techs, researching Map Making (31/78)
+    Babylon: size=3, prod=Horsemen (19sh), bldgs=Palace
+    Units: 2x Warriors, 3x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 23g, 7 techs, researching Map Making (25/105)
+    Berlin: size=2, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 62g, 7 techs, researching Map Making (4/105)
+    Thebes: size=3, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 4 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 4 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 35 — 3320 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 59g, 7 techs, researching Iron Working (24/105)
+    Rome: size=3, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 57g, 6 techs, researching Map Making (34/78)
+    Babylon: size=3, prod=Horsemen (2sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 24g, 7 techs, researching Map Making (27/105)
+    Berlin: size=2, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 6 units, 63g, 7 techs, researching Map Making (6/105)
+    Thebes: size=3, prod=Horsemen (17sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 36 — 3300 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 61g, 7 techs, researching Iron Working (27/105)
+    Rome: size=3, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 59g, 6 techs, researching Map Making (37/78)
+    Babylon: size=3, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 6 units, 25g, 7 techs, researching Map Making (29/105)
+    Berlin: size=2, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 4x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 64g, 7 techs, researching Map Making (8/105)
+    Thebes: size=3, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 37 — 3280 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 63g, 7 techs, researching Iron Working (30/105)
+    Rome: size=3, prod=Horsemen (8sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 61g, 6 techs, researching Map Making (40/78)
+    Babylon: size=3, prod=Horsemen (6sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 26g, 7 techs, researching Map Making (31/105)
+    Berlin: size=2, prod=Horsemen (0sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 65g, 7 techs, researching Map Making (10/105)
+    Thebes: size=3, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 38 — 3260 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 65g, 7 techs, researching Iron Working (33/105)
+    Rome: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 63g, 6 techs, researching Map Making (43/78)
+    Babylon: size=3, prod=Horsemen (8sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 27g, 7 techs, researching Map Making (33/105)
+    Berlin: size=2, prod=Horsemen (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 66g, 7 techs, researching Map Making (12/105)
+    Thebes: size=3, prod=Horsemen (4sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 39 — 3240 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 67g, 7 techs, researching Iron Working (36/105)
+    Rome: size=3, prod=Horsemen (12sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 65g, 6 techs, researching Map Making (46/78)
+    Babylon: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 28g, 7 techs, researching Map Making (35/105)
+    Berlin: size=2, prod=Horsemen (2sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 67g, 7 techs, researching Map Making (14/105)
+    Thebes: size=3, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 40 — 3220 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 69g, 7 techs, researching Iron Working (39/105)
+    Rome: size=3, prod=Horsemen (14sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 67g, 6 techs, researching Map Making (49/78)
+    Babylon: size=3, prod=Horsemen (12sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 29g, 7 techs, researching Map Making (37/105)
+    Berlin: size=2, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 68g, 7 techs, researching Map Making (16/105)
+    Thebes: size=3, prod=Horsemen (8sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 41 — 3200 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 71g, 7 techs, researching Iron Working (42/105)
+    Rome: size=3, prod=Horsemen (16sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 69g, 6 techs, researching Map Making (52/78)
+    Babylon: size=3, prod=Horsemen (14sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 31g, 7 techs, researching Map Making (39/105)
+    Berlin: size=3, prod=Horsemen (6sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 69g, 7 techs, researching Map Making (18/105)
+    Thebes: size=3, prod=Horsemen (10sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 42 — 3180 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 6 units, 73g, 7 techs, researching Iron Working (45/105)
+    Rome: size=3, prod=Horsemen (18sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 71g, 6 techs, researching Map Making (55/78)
+    Babylon: size=3, prod=Horsemen (16sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 33g, 7 techs, researching Map Making (41/105)
+    Berlin: size=3, prod=Horsemen (9sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 70g, 7 techs, researching Map Making (20/105)
+    Thebes: size=3, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 43 — 3160 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 75g, 7 techs, researching Iron Working (48/105)
+    Rome: size=3, prod=Horsemen (0sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 6 units, 73g, 6 techs, researching Map Making (58/78)
+    Babylon: size=3, prod=Horsemen (18sh), bldgs=Palace
+    Units: 2x Warriors, 4x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 35g, 7 techs, researching Map Making (43/105)
+    Berlin: size=3, prod=Horsemen (12sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 71g, 7 techs, researching Map Making (22/105)
+    Thebes: size=3, prod=Horsemen (14sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 5 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 5 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 44 — 3140 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 77g, 7 techs, researching Iron Working (51/105)
+    Rome: size=3, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 75g, 6 techs, researching Map Making (61/78)
+    Babylon: size=3, prod=Horsemen (0sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 37g, 7 techs, researching Map Making (45/105)
+    Berlin: size=3, prod=Horsemen (15sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 72g, 7 techs, researching Map Making (24/105)
+    Thebes: size=3, prod=Horsemen (16sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 45 — 3120 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 79g, 7 techs, researching Iron Working (55/105)
+    Rome: size=4, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 77g, 6 techs, researching Map Making (64/78)
+    Babylon: size=3, prod=Horsemen (1sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 7 units, 39g, 7 techs, researching Map Making (47/105)
+    Berlin: size=3, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 7 units, 73g, 7 techs, researching Map Making (26/105)
+    Thebes: size=3, prod=Horsemen (18sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 5x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 46 — 3100 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 81g, 7 techs, researching Iron Working (59/105)
+    Rome: size=4, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 79g, 6 techs, researching Map Making (67/78)
+    Babylon: size=4, prod=Horsemen (4sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 8 units, 41g, 7 techs, researching Map Making (49/105)
+    Berlin: size=3, prod=Horsemen (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 8 units, 75g, 7 techs, researching Map Making (28/105)
+    Thebes: size=4, prod=Horsemen (1sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 47 — 3080 B.C. (2ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 83g, 7 techs, researching Iron Working (63/105)
+    Rome: size=4, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 81g, 6 techs, researching Map Making (70/78)
+    Babylon: size=4, prod=Horsemen (7sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 8 units, 43g, 7 techs, researching Map Making (51/105)
+    Berlin: size=3, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 8 units, 77g, 7 techs, researching Map Making (30/105)
+    Thebes: size=4, prod=Horsemen (3sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 48 — 3060 B.C. (4ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 85g, 7 techs, researching Iron Working (67/105)
+    Rome: size=4, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 83g, 6 techs, researching Map Making (73/78)
+    Babylon: size=4, prod=Horsemen (10sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 8 units, 45g, 7 techs, researching Map Making (53/105)
+    Berlin: size=3, prod=Horsemen (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 8 units, 79g, 7 techs, researching Map Making (32/105)
+    Thebes: size=4, prod=Horsemen (5sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  TURN 49 — 3040 B.C. (3ms)
+══════════════════════════════════════════════════════════════════════
+  [Civ 1] Romans (despotism): 1 cities, 7 units, 87g, 7 techs, researching Iron Working (71/105)
+    Rome: size=4, prod=Horsemen (16sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 2] Babylonians (despotism): 1 cities, 7 units, 85g, 6 techs, researching Map Making (76/78)
+    Babylon: size=4, prod=Horsemen (13sh), bldgs=Palace
+    Units: 2x Warriors, 5x Horsemen
+  [Civ 3] Germans (despotism): 1 cities, 8 units, 47g, 7 techs, researching Map Making (55/105)
+    Berlin: size=3, prod=Horsemen (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 4] Egyptians (despotism): 1 cities, 8 units, 81g, 7 techs, researching Map Making (34/105)
+    Thebes: size=4, prod=Horsemen (7sh), bldgs=Palace
+    Units: 1x Warriors, 1x Settlers, 6x Horsemen
+  [Civ 1] Romans turn: 0 actions — idle
+    END_TURN REJECTED: 6 units still need orders
+      #1 Warriors(Atk) @(22,13) mv=3 ord=none hp=full
+      #14 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #18 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #23 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+      #26 Horsemen(Atk) @(15,25) mv=6 ord=none hp=full
+    SET_RESEARCH tech=Currency
+    END_TURN REJECTED: 6 units still need orders
+      #3 Warriors(Atk) @(11,67) mv=3 ord=none hp=full
+      #15 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #19 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #24 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+      #27 Horsemen(Atk) @(7,71) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #5 Warriors(Atk) @(46,5) mv=3 ord=none hp=full
+      #12 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #16 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #20 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+      #22 Horsemen(Atk) @(39,11) mv=6 ord=none hp=full
+    END_TURN REJECTED: 7 units still need orders
+      #7 Warriors(Atk) @(7,48) mv=3 ord=none hp=full
+      #13 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #17 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #21 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+      #25 Horsemen(Atk) @(10,48) mv=6 ord=none hp=full
+
+══════════════════════════════════════════════════════════════════════
+  FINAL SUMMARY
+══════════════════════════════════════════════════════════════════════
+Game ended at turn 50 (3020 B.C.)
+
+── Civ 1: Romans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  7 (peak 7)
+  Treasury: 89g
+  Techs discovered: 0 — none
+  Actions: 37 total, 35 idle turns
+  Breakdown: UNIT_ORDER(16), MOVE_UNIT(13), ADJUST_ATTITUDE(3), SET_RESEARCH(2), CHANGE_RATES(1), BUILD_CITY(1), CHANGE_PRODUCTION(1)
+  Army: 2x Warriors, 5x Horsemen
+  Rome: size=4, shields=19
+
+── Civ 2: Babylonians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 1)
+  Units:  7 (peak 7)
+  Treasury: 85g
+  Techs discovered: 0 — none
+  Actions: 38 total, 34 idle turns
+  Breakdown: UNIT_ORDER(16), MOVE_UNIT(13), SET_RESEARCH(3), ADJUST_ATTITUDE(3), CHANGE_RATES(1), BUILD_CITY(1), CHANGE_PRODUCTION(1)
+  Army: 2x Warriors, 5x Horsemen
+  Babylon: size=4, shields=16
+
+── Civ 3: Germans (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  8 (peak 8)
+  Treasury: 49g
+  Techs discovered: 0 — none
+  Actions: 33 total, 38 idle turns
+  Breakdown: UNIT_ORDER(13), MOVE_UNIT(10), ADJUST_ATTITUDE(3), SET_RESEARCH(2), BUILD_CITY(2), CHANGE_RATES(1), CHANGE_PRODUCTION(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 6x Horsemen
+  Berlin: size=3, shields=9
+
+── Civ 4: Egyptians (despotism) ALIVE ──
+  Cities: 1 (peak 1, founded 2)
+  Units:  8 (peak 8)
+  Treasury: 83g
+  Techs discovered: 0 — none
+  Actions: 33 total, 38 idle turns
+  Breakdown: UNIT_ORDER(13), MOVE_UNIT(10), ADJUST_ATTITUDE(3), SET_RESEARCH(2), BUILD_CITY(2), CHANGE_RATES(1), CHANGE_PRODUCTION(1), WORKER_ORDER(1)
+  Army: 1x Warriors, 1x Settlers, 6x Horsemen
+  Thebes: size=4, shields=9
+
+
+══════════════════════════════════════════════════════════════════════
+  AI BEHAVIOR ANALYSIS
+══════════════════════════════════════════════════════════════════════
+[Civ 1] Romans:
+  WARNING: Never discovered a tech
+  WARNING: Idle 35/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+  WARNING: Low unit diversity
+
+[Civ 2] Babylonians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 34/50 turns (>50%)
+  WARNING: Only 1 city after 30+ turns
+  WARNING: Low unit diversity
+
+[Civ 3] Germans:
+  WARNING: Never discovered a tech
+  WARNING: Idle 38/50 turns (>50%)
+
+[Civ 4] Egyptians:
+  WARNING: Never discovered a tech
+  WARNING: Idle 38/50 turns (>50%)
+
