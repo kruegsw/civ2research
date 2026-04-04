@@ -12,11 +12,11 @@ This roadmap turns the headless engine into a playable web game. Each phase is s
 
 ## Phase 1: Headless Engine Stabilization
 
-**What this is:** Make the headless engine produce correct results for an all-AI game. No browser, no rendering — just verify the numbers match real Civ2.
+**What this is:** Make the headless engine produce correct results for an all-AI game. No browser, no rendering — just verify the numbers are right.
 
 **Why it matters:** If the engine doesn't produce correct results headlessly, nothing built on top of it will work. This is the foundation.
 
-**What "done" looks like:** Load a save file, run 50 turns all-AI, compare key metrics (city sizes, unit counts, treasury, techs) against the same save run in real Civ2. They match within tolerance.
+**What "done" looks like:** Load a save file, run 50 turns all-AI. Cities grow at realistic rates. Units are built. Treasury changes. Techs are discovered. No crashes.
 
 ### Work Items
 
@@ -26,15 +26,21 @@ This roadmap turns the headless engine into a playable web game. Each phase is s
 | Turn pipeline | `FUN_00487371` (end-of-turn) + `FUN_00489553` (per-civ) called correctly | Turn counter increments, year advances correctly |
 | Extern stubs | Win32/MFC functions return correct defaults per `findings/mfc_methods.md` | No crashes, no NaN propagation |
 | All-AI mode | `DAT_00655b0b = 0` skips human turn | 50 turns complete without hanging |
-| Automated tests | Load known save file, run N turns, check expected values | Cities grow, units built, treasury changes, techs discovered |
 | TODO_FIXME cleanup | Fix remaining 190 TODO_FIXME deviations as they're encountered | `grep -r TODO_FIXME` count decreases |
 
-### Verification methodology
-No sniffing or real Civ2 comparison required. Verification is done by:
-1. **C source tracing** — read the C source for each function in the turn pipeline, verify the transpiled JS matches line-by-line (already done for game logic blocks)
-2. **P-code cross-check** — use `verify-types.cjs` and `audit-pcode.cjs` to find expression-level divergences (already at 0 for game logic)
-3. **Known-value tests** — load a save file with known city/unit state, run 1 turn, assert specific values (food box increased by expected yield, shield box increased, etc.)
-4. **Regression tests** — each fix includes a test that prevents the bug from returning
+### The verification problem
+
+We need to know whether our engine produces correct numbers. There are three sources of truth, each with trade-offs:
+
+| Source | What it gives us | Limitation |
+|--------|-----------------|------------|
+| **C source** | The exact formula for every calculation | Tells us HOW to compute, not WHAT the answer should be for a specific save file |
+| **P-code** | Verified that our transpilation matches the binary's types and operations | Already at 0 divergences — can't find more bugs this way |
+| **Real Civ2 snapshots** | The exact correct answer for a specific save file after N turns | Requires running real Civ2 (one-time capture, then reusable forever) |
+
+**Recommended approach:** Capture a small set of reference snapshots (3-5 save files, 1 turn each) from real Civ2. This is a one-time task. Once captured, all future verification is automated — run the JS engine on the same save, diff against the snapshot, fix divergences. No ongoing human involvement.
+
+**Fallback if no snapshots available:** Trace the C source manually for a specific save file. For a size-1 city on grassland in Despotism, the food yield formula is deterministic from the C source. Calculate the expected food box value by hand, assert it in a test. This is slower but requires no external tools.
 
 ### Key insight
 The other Claude session fixed 7 infrastructure bugs (thiscall ECX, pointer widths, etc.) and got 9/9 verification passing with units being created and treasury accumulating. The engine may already be closer to correct than early tests suggested. Start by running the latest code and measuring.
@@ -105,21 +111,29 @@ The v3 renderer already works and looks like Civ2. The only change is the data s
 
 **What "done" looks like:** Click a unit to select it. Click a tile to move it. Press 'f' to fortify. Press 'g' and click to set a go-to destination. End turn button processes the turn and updates the map.
 
-### Work Items
+### The blocking loop problem
 
-| Item | Binary Function | What it does |
-|------|----------------|-------------|
-| Unit selection | Read unit list from _MEM | Find units at clicked tile |
-| Move unit | `FUN_0059061d` | Moves unit, handles combat, ZOC |
-| Fortify | `FUN_004c4ada` | Set unit order to fortify |
-| Sentry | `FUN_004c4ada` | Set unit order to sentry |
-| Go-to | `FUN_004c9ebd` | Set destination, pathfind |
-| End turn | `FUN_00487371` + `FUN_00489553` | Process all civs |
-| Found city | `FUN_004c2b73` | Settler founds city |
-| Build road/irrigate | `FUN_004c4ada` | Worker orders |
+The binary's human turn handler (`FUN_0048a416`) is a `while(true)` loop that waits for Win32 mouse/keyboard events. A web game is event-driven — the browser sends an action whenever the player clicks, and the server processes it immediately. These are fundamentally different control flows.
 
-### Key insight
-Each player action maps to exactly one binary function call. The browser sends "move unit 3 to tile (15, 22)" → the server calls `FUN_0059061d(3, 15, 22)` → the _MEM array updates → the server sends the changed state back → the browser redraws.
+**We cannot use the binary's human turn loop.** It blocks waiting for input that never comes in a web environment.
+
+**The solution:** Bypass the binary's turn loop for human players. Instead, the server exposes individual action functions that the client calls directly:
+
+| Player action | What the server does | Binary function |
+|--------------|---------------------|-----------------|
+| Click tile to move unit | Validate move, update unit position | `FUN_0059061d` |
+| Press 'f' to fortify | Set unit order byte | `FUN_004c4ada` |
+| Click "End Turn" | Run AI turns + end-of-turn processing | `FUN_00487371` + `FUN_00489553` for AI civs |
+| Found city | Place city, assign tiles | `FUN_004c2b73` |
+| Change production | Update city production field | `FUN_004f3f60` |
+
+This is NOT writing game logic — every action calls a real binary function. We're just calling them individually instead of from within the binary's blocking loop. The binary's loop does the same thing: wait for input, call the appropriate function, repeat. We're doing the same thing with WebSocket events instead of Win32 messages.
+
+**Why this works:** The binary's turn loop (`FUN_0048a416`) is pure orchestration — it reads input, dispatches to a handler function, and loops. The handler functions are the same regardless of whether they're called from the binary's loop or from our server's WebSocket handler. The game state in `_MEM` doesn't care who called the function.
+
+### What we DON'T bypass
+
+The AI turn processing is NOT bypassed. When the human clicks "End Turn," the server calls the binary's AI processing chain (`FUN_00489553` for each AI civ, `FUN_00543cd6` for AI unit dispatch). This runs exactly as the binary intended — no approximation.
 
 ---
 
@@ -135,7 +149,7 @@ Each player action maps to exactly one binary function call. The browser sends "
 
 | Item | Data Source | Binary Function |
 |------|-----------|-----------------|
-| City info display | Read city record at `DAT_0064f340 + idx * 0x58` | N/A (just reading) |
+| City info display | Read city record at `DAT_0064f340 + idx * 0x58` | N/A (just reading _MEM) |
 | Production change | Write to city production field | `FUN_004f3f60` |
 | Rush buy | Write gold, complete production | `FUN_004eef23` chain |
 | Sell building | Remove building bit from city | `FUN_004e790c` |
@@ -177,7 +191,7 @@ The city screen is primarily a READ operation — display data from _MEM. The fe
 **What "done" looks like:** Two players connect to the same game. Each takes their turn. The other sees the results. Hot-seat and simultaneous modes both work.
 
 ### Key insight
-The v3 server already has the multiplayer infrastructure (rooms, seats, lobby, session management). The binary supports multiplayer via `DAT_00655b02` (game mode) and `DAT_00655b0b` (human player bitmask). Setting these correctly makes the binary's turn pipeline handle multi-human games natively.
+The v3 server already has the multiplayer infrastructure (rooms, seats, lobby, session management). The binary supports multiplayer via `DAT_00655b02` (game mode) and `DAT_00655b0b` (human player bitmask). Setting these correctly makes the binary's turn pipeline handle multi-human games natively. The blocking loop problem (Phase 4) is already solved by that point — each human player's actions come in via WebSocket and are dispatched to binary functions individually.
 
 ---
 
@@ -193,8 +207,22 @@ These are explicitly deferred. They can be added later without changing the arch
 
 ---
 
+## Known Risks
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Phase 1 verification without real Civ2 snapshots | Can't confirm exact numerical correctness | Capture 3-5 reference snapshots once, reuse forever. Fallback: manual C formula calculation. |
+| 190 TODO_FIXME deviations | Code paths outside turn pipeline may break when reached | Fix as encountered. None are in the core turn pipeline. |
+| Extern stub return values | Wrong default could change a code path | Each stub documented in `findings/mfc_methods.md` with correct return value. |
+| State serialization performance | Full _MEM is 1.3MB — too large to send every action | Send deltas: track which _MEM regions changed, send only those. |
+| Browser memory | _MEM array on client side | Client doesn't need full _MEM — only the extracted game state (cities, units, tiles, civs). Server extracts and sends structured data. |
+
+---
+
 ## The Principle
 
 At no point in this roadmap do we write game logic. The binary's transpiled functions ARE the game logic. Every phase is infrastructure: serving data, drawing pixels, handling clicks, sending messages. If a game formula is wrong, we fix the transpiler or the stubs — we never write our own version of the formula.
+
+The one exception is Phase 4's human turn handling, where we bypass the binary's blocking input loop and call action functions directly. This is orchestration, not logic — the functions themselves are the binary's, we just call them from a different event source.
 
 This is what makes the plan closed-ended. The number of infrastructure pieces is finite and enumerable. Each one is independently testable. There are no hidden game logic surprises because we don't write game logic.
