@@ -89,6 +89,28 @@ try {
 // Also expose G and _MEM for infrastructure
 globalThis.G = G;
 
+// Pre-populate game text buffer (DAT_0063e4c8) so FUN_00428b0c doesn't scan zeroes
+// The binary loads Labels.txt at startup, but our file I/O stubs can't read it.
+// Write a dummy multi-string buffer: "text1\0text2\0text3\0..." with 1000 entries.
+// This prevents the string-scanner loop from hitting 500K iterations on zero memory.
+{
+  const TEXT_BUF = G._MEM.length - 200000; // 200KB before end of buffer
+  const dv = new DataView(G._MEM.buffer);
+  // DAT_0063e4c8 is the string buffer pointer
+  const off_0063e4c8 = parseInt('0063e4c8', 16) - _BASE;
+  dv.setInt32(off_0063e4c8, TEXT_BUF, true);
+  // Fill with dummy strings: "LABEL_000\0LABEL_001\0..."
+  let pos = TEXT_BUF;
+  for (let i = 0; i < 1000 && pos < TEXT_BUF + 50000; i++) {
+    const s = 'LABEL_' + String(i).padStart(3, '0');
+    for (let j = 0; j < s.length; j++) G._MEM[pos++] = s.charCodeAt(j);
+    G._MEM[pos++] = 0; // null terminator
+  }
+  // Also set the label count
+  const off_00628424 = parseInt('00628424', 16) - _BASE;
+  dv.setInt32(off_00628424, 1000, true);
+}
+
 // CPU register globals
 globalThis.in_ECX = new Uint8Array(8192);
 globalThis.in_ECX[0x1ef] = 1;   // "is host" flag — FUN_00421f40 checks this for unit/city creation
