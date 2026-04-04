@@ -2314,7 +2314,7 @@ export function FUN_004f734a(param_1, param_2) {
       iVar1 = FUN_00407f90(DAT_006a818c);
       local_c = ((v(DAT_006a818c) + (iVar1 / 2 | 0) <= param_1) >>> 0);
       iVar1 = FUN_00407fc0(DAT_006a818c);
-      local_14 = ((param_2 - v(DAT_006a8190)) / (iVar1 / 9) | 0) + local_c * 9 + v(DAT_006a85a4);
+      local_14 = ((param_2 - v(DAT_006a8190)) / ((iVar1 / 9 | 0)) | 0) + local_c * 9 + v(DAT_006a85a4);
       if (v(DAT_006a819c) <= local_14) {
         local_14 = -5;
       }

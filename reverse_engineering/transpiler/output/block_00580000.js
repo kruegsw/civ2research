@@ -2165,7 +2165,7 @@ export function FUN_0058832d(param_1, param_2, param_3) {
     else if (param_1 < s32(param_3 * 0x10 + 0x3c8 + local_8, 0)) {
       iVar1 = s32(param_3 * 0x10 + 0x3c4 + local_8, 0);
       iVar2 = FUN_00407fc0(param_3 * 0x10 + local_8 + 0x3c0);
-      iVar1 = ((param_2 - iVar1) / (iVar2 / s32(local_8, 0x10420 + param_3 * 4)) | 0) + s32(local_8, 0x10410 + param_3 * 4);
+      iVar1 = ((param_2 - iVar1) / ((iVar2 / s32(local_8, 0x10420 + param_3 * 4) | 0)) | 0) + s32(local_8, 0x10410 + param_3 * 4);
               /*JOINED*/
     }
     else {

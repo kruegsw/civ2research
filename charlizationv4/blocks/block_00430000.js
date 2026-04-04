@@ -3337,7 +3337,7 @@ export function FUN_0043742f(param_1) {
   local_58 = v(DAT_0063ec34) + 2;
   local_60 = local_54;
   local_64 = v(DAT_00625ecc);
-  local_50 = (v(DAT_00625ecc) / (local_28 / 2) | 0);
+  local_50 = (v(DAT_00625ecc) / ((local_28 / 2 | 0)) | 0);
   if (local_50 < v(DAT_00625ec8)) {
     local_60 = local_54 + (v(DAT_00625ecc) % ((local_28 / 2 | 0))) * -2;
     for (local_2c = 0; local_2c < 0x1e; local_2c = local_2c + 1) {

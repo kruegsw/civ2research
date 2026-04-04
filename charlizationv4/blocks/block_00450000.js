@@ -495,7 +495,7 @@ export function FUN_00450df6(param_1, param_2, param_3) {
     else if (param_1 < s32(param_3 * 0x10 + 0x3c8 + local_8, 0)) {
       iVar1 = s32(param_3 * 0x10 + 0x3c4 + local_8, 0);
       iVar2 = FUN_00407fc0(param_3 * 0x10 + local_8 + 0x3c0);
-      iVar1 = ((param_2 - iVar1) / (iVar2 / (s32(local_8, 0x10420 + param_3 * 4) + 1)) | 0) + s32(local_8, 0x10410 + param_3 * 4);
+      iVar1 = ((param_2 - iVar1) / ((iVar2 / (s32(local_8, 0x10420 + param_3 * 4) + 1) | 0)) | 0) + s32(local_8, 0x10410 + param_3 * 4);
               /*JOINED*/
     }
     else {
@@ -3785,7 +3785,7 @@ export function FUN_0045705e(param_1, param_2) {
                      /*JOINED*/
     }
   }
-  wv(DAT_0064b0ec, ((v(DAT_0064b0ec)) / ((u8(_MEM[DAT_0064c6be + param_1 * 0x594]) - 1) / 2 + 1) | 0));
+  wv(DAT_0064b0ec, ((v(DAT_0064b0ec)) / (((u8(_MEM[DAT_0064c6be + param_1 * 0x594]) - 1) / 2 | 0) + 1) | 0));
   if ((_MEM[DAT_0064c6c0 + param_1 * 4 + param_2 * 0x594] & 8) != 0) {
     wv(DAT_0064b114, v(DAT_0064b114) - 0x19);
   }

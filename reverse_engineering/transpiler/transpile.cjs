@@ -1279,6 +1279,8 @@ function transformLine(line, ctx) {
   // ── Integer division truncation (final pass, runs once) ──
   // C integer division truncates toward zero. JS division produces floats.
   // Wrap each "a / b" with truncation: (a / b | 0)
+  // Run twice to handle nested divisions: (a / (b / c)) → (a / (b / c | 0) | 0)
+  out = truncateIntDivisions(out);
   out = truncateIntDivisions(out);
 
   return out;
