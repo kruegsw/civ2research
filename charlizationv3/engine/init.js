@@ -399,6 +399,18 @@ export function initNewGame(mapResult, seatList) {
     }
   }
 
+  // Binary FUN_004a76f5 (reset_kill_history): zeroes the destroyed-civs
+  // history at game start. 12 entries max: killTurns, killerCivIds,
+  // destroyedCivRulesIds, destroyedCivNames. Without explicit init,
+  // consumers that iterate killHistory before any civ dies would hit undefined.
+  const killHistory = {
+    count: 0,
+    killTurns: new Array(12).fill(0),
+    killerCivIds: new Array(12).fill(0),
+    destroyedCivRulesIds: new Array(12).fill(0),
+    destroyedCivNames: new Array(12).fill(''),
+  };
+
   const gameState = {
     units,
     cities: [],
@@ -418,6 +430,7 @@ export function initNewGame(mapResult, seatList) {
     seatCivMap,
     humanPlayers,
     treaties,
+    killHistory,
     unitBySaveIndex: null,
     allUnits: null,
   };
@@ -498,6 +511,7 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
     taxRate,
     luxuryRate,
     researchProgress: 0,
+    researchSlot: 0, // Binary civ+0x3FE: paradigm pacing counter (FUN_00486e6f)
     techBeingResearched: 0xFF, // none selected
     rulesCivNumber,
     difficulty: seat?.difficulty || undefined,

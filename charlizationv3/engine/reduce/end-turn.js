@@ -7,8 +7,8 @@ import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../move
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
 import { calcCityTrade, calcShieldProduction } from '../production.js';
-import { cityHasBuilding, hasWonderEffect } from '../utils.js';
-import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
+import { cityHasBuilding, hasWonderEffect, markCitySeenByCiv } from '../utils.js';
+import { calcResearchCost, calcTechParadigmCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
@@ -521,6 +521,22 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // ── Recalc spaceship stats (may have built SS parts this turn) ──
   recalcSpaceshipStats(state, activeCiv);
 
+  // ── Post-visibility city marking (binary FUN_0043cc00) ──
+  // After all unit/city processing for this civ, scan all cities and mark
+  // the ones on tiles now visible to this civ. Records the seenByCivs bitmask
+  // and the last-known city size per civ — used for FOW of enemy cities.
+  if (mapBase?.tileData) {
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const c = state.cities[ci];
+      if (c.size <= 0) continue;
+      const tileIdx = c.gy * mapBase.mw + c.gx;
+      const tile = mapBase.tileData[tileIdx];
+      if (tile && (tile.visibility & (1 << activeCiv))) {
+        markCitySeenByCiv(c, activeCiv);
+      }
+    }
+  }
+
   // ── Famine elimination check: if a city was destroyed by famine, check if civ is eliminated ──
   checkCivElimination(state, activeCiv);
 
@@ -843,6 +859,36 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
             civSlot: activeCiv,
             population: milestonePop,
           });
+        }
+      }
+    }
+  }
+
+  // ── Paradigm pacing: check_tech_advance (FUN_00486e6f) ──
+  // Binary: once per turn, if the civ has a Palace (building 1) and the
+  // civ's total score exceeds calcTechParadigmCost(researchSlot + 1),
+  // advance the paradigm slot. This is a hidden pacing counter that
+  // affects AI research timing. Gated on: not scenario flag 0x80, and
+  // turn > DAT_0064bc56 * 20 + 1 (paradigm turn delay, default 0 → turn > 1).
+  // Binary only runs in SP mode; for our server we run for all civs.
+  if (turnNumber > 1 && !state.scenarioTechRestrictions?.noResearch) {
+    const civObj = state.civs?.[activeCiv];
+    if (civObj) {
+      // Require a Palace (building 1) in at least one city
+      const hasPalace = state.cities.some(c =>
+        c.owner === activeCiv && c.size > 0 && c.buildings?.has?.(1));
+      if (hasPalace) {
+        const slot = civObj.researchSlot || 0;
+        const score = calcCivScore(state, activeCiv, mapBase)?.total || 0;
+        const threshold = calcTechParadigmCost(slot + 1, diffIdx);
+        if (score >= threshold && slot < 37) { // < 0x26 = 38; slot is 0-based, cap at 37
+          if (!Array.isArray(state.civs) || Object.isFrozen(state.civs)) {
+            state.civs = [...state.civs];
+          }
+          state.civs[activeCiv] = {
+            ...state.civs[activeCiv],
+            researchSlot: slot + 1,
+          };
         }
       }
     }

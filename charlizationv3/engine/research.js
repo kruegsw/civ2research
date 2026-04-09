@@ -11,10 +11,35 @@
 
 import {
   ADVANCE_PREREQS, ADVANCE_NAMES, COSMIC_TECH_MULTIPLIER, DIFFICULTY_KEYS,
-  UNIT_PREREQS, UNIT_OBSOLETE, UNIT_DOMAIN, UNIT_ATK, UNIT_NAMES,
+  UNIT_PREREQS, UNIT_OBSOLETE, UNIT_NAMES,
+  UNIT_ROLE, UNIT_CARRY_CAP,
   WONDER_OBSOLETE, WONDER_NAMES, IMPROVE_MAINTENANCE,
   GOVERNMENT_NAMES,
 } from './defs.js';
+
+/**
+ * Compute the paradigm-pacing threshold for a given research slot.
+ *
+ * Binary ref: FUN_00486e15 (block_00480000.c:1644-1655)
+ *   sum = Σ_{i=0..slot} (7 - difficulty) * i
+ *   return sum / 2 + 1
+ *
+ * Used by check_tech_advance (FUN_00486e6f): when a civ's total score
+ * exceeds this threshold for (researchSlot + 1), the slot advances.
+ * Higher difficulty → smaller threshold → faster paradigm advancement.
+ *
+ * @param {number} slot - paradigm slot to compute cost for (0+)
+ * @param {number} difficultyIdx - 0=chieftain..5=deity
+ * @returns {number} score threshold
+ */
+export function calcTechParadigmCost(slot, difficultyIdx) {
+  const diff = Math.max(0, Math.min(5, difficultyIdx));
+  let sum = 0;
+  for (let i = 0; i <= slot; i++) {
+    sum += (7 - diff) * i;
+  }
+  return Math.floor(sum / 2) + 1;
+}
 
 /**
  * Get list of advances available for research by a civ.
@@ -111,17 +136,17 @@ export function calcResearchCost(gameState, civSlot) {
   }
   baseCost += modifier;
 
-  // ── City count scaling (FUN_004c2788, line 1004) ──
-  // If civ has more than 67 cities, scale cost down: cost = cost * 67 / numCities
+  // ── Defined-techs scaling (FUN_004c2788, line 1011-1012) ──
+  // Binary: DAT_00655b1a = total number of defined techs (entries with exists!=0).
+  // If numDefinedTechs > 67, scale cost down: cost = cost * 67 / numDefinedTechs.
+  // With default RULES.TXT this is ~90 techs, so cost is always scaled by 67/90.
   {
-    let numCities = 0;
-    if (gameState.cities) {
-      for (const c of gameState.cities) {
-        if (c.owner === civSlot && c.size > 0) numCities++;
-      }
-    }
-    if (numCities > 67) {
-      baseCost = Math.floor(baseCost * 67 / numCities);
+    // Count defined techs: binary iterates 100 tech slots, counts those with exists!=0.
+    // ADVANCE_PREREQS covers indices 0-88 (89 entries); index 89 = Future Tech is also
+    // defined in RULES.TXT but omitted from ADVANCE_PREREQS. Add 1 to include it.
+    const numDefinedTechs = ADVANCE_PREREQS.length + 1; // +1 for Future Tech (index 89)
+    if (numDefinedTechs > 67) {
+      baseCost = Math.floor(baseCost * 67 / numDefinedTechs);
     }
   }
 
@@ -142,7 +167,12 @@ export function calcResearchCost(gameState, civSlot) {
   }
 
   // Final cost = baseCost × totalTechs
-  const cost = Math.max(1, Math.min(32000, baseCost * totalTechs));
+  // Binary (FUN_004c2788, line 1025): if cost < 1 OR cost > 32000, set to 32000.
+  // Both out-of-range branches collapse to 32000 (not clamped to 1).
+  let cost = baseCost * totalTechs;
+  if (cost < 1 || cost > 32000) {
+    cost = 32000;
+  }
 
   return cost;
 }
@@ -381,14 +411,17 @@ export function upgradeUnitsForTech(state, civSlot, techId) {
     // The civ must have the obsoleting tech for the upgrade to trigger
     if (!techs.has(obsoleteTech)) continue;
 
-    // (#168) Find best upgrade: same domain, prereq matches the obsoleting tech.
-    // Binary matches by obsoleteTech and domain only — NO attack-power requirement.
+    // Find best upgrade (FUN_004be6ba, lines 6472-6478):
+    // Binary matches candidate.prereq_tech (offset 0x13) == unit.obsolete_tech (offset 0x08),
+    // same role (offset 0x12), and candidate.hold >= unit.hold (offset 0x11).
     // Take the last match (highest index = most advanced).
     let bestUpgrade = -1;
+    const unitHold = UNIT_CARRY_CAP[unitTypeId] || 0;
     for (let candidate = 0; candidate < UNIT_PREREQS.length; candidate++) {
       if (candidate === unitTypeId) continue;
       if (UNIT_PREREQS[candidate] !== obsoleteTech) continue;
-      if (UNIT_DOMAIN[candidate] !== UNIT_DOMAIN[unitTypeId]) continue;
+      if (UNIT_ROLE[candidate] !== UNIT_ROLE[unitTypeId]) continue;
+      if ((UNIT_CARRY_CAP[candidate] || 0) < unitHold) continue;
       bestUpgrade = candidate;
     }
 
@@ -691,14 +724,17 @@ export function checkUnitAutoUpgrade(state, cityIndex) {
   const civTechs = state.civTechs?.[city.owner];
   if (!civTechs || !civTechs.has(obsoleteTech)) return null; // civ doesn't have obsoleting tech
 
-  // (#168) Find best replacement: same domain, prereq matches obsoleting tech.
-  // Binary matches by obsoleteTech and domain only — NO attack-power requirement.
+  // Find best replacement (FUN_004be6ba, lines 6472-6478):
+  // Binary matches candidate.prereq_tech (offset 0x13) == unit.obsolete_tech (offset 0x08),
+  // same role (offset 0x12), and candidate.hold >= unit.hold (offset 0x11).
   // Last match = highest index = most advanced.
   let bestUpgrade = -1;
+  const unitHold = UNIT_CARRY_CAP[unitTypeId] || 0;
   for (let candidate = 0; candidate < UNIT_PREREQS.length; candidate++) {
     if (candidate === unitTypeId) continue;
     if (UNIT_PREREQS[candidate] !== obsoleteTech) continue;
-    if (UNIT_DOMAIN[candidate] !== UNIT_DOMAIN[unitTypeId]) continue;
+    if (UNIT_ROLE[candidate] !== UNIT_ROLE[unitTypeId]) continue;
+    if ((UNIT_CARRY_CAP[candidate] || 0) < unitHold) continue;
     bestUpgrade = candidate;
   }
 

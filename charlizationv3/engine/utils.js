@@ -90,3 +90,25 @@ export function findCityById(state, cityId) {
   }
   return -1;
 }
+
+/**
+ * Mark a city as seen by a civ and record its current size.
+ *
+ * Binary ref: FUN_0043cc00 (block_00430000.c:4437-4446)
+ *   city[+0x04] |= (1 << civSlot)        — seen-by-civ bitmask
+ *   city[+0x05+civSlot] = city.size       — per-civ last-known size
+ *
+ * Called whenever a civ's visibility covers a city tile. In the binary
+ * this is invoked from 15+ call sites (process_unit_move_visibility,
+ * city_production, diplomacy turn, etc.); in JS we call it from a
+ * post-visibility-update pass in end-turn.js.
+ *
+ * @param {object} city - mutable city object
+ * @param {number} civSlot - civ that can see this city (0-7)
+ */
+export function markCitySeenByCiv(city, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return;
+  city.seenByCivs = (city.seenByCivs || 0) | (1 << civSlot);
+  if (!city.knownSizeByCiv) city.knownSizeByCiv = new Uint8Array(8);
+  city.knownSizeByCiv[civSlot] = city.size;
+}
