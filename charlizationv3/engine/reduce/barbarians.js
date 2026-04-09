@@ -2,7 +2,7 @@
 // reduce/barbarians.js — Barbarian spawning, AI, and camp production
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_ATK, UNIT_DEF, BARBARIAN_CITY_NAMES, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_ATK, UNIT_DEF, BARBARIAN_CITY_NAMES, BARBARIAN_SEA_UNITS, BARBARIAN_MAX_UNITS } from '../defs.js';
 import { resolveDirection, moveCost } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender } from '../combat.js';
@@ -65,29 +65,41 @@ export function getBarbSeaUnitType(state) {
  * I.2: Naval barbarians near coastal settlements, fuel timeout, scuttle weak ships.
  */
 export function spawnBarbarians(state, mapBase) {
-  const activity = state.barbarianActivity || 'none';
-  const freq = BARBARIAN_SPAWN_FREQUENCY[activity];
-  if (!freq || activity === 'none') return;
+  // Binary FUN_00485c15 line 1200: if (DAT_00655b09 != 0) — when level == 0
+  // (Villages Only), no spawning happens. Villages still come from goody huts.
+  const activity = state.barbarianActivity || 'villages';
+  if (activity === 'villages') return;
 
   const turnNum = state.turn.number;
-  if (turnNum < BARBARIAN_MIN_TURN) return;
-
-  // G.1: Binary spawn frequency formula
-  // difficulty < 5: timing = ((3 - barbLevel) * 3 + 0x1E) * (5 - difficulty)
-  // difficulty >= 5: timing = (3 - barbLevel) * 3 + 0x0F
   const difficulty = state.difficulty || 'chieftain';
   const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
+  // Binary DAT_00655b09: 1=Roving, 2=Restless, 3=Raging
   const barbLevel = activity === 'roaming' ? 1 : activity === 'restless' ? 2 : 3;
-  let timing;
+
+  // ── Spawn gate check (spec section 3.1, binary lines 1201-1209) ──
+  // For difficulty < 5: gate = ((3 - barbLevel) * 3 + 30) * (5 - difficulty)
+  //   if turn != gate AND turn <= gate: return (no spawning yet)
+  // For difficulty == 5 (Deity): gate = (3 - barbLevel) * 3 + 15
+  //   if turn < gate: return
+  let gate;
   if (diffIdx < 5) {
-    timing = ((3 - barbLevel) * 3 + 0x1E) * (5 - diffIdx);
+    gate = ((3 - barbLevel) * 3 + 30) * (5 - diffIdx);
+    if (turnNum !== gate && turnNum <= gate) return;
   } else {
-    timing = (3 - barbLevel) * 3 + 0x0F;
+    gate = (3 - barbLevel) * 3 + 15;
+    if (turnNum < gate) return;
   }
-  // Find the largest power-of-2 mask <= timing
-  let frequencyMask = 1;
-  while (frequencyMask * 2 <= timing) frequencyMask *= 2;
-  frequencyMask -= 1; // e.g. 64 → 63 = 0x3F
+
+  // ── Spawn frequency mask (spec section 3.2, binary lines 1210-1218) ──
+  // Level 1 (Villages/roaming): mask 0xF → every 16 turns
+  // Level 2 (Roving Bands/restless): mask 0x7 → every 8 turns
+  // Level 3 (Raging Hordes/raging): mask 0x7 → every 8 turns
+  let frequencyMask;
+  if (barbLevel === 1) {
+    frequencyMask = 0xF;
+  } else {
+    frequencyMask = 0x7;
+  }
 
   // Count existing barbarian units on the map
   let barbCount = 0;
@@ -100,32 +112,47 @@ export function spawnBarbarians(state, mapBase) {
     const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
     if (spawnLoc) {
       const unitType = getBarbUnitType(state);
-      // Binary spawn count formula: clamp(turn / (barbLevel * -50 + 250) + 1, 1, 5)
+      // Binary spawn count formula (spec section 3.4, lines 1251-1256):
+      //   raw_count = clamp(turn / divisor + 1, 1, 5) + 1  → range 2-6
+      //   if barb_level == 3 (raging): raw_count += 1       → range 3-7
       const spawnDivisor = barbLevel * -50 + 250;
-      const spawnCount = Math.max(1, Math.min(5, Math.floor(turnNum / spawnDivisor) + 1));
+      let spawnCount = Math.max(1, Math.min(5, Math.floor(turnNum / spawnDivisor) + 1)) + 1;
+      if (barbLevel === 3) spawnCount += 1;
 
       // Ensure units array is a fresh clone before pushing
       state.units = [...state.units];
 
       let actualSpawned = 0;
-      for (let s = 0; s < spawnCount && barbCount + actualSpawned < BARBARIAN_MAX_UNITS; s++) {
-        const newUnit = makeUnit(
-          unitType, 0, spawnLoc.gx, spawnLoc.gy,
-          UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
+
+      // Spec section 3.5: Leader unit (ship type) is always spawned first.
+      // Trireme default; Caravel if Navigation known; Frigate if Magnetism known.
+      // 50% veteran chance (lines 1304-1309).
+      if (barbCount + actualSpawned < BARBARIAN_MAX_UNITS) {
+        const leaderShipType = getBarbSeaUnitType(state);
+        const leaderUnit = makeUnit(
+          leaderShipType, 0, spawnLoc.gx, spawnLoc.gy,
+          UNIT_MOVE_POINTS[leaderShipType] * MOVEMENT_MULTIPLIER
         );
-        // G.1: 50% veteran chance for spawned barbarians
-        if (state.rng.nextInt(2) === 0) newUnit.veteran = 1;
-        state.units.push(newUnit);
+        if (state.rng.nextInt(2) === 0) leaderUnit.veteran = 1;
+        state.units.push(leaderUnit);
         actualSpawned++;
       }
 
-      // Barbarian leader unit: Diplomat (type 46), carries gold ransom (1 in 4 chance)
-      if (actualSpawned > 0 && state.rng.random() < 0.25 && barbCount + actualSpawned < BARBARIAN_MAX_UNITS) {
-        const leaderUnit = makeUnit(46, 0, spawnLoc.gx, spawnLoc.gy, UNIT_MOVE_POINTS[46] * MOVEMENT_MULTIPLIER); // Diplomat as leader
-        // Barbarian leaders carry gold: 25 × difficulty rank (1-6)
-        const leaderDiffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
-        leaderUnit.barbarianGold = 25 * (leaderDiffIdx + 1);
-        state.units.push(leaderUnit);
+      // Spec section 3.6-3.7: Combat units, with last unit replaced by Diplomat (type 46).
+      // Total combat units = spawnCount. The second-to-last is replaced with a Diplomat.
+      for (let s = spawnCount - 1; s >= 0 && barbCount + actualSpawned < BARBARIAN_MAX_UNITS; s--) {
+        let thisType = unitType;
+        // Spec section 3.7: second-to-last unit (s == 1 when count > 1) is a Diplomat
+        if (s === 1 && spawnCount > 1) {
+          thisType = 46; // Diplomat
+        }
+        const newUnit = makeUnit(
+          thisType, 0, spawnLoc.gx, spawnLoc.gy,
+          UNIT_MOVE_POINTS[thisType] * MOVEMENT_MULTIPLIER
+        );
+        // 50% veteran chance for spawned barbarians
+        if (state.rng.nextInt(2) === 0) newUnit.veteran = 1;
+        state.units.push(newUnit);
         actualSpawned++;
       }
 
@@ -779,8 +806,10 @@ export function processBarbarianAI(state, prev, mapBase) {
  * distance 5 of the captured city.
  */
 export function spawnBarbarianUprising(state, mapBase, cityGx, cityGy) {
-  const activity = state.barbarianActivity || 'none';
-  if (activity === 'none') return;
+  // Note: this function is no longer called from move-unit (the binary's
+  // kill_civ does NOT spawn barbarians), but is kept for potential reuse.
+  const activity = state.barbarianActivity || 'villages';
+  if (activity === 'villages') return;
 
   const unitType = getBarbUnitType(state);
   const count = 2 + state.rng.nextInt(3); // 2-4
@@ -838,8 +867,11 @@ export function spawnBarbarianUprising(state, mapBase, cityGx, cityGy) {
  * Called once per full turn cycle.
  */
 export function processBarbCampProduction(state, mapBase) {
-  const activity = state.barbarianActivity || 'none';
-  if (activity === 'none') return;
+  // Camps still produce in Villages Only mode? In binary, camps spawn from huts
+  // regardless of activity level — keep producing to match.
+  const activity = state.barbarianActivity || 'villages';
+  // Note: do not gate camp production on 'villages' — camps are independent of
+  // the spawn level (they produce based on era/turn).
 
   // Count existing barbarian units
   let barbCount = 0;

@@ -47,6 +47,7 @@ import { fileURLToPath } from "url";
 import { Civ2Parser } from "../charlizationv3/engine/parser.js";
 import { initFromSav, initNewGame } from "../charlizationv3/engine/init.js";
 import { generateMap } from "../charlizationv3/engine/mapgen.js";
+import { generateMapWithAlgorithm, MAPGEN_ALGORITHMS, DEFAULT_ALGORITHM } from "../charlizationv3/engine/mapgen-dispatch.js";
 import { applyAction } from "../charlizationv3/engine/reducer.js";
 import { resetAIState } from "../charlizationv3/engine/ai/index.js";
 import { filterStateForCiv, computeLOS } from "../charlizationv3/engine/visibility.js";
@@ -271,6 +272,8 @@ function roomRoster(roomId) {
     name: room.name,
     started: room.started,
     ready: room.ready,
+    mapAlgorithm: room.mapAlgorithm || DEFAULT_ALGORITHM,
+    mapSize: room.mapSize || '50x80',
   };
 }
 
@@ -503,6 +506,24 @@ wss.on("connection", (ws) => {
         if (!info.roomId) break;
         leaveCurrentRoom(ws, info);
         broadcastRoomList();
+        break;
+      }
+
+      case "SET_GAME_OPTIONS": {
+        const optRoomId = info.roomId;
+        if (!optRoomId) break;
+        const optRoom = rooms.get(optRoomId);
+        if (!optRoom || optRoom.started) break;
+        // Only the creator (seat 0) can set options
+        if (info.playerIndex !== 0) break;
+        if (msg.mapAlgorithm && MAPGEN_ALGORITHMS[msg.mapAlgorithm]) {
+          optRoom.mapAlgorithm = msg.mapAlgorithm;
+        }
+        if (typeof msg.mapSize === 'string' && /^\d+\s*[xX×]\s*\d+$/.test(msg.mapSize)) {
+          optRoom.mapSize = msg.mapSize;
+        }
+        // Re-broadcast room state so all clients see the updated dropdowns
+        broadcastToRoom(optRoomId, roomRoster(optRoomId));
         break;
       }
 
@@ -787,14 +808,15 @@ wss.on("connection", (ws) => {
         if (!restartRoom) break;
 
         // Parse map size: "WxH" display dimensions → doubled-X internal
+        // continents: 2 = "Continents" dialog setting (binary landForm = 1) → large walker
         let sz;
         const m = String(msg.mapSize).match(/^(\d+)\s*[xX×]\s*(\d+)$/);
         if (m) {
-          const w = Math.max(10, Math.min(300, parseInt(m[1])));
-          const h = Math.max(10, Math.min(300, parseInt(m[2])));
-          sz = { width: w * 2, height: h };
+          const w = Math.max(20, Math.min(150, parseInt(m[1])));
+          const h = Math.max(20, Math.min(150, parseInt(m[2])));
+          sz = { width: w * 2, height: h, continents: 2 };
         } else {
-          sz = { width: 40, height: 40 }; // default: Tiny (40×40)
+          sz = { width: 100, height: 80, continents: 2 }; // default: Medium (100×80)
         }
 
         // Re-build seat list from current seats
@@ -803,8 +825,10 @@ wss.on("connection", (ws) => {
           if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i + 1}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
         }
 
-        sz.flatGrassland = true; // DEBUG: flat grassland map for testing
-        const mapResult = generateMap(sz);
+        // Algorithm selection: defaults to binary-faithful 'civ2' if not specified
+        const algorithm = (msg.mapAlgorithm && MAPGEN_ALGORITHMS[msg.mapAlgorithm]) ? msg.mapAlgorithm : DEFAULT_ALGORITHM;
+        const mapResult = generateMapWithAlgorithm(algorithm, sz);
+        console.log(`[game] Room ${restartRoomId}: RESTART using algorithm '${algorithm}'`);
         const { mapBase, gameState } = initNewGame(mapResult, restartSeats);
         restartRoom.mapBase = mapBase;
         restartRoom.gameState = gameState;
@@ -1159,6 +1183,14 @@ function sendGameLog(room, category, text, turn, civSlots) {
  * Build a detailed combat log string from the enriched combatResult.
  */
 function formatCombatLog(cr, gs) {
+  // Capture-without-combat (e.g., walking into an undefended city): the
+  // combatResult only has { type: 'capture', cityName, civSlot, gx, gy }
+  // — no attacker/defender/rounds. Emit a simple capture line.
+  if (cr.type === 'capture' && cr.rounds == null) {
+    const civName = gs.civNames?.[cr.civSlot] || `Civ ${cr.civSlot}`;
+    return `[Combat] ${civName} captured ${cr.cityName} (undefended).`;
+  }
+
   const atkName = UNIT_NAMES[cr.attacker] || `Unit ${cr.attacker}`;
   const defName = UNIT_NAMES[cr.defender] || `Unit ${cr.defender}`;
   const atkCivName = gs.civNames?.[cr.atkOwner] || `Civ ${cr.atkOwner}`;
@@ -1326,8 +1358,13 @@ function formatTurnEventLog(ev, gs) {
     case 'warDeclared':
       return { category: 'diplomacy', text: `${civName(ev.aggressor)} declared war on ${civName(ev.target)}!` };
     case 'treatyAccepted': {
-      const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
+      const treatyName = ev.treaty === 'alliance' ? 'an Alliance' :
+                         ev.treaty === 'peace'    ? 'a Peace Treaty' :
+                                                    'a Ceasefire';
       return { category: 'diplomacy', text: `${civName(ev.civA)} and ${civName(ev.civB)} signed ${treatyName}` };
+    }
+    case 'allianceBroken': {
+      return { category: 'diplomacy', text: `${civName(ev.civA)} and ${civName(ev.civB)} have cancelled their alliance` };
     }
     case 'civEliminated':
       return { category: 'diplomacy', text: `The ${civName(ev.civSlot)} civilization has been destroyed!` };
@@ -1352,6 +1389,17 @@ function formatTurnEventLog(ev, gs) {
       return { category: 'city', text: `Trade route: ${ev.homeCityName} -> ${ev.destCityName} (${ev.income} gold/turn)` };
     case 'tributePaid':
       return { category: 'diplomacy', text: `${civName(ev.from)} paid ${ev.amount} gold tribute to ${civName(ev.to)}` };
+    case 'cityCapture': {
+      const verb = ev.wasOurs ? 'recaptured' : (ev.destroyed ? 'razed' : 'captured');
+      const captName = civName(ev.to);
+      const lostName = civName(ev.from);
+      let text = `${captName} ${verb} ${ev.cityName}`;
+      if (ev.from > 0) text += ` from ${lostName}`;
+      text += '.';
+      if (ev.plunder > 0) text += ` ${ev.plunder} gold pieces plundered.`;
+      if (ev.destroyed) text += ' City razed.';
+      return { category: 'combat', text };
+    }
     case 'cityIncited':
       return { category: 'diplomacy', text: `${ev.cityName} revolts!` };
     case 'techStolen': {
@@ -1447,11 +1495,24 @@ async function startGame(roomId, room, occupiedSeats) {
 }
 
 function startNewGame(roomId, room, seatList) {
-  const mapResult = generateMap({ width: 40, height: 40 });
+  // Read room options set in the lobby (or fall back to defaults).
+  // mapgen takes the DOUBLED internal width and returns compact mw.
+  const algorithm = (room.mapAlgorithm && MAPGEN_ALGORITHMS[room.mapAlgorithm]) ? room.mapAlgorithm : DEFAULT_ALGORITHM;
+  let sz;
+  const sizeMatch = String(room.mapSize || '50x80').match(/^(\d+)\s*[xX×]\s*(\d+)$/);
+  if (sizeMatch) {
+    const w = Math.max(20, Math.min(150, parseInt(sizeMatch[1])));
+    const h = Math.max(20, Math.min(150, parseInt(sizeMatch[2])));
+    sz = { width: w * 2, height: h, continents: 2 };
+  } else {
+    sz = { width: 100, height: 80, continents: 2 };
+  }
+
+  const mapResult = generateMapWithAlgorithm(algorithm, sz);
   const { mapBase, gameState } = initNewGame(mapResult, seatList);
   room.mapBase = mapBase;
   room.gameState = gameState;
-  console.log(`[game] Room ${roomId}: generated new map (${mapResult.mw}×${mapResult.mh})`);
+  console.log(`[game] Room ${roomId}: generated map algorithm='${algorithm}' size=${room.mapSize || '50x80'} (${mapResult.mw}×${mapResult.mh})`);
 }
 
 function sendGameStartToAll(roomId, room) {

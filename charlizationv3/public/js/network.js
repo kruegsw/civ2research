@@ -4,8 +4,8 @@
 
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
-import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
-import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
+import { sfx, menuLoop, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
+import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog, closeAllCiv2Dialogs } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker, showTechDetail } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, centerOnTile, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
@@ -76,6 +76,33 @@ function removeActiveGame(roomId) {
 function getActiveGameSession(roomId) {
   const g = S.activeGames.find(g => g.roomId === roomId);
   return g ? g.sessionId : null;
+}
+
+/**
+ * Clear all per-game client state when leaving a room.
+ * Without this, dialogs/sounds/units from the previous game persist
+ * and can leak into the next game (or into the lobby).
+ */
+function cleanupGameSession() {
+  // Close any open turn-event/city/diplomacy dialogs
+  closeAllCiv2Dialogs();
+  // Stop any pending blink/selection
+  try { stopBlink(); } catch (_) {}
+  // Clear game state
+  S.mpGameState = null;
+  S.mpMapBase = null;
+  S.mpCivSlot = null;
+  S.mpSeatCivMap = null;
+  S.currentMapData = null;
+  S.mpSelectedUnit = null;
+  S.pendingMoveUnit = null;
+  S.pendingAutoAdvanceFrom = null;
+  S.mercenaryQueue = [];
+  S.gotoMode = false;
+  S.rebaseMode = false;
+  // Reset cached fog/los so the next game's tiles render fresh
+  S.cachedFowCiv = 0;
+  S.cachedLosData = null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -174,6 +201,9 @@ function renderRoomList() {
         document.getElementById('lobby-room-view').style.display = 'block';
         renderRoomDetail(S.wsLastRoom);
       } else {
+        // Joining a different room — clear any leftover state from a prior game
+        // (open dialogs, mpGameState, selection, etc.) so it doesn't bleed in.
+        cleanupGameSession();
         // Use saved sessionId if resuming an active game
         const savedSession = getActiveGameSession(roomId);
         if (savedSession) {
@@ -285,6 +315,61 @@ function renderRoomDetail(msg) {
   const statusText = document.getElementById('room-status-text');
   const backBtn = document.getElementById('room-back-btn');
   const leaveBtn = document.getElementById('room-leave-btn');
+  const optionsPanel = document.getElementById('room-game-options');
+  const algoSelect = document.getElementById('room-mapgen-select');
+  const sizeSelect = document.getElementById('room-mapsize-select');
+
+  // Populate game options dropdowns (once per render to keep them fresh)
+  if (algoSelect && sizeSelect && optionsPanel) {
+    if (!algoSelect.dataset.populated) {
+      const algos = [
+        ['civ2',           'Civ2 Binary (Faithful)'],
+        ['pangeaCrescent', 'Pangea Crescent'],
+        ['claudeSpecial4', 'Realistic Satellite v4'],
+        ['claudeSpecial3', 'Realistic Satellite v3'],
+        ['claudeSpecial2', 'Realistic Satellite v2'],
+        ['claudeSpecial',  'Realistic Satellite v1'],
+        ['civ2tec',        'Civ2 + Tectonics'],
+        ['civ2tecRegions', 'Civ2 + Tectonic Regions'],
+        ['blob',           'Blob'],
+        ['plates',         'Plate Tectonics'],
+        ['voronoi',        'Voronoi'],
+        ['noise',          'Perlin Noise'],
+        ['diamond',        'Diamond-Square'],
+        ['ca',             'Cellular Automata'],
+        ['flatGrass',      'Test: All Grasslands'],
+        ['flatGrassClose', 'Test: All Grass + Close Spawns'],
+      ];
+      algoSelect.innerHTML = algos.map(([id, lab]) => `<option value="${id}">${lab}</option>`).join('');
+      algoSelect.dataset.populated = '1';
+    }
+    if (!sizeSelect.dataset.populated) {
+      const sizes = [
+        ['40x50',  'Small (40 × 50)'],
+        ['50x80',  'Medium (50 × 80)'],
+        ['75x120', 'Large (75 × 120)'],
+        ['100x100','XL (100 × 100)'],
+      ];
+      sizeSelect.innerHTML = sizes.map(([id, lab]) => `<option value="${id}"${id === '50x80' ? ' selected' : ''}>${lab}</option>`).join('');
+      sizeSelect.dataset.populated = '1';
+    }
+    // Reflect server's current selection if provided
+    if (msg.mapAlgorithm && algoSelect.value !== msg.mapAlgorithm) algoSelect.value = msg.mapAlgorithm;
+    if (msg.mapSize && sizeSelect.value !== msg.mapSize) sizeSelect.value = msg.mapSize;
+    // Only the room creator can change options before game starts
+    const isCreator = S.wsPlayerIndex === 0;
+    const canEdit = isCreator && !msg.started;
+    algoSelect.disabled = !canEdit;
+    sizeSelect.disabled = !canEdit;
+    optionsPanel.style.display = msg.started ? 'none' : '';
+    // Wire change handlers (idempotent — replace listeners by using onchange)
+    algoSelect.onchange = () => {
+      transport.send('SET_GAME_OPTIONS', { mapAlgorithm: algoSelect.value, mapSize: sizeSelect.value });
+    };
+    sizeSelect.onchange = () => {
+      transport.send('SET_GAME_OPTIONS', { mapAlgorithm: algoSelect.value, mapSize: sizeSelect.value });
+    };
+  }
 
   if (msg.started) {
     // Game started
@@ -398,7 +483,7 @@ function buildMapDataFromState() {
       playerCiv: state.gameState?.playerCiv ?? S.mpCivSlot ?? 1,
       difficulty: state.difficulty || state.gameState?.difficulty || 'chieftain',
       humanPlayers: state.humanPlayers ?? state.gameState?.humanPlayers ?? 0xFF,
-      barbarianActivity: state.barbarianActivity ?? state.gameState?.barbarianActivity ?? 'normal',
+      barbarianActivity: state.barbarianActivity ?? state.gameState?.barbarianActivity ?? 'villages',
     },
     validation: state.validation,
     civNames: state.civNames,
@@ -1304,8 +1389,9 @@ function initNetwork(appCallbacks) {
             if (statePayload.combatResult) {
               const cr = statePayload.combatResult;
               if (cr.type === 'capture') {
-                sfx('CRWDBUGL');
-                showOverlayMessage(`${cr.cityName} captured!`);
+                // No overlay — the cityCapture turnEvent dialog (in
+                // dialogs.js) shows the binary-faithful @CITYCAPTURE
+                // message with plunder + razing info.
               } else {
                 const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
                 const defName = UNIT_NAMES[cr.defender] || 'Unit';
@@ -1343,7 +1429,7 @@ function initNetwork(appCallbacks) {
                 statePayload.turnEvents = null; // prevent immediate processing below
                 // Show turn events after a delay to let tech dialog display first
                 setTimeout(() => {
-                  const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
+                  const GLOBAL_EVENTS = new Set(['civEliminated', 'civDestroyed', 'allianceBroken', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
                   const myEvents = evts.filter(e =>
                     e.civSlot === S.mpCivSlot || e.civA === S.mpCivSlot || e.civB === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
                   if (myEvents.length > 0) showTurnEvents(myEvents);
@@ -1410,13 +1496,13 @@ function initNetwork(appCallbacks) {
               const year = getGameYear(S.mpGameState.turn?.number || 0);
               showCityFoundedDialog(cf.name, year, () => {
                 const city = S.mpGameState.cities[cf.cityIndex];
-                if (city) openCityDialog(city, cf.cityIndex);
+                if (city && city.size > 0 && city.owner !== 0xFF) openCityDialog(city, cf.cityIndex);
               });
             }
 
             // Turn events: city growth, famine, production complete, civ eliminated
             if (statePayload.turnEvents) {
-              const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
+              const GLOBAL_EVENTS = new Set(['civEliminated', 'civDestroyed', 'allianceBroken', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
               const myEvents = statePayload.turnEvents.filter(e =>
                 e.civSlot === S.mpCivSlot || e.civA === S.mpCivSlot || e.civB === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
               if (myEvents.length > 0) {
@@ -1427,10 +1513,7 @@ function initNetwork(appCallbacks) {
             // Game over: show retirement/victory dialog (do NOT close WebSocket)
             if (statePayload.gameOver) {
               const go = statePayload.gameOver;
-              const debugMsg = `GAME OVER: winner=${go.winner} reason=${go.reason} civsAlive=${S.mpGameState.civsAlive?.toString(2)} debug=${go._debug || 'none'}`;
-              console.error(debugMsg);
-              // Also show debug in an alert so user can report it
-              alert(debugMsg);
+              console.log(`[gameOver] winner=${go.winner} reason=${go.reason} civsAlive=${S.mpGameState.civsAlive?.toString(2)}`);
               setTimeout(() => showRetirementDialog(
                 S.mpGameState, S.mpCivSlot, go.reason, go.winner
               ), 600);
@@ -1530,11 +1613,12 @@ function initNetwork(appCallbacks) {
               if (S.mapSprites) {
                 animateCombat(cr, playNextCombat);
               } else {
-                // No sprites loaded — play sounds only
-                const atkSfx = UNIT_ATK_SFX[cr.attacker];
-                if (atkSfx) sfx(atkSfx);
-                const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
-                sfx(getDeathSfx(loser));
+                // No sprites loaded — play attack sound only (binary
+                // FUN_00580341 plays no post-combat sound for ground
+                // combat; air/naval resolution would need full domain
+                // info that we don't have in this fallback path).
+                const atkSfxName = UNIT_ATK_SFX[cr.attacker];
+                if (atkSfxName) sfx(atkSfxName);
                 setTimeout(playNextCombat, 200);
               }
             }
@@ -1653,6 +1737,7 @@ function initNetwork(appCallbacks) {
     S.wsGameStarted = false;
     S.wsLastRoom = null;
     transport.setRoomId(null);
+    cleanupGameSession();
     updateGameBackBtn();
     document.getElementById('lobby-room-view').style.display = 'none';
     document.getElementById('lobby-rooms-view').style.display = 'block';

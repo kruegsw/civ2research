@@ -356,41 +356,21 @@ const Civ2CityDialog = {
   },
 
   getGarrisonedUnits(city, mapData) {
-    // Binary: citywin_draw_units_present (0x005070E5) iterates via nextInStack linked list,
-    // not slot order. FUN_005b2e69 finds any unit at tile, FUN_005b2d39 walks prevInStack
-    // to head, then loop follows nextInStack forward.
-    const atTile = mapData.units.filter(u => u.gx === city.gx && u.gy === city.gy);
-    if (atTile.length === 0) return atTile;
-    const lookup = mapData.unitBySaveIndex || {};
-
-    // Find head of linked list: walk prevInStack from first unit found
-    let head = atTile[0];
-    while (head.prevInStack >= 0 && head.prevInStack !== head.saveIndex && lookup[head.prevInStack]) {
-      head = lookup[head.prevInStack];
-    }
-
-    // Walk forward via nextInStack
-    const result = [];
-    const visited = new Set();
-    let cur = head;
-    while (cur && !visited.has(cur.saveIndex)) {
-      visited.add(cur.saveIndex);
-      if (cur.gx === city.gx && cur.gy === city.gy) result.push(cur);
-      if (cur.nextInStack < 0 || !lookup[cur.nextInStack]) break;
-      cur = lookup[cur.nextInStack];
-    }
-
-    // Fallback: if linked list missed any units (broken chain), append remainder
-    if (result.length < atTile.length) {
-      for (const u of atTile) {
-        if (!visited.has(u.saveIndex)) result.push(u);
-      }
-    }
-    return result;
+    // Binary: citywin_draw_units_present (0x005070E5) iterates via the nextInStack
+    // linked list. We previously tried to mirror that here, but units created at
+    // runtime via makeUnit() (combat, production, hut spawns) have no saveIndex
+    // and prevInStack/nextInStack = -1 — so the linked-list walk's visited set
+    // ended up keyed on `undefined`, causing all-but-one new unit at a tile to
+    // be skipped (visible as units overlapping at slot 0).
+    //
+    // Just filter directly. We exclude dead units (gx < 0).
+    return mapData.units.filter(u => u.gx === city.gx && u.gy === city.gy && u.gx >= 0);
   },
 
   getSupportedUnits(cityIndex, mapData) {
-    return mapData.units.filter(u => u.homeCityId === cityIndex);
+    // Skip dead units (gx < 0). When a unit dies, killUnit() in helpers.js
+    // sets gx/gy to -1 but leaves homeCityId pointing to its old home.
+    return mapData.units.filter(u => u.homeCityId === cityIndex && u.gx >= 0);
   },
 
   _getProductionCost(item) {
@@ -1903,7 +1883,11 @@ const Civ2CityDialog = {
     // Title text: "City of {name}, {year}, Population {pop} (Treasury: {gold} Gold)"
     if (city) {
       const year = getGameYearFromMap(mapData);
-      const pop = city.size * 10000;  // approximate Civ2 population display
+      // Binary FUN_0043cc7e (block_00430000.c:4455-4468): population is the
+      // triangular sum of city size: Σ_{i=1..size} i = size*(size+1)/2.
+      // Each "1" here = 10,000 displayed people. Min clamp to 1.
+      const popPoints = Math.max(1, (city.size * (city.size + 1)) >> 1);
+      const pop = popPoints * 10000;
       const gold = (mapData.civs && mapData.civs[city.owner]) ? mapData.civs[city.owner].treasury || 0 : 0;
       const titleStr = `City of ${city.name}, ${year}, Population ${pop.toLocaleString()} (Treasury: ${gold} Gold)`;
       const textX = tbX + 59;  // after 3 icons + gap

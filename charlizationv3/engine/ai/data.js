@@ -221,6 +221,55 @@ export function computeAiData(gameState, mapBase, civSlot) {
   }
   const aliveCivCount = popcount(civsAlive);
 
+  // ── Per-civ wonders-per-era and demographic extremes ────────────
+  // Binary refs:
+  //   FUN_0053184d (ai_process_civ_turn) lines 520-530:
+  //     Recomputes DAT_0064c6b7[civ*0x594 + era] = count of wonders this civ
+  //     owns in each of 4 eras (28 wonders / 7 per era).
+  //   FUN_0048a92d (calc_demographic_extremes):
+  //     Per era 0..3, computes min/max of DAT_0064c6b7 across alive civs,
+  //     stored in DAT_00673af8 (min) and DAT_00673afc (max).
+  //
+  // Used by:
+  //   - prodai wonder scoring (block_00490000.c lines 5141-5160): adds +2 to
+  //     score if civ wonders > min, -1 if civ wonders < strongest civ wonders.
+  //   - rush-buy scaling (block_004E0000.c lines 5527-5543): scales treasury
+  //     ratio based on civ vs min/max range.
+  const NUM_WONDERS = 28; // 4 eras × 7 wonders
+  const civWondersPerEra = Array.from({ length: 8 }, () => [0, 0, 0, 0]);
+  const wonders = gameState.wonders || [];
+  for (let w = 0; w < NUM_WONDERS; w++) {
+    const wd = wonders[w];
+    if (!wd || wd.cityIndex == null || wd.destroyed) continue;
+    const ownerCity = gameState.cities?.[wd.cityIndex];
+    if (!ownerCity || ownerCity.size <= 0) continue;
+    const ownerCiv = ownerCity.owner;
+    if (ownerCiv < 1 || ownerCiv > 7) continue;
+    // Skip obsolete wonders (any alive civ has the obsoleting tech)
+    const obsTech = WONDER_OBSOLETE[w];
+    if (obsTech != null && obsTech >= 0) {
+      let obsoleted = false;
+      for (let oc = 1; oc < 8; oc++) {
+        if (!(civsAlive & (1 << oc))) continue;
+        if (gameState.civTechs?.[oc]?.has?.(obsTech)) { obsoleted = true; break; }
+      }
+      if (obsoleted) continue;
+    }
+    const era = Math.floor(w / 7);
+    civWondersPerEra[ownerCiv][era]++;
+  }
+  // Compute min/max extremes across alive civs (binary calc_demographic_extremes)
+  const wondersPerEraMin = [99, 99, 99, 99];
+  const wondersPerEraMax = [0, 0, 0, 0];
+  for (let era = 0; era < 4; era++) {
+    for (let c = 1; c < 8; c++) {
+      if (!(civsAlive & (1 << c))) continue;
+      const v = civWondersPerEra[c][era];
+      if (v > wondersPerEraMax[era]) wondersPerEraMax[era] = v;
+      if (v < wondersPerEraMin[era]) wondersPerEraMin[era] = v;
+    }
+  }
+
   // ── (b) Power rankings ──────────────────────────────────────
   // Binary formula (FUN_004853e7, POWER_GRAPH_BINARY):
   //   techCount * 3 + cityCount * 8 + treasury / 32
@@ -378,6 +427,9 @@ export function computeAiData(gameState, mapBase, civSlot) {
     contactedCivs,
     embassyFlags,
     provocationFlags,
+    civWondersPerEra,
+    wondersPerEraMin,
+    wondersPerEraMax,
   };
 }
 

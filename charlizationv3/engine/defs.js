@@ -184,13 +184,13 @@ export const SEA_TRANSPORT_TYPES = new Set([32, 33, 34, 43]);
 // Units with flagsA & 0x20 — "no sea bonus" flag (skip Lighthouse MP bonus).
 // In vanilla Civ2: Trireme(32), Caravel(33), Galleon(34), Carrier(42), Transport(43).
 // Raw C FUN_005b2a39: checks unit_types[type].flagsA & 0x20 before applying Lighthouse.
-export const UNIT_NO_LIGHTHOUSE_BONUS = new Set([32, 33, 34, 42, 43]);
+export const UNIT_NO_LIGHTHOUSE_BONUS = new Set([32]);
 
 // Transport capacity (only units that can carry others)
 // Trireme=2, Caravel=3, Galleon=4, Carrier=8 (air only), Transport=8
 export const UNIT_CARRY_CAP = [];
 UNIT_CARRY_CAP[32] = 2;  UNIT_CARRY_CAP[33] = 3;
-UNIT_CARRY_CAP[34] = 4;  UNIT_CARRY_CAP[42] = 8;  UNIT_CARRY_CAP[43] = 8;
+UNIT_CARRY_CAP[34] = 4;  UNIT_CARRY_CAP[35] = 2;  UNIT_CARRY_CAP[42] = 8;  UNIT_CARRY_CAP[43] = 8;
 
 // Free unit support slots by government (COSMIC defaults)
 export const COSMIC_FREE_SUPPORT = { monarchy: 3, communism: 3, fundamentalism: 10 };
@@ -210,7 +210,7 @@ export const UNIT_MOVE_POINTS = [
   2, 2, 2, 2, 2, 2, 2, 3,    // 15-22: Horsemen..Armor
   1, 1, 1, 2, 10, 8, 6,      // 23-29: Catapult..Helicopter
   14, 12, 3, 3, 4, 4, 4,     // 30-36: StealthF..Ironclad
-  5, 5, 5, 4, 3, 5, 5,       // 37-43: Destroyer..Transport (Cruiser=5, AEGIS=5 per RULES.TXT)
+  6, 5, 5, 4, 3, 5, 5,       // 37-43: Destroyer..Transport (Destroyer=6, Cruiser=5, AEGIS=5 per RULES.TXT)
   12, 16, 2, 3, 1, 2, 1,     // 44-50: CruiseMsl..Explorer (Freight=2 per RULES.TXT)
   1,                          // 51:   Extra Land
 ];
@@ -292,9 +292,6 @@ export const MOUNTED_UNITS = new Set([
   17,  // Elephant
   18,  // Crusaders
   19,  // Knights
-  20,  // Dragoons
-  21,  // Cavalry
-  22,  // Armor (tanks are "mounted" in game engine)
 ]);
 
 // Units with Aegis defense bonus (double defense vs air and missile attacks)
@@ -489,7 +486,16 @@ export const GOVT_MAX_SCIENCE = {
 export const DIFFICULTY_KEYS = ['chieftain','warlord','prince','king','emperor','deity'];
 
 // ── Barbarian activity enum ──
-export const BARBARIAN_KEYS = ['none','roaming','restless','raging'];
+// Order matches the binary save format byte at SAV+0x002D:
+//   0=none, 1=villages-only, 2=roaming, 3=restless, 4=raging
+// Previously this list was missing 'villages', causing an off-by-one
+// where every loaded save's barbarian setting was wrong by one slot.
+// Barbarian activity levels — binary DAT_00655b09 (0-3).
+// Reference: Civ2-clone BarbarianActivityType enum.
+// Note: there is no "off" — Villages Only is the lowest setting, and the
+// binary's spawn_barbarians function (FUN_00485c15) returns when the level
+// is 0 (Villages Only), spawning only for Roving Bands and above.
+export const BARBARIAN_KEYS = ['villages','roaming','restless','raging'];
 
 // ── City name lists (indexed by rulesCivNumber, LEADERS.TXT order) ──
 export const CIV_CITY_NAMES = [
@@ -1007,7 +1013,7 @@ export const UNIT_AMPHIBIOUS = new Set([12]); // Marines
 
 // Alpine flag: unit treats ALL terrain as cost 1 MP (Alpine Troops)
 // From RULES.TXT flags bit 12 (0x1000)
-export const UNIT_ALPINE = new Set([10]); // Alpine Troops
+export const UNIT_ALPINE = new Set([9, 10, 50]); // Partisans, Alpine Troops, Explorer
 
 // Fighter flag: air units that can only attack ground units when target
 // has a city or airbase (fighters cannot strafe open-field ground units)

@@ -405,7 +405,7 @@ function clamp(val, min, max) {
 // DAT_00634f64 (×3 stride, 6 entries):
 //   [0]=structural max, [1]=fuel max, [2]=propulsion max,
 //   [3]=habitation max, [4]=life support max, [5]=solar panel max
-const SS_MAX = [10, 6, 6, 5, 5, 5]; // Standard Civ2 MGE values
+const SS_MAX = [39, 8, 8, 4, 4, 4]; // From civ2.exe config table at DAT_00634f64
 
 // Spaceship component building IDs: 35=SS Structural, 36=SS Component, 37=SS Module
 const SS_STRUCTURAL_ID = 35;
@@ -1869,22 +1869,20 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
   // Era-based adjustment: wonder_era = wonderIndex / 7
   const wonderEra = Math.floor(wonderIndex / 7);
 
-  // Per-continent era comparison
-  const continentId = cityCtx.continentId;
-  // Approximate: check if our era assessment exceeds average
-  // Decompiled: DAT_0064c6b7[civ*0x594 + era] = per-continent era count
-  // We use tech count as a proxy for era
-  const ourTechs = aiData?.techCount?.[civSlot] ?? 0;
-  let eraBonus = 0;
-  // Rough era thresholds: era 0 = 0-15 techs, era 1 = 15-35, era 2 = 35-55, era 3 = 55+
-  const ERA_THRESHOLDS = [0, 15, 35, 55];
-  const ourEra = ERA_THRESHOLDS.findIndex((t, i) =>
-    i === ERA_THRESHOLDS.length - 1 || ourTechs < ERA_THRESHOLDS[i + 1]);
-  // If our era >= wonder era, slight bonus
-  if (ourEra >= wonderEra) eraBonus = 0;
-  else eraBonus = wonderEra - ourEra; // penalty for building era-mismatched wonders
-
-  let rawScore = baseScore + eraBonus;
+  // Binary (block_00490000.c lines 5141-5160):
+  //   local_28 = wonder_index / 7 (era)
+  //   local_1c = baseScore + civWondersPerEra[civSlot][era]
+  //   if (wondersPerEraMin[era] < civWondersPerEra[civSlot][era])
+  //       local_1c = baseScore + civWondersPerEra[civSlot][era] + 2  (penalty)
+  //   if (civWondersPerEra[civSlot][era] < civWondersPerEra[strongest][era])
+  //       local_1c -= 1  (incentive to catch up)
+  // Both arrays are computed by computeAiData() (calc_demographic_extremes equiv).
+  const civEraCount = aiData?.civWondersPerEra?.[civSlot]?.[wonderEra] ?? 0;
+  const minEraCount = aiData?.wondersPerEraMin?.[wonderEra] ?? 0;
+  const strongestEraCount = aiData?.civWondersPerEra?.[strongestCiv]?.[wonderEra] ?? 0;
+  let rawScore = baseScore + civEraCount;
+  if (minEraCount < civEraCount) rawScore += 2;
+  if (civEraCount < strongestEraCount) rawScore -= 1;
 
   let coastalPref = 0;
   if (continentPosture === 4) coastalPref = coastalFlag;

@@ -5,7 +5,7 @@
 // 8-direction movement with proper wrapping.
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP, UNIT_ROLE, UNIT_ALPINE } from './defs.js';
+import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP, UNIT_ROLE, UNIT_ALPINE } from './defs.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // C.1: Damage-based movement reduction
@@ -16,31 +16,47 @@ import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, U
  * Damaged units have reduced MP: baseMP * currentHP / maxHP, rounded up
  * to the nearest MOVEMENT_MULTIPLIER (3) multiple.
  *
- * Per binary FUN_005b2a39:
- *   - Sea units (domain 2) are exempt from damage-based MP reduction.
- *   - Air units (domain 1) have a minimum of 2 * MOVEMENT_MULTIPLIER (6).
+ * Per binary FUN_005b2a39 (block_005B0000.c:758-813):
+ *   - Air units (domain 1) are EXEMPT from damage-based MP reduction.
+ *   - Sea units (domain 2) have a minimum of 2 * MOVEMENT_MULTIPLIER (6).
  *   - Ground units (domain 0) have a minimum of MOVEMENT_MULTIPLIER (3).
  *
- * @param {object} unit - unit object { type, movesRemain }
+ * @param {object} unit - unit object { type, movesRemain (damage_taken in 10x scale) }
+ * @param {number} [seaBonus=0] - additional MP from sea bonuses (Lighthouse/Magellan/NuclearPower),
+ *        applied BEFORE damage scaling per binary FUN_005b2a39 lines 772-786 then 789-810.
  * @returns {number} effective movement points in movement thirds
  */
-export function calcEffectiveMovementPoints(unit) {
-  const baseMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
+export function calcEffectiveMovementPoints(unit, seaBonus = 0) {
+  const baseMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER + seaBonus;
   const domain = UNIT_DOMAIN[unit.type] ?? 0;
 
-  // Sea units are exempt from damage-based MP reduction
-  if (domain === 2) return baseMP;
+  // Air units (domain 1) are exempt from damage-based MP reduction (C line 790)
+  if (domain === 1) return baseMP;
 
-  const maxHP = UNIT_HP[unit.type] || 1;
-  const currentHP = maxHP - (unit.movesRemain || 0);
+  // No damage taken — return full MP
+  const damageTaken = unit.movesRemain || 0;
+  if (damageTaken === 0) return baseMP;
+
+  // maxHP is stored pre-multiplied by 10 in the binary (UNIT_HP * 10)
+  // movesRemain (damage_taken) is also in the 10x scale
+  const maxHP = (UNIT_HP[unit.type] || 1) * 10;
+  const currentHP = maxHP - damageTaken;
+  if (currentHP <= 0) {
+    // Unit should be dead, but return minimum as safety
+    const minMP = domain === 2 ? 2 * MOVEMENT_MULTIPLIER : MOVEMENT_MULTIPLIER;
+    return minMP;
+  }
   if (currentHP >= maxHP) return baseMP;
 
-  // Damaged: scale proportionally, round up to nearest MOVEMENT_MULTIPLIER multiple
-  const rawMP = baseMP * currentHP / maxHP;
-  const effectiveMP = Math.ceil(rawMP / MOVEMENT_MULTIPLIER) * MOVEMENT_MULTIPLIER;
+  // Damaged: scale proportionally using integer division (C line 796)
+  const reduced = Math.trunc(currentHP * baseMP / maxHP);
 
-  // Air units: minimum 2 full MP (6 thirds); ground units: minimum 1 full MP (3 thirds)
-  const minMP = domain === 1 ? 2 * MOVEMENT_MULTIPLIER : MOVEMENT_MULTIPLIER;
+  // Round up to next multiple of MOVEMENT_MULTIPLIER (C lines 797-798)
+  const remainder = reduced % MOVEMENT_MULTIPLIER;
+  const effectiveMP = remainder !== 0 ? reduced + (MOVEMENT_MULTIPLIER - remainder) : reduced;
+
+  // Sea units (domain 2): minimum 2 MP; ground units (domain 0): minimum 1 MP (C lines 800-804)
+  const minMP = domain === 2 ? 2 * MOVEMENT_MULTIPLIER : MOVEMENT_MULTIPLIER;
   return Math.max(effectiveMP, minMP);
 }
 
@@ -232,7 +248,8 @@ export function resolveDirection(gx, gy, dir, mapBase) {
  * @param {number} fromGy - source tile gy
  * @param {number} toGx - destination tile gx
  * @param {number} toGy - destination tile gy
- * @returns {number} cost in movement thirds (MOVEMENT_MULTIPLIER units)
+ * @returns {number} cost in internal movement units (0=railroad, 1=road/alpine/river,
+ *          MOVEMENT_MULTIPLIER*terrain_cost for full terrain, MOVEMENT_MULTIPLIER for air/sea)
  */
 export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const domain = UNIT_DOMAIN[unitType] ?? 0;
@@ -245,29 +262,29 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const fromImp = mapBase.getImprovements(fromGx, fromGy);
   const toImp = mapBase.getImprovements(toGx, toGy);
 
-  // Railroad: both tiles have railroad → 0 cost (free move)
+  // Priority order per binary FUN_0059062c lines 681-694:
+  // 1. Railroad (cost 0), 2. Alpine (cost 1), 3. Road (cost 1), 4. River (cost 1), 5. Terrain
+
+  // 1. Railroad: both tiles have railroad → 0 cost (free move) (C line 681, 706)
   if (fromImp.railroad && toImp.railroad) return 0;
 
-  // Road or river: both tiles connected by road/railroad/river → 1/3 MP
-  // Rivers only connect along diagonal edges (NE/SE/SW/NW in iso space),
-  // so river bonus only applies for ±1 row moves, not N/S (±2 rows) or E/W
+  // 2. Alpine flag: all terrain costs 1 internal unit (C line 682, 702)
+  // Same cost as road (1/3 MP), but applies even without roads
+  if (UNIT_ALPINE.has(unitType)) return 1;
+
+  // 3. Road: both tiles connected by road/railroad → 1 internal unit (C line 683, 698)
   const dgy = toGy - fromGy;
   const isDiagonal = (dgy === 1 || dgy === -1);
-  const fromHasRoad = fromImp.road || fromImp.railroad || (isDiagonal && mapBase.hasRiver(fromGx, fromGy));
-  const toHasRoad = toImp.road || toImp.railroad || (isDiagonal && mapBase.hasRiver(toGx, toGy));
+  const fromHasRoad = fromImp.road || fromImp.railroad;
+  const toHasRoad = toImp.road || toImp.railroad;
   if (fromHasRoad && toHasRoad) return 1;
 
-  // Base terrain cost
+  // 4. River crossing: both tiles have river AND diagonal adjacency (C lines 684-692, 698)
+  if (isDiagonal && mapBase.hasRiver(fromGx, fromGy) && mapBase.hasRiver(toGx, toGy)) return 1;
+
+  // 5. Full terrain cost (C line 694)
   const terrain = mapBase.getTerrain(toGx, toGy);
-  const baseCost = (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
-
-  // C.5: Alpine Troops (alpine flag) treat ALL terrain as cost 1 MP
-  // Per binary RULES.TXT flags bit 12: alpine units always pay 1 MP regardless of terrain
-  if (UNIT_ALPINE.has(unitType)) {
-    return MOVEMENT_MULTIPLIER; // 1 MP regardless of terrain
-  }
-
-  return baseCost;
+  return (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
 }
 
 /**
@@ -299,11 +316,44 @@ export function getDirection(fromGx, fromGy, toGx, toGy, mapBase) {
 }
 
 /**
+ * Pick the closest of the 8 compass directions for an arbitrary (dx, dy)
+ * delta. Sign-clamps both deltas to {-1, 0, 1} then finds the matching
+ * direction index.
+ *
+ * Binary ref: FUN_004abea0 (block_004A0000.c:3634-3695, "direction_from_delta").
+ * Used by binary's pathfinder as a geometric fallback when targets are
+ * non-adjacent. Returns 0..7 (N=0, NE=1, E=2, SE=3, S=4, SW=5, W=6, NW=7),
+ * or 8 as the "no direction" sentinel (which only happens for dx=dy=0,
+ * matching the C function's `local_c = 8` initial value).
+ *
+ * @param {number} dx - x delta (any sign/magnitude)
+ * @param {number} dy - y delta (any sign/magnitude)
+ * @returns {number} direction index 0..7, or 8 if dx==dy==0
+ */
+// Sign tables: dx[i], dy[i] for direction index i.
+// These mirror the binary's DAT_00628350/DAT_00628360 byte tables AFTER
+// sign-clamping to {-1, 0, 1}, ordered N, NE, E, SE, S, SW, W, NW.
+const DIR_FROM_DELTA_DX_SIGN = [ 0, 1, 1, 1, 0, -1, -1, -1];
+const DIR_FROM_DELTA_DY_SIGN = [-1,-1, 0, 1, 1,  1,  0, -1];
+export function directionFromDelta(dx, dy) {
+  const sx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+  const sy = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+  let result = 8;
+  for (let i = 0; i < 8; i++) {
+    if (DIR_FROM_DELTA_DX_SIGN[i] === sx && DIR_FROM_DELTA_DY_SIGN[i] === sy) {
+      result = i;
+    }
+  }
+  return result;
+}
+
+/**
  * Check if movement from→to is blocked by Zone of Control.
- * ZOC rule: if a unit is adjacent to an enemy combat unit, it can only move to:
+ * Per binary FUN_005b4c63: ALL foreign non-allied units exert ZOC (no unit type filter).
+ * ZOC rule: if a unit is adjacent to an enemy unit, it can only move to:
  *   - tiles with friendly units/cities, OR
- *   - tiles NOT adjacent to enemy combat units
- * Air units, sea units, diplomats, settlers etc. with UNIT_IGNORE_ZOC=1 skip this check.
+ *   - tiles NOT adjacent to enemy units
+ * Units with UNIT_IGNORE_ZOC=1 (flags_lo & 0x02) skip this check.
  *
  * @param {number} unitType - unit type ID
  * @param {number} owner - civ slot of the moving unit
@@ -332,7 +382,7 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   for (const dir in fromNeighbors) {
     const [nx, ny] = fromNeighbors[dir];
     if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyCombatUnit(nx, ny, owner, domain, units)) {
+    if (hasEnemyUnit(nx, ny, owner, domain, units)) {
       fromAdjacentToEnemy = true;
       break;
     }
@@ -352,7 +402,7 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   for (const dir in toNeighbors) {
     const [nx, ny] = toNeighbors[dir];
     if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyCombatUnit(nx, ny, owner, domain, units)) {
+    if (hasEnemyUnit(nx, ny, owner, domain, units)) {
       return true; // blocked by ZOC
     }
   }
@@ -360,10 +410,18 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   return false;
 }
 
-function hasEnemyCombatUnit(gx, gy, owner, domain, units) {
+/**
+ * Check if any foreign (non-allied) unit exists at the given tile.
+ * Per binary FUN_005b4c63 (block_005B0000.c:1831-1854), ZOC is exerted by
+ * ALL foreign non-allied units regardless of unit type — there is no attack
+ * strength filter. The domain check uses tile terrain (ocean vs non-ocean),
+ * not unit domain. We approximate this by checking UNIT_DOMAIN match since
+ * land units are on land tiles and sea units on sea tiles.
+ */
+function hasEnemyUnit(gx, gy, owner, domain, units) {
   for (const u of units) {
     if (u.gx === gx && u.gy === gy && u.owner !== owner && u.gx >= 0
-        && UNIT_DOMAIN[u.type] === domain && (UNIT_ATK[u.type] || 0) > 0) {
+        && UNIT_DOMAIN[u.type] === domain) {
       return true;
     }
   }

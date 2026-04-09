@@ -7,7 +7,7 @@
  */
 
 import { S } from './state.js';
-import { sfx, getDeathSfx, playSoundForEvent, getProductionSound, playCityStatusSound, playTurnEventSound, playRandomCheers } from './sound.js';
+import { sfx, getDeathSfx, playSoundForEvent, getProductionSound, playCityStatusSound, playTurnEventSound, playRandomCheers, SOUND_ID_MAP } from './sound.js';
 import {
   UNIT_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES,
   ORDER_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, CIV_CITY_NAMES,
@@ -164,8 +164,10 @@ export function showUnitSupportedDialog(unitIndex) {
   const displayY = unit.gy;
 
   // Find city at unit location, or nearest city
+  // Skip destroyed cities (size=0/owner=0xFF after razing).
   let locationStr;
-  const cityAtUnit = S.mpGameState.cities?.find(c => c.gx === unit.gx && c.gy === unit.gy);
+  const cityAtUnit = S.mpGameState.cities?.find(c =>
+    c.gx === unit.gx && c.gy === unit.gy && c.size > 0 && c.owner !== 0xFF);
   if (cityAtUnit) {
     locationStr = `Location: ${cityAtUnit.name} (${displayX}, ${displayY})`;
   } else {
@@ -367,6 +369,15 @@ export function showCityFoundedDialog(cityName, year, onDismiss) {
  * @param {Array<{label:string, action:function}>} buttons - button definitions
  * @returns {{ overlay, dismiss }} - DOM element and dismiss function
  */
+/**
+ * Close every open Civ2 dialog (modal, turn-event queue, etc.).
+ * Call when leaving a game to avoid leaking dialogs/sounds across sessions.
+ */
+export function closeAllCiv2Dialogs() {
+  const overlays = document.querySelectorAll('.civ2-dialog-overlay');
+  overlays.forEach(o => o.remove());
+}
+
 export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }], opts = {}) {
   const { showClose = true, suppressKeyboard = false } = opts;
   const existing = document.getElementById(id);
@@ -457,6 +468,22 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
  * Events: cityGrowth, famine, needsAqueduct, needsSewer, productionComplete
  */
 export function showTurnEvents(events) {
+  // Suppress 'warDeclared' events when the target is being destroyed in the
+  // same batch. Otherwise the user sees "X declared war" right before
+  // "X civilization destroyed", which is confusing — the war was just a
+  // brief technicality before the conquest. The destruction event is the
+  // meaningful one to show.
+  const destroyedCivs = new Set();
+  for (const e of events) {
+    if (e.type === 'civDestroyed' || e.type === 'civEliminated') {
+      if (e.civSlot != null) destroyedCivs.add(e.civSlot);
+    }
+  }
+  events = events.filter(e => {
+    if (e.type !== 'warDeclared') return true;
+    return !(destroyedCivs.has(e.target) || destroyedCivs.has(e.aggressor));
+  });
+
   let i = 0;
   function showNext() {
     if (i >= events.length) return;
@@ -582,11 +609,59 @@ export function showTurnEvents(events) {
         sfx('POS1');
         const civAName = S.mpGameState?.civNames?.[ev.civA] || `Civ ${ev.civA}`;
         const civBName = S.mpGameState?.civNames?.[ev.civB] || `Civ ${ev.civB}`;
-        const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
+        // The previous code had `ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire'`
+        // which mislabeled an alliance as a ceasefire because alliance fell
+        // through the ternary's else branch.
+        const treatyName = ev.treaty === 'alliance' ? 'Alliance' :
+                           ev.treaty === 'peace'    ? 'Peace Treaty' :
+                                                      'Ceasefire';
         createCiv2Dialog('turn-event-dialog', treatyName, panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.textContent = `${civAName} and ${civBName} have signed a ${treatyName}.`;
+          msg.textContent = `${civAName} and ${civBName} have signed an ${treatyName}.`
+            .replace('signed an Peace', 'signed a Peace')
+            .replace('signed an Ceasefire', 'signed a Ceasefire');
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'allianceBroken': {
+        // Binary @CANCELALLIANCE0 (Game.txt:2113-2119) — fired by FUN_00467ef2
+        // (block_00460000.c:1711). The binary uses a SINGLE dialog that
+        // explains both the cancellation and the unit recall (FUN_00467baf
+        // is called for both directions before the dialog at line 1718-1722).
+        //
+        //   Title: Defense Minister
+        //   Body:  Our alliance with the %STRING1 has been cancelled.
+        //          All of our units in %STRING2 territory have been
+        //          relocated to our nearest cities; %STRING2 units in
+        //          our territory have been similarly relocated.
+        //
+        // Only show this dialog to the player who is involved in the
+        // alliance (one of civA / civB). Other observers see @CANCELALLIANCE1
+        // ("The X and Y have cancelled their alliance.") which we skip
+        // since it's a notification of unrelated civs' diplomacy.
+        const me = S.mpCivSlot;
+        const involved = ev.civA === me || ev.civB === me;
+        if (!involved) {
+          showNext();
+          break;
+        }
+        sfx('NEG1');
+        const otherCiv = ev.civA === me ? ev.civB : ev.civA;
+        const otherName = S.mpGameState?.civNames?.[otherCiv] || `Civ ${otherCiv}`;
+        const myRecalled = ev.civA === me ? ev.unitsRecalledA : ev.unitsRecalledB;
+        const theirRecalled = ev.civA === me ? ev.unitsRecalledB : ev.unitsRecalledA;
+        createCiv2Dialog('turn-event-dialog', 'Defense Minister', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);line-height:1.5';
+          let text = `Our alliance with the ${otherName} has been cancelled.`;
+          if (myRecalled > 0 || theirRecalled > 0) {
+            text += `\n\nAll of our units in ${otherName} territory have been relocated to our nearest cities; ${otherName} units in our territory have been similarly relocated.`;
+          }
+          msg.textContent = text;
+          msg.style.whiteSpace = 'pre-line';
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;
@@ -653,29 +728,54 @@ export function showTurnEvents(events) {
         break;
       }
 
-      case 'civEliminated': {
+      // Both event types use the binary's @DESTROYED dialog from Game.txt:1233
+      //   @DESTROYED
+      //   @title=Defense Minister
+      //   %STRING0 civilization destroyed by %STRING1.
+      //
+      // The binary fires this from kill_civ (FUN_004AA378) when the civ
+      // loses its last city. JS emits 'civDestroyed' from killCiv (when a
+      // civ is killed via city capture) and 'civEliminated' from
+      // checkCivElimination (when the elimination is detected from another
+      // path). Both should show the same dialog.
+      case 'civEliminated':
+      case 'civDestroyed': {
         sfx('GUILLOTN');
         const civName = S.mpGameState?.civNames?.[ev.civSlot] || `Civilization ${ev.civSlot}`;
+        const killerName = ev.killerCiv != null
+          ? (S.mpGameState?.civNames?.[ev.killerCiv] || `Civ ${ev.killerCiv}`)
+          : null;
         const isMe = ev.civSlot === S.mpCivSlot;
-        const title = isMe ? 'Defeat!' : 'Civilization Destroyed';
-        const text = isMe
-          ? 'Your civilization has been destroyed!'
-          : `The ${civName} have been destroyed!`;
-        if (ev._debug) console.log(`[civEliminated] civ=${ev.civSlot} ${ev._debug}`);
-        createCiv2Dialog('turn-event-dialog', title, panel => {
-          const msg = document.createElement('div');
-          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.textContent = text;
-          if (ev._debug) {
-            const dbg = document.createElement('div');
-            dbg.style.cssText = 'font:11px monospace;color:#999;margin-top:8px;text-align:center';
-            dbg.textContent = ev._debug;
+        if (ev._debug) console.log(`[${ev.type}] civ=${ev.civSlot} ${ev._debug}`);
+
+        if (isMe) {
+          // Binary FUN_0048b165 case 4 → FUN_004702e0 (death sequence): when
+          // the local player loses their last city, show a prominent DEFEAT
+          // dialog. Real Civ2 plays a death cinematic; we show a final
+          // "your civilization has been destroyed" screen.
+          const flavor = killerName
+            ? `Conquered by the ${killerName}, the ${civName} civilization is no more.`
+            : `The ${civName} civilization is no more.`;
+          createCiv2Dialog('defeat-dialog', 'DEFEAT', panel => {
+            const msg = document.createElement('div');
+            msg.style.cssText = 'text-align:center;padding:24px 28px;font:bold 20px "Times New Roman",Georgia,serif;color:#660000;text-shadow:1px 1px 0 rgba(191,191,191,0.5);max-width:380px';
+            msg.innerHTML =
+              `Your civilization has fallen.<br><br>` +
+              `<span style="font:16px \\'Times New Roman\\',Georgia,serif;color:#333">${flavor}</span>`;
             panel.appendChild(msg);
-            panel.appendChild(dbg);
-          } else {
+          }, [{ label: 'OK', action: showNext }], { showClose: false });
+        } else {
+          const title = 'Defense Minister';
+          const text = killerName
+            ? `${civName} civilization destroyed by ${killerName}.`
+            : `The ${civName} civilization has been destroyed.`;
+          createCiv2Dialog('turn-event-dialog', title, panel => {
+            const msg = document.createElement('div');
+            msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+            msg.textContent = text;
             panel.appendChild(msg);
-          }
-        }, [{ label: 'OK', action: showNext }]);
+          }, [{ label: 'OK', action: showNext }]);
+        }
         break;
       }
 
@@ -830,6 +930,28 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'casualtyReport': {
+        // Binary FUN_0048b340 lines 3438-3454 (game loop): casualty dialog
+        // shows units lost since last turn. Sound effect 0x30 from
+        // FUN_0046e020 (table at 0x0062AF70). Strings: CASUALTY (singular) /
+        // CASUALTIES (plural). Only show for the local player.
+        if (ev.civSlot !== S.mpCivSlot) { showNext(); break; }
+        const sndName = SOUND_ID_MAP?.[0x30];
+        if (sndName) sfx(sndName);
+        const civName = S.mpGameState?.civNames?.[ev.civSlot] || 'your';
+        const title = 'Defense Minister';
+        const msgText = ev.count === 1
+          ? `My ${civName} leader, we have lost a unit since last turn.`
+          : `My ${civName} leader, we have lost ${ev.count} units since last turn.`;
+        createCiv2Dialog('turn-event-dialog', title, panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = msgText;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'globalWarming': {
         playTurnEventSound(3);
         createCiv2Dialog('turn-event-dialog', 'Global Warming!', panel => {
@@ -879,12 +1001,33 @@ export function showTurnEvents(events) {
       }
 
       case 'cityCapture': {
-        playSoundForEvent('combatVictoryFanfare');
+        // Binary @CITYCAPTURE (Game.txt:1801): "%STRING1 %STRING3 %STRING0.
+        // %NUMBER0 gold pieces plundered." — title "Defense Minister".
+        // %STRING1 = capturer civ, %STRING3 = verb, %STRING0 = city name.
+        // Verb is "captured" / "recaptured" depending on wasOurs flag.
+        // For destroyed cities the binary uses the same dialog but the
+        // city visually disappears; we append a razing notice for clarity.
+        if (ev.destroyed) {
+          sfx('LARGEXPL');
+        } else {
+          playSoundForEvent('combatVictoryFanfare');
+        }
         const capName = ev.cityName || 'City';
-        createCiv2Dialog('turn-event-dialog', 'City Captured!', panel => {
+        const capturerName = S.mpGameState?.civNames?.[ev.to] || `Civ ${ev.to}`;
+        const verb = ev.wasOurs ? 'recaptured' : 'captured';
+        const title = ev.destroyed ? 'City Razed!' : 'Defense Minister';
+        createCiv2Dialog('turn-event-dialog', title, panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
-          msg.textContent = `${capName} has been captured!`;
+          let text = `${capturerName} ${verb} ${capName}.`;
+          if (ev.plunder > 0) {
+            text += `  ${ev.plunder} gold pieces plundered.`;
+          }
+          if (ev.destroyed) {
+            text += `\n\nThe city has been razed to the ground.`;
+          }
+          msg.textContent = text;
+          msg.style.whiteSpace = 'pre-line';
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;
@@ -1326,7 +1469,7 @@ export function showScoreScreen(state, civSlot) {
       const acSec = document.createElement('div');
       acSec.style.cssText = 'text-align:center;padding:8px 0;margin-top:6px;border-top:1px solid rgba(0,0,0,0.15)';
       acSec.innerHTML = `<div style="font:bold 16px 'Times New Roman',Georgia,serif;color:#006600">Spaceship Arrived at Alpha Centauri!</div>`
-        + `<div style="${textStyle};font-size:13px;color:#006600;margin-top:2px">+${finalResult.acBonus} bonus points from ${ss.structurals} structurals, ${ss.components} components, ${ss.modules} modules</div>`;
+        + `<div style="${textStyle};font-size:13px;color:#006600;margin-top:2px">+${finalResult.acBonus} bonus points from ${ss.structural || 0} structurals, ${(ss.fuel || 0) + (ss.propulsion || 0)} components, ${(ss.habitation || 0) + (ss.lifeSupport || 0) + (ss.solarPanel || 0)} modules</div>`;
       panel.appendChild(acSec);
     }
 
@@ -1468,9 +1611,9 @@ export function showRetirementDialog(state, civSlot, reason, winnerCivSlot) {
 export function showSpaceshipDialog(state, civSlot) {
   // Read existing spaceship stats (already computed by end-turn processing)
   const ss = state.spaceships?.[civSlot] || {
-    structurals: 0, components: 0, modules: 0,
+    structural: 0, fuel: 0, propulsion: 0, habitation: 0, lifeSupport: 0, solarPanel: 0,
     mass: 0, successProb: 0, flightTurns: 0, arrivalTurn: 0,
-    launched: false, launchTurn: -1, canLaunch: false, hasApollo: false,
+    launched: false, launchTurn: -1, canLaunch: false, hasNuclearPower: false,
   };
   const civName = state.civNames?.[civSlot] || `Civ ${civSlot}`;
   const yearStr = getGameYear(state.turn?.number || 0);
@@ -1501,7 +1644,8 @@ export function showSpaceshipDialog(state, civSlot) {
       header.innerHTML = `<div style="${textStyle};color:#006600;font-size:16px"><b>Launched!</b> In flight...</div>`;
     } else if (ss.destroyed) {
       header.innerHTML = `<div style="${textStyle};color:#990000;font-size:16px"><b>Ship Lost!</b> The spaceship was destroyed.</div>`;
-    } else if (ss.structurals === 0 && ss.components === 0 && ss.modules === 0) {
+    } else if ((ss.structural || 0) === 0 && (ss.fuel || 0) === 0 && (ss.propulsion || 0) === 0
+               && (ss.habitation || 0) === 0 && (ss.lifeSupport || 0) === 0 && (ss.solarPanel || 0) === 0) {
       header.innerHTML = `<div style="${textStyle};font-size:16px">No spaceship parts built yet.</div>`;
     } else {
       header.innerHTML = `<div style="${textStyle};font-size:16px">Under construction &mdash; ${yearStr}</div>`;
@@ -1515,9 +1659,12 @@ export function showSpaceshipDialog(state, civSlot) {
     panel.appendChild(partsSec);
 
     const partRows = [
-      ['SS Structural', ss.structurals, '800 tons each'],
-      ['SS Component', ss.components, '500 tons avg'],
-      ['SS Module', ss.modules, '867 tons avg'],
+      ['Structural', ss.structural || 0, 'mass 1'],
+      ['Fuel', ss.fuel || 0, 'mass 4'],
+      ['Propulsion', ss.propulsion || 0, 'mass 4'],
+      ['Habitation', ss.habitation || 0, 'mass 16'],
+      ['Life Support', ss.lifeSupport || 0, 'mass 16'],
+      ['Solar Panel', ss.solarPanel || 0, 'mass 16'],
     ];
     for (const [label, count, weight] of partRows) {
       const row = document.createElement('div');
@@ -1544,8 +1691,8 @@ export function showSpaceshipDialog(state, civSlot) {
       statRows.push(['Arrival In', `${turnsLeft} turn${turnsLeft !== 1 ? 's' : ''}`]);
     }
 
-    if (ss.hasApollo) {
-      statRows.push(['Apollo Bonus', 'Flight time reduced 25%']);
+    if (ss.hasNuclearPower) {
+      statRows.push(['Fusion Power', 'Flight time reduced 25%']);
     }
 
     for (const [label, val] of statRows) {
@@ -1578,9 +1725,9 @@ export function showSpaceshipDialog(state, civSlot) {
       reqSec.appendChild(reqTitle);
 
       const reqs = [
-        [ss.structurals >= 1, 'At least 1 SS Structural'],
-        [ss.components >= 1, 'At least 1 SS Component'],
-        [ss.modules >= 1, 'At least 1 SS Module'],
+        [(ss.structural || 0) >= 1, 'At least 1 Structural'],
+        [(ss.fuel || 0) >= 1 || (ss.propulsion || 0) >= 1, 'At least 1 Component (Fuel or Propulsion)'],
+        [(ss.habitation || 0) >= 1 || (ss.lifeSupport || 0) >= 1 || (ss.solarPanel || 0) >= 1, 'At least 1 Module (Hab/Life/Solar)'],
       ];
       for (const [met, desc] of reqs) {
         const reqRow = document.createElement('div');

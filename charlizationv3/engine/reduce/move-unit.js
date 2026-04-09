@@ -2,17 +2,17 @@
 // reduce/move-unit.js — MOVE_UNIT action handler + goody hut logic
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { grantAdvance, getAvailableResearch } from '../research.js';
 import { dispatchEvents, EVENT_UNIT_KILLED } from '../events.js';
-import { declareWar as diplomacyDeclareWar } from '../diplomacy.js';
+import { declareWar as diplomacyDeclareWar, getTreatyFlags, TF } from '../diplomacy.js';
 import { getNumericYear } from '../year.js';
 import { makeUnit, killUnit, captureCity, checkCivElimination, discoverContacts, checkSenateVeto, getCityName, assignInitialWorkers, radiusTileCoords } from './helpers.js';
-import { spawnBarbarianUprising, getBarbUnitType } from './barbarians.js';
+import { getBarbUnitType } from './barbarians.js';
 
 // ── #139 LONGMOVE counter: binary threshold from FUN_0059062c ──
 const LONGMOVE_THRESHOLD = 0x2f; // 47 — after this many goto moves, cancel goto to prevent infinite loops
@@ -297,10 +297,17 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
 
   if (enemiesAtDest.length > 0) {
     // ── Combat ──
-    // Establish contact if this is the first encounter, then auto-declare war
     const defCivSlot = state.units[enemiesAtDest[0]].owner;
     if (!state.treaties) state.treaties = {};
     const warKey = civSlot < defCivSlot ? `${civSlot}-${defCivSlot}` : `${defCivSlot}-${civSlot}`;
+
+    // Binary FUN_00580341:273-274: alliance check — cannot attack allies
+    // (&DAT_0064c6c0)[defender * 4 + attacker * 0x594] & 8 → return 1 (abort)
+    if (state.treaties[warKey] === 'alliance') {
+      return; // allies cannot attack each other
+    }
+
+    // Establish contact if this is the first encounter, then auto-declare war
     if (state.treaties[warKey] === undefined) {
       // First contact via combat — establish contact then immediately go to war
       if (!state.turnEvents) state.turnEvents = [];
@@ -771,13 +778,60 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     const eliminatedCiv = result.attackerWins ? defOwner : unit.owner;
     checkCivElimination(state, eliminatedCiv);
 
-    // Barbarian uprising when a civ is destroyed via city capture
-    if (result.attackerWins && defCity && eliminatedCiv > 0 &&
-        !(state.civsAlive & (1 << eliminatedCiv))) {
-      spawnBarbarianUprising(state, mapBase, dest.gx, dest.gy);
-    }
+    // NOTE: the binary's kill_civ (FUN_004AA378 in block_004A0000.c:3378)
+    // does NOT spawn barbarians when a civ is destroyed by city capture —
+    // verified by listing all functions called from kill_civ. Barbarian
+    // uprisings come from goody huts and the periodic spawn timer
+    // (gated by the barbarianActivity setting), not from civ deaths.
   } else {
-    // ── Normal movement (no enemy) ──
+    // ── Normal movement (no enemy at destination) ──
+    // Binary FUN_0059062c handles several city-at-destination cases before moving:
+    //   1. Allied city (diplomacy & 0x08): enter, stop unit, heal (lines 258-286)
+    //   2. Peace/ceasefire city (& 0x06): EXPEL dialog — must break treaty (lines 357-389)
+    //   3. Enemy war city (& 0x20): enter and capture (lines 664-673, 1000-1005)
+    //   4. Own city: normal entry
+    // We check these cases here before the normal move logic.
+    let enterAlliedCity = false;
+    {
+      const destCity = state.cities.find(c =>
+        c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.owner > 0 && c.size > 0);
+      if (destCity) {
+        const destCityOwner = destCity.owner;
+        const keyA = Math.min(civSlot, destCityOwner);
+        const keyB = Math.max(civSlot, destCityOwner);
+        const cityKey = `${keyA}-${keyB}`;
+        const cityTreaty = state.treaties?.[cityKey];
+
+        if (cityTreaty === 'alliance') {
+          // Allied city: unit will enter, heal, and stop (consume all MP at end)
+          enterAlliedCity = true;
+        } else if (cityTreaty === 'peace' || cityTreaty === 'ceasefire') {
+          // Peace/ceasefire: must declare war to enter. Run Senate veto like combat.
+          const cityEntrySenate = checkSenateVeto(state, mapBase, civSlot, destCityOwner);
+          if (!state.turnEvents) state.turnEvents = [];
+          for (const evt of cityEntrySenate.events) {
+            state.turnEvents.push(evt);
+          }
+          if (cityEntrySenate.blocked) {
+            // Senate blocks — clear goto and return
+            if (unit.orders === 'goto') {
+              unit.orders = 'none';
+              unit.goToX = undefined;
+              unit.goToY = undefined;
+              state.units[unitIndex] = unit;
+            }
+            return;
+          }
+          // Declare war via diplomacy module (handles reputation, alliances, trade routes)
+          const cityEntryWarResult = diplomacyDeclareWar(state, mapBase, civSlot, destCityOwner);
+          for (const evt of cityEntryWarResult.events) {
+            state.turnEvents.push(evt);
+          }
+        }
+        // 'war' or no treaty: proceed with move (capture handled post-move)
+      }
+    }
+
     const prevGx = unit.gx, prevGy = unit.gy;
     const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
@@ -890,24 +944,13 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     }
 
     // ── Capture undefended enemy city ──
+    // Treaty-breaking (peace/ceasefire) is handled BEFORE the move in the city
+    // entry check above (via diplomacyDeclareWar). By the time we get here,
+    // the treaty should already be 'war' or was never set (barbarian/first contact).
     const enemyCity = state.cities.find(c =>
       c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.owner > 0 && c.size > 0);
     if (enemyCity && (UNIT_ATK[unit.type] || 0) > 0) {
       const defOwner = enemyCity.owner;
-
-      // D.3: Apply treaty-breaking flags when entering undefended enemy city
-      if (state.treaties) {
-        const capWarKey = civSlot < defOwner ? `${civSlot}-${defOwner}` : `${defOwner}-${civSlot}`;
-        const capPrevTreaty = prev.treaties?.[capWarKey];
-        if (capPrevTreaty && capPrevTreaty !== 'war' && capPrevTreaty !== undefined) {
-          if (!state.diplomacy) state.diplomacy = {};
-          const dKey = `${civSlot}-${defOwner}`;
-          state.diplomacy = { ...state.diplomacy, [dKey]: { ...(state.diplomacy[dKey] || {}), sneak: true, sneakTurn: state.turn?.number || 0 } };
-          // Break the treaty
-          state.treaties = { ...state.treaties, [capWarKey]: 'war' };
-        }
-      }
-
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const cityIdx = state.cities.indexOf(enemyCity);
       if (cityIdx >= 0) {
@@ -919,27 +962,32 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         };
         // Check civ elimination for the old owner
         checkCivElimination(state, defOwner);
-        // Barbarian uprising when a civ is destroyed via city capture
-        if (defOwner > 0 && !(state.civsAlive & (1 << defOwner))) {
-          spawnBarbarianUprising(state, mapBase, dest.gx, dest.gy);
-        }
+        // NOTE: binary kill_civ does NOT spawn barbarians on civ death
+        // (see move-unit.js:778 comment for verification details).
       }
     }
 
-    // #64: Allied city repair — heal units entering an allied city
-    // Per binary block_00590000.c: heal maxHP/10 when entering allied city
-    if (unit.gx >= 0 && (unit.movesRemain || 0) > 0) {
-      const alliedCity = state.cities.find(c => {
-        if (c.gx !== unit.gx || c.gy !== unit.gy || c.size <= 0) return false;
-        if (c.owner === unit.owner) return false; // own city, not allied
-        const a = Math.min(unit.owner, c.owner);
-        const b = Math.max(unit.owner, c.owner);
-        return state.treaties?.[`${a}-${b}`] === 'alliance';
-      });
+    // #64: Allied city entry — heal and STOP the unit
+    // Binary FUN_0059062c:258-286: when entering allied city, unit heals maxHP/10
+    // (damage reduction), consumes ~10% movement cost, then FUN_005b6787 consumes
+    // all remaining MP (unit stops for the turn). Shows ALLIEDREPAIR message.
+    if (enterAlliedCity && unit.gx >= 0) {
+      const alliedCity = state.cities.find(c =>
+        c.gx === unit.gx && c.gy === unit.gy && c.size > 0 && c.owner !== unit.owner);
       if (alliedCity) {
+        // Heal: reduce damage by maxHP/10
         const maxHp = (UNIT_HP[unit.type] || 1) * 10;
         const healAmount = Math.floor(maxHp / 10);
         unit.movesRemain = Math.max(0, (unit.movesRemain || 0) - healAmount);
+        // Stop unit: consume all remaining movement (binary FUN_005b6787)
+        unit.movesLeft = 0;
+        state.units[unitIndex] = unit;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'alliedCityEntry',
+          cityName: alliedCity.name, cityOwner: alliedCity.owner,
+          unitIndex, unitType: unit.type, civSlot,
+        });
       }
     }
 
@@ -1017,28 +1065,74 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     // Check for first contact with other civs now visible
     discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
 
-    // D5/D6: Cancel goto orders and wake sentries when enemies become visible
-    // Binary FUN_0042738c (cancel_goto_if_blocked) + FUN_004273e6 (cancel_goto_for_stack)
+    // Binary FUN_004274a6 (process_unit_move_visibility) lines 2541-2685:
+    // After a unit finishes moving, scan immediate neighbors for OTHER civs'
+    // units. If a neighbor is non-allied (treaty flag bit TF.ALLIANCE clear),
+    // cancel the moving unit's GOTO and wake adjacent sentries.
+    //
+    // Binary FUN_0042738c (cancel_goto_if_blocked): clears order if low nibble
+    //   of order == 0xb (GOTO) AND unit AI role != 7 (caravan/freight keep
+    //   going).
+    // Binary FUN_004273e6 (cancel_goto_for_stack): wakes any sentry-order unit
+    //   in the stack at the given position.
+    //
+    // Adjacency = Chebyshev distance 1 in logical (gx, gy) grid.
+    const isAdjacent = (u1, u2) => {
+      let dx = Math.abs(u1.gx - u2.gx);
+      if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+      const dy = Math.abs(u1.gy - u2.gy);
+      return dx <= 1 && dy <= 1 && (dx + dy) > 0;
+    };
+    const isAllied = (civA, civB) => {
+      if (civA === civB) return true;
+      if (civA === 0 || civB === 0) return false; // barbarians: never allied
+      const flags = getTreatyFlags(state, civA, civB);
+      return (flags & TF.ALLIANCE) !== 0;
+    };
+
+    // ── Cancel the moving unit's own GOTO if it's now next to a non-ally ──
+    // Binary FUN_0042738c (cancel_goto_if_blocked) at block_00420000.c:2439-2446
+    // checks `unit_type[+0xa] != 7` where +0xa is the AI Role byte from
+    // RULES.TXT @UNITS — value 7 = caravan/freight (trade units), which keep
+    // their GOTO even when blocked. JS UNIT_ROLE uses a +1 offset relative to
+    // RULES.TXT (see espionage.js:224 comment), so JS role 8 = binary role 7
+    // (caravan/freight). Air units are NOT exempt in the binary; the previous
+    // JS check `UNIT_DOMAIN !== 1` was a JS-invented exemption.
+    if (unit.orders === 'goto' && (UNIT_ROLE[unit.type] ?? 0) !== 8) {
+      let blocking = false;
+      for (let ei = 0; ei < state.units.length; ei++) {
+        const e = state.units[ei];
+        if (e.gx < 0 || e.owner === civSlot) continue;
+        if (isAllied(civSlot, e.owner)) continue;
+        if (isAdjacent(unit, e)) { blocking = true; break; }
+      }
+      if (blocking) {
+        unit.orders = 'none';
+        // Note: `unit` is the live reference into state.units; the move loop
+        // writes back to the array, so this assignment is sufficient.
+      }
+    }
+
+    // ── Wake nearby sentries / cancel nearby gotos for the moving civ's
+    // own units when enemies become visible (existing D5/D6 behaviour) ──
     for (let ui = 0; ui < state.units.length; ui++) {
       const u = state.units[ui];
       if (u.owner !== civSlot || u.gx < 0) continue;
-      // Check if any enemy is now visible near this unit (radius 1 = 9 tiles)
-      let enemyVisible = false;
+      if (u.orders !== 'sentry' && u.orders !== 'goto') continue;
+      // Check if any non-allied unit is adjacent
+      let enemyAdj = false;
       for (let ei = 0; ei < state.units.length; ei++) {
         const e = state.units[ei];
-        if (e.owner === civSlot || e.owner === 0 || e.gx < 0) continue;
-        let dx = Math.abs(u.gx - e.gx);
-        if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
-        const dy = Math.abs(u.gy - e.gy);
-        if (dx <= 2 && dy <= 2 && dx + dy <= 3) { enemyVisible = true; break; }
+        if (e.gx < 0 || e.owner === civSlot) continue;
+        if (isAllied(civSlot, e.owner)) continue;
+        if (isAdjacent(u, e)) { enemyAdj = true; break; }
       }
-      if (!enemyVisible) continue;
-      // D5: Cancel goto for non-air units
-      if (u.orders === 'goto' && (UNIT_DOMAIN[u.type] ?? 0) !== 1) {
+      if (!enemyAdj) continue;
+      // Cancel GOTO for non-trade units (binary role != 7 = JS UNIT_ROLE != 8),
+      // wake sentries unconditionally.
+      if (u.orders === 'goto' && (UNIT_ROLE[u.type] ?? 0) !== 8) {
         state.units[ui] = { ...u, orders: 'none' };
-      }
-      // D6: Wake sentries (non-air land units or any sentry seeing enemies)
-      else if (u.orders === 'sentry') {
+      } else if (u.orders === 'sentry') {
         state.units[ui] = { ...u, orders: 'none' };
       }
     }

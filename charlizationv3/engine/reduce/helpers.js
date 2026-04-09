@@ -424,6 +424,20 @@ export function killUnit(state, idx) {
   const u = state.units[idx];
   if (u.gx < 0) return;
   state.units[idx] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+  // Binary FUN_005bb544 (in block_00590000) increments DAT_006af220[civ*4]
+  // (lifetime units lost). Used by the casualty notification dialog at start
+  // of next turn (game loop FUN_0048b340 lines 3428-3454).
+  const owner = u.owner;
+  if (owner > 0 && owner < 8 && state.civs?.[owner]) {
+    if (!Array.isArray(state.civs) || Object.isFrozen(state.civs)) {
+      state.civs = [...state.civs];
+    }
+    const civ = state.civs[owner];
+    state.civs[owner] = {
+      ...civ,
+      unitsLostLifetime: (civ.unitsLostLifetime || 0) + 1,
+    };
+  }
 }
 
 /** Check if a civ has no cities and no alive units → eliminate. */

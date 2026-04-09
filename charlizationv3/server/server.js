@@ -917,7 +917,8 @@ function processImmediateAiDiplomacy(roomId, room, action) {
   }
 
   // ── Fix #8: Tribute demand — immediate AI response ──
-  if (action.type === 'DEMAND_TRIBUTE') {
+  // (skip if the player already used the new self-resolving accept-flag flow)
+  if (action.type === 'DEMAND_TRIBUTE' && action.accept === undefined) {
     const targetCiv = action.targetCiv;
     console.log(`[diplo] DEMAND_TRIBUTE from civ ${action.from || '?'} to civ ${targetCiv}, amount=${action.amount}`);
     if (targetCiv != null && !(humanPlayers & (1 << targetCiv)) && (room.gameState.civsAlive & (1 << targetCiv))) {
@@ -1133,6 +1134,14 @@ function sendGameLog(room, category, text, turn, civSlots) {
  * Build a detailed combat log string from the enriched combatResult.
  */
 function formatCombatLog(cr, gs) {
+  // Capture-without-combat (e.g., walking into an undefended city): the
+  // combatResult only has { type: 'capture', cityName, civSlot, gx, gy }
+  // — no attacker/defender/rounds. Emit a simple capture line.
+  if (cr.type === 'capture' && cr.rounds == null) {
+    const civName = gs.civNames?.[cr.civSlot] || `Civ ${cr.civSlot}`;
+    return `[Combat] ${civName} captured ${cr.cityName} (undefended).`;
+  }
+
   const atkName = UNIT_NAMES[cr.attacker] || `Unit ${cr.attacker}`;
   const defName = UNIT_NAMES[cr.defender] || `Unit ${cr.defender}`;
   const atkCivName = gs.civNames?.[cr.atkOwner] || `Civ ${cr.atkOwner}`;
@@ -1300,8 +1309,13 @@ function formatTurnEventLog(ev, gs) {
     case 'warDeclared':
       return { category: 'diplomacy', text: `${civName(ev.aggressor)} declared war on ${civName(ev.target)}!` };
     case 'treatyAccepted': {
-      const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
+      const treatyName = ev.treaty === 'alliance' ? 'an Alliance' :
+                         ev.treaty === 'peace'    ? 'a Peace Treaty' :
+                                                    'a Ceasefire';
       return { category: 'diplomacy', text: `${civName(ev.civA)} and ${civName(ev.civB)} signed ${treatyName}` };
+    }
+    case 'allianceBroken': {
+      return { category: 'diplomacy', text: `${civName(ev.civA)} and ${civName(ev.civB)} have cancelled their alliance` };
     }
     case 'civEliminated':
       return { category: 'diplomacy', text: `The ${civName(ev.civSlot)} civilization has been destroyed!` };
@@ -1326,6 +1340,17 @@ function formatTurnEventLog(ev, gs) {
       return { category: 'city', text: `Trade route: ${ev.homeCityName} -> ${ev.destCityName} (${ev.income} gold/turn)` };
     case 'tributePaid':
       return { category: 'diplomacy', text: `${civName(ev.from)} paid ${ev.amount} gold tribute to ${civName(ev.to)}` };
+    case 'cityCapture': {
+      const verb = ev.wasOurs ? 'recaptured' : (ev.destroyed ? 'razed' : 'captured');
+      const captName = civName(ev.to);
+      const lostName = civName(ev.from);
+      let text = `${captName} ${verb} ${ev.cityName}`;
+      if (ev.from > 0) text += ` from ${lostName}`;
+      text += '.';
+      if (ev.plunder > 0) text += ` ${ev.plunder} gold pieces plundered.`;
+      if (ev.destroyed) text += ' City razed.';
+      return { category: 'combat', text };
+    }
     case 'cityIncited':
       return { category: 'diplomacy', text: `${ev.cityName} revolts!` };
     case 'techStolen': {

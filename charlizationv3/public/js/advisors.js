@@ -14,6 +14,7 @@ import { validateAction } from '../engine/rules.js';
 import { REVOLUTION, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, SET_RESEARCH } from '../engine/actions.js';
 import { openDiplomacyDialog } from './diplomacy-ui.js';
 import { hasWonderEffect } from '../engine/utils.js';
+import { calcTributeDemand } from '../engine/diplomacy.js';
 
 // Late-bound dependencies (e.g. openCityDialog from app.js)
 let _deps = {};
@@ -686,28 +687,68 @@ export function showDiplomacyPanel() {
   }, [{ label: 'Close' }]);
 }
 
-/** Prompt for tribute amount to demand. */
+/** Demand tribute from a foreign civ.
+ *
+ * Civ2 MGE behavior: the player does NOT specify an amount. The AI computes
+ * how much it is willing to pay (FUN_0045705e) and offers that. The player
+ * accepts (gold transfers) or refuses (relations sour, possibly war).
+ */
 export function showTributeDemandInput(targetCiv, targetName) {
-  createCiv2Dialog('tribute-dialog', 'Demand Tribute', panel => {
-    const msg = document.createElement('div');
-    msg.textContent = `How much gold to demand from ${targetName}?`;
-    panel.appendChild(msg);
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '1';
-    input.max = '1000';
-    input.value = '50';
-    input.style.cssText = 'width:80px;margin:8px 0;font:14px "Times New Roman",serif;padding:4px';
-    panel.appendChild(input);
-  }, [
-    { label: 'Demand', action: () => {
-      const el = document.querySelector('#tribute-dialog input');
-      const amount = parseInt(el?.value) || 50;
-      S.transport.sendRaw({ type: 'ACTION', action: { type: DEMAND_TRIBUTE, targetCiv, amount: Math.min(1000, Math.max(1, amount)) } });
-      showOverlayMessage(`Tribute demand sent to ${targetName}`);
-    }},
-    { label: 'Cancel' },
-  ]);
+  if (!S.mpGameState || S.mpCivSlot == null) return;
+
+  // The AI being asked is the payer; the human player (mpCivSlot) is the receiver.
+  const offer = calcTributeDemand(S.mpGameState, targetCiv, S.mpCivSlot);
+
+  if (offer.willingness === 'pay' && offer.amount > 0) {
+    createCiv2Dialog('tribute-dialog', 'Demand Tribute', panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'padding:8px 12px;font:14px "Times New Roman",serif';
+      msg.innerHTML =
+        `The ${targetName} reluctantly agree to pay ` +
+        `<b style="color:#a06600">${offer.amount} gold</b> as tribute.`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Refuse', action: () => {
+        S.transport.sendRaw({
+          type: 'ACTION',
+          action: { type: DEMAND_TRIBUTE, targetCiv, accept: false },
+        });
+        showOverlayMessage(`The ${targetName} are insulted by your refusal.`);
+      }},
+      { label: 'Accept', action: () => {
+        S.transport.sendRaw({
+          type: 'ACTION',
+          action: { type: DEMAND_TRIBUTE, targetCiv, amount: offer.amount, accept: true },
+        });
+        showOverlayMessage(`${offer.amount} gold transferred from ${targetName}.`);
+      }},
+    ]);
+  } else if (offer.willingness === 'war') {
+    createCiv2Dialog('tribute-dialog', 'Provoked!', panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'padding:8px 12px;font:14px "Times New Roman",serif';
+      msg.textContent =
+        `Your demand has provoked the ${targetName}! They prepare for war.`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Continue', action: () => {
+        // AI is the aggressor — send DEMAND_TRIBUTE { provoked: true } so the
+        // reducer's war declaration uses targetCiv as aggressor (not us).
+        S.transport.sendRaw({
+          type: 'ACTION',
+          action: { type: DEMAND_TRIBUTE, targetCiv, provoked: true },
+        });
+      }},
+    ]);
+  } else {
+    createCiv2Dialog('tribute-dialog', 'Refused', panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'padding:8px 12px;font:14px "Times New Roman",serif';
+      msg.textContent =
+        `The ${targetName} laugh at your demand. They will give you nothing.`;
+      panel.appendChild(msg);
+    }, [{ label: 'Continue' }]);
+  }
 }
 
 // ── Research picker ──
@@ -1603,6 +1644,27 @@ export function appendTechLine(container, techId, civTechs) {
   container.appendChild(line);
 }
 
+// Map generation algorithm options.
+// Must match keys in engine/mapgen-dispatch.js MAPGEN_ALGORITHMS.
+const MAPGEN_ALGORITHM_OPTIONS = [
+  { id: 'civ2',           label: 'Civ2 Binary (Faithful)' },
+  { id: 'pangeaCrescent', label: 'Pangea Crescent' },
+  { id: 'claudeSpecial4', label: 'Realistic Satellite v4' },
+  { id: 'claudeSpecial3', label: 'Realistic Satellite v3' },
+  { id: 'claudeSpecial2', label: 'Realistic Satellite v2' },
+  { id: 'claudeSpecial',  label: 'Realistic Satellite v1' },
+  { id: 'civ2tec',        label: 'Civ2 + Tectonics' },
+  { id: 'civ2tecRegions', label: 'Civ2 + Tectonic Regions' },
+  { id: 'blob',           label: 'Blob' },
+  { id: 'plates',         label: 'Plate Tectonics' },
+  { id: 'voronoi',        label: 'Voronoi' },
+  { id: 'noise',          label: 'Perlin Noise' },
+  { id: 'diamond',        label: 'Diamond-Square' },
+  { id: 'ca',             label: 'Cellular Automata' },
+  { id: 'flatGrass',      label: 'Test: All Grasslands' },
+  { id: 'flatGrassClose', label: 'Test: All Grass + Close Spawns' },
+];
+
 export function showMapSizePicker() {
   const MIN_DIM = 20;
   const MAX_DIM = 300;
@@ -1613,6 +1675,7 @@ export function showMapSizePicker() {
   ];
   let selected = 1; // default: Medium
   let customW = 50, customH = 80;
+  let selectedAlgorithm = 'civ2'; // default: binary-faithful
   let okBtn = null;
 
   function validateCustom() {
@@ -1633,8 +1696,32 @@ export function showMapSizePicker() {
 
   let wInput, hInput, errorMsg;
 
-  createCiv2Dialog('mapsize-dialog', 'Select Map Size', panel => {
-    panel.style.minWidth = '280px';
+  createCiv2Dialog('mapsize-dialog', 'New Game Options', panel => {
+    panel.style.minWidth = '320px';
+
+    // ── Algorithm picker (native <select>) ──
+    const algoLabel = document.createElement('div');
+    algoLabel.textContent = 'Map Generator:';
+    algoLabel.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#333;margin:6px 0 4px 4px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    panel.appendChild(algoLabel);
+
+    const algoSelect = document.createElement('select');
+    algoSelect.style.cssText = 'width:100%;padding:4px 8px;font:14px "Times New Roman",Georgia,serif;margin-bottom:10px;cursor:pointer';
+    for (const opt of MAPGEN_ALGORITHM_OPTIONS) {
+      const optEl = document.createElement('option');
+      optEl.value = opt.id;
+      optEl.textContent = opt.label;
+      if (opt.id === selectedAlgorithm) optEl.selected = true;
+      algoSelect.appendChild(optEl);
+    }
+    algoSelect.addEventListener('change', () => { selectedAlgorithm = algoSelect.value; });
+    panel.appendChild(algoSelect);
+
+    // ── Map size label ──
+    const sizeLabel = document.createElement('div');
+    sizeLabel.textContent = 'Map Size:';
+    sizeLabel.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#333;margin:0 0 4px 4px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    panel.appendChild(sizeLabel);
 
     const list = document.createElement('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:2px;margin-bottom:8px';
@@ -1721,7 +1808,7 @@ export function showMapSizePicker() {
         if (customW < MIN_DIM || customH < MIN_DIM || customW > MAX_DIM || customH > MAX_DIM) return;
         mapSize = `${customW}x${customH}`;
       }
-      S.transport.sendRaw({ type: 'RESTART_GAME', mapSize });
+      S.transport.sendRaw({ type: 'RESTART_GAME', mapSize, mapAlgorithm: selectedAlgorithm });
     }},
   ]);
 
@@ -1855,8 +1942,13 @@ export function showCivpedia(initialTab) {
 /** Gather demographic stats for a single civ. */
 function _calcCivDemographics(gs, mapBase, cSlot) {
   const cities = gs.cities.filter(c => c.owner === cSlot && c.size > 0);
-  let population = 0;
-  for (const c of cities) population += c.size * 10000;
+  // Binary FUN_0043cce5 (block_00430000.c:4478-4500): civ population is the
+  // sum over alive cities of FUN_0043cc7e(city) = Σ_{i=1..size} i, clamped
+  // to [1, 32000]. Each "1" = 10,000 displayed people.
+  let popPoints = 0;
+  for (const c of cities) popPoints += (c.size * (c.size + 1)) >> 1;
+  popPoints = Math.max(1, Math.min(32000, popPoints));
+  const population = popPoints * 10000;
 
   // GNP — net gold income per turn
   let gnp = 0;

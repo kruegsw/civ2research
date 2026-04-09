@@ -50,7 +50,9 @@ export const TF = {
   MULTI_CAPTURE_VENDETTA: 0x400000,  // Multi-city capture vendetta
   DIPLOMACY_ACTIVE:  0x800000,  // Diplomacy session currently active
   SPY_MISSION_ACTIVE: 0x1000000, // Spy/diplomat mission in progress
-  SPACESHIP_LAUNCHED: 0x100,     // Civ has launched spaceship
+  // Note: SPACESHIP_LAUNCHED was 0x100, conflicting with NUKE_AWARENESS.
+  // Removed to avoid the constant collision. Spaceship status is tracked
+  // separately in the civ record, not in the treaty flags.
 };
 
 // ── D.2: Attitude Scoring Constants ──────────────────────────────
@@ -161,36 +163,46 @@ export function setTreatyFlags(state, civA, civB, flags) {
 /**
  * Add flag bits to a civ pair's treaty (cascade-aware, symmetric).
  *
- * Cascade rules when SETTING:
- *   ALLIANCE  -> also set PEACE + CONTACT
- *   PEACE     -> also set CONTACT; clear WAR, WAR_STARTED, CAPTURE_VENDETTA, HOSTILITY
- *   CEASEFIRE -> also set CONTACT; clear WAR, WAR_STARTED, CAPTURE_VENDETTA, HOSTILITY
- *   WAR       -> clear CEASEFIRE, PEACE, ALLIANCE; set WAR_TRACKING
+ * Binary FUN_00467825 (block_00460000.c:1459-1477) — three INDEPENDENT
+ * if-statements (not mutually exclusive) that compute cascading sets/clears
+ * before applying:
+ *   if (flag & ALLIANCE):           also set PEACE                      (0x4)
+ *   if (flag & 0xe = CF|PE|AL):     clear war flags 0x2a60 from pair
+ *   if (flag & WAR):                clear treaty bits 0xe from pair,
+ *                                   add WAR_TRACKING (0x200000) to flag
+ * After cascades, the final flag word is OR'd into BOTH directions of the
+ * pair. JS additionally OR's TF.CONTACT into peace/ceasefire/alliance sets
+ * because callers don't always pre-set CONTACT (the binary always does).
+ *
+ * The previous JS used an else-if chain which only handled the FIRST matching
+ * branch — compound masks like (ALLIANCE|WAR) would miss the WAR cascade.
  */
 export function addTreatyFlag(state, civA, civB, flag) {
+  // Compute the effective cascade exactly as the binary does.
+  let toSet = flag;
+  let toClear = 0;
+
+  // (1) ALLIANCE recursion → also set PEACE
+  if (toSet & TF.ALLIANCE) {
+    toSet |= TF.PEACE;
+  }
+  // (2) Any treaty bit (CEASEFIRE|PEACE|ALLIANCE = 0xe) → clear war flags 0x2a60
+  if (toSet & (TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE)) {
+    toClear |= PEACE_CLEARS; // = WAR | WAR_STARTED | 0x200 | HOSTILITY | INTRUDER
+    toSet |= TF.CONTACT;     // JS convention: peace implies contact
+  }
+  // (3) WAR → clear treaty flags 0xe, add WAR_TRACKING
+  if (toSet & TF.WAR) {
+    toClear |= TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE;
+    toSet |= TF.WAR_TRACKING;
+  }
+
   let ab = getTreatyFlags(state, civA, civB);
   let ba = getTreatyFlags(state, civB, civA);
-
-  if (flag & TF.ALLIANCE) {
-    // Setting ALLIANCE: also set PEACE + CONTACT
-    ab = (ab | flag | TF.PEACE | TF.CONTACT);
-    ba = (ba | flag | TF.PEACE | TF.CONTACT);
-  } else if (flag & TF.PEACE) {
-    // Setting PEACE: also set CONTACT, clear war-related flags
-    ab = ((ab | flag | TF.CONTACT) & ~PEACE_CLEARS);
-    ba = ((ba | flag | TF.CONTACT) & ~PEACE_CLEARS);
-  } else if (flag & TF.CEASEFIRE) {
-    // Setting CEASEFIRE: also set CONTACT, clear war-related flags
-    ab = ((ab | flag | TF.CONTACT) & ~PEACE_CLEARS);
-    ba = ((ba | flag | TF.CONTACT) & ~PEACE_CLEARS);
-  } else if (flag & TF.WAR) {
-    // Setting WAR: clear treaty flags, set WAR_TRACKING
-    ab = ((ab | flag | TF.WAR_TRACKING) & ~WAR_CLEARS);
-    ba = ((ba | flag | TF.WAR_TRACKING) & ~WAR_CLEARS);
-  } else {
-    ab |= flag;
-    ba |= flag;
-  }
+  // Order: clear first, then set (matches binary execution order: cascaded
+  // FUN_00467750 calls clear before the final OR).
+  ab = (ab & ~toClear) | toSet;
+  ba = (ba & ~toClear) | toSet;
 
   if (!state.treatyFlags) state.treatyFlags = {};
   state.treatyFlags = {
@@ -200,52 +212,47 @@ export function addTreatyFlag(state, civA, civB, flag) {
   };
 
   // Sync string-based treaty to match the updated flags
-  // Use the higher-level status (flags determine the canonical treaty)
-  if (flag & (TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
-    const newStatus = flagsToStatus(ab);
+  if (toSet & (TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
     if (!state.treaties) state.treaties = {};
-    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: newStatus };
+    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: flagsToStatus(ab) };
   }
 }
 
 /**
  * Clear flag bits from a civ pair's treaty (cascade-aware, symmetric).
  *
- * Cascade rules when CLEARING:
- *   PEACE   -> also clear ALLIANCE
- *   CONTACT -> clear everything (all flags to 0)
- *   WAR     -> also clear WAR_STARTED + CAPTURE_VENDETTA
+ * Binary FUN_00467750 (block_00460000.c:1429-1450) — three independent
+ * if-statements (NOT mutually exclusive) that each cascade additional bits
+ * before clearing:
+ *   PEACE   (0x4)    -> recursively clear ALLIANCE (0x8)
+ *   WAR     (0x2000) -> recursively clear WAR_STARTED + CAPTURE_VENDETTA (0x1800)
+ *   CONTACT (0x1)    -> recursively clear WAR — which itself recurses to clear 0x1800
+ * After all cascades, the cleaned mask is removed from BOTH directions of the
+ * treaty matrix.
+ *
+ * Note: a compound mask like (PEACE | WAR) must trigger BOTH cascades, hence
+ * three independent ifs rather than else-if. The previous JS used else-if and
+ * also wholesale-zeroed the pair when CONTACT was cleared, which over-cleared
+ * bits like EMBASSY/VENDETTA/NUCLEAR_ATTACK that the binary preserves.
  */
 export function clearTreatyFlag(state, civA, civB, flag) {
-  if (flag & TF.CONTACT) {
-    // Clearing CONTACT: clear everything
-    if (!state.treatyFlags) state.treatyFlags = {};
-    state.treatyFlags = {
-      ...state.treatyFlags,
-      [`${civA}-${civB}`]: 0,
-      [`${civB}-${civA}`]: 0,
-    };
-    // Sync string-based treaty: no contact means war by default
-    if (!state.treaties) state.treaties = {};
-    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: 'war' };
-    return;
+  // Build the effective mask by walking the same cascade the binary does.
+  let effective = flag;
+  if (effective & TF.PEACE) {
+    effective |= TF.ALLIANCE;
+  }
+  if (effective & TF.CONTACT) {
+    // CONTACT cascades to WAR (which then cascades to WAR_STARTED+CAPTURE_VENDETTA)
+    effective |= TF.WAR;
+  }
+  if (effective & TF.WAR) {
+    effective |= TF.WAR_STARTED | TF.CAPTURE_VENDETTA;
   }
 
   let ab = getTreatyFlags(state, civA, civB);
   let ba = getTreatyFlags(state, civB, civA);
-
-  if (flag & TF.PEACE) {
-    // Clearing PEACE: also clear ALLIANCE
-    ab &= ~(flag | TF.ALLIANCE);
-    ba &= ~(flag | TF.ALLIANCE);
-  } else if (flag & TF.WAR) {
-    // Clearing WAR: also clear WAR_STARTED + CAPTURE_VENDETTA
-    ab &= ~(flag | TF.WAR_STARTED | TF.CAPTURE_VENDETTA);
-    ba &= ~(flag | TF.WAR_STARTED | TF.CAPTURE_VENDETTA);
-  } else {
-    ab &= ~flag;
-    ba &= ~flag;
-  }
+  ab &= ~effective;
+  ba &= ~effective;
 
   if (!state.treatyFlags) state.treatyFlags = {};
   state.treatyFlags = {
@@ -254,11 +261,12 @@ export function clearTreatyFlag(state, civA, civB, flag) {
     [`${civB}-${civA}`]: ba,
   };
 
-  // Sync string-based treaty to match the updated flags
-  if (flag & (TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
-    const newStatus = flagsToStatus(ab);
+  // Sync string-based treaty to match the updated flags. When CONTACT is
+  // cleared the pair is no longer in any relationship, so revert to default
+  // (binary's flagsToStatus returns 'war' for a pair with no CONTACT bit).
+  if (effective & (TF.CONTACT | TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
     if (!state.treaties) state.treaties = {};
-    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: newStatus };
+    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: flagsToStatus(ab) };
   }
 }
 
@@ -321,7 +329,7 @@ function getAttitude(state, civSlot, targetCiv) {
 }
 
 /** Modify attitude of civSlot toward targetCiv by delta, clamped [-100, 100]. */
-function adjustAttitude(state, civSlot, targetCiv, delta) {
+export function adjustAttitude(state, civSlot, targetCiv, delta) {
   if (!state.civs?.[civSlot]) return;
   state.civs = [...state.civs];
   const civ = { ...state.civs[civSlot] };
@@ -390,7 +398,46 @@ function isHuman(state, civSlot) {
   return !!(state.civs?.[civSlot]?.isHuman);
 }
 
+/**
+ * Randomize a civ's attitude toward another civ in the direction of 50.
+ * Binary: attitude = clamp(rand_between(attitude, 0x32), 0, 100)
+ * This picks a random value between the current attitude and 50, then clamps [0, 100].
+ * Used when signing peace treaties and ceasefires (spec sections 2.5, 2.6).
+ */
+function randomizeAttitudeToward50(state, civSlot, targetCiv) {
+  if (!state.civs?.[civSlot]) return;
+  const cur = state.civs[civSlot].attitudes?.[targetCiv] ?? 0;
+  const target = 50;
+  // rand_between(a, b) returns a random integer in [min(a,b), max(a,b)]
+  const lo = Math.min(cur, target);
+  const hi = Math.max(cur, target);
+  const rng = state.rng;
+  const newVal = lo + (rng ? rng.nextInt(hi - lo + 1) : Math.floor(Math.random() * (hi - lo + 1)));
+  // Set attitude (clamped 0-100)
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  if (!Array.isArray(civ.attitudes)) {
+    const old = civ.attitudes;
+    civ.attitudes = [0, 0, 0, 0, 0, 0, 0, 0];
+    if (old) for (const [k, v] of Object.entries(old)) civ.attitudes[+k] = v;
+  } else {
+    civ.attitudes = [...civ.attitudes];
+  }
+  civ.attitudes[targetCiv] = Math.max(0, Math.min(100, newVal));
+  state.civs[civSlot] = civ;
+}
+
 // ── G.5: Reputation helpers ──
+//
+// Binary reputation model (spec section 5.1):
+//   DAT_0064c6be — one byte per civ, starts at 0.
+//   Higher value = more past treaty violations = WORSE standing.
+//   Incremented by +1 per violation condition (rank/difficulty/third-party).
+//   Used in AI trust formula: trust = reputation[other] - treaty_violations[other][self]
+//
+// Binary treaty_violations model (spec section 1.1, DAT_0064c6e8):
+//   Signed byte per civ pair. Negative = good standing, positive = violations.
+//   Decremented (worsened) when human player breaks a treaty.
 
 /** Ceasefire expiration threshold in turns. */
 export const CEASEFIRE_EXPIRE_TURNS = 16;
@@ -401,7 +448,7 @@ export const REPUTATION_DECAY_INTERVAL = 16;
 
 /**
  * Adjust a civ's reputation by delta, clamped to [0, 100].
- * Lower reputation = less trustworthy.
+ * Lower reputation = less trustworthy (kept for backward compat).
  */
 function adjustReputation(state, civSlot, delta) {
   if (!state.civs?.[civSlot]) return;
@@ -410,6 +457,38 @@ function adjustReputation(state, civSlot, delta) {
   const cur = civ.reputation ?? 100;
   civ.reputation = Math.max(0, Math.min(100, cur + delta));
   state.civs[civSlot] = civ;
+}
+
+/**
+ * Increment a civ's binary-faithful reputation counter by 1.
+ * Binary: reputation[civ] += 1 (higher = worse, counts treaty violations).
+ * Spec section 5.1: DAT_0064c6be, one byte, 0-255.
+ */
+function incrementReputation(state, civSlot) {
+  if (!state.civs?.[civSlot]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  civ.reputationCounter = Math.min(255, (civ.reputationCounter ?? 0) + 1);
+  state.civs[civSlot] = civ;
+}
+
+/**
+ * Adjust per-pair treaty violation counter.
+ * Binary: treaty_violations[violator][target] += delta (signed byte).
+ * Spec section 4.1: decremented (delta = -1) when human breaks treaty.
+ */
+function adjustTreatyViolations(state, violator, target, delta) {
+  if (!state.civs?.[violator]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[violator] };
+  if (!civ.treatyViolations || !Array.isArray(civ.treatyViolations)) {
+    civ.treatyViolations = [0, 0, 0, 0, 0, 0, 0, 0];
+  } else {
+    civ.treatyViolations = [...civ.treatyViolations];
+  }
+  civ.treatyViolations[target] = Math.max(-128, Math.min(127,
+    (civ.treatyViolations[target] || 0) + delta));
+  state.civs[violator] = civ;
 }
 
 /**
@@ -536,8 +615,14 @@ export function processDiplomacyTimers(state, mapBase, turnNumber) {
     }
   }
 
-  // G.5: Reputation decay — every 16 turns, each civ recovers +1 reputation (toward 100)
-  if (turnNumber > 0 && (turnNumber % REPUTATION_DECAY_INTERVAL) === 0) {
+  // G.5: Reputation decay — binary FUN_00487371 (process_end_of_turn) lines 1823-1841.
+  // Decay interval: (difficulty + 1) * 12 turns. Chieftain=12, Deity=72.
+  // Note: binary scale is 0-7 (0=spotless, 7=atrocities), JS scale is 0-100
+  // (0=worst, 100=best); JS recovers +1 toward 100, semantically same as
+  // binary decrementing toward 0.
+  const diffIdxRep = Math.max(0, DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain'));
+  const repDecayInterval = (diffIdxRep + 1) * 12;
+  if (turnNumber > 0 && (turnNumber % repDecayInterval) === 0) {
     if (state.civs) {
       state.civs = [...state.civs];
       for (let c = 1; c <= 7; c++) {
@@ -770,8 +855,10 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     return { events };
   }
 
-  // Record treaty violation against third party
+  // Binary FUN_0045ac71 line 4893: treaty_violations[third_party][violator] += 1
   if (thirdParty >= 0) {
+    adjustTreatyViolations(state, thirdParty, aggressor, 1);
+    // Also keep the diplomacy object for backward compat
     const dKey = ensureDiplomacy(state, thirdParty, aggressor);
     const prev = state.diplomacy[dKey] || {};
     state.diplomacy = {
@@ -781,157 +868,128 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
   }
 
   const diffIdx = getDifficultyIdx(state, aggressor);
-  // Statue of Liberty wonder index = 19
-  const hasStatueOfLiberty = hasWonderEffect(state, aggressor, 19);
+  // Binary uses wonder 0x14 = 20 (Eiffel Tower) for reputation protection.
+  // Spec section 5.3 labels this "Statue of Liberty" but WONDER_NAMES[20] = "Eiffel Tower".
+  const hasReputationWonder = hasWonderEffect(state, aggressor, 20);
+  // Binary conditions for reputation: rank == 7 (DAT_00655c22) AND cities > 4
+  const aggressorRank = state.civs?.[aggressor]?.powerRank ?? 0;
+  const aggressorCities = state.cities
+    ? state.cities.filter(c => c.owner === aggressor && c.size > 0).length
+    : 0;
 
   if (currentTreaty === 'alliance') {
-    // ── Breaking alliance — worst reputation damage ──
-    if (diffIdx > 0 && !hasStatueOfLiberty) {
-      incrementPatience(state, aggressor);
+    // ── Breaking alliance — spec section 4.1, FUN_0045ac71 lines 4944-4961 ──
+    // Binary: status & 0x08 != 0 (alliance active)
+    if (diffIdx > 0 && !hasReputationWonder) {
+      incrementReputation(state, aggressor); // line 4946
     }
     if (thirdParty < 0) {
-      incrementPatience(state, aggressor);
-    }
-
-    // Double penalty if also had peace+ceasefire (shouldn't usually happen but matches pseudocode)
-    if (diffIdx > 0 && !hasStatueOfLiberty) {
-      incrementPatience(state, aggressor);
+      incrementReputation(state, aggressor); // line 4949
+      if (isHuman(state, aggressor)) {
+        adjustTreatyViolations(state, aggressor, target, -1); // line 4951
+      }
     }
 
     if (thirdParty >= 0) {
-      // Binary FUN_0045ac71 alliance tier: thunk_FUN_00456f20(witness, declarer, -25)
+      // Binary line 4954: thunk_FUN_00456f20(param_3, param_1, 0xffffffe7) = -25
       adjustAttitude(state, thirdParty, aggressor, -25);
     }
 
-    // G.5: Reputation penalty for breaking alliance (-60)
-    adjustReputation(state, aggressor, -60);
+    // Binary line 4956: FUN_00467ef2(param_1, param_2) — cancel alliance
+    // This clears the alliance bit and recalls units; does NOT declare war.
+    // The alliance break downgrades to peace, not war.
+    breakAlliance(state, mapBase, aggressor, target);
 
-    // Set sneak attack flag
-    const sKey = ensureDiplomacy(state, aggressor, target);
-    state.diplomacy = {
-      ...state.diplomacy,
-      [sKey]: {
-        ...(state.diplomacy[sKey] || {}),
-        sneak: true, sneakTurn: state.turn?.number || 0,
-      },
-    };
-
-    // Break the alliance → set to war
-    setTreaty(state, aggressor, target, 'war');
-
-    // Activate counter-alliance wars (target's allies join against aggressor)
-    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
-    events.push(...allyResult.events);
-
-    recordTributeTurn(state, target, aggressor);
-
-  } else if (currentTreaty === 'peace') {
-    // ── Breaking peace — significant reputation damage ──
-    if (diffIdx > 0 && !hasStatueOfLiberty) {
-      incrementPatience(state, aggressor);
-    }
-    if (thirdParty < 0) {
-      incrementPatience(state, aggressor);
+    // Set sneak attack flag if human (line 4958)
+    if (isHuman(state, aggressor)) {
+      const sKey = ensureDiplomacy(state, aggressor, target);
+      state.diplomacy = {
+        ...state.diplomacy,
+        [sKey]: {
+          ...(state.diplomacy[sKey] || {}),
+          sneak: true, sneakTurn: state.turn?.number || 0,
+        },
+      };
+      addTreatyFlag(state, aggressor, target, TF.VENDETTA); // 0x10
     }
 
-    if (thirdParty >= 0) {
-      adjustAttitude(state, thirdParty, aggressor, -5);
-    }
+    // NOTE: Binary does NOT call FUN_00467825(0x2000) or FUN_0045a8e3 here.
+    // Alliance break only cancels the alliance; it does not declare war.
 
-    // G.5: Reputation penalty for breaking peace (-40)
-    adjustReputation(state, aggressor, -40);
-
-    // Set sneak attack flag
-    const sKey = ensureDiplomacy(state, aggressor, target);
-    state.diplomacy = {
-      ...state.diplomacy,
-      [sKey]: {
-        ...(state.diplomacy[sKey] || {}),
-        sneak: true, sneakTurn: state.turn?.number || 0,
-      },
-    };
-
-    setTreaty(state, aggressor, target, 'war');
-
-    // Activate counter-alliance wars
-    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
-    events.push(...allyResult.events);
-
-    recordTributeTurn(state, target, aggressor);
-
-  } else if (currentTreaty === 'ceasefire') {
-    // ── Breaking ceasefire — moderate reputation damage ──
-    if (diffIdx > 0 && !hasStatueOfLiberty) {
-      incrementPatience(state, aggressor);
-    }
-    if (thirdParty < 0) {
-      incrementPatience(state, aggressor);
-    }
-
-    if (thirdParty >= 0) {
-      adjustAttitude(state, thirdParty, aggressor, -5);
-    }
-
-    // G.5: Reputation penalty for breaking ceasefire (-20)
-    adjustReputation(state, aggressor, -20);
-
-    // Set sneak attack flag
-    const sKey = ensureDiplomacy(state, aggressor, target);
-    state.diplomacy = {
-      ...state.diplomacy,
-      [sKey]: {
-        ...(state.diplomacy[sKey] || {}),
-        sneak: true, sneakTurn: state.turn?.number || 0,
-      },
-    };
-
-    setTreaty(state, aggressor, target, 'war');
-
-    // Activate counter-alliance wars
-    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
-    events.push(...allyResult.events);
-
-    recordTributeTurn(state, target, aggressor);
-
-  } else {
-    // ── No treaty / first-time war (sneak attack if had contact) — reputation hit ──
-    if (diffIdx > 0 && !hasStatueOfLiberty) {
-      incrementPatience(state, aggressor);
-    }
-    if (thirdParty < 0) {
-      incrementPatience(state, aggressor);
-    }
-
-    if (thirdParty >= 0) {
-      // Binary FUN_0045ac71 no-treaty tier: thunk_FUN_00456f20(witness, declarer, -5)
-      adjustAttitude(state, thirdParty, aggressor, -5);
-    }
-
-    // G.5: Sneak attack reputation penalty (-80) if had contact but no treaty
-    if (haveContact(state, aggressor, target)) {
-      adjustReputation(state, aggressor, -80);
-    }
-
-    setTreaty(state, aggressor, target, 'war');
-  }
-
-  // ── Item 8: Treaty-specific reputation penalties ──
-  // Smaller per-incident penalties on top of the G.5 reputation system:
-  //   Breaking alliance: -5, breaking peace/ceasefire: -3, no treaty: -1
-  if (currentTreaty === 'alliance') {
-    adjustReputation(state, aggressor, -5);
   } else if (currentTreaty === 'peace' || currentTreaty === 'ceasefire') {
-    adjustReputation(state, aggressor, -3);
+    // ── Breaking peace or ceasefire — spec section 4.1, FUN_0045ac71 lines 4903-4929 ──
+    // Binary: status & 0x06 != 0 (has ceasefire or peace treaty)
+    const hasPeace = currentTreaty === 'peace';
+    const hasBothPeaceAndCeasefire = hasPeace; // peace implies ceasefire was active
+
+    // DOUBLE reputation hit if both peace AND ceasefire active (lines 4903-4915)
+    if (hasBothPeaceAndCeasefire) {
+      if (aggressorRank === 7 && aggressorCities > 4 && thirdParty < 0) {
+        incrementReputation(state, aggressor); // line 4907
+      }
+      if (diffIdx > 0 && !hasReputationWonder) {
+        incrementReputation(state, aggressor); // line 4910
+      }
+      if (thirdParty < 0 && isHuman(state, aggressor)) {
+        adjustTreatyViolations(state, aggressor, target, -1); // line 4914
+      }
+    }
+
+    // Single treaty break (lines 4917-4926, applied for ANY ceasefire/peace)
+    if (aggressorRank === 7 && aggressorCities > 4 && thirdParty < 0) {
+      incrementReputation(state, aggressor); // line 4919
+    }
+    if (diffIdx > 0 && !hasReputationWonder) {
+      incrementReputation(state, aggressor); // line 4922
+    }
+    if (thirdParty < 0 && isHuman(state, aggressor)) {
+      adjustTreatyViolations(state, aggressor, target, -1); // line 4925
+    }
+
+    if (thirdParty >= 0) {
+      // Binary line 4929: thunk_FUN_00456f20(param_3, param_1, 0xfffffff1) = -15
+      adjustAttitude(state, thirdParty, aggressor, -15);
+    }
+
   } else {
-    adjustReputation(state, aggressor, -1);
+    // ── No treaty (status & 0x06 == 0) — minor violation (tech steal or similar) ──
+    // Binary FUN_0045ac71 lines 4897-4900: only attitude penalty to third party,
+    // NO reputation increments for declaring war without a treaty.
+    if (thirdParty >= 0) {
+      // Binary line 4899: thunk_FUN_00456f20(param_3, param_1, 0xfffffffb) = -5
+      adjustAttitude(state, thirdParty, aggressor, -5);
+    }
   }
 
-  // ── Witness penalty: only the third-party witness on war declaration ──
-  // Binary FUN_0045ac71: the attitude penalty is applied per-tier only to
-  // the thirdParty (param_3), not broadcast to all civs. The per-tier
-  // penalties (-25 alliance / -15 peace/ceasefire / -5 no treaty) above
-  // already handle the witness. No additional broadcast penalty exists
-  // in the binary.
+  // ── Common post-break logic for NON-alliance branches (lines 4932-4941) ──
+  // The alliance branch only cancels the alliance (FUN_00467ef2) — it does NOT
+  // declare war or activate alliance cascades.
+  if (currentTreaty !== 'alliance') {
+    // Set sneak_attack_flag if aggressor is human (line 4932-4934)
+    if (isHuman(state, aggressor)) {
+      const sKey = ensureDiplomacy(state, aggressor, target);
+      state.diplomacy = {
+        ...state.diplomacy,
+        [sKey]: {
+          ...(state.diplomacy[sKey] || {}),
+          sneak: true, sneakTurn: state.turn?.number || 0,
+        },
+      };
+      addTreatyFlag(state, aggressor, target, TF.VENDETTA); // 0x10
+    }
+
+    // Declare war (line 4936): FUN_00467825(param_1, param_2, 0x2000)
+    setTreaty(state, aggressor, target, 'war');
+
+    // Human-only: set shared_war_target flags + alliance cascade (lines 4937-4941)
+    if (isHuman(state, aggressor)) {
+      addTreatyFlag(state, target, aggressor, TF.PERIODIC_FLAG_19); // 0x80800 bits
+      addTreatyFlag(state, target, aggressor, TF.WAR_STARTED);
+      recordTributeTurn(state, target, aggressor);
+      const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
+      events.push(...allyResult.events);
+    }
+  }
 
   // Cancel trade routes between the two civs
   cancelTradeRoutes(state, aggressor, target);
@@ -940,13 +998,17 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
   wakeUnitsNearEnemy(state, mapBase, aggressor, target);
   wakeUnitsNearEnemy(state, mapBase, target, aggressor);
 
-  events.push({
-    type: 'warDeclared',
-    aggressor,
-    target,
-    thirdParty: thirdParty >= 0 ? thirdParty : undefined,
-    previousTreaty: currentTreaty,
-  });
+  if (currentTreaty !== 'alliance') {
+    // Non-alliance branches declare war — emit warDeclared event
+    events.push({
+      type: 'warDeclared',
+      aggressor,
+      target,
+      thirdParty: thirdParty >= 0 ? thirdParty : undefined,
+      previousTreaty: currentTreaty,
+    });
+  }
+  // Alliance branch already emitted 'allianceBroken' via breakAlliance()
 
   return { events };
 }
@@ -1034,8 +1096,10 @@ export function signCeasefire(state, civA, civB) {
   // Binary FUN_0045a7a8: treaty[civA][civB] |= 0x40000
   addTreatyFlag(state, civA, civB, TF.TRIBUTE_DEMANDED);
 
-  // Clamp attitude to [0, 50] — per pseudocode
-  clampAttitude(state, civB, civA, 0, 50);
+  // Binary FUN_0045a7a8 lines 4792-4794: randomize attitude toward 50, then clamp [0, 100]
+  // attitude = clamp(rand_between(attitude, 0x32), 0, 100)
+  // Spec section 2.6: "randomize toward 50"
+  randomizeAttitudeToward50(state, civB, civA);
 
   // Record treaty turn
   recordTributeTurn(state, civA, civB);
@@ -1098,10 +1162,11 @@ export function signPeaceTreaty(state, civA, civB) {
 
   setTreaty(state, civA, civB, 'peace');
 
-  // Binary FUN_0045a6ab: thunk_FUN_00467904(civB, civA, 0, 0x32) — only clamp
-  // the accepting civ's (civB) attitude toward the proposer (civA).
-  // The proposer's attitude is NOT clamped.
-  clampAttitude(state, civB, civA, 0, 50);
+  // Binary FUN_0045a6ab lines 4761-4763: randomize attitude toward 50, then clamp [0, 100]
+  // attitude = clamp(rand_between(attitude, 0x32), 0, 100)
+  // Spec section 2.5: "randomize toward 50"
+  // Only the accepting civ's (civB) attitude toward the proposer (civA) is affected.
+  randomizeAttitudeToward50(state, civB, civA);
 
   // Reset patience
   if (state.civs?.[civB]) {
@@ -1150,10 +1215,10 @@ export function signPeaceTreaty(state, civA, civB) {
 export function formAlliance(state, mapBase, civA, civB) {
   const events = [];
 
-  // Goodwill from alliance — per pseudocode: adjust_attitude(civB, civA, -25)
-  // Note: in Civ2 negative attitude = friendly (inverted scale),
-  // in our system we use positive = friendly
-  adjustAttitude(state, civB, civA, 25);
+  // Binary FUN_0045a535 line 4727: FUN_00456f20(civB, civA, -25)
+  // The "price" of forming an alliance — attitude adjusted downward.
+  // Spec section 2.4: "This is the price of forming an alliance."
+  adjustAttitude(state, civB, civA, -25);
 
   setTreaty(state, civA, civB, 'alliance');
 
@@ -1166,13 +1231,17 @@ export function formAlliance(state, mapBase, civA, civB) {
   // Record treaty turn
   recordTributeTurn(state, civA, civB);
 
-  // G.3: Alliance shared visibility — share full map both ways + auto-embassy
+  // ── Non-binary additions (engine enhancements, not in FUN_0045a535) ──
+  // These features are not in the decompiled binary alliance function but are
+  // reasonable multiplayer engine additions.
+
+  // Map sharing: allies share visibility
   if (mapBase?.tileData) {
     shareMaps(state, mapBase, civA, civB);
     shareMaps(state, mapBase, civB, civA);
   }
 
-  // G.3: Auto-establish embassy both ways
+  // Auto-establish embassy both ways
   if (!state.diplomacy) state.diplomacy = {};
   const embKeyAB = `${civA}-${civB}`;
   const embKeyBA = `${civB}-${civA}`;
@@ -1181,25 +1250,6 @@ export function formAlliance(state, mapBase, civA, civB) {
     [embKeyAB]: { ...(state.diplomacy[embKeyAB] || {}), embassy: true },
     [embKeyBA]: { ...(state.diplomacy[embKeyBA] || {}), embassy: true },
   };
-
-  // Attitude adjustment toward other civs who are enemies of the new ally.
-  // Forming an alliance makes each civ view the OTHER's enemies more negatively
-  // (-25 per enemy, from binary diplo_form_alliance).
-  for (let c = 1; c <= 7; c++) {
-    if (c === civA || c === civB) continue;
-    if (!(state.civsAlive & (1 << c))) continue;
-    // civA adjusts attitude toward enemies of civB (the new ally)
-    if (haveContact(state, civA, c) && getTreaty(state, civB, c) === 'war' && haveContact(state, civB, c)) {
-      adjustAttitude(state, civA, c, -25);
-    }
-    // civB adjusts attitude toward enemies of civA (the new ally)
-    if (haveContact(state, civB, c) && getTreaty(state, civA, c) === 'war' && haveContact(state, civA, c)) {
-      adjustAttitude(state, civB, c, -25);
-    }
-  }
-
-  // Set nuke awareness flag (0x100) — alliance partners share nuclear intel
-  addTreatyFlag(state, civA, civB, TF.NUKE_AWARENESS);
 
   events.push({
     type: 'treatySigned',
@@ -2404,6 +2454,12 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   }
 
   // ── Clear diplomatic state (binary Step 3: clear all treaties/attitudes for dead civ) ──
+  // ALL pair-keyed diplomacy state must be cleared so the AI doesn't keep
+  // trying to negotiate with / declare war on / offer alliance to the dead civ
+  // every turn. Without this, the user sees the same diplomacy event repeating
+  // in chat and a notification sound playing each turn.
+  const pairKey = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+
   if (state.treatyFlags) {
     state.treatyFlags = { ...state.treatyFlags };
     for (let c = 0; c <= 7; c++) {
@@ -2414,8 +2470,46 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   if (state.treaties) {
     state.treaties = { ...state.treaties };
     for (let c = 0; c <= 7; c++) {
-      const k1 = civSlot < c ? `${civSlot}-${c}` : `${c}-${civSlot}`;
-      delete state.treaties[k1];
+      delete state.treaties[pairKey(civSlot, c)];
+    }
+  }
+  if (state.diplomacy) {
+    state.diplomacy = { ...state.diplomacy };
+    for (let c = 0; c <= 7; c++) {
+      delete state.diplomacy[pairKey(civSlot, c)];
+    }
+  }
+  if (state.treatyTurns) {
+    state.treatyTurns = { ...state.treatyTurns };
+    for (let c = 0; c <= 7; c++) {
+      delete state.treatyTurns[pairKey(civSlot, c)];
+    }
+  }
+  if (state.withdrawalDeadlines) {
+    state.withdrawalDeadlines = { ...state.withdrawalDeadlines };
+    for (let c = 0; c <= 7; c++) {
+      delete state.withdrawalDeadlines[pairKey(civSlot, c)];
+    }
+  }
+  if (state.treatyProposals) {
+    state.treatyProposals = state.treatyProposals.filter(p =>
+      p.from !== civSlot && p.to !== civSlot);
+  }
+  if (state.tributeDemands) {
+    state.tributeDemands = state.tributeDemands.filter(d =>
+      d.from !== civSlot && d.to !== civSlot);
+  }
+  // Clear per-civ attitudes pointing at the dead civ
+  if (state.civs) {
+    state.civs = [...state.civs];
+    for (let c = 1; c <= 7; c++) {
+      const civ = state.civs[c];
+      if (!civ || !civ.attitudes) continue;
+      if (civ.attitudes[civSlot] != null && civ.attitudes[civSlot] !== 0) {
+        const newAtt = [...civ.attitudes];
+        newAtt[civSlot] = 0;
+        state.civs[c] = { ...civ, attitudes: newAtt };
+      }
     }
   }
 
@@ -2738,41 +2832,42 @@ export function shouldBetrayTreaty(state, aiCiv, targetCiv) {
   const aiCivData = state.civs?.[aiCiv];
   if (!aiCivData) return false;
 
-  // Government check: only Republic (5) and Democracy (6) can betray
+  // Binary FUN_0055bef9: Senate override check.
+  // Returns true if Senate BLOCKS the action (war/aggression).
+  // Government check: only Republic (5) and Democracy (6) have a Senate
   const govtKey = aiCivData.government || 'anarchy';
   const govtIdx = GOVT_INDEX[govtKey] ?? 0;
-  if (govtIdx < 5) return false;
+  if (govtIdx < 5) return false; // No Senate → no block
 
-  // Build betrayal threshold from target's patience counter
-  const targetCivData = state.civs?.[targetCiv];
-  const counter = targetCivData?.patience || 0;  // target's patience counter (off+30 in binary)
-  let bonus = 0;
-
-  // Vendetta: check if target has VENDETTA flag toward AI (0x10)
-  const targetFlagsTowardAi = getTreatyFlags(state, targetCiv, aiCiv);
-  if (targetFlagsTowardAi & TF.VENDETTA) {
-    bonus = 25;  // 0x19
+  // Binary line 4869: check senate_overrule_flag in status[aiCiv][targetCiv] byte1 bit 0x10
+  let base = 0;
+  const aiFlagsTowardTarget = getTreatyFlags(state, aiCiv, targetCiv);
+  if (aiFlagsTowardTarget & 0x1000) { // byte1 bit 0x10 = overall bit 12 (0x1000)
+    base = 25; // 0x19
   }
 
-  // UN wonder (24): if AI has United Nations, override bonus to 50
+  // Binary line 4872-4874: United Nations wonder (0x18 = 24)
   if (civHasWonder(state, aiCiv, 24)) {
-    bonus = 50;  // 0x32
+    base = 50; // 0x32
   }
 
-  // Threshold: clamp(counter * 15 + bonus, 0, 75)
-  const threshold = Math.min(Math.max(counter * 15 + bonus, 0), 75);
+  // Binary line 4876: threshold = clamp(base + reputation[targetCiv] * 15, 0, 75)
+  // Note: uses the TARGET civ's reputation counter, not the AI's
+  const targetRepCounter = state.civs?.[targetCiv]?.reputationCounter ?? 0;
+  const threshold = Math.min(Math.max(base + targetRepCounter * 15, 0), 75);
 
-  // Compare against AI's aggressiveness seed (aiRandomSeed field, offset+22)
-  const aggressiveness = aiCivData.aiRandomSeed ?? 0;
-  if (aggressiveness < threshold) return false;
+  // Binary line 4877: if aggression_level[aiCiv] < threshold → return 0 (no block)
+  const aggressionLevel = aiCivData.aggressionLevel ?? aiCivData.aiRandomSeed ?? 0;
+  if (aggressionLevel < threshold) return false;
 
-  // Republic: needs militaristic flag (civFlags bit 2)
+  // Binary line 4880-4886: Republic (govt=5) — Senate blocks only if "we love" active
   if (govtIdx === 5) {
+    // Binary: civ.flags & 0x04 = "we love the king" day flag
     const civFlags = aiCivData.civFlags ?? 0;
     return (civFlags & 4) !== 0;
   }
 
-  // Democracy: always betray if threshold passes
+  // Binary line 4888-4889: Democracy (govt=6) — Senate always blocks
   return true;
 }
 
@@ -2835,29 +2930,174 @@ export function calcTechSellPrice(state, sellerCiv, buyerCiv, techId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Tribute Demand — how much gold an AI demands from a target civ
+// Tribute Demand — port of FUN_0045705e (block_00450000.c:3546)
+//
+// In Civ2 MGE, the player does NOT specify a tribute amount. When one civ
+// demands tribute from another, the *paying* civ computes how much it is
+// willing to pay based on tech disparity, military balance, attitude,
+// reputation, alliance status, and certain wonders. The result is offered
+// to the demander, who accepts (gold transfers) or refuses (relations
+// sour, possibly war).
+//
+// This function ports the binary's algorithm from FUN_0045705e to JS,
+// using the engine's flat civTechs Sets in place of the binary's per-tech
+// beaker counters. See spec/diplomacy.md §6.1.1 for the full pseudocode.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Calculate tribute demand amount from AI toward a target civ.
- * Based on difficulty level, tech desire weight, and target's treasury.
- * Rounded to nearest 50 gold.
+ * Compute the tribute amount the payer is willing to pay to the receiver.
+ *
+ * Returns an object describing the AI's response so the caller (UI or
+ * server) can decide whether to display, transfer, or escalate to war.
  *
  * @param {object} state - game state
- * @param {number} aiCiv - AI civ making the demand
- * @param {number} targetCiv - civ being demanded from
- * @param {number} techDesire - weight of the tech desire (0-100+)
- * @returns {number} tribute amount in gold (multiple of 50)
+ * @param {number} payerCiv - civ that would pay (FUN_0045705e param_1)
+ * @param {number} receiverCiv - civ that demands (FUN_0045705e param_2)
+ * @returns {{ amount: number, willingness: 'pay'|'refuse'|'war', wantsWar: boolean }}
  */
-export function calcTributeDemand(state, aiCiv, targetCiv, techDesire) {
-  const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
-  let tribute = Math.floor((diffIdx + 1) * techDesire / 32);
-  tribute = Math.max(0, Math.min(20, tribute)) * 50;
-  const treasury = state.civs?.[targetCiv]?.treasury || 0;
-  if (tribute > treasury && tribute < treasury * 2 && treasury > 49) {
-    tribute = Math.floor(treasury / 50) * 50;
+export function calcTributeDemand(state, payerCiv, receiverCiv) {
+  const payerCivData = state.civs?.[payerCiv];
+  const receiverCivData = state.civs?.[receiverCiv];
+  if (!payerCivData || !receiverCivData) {
+    return { amount: 0, willingness: 'refuse', wantsWar: false };
   }
-  return tribute;
+  const payerTechs = state.civTechs?.[payerCiv];
+  const receiverTechs = state.civTechs?.[receiverCiv];
+  if (!payerTechs || !receiverTechs) {
+    return { amount: 0, willingness: 'refuse', wantsWar: false };
+  }
+
+  // ── Step 1: Per-tech disparity scan (FUN_0045705e:3580-3626) ─────
+  // The binary scans 1..63 with per-tech beaker counters; we use a
+  // simplified weight = (epoch + 1) since the JS engine has no per-tech
+  // research progress.
+  let accum = 0;
+  let wantsWar = false;
+  for (let tech = 1; tech < 64; tech++) {
+    const payerHas = payerTechs.has(tech);
+    const receiverHas = receiverTechs.has(tech);
+    const weight = (ADVANCE_EPOCH[tech] ?? 0) + 1; // 1..4
+
+    if (!payerHas && receiverHas) {
+      // Receiver has it, payer doesn't → half the diff (binary line 3607-3609)
+      accum += weight * 2;
+    } else if (!payerHas && !receiverHas) {
+      // Neither has it → quarter the disparity (binary line 3597-3604)
+      // No contribution since both are zero.
+    } else if (payerHas && !receiverHas) {
+      // Payer has it, receiver doesn't (binary line 3613-3623, branch C):
+      // The binary uses receiver's beaker count. For us, no contribution
+      // since the receiver doesn't have the tech.
+    } else {
+      // Both have the advance — both researching same things flags wantsWar
+      // (binary line 3591-3594)
+      // Contribution: receiver_beakers - payer_beakers, ≈ 0 with flat sets.
+    }
+  }
+
+  // Tech-count disparity also drives demand: receiver has more techs
+  // overall → larger demand (proxies the binary's beaker accumulation).
+  const techDelta = receiverTechs.size - payerTechs.size;
+  if (techDelta > 0) accum += techDelta * 4;
+
+  // ── Step 2: Marco Polo's Embassy bonus (FUN_0045705e:3627-3630) ──
+  // Receiver knows payer's wealth → can demand 25% more.
+  if (civHasWonder(state, receiverCiv, 9)) {
+    accum += accum >> 2;
+  }
+
+  // ── Step 3: Working attitude (line 3638) ─────────────────────────
+  // Use the receiver's attitude TOWARD the payer (the one being asked)
+  let attitude = getAttitude(state, receiverCiv, payerCiv);
+  const treaty = getTreaty(state, payerCiv, receiverCiv);
+
+  // ── Step 4: Treaty / reputation modifiers (lines 3680-3690) ──────
+  if (treaty === 'alliance') attitude -= 25;
+  if (treaty === 'war') attitude += 25;
+
+  const payerReputation = payerCivData.reputation ?? 0;
+  if (payerReputation !== 0) {
+    // (rep - 1 - violations) * 5; we don't track per-pair violations here
+    attitude += (payerReputation - 1) * 5;
+  }
+
+  // ── Step 5: Attitude scaling (lines 3691-3704) ───────────────────
+  if (attitude < 26) {
+    accum = Math.floor(accum / 2);
+    wantsWar = false;
+  } else {
+    const attLevel = getAttitudeLevel(attitude);
+    if (attLevel < 4) {
+      accum = Math.floor((accum * 2) / 3);
+    } else if (attitude > 0x4A) {
+      accum = Math.floor((accum * 3) / 2);
+      wantsWar = true;
+    }
+  }
+
+  // Alliance flag also forces wantsWar (line 3705-3707) — note this is
+  // the byte1 0x08 which the JS treaty system maps via TF.ALLIANCE.
+  // Skipped: requires the byte1 ALLIANCE flag which isn't tracked here.
+
+  // ── Step 6: Pacifist wonders (lines 3715-3722) ───────────────────
+  // Payer has Great Wall (6) or United Nations (24) → cancel aggression.
+  // Note: in the binary, these checks apply to the *demander* (param_1)
+  // wanting to make demands of *us*; we mirror by checking the payer's
+  // wonders to suppress wantsWar when the payer is shielded.
+  if (civHasWonder(state, payerCiv, 6) || civHasWonder(state, payerCiv, 24)) {
+    wantsWar = false;
+    attitude -= 10;
+  }
+
+  // ── Step 7: Reputation multiplier (line 3723-3726) ───────────────
+  if (payerReputation > 0) {
+    accum += Math.floor((payerReputation * accum) / 2);
+  }
+
+  // ── Step 8: Final scaling and rounding (lines 3737-3747) ─────────
+  const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+  let scaled = Math.floor(((diffIdx + 1) * accum) / 32);
+  scaled = Math.max(0, Math.min(20, scaled));
+  let amount = scaled * 50;
+
+  // Treasury cap (lines 3743-3747): if demand > treasury but < 2× treasury
+  // and treasury > 50, snap to (treasury / 50) * 50.
+  const treasury = payerCivData.treasury ?? 0;
+  if (amount > treasury && amount < treasury * 2 && treasury > 49) {
+    amount = Math.floor(treasury / 50) * 50;
+  }
+
+  // ── Step 9: Allied cap (FUN_00460129:312-319) ────────────────────
+  // Allies cannot drain each other; cap at max(100, treasury/2).
+  if (treaty === 'alliance') {
+    const cap = Math.max(100, Math.floor(treasury / 2));
+    if (cap < amount) amount = cap;
+  }
+
+  // ── Step 10: Refusal-on-strength (lines 3748-3756) ───────────────
+  // If amount is 0 or payer is much stronger militarily, no demand.
+  if (amount === 0) {
+    wantsWar = false;
+  }
+
+  // Affordability: cannot exceed treasury (FUN_00460129:310 gates the
+  // dialog on `DAT_0064b118 <= gold[payer]`)
+  if (amount > treasury) amount = 0;
+
+  // Determine willingness:
+  //   amount > 0   → 'pay' (AI offers the amount)
+  //   amount == 0 AND wantsWar → 'war' (AI provoked into hostility)
+  //   amount == 0 AND NOT wantsWar → 'refuse' (AI ignores the demand)
+  let willingness;
+  if (amount > 0) {
+    willingness = 'pay';
+  } else if (wantsWar) {
+    willingness = 'war';
+  } else {
+    willingness = 'refuse';
+  }
+
+  return { amount, willingness, wantsWar };
 }
 
 // ═══════════════════════════════════════════════════════════════════

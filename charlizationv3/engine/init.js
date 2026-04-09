@@ -156,7 +156,7 @@ export function initFromSav(parsed, seatList) {
     treaties,
     wonders: parsed.gameState?.wonders || initWonders(),
     difficulty: parsed.gameState?.difficulty || 'chieftain',
-    barbarianActivity: parsed.gameState?.barbarianActivity || 'normal',
+    barbarianActivity: parsed.gameState?.barbarianActivity || 'villages',
     // Q.4: Scenario-specific state
     isScenario,
     scenarioRules,
@@ -257,7 +257,8 @@ export function initNewGame(mapResult, seatList) {
   }
 
   // ── Place starting settlers using distance-maximization algorithm ──
-  const placements = assignInitialSettlerPositions(mapBase, civCount);
+  // mapResult.closeSpawns: testing flag — clusters all civs in a small area
+  const placements = assignInitialSettlerPositions(mapBase, civCount, { closeSpawns: !!mapResult.closeSpawns });
 
   // ── Create starting units at placements ──
   const units = [];
@@ -506,25 +507,36 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
 }
 
 /**
- * (#45) Binary FUN_004a7ce9: Grant techs that other civs already have.
+ * Grant starting techs to a new civ.
  *
- * For each tech known by any already-initialized civ, grant it with
- * probability: rand() % (difficultyIdx + 1) > 0
- *   - Chieftain (diff=0): rand()%1 > 0 → always false → NO free techs from this path
- *   - Deity (diff=5): rand()%6 > 0 → 5/6 chance per tech
+ * Binary ref: `new_civ` (FUN_004A7CE9 in block_004A0000.c, lines 2726-2748).
+ * The binary's tech-granting code is gated by `if (DAT_00655af8 != 0)` —
+ * i.e. **only fires for mid-game respawn**, never at game start. At turn 0
+ * all civs start with ZERO techs. The previous JS implementation had a
+ * "fallback to random no-prereq pool" path that gave 7 techs at Chieftain
+ * down to 0 at Deity — that was a JS invention with no binary basis, and
+ * because the seeded RNG was deterministic the player got the same techs
+ * (Horseback Riding + Bronze Working) every game.
  *
- * For the first civ (no other civs initialized yet), fall back to granting
- * random no-prereq techs scaled by difficulty.
+ * Mid-game respawn (binary lines 2729-2744): for each of 100 advances,
+ * if at least one alive civ has it AND `rand() % (difficulty + 1) != 0`,
+ * grant it to the new civ. So:
+ *   - Chieftain (idx 0): rand()%1 == 0 → never grants
+ *   - Warlord  (idx 1): rand()%2 != 0 → 50% chance per tech
+ *   - Deity    (idx 5): rand()%6 != 0 → 83% chance per tech
  *
  * @param {number} difficultyIdx - 0=chieftain..5=deity
- * @param {boolean} isHuman - whether this civ is human-controlled
+ * @param {boolean} isHuman - whether this civ is human-controlled (unused, kept for sig compat)
  * @param {object} [rng] - SeededRNG instance
  * @param {number} civSlot - the civ slot being initialized
  * @param {Array<Set>} civTechs - per-civ tech sets (already initialized for earlier civs)
  * @returns {number[]} array of advance IDs to grant
  */
 function getStartingTechs(difficultyIdx, isHuman, rng, civSlot, civTechs) {
-  // Collect all techs known by any already-initialized civ
+  // Collect all techs known by any already-alive civ. At game start no civ
+  // has any techs yet, so this set is empty and the function returns [].
+  // Only at mid-game respawn (after some civs have researched things) does
+  // this set become non-empty.
   const knownByOthers = new Set();
   if (civTechs) {
     for (let c = 1; c < 8; c++) {
@@ -536,45 +548,21 @@ function getStartingTechs(difficultyIdx, isHuman, rng, civSlot, civTechs) {
     }
   }
 
+  // No civs have techs yet → game start → no starting techs (binary line 2726
+  // gates the entire grant block on `DAT_00655af8 != 0`).
+  if (knownByOthers.size === 0) return [];
+
+  // Chieftain: binary forces local_1b4 = 0 (line 2734), so never grants.
+  if (difficultyIdx === 0) return [];
+
+  // Mid-game respawn: per-tech rand() % (diff+1) != 0
   const granted = [];
-
-  if (knownByOthers.size > 0 && difficultyIdx > 0) {
-    // Binary algorithm: for each tech known by others, rand()%(diff+1) > 0
-    for (const techId of knownByOthers) {
-      const roll = rng ? rng.nextInt(difficultyIdx + 1) : Math.floor(Math.random() * (difficultyIdx + 1));
-      if (roll > 0) {
-        granted.push(techId);
-      }
+  for (const techId of knownByOthers) {
+    const roll = rng ? rng.nextInt(difficultyIdx + 1) : Math.floor(Math.random() * (difficultyIdx + 1));
+    if (roll !== 0) {
+      granted.push(techId);
     }
   }
-
-  // If no techs granted from other civs (first civ or Chieftain), fall back
-  // to random no-prereq tech selection scaled by difficulty
-  if (granted.length === 0) {
-    const pool = [];
-    for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
-      const [p1, p2] = ADVANCE_PREREQS[i];
-      if (p1 === -1 && p2 === -1) pool.push(i);
-    }
-
-    // Number of free techs per difficulty level
-    const counts = [7, 5, 3, 2, 1, 0];
-    const count = Math.min(counts[Math.min(difficultyIdx, 5)], pool.length);
-
-    if (count === 0) return [];
-    if (count >= pool.length) return [...pool];
-
-    // Fisher-Yates shuffle using seeded RNG, take first `count`
-    const shuffled = [...pool];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = rng ? rng.nextInt(i + 1) : Math.floor(Math.random() * (i + 1));
-      const tmp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = tmp;
-    }
-    return shuffled.slice(0, count).sort((a, b) => a - b);
-  }
-
   return granted.sort((a, b) => a - b);
 }
 
@@ -598,8 +586,9 @@ function getStartingTechs(difficultyIdx, isHuman, rng, civSlot, civTechs) {
  * @param {number} numCivs - number of civs to place (1-7)
  * @returns {Array<{gx: number, gy: number}>} array of positions
  */
-export function assignInitialSettlerPositions(mapBase, numCivs) {
+export function assignInitialSettlerPositions(mapBase, numCivs, opts = {}) {
   const { mw, mh, tileData, wraps } = mapBase;
+  const closeSpawns = !!opts.closeSpawns;
 
   // ── Step 1: Score all eligible land tiles ──
   // A tile is eligible if: land, not ocean/glacier/mountains, not too close to edges
@@ -624,6 +613,33 @@ export function assignInitialSettlerPositions(mapBase, numCivs) {
   if (candidates.length === 0) {
     // Fallback: use the old simple method
     return findSettlerPlacementsFallback(mapBase, numCivs);
+  }
+
+  // ── Close-spawns testing mode: cluster all civs around the map center ──
+  // Each civ is placed exactly 3 tiles from the center on different sides.
+  if (closeSpawns) {
+    const placements = [];
+    const cx = Math.floor(mw / 2) & ~1;
+    const cy = Math.floor(mh / 2);
+    // Spiral offsets at distance ~3, picking valid parity for each row
+    const offsets = [
+      [0, 0], [4, 0], [-4, 0], [0, 4], [0, -4],
+      [4, 4], [-4, 4], [4, -4], [-4, -4],
+      [2, 2], [-2, -2], [2, -2], [-2, 2],
+    ];
+    for (let i = 0; i < numCivs && i < offsets.length; i++) {
+      const [dx, dy] = offsets[i];
+      let px = cx + dx;
+      let py = cy + dy;
+      // Snap to valid parity for the row
+      px = (px & ~1) | (py & 1);
+      // Wrap or clamp x
+      if (wraps) px = ((px % mw) + mw) % mw;
+      else px = Math.max(0, Math.min(mw - 1, px));
+      py = Math.max(0, Math.min(mh - 1, py));
+      placements.push({ gx: px, gy: py });
+    }
+    return placements;
   }
 
   // Sort by score descending

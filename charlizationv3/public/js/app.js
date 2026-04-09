@@ -389,6 +389,11 @@ function findCityAt(gx, gy) {
   if (!S.currentMapData) return null;
   for (let i = 0; i < S.currentMapData.cities.length; i++) {
     const c = S.currentMapData.cities[i];
+    // Skip destroyed cities (size=0, owner=0xFF after city is razed via
+    // citycapture.js line 646: state.cities[i] = { ...city, size: 0, owner: 0xFF }).
+    // Without this filter, clicking the tile of a razed city opens a ghost
+    // city dialog and blocks unit movement.
+    if (c.size <= 0 || c.owner === 0xFF) continue;
     if (c.gx === gx && c.gy === gy) return { city: c, index: i };
   }
   return null;

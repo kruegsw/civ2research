@@ -19,7 +19,7 @@ import { updateVisibility } from './visibility.js';
 import { getProductionCost, calcCityTrade } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect } from './utils.js';
-import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, applyGovernmentChangeEffects } from './diplomacy.js';
+import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, applyGovernmentChangeEffects, calcTributeDemand, goldToAttitude, adjustAttitude } from './diplomacy.js';
 import { grantAdvance } from './research.js';
 
 // ── Sub-module imports ──
@@ -846,11 +846,69 @@ export function applyAction(prev, mapBase, action, civSlot) {
     }
 
     case DEMAND_TRIBUTE: {
-      if (!state.tributeDemands) state.tributeDemands = [];
-      state.tributeDemands = [...state.tributeDemands, {
-        from: civSlot, to: action.targetCiv, amount: action.amount,
-        resolved: false, turn: state.turn.number,
-      }];
+      // New binary-faithful flow (FUN_0045705e + FUN_00460129:308-377):
+      //   - If `accept` is set, the player has already viewed the AI's offer
+      //     and chosen accept (true) or refuse (false). Resolve immediately.
+      //   - If `accept` is undefined, fall back to the legacy pending-demand
+      //     flow used by AI-initiated demands (RESPOND_DEMAND completes it).
+      if (action.accept === true) {
+        // Validate amount matches what the AI is willing to pay (server-side
+        // recompute prevents client tampering).
+        const offer = calcTributeDemand(state, action.targetCiv, civSlot);
+        const requested = action.amount ?? 0;
+        // Allow tolerance of 0 — exact match required
+        const amount = offer.willingness === 'pay'
+          ? Math.min(requested, offer.amount)
+          : 0;
+        if (amount > 0) {
+          state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+          const payer = { ...state.civs[action.targetCiv] };
+          payer.treasury = Math.max(0, (payer.treasury || 0) - amount);
+          state.civs[action.targetCiv] = payer;
+          const receiver = { ...state.civs[civSlot] };
+          receiver.treasury = (receiver.treasury || 0) + amount;
+          state.civs[civSlot] = receiver;
+          // Attitude: AI feels better toward us for receiving the gold
+          // (binary line 369-370: FUN_00456f20(receiver, payer, -goldToAttitude(amount)))
+          const attDelta = goldToAttitude(amount);
+          adjustAttitude(state, action.targetCiv, civSlot, +attDelta);
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'tributePaid',
+            from: action.targetCiv,
+            to: civSlot,
+            amount,
+          });
+        }
+      } else if (action.accept === false) {
+        // Player viewed the AI's offer and refused. Insulted; minor attitude
+        // hit (the binary doesn't transfer gold or take stronger action,
+        // since the player simply walked away from a free gift).
+        adjustAttitude(state, action.targetCiv, civSlot, -5);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'tributeRefused',
+          from: action.targetCiv,
+          to: civSlot,
+        });
+      } else if (action.provoked === true) {
+        // The demand provoked the AI into war (binary FUN_00460129:497-517).
+        // The AI is the aggressor, NOT the player — declare war with the
+        // arguments flipped so the warDeclared event correctly attributes
+        // the aggressor.
+        const warResult = diplomacyDeclareWar(state, mapBase, action.targetCiv, civSlot);
+        if (warResult && warResult.events) {
+          if (!state.turnEvents) state.turnEvents = [];
+          for (const evt of warResult.events) state.turnEvents.push(evt);
+        }
+      } else {
+        // Legacy flow: create pending demand for AI-initiated DEMAND_TRIBUTE.
+        if (!state.tributeDemands) state.tributeDemands = [];
+        state.tributeDemands = [...state.tributeDemands, {
+          from: civSlot, to: action.targetCiv, amount: action.amount,
+          resolved: false, turn: state.turn.number,
+        }];
+      }
       break;
     }
 

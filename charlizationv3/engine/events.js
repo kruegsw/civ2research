@@ -1235,6 +1235,64 @@ export function dispatchEvents(state, mapBase, triggerType, ctx) {
 }
 
 /**
+ * Poll all EVENT_RECEIVED_TECH triggers at start of turn cycle.
+ *
+ * Binary FUN_004fbbdd (event_check_tech_trigger) is called from the game
+ * loop every turn. For each pending tech-trigger event, it checks if any
+ * civ currently satisfies the condition (or, if a specific civ is named,
+ * whether that civ has the tech). When matched, the event fires.
+ *
+ * This complements the inline EVENT_RECEIVED_TECH dispatch (which fires
+ * at the moment a tech is granted) — the poll catches edge cases where
+ * the event was added after the tech was already known, or where the tech
+ * was acquired through a code path that didn't dispatch.
+ */
+export function pollReceivedTechTriggers(state, mapBase) {
+  const scenarioEvents = state.scenarioEvents;
+  if (!scenarioEvents || scenarioEvents.length === 0) return;
+
+  for (const evt of scenarioEvents) {
+    if (evt.triggerType !== EVENT_RECEIVED_TECH) continue;
+    if (evt.justOnce && evt.fired) continue;
+    const c = evt.conditions;
+    const techId = c.techId;
+    if (techId == null || techId < 0) continue;
+
+    // Determine which civ to check (specific receiver or wildcard)
+    let firingCiv = -1;
+    if (c.receiver != null && c.receiver !== ANYBODY) {
+      // Specific civ named
+      if ((state.civsAlive & (1 << c.receiver)) &&
+          state.civTechs?.[c.receiver]?.has?.(techId)) {
+        firingCiv = c.receiver;
+      }
+    } else {
+      // Wildcard: any alive civ that has the tech
+      for (let civ = 1; civ < 8; civ++) {
+        if (!(state.civsAlive & (1 << civ))) continue;
+        if (state.civTechs?.[civ]?.has?.(techId)) {
+          firingCiv = civ;
+          break;
+        }
+      }
+    }
+    if (firingCiv < 0) continue;
+
+    // Fire event actions
+    const ctx = { civSlot: firingCiv, techId };
+    resolveWildcards(evt, ctx);
+    for (const action of evt.actions) {
+      const result = executeEventAction(state, mapBase, action, ctx);
+      if (result) {
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push(result);
+      }
+    }
+    if (evt.justOnce) evt.fired = true;
+  }
+}
+
+/**
  * Check if civil war/schism is blocked for a given civ by a NOSCHISM event.
  *
  * @param {object} state - game state

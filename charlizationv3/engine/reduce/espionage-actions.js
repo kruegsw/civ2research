@@ -9,7 +9,8 @@ import { grantAdvance } from '../research.js';
 import { checkSpySurvival, spyCaughtCheck, handleEspionageIncident, calcSpySuccessChance, validateBribery } from '../espionage.js';
 import { dispatchEvents, EVENT_RECEIVED_TECH, EVENT_CITY_TAKEN } from '../events.js';
 import { killUnit, captureCity, checkCivElimination, removeWorstWorker } from './helpers.js';
-import { spawnBarbarianUprising } from './barbarians.js';
+// Note: spawnBarbarianUprising removed — binary kill_civ doesn't spawn
+// barbarians on civ death (verified against block_004A0000.c:3378+).
 
 export function handleBribeUnit(state, prev, mapBase, action, civSlot) {
   // Validate bribery preconditions (sole city defender, barbarians, etc.)
@@ -177,10 +178,8 @@ export function handleInciteRevolt(state, prev, mapBase, action, civSlot) {
   // Diplomatic incident
   handleEspionageIncident(state, mapBase, civSlot, oldOwner);
   checkCivElimination(state, oldOwner);
-  // Barbarian uprising when civ is destroyed via incite revolt
-  if (oldOwner > 0 && !(state.civsAlive & (1 << oldOwner))) {
-    spawnBarbarianUprising(state, mapBase, iCity.gx, iCity.gy);
-  }
+  // NOTE: binary kill_civ does NOT spawn barbarians on civ death — verified
+  // by listing all functions called from kill_civ in block_004A0000.c.
   // Scenario events: city taken
   dispatchEvents(state, mapBase, EVENT_CITY_TAKEN, {
     cityName: iCity.name, attacker: civSlot, defender: oldOwner,
@@ -492,9 +491,7 @@ export function handleSpySubvertCity(state, prev, mapBase, action, civSlot) {
   // Diplomatic incident
   handleEspionageIncident(state, mapBase, civSlot, svOldOwner);
   checkCivElimination(state, svOldOwner);
-  if (svOldOwner > 0 && !(state.civsAlive & (1 << svOldOwner))) {
-    spawnBarbarianUprising(state, mapBase, svCity.gx, svCity.gy);
-  }
+  // NOTE: binary kill_civ does NOT spawn barbarians on civ death.
   dispatchEvents(state, mapBase, EVENT_CITY_TAKEN, {
     cityName: svCity.name, attacker: civSlot, defender: svOldOwner,
   });

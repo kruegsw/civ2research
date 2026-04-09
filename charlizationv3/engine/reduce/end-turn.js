@@ -12,7 +12,7 @@ import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTec
 import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
-import { dispatchEvents, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
+import { dispatchEvents, pollReceivedTechTriggers, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
 import { completeWorkerOrder, getWorkerTurnsNeeded, countCooperatingWorkers, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
 import { processBarbarianAI, processBarbCampProduction, spawnBarbarians } from './barbarians.js';
 // resolveGoodyHut is defined in move-unit.js but is also used in GOTO continuation within END_TURN.
@@ -203,6 +203,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // #35: Reset ALL units for ALL civs at once at turn start (civ 0)
     // Binary: FUN_005b2a39 resets all units at the start of the turn cycle,
     // not per-civ. This ensures consistent state for all civs.
+    //
+    // Heal eligibility (binary FUN_00488cef): a unit may heal at the start of
+    // its civ's next turn ONLY if its 0x40 flag is clear — i.e., it did not
+    // move during its last turn. We capture that decision here, before mp is
+    // reset, by recording `idleLastTurn = (movesLeft >= maxFresh)`.
     state.units = state.units.map(u => {
       if (u.gx < 0) return u;
       const ownerCiv = u.owner;
@@ -210,15 +215,24 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       const ownerHasMagellan = hasWonderEffect(state, ownerCiv, 12);
       const ownerHasNuclearPower = !!(state.civTechs?.[ownerCiv]?.has(59));
       const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
-      let mp = calcEffectiveMovementPoints(u);
+      // Sea bonuses are computed first, then passed to calcEffectiveMovementPoints
+      // so damage scaling applies to the total (base + bonuses), matching binary
+      // FUN_005b2a39 which adds sea bonuses (lines 772-786) before damage reduction (789-810).
+      let seaBonus = 0;
       if (UNIT_DOMAIN[u.type] === 2) { // sea domain
         if (ownerHasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
-          mp += MOVEMENT_MULTIPLIER;
+          seaBonus += MOVEMENT_MULTIPLIER;
         }
-        if (ownerHasMagellan) mp += 2 * MOVEMENT_MULTIPLIER;
-        if (ownerHasNuclearPower) mp += MOVEMENT_MULTIPLIER;
+        if (ownerHasMagellan) seaBonus += 2 * MOVEMENT_MULTIPLIER;
+        if (ownerHasNuclearPower) seaBonus += MOVEMENT_MULTIPLIER;
       }
-      return { ...u, movesLeft: mp, orders };
+      let mp = calcEffectiveMovementPoints(u, seaBonus);
+      // Capture idleness BEFORE resetting movesLeft. If the unit still has
+      // its full mp (the value we're about to assign), it didn't move/attack
+      // last turn and is eligible for healing. The +1 tolerance is for
+      // off-by-one where a unit may have spent one MP on a no-cost order.
+      const idleLastTurn = (u.movesLeft || 0) >= mp;
+      return { ...u, movesLeft: mp, orders, idleLastTurn };
     });
 
     // ── #145: Future tech counter — increment after turn 199 ──
@@ -251,6 +265,65 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
   // ── Begin-of-turn processing for the NEW active civ ──
   const activeCiv = next;
+
+  // ── Council meeting check (binary FUN_0048aa24 / check_turn_advisors) ──
+  // Binary fires this for the human player at the start of their turn,
+  // every 50 turns. Picks one of the player's larger cities (rand-weighted).
+  if (turnNumber >= 2 && (turnNumber - 1) % 50 === 0 && state.councilEnabled !== false) {
+    const isActiveCivHumanCouncil = !!((1 << activeCiv) & (state.humanPlayers || 0xFF));
+    if (isActiveCivHumanCouncil) {
+      // Binary FUN_0048aa24 lines 3047-3068: iterate active civ's cities,
+      // for each: weight = citySize (or *2 if has Palace), then pick max of
+      // (rand() % weight) across cities.
+      let bestCi = -1;
+      let bestScore = -1;
+      const rng = state.rng;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (!c || c.size <= 0) continue;
+        if (c.owner !== activeCiv) continue;
+        let weight = c.size;
+        if (c.buildings && c.buildings.has(1)) weight *= 2;
+        const score = weight <= 1 ? 0 : (rng ? rng.nextInt(weight) : Math.floor(Math.random() * weight));
+        if (score > bestScore) {
+          bestScore = score;
+          bestCi = ci;
+        }
+      }
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'councilMeeting',
+        cityIndex: bestCi,
+        cityName: bestCi >= 0 ? state.cities[bestCi].name : null,
+        civSlot: activeCiv,
+        turn: turnNumber,
+      });
+    }
+  }
+
+  // ── Casualty notification ──
+  // Binary game loop FUN_0048b340 lines 3428-3454: when starting a civ's turn,
+  // computes delta = unitsLostLifetime - unitsLostNotified. If delta > 0,
+  // shows the CASUALTY (delta==1) or CASUALTIES (delta>1) dialog and updates
+  // unitsLostNotified to current. We fire it as a turnEvent for client UI.
+  if (state.civs?.[activeCiv]) {
+    const civ = state.civs[activeCiv];
+    const lifetime = civ.unitsLostLifetime || 0;
+    const notified = civ.unitsLostNotified || 0;
+    const delta = lifetime - notified;
+    if (delta > 0) {
+      if (!Array.isArray(state.civs) || Object.isFrozen(state.civs)) {
+        state.civs = [...state.civs];
+      }
+      state.civs[activeCiv] = { ...state.civs[activeCiv], unitsLostNotified: lifetime };
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'casualtyReport',
+        civSlot: activeCiv,
+        count: delta,
+      });
+    }
+  }
 
   // ── Anarchy countdown ──
   if (state.civs?.[activeCiv]) {
@@ -313,11 +386,20 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   }
 
   // ── #34: Heal units BEFORE city processing (binary FUN_00488cef) ──
-  // Binary: healing runs at START of each civ's turn before cities process
+  // Binary: healing runs at START of each civ's turn before cities process.
+  // Binary FUN_00488cef line 2300: heal only runs if the unit's old 0x40
+  // flag (moved-last-turn) was clear. We use idleLastTurn captured at the
+  // start of the new turn cycle.
   for (let ui = 0; ui < state.units.length; ui++) {
     const u = state.units[ui];
     if (u.owner !== activeCiv || u.gx < 0) continue;
     if (u.movesRemain <= 0) continue;
+    // If unit moved last turn (idleLastTurn === false), skip normal heal.
+    // Then clear the flag so the unit can heal next cycle if it stays put.
+    if (u.idleLastTurn === false) {
+      state.units[ui] = { ...u, idleLastTurn: true };
+      continue;
+    }
 
     const domain = UNIT_DOMAIN[u.type] ?? 0;
     const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
@@ -378,7 +460,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     if (healBase > 0) {
       const newHpLost = Math.max(0, u.movesRemain - healBase);
       if (newHpLost !== u.movesRemain) {
-        state.units[ui] = { ...u, movesRemain: newHpLost };
+        // Binary FUN_00488cef lines 2368-2375: when a unit fully heals
+        // (damage reaches 0) AND its order is sentry, clear the order so the
+        // unit wakes up at the start of the turn and is ready for input.
+        const newOrders = (newHpLost === 0 && u.orders === 'sentry') ? 'none' : u.orders;
+        state.units[ui] = { ...u, movesRemain: newHpLost, orders: newOrders };
       }
     }
   }
@@ -446,17 +532,21 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // Binary processes this once when civ 0 (first alive) runs, not every civ.
   // #13: When counter exceeds threshold, degrade terrain tiles.
   if (isNewTurnCycle) {
-    // Count pollution tiles, recycling centers, and solar plants across all cities
+    // Binary FUN_00486c2e (update_pollution_counter) lines 1599-1620:
+    //   local_c = DAT_00655b12 - DAT_00655b10/2  (effective pollution tile count)
+    //   local_14 = count of cities with Solar Plant (improvement 0x1d=29)
+    //   if (numCivs > 1) local_c = (numCivs - 1 + local_c) / numCivs
+    //   netPressure = local_c * 2 + warmingCount * -4 - local_14
+    // Note: only Solar Plants subtract from netPressure here. Recycling Centers
+    // reduce per-city pollution generation, not the global warming counter.
     let pollCount = 0;
     for (const tile of mapBase.tileData) {
       if (tile && tile.improvements && tile.improvements.pollution) pollCount++;
     }
-    let recyclingCount = 0;
     let solarPlantCount = 0;
     for (const c of state.cities) {
       if (c.size <= 0) continue;
-      if (cityHasBuilding(c, 18)) recyclingCount++;   // Recycling Center = building 18
-      if (cityHasBuilding(c, 29)) solarPlantCount++;   // Solar Plant = building 29
+      if (cityHasBuilding(c, 29)) solarPlantCount++;   // Solar Plant = improvement 0x1d
     }
 
     // Count alive civs for multi-civ divisor
@@ -472,28 +562,26 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       pollLevel = Math.floor((aliveCivCount - 1 + pollLevel) / aliveCivCount);
     }
 
-    // Net pressure: pollution × 2 - warmingEvents × 4 - recyclingCenters - solarPlants
-    // Solar Plant cities reduce global warming pressure (binary: reduces counter)
+    // Net pressure: pollution × 2 - warmingEvents × 4 - solarPlantCities
     const warmingCount = state.globalWarmingCount || 0;
-    const netPressure = pollLevel * 2 - warmingCount * 4 - recyclingCount - solarPlantCount;
+    const netPressure = pollLevel * 2 - warmingCount * 4 - solarPlantCount;
 
     // Drift counter toward net pressure (±1 per turn)
+    // Binary lines 1612-1619: if (netPressure <= counter) { if (netPressure < counter) counter--- }
+    //                         else counter++;
     let counter = state.pollutionCounter || 0;
     if (netPressure > counter) counter++;
     else if (netPressure < counter) counter--;
     counter = Math.max(0, Math.min(99, counter));
     state.pollutionCounter = counter;
 
-    // Warnings: counter > 12 with pollution > 6, and counter > 6
-    if (counter > 12 && pollCount > 6) {
+    // Binary line 1621: FEARWARMING dialog fires when counter == 12 AND pollLevel > 6
+    if (counter === 12 && pollLevel > 6) {
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'pollutionWarning', severity: 'high' });
-    } else if (counter > 6 && pollCount > 0) {
-      if (!state.turnEvents) state.turnEvents = [];
-      state.turnEvents.push({ type: 'pollutionWarning', severity: 'low' });
     }
 
-    // Trigger global warming at counter > 16
+    // Trigger global warming at counter > 16 (binary line 1628: '\x10' < counter)
     if (counter > 16) {
       state.globalWarmingCount = warmingCount + 1;
       state.pollutionCounter = 0; // reset after event
@@ -563,7 +651,13 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   let civSciTotal = 0;
   let civMaintenanceTotal = 0;
   // #147: Per-civ score accumulators during city processing
+  // civPopulationTotal: linear sum (Σ city.size) — matches binary civ+0x6c, the
+  //   "total city population" field used by happiness calcs.
+  // civPopulationDemographic: triangular sum (Σ size*(size+1)/2) — matches
+  //   binary FUN_0043cce5 (block_00430000.c:4478-4500), used for the population
+  //   display ("12,345,000 people") and milestone events. Min clamp to 1.
   let civPopulationTotal = 0;
+  let civPopulationDemographic = 0;
 
   // #123: Per-city science accumulation — precompute doubling conditions
   // Binary FUN_004efbc6: science doubling is applied PER CITY before accumulation,
@@ -583,7 +677,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     if (city.owner !== activeCiv || city.size <= 0) continue;
 
     // #147: Accumulate population for score tracking
+    // Linear sum mirrors binary's civ+0x6c "city size sum" (used internally
+    // by happiness/AI). Triangular sum is the displayed population units.
     civPopulationTotal += city.size;
+    civPopulationDemographic += (city.size * (city.size + 1)) >> 1;
 
     if (city.resistanceTurns > 0) continue; // no trade during resistance
     if (city.civilDisorder) continue; // no trade/science during civil disorder
@@ -710,10 +807,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // Binary FUN_00489292: check_population_milestone(civ_id, prev_gold)
     // Checks for 10K, 100K, 1M, 10M population milestones and emits events.
     // Population is in "thousands" (city size × 10,000 in Civ2 display).
+    // Binary FUN_00489292 calls FUN_0043cce5 (triangular sum, clamped [1,32000])
+    // for the milestone source value, so we use the demographic (triangular)
+    // total here, not the linear city-size sum.
     {
       const prevMilestone = civ.populationMilestone || 0;
-      // Total population in game units (each citizen = 10,000 people)
-      const currentPop = civPopulationTotal;
+      // Civ2 demographic population: each "1" here represents 10,000 people.
+      // Min 1, max 32,000 (binary FUN_0043cce5 lines 4493-4498).
+      const currentPop = Math.max(1, Math.min(32000, civPopulationDemographic));
       let newMilestone = prevMilestone;
       let milestonePop = 0;
       if (currentPop < 100) {
@@ -946,11 +1047,18 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // ── Once-per-full-turn-cycle: scenario events, diplomacy, council ──
   // Note: barbarian spawning was moved to the top of the turn cycle (#76)
   if (isNewTurnCycle) {
-    // ── Scenario events: TURN, TURN_INTERVAL, RANDOM_TURN triggers ──
+    // ── Scenario events: TURN, TURN_INTERVAL, RANDOM_TURN, RECEIVED_TECH triggers ──
+    // Binary game loop (FUN_0048b340 lines 3310-3315) calls all four event check
+    // functions at the top of each turn cycle:
+    //   FUN_004fba0c — turn trigger    (EVENT_TURN)
+    //   FUN_004fba9c — interval trigger (EVENT_TURN_INTERVAL)
+    //   FUN_004fbb2f — random trigger   (EVENT_RANDOM_TURN)
+    //   FUN_004fbbdd — tech trigger     (EVENT_RECEIVED_TECH polling)
     if (state.scenarioEvents && state.scenarioEvents.length > 0) {
       dispatchEvents(state, mapBase, EVENT_TURN, { turn: turnNumber });
       dispatchEvents(state, mapBase, EVENT_TURN_INTERVAL, { turn: turnNumber });
       dispatchEvents(state, mapBase, EVENT_RANDOM_TURN, { turn: turnNumber });
+      pollReceivedTechTriggers(state, mapBase);
     }
 
     // ── G.1-G.5: Diplomacy timers (ceasefire expiration, withdrawal, alliance visibility, reputation decay) ──
@@ -960,33 +1068,6 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       state.turnEvents.push(...diploEvents);
     }
 
-    // ── Council meeting: every 50 turns (min turn 2) ──
-    // Formula: (turn-1) % 50 == 0, starting from turn 2
-    if (turnNumber >= 2 && (turnNumber - 1) % 50 === 0 && state.councilEnabled !== false) {
-      // Select the largest city, weighted by size (Palace doubles weight)
-      let councilCi = -1;
-      let councilWeight = -1;
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        const c = state.cities[ci];
-        if (!c || c.size <= 0) continue;
-        let weight = c.size;
-        if (c.buildings && c.buildings.has(1)) weight *= 2; // Palace doubles weight
-        if (weight > councilWeight) {
-          councilWeight = weight;
-          councilCi = ci;
-        }
-      }
-      if (councilCi >= 0) {
-        if (!state.turnEvents) state.turnEvents = [];
-        state.turnEvents.push({
-          type: 'councilMeeting',
-          cityIndex: councilCi,
-          cityName: state.cities[councilCi].name,
-          civSlot: state.cities[councilCi].owner,
-          turn: turnNumber,
-        });
-      }
-    }
   }
 
   // ── K.3: Track consecutive peace turns per civ (for score formula) ──

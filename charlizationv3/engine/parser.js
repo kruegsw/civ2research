@@ -149,7 +149,9 @@ const Civ2Parser = {
     const mapRelatedByte     = savBuf[0x002A];
     const mapRevealed        = savBuf[0x002B];
     const difficulty         = DIFFICULTY_KEYS[savBuf[0x002C]] || 'chieftain';
-    const barbarianActivity  = BARBARIAN_KEYS[savBuf[0x002D]] || 'none';
+    // Binary DAT_00655b09 (0-3): 0=Villages Only (no spawning), 1=Roving,
+    // 2=Restless, 3=Raging. There is no "off" state in original Civ2.
+    const barbarianActivity  = BARBARIAN_KEYS[savBuf[0x002D]] || 'villages';
     const civsAlive          = savBuf[0x002E];
     const humanPlayers       = savBuf[0x002F];
     const civsEverExisted    = savBuf[0x0030];              // Bitmask — bits stay set after civ death (byte 0x0031 always 0)
