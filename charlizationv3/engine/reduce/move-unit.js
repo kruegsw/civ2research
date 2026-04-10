@@ -711,11 +711,14 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         }
       }
 
-      // Attacker stays on its own tile after winning combat.
-      // To capture a city or occupy the tile, the player must move there manually.
-      // The attacker does NOT auto-advance.
-
-      // Combat costs 1 MP (not all movement)
+      // Binary FUN_00580341 → FUN_0057e9f9: attacker auto-advances to the
+      // defender's tile after winning combat. In real Civ2, winning combat
+      // automatically moves the attacker to the destination — the player does
+      // NOT need a second move command. Combat costs 1 MP.
+      unit.gx = dest.gx;
+      unit.gy = dest.gy;
+      unit.x = dest.gx * 2 + (dest.gy % 2);
+      unit.y = dest.gy;
       unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
       if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
     } else {
