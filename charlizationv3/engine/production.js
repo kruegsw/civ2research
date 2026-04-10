@@ -13,7 +13,7 @@ import {
   COSMIC_FREE_SUPPORT, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   IMPROVE_MAINTENANCE, COMMODITY_NAMES, UNIT_ATK,
   GOVT_FACTOR, GOVT_CORRUPTION_DIVISOR, GOVT_WLTKD_BUMP,
-  COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY,
+  COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY, GOVT_INDEX,
 } from './defs.js';
 import { cityHasBuilding, civHasWonder, cityHasWonder, hasWonderEffect, getGovernment } from './utils.js';
 
@@ -48,9 +48,6 @@ export function calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, g
 
   // Harbor (30): +1 food on ocean
   if (ter === 10 && cityHasBuilding(city, 30)) food += 1;
-
-  // Railroad: +50% food (binary FUN_004e868f: food = food + food / 2)
-  if (hasRailroad) food = food + Math.floor(food / 2);
 
   // Despotism/Anarchy penalty: -1 if food > 2 (unless WLTKD)
   if ((government === 'anarchy' || government === 'despotism') && food > 2 && !city.weLoveKingDay)
@@ -109,7 +106,10 @@ export function calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
   const hasRoad = imp.road || imp.railroad || isCenter;
   if (hasRoad && (ter < 3 || trade > 0)) trade += 1;
 
-  // Colossus (wonder 2): +1 trade if trade > 0, in wonder city
+  // Ocean Colossus bonus (FUN_004e868f:3114): ocean tiles get +1 trade in Colossus city
+  if (ter === 10 && cityHasWonder(gameState, cityIndex, 2)) trade += 1;
+
+  // Colossus (wonder 2): +1 trade if trade > 0, in wonder city (FUN_004e868f:3162)
   if (trade > 0 && cityHasWonder(gameState, cityIndex, 2)) trade += 1;
 
   // Despotism/Anarchy penalty
@@ -118,11 +118,14 @@ export function calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
     trade -= 1;
 
   // Republic/Democracy: +1 trade if trade > 0
-  if ((government === 'republic' || government === 'democracy') && trade > 0) trade += 1;
-
-  // (#101) WLTKD does NOT grant +1 trade per tile in the binary.
-  // WLTKD only affects the government penalty check (despotism/anarchy penalty
-  // is skipped when WLTKD is active, which is already handled above).
+  // Per FUN_004e868f:3189-3197, when WLtKD is active the threshold drops from
+  // govt >= 5 (Republic/Democracy) to govt >= 2 (Monarchy through Democracy),
+  // granting the +1 trade bonus to Monarchy, Communism, and Fundamentalism too.
+  if (trade > 0) {
+    const govtIdx = GOVT_INDEX[government] ?? 0;
+    const threshold = city.weLoveKingDay ? 2 : 5;
+    if (govtIdx >= threshold) trade += 1;
+  }
 
   // Superhighways (25) + road: +50%
   if (hasRoad && cityHasBuilding(city, 25))
@@ -358,11 +361,12 @@ export function calcShieldWaste(city, grossShields, support, gameState, mapBase)
   if (govt === 'fundamentalism' || govt === 'democracy' || city.owner === 0) return 0;
   if (city.hasPalace) return 0;
   const capital = gameState.cities.find(c => c.owner === city.owner && c.hasPalace);
-  if (!capital) return 0;
-
-  const mw2 = (mapBase.mw || 0) * 2;
-  const mapShape = mapBase.mapShape || 0;
-  const distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+  let distance = 32; // default when no capital (maximum waste)
+  if (capital) {
+    const mw2 = (mapBase.mw || 0) * 2;
+    const mapShape = mapBase.mapShape || 0;
+    distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+  }
 
   const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
   const gf = GOVT_FACTOR[effGovt] || 4;
@@ -370,7 +374,7 @@ export function calcShieldWaste(city, grossShields, support, gameState, mapBase)
   const available = grossShields - support;
   if (available <= 0) return 0;
 
-  const distVal = (govt === 'communism') ? 3 : Math.min(distance, 16);
+  const distVal = (govt === 'communism') ? 0 : Math.min(distance, 16);
   let baseWaste = Math.trunc((distVal * available * 3) / (gf * 20));
   baseWaste = Math.max(0, Math.min(baseWaste, available));
 
@@ -464,7 +468,13 @@ export function calcTradeCorruption(city, grossTrade, gameState, mapBase) {
 
   const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
   const gf = GOVT_FACTOR[effGovt] || 4;
-  const distVal = (govt === 'communism') ? 3 : distance; // no cap (unlike shields)
+  // Binary FUN_004e989a (calc_corruption) lines 3635-3641: communism uses a
+  // flat "equivalent distance" (COSMIC param 16, DAT_0064bcd8, default 10)
+  // instead of real capital distance. This gives communism uniform corruption
+  // across all cities regardless of distance. The previous JS used 0, making
+  // communism have ZERO corruption — that was wrong.
+  const COSMIC_COMMUNISM_EQUIV_DISTANCE = 10; // DAT_0064bcd8 default
+  const distVal = (govt === 'communism') ? COSMIC_COMMUNISM_EQUIV_DISTANCE : distance;
   let corruption = Math.trunc((distVal * grossTrade * 3) / (gf * 20));
   corruption = Math.max(0, Math.min(corruption, grossTrade));
 
@@ -570,6 +580,13 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   tax += specs.taxman * 3;
   sci += specs.scientist * 3;
 
+  // Fundamentalism science penalty (FUN_004ea1f6:3899-3901):
+  // Applied AFTER specialist bonuses but BEFORE building multipliers.
+  // science -= (DAT_0064bcd9 * science) / 100
+  if (govt === 'fundamentalism') {
+    sci -= Math.trunc((COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY * sci) / 100);
+  }
+
   // Marketplace(5)/Bank(10)/Stock Exchange(22): each +50% to lux and tax
   let lgMult = 0;
   if (cityHasBuilding(city, 5)) lgMult++;
@@ -591,13 +608,6 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
 
   // Copernicus' Observatory (wonder 11): doubles science in wonder city
   if (cityHasWonder(gameState, cityIndex, 11)) sci <<= 1;
-
-  // Fundamentalism science penalty (Raw C FUN_004ea1f6 line 3900):
-  // science -= (DAT_0064bcd9 * science) / 100
-  // Applied AFTER all specialist/building/wonder multipliers.
-  if (govt === 'fundamentalism') {
-    sci -= Math.trunc((COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY * sci) / 100);
-  }
 
   return { lux, tax, sci };
 }

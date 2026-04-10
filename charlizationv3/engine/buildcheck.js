@@ -56,10 +56,18 @@ export function canBuildUnitType(civSlot, cityIndex, unitTypeId, gameState, mapB
     if (city && !isCityCoastal(city, mapBase)) return false;
   }
 
-  // ── Gap 91: Range >= 99 requires SpaceFlight tech (76) ──
-  // Binary FUN_004bfe5a: units with range >= 99 need SpaceFlight tech to build
-  const range = UNIT_RANGE[unitTypeId] ?? 0;
-  if (range >= 99 && !hasTech(76)) return false;  // 76 = Space Flight
+  // ── Nuclear weapons require Manhattan Project + Nuclear Fission ──
+  // Binary FUN_004bfe5a line 7031-7032: attack >= 99 (0x63) requires:
+  //   (1) DAT_00655c14 != -1 (Manhattan Project wonder has been built)
+  //   (2) civ has tech 58 (Nuclear Fission)
+  // Previous JS incorrectly checked UNIT_RANGE >= 99 with Space Flight (76).
+  const unitAtk = UNIT_ATK[unitTypeId] ?? 0;
+  if (unitAtk >= 99) {
+    // Manhattan Project (wonder index 24) must exist and not be destroyed
+    const mpWonder = gameState.wonders?.[24];
+    if (!mpWonder || mpWonder.cityIndex == null || mpWonder.destroyed) return false;
+    if (!hasTech(58)) return false; // 58 = Nuclear Fission
+  }
 
   // Fanatics require Fundamentalism government
   if (FANATIC_TYPES.has(unitTypeId)) {
