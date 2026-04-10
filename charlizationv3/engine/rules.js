@@ -14,7 +14,7 @@ import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROV
 import { resolveDirection, getDirection, isZOCBlocked, checkRoadConnection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
-import { getGovernment } from './utils.js';
+import { getGovernment, hasWonderEffect } from './utils.js';
 import { canBuildUnitType, canBuildImprovement, canBuildWonder } from './buildcheck.js';
 import { calcBribeCostEnhanced, calcInciteCostEnhanced } from './espionage.js';
 
@@ -482,10 +482,16 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (civ.government === government) return 'Already that government';
       if (civ.government === 'anarchy') return 'Revolution already in progress';
       // Check tech prerequisite
-      const prereq = GOVT_TECH_PREREQS[government] ?? -1;
-      if (prereq >= 0) {
-        const civTechs = gameState.civTechs?.[civSlot];
-        if (!civTechs || !civTechs.has(prereq)) return 'Missing tech prerequisite';
+      // Binary FUN_0055c277 (check_govt_available): if civ has Statue of
+      // Liberty wonder (wonder 19), all governments are available regardless
+      // of tech prerequisites.
+      const hasStatueOfLiberty = hasWonderEffect(gameState, civSlot, 19);
+      if (!hasStatueOfLiberty) {
+        const prereq = GOVT_TECH_PREREQS[government] ?? -1;
+        if (prereq >= 0) {
+          const civTechs = gameState.civTechs?.[civSlot];
+          if (!civTechs || !civTechs.has(prereq)) return 'Missing tech prerequisite';
+        }
       }
       return null;
     }
