@@ -530,12 +530,16 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   }
 
   // ── #22: Civil war check with age rank gate ──
-  // Binary ref FUN_0057b5df lines 4566-4585:
-  //   Requires: old owner's capital, 4+ remaining cities, capturer's age rank < old owner's age rank
+  // Binary ref FUN_0057b5df lines 4567-4585:
+  //   Requires: defender is AI (not human), old owner's capital (Palace),
+  //   defender has > 4 cities, capturer's age rank < old owner's age rank
   //   Age rank = DAT_00655c22 (powerRank byte array, higher = older/stronger)
   const hadPalace = !!(city.buildings && city.buildings.has(1));
+  const isDefenderHuman = !!((state.humanPlayers || 0) & (1 << oldOwner));
   let civilWarResult = null;
-  if (hadPalace && countCities(state, oldOwner) >= 6 && !isSchismBlocked(state, oldOwner)) {
+  // C line 4567: (1 << defender & human_bitmask) == 0 — AI only
+  // C line 4569: 4 < city_count — defender must have > 4 cities (including captured one)
+  if (hadPalace && !isDefenderHuman && countCities(state, oldOwner) > 4 && !isSchismBlocked(state, oldOwner)) {
     // #22: Age rank gate — capturer must be younger (lower rank) than old owner
     const capturerRank = getPowerRank(state, capturerCivSlot);
     const oldOwnerRank = getPowerRank(state, oldOwner);
@@ -548,20 +552,25 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   }
 
   // ── #4: Gold plunder (binary-faithful formula) ──
-  // Binary ref: FUN_00579DBB — gold = (citySize * treasury) / (numCities + 1)
-  // where numCities is the OLD owner's city count (DAT_0064c708, not totalPop)
+  // Binary ref: FUN_00579DBB (block_00570000.c:3906) — line 3916:
+  //   gold = (citySize * treasury) / (total_population + 1)
+  // where total_population is DAT_0064c70c (civ record offset 0x6C, sum of all city sizes)
   // with overflow protection: if treasury >= 32000/citySize, reorder to avoid overflow
   const oldOwnerCiv = state.civs?.[oldOwner];
   const oldTreasury = oldOwnerCiv?.treasury || 0;
-  const numCities = countCities(state, oldOwner);
+  // C uses DAT_0064c70c (total_population), NOT DAT_0064c708 (city_count)
+  let totalPop = 0;
+  for (const c of state.cities) {
+    if (c.owner === oldOwner && c.size > 0) totalPop += c.size;
+  }
   let plunder;
-  if (numCities + 1 <= 0) {
+  if (totalPop + 1 <= 0) {
     plunder = 0;
   } else if (oldTreasury >= Math.floor(32000 / Math.max(1, city.size))) {
-    // Overflow protection: reorder to (treasury / (numCities+1)) * citySize
-    plunder = Math.floor(oldTreasury / (numCities + 1)) * city.size;
+    // Overflow protection: reorder to (treasury / (totalPop+1)) * citySize
+    plunder = Math.floor(oldTreasury / (totalPop + 1)) * city.size;
   } else {
-    plunder = Math.floor((city.size * oldTreasury) / (numCities + 1));
+    plunder = Math.floor((city.size * oldTreasury) / (totalPop + 1));
   }
   if (plunder < 0) plunder = Math.min(32000, oldTreasury); // overflow cap
   plunder = Math.min(plunder, Math.max(0, oldTreasury));
@@ -576,7 +585,10 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       const capTreasury = state.civs[capturerCivSlot]?.treasury || 0;
       state.civs[capturerCivSlot] = { ...state.civs[capturerCivSlot], treasury: capTreasury + plunder };
     }
-    events.push({ type: 'goldPlundered', amount: plunder, from: oldOwner, to: capturerCivSlot });
+    // Note: no separate goldPlundered event — the plunder amount is
+    // included in the unified cityCapture event below so the dialog can
+    // show the binary-faithful "X captured Y. N gold pieces plundered."
+    // message in a single popup.
   }
 
   // ── #5: Tech theft — ALWAYS guaranteed on city capture ──
@@ -604,20 +616,24 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     }
   }
 
-  // ── Population reduction ──
-  // Normal capture: reduce size by 1 (min 1)
-  // If recapture (wasOurs) AND captureType > 0: don't reduce
+  // ── Population reduction — Phase 2 (capture-time) ──
+  // Binary FUN_0057b5df line 4836: city.size -= 1, always for normal capture
+  // (NOT gated by City Walls/Great Wall/Chieftain — those are Phase 1 combat-
+  // time checks in FUN_00580341 lines 1002-1007, handled separately in
+  // move-unit.js when the last defender is killed).
+  //
+  // Phase 2 condition (binary line 4810): fires if
+  //   (normalCapture && !recapture) OR (city.size > 1)
+  // The size > 1 guard prevents Phase 2 from destroying a size-1 city that
+  // already survived Phase 1 (walls protected it from the combat reduction).
+  //
+  // Net effect: cities lose 2 pop without walls (Phase 1 + Phase 2),
+  //             cities lose 1 pop with walls (Phase 2 only).
   let newSize = city.size;
-  if (captureType === 0 && !wasOurs) {
-    newSize = Math.max(1, city.size - 1);
-  } else if (city.size > 1) {
-    newSize = Math.max(1, city.size - 1);
-  }
-
-  // ── #57: Size-1 city destruction on barbarian capture ──
-  // Binary: cities of size < 2 captured by barbarians (param_2 == 0) are destroyed
-  if (capturerCivSlot === 0 && newSize < 2) {
-    newSize = 0;
+  if ((captureType === 0 && !wasOurs) || city.size > 1) {
+    if (captureType === 0 && !wasOurs) {
+      newSize = city.size - 1;
+    }
   }
 
   // Check if city is destroyed (size reaches 0)
@@ -637,13 +653,30 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
         }
       }
     }
-    events.push({ type: 'cityDestroyed', cityName: city.name, gx: cityGx, gy: cityGy });
+    // Binary FUN_0057b5df:4953-4960 — the @CITYCAPTURE dialog still fires
+    // when a size-1 city is razed, with the same "captured" verb and gold
+    // plunder amount. Emit a single unified cityCapture event with the
+    // razed flag so the client can show the proper combined dialog.
+    events.push({
+      type: 'cityCapture',
+      cityIndex,
+      cityName: city.name,
+      from: oldOwner,
+      to: capturerCivSlot,
+      plunder,
+      newSize: 0,
+      destroyed: true,
+      wasOurs,
+      gx: cityGx,
+      gy: cityGy,
+    });
 
-    // Still check elimination even when city is destroyed
+    // Civ elimination check — match the survived branch and the binary:
+    // any civ that loses its last city dies immediately, regardless of
+    // surviving units (killCiv kills them as part of cleanup).
     if (oldOwner > 0) {
       const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
-      const hasUnit = state.units.some(u => u.owner === oldOwner && u.gx >= 0);
-      if (!hasCity && !hasUnit) {
+      if (!hasCity) {
         const killResult = killCiv(state, mapBase, oldOwner, capturerCivSlot);
         events.push(...killResult.events);
       }
@@ -654,25 +687,29 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── Building destruction ──
   let buildings = new Set(city.buildings);
 
-  // Always destroy: Palace, Temple, Courthouse, Cathedral
-  for (const bid of ALWAYS_DESTROYED_ON_CAPTURE) {
-    buildings.delete(bid);
+  // Always destroy: Palace, Temple, Courthouse, Cathedral — but only when
+  // NOT recapturing own city (C line 4795: if local_7c == 0)
+  if (!wasOurs) {
+    for (const bid of ALWAYS_DESTROYED_ON_CAPTURE) {
+      buildings.delete(bid);
+    }
   }
 
   // B.5: Building destruction using 0xAA mask pattern
-  // Binary: applies mask 0xAA with random shift (0 or 1) to building bitfield
-  // This creates a deterministic alternating pattern of destruction
+  // Binary ref: FUN_0057b5df lines 4801-4808
+  // C: buildings[byte] &= (0xAA >> (rand() & 1))
+  // Bits SET in mask = building SURVIVES; bits CLEAR = building DESTROYED
+  // Mask is 0xAA (10101010) or 0x55 (01010101) depending on random bit
   if (!opts.skipBuildingDestruction && captureType === 0 && !wasOurs) {
     const shift = rand() & 1; // 0 or 1
-    const mask = 0xAA >>> shift; // 0xAA=10101010 or 0x55=01010101
     const remaining = [...buildings].filter(bid => bid >= 1 && bid <= 38);
     for (const bid of remaining) {
-      // Check if the bit for this building is set in the mask
       // Buildings map to bits within 5 bytes (40 bits total)
-      const byteIdx = Math.floor((bid - 1) / 8);
       const bitIdx = (bid - 1) % 8;
       const byteMask = (0xAA >>> shift) & 0xFF;
-      if (byteMask & (1 << bitIdx)) {
+      // C code ANDs with mask — bit SET in mask means SURVIVE
+      // So destroy building when its bit is CLEAR in the mask
+      if (!(byteMask & (1 << bitIdx))) {
         buildings.delete(bid);
       }
     }
@@ -1046,8 +1083,14 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   }
 
   // ── #6: Civ elimination check FIRST, then partisans only if civ SURVIVES ──
-  // Binary ref: FUN_0057b5df line 5104 calls kill_civ BEFORE partisan spawning (lines 5105+)
-  // Binary checks only for cities (not units) — killCiv cleans up remaining units.
+  // Binary ref: FUN_0057b5df line 5104 calls kill_civ BEFORE partisan spawning.
+  // Binary kill_civ (FUN_004AA378:3395-3401) early-returns only when the civ
+  // still has at least one CITY — units are not checked. As part of the
+  // kill_civ cleanup, all remaining units of the dying civ are killed.
+  //
+  // So when a civ loses its last city, it dies immediately regardless of
+  // surviving units. This matches the binary and the user's expectation
+  // (the AI should be wiped from the map immediately, not at end of turn).
   let civEliminated = false;
   if (oldOwner > 0) {
     const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
@@ -1169,6 +1212,10 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   }
 
   // ── City capture event ──
+  // Binary FUN_0057b5df:4953-4960 — the @CITYCAPTURE dialog with the
+  // capturer civ name, the verb (captured/recaptured), the city name,
+  // and the gold plunder amount. The destroyed branch above emits a
+  // similar event with destroyed=true.
   events.push({
     type: 'cityCapture',
     cityIndex,
@@ -1177,6 +1224,8 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     to: capturerCivSlot,
     plunder,
     newSize,
+    destroyed: false,
+    wasOurs,
     gx: cityGx,
     gy: cityGy,
   });

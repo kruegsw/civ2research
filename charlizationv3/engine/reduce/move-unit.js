@@ -650,6 +650,33 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         });
       }
 
+      // ── Phase 1 pop reduction (combat-time, walls-gated) ──
+      // Binary FUN_00580341 lines 999-1006: when a defender dies at a city tile,
+      // reduce city pop by 1 IF no City Walls, no Great Wall, not Chieftain+human.
+      // This is SEPARATE from Phase 2 (always -1 at capture time in citycapture.js).
+      // Net effect: -2 pop without walls, -1 with walls (for size 3+ cities).
+      if (defInCity) {
+        const cityAtBattle = state.cities.find(c =>
+          c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
+        if (cityAtBattle) {
+          const wallsBlock = cityAtBattle.buildings?.has?.(8); // City Walls
+          const greatWallBlock = hasWonderEffect(state, cityAtBattle.owner, 6);
+          const chieftainHumanBlock = (state.difficulty === 'chieftain' || state.difficulty === 0)
+            && !!((state.humanPlayers || 0) & (1 << civSlot));
+          if (!wallsBlock && !greatWallBlock && !chieftainHumanBlock) {
+            const ci = state.cities.indexOf(cityAtBattle);
+            if (ci >= 0) {
+              state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+              const newCity = { ...state.cities[ci], size: cityAtBattle.size - 1 };
+              state.cities[ci] = newCity;
+              if (newCity.size <= 0) {
+                // City destroyed by combat pop reduction — handled by capture flow below
+              }
+            }
+          }
+        }
+      }
+
       // Gold reward for killing barbarian units (B.2: difficulty × 50)
       if (defender.owner === 0 && civSlot > 0) {
         const killGold = result.barbarianGold || 0;
