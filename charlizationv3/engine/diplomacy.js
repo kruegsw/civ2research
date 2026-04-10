@@ -2721,13 +2721,26 @@ export function calcPatienceThreshold(state, aiCiv, targetCiv) {
  * @param {number} targetCiv - target civ
  * @returns {boolean}
  */
+/**
+ * Check if hostile interaction is allowed against a target civ.
+ *
+ * Binary ref: FUN_00467af0 (should_declare_war, block_00460000.c)
+ *   (1) if WAR flag already set → return true (allow continued war actions)
+ *   (2) if ALLIANCE → return false
+ *   (3) if CONTACT only (no PEACE) AND attitude > 49 → return true
+ *   (4) otherwise → false
+ */
 export function shouldProvoke(state, aiCiv, targetCiv) {
+  const flags = getTreatyFlags(state, aiCiv, targetCiv);
+  // (1) Already at war: always allow hostile actions
+  if (flags & TF.WAR) return true;
+  // (2) Allied: never provoke
+  if (flags & TF.ALLIANCE) return false;
+  // (3) Contact only (no peace/ceasefire) + hostile attitude
   const attitude = getAttitude(state, aiCiv, targetCiv);
   if (attitude <= 49) return false;
-  const flags = getTreatyFlags(state, aiCiv, targetCiv);
-  // Only provoke if contact-only (no ceasefire, peace, alliance, or war)
   return (flags & TF.CONTACT) !== 0 &&
-         !(flags & (TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE | TF.WAR));
+         !(flags & (TF.CEASEFIRE | TF.PEACE));
 }
 
 // ═══════════════════════════════════════════════════════════════════

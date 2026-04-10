@@ -150,9 +150,13 @@ export function calcResearchCost(gameState, civSlot) {
     }
   }
 
-  // Raging hordes penalty (binary: DAT_00655af0 & 4)
+  // Raging hordes penalty: ×5/4 (binary FUN_004c2788 line 1014-1015)
+  // C: `(local_14 * 5 + (local_14 * 5 >> 0x1f & 3U)) >> 2`
+  // For positive baseCost this is floor(baseCost * 5 / 4).
+  // The `>> 0x1f & 3` is a signed-division rounding fix for negative values
+  // only — for non-negative values it's just `(baseCost * 5) >> 2`.
   if (gameState.barbarianActivity === 'raging') {
-    baseCost = Math.floor((baseCost * 5 + 3) / 4);
+    baseCost = (baseCost * 5) >> 2;
   }
 
   // Gap 95: Bloodlust scenario flag (binary: DAT_00655af0 & 8)
