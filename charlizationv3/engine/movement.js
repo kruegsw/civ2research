@@ -365,7 +365,7 @@ export function directionFromDelta(dx, dy) {
  * @param {Array} units - all units array
  * @returns {boolean} true if movement is blocked by ZOC
  */
-export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBase, units) {
+export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBase, units, gameState) {
   // Units that ignore ZOC
   if (UNIT_IGNORE_ZOC[unitType]) return false;
 
@@ -382,7 +382,7 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   for (const dir in fromNeighbors) {
     const [nx, ny] = fromNeighbors[dir];
     if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyUnit(nx, ny, owner, domain, units)) {
+    if (hasEnemyUnit(nx, ny, owner, domain, units, gameState)) {
       fromAdjacentToEnemy = true;
       break;
     }
@@ -402,7 +402,7 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   for (const dir in toNeighbors) {
     const [nx, ny] = toNeighbors[dir];
     if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyUnit(nx, ny, owner, domain, units)) {
+    if (hasEnemyUnit(nx, ny, owner, domain, units, gameState)) {
       return true; // blocked by ZOC
     }
   }
@@ -411,19 +411,35 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
 }
 
 /**
- * Check if any foreign (non-allied) unit exists at the given tile.
- * Per binary FUN_005b4c63 (block_005B0000.c:1831-1854), ZOC is exerted by
- * ALL foreign non-allied units regardless of unit type — there is no attack
- * strength filter. The domain check uses tile terrain (ocean vs non-ocean),
- * not unit domain. We approximate this by checking UNIT_DOMAIN match since
- * land units are on land tiles and sea units on sea tiles.
+ * Check if any foreign NON-ALLIED unit exists at the given tile.
+ *
+ * Binary FUN_005b4b66 (check_adjacent_enemy_simple, block_005B0000.c):
+ *   For each unit at (x,y): if owner >= 0 AND owner != civSlot AND
+ *   `(treaty[civSlot*0x594 + owner*4] & 8) == 0` → enemy present.
+ *   Bit 8 = TF.ALLIANCE — allied units do NOT exert ZOC.
+ *
+ * The previous JS only checked `u.owner !== owner`, which incorrectly
+ * treated allied units as ZOC-exerting. This blocked movement near allies.
+ *
+ * @param {number} gx - tile x
+ * @param {number} gy - tile y
+ * @param {number} owner - moving unit's civ slot
+ * @param {number} domain - moving unit's domain (0=land, 1=air, 2=sea)
+ * @param {Array} units - all units
+ * @param {object} [gameState] - game state (for treaty lookup)
  */
-function hasEnemyUnit(gx, gy, owner, domain, units) {
+function hasEnemyUnit(gx, gy, owner, domain, units, gameState) {
   for (const u of units) {
-    if (u.gx === gx && u.gy === gy && u.owner !== owner && u.gx >= 0
-        && UNIT_DOMAIN[u.type] === domain) {
-      return true;
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner === owner) continue;
+    if (UNIT_DOMAIN[u.type] !== domain) continue;
+    // Alliance check: allied units don't exert ZOC
+    if (gameState?.treatyFlags) {
+      const key = `${owner}-${u.owner}`;
+      const flags = gameState.treatyFlags[key] || 0;
+      if (flags & 0x08) continue; // TF.ALLIANCE = 0x08
     }
+    return true;
   }
   return false;
 }

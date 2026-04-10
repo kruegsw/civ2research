@@ -177,7 +177,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       }
 
       // Zone of Control check
-      if (!hasEnemy && isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, dest.gx, dest.gy, mapBase, gameState.units)) {
+      if (!hasEnemy && isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, dest.gx, dest.gy, mapBase, gameState.units, gameState)) {
         return 'Movement blocked by Zone of Control';
       }
 
@@ -677,10 +677,21 @@ export function validateAction(gameState, mapBase, action, civSlot) {
     }
 
     case DEMAND_TRIBUTE: {
-      const { targetCiv, amount } = action;
+      const { targetCiv, amount, accept, provoked } = action;
       if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
       if (!haveContact(gameState, civSlot, targetCiv)) return 'No contact with target civ';
+      // Provoked-into-war branch: AI declares war on us. No amount needed.
+      if (provoked === true) return null;
+      // New flow: accept-flag set means the player has viewed the AI's offer
+      // and is committing accept/refuse. Skip pending-demand check.
+      if (accept !== undefined) {
+        if (accept === true && (!amount || amount < 1 || amount > 30000)) {
+          return 'Invalid tribute amount';
+        }
+        return null;
+      }
+      // Legacy AI-initiated flow: amount required, and no overlap with existing pending demand.
       if (!amount || amount < 1 || amount > 30000) return 'Invalid amount';
       if (gameState.tributeDemands?.some(d => d.from === civSlot && d.to === targetCiv && !d.resolved))
         return 'Demand already pending';
