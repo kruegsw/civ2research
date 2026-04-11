@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP, DIFFICULTY_KEYS } from '../defs.js';
-import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel } from '../movement.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel, isZOCBlocked } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from '../utils.js';
@@ -965,6 +965,16 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
     const destTerrain = mapBase.getTerrain(dest.gx, dest.gy);
     const srcTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+
+    // ── Binary FUN_0059062c lines 163-172: ZOC enforcement on movement ──
+    // Block move if unit would pass through enemy zone of control
+    if (isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, dest.gx, dest.gy, mapBase, state.units, state)) {
+      // ZOC blocked — reject move, clear goto if active
+      if (unit.orders === 'goto') {
+        state.units[unitIndex] = { ...unit, orders: 'none', goToX: undefined, goToY: undefined };
+      }
+      return;
+    }
 
     // ── C.4: Transport boarding — land unit moving to ocean tile ──
     if (domain === 0 && destTerrain === 10) {

@@ -630,11 +630,12 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   //
   // Net effect: cities lose 2 pop without walls (Phase 1 + Phase 2),
   //             cities lose 1 pop with walls (Phase 2 only).
+  // Binary FUN_0057b5df line 4810-4836: Phase 2 pop reduction.
+  // Condition: (normalCapture AND !recapture) OR (size > 1)
+  // Reduce by 1 if EITHER condition is true.
   let newSize = city.size;
   if ((captureType === 0 && !wasOurs) || city.size > 1) {
-    if (captureType === 0 && !wasOurs) {
-      newSize = city.size - 1;
-    }
+    newSize = city.size - 1;
   }
 
   // Check if city is destroyed (size reaches 0)
