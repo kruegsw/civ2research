@@ -937,8 +937,12 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     }
 
     // Base raw score: existingOnContinent + global counts as priority seed
+    // Binary line 5753: local_1c = local_21c[type]*2 + aiStack_364[type]
+    // Binary line 5928: local_1c = (ATK + 2) * local_1c — but this keeps 0 as 0
+    // Binary has additional threat/posture scoring that prevents all-zero states.
+    // Ensure minimum base from unit stats so new unit types can be selected.
     const existingMetric = sameTypeOnCont * 2 + sameTypeGlobal;
-    rawScore = existingMetric * roleMul;
+    rawScore = Math.max(existingMetric, atk + def) * roleMul;
 
     // Partisans (9) special: only build on continent with certain flags
     if (unitId === 9 && coastalFlag === 0 && continentPosture !== 4) {
