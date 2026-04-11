@@ -984,39 +984,52 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
 
   // ── Domain-specific adjustments ──
 
-  // Naval combat (role 2): sea control bonuses
-  if (role === 2) {
+  // ── Naval production scoring (binary FUN_00498e8b) ──
+  if (domain === 2) {
     if (!cityCtx.isCoastal) return -1;
+
+    // Count existing sea units for this civ
+    const existingSeaCount = gameState.units.filter(u =>
+      u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 2).length;
+    const ownCityCount = gameState.cities.filter(c => c.owner === civSlot && c.size > 0).length;
+
+    // Binary: naval need based on coastal flag + existing navy size
     if (coastalFlag) {
-      // Naval need detected — strong boost
-      rawScore = rawScore << 2;
+      // Strong need — enemies on other continents or at war
+      rawScore = rawScore << 2; // 4x base
+
+      // Extra boost when navy is small relative to cities
+      // Binary creates naval units proportional to city count
+      if (existingSeaCount < Math.floor(ownCityCount / 3)) {
+        rawScore = rawScore << 1; // another 2x when underbuilt
+      }
     } else {
-      // No immediate naval need — modest boost for coastal defense
+      // Modest coastal defense
       rawScore = Math.floor(rawScore * 3 / 2);
     }
+
+    // Transport/carrier special handling
+    if (role === 5 || unitId === 42 || unitId === 43) {
+      if (coastalFlag && existingSeaCount < 3) {
+        rawScore = rawScore << 1; // priority when no transports exist
+      }
+      if (unitId === 42) { // Carrier
+        const airCount = gameState.units.filter(u =>
+          u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 1).length;
+        if (airCount >= 3) rawScore += rawScore;
+        else rawScore = Math.floor(rawScore / 2);
+      }
+    }
+
     // Port Facility bonus
     if (city.buildings && city.buildings.has(34)) {
       rawScore += Math.floor(rawScore / 4);
     }
-  }
 
-  // Sea transport (role 5): transports and carriers
-  if (domain === 2 && (role === 5 || unitId === 42)) {
-    if (coastalFlag) {
-      rawScore = rawScore << 1; // double when naval need exists
+    // Early game Trireme/Caravel exploration bonus
+    if ((unitId === 32 || unitId === 33) && existingSeaCount === 0) {
+      rawScore += 50; // flat bonus to get the first ship built
     }
-    // Binary: carriers scored based on air unit count
-    if (unitId === 42) {
-      const airCount = gameState.units.filter(u =>
-        u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 1).length;
-      if (airCount >= 3) rawScore += rawScore; // double if 3+ air units
-      else rawScore = Math.floor(rawScore / 2); // halve if few air units
-    }
-  }
-
-  // Sea domain general: boost for sea units at coastal cities
-  if (domain === 2) {
-    rawScore = Math.floor(rawScore * 3 / 2);
   }
 
   // ── Army balance: defenders less needed when garrison is adequate ──
