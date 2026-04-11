@@ -1046,7 +1046,7 @@ function processAiTurns(roomId, room) {
         clearOneshotNotifications(room);
       }
     }
-    console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms`);
+    console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms — ${room.aiMoveQueue.length} moves, ${room.aiCombatQueue.length} combats queued`);
 
     // End the AI civ's turn
     let endResult;

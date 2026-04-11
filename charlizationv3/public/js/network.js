@@ -1625,19 +1625,16 @@ function initNetwork(appCallbacks) {
             let moveIdx = 0;
             function playNextMove() {
               if (moveIdx >= aiMoves.length) {
-                // All moves done — proceed to combat animations
                 playCombatSequence();
                 return;
               }
               const mv = aiMoves[moveIdx++];
-              // Center on destination if not in viewport
-              if (!isTileInViewport(mv.toGx, mv.toGy)) {
-                centerOnTile(mv.toGx, mv.toGy);
-              }
+              // Always center on the moving unit's destination
+              centerOnTile(mv.toGx, mv.toGy);
               doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
               sfx('MOVPIECE');
-              // Brief pause to let player see the movement
-              setTimeout(playNextMove, 250);
+              // Pause so player can see where the AI unit moved
+              setTimeout(playNextMove, 400);
             }
 
             function playCombatSequence() {
@@ -1684,6 +1681,9 @@ function initNetwork(appCallbacks) {
               playCombatSequence();
             }
           }
+
+          if (aiMoves.length > 0) console.log(`[ai-moves] ${aiMoves.length} visible AI movements`);
+          if (allCombats.length > 0) console.log(`[ai-combat] ${allCombats.length} visible AI combats`);
 
           if (allCombats.length > 0 || aiMoves.length > 0) {
             playMovesAndCombat();
