@@ -1613,12 +1613,25 @@ export function recalcCityAll(cityIndex, state, mapBase) {
   const city = state.cities[cityIndex];
   if (!city || city.size <= 0) return;
 
+  // Binary FUN_004eb4a1: full 5-step city refresh
+  // 1. Happiness
   const hap = calcHappiness(city, cityIndex, state, mapBase);
+  // 2. Food surplus
+  const foodSurplus = calcFoodSurplus(city, cityIndex, state, mapBase);
+  // 3. Shield production
+  const shields = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
+  // 4. Trade/science
+  const trade = calcCityTrade(city, cityIndex, state, mapBase);
+
   state.cities[cityIndex] = {
     ...city,
     civilDisorder: hap.civilDisorder,
     weLoveKingDay: hap.weLoveKingDay,
     happyCitizens: hap.happy,
     unhappyCitizens: hap.unhappy,
+    // Cache yields for UI display
+    cachedFoodSurplus: foodSurplus,
+    cachedNetShields: shields.netShields,
+    cachedGrossTrade: trade.grossTrade,
   };
 }

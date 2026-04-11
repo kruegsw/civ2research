@@ -13,7 +13,7 @@
 //   FUN_004c9ebd  — spy_sabotage_unit (784B)
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_COSTS, UNIT_ROLE, ADVANCE_NAMES } from './defs.js';
+import { UNIT_COSTS, UNIT_ROLE, UNIT_HP, ADVANCE_NAMES } from './defs.js';
 import { getGovernment } from './utils.js';
 import { handleNuclearAttack } from './nuclear.js';
 import { TF, addTreatyFlag } from './diplomacy.js';
@@ -1418,6 +1418,84 @@ export function counterEspionage(state, mapBase, spyCiv, cityIndex) {
   // Binary: spy is NOT consumed; it remains stationed providing ongoing protection
   state.units = [...state.units];
   state.units[spyIdx] = { ...spy, orders: 'counterEspionage', movesLeft: 0 };
+
+  return events;
+}
+
+/**
+ * Binary FUN_004c9ebd (spy_sabotage_unit, 784B): sabotage an enemy unit.
+ * Spy/diplomat reduces target unit's HP or destroys it outright.
+ * Success depends on spy survival roll and target unit's defense.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @param {number} spyCiv - spy's civ slot
+ * @param {number} targetUnitIdx - index of enemy unit to sabotage
+ * @param {object} rng - seeded RNG
+ * @returns {object[]} events
+ */
+export function sabotageUnit(state, mapBase, spyCiv, targetUnitIdx, rng) {
+  const events = [];
+  const target = state.units[targetUnitIdx];
+  if (!target || target.gx < 0 || target.owner === spyCiv) {
+    events.push({ type: 'espionageFailed', mission: 'sabotageUnit', reason: 'Invalid target' });
+    return events;
+  }
+
+  // Find spy near the target
+  let spyIdx = -1;
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.owner === spyCiv && u.gx >= 0 && (u.type === 46 || u.type === 47)) {
+      let dx = Math.abs(u.gx - target.gx);
+      if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+      const dy = Math.abs(u.gy - target.gy);
+      if (dx + dy <= 1) { spyIdx = i; break; }
+    }
+  }
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'sabotageUnit', reason: 'No spy near target' });
+    return events;
+  }
+
+  const spy = state.units[spyIdx];
+
+  // Success roll: 50% base, +25% if veteran spy
+  const successChance = spy.veteran ? 0.75 : 0.50;
+  const roll = rng ? rng.random() : Math.random();
+
+  if (roll < successChance) {
+    // Sabotage succeeds — reduce target HP by 50% or kill if already damaged
+    const maxHp = (UNIT_HP[target.type] || 1) * 10;
+    const curHp = maxHp - (target.movesRemain || 0);
+    if (curHp <= maxHp / 2) {
+      // Target already heavily damaged — destroy it
+      state.units[targetUnitIdx] = { ...target, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      events.push({ type: 'unitSabotaged', mission: 'sabotageUnit', targetType: target.type,
+        targetOwner: target.owner, destroyed: true, spyCiv });
+    } else {
+      // Damage target by 50% of max HP
+      const damage = Math.floor(maxHp / 2);
+      state.units[targetUnitIdx] = { ...target, movesRemain: (target.movesRemain || 0) + damage };
+      events.push({ type: 'unitSabotaged', mission: 'sabotageUnit', targetType: target.type,
+        targetOwner: target.owner, destroyed: false, damage, spyCiv });
+    }
+  } else {
+    events.push({ type: 'espionageFailed', mission: 'sabotageUnit', reason: 'Sabotage failed' });
+  }
+
+  // Spy survival check
+  const survived = checkSpySurvival(spy, 0, rng);
+  if (!survived) {
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    events.push({ type: 'spyKilled', spyCiv, mission: 'sabotageUnit' });
+  } else {
+    state.units[spyIdx] = { ...spy, movesLeft: 0 };
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, target.owner);
 
   return events;
 }

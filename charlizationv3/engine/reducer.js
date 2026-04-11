@@ -317,8 +317,23 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const unit = { ...state.units[unitIndex] };
 
       if (order === 'disband') {
-        // Remove unit
+        // Binary FUN_0058c295: disband unit + transfer 50% shield cost to home city
+        const disbandCost = UNIT_COSTS[unit.type] || 0;
+        if (disbandCost > 0 && unit.homeCityId >= 0 && unit.homeCityId < state.cities.length) {
+          const homeCity = state.cities[unit.homeCityId];
+          if (homeCity && homeCity.owner === unit.owner && homeCity.size > 0) {
+            state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+            state.cities[unit.homeCityId] = {
+              ...homeCity,
+              shieldsInBox: (homeCity.shieldsInBox || 0) + Math.floor(disbandCost / 2),
+            };
+          }
+        }
         unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
+      } else if (order === 'wait') {
+        // Binary FUN_0058bdfd: unit waits (skipped this turn, asked again later)
+        unit.movesLeft = 0;
+        // Binary sets flag 0x4000 on unit — in JS we just skip without changing orders
       } else if (order === 'fortify') {
         // Takes 1 turn to fortify — set to 'fortifying', END_TURN will promote to 'fortified'
         unit.orders = 'fortifying';
