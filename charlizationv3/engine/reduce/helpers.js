@@ -221,16 +221,16 @@ export function getCityName(owner, cities, civs) {
 }
 
 /**
- * Assign initial workers for a new city using multi-phase algorithm.
- * Binary-faithful: honor existing assignments, food-priority first, then surplus optimization.
+ * Assign workers using binary FUN_004e8f42 two-phase algorithm.
  *
- * Phase 1: Honor existing tile assignments (from workedTiles if provided)
- * Phase 2: Food-priority pass — assign tiles that produce food first
- * Phase 3: Surplus optimization — fill remaining slots with best overall yield
+ * Phase 1 (Food-priority): Iteratively pick the best food-producing tile
+ * until accumulated food >= citySize × foodPerCitizen. Tiebreaker: trade×2 + shields.
  *
- * Evaluates all 20 radius tiles (not 20=center, always worked).
- * Uses full yield calculation (resources, improvements, government, rivers).
- * Returns workedTiles: number[] (tile indices 0-19).
+ * Phase 2 (Deficit-weighted surplus): For remaining workers, score each tile using
+ * inverse-deficit weighting: foodWeight + tradeWeight + scienceWeight where lower
+ * deficit = higher weight for that yield type.
+ *
+ * @returns {number[]} workedTiles indices (0-19)
  */
 export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, mapBase) {
   // Gather all valid tiles with yields
@@ -241,8 +241,7 @@ export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, m
     const ter = mapBase.getTerrain(pos.gx, pos.gy);
     if (ter < 0 || ter > 10) continue;
     const [food, shields, trade] = getTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
-    const score = food * 3 + shields * 2 + trade;
-    tileInfo.push({ i, food, shields, trade, score });
+    tileInfo.push({ i, food, shields, trade });
   }
 
   const toPlace = Math.min(size, tileInfo.length);
@@ -251,33 +250,75 @@ export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, m
   const assigned = new Set();
   const result = [];
 
-  // Phase 1: Honor existing assignments (if city already had workedTiles)
-  if (city.workedTiles && city.workedTiles.length > 0) {
-    for (const idx of city.workedTiles) {
-      if (result.length >= toPlace) break;
-      if (tileInfo.some(t => t.i === idx) && !assigned.has(idx)) {
-        assigned.add(idx);
-        result.push(idx);
+  // Track accumulated yields for deficit calculation
+  // Center tile always produces food/shields/trade — add its contribution
+  const centerYields = getTileYields(gx, gy, true, city, cityIndex, gameState, mapBase);
+  let accFood = centerYields[0];
+  let accTrade = centerYields[2];
+  let accScience = centerYields[2]; // science derived from trade
+
+  // Food threshold: citySize × foodPerCitizen (2 in standard rules)
+  const foodPerCitizen = 2; // COSMIC param, hardcoded for now
+  const foodThreshold = size * foodPerCitizen;
+
+  // ── Phase 1: Food-priority (binary lines 3425-3458) ──
+  // Iteratively pick best food tile until food threshold met or size < 3
+  while (result.length < toPlace && (accFood < foodThreshold || size < 3)) {
+    let bestIdx = -1;
+    let bestFood = -1;
+    let bestTiebreak = -1;
+
+    for (const t of tileInfo) {
+      if (assigned.has(t.i)) continue;
+      // Binary scoring: primary = food, tiebreaker = trade×2 + shields
+      const tiebreak = t.trade * 2 + t.shields;
+      if (t.food > bestFood || (t.food === bestFood && tiebreak > bestTiebreak)) {
+        bestIdx = t.i;
+        bestFood = t.food;
+        bestTiebreak = tiebreak;
       }
     }
+
+    if (bestIdx < 0) break; // no more tiles
+    assigned.add(bestIdx);
+    result.push(bestIdx);
+    const picked = tileInfo.find(t => t.i === bestIdx);
+    accFood += picked.food;
+    accTrade += picked.trade;
+    accScience += picked.trade; // simplified: science ≈ trade share
   }
 
-  // Phase 2: Food-priority — assign tiles that produce food, sorted by food then overall score
-  const foodTiles = tileInfo.filter(t => t.food > 0 && !assigned.has(t.i));
-  foodTiles.sort((a, b) => b.food - a.food || b.score - a.score);
-  for (const t of foodTiles) {
-    if (result.length >= toPlace) break;
-    assigned.add(t.i);
-    result.push(t.i);
-  }
+  // ── Phase 2: Deficit-weighted surplus optimization (binary lines 3464-3491) ──
+  // Score = foodWeight + tradeWeight + scienceWeight
+  // Each weight = (scale / clamp(deficit, 1, 99)) × tile_yield
+  while (result.length < toPlace) {
+    let bestIdx = -1;
+    let bestScore = -1;
 
-  // Phase 3: Surplus optimization — fill remaining with best overall yield
-  const remaining = tileInfo.filter(t => !assigned.has(t.i));
-  remaining.sort((a, b) => b.score - a.score);
-  for (const t of remaining) {
-    if (result.length >= toPlace) break;
-    assigned.add(t.i);
-    result.push(t.i);
+    const foodDeficit = Math.max(1, Math.min(99, foodThreshold - accFood));
+    const tradeDeficit = Math.max(1, Math.min(99, size * 2 - accTrade));
+    const sciDeficit = Math.max(1, Math.min(99, Math.max(1, accScience)));
+
+    for (const t of tileInfo) {
+      if (assigned.has(t.i)) continue;
+      // Binary formula: inversely weight each yield by its deficit
+      const foodW = Math.floor(16 / foodDeficit) * t.food;
+      const tradeW = Math.floor((size * 3) / tradeDeficit) * t.trade;
+      const sciW = Math.floor((size * 2) / sciDeficit) * t.trade; // science from trade
+      const score = foodW + tradeW + sciW + t.shields; // shields as baseline
+      if (score > bestScore) {
+        bestScore = score;
+        bestIdx = t.i;
+      }
+    }
+
+    if (bestIdx < 0) break;
+    assigned.add(bestIdx);
+    result.push(bestIdx);
+    const picked = tileInfo.find(t => t.i === bestIdx);
+    accFood += picked.food;
+    accTrade += picked.trade;
+    accScience += picked.trade;
   }
 
   return result;
@@ -597,12 +638,8 @@ export function checkSenateVeto(state, mapBase, attackerCiv, defenderCiv) {
   const govt = getGovernment(null, state, attackerCiv);
 
   // Only Republic and Democracy have a senate
+  // Binary FUN_0055bef9: government > 4 (republic=5, democracy=6)
   if (govt !== 'republic' && govt !== 'democracy') {
-    return { blocked: false, events };
-  }
-
-  // Statue of Liberty (wonder 19) bypasses senate
-  if (hasWonderEffect(state, attackerCiv, 19)) {
     return { blocked: false, events };
   }
 
@@ -628,15 +665,44 @@ export function checkSenateVeto(state, mapBase, attackerCiv, defenderCiv) {
     }
   }
 
-  // Senate veto check
+  // ── Binary FUN_0055bef9: Reputation-based senate veto ──────────
+  // threshold = base + (target_attitude × 15), clamped to [0, 75]
+  // base = 0 default, 25 if VENDETTA flag, 50 if target has UN wonder
+  // If attacker reputation < threshold → senate ALLOWS war
+  // Republic: additional flag check; Democracy: always blocks
+  let base = 0;
+
+  // VENDETTA flag check (treaty byte bit 0x10)
+  const treatyFlags = state.treatyFlags;
+  if (treatyFlags) {
+    const fKey = attackerCiv < defenderCiv
+      ? `${attackerCiv}-${defenderCiv}` : `${defenderCiv}-${attackerCiv}`;
+    const flags = treatyFlags[fKey] || 0;
+    if (flags & 0x10) base = 25; // CAPTURE_VENDETTA
+  }
+
+  // UN wonder (wonder 24) on TARGET civ increases threshold to 50
+  if (hasWonderEffect(state, defenderCiv, 24)) {
+    base = 50;
+  }
+
+  // Target civ's attitude toward attacker (0-100 scale, higher = more hostile)
+  const targetAttitude = state.civAttitudes?.[defenderCiv]?.[attackerCiv] ?? 0;
+  const threshold = Math.max(0, Math.min(75, base + targetAttitude * 15));
+
+  // Attacker's reputation (0-100, higher = more trustworthy)
+  const attackerRep = state.civs?.[attackerCiv]?.reputation ?? 100;
+
   let blocked = false;
-  if (govt === 'democracy') {
+  if (attackerRep < threshold) {
+    // Reputation too low — senate allows war (player is untrustworthy anyway)
+    blocked = false;
+  } else if (govt === 'democracy') {
     // Democracy: senate always blocks
     blocked = true;
   } else {
-    // Republic: 50% chance senate blocks
-    const roll = state.rng ? state.rng.random() : Math.random();
-    blocked = roll < 0.5;
+    // Republic: senate blocks (binary checks civ flag 0x04)
+    blocked = true;
   }
 
   if (blocked) {

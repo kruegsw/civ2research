@@ -6,7 +6,7 @@
 // happiness, and citydialog.
 // ═══════════════════════════════════════════════════════════════════
 
-import { WONDER_OBSOLETE } from './defs.js';
+import { WONDER_OBSOLETE, CITY_RADIUS_DOUBLED } from './defs.js';
 
 /** Check if a city has a specific building by ID. */
 export function cityHasBuilding(city, id) {
@@ -111,4 +111,30 @@ export function markCitySeenByCiv(city, civSlot) {
   city.seenByCivs = (city.seenByCivs || 0) | (1 << civSlot);
   if (!city.knownSizeByCiv) city.knownSizeByCiv = new Uint8Array(8);
   city.knownSizeByCiv[civSlot] = city.size;
+}
+
+/**
+ * Binary FUN_0043f7a7: refresh tile ownership for a city's 21-tile radius.
+ * Scans the first 21 tiles (inner ring + center) and assigns ownership to
+ * the city's civ. Called after city creation and when cities are destroyed
+ * (to reassign tiles to remaining cities).
+ *
+ * @param {object} city - city object with gx, gy, owner
+ * @param {object} mapBase - map data with tileData, mw, mh, wraps
+ */
+export function refreshCityTileOwnership(city, mapBase) {
+  if (!city || city.size <= 0 || !mapBase.tileData) return;
+  const { mw, mh, wraps, tileData } = mapBase;
+  const parC = city.gy & 1;
+
+  for (let i = 0; i <= 20; i++) {
+    const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
+    const parT = ((city.gy + ddy) % 2 + 2) % 2;
+    const tgx = city.gx + ((parC + ddx - parT) >> 1);
+    const tgy = city.gy + ddy;
+    const wgx = wraps ? ((tgx % mw) + mw) % mw : tgx;
+    if (tgy < 0 || tgy >= mh || wgx < 0 || wgx >= mw) continue;
+    const tile = tileData[tgy * mw + wgx];
+    if (tile) tile.tileOwnership = city.owner;
+  }
 }

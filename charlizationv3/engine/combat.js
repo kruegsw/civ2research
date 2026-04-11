@@ -5,25 +5,24 @@
 // resolution with terrain/fortification/veteran modifiers.
 //
 // Phase B.1: calcUnitDefenseStrength, calcStackBestDefender
-// Phase B.2: Palace/small-city/Great Wall double-roll, amphibious
-//            attack, barbarian kill ransom (leaders only), treaty
-//            violation flags, sneak attack ×2
+// Phase B.2: Palace/small-city double-roll (barbarian-only),
+//            barbarian kill ransom (leaders only), treaty violation
+//            flags, sneak attack ×2
 //
 // Special unit interactions ported from decompiled FUN_00580341:
 //   - Aegis Cruiser defense bonus vs air/missile attacks (flags bit 14)
 //   - Air vs unarmed ships: halved defense, FP capped to 1
 //   - Sea vs land: FP capped to 1 for both sides
 //   - Caught in port: sea unit on land → attacker FP ×2, defender FP = 1
-//   - City Walls: attacker FP = 1 for land attackers (not wall-negating)
-//   - Siege units defending: FP forced to 1 (Catapult/Cannon/Artillery/Howitzer)
+//   - Submarine defending: FP forced to 1 (flags_lo & 0x08)
 //   - Helicopter vs Fighter: defender (helicopter) FP = 1
 //   - Partisans vs unarmed: ×8 attack multiplier
 //   - Partial movement attack penalty (fractional MP)
-//   - Palace / small-city / Great Wall double-roll mechanic for defenders
+//   - Palace / small-city double-roll (barbarian attackers only)
 //   - Palace: halves barbarian attack (separate from double-roll)
 //   - Great Wall: halves barbarian attack, doubles attack vs barbarians
 //   - Sneak attack: ×2 attack bonus when breaking treaties
-//   - Amphibious attack: ×2 defender FP when attacking from ship
+//   - Amphibious attack: +50% attack bonus (on-ship flag 0x10)
 //   - Barbarian kill ransom: difficultyLevel × 50 gold (leader units only)
 //   - Difficulty scaling: AI attack halved on Chieftain/Warlord vs human,
 //     human attack doubled on Chieftain vs AI
@@ -31,7 +30,7 @@
 //   - Barbarian attack halved vs AI (non-human) defenders
 //   - Barbarian attack zeroed vs cities with reputation < 2
 //   - Barbarian diplomat/spy defense halved
-//   - Coastal Fortress: ×4 defense for sea units in city
+//   - Coastal Fortress: ×2 defense for sea attackers, per-building in calcUnitDefenseStrength
 //   - Single-round combat option (scenario flag)
 //   - Fortress: no stack retreat (stack wipe on defeat)
 //   - Pikeman bonus: +1 tiebreaker in defender selection only
@@ -48,8 +47,7 @@ import { hasWonderEffect, civHasWonder } from './utils.js';
 // Diplomat/Spy unit types — barbarian versions get halved defense (#55)
 const DIPLOMAT_SPY_TYPES = new Set([46, 47]);
 
-// Siege units: FP forced to 1 when defending (Catapult=23, Cannon=24, Artillery=25, Howitzer=26)
-const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
+// Submarine defending FP=1 handled via UNIT_SUBMARINE set from defs.js
 
 // ═══════════════════════════════════════════════════════════════════
 // Stack Property Summation (ported from block 0x005B sum_stack_property)
@@ -131,16 +129,23 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
     defense = Math.floor(defense * 3 / 2);
   }
 
-  // Fortress: ×2 (mult goes to 4) — only if not in a city
-  // Binary: fortress ignored when attacker domain == air (1)
-  if (hasFortress && !inCity) {
-    if (attackerType == null || attackerType < 0 || atkDomain !== 1) {
+  // Fortress: ×2 (mult goes to 4) — only if not in a city, land domain only
+  // Binary FUN_0057e33a:5350-5357: fortress denied when attacker domain == air (1)
+  // OR attacker has flagsA 0x40 (negates walls, e.g. Howitzer)
+  // Binary FUN_0057e33a:5387-5388: non-land defenders (domain != 0) get mult reset
+  // to 2, effectively cancelling fortress/fortification/walls bonuses.
+  if (hasFortress && !inCity && defDomain === 0) {
+    if (attackerType == null || attackerType < 0 ||
+        (atkDomain !== 1 && !UNIT_NEGATES_WALLS.has(attackerType))) {
       defense *= 2;
     }
   }
 
   // City walls / Great Wall: ×3 for ground-domain defenders vs ground-domain attackers only
   // Binary: walls multiplier only applied for ground defenders, and only vs ground attackers
+  // NOTE: Binary FUN_0057e33a:5381-5382 also excludes attackers with flags_lo & 0x40
+  // (can_carry_land). In standard RULES.TXT, no ground-domain unit has this flag,
+  // so this edge case doesn't arise. If custom RULES.TXT adds it, this needs updating.
   if (inCity && hasWalls && defDomain === 0) {
     if (attackerType == null || attackerType < 0 || atkDomain === 0) {
       defense *= 3;
@@ -152,12 +157,10 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
 
   // Defensive building bonuses (city buildings)
   if (inCity && cityBuildings) {
-    // Coastal Fortress (building 28): ×2 defense vs naval attackers when defender is NOT sea domain
-    // Binary: attacker domain == sea AND defender domain != sea AND city has Coastal Fortress
-    if (cityBuildings.has(28) && atkDomain === 2 && defDomain !== 2) defense *= 2;
-    // Coastal Fortress (#53): ×4 defense for sea-domain defenders in city with Coastal Fortress
-    // Binary: sea units in a city with Coastal Fortress get quadruple defense multiplier
-    if (cityBuildings.has(28) && defDomain === 2) defense *= 4;
+    // Coastal Fortress (building 28): ×2 defense vs naval attackers for ALL defenders.
+    // Binary FUN_00580341:151-159: checks attacker domain == sea AND city has building 0x1c (28).
+    // No defender domain restriction — sea defenders also benefit.
+    if (cityBuildings.has(28) && atkDomain === 2) defense *= 2;
     // SAM Battery (building 27): ×2 defense vs ALL air domain attackers (no missile exclusion)
     // Binary: attacker domain == air AND city has SAM Battery
     if (cityBuildings.has(27) && atkDomain === 1) {
@@ -268,9 +271,34 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
     }
 
     // ── Submarine: ×2 defender score vs air attackers ──
-    // Binary FUN_0057e6e2: submarine flag + attacker domain == air → score ×2
+    // Binary FUN_0057e6e2:5453-5458: checks flags_lo & 0x10 on BOTH defender
+    // AND attacker, plus attacker.domain == air. Current implementation uses
+    // UNIT_SUBMARINE set as a proxy for flags_lo 0x10 and only checks the
+    // defender flag.
+    // TODO: Binary also requires attacker to have flags_lo & 0x10. In standard
+    // RULES.TXT no air-domain unit has this flag, so the condition is never
+    // true in practice. If custom RULES.TXT adds submarine-flagged air units,
+    // this needs an attacker flag check as well.
     if (UNIT_SUBMARINE.has(u.type) && atkDomain === 1) {
       score *= 2;
+    }
+
+    // ── Sea-domain-in-city scoring (FUN_0057e6e2:5459-5471) ──
+    // Sea units in a city are generally poor defenders on land, so their
+    // score is halved — EXCEPT vs air attackers when the city lacks SAM
+    // Battery, where sea units score higher (×2) to be selected as the
+    // sacrificial defender instead of more valuable land units.
+    if (unitDomain === 2 && inCity) {
+      if (attackerType == null || attackerType < 0) {
+        // No attacker specified: halve sea unit score
+        score = Math.floor(score / 2);
+      } else if (atkDomain === 1 && !(cityBuildings && cityBuildings.has(27))) {
+        // Air attacker and city has no SAM Battery: sea units score higher
+        score *= 2;
+      } else {
+        // All other cases: halve sea unit score
+        score = Math.floor(score / 2);
+      }
     }
 
     if (score >= bestScore) {
@@ -396,8 +424,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // +50% defense when attacker is a land unit with exactly 2 base movement
   // (mounted units: Horsemen, Knights, Crusaders, Dragoons, Cavalry, etc.)
   // Check: calc_unit_movement_points(atk) == COSMIC_MULTIPLIER * 2
+  // Binary FUN_00580341:138: also requires attacker maxHP == 10 (raw HP value of 1)
   if (UNIT_PIKEMAN_BONUS.has(defender.type) && atkDomain === 0 &&
-      (UNIT_MOVE_POINTS[attacker.type] || 0) === 2) {
+      (UNIT_MOVE_POINTS[attacker.type] || 0) === 2 &&
+      (UNIT_HP[attacker.type] || 1) === 1) {
     effDef += effDef >> 1; // ×1.5 defense
   }
 
@@ -416,54 +446,32 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effDef = Math.max(1, effDef >> 1);
   }
 
-  // ── B.2: Amphibious attack penalty ──────────────────────────────
-  // From FUN_00580341 lines 162-168: when a land unit attacks from a ship
-  // (amphibious assault), the defender's firepower is doubled.
-  // The attacker doesn't get its attack halved; instead the defender
-  // does more damage per hit.
-  if (amphibious) {
-    defFp *= 2;
+  // ── Barbarian Archers/Legion defense halving (FUN_00580341:239-244) ──
+  // Binary: barbarian-owned Archers (type 4) and Legion (type 5) have
+  // their effective defense halved, minimum 1.
+  if (defender.owner === 0 && (defender.type === 4 || defender.type === 5)) {
+    effDef = Math.max(1, effDef >> 1);
   }
 
-  // ── B.3: Air vs land — both FP forced to 1 ──────────────────
-  // From FUN_00580341: when an air unit attacks a ground unit,
-  // both firepower values are reduced to 1.
-  if (atkDomain === 1 && defDomain === 0) {
-    atkFp = 1;
-    defFp = 1;
-  }
-
-  // ── B.1: Sea unit attacks land unit ────────────────────────────
-  // From Civ2 mechanics: when a sea unit attacks a land unit,
-  // both sides have firepower reduced to 1.
+  // ── B.1: Sea unit attacks land unit (FUN_00580341:187-191) ──────
+  // Binary: sea-domain attacker vs land-domain defender → both FP = 1.
   if (atkDomain === 2 && defDomain === 0) {
     atkFp = 1;
     defFp = 1;
   }
 
-  // ── B.1: Caught in port (sea unit on land) ────────────────────
-  // When a non-air unit attacks a sea-domain defender on a non-ocean tile,
-  // the attacker's FP is doubled and the defender's FP is reduced to 1.
-  // The sea unit is vulnerable when not at sea.
-  if (atkDomain !== 1 && defDomain === 2 && defTerrain !== 10) {
+  // ── B.1: Caught in port (FUN_00580341:200-211) ────────────────
+  // Non-sea attacker vs sea-domain defender on non-ocean tile:
+  // attacker FP doubled, defender FP = 1.
+  if (atkDomain !== 2 && defDomain === 2 && defTerrain !== 10) {
     atkFp *= 2;
     defFp = 1;
   }
 
-  // ── B.1: City Walls reduce attacker FP to 1 ──────────────────
-  // When a land attacker attacks a city with City Walls, the attacker's
-  // firepower is reduced to 1. This means the defender takes less damage
-  // per round, making walls effective against high-FP siege units.
-  // Howitzer and other wall-negating units are exempt.
-  if (defCityHasWalls && atkDomain === 0 && !UNIT_NEGATES_WALLS.has(attacker.type)) {
-    atkFp = 1;
-  }
-
-  // ── B.1: Siege units have FP=1 when defending ────────────────
-  // Catapult (23), Cannon (24), Artillery (25), Howitzer (26) always
-  // have their defensive firepower forced to 1. These units are designed
-  // as offensive siege weapons, not defensive combatants.
-  if (SIEGE_DEFENDING_FP1.has(defender.type)) {
+  // ── B.1: Submarine defending — FP forced to 1 (FUN_00580341:192-194) ──
+  // Binary: defender with flags_lo & 0x08 (submarine advantages) has FP = 1.
+  // Submarines are fragile when forced into defensive combat.
+  if (UNIT_SUBMARINE.has(defender.type)) {
     defFp = 1;
   }
 
@@ -500,14 +508,13 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effAtk *= 2;
   }
 
-  // ── B.2: Palace / small-city / Great Wall double-roll mechanic ─────
-  // From FUN_00580341 lines 225-232, 786-804: bVar18 is set when
-  // defending city has Palace (building 1) OR city size < 8 OR
-  // defender's civ has Great Wall wonder (#3).
-  // When active, attacker wins a round, a second pair of rolls is made.
-  // If attacker loses the re-roll, the round is reversed.
+  // ── B.2: Palace / small-city double-roll — barbarian-only ──────
+  // Binary FUN_00580341:221-232: bVar18 is set ONLY when attacker is
+  // barbarian (uVar7 == 0) and defending city has Palace (building 1)
+  // OR defender civ size/reputation < 8. Great Wall does NOT trigger
+  // double-roll (it halves barbarian attack separately above).
   let doubleRoll = false;
-  if (defInCity && (defCityHasPalace || (defCitySize > 0 && defCitySize < 8) || defenderHasGreatWall)) {
+  if (attacker.owner === 0 && defInCity && (defCityHasPalace || (defCitySize > 0 && defCitySize < 8))) {
     doubleRoll = true;
   }
 
@@ -517,15 +524,17 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const defIsHuman = !!(humanPlayers & (1 << defender.owner));
 
   if (attacker.owner === 0) {
-    // ── Barbarian attack difficulty scaling (#19) ──────────────
-    // Binary continuous formula: effAtk = (diffIdx + 1) * effAtk / 4
-    // At Prince (idx 2): (2+1)/4 = 75%. At Deity (idx 5): (5+1)/4 = 150%.
-    effAtk = Math.floor((diffIdx + 1) * effAtk / 4);
-
-    // ── Halve barbarian attack vs AI defenders (#18) ──────────
-    // Binary: barbarians deal half damage to non-human civs
+    // ── Barbarian attack scaling (FUN_00580341:213-220) ──────────
+    // Binary has two MUTUALLY EXCLUSIVE branches:
+    //   - If defender is AI (not human): effAtk /= 2 ONLY
+    //   - If defender IS human: effAtk = (diffIdx + 1) * effAtk / 4 ONLY
     if (!defIsHuman && defender.owner !== 0) {
+      // AI defender: simple halving
       effAtk = Math.floor(effAtk / 2);
+    } else if (defIsHuman) {
+      // Human defender: difficulty-scaled formula
+      // At Prince (idx 2): (2+1)/4 = 75%. At Deity (idx 5): (5+1)/4 = 150%.
+      effAtk = Math.floor((diffIdx + 1) * effAtk / 4);
     }
 
     // ── Zero barbarian attack vs cities with defender reputation < 2 (#54) ──
@@ -595,11 +604,22 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 
   // Round-by-round combat using pseudo-random sequence.
   // Seed includes unit stats + extraSeed (positions, turn, state version) for varied outcomes.
+  //
+  // BUG HISTORY: previously this used the glibc LCG (multiplier 1103515245)
+  // and returned the full 31-bit `seed` value. The low bits of an LCG with a
+  // power-of-2 modulus have very short cycles — for many seeds the bottom 3
+  // bits got stuck at 0, so `rand() % 8` returned 0 every time, which made
+  // `defenseRoll < attackRoll` always false and the defender ALWAYS won.
+  //
+  // This now uses the MSVC `rand()` formula (multiplier 214013, increment
+  // 2531011) and returns the HIGH 15 bits, matching the binary's
+  // `_rand()` calls in `FUN_00580341:775,782,791,798`. The high bits of
+  // an LCG are uniformly distributed, so `% effAtk` is unbiased.
   let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp +
     (extraSeed || 0)) & 0x7FFFFFFF) || 1;
   const rand = () => {
-    seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF;
-    return seed;
+    seed = (seed * 214013 + 2531011) & 0x7FFFFFFF;
+    return (seed >> 16) & 0x7FFF;
   };
 
   const rounds = []; // true = attacker hit defender, false = defender hit attacker
@@ -612,9 +632,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     const defenseRoll = effDef > 1 ? (rand() % effDef) : 0;
     let atkHit = defenseRoll < attackRoll;
 
-    // ── B.2: Palace / small-city / Great Wall double-roll mechanic ──
-    // From FUN_00580341 lines 786-804: when bVar18 is true (Palace or
-    // city size < 8 or Great Wall) and attacker wins a round, a second
+    // ── B.2: Palace / small-city double-roll (barbarian-only) ────────
+    // FUN_00580341:786-804: when bVar18 is true (barbarian attacker vs
+    // city with Palace or size < 8) and attacker wins a round, a second
     // pair of rolls is made. If attacker LOSES the re-roll, the round
     // is reversed.
     if (doubleRoll && atkHit) {
@@ -694,25 +714,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Check if the Senate will override (block) an attack.
- * Republic and Democracy governments have senate oversight.
- * The United Nations wonder (wonder 24) guarantees senate intervention.
- *
- * @param {object} state - game state
- * @param {number} attackerCiv - civ attempting to attack
- * @returns {boolean} true if senate blocks the attack
+ * @deprecated Use checkSenateVeto() from reduce/helpers.js instead.
+ * This function is unused — the full reputation-based check is in helpers.js.
  */
 export function checkSenateOverride(state, attackerCiv) {
-  const govt = state.civs?.[attackerCiv]?.government;
-  if (govt !== 'republic' && govt !== 'democracy') return false;
-  // UN wonder (wonder 24) always triggers senate intervention
-  const hasUN = civHasWonder(state, attackerCiv, 24);
-  if (hasUN) return true;
-  // Simplified: in full implementation, the senate's decision would
-  // depend on attitude toward the target civ and a random roll.
-  // For now, return false (senate does not block) as the baseline
-  // behavior — the full attitude-based check would require the
-  // target civ parameter and attitude lookup.
   return false;
 }
 

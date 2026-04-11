@@ -538,8 +538,9 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   const isDefenderHuman = !!((state.humanPlayers || 0) & (1 << oldOwner));
   let civilWarResult = null;
   // C line 4567: (1 << defender & human_bitmask) == 0 — AI only
-  // C line 4569: 4 < city_count — defender must have > 4 cities (including captured one)
-  if (hadPalace && !isDefenderHuman && countCities(state, oldOwner) > 4 && !isSchismBlocked(state, oldOwner)) {
+  // C line 4569: 4 < city_count — defender must have > 4 cities REMAINING after capture.
+  // Binary checks after city transfer; we check before, so subtract 1.
+  if (hadPalace && !isDefenderHuman && (countCities(state, oldOwner) - 1) > 4 && !isSchismBlocked(state, oldOwner)) {
     // #22: Age rank gate — capturer must be younger (lower rank) than old owner
     const capturerRank = getPowerRank(state, capturerCivSlot);
     const oldOwnerRank = getPowerRank(state, oldOwner);

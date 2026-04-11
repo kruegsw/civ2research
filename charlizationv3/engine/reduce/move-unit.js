@@ -2,7 +2,7 @@
 // reduce/move-unit.js — MOVE_UNIT action handler + goody hut logic
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP, DIFFICULTY_KEYS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
@@ -10,7 +10,7 @@ import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { grantAdvance, getAvailableResearch } from '../research.js';
 import { dispatchEvents, EVENT_UNIT_KILLED } from '../events.js';
 import { declareWar as diplomacyDeclareWar, getTreatyFlags, TF } from '../diplomacy.js';
-import { getNumericYear } from '../year.js';
+
 import { makeUnit, killUnit, captureCity, checkCivElimination, discoverContacts, checkSenateVeto, getCityName, assignInitialWorkers, radiusTileCoords } from './helpers.js';
 import { getBarbUnitType } from './barbarians.js';
 
@@ -32,27 +32,45 @@ function anyoneHasTech(state, techId) {
 }
 
 /**
- * Pick mercenary unit type per Civ2 algorithm.
- * Two classes (50/50 coin flip): 2-move cavalry line, 1-move infantry line.
- * Tech checks use ANY civ's discoveries, not just the triggering civ.
+ * Pick mercenary unit type per binary FUN_0058f040 lines 5031-5078.
+ * Two classes: offensive (cavalry line) and defensive (infantry line).
+ * 50% coin flip picks class. Tech checks use global tech-discovered flags.
+ *
+ * Offensive: Knights(19) default if Chivalry(11) known.
+ *   Cumulative overrides: Iron Working(55)→Crusaders(18),
+ *   Feudalism(42)→Dragoons(20), Combined Arms(17)→Cavalry(11).
+ *   No Chivalry: 1/3 Chariot(16) vs 2/3 Horsemen(15),
+ *   + 50% Elephant(17) if Machine Tools(64) known.
+ *
+ * Defensive: Musketeers(8) default.
+ *   Downgrade without techs: no Electricity(34)→Pikemen(7),
+ *   no Electronics(35)→Legion(5), no Engineering(39)→Archers(4).
  */
 function getHutMercType(state) {
   const rng = state.rng;
-  if (rng.random() < 0.5) {
-    // 2-move class: Horsemen→Elephant→Knights→Crusaders→Dragoons→Riflemen
-    if (anyoneHasTech(state, 17)) return 11; // Conscription → Riflemen
-    if (anyoneHasTech(state, 42)) return 20; // Leadership → Dragoons
-    if (anyoneHasTech(state, 55)) return 18; // Monotheism → Crusaders
-    if (anyoneHasTech(state, 11)) return 19; // Chivalry → Knights
-    if (anyoneHasTech(state, 64) && rng.random() < 0.5) return 17; // Polytheism → 50% Elephant
-    return rng.random() < 0.67 ? 15 : 16; // 2/3 Horsemen, 1/3 Chariot
-  } else {
-    // 1-move class: Archers→Legion→Musketeers→Fanatics
-    if (anyoneHasTech(state, 34)) return 8;  // Guerrilla Warfare → Fanatics
-    if (anyoneHasTech(state, 35)) return 7;  // Gunpowder → Musketeers
-    if (anyoneHasTech(state, 39)) return 5;  // Iron Working → Legion
-    return 4; // Archers
+
+  // Offensive unit (binary local_14)
+  let offensive = 19; // Knights (default when Chivalry known)
+  if (!anyoneHasTech(state, 11)) {
+    // No Chivalry: choose from early units
+    offensive = (rng.nextInt(3) === 0) ? 16 : 15; // 1/3 Chariot, 2/3 Horsemen
+    if (anyoneHasTech(state, 64) && rng.nextInt(2) !== 0) {
+      offensive = 17; // Machine Tools → 50% Elephant
+    }
   }
+  // Cumulative overrides (each later tech overrides)
+  if (anyoneHasTech(state, 55)) offensive = 18; // Iron Working → Crusaders
+  if (anyoneHasTech(state, 42)) offensive = 20; // Feudalism → Dragoons
+  if (anyoneHasTech(state, 17)) offensive = 11; // Combined Arms → Cavalry
+
+  // Defensive unit (binary local_c)
+  let defensive = 8; // Musketeers (default)
+  if (!anyoneHasTech(state, 34)) defensive = 7; // no Electricity → Pikemen
+  if (!anyoneHasTech(state, 35)) defensive = 5; // no Electronics → Legion
+  if (!anyoneHasTech(state, 39)) defensive = 4; // no Engineering → Archers
+
+  // 50% coin flip: offensive vs defensive
+  return (rng.nextInt(2) === 0) ? offensive : defensive;
 }
 
 /**
@@ -70,24 +88,44 @@ function getHutMercType(state) {
 export function resolveGoodyHut(state, mapBase, unit, civSlot) {
   const turnNum = state.turn?.number || 0;
   const hasCities = state.cities.some(c => c.owner === civSlot && c.size > 0);
-  const earlyNoCities = !hasCities && turnNum < 50;
+  const civCityCount = state.cities.filter(c => c.owner === civSlot && c.size > 0).length;
+  const earlyNoCities = civCityCount === 0 && turnNum < 50;
+
+  // Distance to nearest own city (used by barbarian suppression)
+  let nearestCityDist = 999;
+  for (const c of state.cities) {
+    if (c.owner !== civSlot || c.size <= 0) continue;
+    let dx = Math.abs(unit.gx - c.gx);
+    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+    const dy = Math.abs(unit.gy - c.gy);
+    nearestCityDist = Math.min(nearestCityDist, dx + dy);
+  }
 
   const rng = state.rng;
 
   // #48: Uniform distribution — rand()%5 per binary FUN_0058f040
-  // 0=advancedTribe, 1=mercenary, 2=gold, 3=tech, 4=barbarians
+  // Binary outcome indices: 0=advancedTribe, 1=mercenary, 2=gold, 3=barbarians, 4=tech
   let outcome = rng.nextInt(5);
 
-  // Suppression rules (same as binary)
-  if (outcome === 0 && turnNum < 100) outcome = 1;       // too early for city
-  if (outcome === 4 && earlyNoCities) outcome = 1;        // no barbs when no cities early
-  if (outcome === 3 && anyoneHasTech(state, 38)) outcome = 2; // all techs known → gold
-  if (NON_COMBAT_TYPES.has(unit.type) && outcome === 4) outcome = 2; // noncombat unit → gold
+  // Suppression rules (from binary FUN_0058f040)
+  if (outcome === 0 && nearestCityDist < 4) outcome = 1;   // too close to city for advanced tribe
+  if (outcome === 0 && civCityCount === 0 && turnNum < 50) {
+    // Binary lines 4978-4989: if no cities and turn < 50, check homeless settler count
+    const homelessSettlers = state.units.filter(u =>
+      u.gx >= 0 && (UNIT_ROLE[u.type] ?? 0) === 5 && (u.homeCityId == null || u.homeCityId < 0)
+    ).length;
+    if (homelessSettlers >= 2) outcome = 1;  // too many settlers → mercenary
+  }
+  // Binary line 5118-5121: barbarians suppressed if near city OR early no-cities
+  if (outcome === 3 && (nearestCityDist < 4 || earlyNoCities)) outcome = 1;
+  // Binary line 5216: tech suppressed if turn 0 OR this civ has tech 38
+  if (outcome === 4 && (turnNum === 0 || state.civTechs?.[civSlot]?.has(38))) outcome = 2;
+  if (NON_COMBAT_TYPES.has(unit.type) && outcome === 3) outcome = 2; // noncombat unit → gold
 
   switch (outcome) {
     case 0: { // Advanced Tribe — found a city with some buildings
       const terrain = mapBase.getTerrain(unit.gx, unit.gy);
-      if (terrain === 10) return hutGiveGold(state, civSlot, turnNum, rng);
+      if (terrain === 10) return hutGiveGold(state, civSlot, state, rng);
       let tooClose = false;
       for (const c of state.cities) {
         if (c.size <= 0) continue;
@@ -145,11 +183,11 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
       return { type: 'advancedTribe', cityName, cityIndex: newCityIndex };
     }
 
-    case 2: return hutGiveGold(state, civSlot, turnNum, rng);
+    case 2: return hutGiveGold(state, civSlot, state, rng);
 
-    case 3: { // Technology
+    case 4: { // Technology (binary case 4)
       const available = getAvailableResearch(state, civSlot);
-      if (available.length === 0) return hutGiveGold(state, civSlot, turnNum, rng);
+      if (available.length === 0) return hutGiveGold(state, civSlot, state, rng);
       const techId = available[rng.nextInt(available.length)];
       grantAdvance(state, civSlot, techId);
       return { type: 'tech', advanceId: techId, advanceName: ADVANCE_NAMES[techId] };
@@ -157,27 +195,31 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
 
     case 1: return hutGiveMerc(state, civSlot, unit, rng);
 
-    case 4: { // Barbarian uprising (4-8 hostile barbarians)
-      const barbType = getBarbUnitType(state);
-      const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const count = 4 + rng.nextInt(5);
-      let spawned = 0;
-      for (let i = dirs.length - 1; i > 0; i--) {
-        const j = rng.nextInt(i + 1);
-        [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-      }
+    case 3: { // Barbarian uprising (binary case 3, FUN_0058f040:5164-5214)
+      // Binary: iterate 8 directions, step by clamp(4 - civCityCount, 1, 4)
+      // More cities → smaller step → more barbarians spawned
+      const civCityCount = state.cities.filter(c => c.owner === civSlot && c.size > 0).length;
+      const step = Math.max(1, Math.min(4, 4 - civCityCount));
+
       const spawnLocs = [];
-      for (const dir of dirs) {
-        const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+      for (let di = 0; di < 8; di++) {
+        const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        // Binary uses (turnNum + index) & 7 to pick direction
+        const dirIdx = (turnNum + di) & 7;
+        const dest = resolveDirection(unit.gx, unit.gy, dirs[dirIdx], mapBase);
         if (!dest) continue;
         if (mapBase.getTerrain(dest.gx, dest.gy) === 10) continue;
         if (state.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0)) continue;
+        if (state.units.some(u => u.gx === dest.gx && u.gy === dest.gy && u.gx >= 0)) continue;
         spawnLocs.push(dest);
       }
+
       state.units = [...state.units];
-      for (let i = 0; i < count; i++) {
-        if (spawnLocs.length === 0) break;
-        const loc = spawnLocs[i % spawnLocs.length];
+      let spawned = 0;
+      for (let idx = 0; idx <= 7; idx += step) {
+        if (idx >= spawnLocs.length) break;
+        const loc = spawnLocs[idx];
+        const barbType = getBarbUnitType(state);
         state.units.push(makeUnit(barbType, 0, loc.gx, loc.gy, UNIT_MOVE_POINTS[barbType] * MOVEMENT_MULTIPLIER));
         spawned++;
       }
@@ -188,14 +230,20 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
   }
 }
 
-/** Helper: give gold from goody hut. */
-function hutGiveGold(state, civSlot, turnNum, rng) {
-  const year = getNumericYear(turnNum);
-  let amount;
-  if (year < -1000) amount = 25 + rng.nextInt(26);
-  else if (year < 1) amount = 25 + rng.nextInt(51);
-  else amount = 50 + rng.nextInt(51);
-  if (year >= 1500) amount *= 2;
+/** Helper: give gold from goody hut.
+ * Binary FUN_0058f040 case 2 (lines 5093-5106):
+ *   base = 50 gold; 1/3 chance to modify based on difficulty:
+ *   roll rand()%10 - difficulty + 2: if < 5 → 25 gold, else → 100 gold.
+ *   After year 1000 (DAT_00655afa > 1000): double. */
+function hutGiveGold(state, civSlot, gameState, rng) {
+  const diffIdx = DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain');
+  const turnNum = gameState.turn?.number || 0;
+  let amount = 50;
+  if (rng.nextInt(3) === 0) {
+    const roll = rng.nextInt(10) - diffIdx + 2;
+    amount = roll < 5 ? 25 : 100;
+  }
+  if (turnNum > 200) amount <<= 1; // binary: DAT_00655afa > 1000 (year > 1000 ≈ turn 200)
   if (state.civs?.[civSlot]) {
     state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
   }

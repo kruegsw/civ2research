@@ -18,7 +18,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, ADVANCE_PREREQS, ADVANCE_AI_INTEREST, UNIT_COSTS, WONDER_PREREQS, GOVT_INDEX, UNIT_DOMAIN } from './defs.js';
-import { hasWonderEffect, civHasWonder } from './utils.js';
+import { hasWonderEffect, civHasWonder, refreshCityTileOwnership } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
 import { resetSpaceship } from './spaceship.js';
@@ -1422,8 +1422,10 @@ export function breakAlliance(state, mapBase, civA, civB) {
 // 5. activateAllianceWars — FUN_0045a8e3 (diplo_activate_alliance_wars)
 //
 // When civA goes to war with civB, civA's allies are checked:
-// each ally that has contact with civB and no existing war/ceasefire
-// is dragged into the war. Prevents infinite loops via a processed set.
+// each ally that has contact with civB and no existing war/alliance
+// is UNCONDITIONALLY dragged into the war. Binary has no cooldown,
+// attitude threshold, or random gate — alliances cascade aggressively.
+// Prevents infinite loops via a processed set.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -1457,24 +1459,12 @@ export function activateAllianceWars(state, mapBase, civA, civB, processed) {
     if (!haveContact(state, civ, civB)) continue;
 
     // Must not already be at war or allied with civB
-    // Binary: !(treaty[ally][enemy] & 0x2008) — not at war or allied
+    // Binary FUN_0045a8e3: !(treaty[ally][enemy] & 0x2008) — not at war or allied
     const existingFlags = getTreatyFlags(state, civ, civB);
     if (existingFlags & (TF.WAR | TF.ALLIANCE)) continue;
 
-    // 6-turn cooldown: skip if alliance was formed recently (within 6 turns)
-    const allyTreatyTurn = state.treatyTurns?.[treatyKey(civA, civ)] ?? 0;
-    const turnNum = state.turn?.number || 0;
-    if (turnNum - allyTreatyTurn < 6) continue;
-
-    // Attitude check: ally must have hostile attitude toward enemy
-    // (attitude score > 50 in binary's hostility scale = willing to fight)
-    const allyAttitude = getAttitude(state, civ, civB);
-    if (allyAttitude < 50) continue;
-
-    // 2/3 random gate: 33% chance the ally refuses to join
-    const rng = state.rng;
-    const roll = rng ? rng.nextInt(3) : Math.floor(Math.random() * 3);
-    if (roll === 0) continue; // 1 in 3 chance to skip
+    // Binary cascades UNCONDITIONALLY here — no cooldown, no attitude check,
+    // no random gate. Three phantom gates previously here were fabricated.
 
     // This ally joins the war
     setTreaty(state, civ, civB, 'war');
@@ -2530,6 +2520,31 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   // ── #129: Reassign eliminated civ's tile ownership ──
   // Scan 45-tile radius per city and reassign tiles to nearest alive civ
   reassignEliminatedCivTiles(state, mapBase, civSlot);
+
+  // ── Recalculate power rankings after civ death ──
+  // Binary recalculates rankings when a civ is eliminated (FUN_004853e7).
+  if (state.powerRanking) {
+    state.powerRanking = [...state.powerRanking];
+    state.powerRanking[civSlot] = 0;
+    const newRank = new Array(8).fill(0);
+    for (let c = 1; c <= 7; c++) {
+      if (!(state.civsAlive & (1 << c))) continue;
+      let rank = 0;
+      for (let other = 1; other <= 7; other++) {
+        if (other === c || !(state.civsAlive & (1 << other))) continue;
+        if (state.powerRanking[other] < state.powerRanking[c]) rank++;
+        else if (state.powerRanking[other] === state.powerRanking[c] && other < c) rank++;
+      }
+      newRank[c] = rank;
+    }
+    state.powerRank = newRank;
+    if (state.civs) {
+      state.civs = [...state.civs];
+      for (let c = 1; c <= 7; c++) {
+        if (state.civs[c]) state.civs[c] = { ...state.civs[c], powerRank: newRank[c] };
+      }
+    }
+  }
 
   events.push({ type: 'civDestroyed', civSlot, killerCiv });
 
@@ -4054,6 +4069,15 @@ export function reassignEliminatedCivTiles(state, mapBase, deadCiv) {
     }
 
     tile.tileOwnership = bestCiv;
+  }
+
+  // Binary FUN_0043f7a7: after reassigning dead civ's tiles, refresh
+  // ownership for ALL remaining cities' 21-tile radius to ensure
+  // consistent territory claims.
+  for (const city of state.cities) {
+    if (city.size > 0 && (state.civsAlive & (1 << city.owner))) {
+      refreshCityTileOwnership(city, mapBase);
+    }
   }
 }
 

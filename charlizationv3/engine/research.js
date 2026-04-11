@@ -342,33 +342,17 @@ export function handleTechDiscovery(state, civSlot, techId) {
   const libEvents = checkGreatLibraryCascade(state, techId);
   events.push(...libEvents);
 
-  // (#128) Electronics discovery: set civ flag 0x20 and trigger WLTKD in all cities
-  // Binary FUN_004bf05b: discovering Electronics (tech 24) sets a special civ flag
-  // and grants We Love The King Day to all of the civ's cities.
-  const TECH_ELECTRONICS = 24;
-  if (techId === TECH_ELECTRONICS) {
-    // Set civ flag
+  // ── Golden Age: Philosophy first-discoverer bonus ──
+  // Binary FUN_004bf05b: tech 0x3c (60 = Philosophy) first discoverer
+  // sets civ flag 0x20 and triggers golden age city selection (FUN_004bee56)
+  if (techId === TECH_PHILOSOPHY && isFirstDiscoverer) {
+    // Set civ flag 0x20
     if (state.civs?.[civSlot]) {
       state.civs = [...state.civs];
       const civ = { ...state.civs[civSlot] };
-      civ.electronicsFlag = true; // civ flag 0x20
+      civ.philosophyBonus = true; // civ flag 0x20
       state.civs[civSlot] = civ;
     }
-    // Trigger WLTKD in all owned cities
-    for (let ci = 0; ci < state.cities.length; ci++) {
-      const city = state.cities[ci];
-      if (city.owner !== civSlot || city.size <= 0) continue;
-      if (!city.weLoveKingDay) {
-        state.cities[ci] = { ...city, weLoveKingDay: true };
-      }
-    }
-    events.push({
-      type: 'electronicsDiscovered', civSlot,
-    });
-  }
-
-  // ── Golden Age: Philosophy first-discoverer bonus ──
-  if (techId === TECH_PHILOSOPHY && isFirstDiscoverer) {
     const goldenEvent = triggerGoldenAge(state, civSlot);
     if (goldenEvent) events.push(goldenEvent);
   }
@@ -596,9 +580,8 @@ export function triggerGoldenAge(state, civSlot) {
     }
   }
 
-  // Grant WeLoveKingDay for next turn
-  state.cities[chosen] = { ...state.cities[chosen], weLoveKingDay: true };
-
+  // Binary FUN_004bee56: notification only — WLTKD is determined by happiness calc,
+  // not set directly by this function
   return { type: 'goldenAge', civSlot, cityIndex: chosen };
 }
 
@@ -644,6 +627,11 @@ export function checkGreatLibraryCascade(state, techId) {
   }
 
   if (knownCount >= 2) {
+    // Binary FUN_004bf05b:6929 recursively calls full handleTechDiscovery
+    // for the library owner, processing barracks refund, Leonardo's upgrade,
+    // wonder obsolescence, etc. grantAdvance must be called first so the
+    // recursive handleTechDiscovery's own Great Library check sees the tech
+    // as already known (preventing infinite recursion).
     grantAdvance(state, libraryOwner, techId);
     events.push({
       type: 'freeAdvance',
@@ -651,6 +639,8 @@ export function checkGreatLibraryCascade(state, techId) {
       advanceId: techId,
       source: 'Great Library',
     });
+    const cascadeEvents = handleTechDiscovery(state, libraryOwner, techId);
+    events.push(...cascadeEvents);
   }
 
   return events;

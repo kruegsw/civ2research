@@ -452,6 +452,46 @@ export const SETTLER_FOOD_COST = {
 // Food needed to grow = (size + 1) × FOOD_BOX_MULTIPLIER
 export const FOOD_BOX_MULTIPLIER = 10;
 
+// ═══════════════════════════════════════════════════════════════════
+// COSMIC PARAMETERS — parsed from RULES.TXT @COSMIC section or save file.
+// Defaults match standard RULES.TXT. Overridden by state.cosmic[] at runtime.
+// ═══════════════════════════════════════════════════════════════════
+export const COSMIC_DEFAULTS = [
+  3,   //  0: Road movement multiplier
+  2,   //  1: 1 in x chance Trireme lost
+  2,   //  2: Food each citizen eats per turn
+  10,  //  3: Food box rows (rows × (size+1) = box)
+  10,  //  4: Shield box rows
+  1,   //  5: Settlers eat (govt ≤ Monarchy)
+  2,   //  6: Settlers eat (govt ≥ Communism)
+  7,   //  7: City size for first unhappiness at Chieftain
+  14,  //  8: Riot factor (higher lessens effect)
+  8,   //  9: Aqueduct needed to exceed this size
+  12,  // 10: Sewer System needed to exceed this size
+  10,  // 11: Tech paradigm (higher slows research)
+  20,  // 12: Base time for engineers to transform terrain (×2)
+  3,   // 13: Monarchy free support
+  3,   // 14: Communism free support
+  10,  // 15: Fundamentalism free support
+  0,   // 16: Communism equivalent palace distance
+  50,  // 17: Fundamentalism science loss %
+  50,  // 18: Shield penalty for production type change %
+  10,  // 19: Max paradrop range
+  75,  // 20: Mass/Thrust paradigm (spaceship)
+  5,   // 21: Max effective science rate in fundamentalism (×10)
+];
+
+/**
+ * Get a cosmic parameter value. Uses state.cosmic if available (parsed from
+ * save file or RULES.TXT), falls back to COSMIC_DEFAULTS for server-init'd games.
+ * @param {object|null} state - game state (may be null for pre-init)
+ * @param {number} idx - cosmic parameter index (0-21)
+ * @returns {number}
+ */
+export function getCosmic(state, idx) {
+  return state?.cosmic?.[idx] ?? COSMIC_DEFAULTS[idx];
+}
+
 // ── Government enum + lookup tables ──
 export const GOVERNMENT_KEYS = ['anarchy','despotism','monarchy','communism','fundamentalism','republic','democracy'];
 // Corruption divisor: (govtIndex >> 1) + 1

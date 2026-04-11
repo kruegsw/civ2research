@@ -38,6 +38,7 @@ import {
   getAttitudeLevel, isHostile, isFriendly,
   calcPatienceThreshold, getPatience,
   shouldBetrayTreaty, wouldEnableWonder,
+  calcTributeDemand,
 } from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
@@ -1274,28 +1275,11 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
   const theirTreasury = gameState.civs?.[targetCiv]?.treasury ?? 0;
   if (theirTreasury < 100) return null; // not worth demanding
 
-  // FUN_0045705e ~3679: DAT_0064b0ec / ((patience - 1) / 2 + 1)
-  // Higher patience = lower demand divisor = higher effective demand
-  const patience = gameState.civs?.[civSlot]?.patience ?? 3;
-  const patienceDivisor = Math.floor((patience) / 2) + 1;
-
-  // Amount: 10% of their treasury, scaled by difficulty and our dominance
-  // FUN_0045705e: tribute = (difficulty + 1) * tech_desire / 32, clamped
-  let amount = Math.floor(theirTreasury * 0.1);
-  amount = Math.floor(amount * (difficulty + 1) / patienceDivisor);
-  amount = Math.max(25, Math.min(200, amount));
-
-  // Aggressive leaders demand more
-  if (personality.militarism > 0) amount = Math.min(200, Math.floor(amount * 1.5));
-
-  // ── Item 8: ERA_TRIBUTE_ADJUSTMENT — era scaling based on tech count ──
-  const ourTechCount = gameState.civTechs?.[civSlot]?.size ?? 0;
-  if (ourTechCount >= 30) {
-    amount *= 3; // Late game
-  } else if (ourTechCount >= 15) {
-    amount *= 2; // Mid game
-  }
-  // Early game (< 15): tribute x1 (no change)
+  // Use the binary-faithful calcTributeDemand: targetCiv = payer (the
+  // one being asked), civSlot = receiver (the demanding AI).
+  const offer = calcTributeDemand(gameState, targetCiv, civSlot);
+  if (offer.willingness !== 'pay' || offer.amount <= 0) return null;
+  let amount = offer.amount;
 
   // ── Item 4: DEMAND_COOLDOWN — half-demand period and ceasefire halving ──
   // 16-turn half-demand period: if within 16 turns of last demand, halve amount
@@ -2412,7 +2396,8 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     // If other civ is building spaceship parts, become hostile
     if (gameState.spaceships?.[other]) {
       const ss = gameState.spaceships[other];
-      if (ss.structurals > 0 || ss.components > 0 || ss.modules > 0) {
+      if ((ss.structural || 0) > 0 || (ss.fuel || 0) > 0 || (ss.propulsion || 0) > 0
+          || (ss.habitation || 0) > 0 || (ss.lifeSupport || 0) > 0 || (ss.solarPanel || 0) > 0) {
         // They're building a spaceship — racing → hostile
         attDelta -= 5;
         if (debugLog && attitude > -20) {
@@ -2640,45 +2625,51 @@ function processAiVsAiDiplomacy(state, mapBase, aiCiv, otherAiCiv) {
 export function processJoinWar(state, mapBase, aiCiv, allyCiv, enemyCiv) {
   const events = [];
 
-  // Skip if already at war with enemy
-  if (getTreaty(state, aiCiv, enemyCiv) === 'war' && haveContact(state, aiCiv, enemyCiv)) {
-    return events;
-  }
+  // Binary FUN_0055d685: outer check — already at war/pending with ally?
+  const flagsToAlly = getTreatyFlags(state, allyCiv, aiCiv);
+  if (flagsToAlly & (TF.WAR | TF.ALLIANCE)) return events; // already committed
 
-  // Skip if allied with enemy
-  if (getTreaty(state, aiCiv, enemyCiv) === 'alliance') {
-    return events;
-  }
-
-  // Check vendetta flag toward enemy
-  const flagsTowardEnemy = getTreatyFlags(state, aiCiv, enemyCiv);
-  const hasVendetta = !!(flagsTowardEnemy & TF.VENDETTA);
-
-  // Contact cooldown: don't join if contact with enemy < 6 turns ago
+  // Binary Branch 1: check if enemy has pending join flag (0x20)
   const flagsFromEnemy = getTreatyFlags(state, enemyCiv, aiCiv);
-  if (flagsFromEnemy & TF.RECENT_CONTACT) {
-    if (!hasVendetta) return events; // vendetta overrides cooldown
+  const hasPendingJoin = !!(flagsFromEnemy & 0x20);
+
+  if (!hasPendingJoin) {
+    // Binary Branch 1a: if BOTH relationships have peace flag (0x10),
+    // set pending join flag (0x20) on both.
+    const peaceWithAlly = !!(getTreatyFlags(state, allyCiv, aiCiv) & 0x10);
+    const peaceWithEnemy = !!(getTreatyFlags(state, enemyCiv, aiCiv) & 0x10);
+    if (peaceWithAlly && peaceWithEnemy) {
+      // Set pending join flag on both relationships
+      addTreatyFlag(state, allyCiv, aiCiv, 0x20);
+      addTreatyFlag(state, enemyCiv, aiCiv, 0x20);
+    }
+    return events; // no war triggered yet — pending only
   }
 
-  // Power rank gate: don't join if enemy rank > ours + 3
-  const ourRank = state.civs?.[aiCiv]?.powerRank ?? 3;
-  const enemyRank = state.civs?.[enemyCiv]?.powerRank ?? 3;
-  if (enemyRank > ourRank + 3) {
-    return events;
+  // Binary Branch 2: pending join flag exists — may trigger war
+  // Human player gate: 6-turn contact check + difficulty random rejection
+  const isHuman = !!((state.humanPlayers || 0) & (1 << aiCiv));
+  if (isHuman) {
+    const peaceWithAlly = !!(getTreatyFlags(state, allyCiv, aiCiv) & 0x10);
+    if (!peaceWithAlly) {
+      // Time gate: less than 6 turns of contact → reject
+      const contactTurn = state.treatyTurns?.[`${Math.min(aiCiv, allyCiv)}-${Math.max(aiCiv, allyCiv)}`] ?? 0;
+      const turnNum = state.turn?.number || 0;
+      if (turnNum - contactTurn < 6) return events;
+
+      // Difficulty-based rejection: AI level < 7 → 2/3 chance reject
+      const rank = state.civs?.[aiCiv]?.powerRank ?? 3;
+      if (rank < 7) {
+        const rng = state.rng;
+        if (rng ? (rng.nextInt(3) !== 0) : (Math.random() > 0.34)) return events;
+      }
+    }
   }
 
-  // Random decline: 1/3 chance to refuse (unless vendetta)
-  if (!hasVendetta) {
-    const turnNumber = state.turn?.number ?? 0;
-    const roll = ((turnNumber * 23 + aiCiv * 13 + enemyCiv * 7) % 3);
-    if (roll === 0) return events;
-  }
-
-  // Join the war: declare war on enemy
+  // Trigger war: declare war on enemy
   const warResult = diplomacyDeclareWar(state, mapBase, aiCiv, enemyCiv, allyCiv);
   events.push(...warResult.events);
 
-  // Notify ally
   fireDiplomacyEvent(state, DIPLO_EVENTS.HELPME, allyCiv, aiCiv, {
     reason: 'join_war',
     enemy: enemyCiv,

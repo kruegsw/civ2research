@@ -228,15 +228,21 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
         if (!isGoal && hasEnemyCombat(nx, ny, owner, units)) continue;
       }
 
-      // ── ZOC blocking check ──
-      if (units && isZOCBlocked(unitType, owner, cur.x, cur.y, nx, ny, mapBase, units)) continue;
-
       // ── Movement cost ──
       const cost = moveCost(unitType, mapBase, cur.x, cur.y, nx, ny);
       if (cost < 0) continue; // impassable
 
+      // ── ZOC cost penalty (binary FUN_004abfe5 lines 3851-3887) ──
+      // Binary adds +4 cost when moving through ZOC'd tiles instead of hard-blocking.
+      // This allows pathfinding through ZOC at higher cost; actual movement enforcement
+      // remains in the movement system (isZOCBlocked in handleMoveUnit).
+      let zocPenalty = 0;
+      if (units && isZOCBlocked(unitType, owner, cur.x, cur.y, nx, ny, mapBase, units)) {
+        zocPenalty = 4;
+      }
+
       // #119: Railroad cost is 0 in pathfinding — don't floor to 1
-      const tentG = cur.g + cost;
+      const tentG = cur.g + cost + zocPenalty;
 
       // Don't exceed budget
       if (tentG > budget) continue;
@@ -339,8 +345,11 @@ export function calcGotoDirection(unit, targetGx, targetGy, mapBase, owner, unit
     // Skip tiles with enemy combat units
     if (units && hasEnemyCombat(nx, ny, owner, units)) continue;
 
-    // ZOC check
-    if (units && isZOCBlocked(unitType, owner, unitGx, unitGy, nx, ny, mapBase, units)) continue;
+    // ZOC cost penalty (same as findPath — cost +4 instead of hard block)
+    let zocPenalty = 0;
+    if (units && isZOCBlocked(unitType, owner, unitGx, unitGy, nx, ny, mapBase, units)) {
+      zocPenalty = 4;
+    }
 
     // Movement cost for this step
     const cost = moveCost(unitType, mapBase, unitGx, unitGy, nx, ny);
@@ -355,7 +364,7 @@ export function calcGotoDirection(unit, targetGx, targetGy, mapBase, owner, unit
     // Score: weighted sum of remaining distance and step cost
     // Favor lower remaining distance; use cost as tiebreaker
     // #119: Railroad cost is 0, don't floor to 1
-    const score = remDist * 100 + cost;
+    const score = remDist * 100 + cost + zocPenalty;
 
     if (score < bestScore) {
       bestScore = score;

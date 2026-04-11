@@ -692,9 +692,13 @@ export function calcTradeRouteIncome(city, cityIndex, gameState, mapBase) {
 
     const destGross = calcGrossTrade(dest, route.destCityIndex, gameState, mapBase);
 
-    // Binary ref: base = (city1.tradeRevenue + city2.tradeRevenue + 4) >> 3
-    // Uses constant 4, not distance between cities
-    let income = (myGross + destGross + 4) >> 3;
+    // Binary FUN_00440750 lines 175-176:
+    // income = (city1.tradeBase + city2.tradeBase) * (distance + 10) / 24
+    let dx = Math.abs(city.gx - dest.gx);
+    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+    const dy = Math.abs(city.gy - dest.gy);
+    const dist = dx + dy;
+    let income = Math.floor((myGross + destGross) * (dist + 10) / 24);
 
     // Same continent: halved
     if (mapBase.getBodyId) {
@@ -1334,26 +1338,57 @@ export function expandCityTerritory(state, mapBase, cityIndex) {
   const cityGy = city.gy;
   const parC = cityGy & 1;
 
-  let bestScore = -1;
-  let bestGx = -1;
-  let bestGy = -1;
+  // Binary FUN_004f080d: TWO-PASS expansion.
+  // Pass 1: Prioritize unowned tiles with special resources.
+  // Pass 2: If no resource tile found, pick best tile by terrain score.
 
-  // Scan 20 tiles in city radius (indices 0-19, excluding center at 20)
-  for (let ri = 0; ri < 20; ri++) {
+  // Helper to get radius tile coordinates
+  const getRadiusTile = (ri) => {
     const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
     const parT = ((cityGy + ddy) % 2 + 2) % 2;
     const tgx = cityGx + ((parC + ddx - parT) >> 1);
     const tgy = cityGy + ddy;
     const wgx = wraps ? ((tgx % mw) + mw) % mw : tgx;
-    if (tgy < 0 || tgy >= mh || wgx < 0 || wgx >= mw) continue;
+    if (tgy < 0 || tgy >= mh || wgx < 0 || wgx >= mw) return null;
+    return { wgx, tgy };
+  };
+
+  const isUnowned = (tile) => {
+    const o = tile.tileOwnership;
+    return o === 0 || o === 0x0F || o === undefined || o === null;
+  };
+
+  // Pass 1: Resource-first claiming (binary lines 200-210)
+  for (let ri = 0; ri < 20; ri++) {
+    const pos = getRadiusTile(ri);
+    if (!pos) continue;
+    const tile = tileData[pos.tgy * mw + pos.wgx];
+    if (!tile || !isUnowned(tile)) continue;
+    const ter = tile.terrain;
+    if (ter < 0 || ter > 10) continue;
+    // Check for special resource
+    if (mapBase.getResource) {
+      const res = mapBase.getResource(pos.wgx, pos.tgy);
+      if (res > 0) {
+        tile.tileOwnership = city.owner;
+        return { gx: pos.wgx, gy: pos.tgy };
+      }
+    }
+  }
+
+  // Pass 2: Best terrain score (binary fallback via FUN_004f03b7)
+  let bestScore = -1;
+  let bestGx = -1;
+  let bestGy = -1;
+
+  for (let ri = 0; ri < 20; ri++) {
+    const pos = getRadiusTile(ri);
+    if (!pos) continue;
+    const { wgx, tgy } = pos;
 
     const tileIdx = tgy * mw + wgx;
     const tile = tileData[tileIdx];
-    if (!tile) continue;
-
-    // Only claim UNOWNED tiles (not tiles owned by other civs)
-    const owner = tile.tileOwnership;
-    if (owner !== 0 && owner !== 0x0F && owner !== undefined && owner !== null) continue;
+    if (!tile || !isUnowned(tile)) continue;
 
     const ter = tile.terrain;
     if (ter < 0 || ter > 10) continue;

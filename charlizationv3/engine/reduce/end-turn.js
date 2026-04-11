@@ -394,76 +394,103 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const u = state.units[ui];
     if (u.owner !== activeCiv || u.gx < 0) continue;
     if (u.movesRemain <= 0) continue;
-    // If unit moved last turn (idleLastTurn === false), skip normal heal.
-    // Then clear the flag so the unit can heal next cycle if it stays put.
+
+    const domain = UNIT_DOMAIN[u.type] ?? 0;
+    const maxHp = (UNIT_HP[u.type] || 1) * 10;
+
+    // If unit moved last turn (idleLastTurn === false), handle attrition or skip.
     if (u.idleLastTurn === false) {
+      // Binary FUN_00488cef lines 2384-2394: helicopter attrition.
+      // Air domain (1), range/fuel == 0 (helicopter), NOT in city → take damage.
+      if (domain === 1 && !(UNIT_FUEL[u.type] > 0)) {
+        const tileIdx = u.gy * mapBase.mw + u.gx;
+        const tile = mapBase.tileData?.[tileIdx];
+        const inCity = state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.size > 0);
+        if (!inCity) {
+          const attrition = Math.floor(maxHp / 10);
+          const newDmg = Math.min(maxHp - 1, u.movesRemain + attrition);
+          state.units[ui] = { ...u, movesRemain: newDmg, idleLastTurn: true };
+          continue;
+        }
+      }
       state.units[ui] = { ...u, idleLastTurn: true };
       continue;
     }
 
-    const domain = UNIT_DOMAIN[u.type] ?? 0;
     const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
-
-    const maxHp = (UNIT_HP[u.type] || 1) * 10;
     let healBase = 1;
+    let hasMatchingBuilding = false;
 
     if (ownCity) {
-      const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
-      const hasMatchingBuilding = cityHasBuilding(ownCity, matchingBuildingId);
-      healBase = 1;
-      if (domain === 0) healBase += (hasMatchingBuilding ? 2 : 1);
+      // ── In own city (distance == 0) ──
+      // Binary FUN_00488cef lines 2321-2356:
+      // Step 4: Near-city bonus (distance < 4, land only)
+      if (domain === 0) {
+        const hasBarracks = cityHasBuilding(ownCity, 2);
+        healBase += hasBarracks ? 2 : 1; // +1 near city, +2 if barracks
+      }
+      // Step 5: Domain-specific building check (in-city only)
+      // land=Barracks(2), air=Airport(32), sea=Port Facility(34)
+      const matchingBuildingId = domain === 0 ? 2 : domain === 1 ? 32 : 34;
+      hasMatchingBuilding = cityHasBuilding(ownCity, matchingBuildingId);
+      if (hasMatchingBuilding) {
+        healBase <<= 1; // conditional double for matching building
+      }
+      // Step 6: Unconditional in-city double
       healBase <<= 1;
-      healBase <<= 1;
+      // Step 7: Scale by max HP
       healBase = Math.floor(maxHp / 10) * healBase;
+      // Step 8: Full heal if matching building present in city
       if (hasMatchingBuilding) healBase = u.movesRemain;
+      // Step 9: Air units in city with airport also get full heal
+      if (domain === 1) {
+        const hasAirport = cityHasBuilding(ownCity, 32);
+        if (hasAirport) healBase = u.movesRemain;
+      }
     } else {
-      const alliedCity = state.cities.find(c => {
-        if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
-        if (c.owner === u.owner) return false;
-        const a = Math.min(u.owner, c.owner);
-        const b = Math.max(u.owner, c.owner);
-        return state.treaties?.[`${a}-${b}`] === 'alliance';
-      });
+      // ── Not in own city ──
+      const tileIdx = u.gy * mapBase.mw + u.gx;
+      const tile = mapBase.tileData?.[tileIdx];
+      const onFortress = tile && tile.improvements && tile.improvements.fortress;
 
-      if (alliedCity) {
+      // Binary line 2316: fortress (bit 0x40 without city bit 0x02) → heal 2
+      if (onFortress) {
         healBase = 2;
-      } else {
-        const tileIdx = u.gy * mapBase.mw + u.gx;
-        const tile = mapBase.tileData?.[tileIdx];
-        const onFortress = tile && tile.improvements && tile.improvements.fortress;
+      }
+      // Binary: no turn parity check — field units heal 1 every turn
 
-        if (onFortress) {
-          healBase = 2;
-        } else if (turnNumber % 2 === 0) {
-          healBase = 1;
-        } else {
-          healBase = 0;
-        }
-
-        if (domain === 0) {
-          for (const c of state.cities) {
-            if (c.owner !== u.owner || c.size <= 0) continue;
-            let cdx = Math.abs(u.gx - c.gx);
-            if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
-            const cdy = Math.abs(u.gy - c.gy);
-            if (cdx + cdy <= 3) {
-              const hasBarracks = cityHasBuilding(c, 2);
-              healBase += hasBarracks ? 2 : 1;
-              break;
-            }
+      // Binary lines 2321-2328: near-city bonus for land units (distance < 4)
+      if (domain === 0) {
+        for (const c of state.cities) {
+          if (c.owner !== u.owner || c.size <= 0) continue;
+          let cdx = Math.abs(u.gx - c.gx);
+          if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
+          const cdy = Math.abs(u.gy - c.gy);
+          if (cdx + cdy <= 3) {
+            const hasBarracks = cityHasBuilding(c, 2);
+            healBase += hasBarracks ? 2 : 1;
+            break;
           }
         }
       }
+      // Step 7: Scale by max HP
       healBase = Math.floor(maxHp / 10) * healBase;
     }
 
     if (healBase > 0) {
       const newHpLost = Math.max(0, u.movesRemain - healBase);
       if (newHpLost !== u.movesRemain) {
-        // Binary FUN_00488cef lines 2368-2375: when a unit fully heals
-        // (damage reaches 0) AND its order is sentry, clear the order so the
-        // unit wakes up at the start of the turn and is ready for input.
-        const newOrders = (newHpLost === 0 && u.orders === 'sentry') ? 'none' : u.orders;
+        // Binary FUN_00488cef lines 2368-2374: sentry auto-wake on full heal.
+        // Condition: damage == 0 AND order == sentry AND (domain != land OR tile != ocean)
+        let newOrders = u.orders;
+        if (newHpLost === 0 && u.orders === 'sentry') {
+          if (domain !== 0) {
+            newOrders = 'none'; // air/sea always wake
+          } else {
+            const terrain = mapBase.getTerrain ? mapBase.getTerrain(u.gx, u.gy) : -1;
+            if (terrain !== 10) newOrders = 'none'; // land wakes unless on ocean
+          }
+        }
         state.units[ui] = { ...u, movesRemain: newHpLost, orders: newOrders };
       }
     }

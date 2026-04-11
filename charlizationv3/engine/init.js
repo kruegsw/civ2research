@@ -12,7 +12,7 @@
 
 import { createAccessors } from './state.js';
 import {
-  MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES,
+  MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES, COSMIC_DEFAULTS,
   CIV_COLORS, ADVANCE_PREREQS, ADVANCE_NAMES, TERRAIN_BASE,
   CITY_RADIUS_DOUBLED, ADVANCE_EPOCH, UNIT_PREREQS, UNIT_DOMAIN,
   IMPROVE_COSTS, IMPROVE_MAINTENANCE,
@@ -162,6 +162,8 @@ export function initFromSav(parsed, seatList) {
     scenarioRules,
     scenarioTechRestrictions,
     scenarioName: parsed.tail?.scenarioName || null,
+    // Cosmic parameters: parsed from save file, fallback to RULES.TXT defaults
+    cosmic: parsed.gameState?.cosmicParams ?? [...COSMIC_DEFAULTS],
     // Extra fields renderers need
     unitBySaveIndex: parsed.unitBySaveIndex,
     allUnits: parsed.allUnits,
@@ -431,6 +433,8 @@ export function initNewGame(mapResult, seatList) {
     humanPlayers,
     treaties,
     killHistory,
+    // Cosmic parameters: use defaults for new games (no save file to parse from)
+    cosmic: [...COSMIC_DEFAULTS],
     unitBySaveIndex: null,
     allUnits: null,
   };

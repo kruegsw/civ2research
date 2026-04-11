@@ -2,7 +2,7 @@
 // reduce/barbarians.js — Barbarian spawning, AI, and camp production
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_ATK, UNIT_DEF, BARBARIAN_CITY_NAMES, BARBARIAN_SEA_UNITS, BARBARIAN_MAX_UNITS } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_ATK, UNIT_DEF, BARBARIAN_CITY_NAMES, BARBARIAN_MAX_UNITS } from '../defs.js';
 import { resolveDirection, moveCost } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender } from '../combat.js';
@@ -17,45 +17,62 @@ export const DIFFICULTY_BARB_MULTIPLIER = {
 
 /**
  * I.1: Pick barbarian unit type based on game era (year).
- * Era pools (pick randomly from available types for the era):
- *   Before 1000 BC: Warriors (2), Horsemen (15)
- *   1000 BC - 1 AD: + Archers (4), Chariots (16)
- *   1 AD - 1500 AD: + Legion (5), Pikemen (6), Knights (19)
- *   After 1500 AD:  + Musketeers (7), Dragoons (20), Cannon (24)
- * Falls back to tech-count method if year calculation fails.
+ * Binary FUN_00485c15 lines 1264-1282: tech-flag based unit selection.
+ * Each check overrides the previous — last matching tech wins.
+ * Checks whether ANY human player has discovered specific techs.
+ *
+ * Progression: Warriors → Archers → Legion → Knights/Crusaders → Dragoons
  */
-export function getBarbUnitType(state) {
+export function getBarbUnitType(state, spawnGx) {
   const rng = state.rng;
+  // Binary: checks (DAT_00655b0b & DAT_00655b??[techId]) — human has tech
+  const humanHas = (techId) => {
+    const humans = state.humanPlayers || 0;
+    for (let c = 1; c <= 7; c++) {
+      if ((humans & (1 << c)) && state.civTechs?.[c]?.has(techId)) return true;
+    }
+    return false;
+  };
+  // Binary: checks DAT_00655b??[techId] != 0 — any civ has tech
+  const anyHas = (techId) => {
+    for (let c = 1; c <= 7; c++) {
+      if (state.civTechs?.[c]?.has(techId)) return true;
+    }
+    return false;
+  };
 
-  // G.1: Era-specific pools via tech checks (binary-faithful)
-  // Binary uses max tech count across all alive civs to determine era
-  let maxTechCount = 0;
-  for (let c = 1; c < 8; c++) {
-    if (!(state.civsAlive & (1 << c))) continue;
-    const tc = state.civTechCounts?.[c] || 0;
-    if (tc > maxTechCount) maxTechCount = tc;
+  // Binary lines 1264-1282: cumulative overrides
+  let unitType = 2;  // Warriors (default)
+  unitType = 4;       // Archers (binary: DAT_00655ae8 & 1, assumed set for standard games)
+
+  if (humanHas(39)) unitType = 5;  // Engineering → Legion
+
+  // Invention(51) known by anyone OR (raging hordes AND Chivalry(11) known)
+  const barbLevel = state.barbarianLevel ?? 1;
+  if (anyHas(51) || (barbLevel === 3 && anyHas(11))) {
+    // Binary: (local_18 & 1) selects between Knights/Crusaders based on spawn X parity
+    unitType = (spawnGx != null && (spawnGx & 1) === 0) ? 19 : 18;
   }
 
-  const pool = [2, 15]; // Warriors, Horsemen (always available)
-  if (maxTechCount >= 10) pool.push(4, 16);  // Archers, Chariots
-  if (maxTechCount >= 25) pool.push(5, 6, 19); // Legion, Pikemen, Knights
-  if (maxTechCount >= 45) pool.push(7, 20, 24); // Musketeers, Dragoons, Cannon
+  if (humanHas(81)) unitType = 20;  // Philosophy → Dragoons
 
-  return pool[rng.nextInt(pool.length)];
+  return unitType;
 }
 
-/** Pick barbarian sea unit type based on max tech count across alive civs. */
+/** Binary FUN_00485c15 lines 1257-1263: ship type by tech discovery.
+ * Default Trireme, upgrades with Industrialization → Caravel, Gunpowder → Frigate. */
 export function getBarbSeaUnitType(state) {
-  let maxTechCount = 0;
-  for (let c = 1; c < 8; c++) {
-    if (!(state.civsAlive & (1 << c))) continue;
-    const tc = state.civTechCounts?.[c] || 0;
-    if (tc > maxTechCount) maxTechCount = tc;
+  let shipType = 32; // Trireme
+  if (anyTechDiscovered(state, 57)) shipType = 33; // Industrialization → Caravel
+  if (anyTechDiscovered(state, 45)) shipType = 35; // Gunpowder → Frigate
+  return shipType;
+}
+
+function anyTechDiscovered(state, techId) {
+  for (let c = 1; c <= 7; c++) {
+    if (state.civTechs?.[c]?.has(techId)) return true;
   }
-  for (let i = BARBARIAN_SEA_UNITS.length - 1; i >= 0; i--) {
-    if (maxTechCount >= BARBARIAN_SEA_UNITS[i][1]) return BARBARIAN_SEA_UNITS[i][0];
-  }
-  return BARBARIAN_SEA_UNITS[0][0]; // fallback: Trireme
+  return false;
 }
 
 /**
@@ -111,7 +128,7 @@ export function spawnBarbarians(state, mapBase) {
   if (((turnNum + 1) & frequencyMask) === 0 && barbCount < BARBARIAN_MAX_UNITS) {
     const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
     if (spawnLoc) {
-      const unitType = getBarbUnitType(state);
+      const unitType = getBarbUnitType(state, spawnLoc.gx);
       // Binary spawn count formula (spec section 3.4, lines 1251-1256):
       //   raw_count = clamp(turn / divisor + 1, 1, 5) + 1  → range 2-6
       //   if barb_level == 3 (raging): raw_count += 1       → range 3-7

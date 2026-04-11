@@ -137,9 +137,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
-      // No visibility update — the settler that founded the city already revealed
-      // surrounding tiles. Cities don't have independent sight range in Civ2.
-      // Contact discovery also already happened during settler movement.
+      // Binary FUN_0043f8b0 lines 5640-5643: ALWAYS updates visibility after founding.
+      // Cities reveal a radius-2 area for the founding civ.
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, unit.owner,
+        newCity.gx, newCity.gy, mapBase.wraps, 2);
 
       // Notify client
       state.cityFounded = { name: newCity.name, cityIndex: newCityIndex, civSlot };
@@ -162,18 +163,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { cityIndex, item } = action;
       state.cities = [...prev.cities];
       const city = state.cities[cityIndex];
-      // Binary production switch: shields = min(shields, new_cost)
-      // Same rule for ALL switches (same category, cross-category, unit↔building↔wonder).
-      // Switching to more expensive → keep all shields.
-      // Switching to cheaper → cap at new cost (lose excess only).
+      // Binary production switch penalty:
+      // Same category (unit→unit, building→building, wonder→wonder): keep all shields.
+      // Cross-category (unit↔building, unit↔wonder, building↔wonder): 50% shield loss.
+      // Same item: no change.
       const prevItem = city.itemInProduction;
       const oldShields = city.shieldsInBox || 0;
       let newShields;
       if (!prevItem || (prevItem.type === item.type && prevItem.id === item.id)) {
         newShields = oldShields;
+      } else if (prevItem.type === item.type) {
+        // Same category: keep all shields
+        newShields = oldShields;
       } else {
-        const newCost = getProductionCost(item);
-        newShields = Math.min(oldShields, newCost);
+        // Cross-category: 50% penalty
+        newShields = Math.floor(oldShields / 2);
       }
       state.cities[cityIndex] = {
         ...city,

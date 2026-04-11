@@ -17,11 +17,12 @@ import {
   COMMODITY_NAMES,
   GROWTH_CAP_BUILDINGS,
   LEADER_PERSONALITY,
+  getCosmic,
 } from './defs.js';
 import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
   calcGrossShields, calcUnitShieldSupport, calcCityTrade,
-  calcBuildingMaintenance, calcSupplyDemand,
+  calcSupplyDemand,
   expandCityTerritory,
 } from './production.js';
 import { calcHappiness } from './happiness.js';
@@ -119,17 +120,19 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       newSize++;
     }
 
-    // Aqueduct gate: can't grow past size 8 without Aqueduct (building 9)
+    // Aqueduct gate: can't grow past cosmic[9] (default 8) without Aqueduct (building 9)
     let growthBlocked = null;
     // Binary ref: FUN_00441a79 (city_growth_building_check)
-    if (newSize > GROWTH_CAP_BUILDINGS.AQUEDUCT.defaultThreshold && !cityHasBuilding(city, GROWTH_CAP_BUILDINGS.AQUEDUCT.buildingId)) {
-      newSize = GROWTH_CAP_BUILDINGS.AQUEDUCT.defaultThreshold;
+    const aqueductLimit = getCosmic(state, 9);  // cosmic param 9
+    const sewerLimit = getCosmic(state, 10);     // cosmic param 10
+    if (newSize > aqueductLimit && !cityHasBuilding(city, 9)) {
+      newSize = aqueductLimit;
       newFood = growthThreshold - 1; // cap food just below threshold
       growthBlocked = 'needsAqueduct';
     }
-    // Sewer System gate: can't grow past size 12 without Sewer System (building 23)
-    else if (newSize > GROWTH_CAP_BUILDINGS.SEWER.defaultThreshold && !cityHasBuilding(city, GROWTH_CAP_BUILDINGS.SEWER.buildingId)) {
-      newSize = GROWTH_CAP_BUILDINGS.SEWER.defaultThreshold;
+    // Sewer System gate: can't grow past cosmic[10] (default 12) without Sewer System (building 23)
+    else if (newSize > sewerLimit && !cityHasBuilding(city, 23)) {
+      newSize = sewerLimit;
       newFood = growthThreshold - 1;
       growthBlocked = 'needsSewer';
     }
@@ -887,16 +890,28 @@ export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
       civSlot: activeCiv, cityName: city.name,
     });
 
-    // A.8: Half-shield recovery — disbanded units return half their cost to nearest city
+    // A.8: Half-shield recovery — disbanded units return half their cost
+    // Binary FUN_004eef23: shields go to NEAREST own city (FUN_0043cf76), not home city
     const unitCost = UNIT_COSTS[u.type] || 0;
     if (unitCost > 0) {
       const halfShields = Math.floor(unitCost / 2);
       if (halfShields > 0) {
-        // Add to the disbanding city's shield box
-        const curCity = state.cities[cityIndex];
-        state.cities[cityIndex] = {
-          ...curCity,
-          shieldsInBox: (curCity.shieldsInBox || 0) + halfShields,
+        // Find nearest own city to the disbanded unit
+        let nearestCi = cityIndex; // fallback to disbanding city
+        let nearestDist = Infinity;
+        for (let ci2 = 0; ci2 < state.cities.length; ci2++) {
+          const c2 = state.cities[ci2];
+          if (c2.owner !== activeCiv || c2.size <= 0) continue;
+          let dx = Math.abs(u.gx - c2.gx);
+          if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+          const dy = Math.abs(u.gy - c2.gy);
+          const d = dx + dy;
+          if (d < nearestDist) { nearestDist = d; nearestCi = ci2; }
+        }
+        const recvCity = state.cities[nearestCi];
+        state.cities[nearestCi] = {
+          ...recvCity,
+          shieldsInBox: (recvCity.shieldsInBox || 0) + halfShields,
         };
       }
     }
@@ -970,43 +985,37 @@ export function payBuildingUpkeep(cityIndex, state) {
   const civ = state.civs?.[activeCiv];
   if (!civ) return { events };
 
-  const maintenance = calcBuildingMaintenance(city, state);
-  if (maintenance <= 0) return { events };
-
-  // Deduct from treasury (note: this modifies the civ object directly)
+  // Binary FUN_004f0221: iterate buildings 1-38 in order, deduct per-building
+  // maintenance. If treasury goes negative after a deduction, auto-sell that
+  // building and refund its shield cost (IMPROVE_COSTS).
   let treasury = civ.treasury || 0;
-  treasury -= maintenance;
 
-  // If treasury goes negative, sell cheapest building
-  while (treasury < 0 && city.buildings && city.buildings.size > 0) {
-    let cheapestId = -1;
-    let cheapestMaint = Infinity;
+  for (let bid = 1; bid <= 38 && city.buildings; bid++) {
+    if (!city.buildings.has(bid)) continue;
+    if (bid === 1) continue; // never sell Palace
+    const maint = IMPROVE_MAINTENANCE[bid] || 0;
+    if (maint <= 0) continue;
+    treasury -= maint;
 
-    for (const bid of city.buildings) {
-      if (bid === 1) continue; // never sell Palace
-      const maint = IMPROVE_MAINTENANCE[bid] || 0;
-      if (maint > 0 && maint < cheapestMaint) {
-        cheapestMaint = maint;
-        cheapestId = bid;
-      }
+    if (treasury < 0) {
+      // Auto-sell: remove building, refund cost
+      treasury = 0; // Binary: civ.treasury = 0 before refund (line 69)
+      const sellBuildings = new Set(city.buildings);
+      sellBuildings.delete(bid);
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        buildings: sellBuildings,
+        hasWalls: sellBuildings.has(8),
+        hasPalace: sellBuildings.has(1),
+      };
+      // Binary FUN_004f0221 lines 76-78: refund = building_cost * shield_multiplier
+      // In the JS engine, IMPROVE_COSTS already includes the base shield cost.
+      treasury += IMPROVE_COSTS[bid] || 0;
+      events.push({
+        type: 'buildingSold', cityName: city.name, cityIndex,
+        civSlot: activeCiv, buildingId: bid,
+      });
     }
-
-    if (cheapestId < 0) { treasury = 0; break; }
-
-    const sellBuildings = new Set(city.buildings);
-    sellBuildings.delete(cheapestId);
-    state.cities[cityIndex] = {
-      ...state.cities[cityIndex],
-      buildings: sellBuildings,
-      hasWalls: sellBuildings.has(8),
-      hasPalace: sellBuildings.has(1),
-    };
-
-    treasury += IMPROVE_COSTS[cheapestId] || 0;
-    events.push({
-      type: 'buildingSold', cityName: city.name, cityIndex,
-      civSlot: activeCiv, buildingId: cheapestId,
-    });
   }
 
   // Update civ treasury
@@ -1046,39 +1055,6 @@ export function handleCityDisorder(city, cityIndex, state, mapBase, wasInDisorde
     });
 
     // Democracy: track disorder turns for revolution risk
-    if (govt === 'democracy') {
-      const disorderTurns = (city.disorderTurns || 0) + 1;
-      if (disorderTurns >= 2) {
-        // Force revolution to anarchy
-        if (state.civs?.[activeCiv]) {
-          state.civs = [...state.civs];
-          state.civs[activeCiv] = {
-            ...state.civs[activeCiv],
-            government: 'anarchy',
-            anarchyTurns: 2,
-          };
-        }
-        events.push({
-          type: 'revolution', civSlot: activeCiv, reason: 'disorder',
-        });
-        return {
-          events,
-          civilDisorder: hap.civilDisorder,
-          weLoveKingDay: hap.weLoveKingDay,
-          disorderTurns: 0,
-        };
-      }
-      return {
-        events,
-        civilDisorder: hap.civilDisorder,
-        weLoveKingDay: hap.weLoveKingDay,
-        disorderTurns,
-      };
-    }
-  }
-
-  // ── Disorder continuation ──
-  if (wasInDisorder && hap.civilDisorder) {
     if (govt === 'democracy') {
       const disorderTurns = (city.disorderTurns || 0) + 1;
       if (disorderTurns >= 2) {
@@ -1165,7 +1141,9 @@ export function handleCityDisorder(city, cityIndex, state, mapBase, wasInDisorde
 export function processCityPollution(city, cityIndex, state, mapBase) {
   const events = [];
   const activeCiv = city.owner;
-  const { netShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units || []);
+  // Binary FUN_004e9c14: pollution uses DAT_006a65cc (total shields WITH factory/power
+  // bonuses applied, but BEFORE unit support deduction). Use grossShields, not netShields.
+  const { grossShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units || []);
 
   // ── Nuclear Meltdown check ──
   // Binary: Nuclear Plant (21) + civil disorder + no Fusion Power tech (0x20=32)
@@ -1226,9 +1204,10 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
   if (cityHasBuilding(city, 18)) powerLevel = 3; // Recycling Center
   if (cityHasBuilding(city, 29)) powerLevel = 3; // Solar Plant
 
-  // Step 2: Industrial pollution = shields / powerLevel - 20
+  // Step 2: Industrial pollution = grossShields / powerLevel - 20
   // Binary: DAT_006a6584 = DAT_006a65cc / DAT_006a65f8 - 0x14
-  let industrialPollution = Math.trunc(netShields / powerLevel) - 20;
+  // DAT_006a65cc is total shields WITH building bonuses, before support deduction.
+  let industrialPollution = Math.trunc(grossShields / powerLevel) - 20;
 
   // Solar Plant zeroes industrial pollution entirely
   if (cityHasBuilding(city, 29)) industrialPollution = 0;
@@ -1246,12 +1225,14 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
     if (hasTech(5)) techCount++;
     if (hasTech(48)) techCount++;
     if (hasTech(62)) techCount++;
-    // Sanitation(74): +1 only if counter is currently 0 (i.e., if no polluting techs)
-    if (!hasTech(74) && techCount === 0) techCount++;
+    // Binary FUN_004e9c14 line 3757-3761: if techCount != 0 AND civ lacks
+    // Sanitation (tech 74), add +1 (pollution worsens without sanitation).
+    if (techCount !== 0 && !hasTech(74)) techCount++;
+    // Binary FUN_004e9c14 line 3763-3768: only reduce if techCount still > 0
     // Environmentalism(26): -1
-    if (hasTech(26)) techCount--;
-    // Solar Plant(29): -1
-    if (cityHasBuilding(city, 29)) techCount--;
+    if (techCount !== 0 && hasTech(26)) techCount--;
+    // Binary FUN_004e9c14 line 3769-3773: Solar Plant (building 29): -1
+    if (techCount !== 0 && cityHasBuilding(city, 29)) techCount--;
     if (techCount < 0) techCount = 0;
     popPollution = (city.size * techCount) >> 2;
   }
@@ -1555,24 +1536,8 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   // double-counting maintenance. The payBuildingUpkeep() function is
   // retained for potential future use but is not called by the orchestrator.
 
-  // ── Step 4b: Pollution and Nuclear Meltdown (D.1) ──
-  // #12: Skip pollution processing for AI civs
-  if (!cityDestroyed && !options?.skipPollution) {
-    const pollResult = processCityPollution(state.cities[cityIndex], cityIndex, state, mapBase);
-    events.push(...pollResult.events);
-    if (pollResult.newSize != null || pollResult.newBuildings != null) {
-      const curCity = state.cities[cityIndex];
-      state.cities[cityIndex] = {
-        ...curCity,
-        size: pollResult.newSize ?? curCity.size,
-        buildings: pollResult.newBuildings ?? curCity.buildings,
-        hasWalls: (pollResult.newBuildings ?? curCity.buildings).has(8),
-        hasPalace: (pollResult.newBuildings ?? curCity.buildings).has(1),
-      };
-    }
-  }
-
-  // ── Step 5: Disorder check (post-production) ──
+  // ── Step 5: Disorder check — BEFORE pollution per binary FUN_004f0a9c ──
+  // Binary order: Food → Production → Support → Disorder → Trade → Upkeep → Pollution
   if (!cityDestroyed) {
     const disorderResult = handleCityDisorder(state.cities[cityIndex], cityIndex, state, mapBase, wasInDisorderBeforeTurn);
     events.push(...disorderResult.events);
@@ -1586,6 +1551,22 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
         civilDisorder: disorderResult.civilDisorder,
         weLoveKingDay: disorderResult.weLoveKingDay,
         disorderTurns: disorderResult.disorderTurns,
+      };
+    }
+  }
+
+  // ── Step 6: Pollution and Nuclear Meltdown (after disorder per binary order) ──
+  if (!cityDestroyed && !options?.skipPollution) {
+    const pollResult = processCityPollution(state.cities[cityIndex], cityIndex, state, mapBase);
+    events.push(...pollResult.events);
+    if (pollResult.newSize != null || pollResult.newBuildings != null) {
+      const curCity = state.cities[cityIndex];
+      state.cities[cityIndex] = {
+        ...curCity,
+        size: pollResult.newSize ?? curCity.size,
+        buildings: pollResult.newBuildings ?? curCity.buildings,
+        hasWalls: (pollResult.newBuildings ?? curCity.buildings).has(8),
+        hasPalace: (pollResult.newBuildings ?? curCity.buildings).has(1),
       };
     }
   }
