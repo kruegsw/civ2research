@@ -782,7 +782,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
   // Update civ treasury and research progress
   if (state.civs && state.civs[activeCiv]) {
-    state.civs = [...prev.civs];
+    // Clone from CURRENT state.civs (not prev.civs) to preserve earlier
+    // mutations like unitsLostNotified from casualty report.
+    state.civs = state.civs !== prev.civs ? [...state.civs] : [...prev.civs];
     const civ = { ...state.civs[activeCiv] };
     civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
 
