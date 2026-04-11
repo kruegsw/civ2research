@@ -1061,10 +1061,11 @@ export function handleCityDisorder(city, cityIndex, state, mapBase, wasInDisorde
       ongoing: wasInDisorder,
     });
 
-    // Democracy: track disorder turns for revolution risk
+    // Binary FUN_004ef578 lines 5855-5864: Democracy revolution triggers
+    // IMMEDIATELY on disorder onset (not after 2 turns).
     if (govt === 'democracy') {
       const disorderTurns = (city.disorderTurns || 0) + 1;
-      if (disorderTurns >= 2) {
+      if (disorderTurns >= 1) {
         // Force revolution to anarchy
         if (state.civs?.[activeCiv]) {
           state.civs = [...state.civs];
@@ -1153,11 +1154,12 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
   const { grossShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units || []);
 
   // ── Nuclear Meltdown check ──
-  // Binary: Nuclear Plant (21) + civil disorder + no Fusion Power tech (0x20=32)
-  // Meltdown chance: rand() % max(1, 6 - difficulty)
+  // Binary FUN_004efd44 lines 6037-6050: Nuclear Plant (21) + no Fusion Power tech (32).
+  // C does NOT require civil disorder — meltdown can happen any turn.
+  // Meltdown chance: rand() % max(1, 6 - difficulty) == 0
   const civTechs = state.civTechs?.[activeCiv];
   const hasFusionPower = civTechs ? civTechs.has(32) : false;
-  if (cityHasBuilding(city, 21) && city.civilDisorder && !hasFusionPower) {
+  if (cityHasBuilding(city, 21) && !hasFusionPower) {
     const diffIdx = Math.max(0, (state.difficulty ? ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty) : 0));
     const meltdownDenom = Math.max(1, 6 - diffIdx);
     const meltdownRoll = state.rng ? state.rng.nextInt(meltdownDenom) : Math.floor(Math.random() * meltdownDenom);
@@ -1167,24 +1169,14 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
       const newBuildings = new Set(city.buildings);
       newBuildings.delete(21); // Destroy Nuclear Plant
 
-      // Place pollution on ALL tiles in city radius
-      const parC = city.gy & 1;
-      for (let ri = 0; ri < 21; ri++) {
-        const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
-        const parT = ((city.gy + ddy) % 2 + 2) % 2;
-        const tgx = city.gx + ((parC + ddx - parT) >> 1);
-        const tgy = city.gy + ddy;
-        const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
-        if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
-        const ter = mapBase.getTerrain(wgx, tgy);
-        if (ter === 10) continue; // skip ocean
-        const tileIdx = tgy * mapBase.mw + wgx;
-        if (mapBase.tileData[tileIdx]) {
-          mapBase.tileData[tileIdx].improvements = {
-            ...mapBase.tileData[tileIdx].improvements,
-            pollution: true,
-          };
-        }
+      // Binary FUN_004efd44 lines 6060-6062: place fallout on city center tile only
+      // (NOT all 21 radius tiles — that was a JS fabrication)
+      const meltTileIdx = city.gy * mapBase.mw + city.gx;
+      if (mapBase.tileData?.[meltTileIdx]) {
+        mapBase.tileData[meltTileIdx].improvements = {
+          ...mapBase.tileData[meltTileIdx].improvements,
+          pollution: true,
+        };
       }
 
       events.push({
@@ -1250,9 +1242,11 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
   // Cap at 255 (binary: 0xFF)
   if (pollutionChance > 255) pollutionChance = 255;
 
-  // Binary: rand() % 256 < pollutionChance → pollution occurs
-  const rollVal = state.rng ? state.rng.nextInt(256) : Math.floor(Math.random() * 256);
-  if (rollVal >= pollutionChance) return { events, newSize: null, newBuildings: null };
+  // Binary FUN_004efd44 line 6012: rand() % (256 - existing) < pollutionChance * 2
+  // C multiplies pollutionChance by 2 before comparison
+  const rollMax = Math.max(1, 256 - (city.existingPollution || 0));
+  const rollVal = state.rng ? state.rng.nextInt(rollMax) : Math.floor(Math.random() * rollMax);
+  if (rollVal >= pollutionChance * 2) return { events, newSize: null, newBuildings: null };
 
   // ── Place pollution on a random non-ocean, non-polluted tile in city radius ──
   const parC = city.gy & 1;
