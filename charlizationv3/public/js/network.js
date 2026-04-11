@@ -5,7 +5,7 @@
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
 import { sfx, menuLoop, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
-import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog, closeAllCiv2Dialogs } from './dialogs.js';
+import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog, showDefeatOutro, closeAllCiv2Dialogs } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker, showTechDetail } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, centerOnTile, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
@@ -1507,6 +1507,18 @@ function initNetwork(appCallbacks) {
                 e.civSlot === S.mpCivSlot || e.civA === S.mpCivSlot || e.civB === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
               if (myEvents.length > 0) {
                 showTurnEvents(myEvents);
+              }
+            }
+
+            // ── Safety net: detect human player eliminated even if event was missed ──
+            if (S.mpCivSlot > 0 && S.mpGameState?.civsAlive != null) {
+              const myBit = 1 << S.mpCivSlot;
+              if (!(S.mpGameState.civsAlive & myBit) && !document.getElementById('defeat-outro-overlay')) {
+                console.log('[defeat] Player civ', S.mpCivSlot, 'eliminated — civsAlive:', S.mpGameState.civsAlive.toString(2));
+                const killerName = S.mpGameState.civNames
+                  ? Object.values(S.mpGameState.civNames).find((n, i) => i !== S.mpCivSlot && (S.mpGameState.civsAlive & (1 << i))) || 'an enemy'
+                  : 'an enemy';
+                showDefeatOutro(killerName, S.mpGameState);
               }
             }
 

@@ -1326,7 +1326,7 @@ export function showGameOverDialog(winnerCivSlot, gameState) {
  * Full-screen defeat outro matching Civ2's LOSER.AVI death sequence.
  * Shows dramatic overlay with optional video, then defeat message.
  */
-function showDefeatOutro(winnerName, gameState) {
+export function showDefeatOutro(winnerName, gameState) {
   sfx('FUNERAL');
 
   // Remove any existing defeat overlay
