@@ -587,8 +587,6 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   // ── Domain filters ──
   // Landlocked cities skip naval units
   if (domain === 2 && !cityCtx.isCoastal) return -1;
-  // Nuclear missiles (45): skip
-  if (unitId === 42) return -1; // unit 42 = Carrier (0x2a in decompiled skip)
 
   // ── Leader personality ──
   const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
@@ -654,7 +652,6 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   }
 
   // Enemy count threshold: >= 2 distinct enemy civs with cities on our continent
-  // Note: `cont` (const) is defined later in this function, so access directly
   {
     const continentId = cityCtx.continentId;
     const _earlyContRef = aiData?.continents?.get(continentId);
@@ -666,6 +663,24 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
         if (gameState.treaties?.[key2] === 'war') enemyCivCount++;
       }
       if (enemyCivCount >= 2) coastalFlag = 1;
+    }
+  }
+
+  // Binary FUN_00498e8b: proactive naval need — enemies on OTHER continents
+  // If any alive enemy civ has cities on a different continent, trigger naval need
+  // so the AI builds transports and naval escorts for cross-ocean invasion.
+  if (!coastalFlag && mapBase?.getBodyId) {
+    const myContinent = cityCtx.continentId;
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot || !(civsAlive & (1 << c))) continue;
+      // Check if this civ has cities on a DIFFERENT continent
+      const hasOtherCont = gameState.cities.some(ci =>
+        ci.owner === c && ci.size > 0 &&
+        mapBase.getBodyId(ci.gx, ci.gy) !== myContinent);
+      if (hasOtherCont) {
+        coastalFlag = 1;
+        break;
+      }
     }
   }
 
@@ -971,23 +986,37 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
 
   // Naval combat (role 2): sea control bonuses
   if (role === 2) {
-    // Decompiled: various naval penalty/bonus conditions
     if (!cityCtx.isCoastal) return -1;
-    if (coastalFlag === 0) rawScore = rawScore << 1;
-    else rawScore = rawScore << 2;
-    // Harbour bonus
-    if (city.buildings && city.buildings.has(34)) { // Port Facility
-      rawScore -= Math.floor(rawScore / 4);
+    if (coastalFlag) {
+      // Naval need detected — strong boost
+      rawScore = rawScore << 2;
+    } else {
+      // No immediate naval need — modest boost for coastal defense
+      rawScore = Math.floor(rawScore * 3 / 2);
+    }
+    // Port Facility bonus
+    if (city.buildings && city.buildings.has(34)) {
+      rawScore += Math.floor(rawScore / 4);
     }
   }
 
-  // Sea domain: double for sea units
-  if (domain === 2) {
-    rawScore = rawScore << 1;
-    // Airport bonus for sea units
-    if (city.buildings && city.buildings.has(32)) {
-      rawScore -= Math.floor(rawScore / 4);
+  // Sea transport (role 5): transports and carriers
+  if (domain === 2 && (role === 5 || unitId === 42)) {
+    if (coastalFlag) {
+      rawScore = rawScore << 1; // double when naval need exists
     }
+    // Binary: carriers scored based on air unit count
+    if (unitId === 42) {
+      const airCount = gameState.units.filter(u =>
+        u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 1).length;
+      if (airCount >= 3) rawScore += rawScore; // double if 3+ air units
+      else rawScore = Math.floor(rawScore / 2); // halve if few air units
+    }
+  }
+
+  // Sea domain general: boost for sea units at coastal cities
+  if (domain === 2) {
+    rawScore = Math.floor(rawScore * 3 / 2);
   }
 
   // ── Army balance: defenders less needed when garrison is adequate ──
