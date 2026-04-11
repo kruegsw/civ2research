@@ -48,6 +48,19 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // Binary order: spawn_barbarians → update_pollution → calc_rankings → check_tech
   // THEN: turnCounter++ → calc_year → begin_turn_unit_reset
   if (isNewTurnCycle) {
+    // ── Binary line 3297: game end check runs at START of cycle, not end ──
+    if (!state.gameOver) {
+      const earlyEndResult = checkGameEndConditions(state);
+      if (earlyEndResult && earlyEndResult.ended) {
+        state.gameOver = { winner: earlyEndResult.winner, reason: earlyEndResult.reason };
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'gameOver', winner: earlyEndResult.winner, reason: earlyEndResult.reason,
+          ...(earlyEndResult.score != null ? { score: earlyEndResult.score } : {}),
+        });
+      }
+    }
+
     // ── #77: Power rankings — calculate ONCE at cycle start using end-of-previous-turn state ──
     // Binary FUN_004853e7: calc_power_graph_rankings() runs at start of turn cycle,
     // computing raw power scores and ranking all alive civs before any civ processes.
@@ -384,6 +397,19 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         }
       }
       state.civs[activeCiv] = updCiv;
+    }
+  }
+
+  // ── Binary FUN_00489553 lines 2476-2484: clamp treasury BEFORE heal/city processing ──
+  if (state.civs?.[activeCiv]) {
+    const preCiv = state.civs[activeCiv];
+    let t = preCiv.treasury || 0;
+    if (t > 30000) t = 30000;
+    if (t < -0x4000) t = 30000; // binary overflow protection
+    if (t < 0) t = 0;
+    if (t !== preCiv.treasury) {
+      state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+      state.civs[activeCiv] = { ...preCiv, treasury: t };
     }
   }
 
