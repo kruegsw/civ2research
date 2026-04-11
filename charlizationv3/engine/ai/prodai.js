@@ -1755,6 +1755,8 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
 function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
   if (!canBuildWonder(civTechs, gameState, wonderIndex, civSlot)) return -1;
 
+  const ourTechs = civTechs ? civTechs.size : 0;
+
   // Wonders: item.id = wonderIndex + 39
   const wonderBuildId = wonderIndex + 39;
 
@@ -1823,6 +1825,8 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
   const numCities = cityCtx.numCities || 1;
   const citySize = city.size || 1;
   const threatLevel = warTargets.length;
+
+  // strongestCiv computed below in the per-wonder scoring section
 
   // Continent posture
   const postureScore = strategy.militaryPostureScore ?? 0;
