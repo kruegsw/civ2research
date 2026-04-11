@@ -1322,18 +1322,25 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     }
   }
 
-  // ── Sentry wake: enemy units with orders 'sentry' within 2 tiles wake up ──
+  // ── Sentry wake + AI alert: enemy units within 2 tiles wake up ──
+  // Binary FUN_004273e6 (cancel_goto_for_stack) + FUN_005369f3 (ai_alert_nearby_units)
   if (unit.gx >= 0) {
     const wokenUnits = [];
     for (let si = 0; si < state.units.length; si++) {
       const su = state.units[si];
-      if (su.owner === civSlot || su.gx < 0 || su.orders !== 'sentry') continue;
-      // Check within 2 tiles (Manhattan distance in gx,gy space)
+      if (su.owner === civSlot || su.gx < 0) continue;
+      if (su.orders !== 'sentry' && su.orders !== 'sleep') continue;
       let sDx = Math.abs(su.gx - unit.gx);
       if (mapBase.wraps) sDx = Math.min(sDx, mapBase.mw - sDx);
       const sDy = Math.abs(su.gy - unit.gy);
       if (sDx + sDy <= 2) {
-        state.units[si] = { ...su, orders: 'none' };
+        // Binary FUN_005369f3: AI units get goto order toward the threat
+        const isAI = !((state.humanPlayers || 0) & (1 << su.owner));
+        if (isAI && (UNIT_ATK[su.type] || 0) > 0) {
+          state.units[si] = { ...su, orders: 'goto', goToX: unit.gx, goToY: unit.gy };
+        } else {
+          state.units[si] = { ...su, orders: 'none' };
+        }
         wokenUnits.push({ unitIndex: si, unitType: su.type, civSlot: su.owner });
       }
     }

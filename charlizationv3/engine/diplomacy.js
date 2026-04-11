@@ -3414,6 +3414,13 @@ export function applyGovernmentChangeEffects(state, civSlot, oldGovt, newGovt) {
     }
   }
 
+  // ── Effect 3: Recalculate happiness for all civ's cities ──
+  // Binary FUN_0055c066 line 4927: thunk_FUN_004eb4ed(city, 1) recalculates
+  // per-city yields/happiness after government change. Government affects
+  // corruption, free support, martial law, WLTKD — all happiness-relevant.
+  // The JS happiness system recalculates lazily on next city turn, which is
+  // equivalent since government changes always happen between turns.
+
   return events;
 }
 
