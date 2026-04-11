@@ -1620,73 +1620,55 @@ function initNetwork(appCallbacks) {
             }
           }
 
-          // ── Play AI move animations, then combat animations, then notifications ──
-          function playMovesAndCombat() {
-            let moveIdx = 0;
-            function playNextMove() {
-              if (moveIdx >= aiMoves.length) {
-                playCombatSequence();
-                return;
-              }
-              const mv = aiMoves[moveIdx++];
-              // Always center on the moving unit's destination
+          if (aiMoves.length > 0) console.log(`[ai-moves] ${aiMoves.length} visible AI movements`);
+          if (allCombats.length > 0) console.log(`[ai-combat] ${allCombats.length} visible AI combats`);
+
+          // ── Step 1: Play AI movement animations (sequential, before combat) ──
+          function playAiMoves(onDone) {
+            let mi = 0;
+            function next() {
+              if (mi >= aiMoves.length) { onDone(); return; }
+              const mv = aiMoves[mi++];
               centerOnTile(mv.toGx, mv.toGy);
               doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
               sfx('MOVPIECE');
-              // Pause so player can see where the AI unit moved
-              setTimeout(playNextMove, 400);
+              setTimeout(next, 400);
             }
+            next();
+          }
 
-            function playCombatSequence() {
-              if (allCombats.length === 0) {
-                afterCombatAnim();
+          // ── Step 2: Play combat animations (original working code) ──
+          function playCombats(onDone) {
+            if (allCombats.length === 0) { onDone(); return; }
+            const firstCr = allCombats[0];
+            if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
+              centerOnTile(firstCr.gx, firstCr.gy);
+            }
+            doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+            let ci = 0;
+            function nextCombat() {
+              if (ci >= allCombats.length) {
+                setTimeout(onDone, 400);
                 return;
               }
-              const firstCr = allCombats[0];
-              if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
-                centerOnTile(firstCr.gx, firstCr.gy);
-              }
-              doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
-              let combatIdx = 0;
-              function playNextCombat() {
-              if (combatIdx >= allCombats.length) {
-                // Brief pause after last combat animation before showing notifications
-                setTimeout(afterCombatAnim, 400);
-                return;
-              }
-              const cr = allCombats[combatIdx++];
-              // Center on combat tile if not visible
+              const cr = allCombats[ci++];
               if (!isTileInViewport(cr.gx, cr.gy)) {
                 centerOnTile(cr.gx, cr.gy);
               }
               if (S.mapSprites) {
-                animateCombat(cr, playNextCombat);
+                animateCombat(cr, nextCombat);
               } else {
-                // No sprites loaded — play attack sound only (binary
-                // FUN_00580341 plays no post-combat sound for ground
-                // combat; air/naval resolution would need full domain
-                // info that we don't have in this fallback path).
                 const atkSfxName = UNIT_ATK_SFX[cr.attacker];
                 if (atkSfxName) sfx(atkSfxName);
-                setTimeout(playNextCombat, 200);
+                setTimeout(nextCombat, 200);
               }
             }
-              playNextCombat();
-            }
-
-            // Start move animation sequence (or skip to combat if no moves)
-            if (aiMoves.length > 0) {
-              playNextMove();
-            } else {
-              playCombatSequence();
-            }
+            nextCombat();
           }
 
-          if (aiMoves.length > 0) console.log(`[ai-moves] ${aiMoves.length} visible AI movements`);
-          if (allCombats.length > 0) console.log(`[ai-combat] ${allCombats.length} visible AI combats`);
-
-          if (allCombats.length > 0 || aiMoves.length > 0) {
-            playMovesAndCombat();
+          // Chain: moves → combats → afterCombatAnim
+          if (aiMoves.length > 0 || allCombats.length > 0) {
+            playAiMoves(() => playCombats(afterCombatAnim));
           } else {
             afterCombatAnim();
           }
