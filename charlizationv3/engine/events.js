@@ -1000,6 +1000,29 @@ export function executeEventAction(state, mapBase, action, ctx) {
         }
       }
 
+      // Binary FUN_004fb5b2 lines 4048-4082: post-terrain-change cleanup
+      // Check if any civ lost all cities/units and should be eliminated
+      if (changed > 0 && state.civsAlive) {
+        for (let c = 1; c <= 7; c++) {
+          if (!(state.civsAlive & (1 << c))) continue;
+          const hasCity = state.cities?.some(ci => ci.owner === c && ci.size > 0);
+          const hasUnit = state.units?.some(u => u.owner === c && u.gx >= 0);
+          if (!hasCity && !hasUnit) {
+            // Civ extinct — clear alive bit and visibility
+            state.civsAlive &= ~(1 << c);
+            if (mapBase.tileData) {
+              const visBit = ~(1 << c);
+              for (let i = 0; i < mapBase.tileData.length; i++) {
+                const tile = mapBase.tileData[i];
+                if (tile && tile.visibility !== undefined) {
+                  tile.visibility &= visBit;
+                }
+              }
+            }
+          }
+        }
+      }
+
       return changed > 0 ? { type: 'scenarioChangeTerrain', terrainType: action.terrainType, changed } : null;
     }
 

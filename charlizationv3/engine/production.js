@@ -1294,8 +1294,32 @@ export function analyzeSurroundingTiles(state, mapBase, cityGx, cityGy, ownerCiv
  * @param {number} gx - reference tile gx coordinate
  * @param {number} gy - reference tile gy coordinate
  * @param {number} civSlot - civ slot to check for garrisons
- * @returns {number} Manhattan distance to nearest garrisoned city (default 32)
+ * @returns {number} distance to nearest garrisoned city (default 32)
  */
+export function calcGarrisonProximity(state, mapBase, gx, gy, civSlot) {
+  const DEFAULT_DISTANCE = 32;
+  if (!state.cities) return DEFAULT_DISTANCE;
+
+  let bestDist = DEFAULT_DISTANCE;
+  for (const city of state.cities) {
+    if (city.owner !== civSlot || city.size <= 0) continue;
+    // Binary FUN_004e7967: check building 1 (Palace) as garrison indicator
+    if (!city.buildings?.has(1)) {
+      // Check for any military unit at this city
+      const hasGarrison = state.units?.some(u =>
+        u.gx === city.gx && u.gy === city.gy && u.owner === civSlot &&
+        u.gx >= 0 && (UNIT_ATK[u.type] || 0) > 0);
+      if (!hasGarrison) continue;
+    }
+    let dx = Math.abs(gx - city.gx);
+    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+    const dy = Math.abs(gy - city.gy);
+    const dist = dx + dy;
+    if (dist < bestDist) bestDist = dist;
+  }
+  return bestDist;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // expandCityTerritory — Claim the best unowned tile in city radius
 // Port of FUN_004a0000 block territory expansion logic.

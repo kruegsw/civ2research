@@ -524,6 +524,8 @@ export function checkGovernmentRevolution(state, civSlot, techId) {
 
   for (const entry of GOVT_UNLOCK_MAP) {
     if (entry.techId !== techId) continue;
+    // Binary FUN_004bea84: skip if civ already HAS this government
+    if (currentGovt === entry.govtIndex) continue;
     if (!entry.promptIf(currentGovt)) continue;
     return {
       type: 'governmentUnlocked',

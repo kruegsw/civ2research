@@ -878,6 +878,17 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   capFlags |= TF.CAPTURE_NOTIFY;
   setTreatyFlags(state, capturerCivSlot, oldOwner, capFlags);
 
+  // ── Binary FUN_0057b5df: eject/kill enemy spies/diplomats in captured city ──
+  // Diplomat (46) and Spy (47) units from the OLD owner at the city tile are killed
+  const DIPLOMAT_SPY = new Set([46, 47]);
+  for (let ui = 0; ui < state.units.length; ui++) {
+    const u = state.units[ui];
+    if (u.gx === cityGx && u.gy === cityGy && u.owner === oldOwner &&
+        u.gx >= 0 && DIPLOMAT_SPY.has(u.type)) {
+      state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    }
+  }
+
   // ── #59: Rehome or DELETE old owner's units that were based here ──
   rehomeOrDisbandUnits(state, cityIndex, oldOwner, mapBase);
 
