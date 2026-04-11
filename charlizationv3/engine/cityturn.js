@@ -1571,6 +1571,26 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     }
   }
 
+  // ── Step 7: Building upkeep — per-city (binary FUN_004f0a9c line 390) ──
+  // Binary: FUN_004f0221 runs per-city, only for human players.
+  // Deducts maintenance from treasury; auto-sells if treasury goes negative.
+  if (!cityDestroyed) {
+    const isHumanOwner = !!((state.humanPlayers || 0) & (1 << state.cities[cityIndex].owner));
+    if (isHumanOwner) {
+      const upkeepResult = payBuildingUpkeep(cityIndex, state);
+      events.push(...upkeepResult.events);
+    }
+  }
+
+  // ── Step 8: City expansion (binary FUN_004f0a9c line 392: FUN_004f080d) ──
+  // Binary calls expansion every city turn, not just on growth.
+  if (!cityDestroyed) {
+    const expCity = state.cities[cityIndex];
+    if (expCity.size > 0) {
+      expandCityTerritory(state, mapBase, cityIndex);
+    }
+  }
+
   // ── #148: Mark city as processed this turn ──
   if (!cityDestroyed) {
     state.cities[cityIndex] = { ...state.cities[cityIndex], processedThisTurn: true };

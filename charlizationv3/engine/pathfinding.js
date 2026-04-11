@@ -151,7 +151,10 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
   const mw = mapBase.mw;
   const mh = mapBase.mh;
   const wraps = mapBase.wraps;
-  const budget = (maxCost != null && maxCost !== Infinity) ? maxCost : mw * mh * MOVEMENT_MULTIPLIER;
+  // Binary FUN_004abfe5: cost budget from caller's param_3, plus circular buffer of 2304 entries.
+  // Default budget: unit's max movement × 48 tiles (approximating binary's buffer constraint).
+  const unitMaxMove = (UNIT_MOVE_POINTS[unitType] || 1) * MOVEMENT_MULTIPLIER;
+  const budget = (maxCost != null && maxCost !== Infinity) ? maxCost : unitMaxMove * 48;
 
   // Use string keys for the visited/gScore maps (handles large maps cleanly)
   const gScore = new Map();

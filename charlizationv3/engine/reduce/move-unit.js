@@ -759,14 +759,18 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         }
       }
 
-      // Binary FUN_00580341 → FUN_0057e9f9: attacker auto-advances to the
-      // defender's tile after winning combat. In real Civ2, winning combat
-      // automatically moves the attacker to the destination — the player does
-      // NOT need a second move command. Combat costs 1 MP.
-      unit.gx = dest.gx;
-      unit.gy = dest.gy;
-      unit.x = dest.gx * 2 + (dest.gy % 2);
-      unit.y = dest.gy;
+      // Binary FUN_0057eb94: attacker auto-advances to destination ONLY if
+      // no enemy units remain on the tile. In a city with multiple defenders,
+      // the attacker stays on its tile after killing one defender.
+      const enemiesRemain = state.units.some(u =>
+        u.gx === dest.gx && u.gy === dest.gy && u.gx >= 0 &&
+        u.owner !== unit.owner && u.owner !== 0xFF);
+      if (!enemiesRemain) {
+        unit.gx = dest.gx;
+        unit.gy = dest.gy;
+        unit.x = dest.gx * 2 + (dest.gy % 2);
+        unit.y = dest.gy;
+      }
       unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
       if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
     } else {

@@ -34,7 +34,7 @@ import { resolveGoodyHut } from './move-unit.js';
 export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   const endingCiv = state.turn.activeCiv;
 
-  // ── Advance to next civ FIRST ──
+  // ── Advance to next civ ──
   let next = endingCiv;
   let turnNumber = state.turn.number;
   for (let i = 0; i < 7; i++) {
@@ -42,12 +42,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     if (state.civsAlive & (1 << next)) break;
   }
   const firstAlive = findFirstAliveCiv(state.civsAlive);
-  if (next <= endingCiv || next === firstAlive) {
-    turnNumber++;
-  }
+  const isNewTurnCycle = next <= endingCiv || next === firstAlive;
 
-  // ── Once-per-full-turn-cycle processing (when turn number increments) ──
-  const isNewTurnCycle = turnNumber > state.turn.number;
+  // ── Binary FUN_00487371: once-per-cycle processing runs BEFORE turn increment ──
+  // Binary order: spawn_barbarians → update_pollution → calc_rankings → check_tech
+  // THEN: turnCounter++ → calc_year → begin_turn_unit_reset
   if (isNewTurnCycle) {
     // ── #77: Power rankings — calculate ONCE at cycle start using end-of-previous-turn state ──
     // Binary FUN_004853e7: calc_power_graph_rankings() runs at start of turn cycle,
@@ -260,6 +259,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       });
     }
   }
+
+  // ── Binary FUN_00487371 line 1816: turn counter increments AFTER cycle processing ──
+  if (isNewTurnCycle) turnNumber++;
 
   state.turn = { activeCiv: next, number: turnNumber };
 
@@ -761,9 +763,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // #147: Store accumulated population for score computations
     civ.totalPopulation = civPopulationTotal;
 
-    // #71: Building upkeep per-city — when treasury goes negative, sell buildings
-    // from the currently-processing city (binary FUN_004f0221 processes per-city).
-    // Iterate buildings 1-38 in order within each city, selling one at a time.
+    // #71: Building upkeep — civ-level fallback for AI civs.
+    // Binary FUN_004f0221 runs per-city for HUMAN players (now in processCityTurn).
+    // This civ-level loop handles AI civs and any remaining deficit.
     while (civ.treasury < 0) {
       let sold = false;
       for (let sci = 0; sci < state.cities.length && civ.treasury < 0; sci++) {
