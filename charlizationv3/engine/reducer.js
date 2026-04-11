@@ -18,7 +18,7 @@ import { findPath, calcGotoDirection, findRoadPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
 import { getProductionCost, calcCityTrade } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
-import { cityHasBuilding, hasWonderEffect } from './utils.js';
+import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from './utils.js';
 import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, applyGovernmentChangeEffects, calcTributeDemand, goldToAttitude, adjustAttitude } from './diplomacy.js';
 import { grantAdvance } from './research.js';
 
@@ -451,6 +451,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
       }
 
       state.cities[razeCi] = { ...razeCity, size: 0, owner: -1 };
+
+      // Binary FUN_004413d1 line 498: refresh tile ownership for ALL remaining cities
+      for (const c of state.cities) {
+        if (c.size > 0 && c.owner > 0) {
+          refreshCityTileOwnership(c, mapBase);
+        }
+      }
+
       checkCivElimination(state, civSlot);
       break;
     }

@@ -6,7 +6,7 @@ import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
-import { cityHasBuilding, hasWonderEffect } from '../utils.js';
+import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from '../utils.js';
 import { grantAdvance, getAvailableResearch } from '../research.js';
 import { dispatchEvents, EVENT_UNIT_KILLED } from '../events.js';
 import { declareWar as diplomacyDeclareWar, getTreatyFlags, TF } from '../diplomacy.js';
@@ -766,7 +766,13 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
                   civSlot: defOwner, attacker: civSlot,
                   gx: dest.gx, gy: dest.gy,
                 });
-                // 6. Check civ elimination (binary: thunk_kill_civ)
+                // 6. Refresh tile ownership for remaining cities (binary line 498)
+                for (const rc of state.cities) {
+                  if (rc.size > 0 && rc.owner > 0) {
+                    refreshCityTileOwnership(rc, mapBase);
+                  }
+                }
+                // 7. Check civ elimination (binary: thunk_kill_civ)
                 checkCivElimination(state, defOwner);
               }
             }

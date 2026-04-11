@@ -545,20 +545,13 @@ export function checkGameOver(state) {
 }
 
 /** Rehome units whose home city was destroyed. Assign to nearest own city or 0xFFFF. */
+// Binary FUN_004413d1 (delete_city): units homed to a destroyed city are killed.
+// The binary kills homed units via FUN_005b6042 during city deletion.
 export function rehomeUnits(state, destroyedCityIdx, owner) {
   for (let i = 0; i < state.units.length; i++) {
     const u = state.units[i];
     if (u.homeCityId === destroyedCityIdx && u.owner === owner && u.gx >= 0) {
-      let bestCi = -1, bestDist = Infinity;
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        const c = state.cities[ci];
-        if (c.owner === owner && c.size > 0 && ci !== destroyedCityIdx) {
-          const dx = Math.abs(u.gx - c.gx), dy = Math.abs(u.gy - c.gy);
-          const d = dx + dy;
-          if (d < bestDist) { bestDist = d; bestCi = ci; }
-        }
-      }
-      state.units[i] = { ...u, homeCityId: bestCi >= 0 ? bestCi : 0xFFFF };
+      killUnit(state, i);
     }
   }
 }
