@@ -749,8 +749,9 @@ wss.on("connection", (ws) => {
           console.error(`[CRASH] sendGameStateToAll failed:`, broadcastErr);
           try { ws.send(JSON.stringify({ type: "ERROR", message: `Broadcast error: ${broadcastErr.message}` })); } catch (_) {}
         }
-        // Clear AI combat queue after broadcast
+        // Clear AI queues after broadcast
         if (room.aiCombatQueue) room.aiCombatQueue = [];
+        if (room.aiMoveQueue) room.aiMoveQueue = [];
 
         // Clear one-shot notifications AFTER broadcast so clients receive them
         clearOneshotNotifications(room);
@@ -1005,10 +1006,18 @@ function processAiTurns(roomId, room) {
     }
 
     // Apply each AI action through the reducer
-    // Accumulate combat results visible to human players for animation
+    // Accumulate combat results and unit movements for client animation
     if (!room.aiCombatQueue) room.aiCombatQueue = [];
+    if (!room.aiMoveQueue) room.aiMoveQueue = [];
     const t2 = Date.now();
     for (const action of aiActions) {
+      // Snapshot unit positions before action (for movement tracking)
+      const prevPositions = {};
+      if (action.type === 'MOVE_UNIT' && action.unitIndex != null) {
+        const u = room.gameState.units[action.unitIndex];
+        if (u && u.gx >= 0) prevPositions[action.unitIndex] = { gx: u.gx, gy: u.gy };
+      }
+
       let result;
       try {
         result = applyAction(room.gameState, room.mapBase, action, activeCiv);
@@ -1018,10 +1027,20 @@ function processAiTurns(roomId, room) {
       }
       if (result !== room.gameState) {
         room.gameState = result;
-        // Queue all AI combat results — client decides whether to animate
-        // based on its FOW/LOS settings
+        // Queue combat results
         if (room.gameState.combatResult) {
           room.aiCombatQueue.push({ ...room.gameState.combatResult });
+        }
+        // Queue unit movements (position changed)
+        for (const [idx, prev] of Object.entries(prevPositions)) {
+          const u = room.gameState.units[idx];
+          if (u && u.gx >= 0 && (u.gx !== prev.gx || u.gy !== prev.gy)) {
+            room.aiMoveQueue.push({
+              unitIndex: +idx, unitType: u.type, owner: u.owner,
+              fromGx: prev.gx, fromGy: prev.gy,
+              toGx: u.gx, toGy: u.gy,
+            });
+          }
         }
         emitGameLogs(roomId, room);
         clearOneshotNotifications(room);
@@ -1552,6 +1571,7 @@ function buildStatePayload(room, civSlot) {
     discoveredAdvance: gs.discoveredAdvance,
     combatResult: gs.combatResult || null,
     aiCombatQueue: room.aiCombatQueue?.length > 0 ? room.aiCombatQueue : null,
+    aiMoveQueue: room.aiMoveQueue?.length > 0 ? room.aiMoveQueue : null,
     cityFounded: gs.cityFounded,
     goodyHutResult: gs.goodyHutResult,
     turnEvents: gs.turnEvents,

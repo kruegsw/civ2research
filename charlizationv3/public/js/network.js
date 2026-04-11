@@ -1576,8 +1576,29 @@ function initNetwork(appCallbacks) {
             }
           };
 
-          // Collect combat results, filtered by client's current LOS/FOW setting
+          // ── AI unit movement animation: show visible moves before combat ──
           const fowOn = document.getElementById('fow-toggle')?.checked;
+          const aiMoves = [];
+          if (statePayload.aiMoveQueue) {
+            for (const mv of statePayload.aiMoveQueue) {
+              if (!mv || mv.toGx == null) continue;
+              // Skip moves already covered by combat (combat will center there)
+              const hasCombatAtDest = statePayload.aiCombatQueue?.some(cr =>
+                cr.gx === mv.toGx && cr.gy === mv.toGy);
+              if (hasCombatAtDest) continue;
+              if (!fowOn) {
+                aiMoves.push(mv);
+              } else {
+                // FOW on — only show if destination is visible
+                const tile = S.mpMapBase?.tileData?.[mv.toGy * S.mpMapBase.mw + mv.toGx];
+                if (tile && (tile.visibility & (1 << S.mpCivSlot))) {
+                  aiMoves.push(mv);
+                }
+              }
+            }
+          }
+
+          // Collect combat results, filtered by client's current LOS/FOW setting
           const allCombats = [];
           if (statePayload.combatResult && statePayload.combatResult.gx != null) {
             // Player's own combat — always show
@@ -1599,19 +1620,38 @@ function initNetwork(appCallbacks) {
             }
           }
 
-          if (allCombats.length > 0) {
-            // Ensure the combat tile is visible before animating
-            // (state update may have already advanced to next unit)
-            const firstCr = allCombats[0];
-            if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
-              centerOnTile(firstCr.gx, firstCr.gy);
+          // ── Play AI move animations, then combat animations, then notifications ──
+          function playMovesAndCombat() {
+            let moveIdx = 0;
+            function playNextMove() {
+              if (moveIdx >= aiMoves.length) {
+                // All moves done — proceed to combat animations
+                playCombatSequence();
+                return;
+              }
+              const mv = aiMoves[moveIdx++];
+              // Center on destination if not in viewport
+              if (!isTileInViewport(mv.toGx, mv.toGy)) {
+                centerOnTile(mv.toGx, mv.toGy);
+              }
+              doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+              sfx('MOVPIECE');
+              // Brief pause to let player see the movement
+              setTimeout(playNextMove, 250);
             }
-            // Render current state so sprites are on screen for the animation
-            doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
 
-            // Play combat animations sequentially
-            let combatIdx = 0;
-            function playNextCombat() {
+            function playCombatSequence() {
+              if (allCombats.length === 0) {
+                afterCombatAnim();
+                return;
+              }
+              const firstCr = allCombats[0];
+              if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
+                centerOnTile(firstCr.gx, firstCr.gy);
+              }
+              doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+              let combatIdx = 0;
+              function playNextCombat() {
               if (combatIdx >= allCombats.length) {
                 // Brief pause after last combat animation before showing notifications
                 setTimeout(afterCombatAnim, 400);
@@ -1634,7 +1674,19 @@ function initNetwork(appCallbacks) {
                 setTimeout(playNextCombat, 200);
               }
             }
-            playNextCombat();
+              playNextCombat();
+            }
+
+            // Start move animation sequence (or skip to combat if no moves)
+            if (aiMoves.length > 0) {
+              playNextMove();
+            } else {
+              playCombatSequence();
+            }
+          }
+
+          if (allCombats.length > 0 || aiMoves.length > 0) {
+            playMovesAndCombat();
           } else {
             afterCombatAnim();
           }
