@@ -992,15 +992,27 @@ export function payBuildingUpkeep(cityIndex, state) {
   const civ = state.civs?.[activeCiv];
   if (!civ) return { events };
 
-  // Binary FUN_004f0221: iterate buildings 1-38 in order, deduct per-building
-  // maintenance. If treasury goes negative after a deduction, auto-sell that
-  // building and refund its shield cost (IMPROVE_COSTS).
+  // Binary FUN_004f0221 + FUN_004f00f0: iterate buildings 1-38 in order,
+  // applying special cases (Barracks scaling, Adam Smith, Fundamentalism).
   let treasury = civ.treasury || 0;
+  const smithFree = hasWonderEffect(state, activeCiv, 17);
+  const diffIdx = state.difficulty
+    ? ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty) : 0;
+  const civTechs = state.civTechs?.[activeCiv];
+  const hasGunpowder = civTechs ? civTechs.has(35) : false;
 
   for (let bid = 1; bid <= 38 && city.buildings; bid++) {
     if (!city.buildings.has(bid)) continue;
     if (bid === 1) continue; // never sell Palace
-    const maint = IMPROVE_MAINTENANCE[bid] || 0;
+
+    // Apply FUN_004f00f0 special cases per building
+    let maint = IMPROVE_MAINTENANCE[bid] || 0;
+    if (bid === 2) { // Barracks scaling
+      if (diffIdx < 2 && maint !== 0) maint -= 1;
+      if (hasGunpowder) maint += 1;
+    }
+    if (smithFree && maint === 1) maint = 0; // Adam Smith
+    if (maint !== 0 && govt === 'fundamentalism' && (bid === 4 || bid === 14 || bid === 11)) maint = 0;
     if (maint <= 0) continue;
     treasury -= maint;
 
