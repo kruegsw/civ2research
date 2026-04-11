@@ -102,12 +102,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
         newCity.hasMountain = hasMountain;
       }
 
+      // Binary FUN_0043f8b0: AI cities founded after turn 40 get bonus population.
+      // Formula: clamp((turn - 20) / 20, 2, 10)
+      const isAI = !((state.humanPlayers || 0) & (1 << unit.owner));
+      const turnNum = state.turn?.number || 0;
+      if (isAI && turnNum > 40) {
+        const bonusPop = Math.max(2, Math.min(10, Math.floor((turnNum - 20) / 20)));
+        newCity.size = bonusPop;
+      }
+
       state.cities = [...prev.cities, newCity];
       const newCityIndex = state.cities.length - 1;
 
       // Compute initial worker placement using full yield calculation
       newCity.workedTiles = assignInitialWorkers(
-        unit.gx, unit.gy, 1, newCity, newCityIndex, state, mapBase
+        unit.gx, unit.gy, newCity.size, newCity, newCityIndex, state, mapBase
       );
 
       // Remove settler (mark as dead)
