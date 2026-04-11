@@ -56,11 +56,20 @@ export function calcFoodBoxSize(citySize) {
  * @returns {number}
  */
 export function calcFoodBoxWithDifficulty(citySize, difficulty, isHuman) {
-  let base = calcFoodBoxSize(citySize);
-  if (isHuman) {
-    if (difficulty === 'chieftain') base = Math.trunc(base * 6 / 10);
-    else if (difficulty === 'warlord') base = Math.trunc(base * 8 / 10);
+  const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty || 'chieftain');
+
+  if (!isHuman) {
+    // Binary FUN_004e7eb1 lines 2901-2929: AI food box uses difficulty-scaled rows
+    // Formula: rows = 13 - difficulty (or 14 - difficulty for easier levels)
+    let rows = 13 - Math.max(0, diffIdx);
+    if (diffIdx < 3) rows = 14 - Math.max(0, diffIdx);
+    return (citySize + 1) * rows;
   }
+
+  // Human players: base formula with Chieftain/Warlord discount
+  let base = calcFoodBoxSize(citySize);
+  if (difficulty === 'chieftain') base = Math.trunc(base * 6 / 10);
+  else if (difficulty === 'warlord') base = Math.trunc(base * 8 / 10);
   return base;
 }
 
@@ -865,6 +874,20 @@ export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
   const { grossShields, support } = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
 
   if (support <= grossShields) return { events };
+
+  // Binary FUN_004eef23 lines 5773-5794: war/tribute penalty path.
+  // When at war and government comparison condition fails, instead of
+  // disbanding, set -999 tribute penalty on affected civ pairs.
+  const defGovt = getGovernment(city, state);
+  const isAtWar = state.treaties && Object.values(state.treaties).some(t => t === 'war');
+  if (isAtWar && (defGovt === 'republic' || defGovt === 'democracy')) {
+    // Apply tribute/war demand penalty to diplomacy state
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({
+      type: 'supportDeficitPenalty', civSlot: activeCiv,
+      cityName: city.name, deficit: support - grossShields,
+    });
+  }
 
   // Need to disband units until support is affordable
   let currentSupport = support;
