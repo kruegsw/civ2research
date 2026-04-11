@@ -730,7 +730,35 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
               const newCity = { ...state.cities[ci], size: cityAtBattle.size - 1 };
               state.cities[ci] = newCity;
               if (newCity.size <= 0) {
-                // City destroyed by combat pop reduction — handled by capture flow below
+                // Binary FUN_00580341 lines 1018-1029: city destroyed IMMEDIATELY
+                // when Phase 1 pop reduction brings size to 0.
+                // 1. Delete city (mark size 0)
+                state.cities[ci] = { ...newCity, size: 0 };
+                // 2. Kill all defending units still at this tile
+                const defOwner = cityAtBattle.owner;
+                for (let ki = 0; ki < state.units.length; ki++) {
+                  const ku = state.units[ki];
+                  if (ku.gx === dest.gx && ku.gy === dest.gy && ku.owner === defOwner && ku.gx >= 0) {
+                    killUnit(state, ki);
+                  }
+                }
+                // 3. Clear city tile
+                const cityTileIdx = dest.gy * mapBase.mw + dest.gx;
+                if (mapBase.tileData?.[cityTileIdx]) {
+                  mapBase.tileData[cityTileIdx].improvements = {
+                    ...mapBase.tileData[cityTileIdx].improvements,
+                    city: false,
+                  };
+                }
+                // 4. Emit city destroyed event
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({
+                  type: 'cityDestroyed', cityName: cityAtBattle.name,
+                  civSlot: defOwner, attacker: civSlot,
+                  gx: dest.gx, gy: dest.gy,
+                });
+                // 5. Check civ elimination (binary: thunk_kill_civ)
+                checkCivElimination(state, defOwner);
               }
             }
           }

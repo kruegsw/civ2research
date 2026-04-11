@@ -492,9 +492,16 @@ export function killUnit(state, idx) {
 /** Check if a civ has no cities and no alive units → eliminate. */
 export function checkCivElimination(state, civSlot) {
   if (civSlot <= 0 || !(state.civsAlive & (1 << civSlot))) return;
-  const hasUnit = state.units.some(u => u.owner === civSlot && u.gx >= 0);
+  // Binary: civ is eliminated when it has NO CITIES, regardless of surviving units.
+  // thunk_kill_civ kills all remaining units as part of the elimination cleanup.
   const hasCity = state.cities.some(c => c.owner === civSlot && c.size > 0);
-  if (!hasUnit && !hasCity) {
+  if (!hasCity) {
+    // Kill all surviving units belonging to this civ
+    for (let i = 0; i < state.units.length; i++) {
+      if (state.units[i].owner === civSlot && state.units[i].gx >= 0) {
+        state.units[i] = { ...state.units[i], gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      }
+    }
     const aliveBefore = state.civsAlive.toString(2);
     state.civsAlive &= ~(1 << civSlot);
     const aliveAfter = state.civsAlive.toString(2);
