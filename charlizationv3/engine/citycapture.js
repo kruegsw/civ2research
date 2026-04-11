@@ -868,9 +868,11 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, capturerCivSlot, cityGx, cityGy, mapBase.wraps, 2);
 
   // ── Set CAPTURE_VENDETTA flag (0x1000) on city capture ──
-  // Binary ref: FUN_00579c40 — treaty[attacker][defender] |= 0x1000
-  // Also set CAPTURE_NOTIFY (0x10000) — FUN_0057b5df
-  addTreatyFlag(state, capturerCivSlot, oldOwner, TF.CAPTURE_VENDETTA);
+  // Binary FUN_00579c40 line 3893: only set if NEITHER civ has VENDETTA (0x10) already
+  const existingFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
+  if (!(existingFlags & TF.VENDETTA)) {
+    addTreatyFlag(state, capturerCivSlot, oldOwner, TF.CAPTURE_VENDETTA);
+  }
   // Set the notify flag directionally
   let capFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
   capFlags |= TF.CAPTURE_NOTIFY;

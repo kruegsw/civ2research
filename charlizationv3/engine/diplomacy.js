@@ -981,6 +981,10 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     // Declare war (line 4936): FUN_00467825(param_1, param_2, 0x2000)
     setTreaty(state, aggressor, target, 'war');
 
+    // Binary FUN_00579c40 line 3895: set max hostility (100) in both directions
+    adjustAttitude(state, aggressor, target, +100);
+    adjustAttitude(state, target, aggressor, +100);
+
     // Human-only: set shared_war_target flags + alliance cascade (lines 4937-4941)
     if (isHuman(state, aggressor)) {
       addTreatyFlag(state, target, aggressor, TF.PERIODIC_FLAG_19); // 0x80800 bits

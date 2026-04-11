@@ -643,10 +643,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // ── 3-slot trade route limit with replacement (block_00440000) ──
       const existingRoutes = homeCity.tradeRoutes || [];
       const route = { destCityIndex: etCi, commodity };
+
+      // Binary FUN_00440453 lines 64-69: check for duplicate route (same dest + commodity)
+      const isDuplicate = existingRoutes.some(r =>
+        r.destCityIndex === etCi && r.commodity === commodity);
+      if (isDuplicate) break; // silently reject duplicate route
+
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const updHome = { ...state.cities[etUnit.homeCityId] };
 
-      if (existingRoutes.length >= 3) {
+      // Binary: if count < 3, just append without replacement logic
+      if (existingRoutes.length < 3) {
+        updHome.tradeRoutes = [...existingRoutes, route];
+        state.cities[etUnit.homeCityId] = updHome;
+      } else if (existingRoutes.length >= 3) {
         // Find lowest-value existing route for comparison
         let lowestVal = Infinity;
         let lowestIdx = -1;
@@ -693,10 +703,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
           // Still consume unit and give one-time bonus, but no ongoing route
           updHome.tradeRoutes = [...existingRoutes];
         }
-      } else {
-        updHome.tradeRoutes = [...existingRoutes, route];
+        state.cities[etUnit.homeCityId] = updHome;
       }
-      state.cities[etUnit.homeCityId] = updHome;
 
       // Consume the caravan/freight
       killUnit(state, etUi);
