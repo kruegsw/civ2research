@@ -734,15 +734,24 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
                 // when Phase 1 pop reduction brings size to 0.
                 // 1. Delete city (mark size 0)
                 state.cities[ci] = { ...newCity, size: 0 };
-                // 2. Kill all defending units still at this tile
                 const defOwner = cityAtBattle.owner;
+                // 2. Kill all defending units still at this tile
                 for (let ki = 0; ki < state.units.length; ki++) {
                   const ku = state.units[ki];
                   if (ku.gx === dest.gx && ku.gy === dest.gy && ku.owner === defOwner && ku.gx >= 0) {
                     killUnit(state, ki);
                   }
                 }
-                // 3. Clear city tile
+                // 3. Kill all units HOMED to this city (anywhere on the map)
+                // Binary delete_city (FUN_004413d1 lines 449-459): iterates all
+                // units and kills any with homeCityId matching the destroyed city.
+                for (let ki = 0; ki < state.units.length; ki++) {
+                  const ku = state.units[ki];
+                  if (ku.owner === defOwner && ku.gx >= 0 && ku.homeCityId === ci) {
+                    killUnit(state, ki);
+                  }
+                }
+                // 4. Clear city tile
                 const cityTileIdx = dest.gy * mapBase.mw + dest.gx;
                 if (mapBase.tileData?.[cityTileIdx]) {
                   mapBase.tileData[cityTileIdx].improvements = {
@@ -750,14 +759,14 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
                     city: false,
                   };
                 }
-                // 4. Emit city destroyed event
+                // 5. Emit city destroyed event
                 if (!state.turnEvents) state.turnEvents = [];
                 state.turnEvents.push({
                   type: 'cityDestroyed', cityName: cityAtBattle.name,
                   civSlot: defOwner, attacker: civSlot,
                   gx: dest.gx, gy: dest.gy,
                 });
-                // 5. Check civ elimination (binary: thunk_kill_civ)
+                // 6. Check civ elimination (binary: thunk_kill_civ)
                 checkCivElimination(state, defOwner);
               }
             }
