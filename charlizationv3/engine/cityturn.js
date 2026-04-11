@@ -1598,3 +1598,27 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
 
   return { events, cityDestroyed };
 }
+
+/**
+ * Binary FUN_004e0ab0 (recalc_city_all): standalone city refresh.
+ * Recalculates happiness and yields for a city without processing
+ * a full city turn. Used after government changes, building sales,
+ * and other mid-turn state changes that affect city output.
+ *
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ */
+export function recalcCityAll(cityIndex, state, mapBase) {
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) return;
+
+  const hap = calcHappiness(city, cityIndex, state, mapBase);
+  state.cities[cityIndex] = {
+    ...city,
+    civilDisorder: hap.civilDisorder,
+    weLoveKingDay: hap.weLoveKingDay,
+    happyCitizens: hap.happy,
+    unhappyCitizens: hap.unhappy,
+  };
+}

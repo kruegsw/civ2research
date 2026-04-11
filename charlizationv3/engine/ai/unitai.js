@@ -988,7 +988,7 @@ function _countOwnAttackersNear(gameState, gx, gy, civSlot, mapBase) {
 }
 
 // ── aiAttacker helper: find nearest own city ────────────────────────
-function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId) {
+function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId, maxRange) {
   let best = null;
   let bestDist = Infinity;
   for (const city of gameState.cities) {
@@ -998,6 +998,8 @@ function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId
       if (cb > 0 && cb !== bodyId) continue;
     }
     const d = tileDist(gx, gy, city.gx, city.gy, mapBase);
+    // Binary FUN_004c54da: range check for human civs with fuel limits
+    if (maxRange > 0 && d > maxRange) continue;
     if (d < bestDist) {
       bestDist = d;
       best = city;
@@ -4914,6 +4916,44 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
     }
 
     let action = null;
+
+    // Fix 6B: Nearby undefended own city — if an attack-role land unit with
+    // defense is near an own city that has 0 defenders, route the unit
+    // toward that city to garrison it. Real Civ2 AI prioritizes garrisoning
+    // newly founded undefended cities, especially when at war. Without this,
+    // AI warriors will wander off attacking even though their own freshly
+    // founded city is wide open.
+    if (role === 0 && domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+      const unitBodyIdNow = mapBase.getBodyId(unit.gx, unit.gy);
+      let nearestUndefended = null;
+      let nearestDist = Infinity;
+      for (let ci = 0; ci < gameState.cities.length; ci++) {
+        const c = gameState.cities[ci];
+        if (!c || c.owner !== civSlot || c.size <= 0 || c.gx < 0) continue;
+        // Same continent check
+        if (unitBodyIdNow > 0) {
+          const cityBody = mapBase.getBodyId(c.gx, c.gy);
+          if (cityBody > 0 && cityBody !== unitBodyIdNow) continue;
+        }
+        // Within ~6 real tiles (12 in doubled-X distance metric)
+        const d = tileDist(unit.gx, unit.gy, c.gx, c.gy, mapBase);
+        if (d > 12) continue;
+        // Skip cities that already have a defender (any unit with DEF > 0)
+        const defenders = _countDefendersAtTile(gameState, spatialIdx, c.gx, c.gy, civSlot);
+        if (defenders > 0) continue;
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearestUndefended = c;
+        }
+      }
+      if (nearestUndefended) {
+        const moveDir = _evaluateDirections(
+          unit, i, gameState, mapBase, spatialIdx, civSlot, domain,
+          nearestUndefended.gx, nearestUndefended.gy, { role: 1, explore: false }
+        );
+        if (moveDir) action = { type: 'MOVE_UNIT', unitIndex: i, dir: moveDir };
+      }
+    }
 
     // ── Goal-directed behavior: check if unit has an assigned goal ──
     const goals = strategy?.goals;

@@ -438,6 +438,21 @@ export function handleEspionageIncident(state, mapBase, attackerCiv, defenderCiv
   if (attackerCiv <= 0 || defenderCiv <= 0) return;
   if (attackerCiv === defenderCiv) return;
 
+  // Binary FUN_004c59f0: human defenders can choose to ignore caught spies.
+  // Emit a choice event instead of auto-processing for human players.
+  const isHumanDefender = !!((state.humanPlayers || 0) & (1 << defenderCiv));
+  if (isHumanDefender) {
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({
+      type: 'espionageIncidentChoice',
+      attacker: attackerCiv,
+      defender: defenderCiv,
+      message: 'A spy has been caught! Pursue diplomatic incident?',
+    });
+    // Player can later dispatch PROCESS_INCIDENT action to apply consequences
+    // or ignore it (no action). For now, still auto-process for game flow.
+  }
+
   if (!state.treaties) state.treaties = {};
   const key = attackerCiv < defenderCiv ? `${attackerCiv}-${defenderCiv}` : `${defenderCiv}-${attackerCiv}`;
   const treaty = state.treaties[key];

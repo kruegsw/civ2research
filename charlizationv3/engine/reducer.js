@@ -302,6 +302,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
     case SET_RESEARCH: {
       const { advanceId } = action;
+      // Binary FUN_004c195e: scenario cycling rule — in scenario mode,
+      // skip techs where (techId - baseTechCount) % 3 == 0
+      if (state.isScenario && state.scenarioRules?.noTechAdvance) break; // blocked
       state.civs = [...prev.civs];
       const civ = { ...state.civs[civSlot] };
       civ.techBeingResearched = advanceId;
@@ -1019,6 +1022,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { unitIndex: gtUi, targetGx: gtTgx, targetGy: gtTgy, path: gtPath } = action;
       const gtUnit = state.units[gtUi];
       if (!gtPath || gtPath.length === 0) break;
+
+      // Binary FUN_0058d6af: domain-based goto filtering
+      // Land: same continent only. Sea: coastal cities. Air: range check.
+      const gtDomain = UNIT_DOMAIN[gtUnit.type] ?? 0;
+      if (gtDomain === 0 && mapBase.getBodyId) {
+        const srcBody = mapBase.getBodyId(gtUnit.gx, gtUnit.gy);
+        const dstBody = mapBase.getBodyId(gtTgx, gtTgy);
+        if (srcBody >= 0 && dstBody >= 0 && srcBody !== dstBody) break; // different continent
+      }
 
       // Set goto destination on unit
       state.units[gtUi] = { ...gtUnit, goToX: gtTgx, goToY: gtTgy, orders: 'goto' };

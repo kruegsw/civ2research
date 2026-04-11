@@ -679,6 +679,21 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       state.killCounters[atkKillKey] = Math.min(255,
         (state.killCounters[atkKillKey] || 0) + 1);
 
+      // Binary FUN_0059c575: record combat kill in per-civ ring buffer (300 entries)
+      // Used by Military Advisor to display combat history.
+      if (!state.combatHistory) state.combatHistory = {};
+      const chKey = `${unit.owner}`;
+      if (!state.combatHistory[chKey]) state.combatHistory[chKey] = [];
+      const hist = [...state.combatHistory[chKey]];
+      hist.push({
+        turn: state.turn?.number || 0,
+        atkType: unit.type, defType: defender.type,
+        defOwner: defender.owner,
+        gx: dest.gx, gy: dest.gy,
+      });
+      if (hist.length > 300) hist.shift(); // ring buffer: max 300 entries
+      state.combatHistory = { ...state.combatHistory, [chKey]: hist };
+
       // Eject air units if a carrier (type 42) was destroyed
       if (defender.type === 42) {
         const ejectResult = ejectAirUnits(state, dest.gx, dest.gy, unit.owner);

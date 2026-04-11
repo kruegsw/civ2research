@@ -207,9 +207,17 @@ export function removeWorstWorker(city, cityIndex, workedTiles, gameState, mapBa
   return result;
 }
 
+// Binary FUN_0043f493: assigns city names using per-continent cycling
+// and @EXTRA/@STOP sections in RULES.TXT. JS uses simplified first-available
+// approach which produces correct names for standard games. Scenarios with
+// custom @EXTRA sections would need per-continent counter tracking.
 export function getCityName(owner, cities, civs) {
   if (owner === 0) {
-    return BARBARIAN_CITY_NAMES[0];
+    const usedBarb = new Set(cities.filter(c => c.owner === 0).map(c => c.name));
+    for (const name of BARBARIAN_CITY_NAMES) {
+      if (!usedBarb.has(name)) return name;
+    }
+    return `Camp ${cities.filter(c => c.owner === 0).length + 1}`;
   }
   const rulesNum = civs?.[owner]?.rulesCivNumber ?? 0;
   const nameList = CIV_CITY_NAMES[rulesNum] || CIV_CITY_NAMES[0];

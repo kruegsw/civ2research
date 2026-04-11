@@ -683,9 +683,10 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
   for (const techId of available) {
     candidateCount++;
 
-    // (#43) AI tech cycling filter — skip techs that don't match this civ's cycle
+    // (#43) AI tech cycling filter — binary: skip techs where (techId - civId) % 3 == 0
+    // This ensures each AI civ researches a different subset of techs
     if (!human && candidateCount > 1) {
-      if ((techId - rulesCivId) % 3 !== 0) continue;
+      if ((techId - rulesCivId) % 3 === 0) continue;
     }
 
     const techVal = calcTechValue(civSlot, techId, gameState, mapBase);

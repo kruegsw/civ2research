@@ -154,11 +154,17 @@ export function getTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapB
   const hasRailroad = imp.railroad ||
     (isCenter && gameState.civTechs && gameState.civTechs[city.owner] &&
      gameState.civTechs[city.owner].has(67));
-  const food = calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government, hasRailroad);
-  const shields = calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, grasslandShield,
+  let food = calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government, hasRailroad);
+  let shields = calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, grasslandShield,
                                    isCenter, city, cityIndex, gameState, mapBase);
-  const trade = calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
+  let trade = calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
                                isCenter, city, cityIndex, gameState);
+
+  // Binary FUN_004e868f: MP yield doubling — in multiplayer games,
+  // tile yields are doubled for human civs to accelerate gameplay.
+  if (gameState.isMultiplayer && ((gameState.humanPlayers || 0) & (1 << city.owner))) {
+    food *= 2; shields *= 2; trade *= 2;
+  }
 
   return [food, shields, trade];
 }

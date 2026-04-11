@@ -128,18 +128,22 @@ export class GoalList {
       }
     }
 
-    // All slots full — evict lowest priority if new goal is better
-    let minIdx = 0;
-    let minPri = slots[0].priority;
-    for (let i = 1; i < slots.length; i++) {
-      if (slots[i].priority < minPri) {
-        minPri = slots[i].priority;
-        minIdx = i;
+    // Binary FUN_0049301b: all slots full — find insertion point and shift
+    // lower-priority goals down (dropping the lowest). This preserves more
+    // goals than simple eviction.
+    let insertIdx = -1;
+    for (let i = 0; i < slots.length; i++) {
+      if (priority > slots[i].priority) {
+        insertIdx = i;
+        break;
       }
     }
-
-    if (priority > minPri) {
-      slots[minIdx] = {
+    if (insertIdx >= 0) {
+      // Shift lower-priority goals down by 1 (last one drops off)
+      for (let i = slots.length - 1; i > insertIdx; i--) {
+        slots[i] = slots[i - 1];
+      }
+      slots[insertIdx] = {
         goalType,
         priority: Math.min(255, Math.max(0, priority)),
         targetGx,
