@@ -1329,68 +1329,69 @@ export function showGameOverDialog(winnerCivSlot, gameState) {
 function showDefeatOutro(winnerName, gameState) {
   sfx('FUNERAL');
 
-  // Create full-screen overlay
+  // Remove any existing defeat overlay
+  const existing = document.getElementById('defeat-outro-overlay');
+  if (existing) existing.remove();
+
+  const civName = gameState.civs?.[S.mpCivSlot]?.name || 'Your civilization';
+
+  // Create full-screen overlay — visible IMMEDIATELY (no delay)
   const overlay = document.createElement('div');
   overlay.id = 'defeat-outro-overlay';
   overlay.style.cssText = `
     position:fixed; top:0; left:0; width:100%; height:100%;
     background:#000; z-index:99999; display:flex; flex-direction:column;
     align-items:center; justify-content:center;
-    opacity:0; transition:opacity 1.5s ease-in;
   `;
 
-  // Try to load LOSER.AVI (converted to mp4) — falls back to text if unavailable
+  // Try to load LOSER video (converted to mp4/webm)
   const video = document.createElement('video');
   video.style.cssText = 'max-width:640px; max-height:240px; margin-bottom:40px; display:none';
   video.autoplay = true;
-  video.muted = false;
   video.playsInline = true;
-
-  // Try multiple formats
-  for (const ext of ['mp4', 'webm', 'avi']) {
-    const src = document.createElement('source');
-    src.src = `assets/LOSER.${ext}`;
-    src.type = ext === 'mp4' ? 'video/mp4' : ext === 'webm' ? 'video/webm' : 'video/avi';
-    video.appendChild(src);
-  }
-
+  const mp4Src = document.createElement('source');
+  mp4Src.src = 'assets/LOSER.mp4';
+  mp4Src.type = 'video/mp4';
+  video.appendChild(mp4Src);
+  const webmSrc = document.createElement('source');
+  webmSrc.src = 'assets/LOSER.webm';
+  webmSrc.type = 'video/webm';
+  video.appendChild(webmSrc);
   video.addEventListener('canplay', () => { video.style.display = 'block'; });
-  video.addEventListener('error', () => { video.style.display = 'none'; });
 
-  // Defeat title — fades in after video or immediately
+  // Defeat title — visible immediately
   const title = document.createElement('div');
   title.style.cssText = `
     font:bold 48px "Times New Roman",Georgia,serif;
-    color:#8b0000; text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+    color:#8b0000; text-shadow:2px 2px 8px rgba(139,0,0,0.5), 0 0 20px rgba(139,0,0,0.3);
     letter-spacing:6px; text-transform:uppercase;
-    opacity:0; transition:opacity 2s ease-in 1.5s;
+    margin-bottom:20px;
   `;
   title.textContent = 'DEFEAT';
 
-  // Flavor text
+  // Flavor text — visible immediately
   const flavor = document.createElement('div');
   flavor.style.cssText = `
     font:20px "Times New Roman",Georgia,serif;
-    color:#999; text-shadow:1px 1px 2px rgba(0,0,0,0.6);
-    margin-top:20px; text-align:center; max-width:500px; line-height:1.6;
-    opacity:0; transition:opacity 2s ease-in 3s;
+    color:#aaa; text-shadow:1px 1px 2px rgba(0,0,0,0.6);
+    text-align:center; max-width:500px; line-height:1.8;
   `;
-  const civName = gameState.civs?.[S.mpCivSlot]?.name || 'Your civilization';
   flavor.innerHTML = `Your civilization has fallen.<br><br>` +
-    `Conquered by the ${winnerName}, the ${civName} civilization is no more.`;
+    `<span style="color:#888">Conquered by the ${winnerName},<br>the ${civName} civilization is no more.</span>`;
 
-  // "OK" button — appears last
+  // "OK" button — visible immediately
   const btn = document.createElement('button');
   btn.style.cssText = `
-    margin-top:40px; padding:10px 40px;
+    margin-top:40px; padding:12px 50px;
     font:bold 16px "Times New Roman",Georgia,serif;
     color:#ccc; background:#333; border:2px solid #666;
-    cursor:pointer; opacity:0; transition:opacity 1s ease-in 5s;
+    cursor:pointer;
   `;
   btn.textContent = 'OK';
   btn.addEventListener('click', () => {
+    overlay.style.transition = 'opacity 0.5s';
     overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 1500);
+    setTimeout(() => overlay.remove(), 600);
   });
   btn.addEventListener('mouseover', () => { btn.style.background = '#555'; });
   btn.addEventListener('mouseout', () => { btn.style.background = '#333'; });
@@ -1400,14 +1401,6 @@ function showDefeatOutro(winnerName, gameState) {
   overlay.appendChild(flavor);
   overlay.appendChild(btn);
   document.body.appendChild(overlay);
-
-  // Trigger fade-in
-  requestAnimationFrame(() => {
-    overlay.style.opacity = '1';
-    title.style.opacity = '1';
-    flavor.style.opacity = '1';
-    btn.style.opacity = '1';
-  });
 }
 
 // ── Retirement rank names (from binary, 0-23) ──
