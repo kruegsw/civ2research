@@ -425,7 +425,7 @@ export function initNewGame(mapResult, seatList) {
     turn: { number: 0, activeCiv: 1 },
     wonders: initWonders(),
     difficulty: difficultyName,
-    barbarianActivity: 'roaming',
+    barbarianActivity: 'villages',
     version: 0,
     rng,
     scenarioEvents: [],

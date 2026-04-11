@@ -804,6 +804,8 @@ wss.on("connection", (ws) => {
         const { mapBase, gameState } = initNewGame(mapResult, restartSeats);
         restartRoom.mapBase = mapBase;
         restartRoom.gameState = gameState;
+        // Apply barbarian setting from room (same as startNewGame)
+        gameState.barbarianActivity = restartRoom.barbarianActivity || 'villages';
 
         // Build civNames
         const restartCivNames = {};
