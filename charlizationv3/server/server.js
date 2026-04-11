@@ -257,6 +257,7 @@ function roomRoster(roomId) {
     name: room.name,
     started: room.started,
     ready: room.ready,
+    barbarianActivity: room.barbarianActivity || 'villages',
   };
 }
 
@@ -558,6 +559,23 @@ wss.on("connection", (ws) => {
 
         broadcastToRoom(roomId, roomRoster(roomId));
         broadcastRoomList();
+        break;
+      }
+
+      case "SET_GAME_OPTIONS": {
+        const optRoomId = info.roomId;
+        if (!optRoomId) break;
+        const optRoom = rooms.get(optRoomId);
+        if (!optRoom || optRoom.started) break;
+        if (info.playerIndex !== 0) break; // only creator
+        if (msg.barbarianActivity) {
+          const valid = ['villages', 'roaming', 'restless', 'raging'];
+          if (valid.includes(msg.barbarianActivity)) {
+            optRoom.barbarianActivity = msg.barbarianActivity;
+          }
+        }
+        // Broadcast updated options to all clients
+        broadcastToRoom(optRoomId, roomRoster(optRoomId));
         break;
       }
 
@@ -1469,7 +1487,9 @@ function startNewGame(roomId, room, seatList) {
   const { mapBase, gameState } = initNewGame(mapResult, seatList);
   room.mapBase = mapBase;
   room.gameState = gameState;
-  console.log(`[game] Room ${roomId}: generated new map (${mapResult.mw}×${mapResult.mh})`);
+  // Apply room barbarian setting (default: 'villages')
+  gameState.barbarianActivity = room.barbarianActivity || 'villages';
+  console.log(`[game] Room ${roomId}: generated new map (${mapResult.mw}×${mapResult.mh}), barbarians=${gameState.barbarianActivity}`);
 }
 
 function sendGameStartToAll(roomId, room) {

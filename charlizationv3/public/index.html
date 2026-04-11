@@ -90,6 +90,26 @@
       <button class="lobby-nav-btn lobby-leave-btn" id="room-leave-btn">Leave Room</button>
     </div>
     <div id="room-seats"></div>
+    <div id="room-game-options" style="margin:12px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:4px">
+      <div style="font-weight:bold;margin-bottom:8px">Game Options</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
+        <label for="room-mapgen-select" style="min-width:110px">Map Generator:</label>
+        <select id="room-mapgen-select" style="flex:1;padding:3px 6px"></select>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <label for="room-mapsize-select" style="min-width:110px">Map Size:</label>
+        <select id="room-mapsize-select" style="flex:1;padding:3px 6px"></select>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
+        <label for="room-barbarian-select" style="min-width:110px">Barbarians:</label>
+        <select id="room-barbarian-select" style="flex:1;padding:3px 6px">
+          <option value="villages" selected>Villages Only</option>
+          <option value="roaming">Roving Bands</option>
+          <option value="restless">Restless Tribes</option>
+          <option value="raging">Raging Hordes</option>
+        </select>
+      </div>
+    </div>
     <div id="room-actions">
       <div id="room-status-text"></div>
       <button id="room-ready-btn" class="civ2-btn room-ready-btn">Ready</button>

@@ -318,6 +318,7 @@ function renderRoomDetail(msg) {
   const optionsPanel = document.getElementById('room-game-options');
   const algoSelect = document.getElementById('room-mapgen-select');
   const sizeSelect = document.getElementById('room-mapsize-select');
+  const barbSelect = document.getElementById('room-barbarian-select');
 
   // Populate game options dropdowns (once per render to keep them fresh)
   if (algoSelect && sizeSelect && optionsPanel) {
@@ -356,19 +357,25 @@ function renderRoomDetail(msg) {
     // Reflect server's current selection if provided
     if (msg.mapAlgorithm && algoSelect.value !== msg.mapAlgorithm) algoSelect.value = msg.mapAlgorithm;
     if (msg.mapSize && sizeSelect.value !== msg.mapSize) sizeSelect.value = msg.mapSize;
+    if (msg.barbarianActivity && barbSelect && barbSelect.value !== msg.barbarianActivity) barbSelect.value = msg.barbarianActivity;
     // Only the room creator can change options before game starts
     const isCreator = S.wsPlayerIndex === 0;
     const canEdit = isCreator && !msg.started;
     algoSelect.disabled = !canEdit;
     sizeSelect.disabled = !canEdit;
+    if (barbSelect) barbSelect.disabled = !canEdit;
     optionsPanel.style.display = msg.started ? 'none' : '';
-    // Wire change handlers (idempotent — replace listeners by using onchange)
-    algoSelect.onchange = () => {
-      transport.send('SET_GAME_OPTIONS', { mapAlgorithm: algoSelect.value, mapSize: sizeSelect.value });
+    // Wire change handlers
+    const sendOpts = () => {
+      transport.send('SET_GAME_OPTIONS', {
+        mapAlgorithm: algoSelect.value,
+        mapSize: sizeSelect.value,
+        barbarianActivity: barbSelect ? barbSelect.value : 'villages',
+      });
     };
-    sizeSelect.onchange = () => {
-      transport.send('SET_GAME_OPTIONS', { mapAlgorithm: algoSelect.value, mapSize: sizeSelect.value });
-    };
+    algoSelect.onchange = sendOpts;
+    sizeSelect.onchange = sendOpts;
+    if (barbSelect) barbSelect.onchange = sendOpts;
   }
 
   if (msg.started) {
