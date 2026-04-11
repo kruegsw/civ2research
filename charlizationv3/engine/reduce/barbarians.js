@@ -781,7 +781,7 @@ export function processBarbarianAI(state, prev, mapBase) {
             };
           }
 
-          checkCivElimination(state, defender.owner);
+          checkCivElimination(state, defender.owner, true);
 
           // Barbarian uprising when barbarian AI kills last city of a civ
           if (defCity && defender.owner > 0 &&

@@ -177,7 +177,7 @@ export function handleInciteRevolt(state, prev, mapBase, action, civSlot) {
   }
   // Diplomatic incident
   handleEspionageIncident(state, mapBase, civSlot, oldOwner);
-  checkCivElimination(state, oldOwner);
+  checkCivElimination(state, oldOwner, true);
   // NOTE: binary kill_civ does NOT spawn barbarians on civ death — verified
   // by listing all functions called from kill_civ in block_004A0000.c.
   // Scenario events: city taken
@@ -490,7 +490,7 @@ export function handleSpySubvertCity(state, prev, mapBase, action, civSlot) {
   }
   // Diplomatic incident
   handleEspionageIncident(state, mapBase, civSlot, svOldOwner);
-  checkCivElimination(state, svOldOwner);
+  checkCivElimination(state, svOldOwner, true);
   // NOTE: binary kill_civ does NOT spawn barbarians on civ death.
   dispatchEvents(state, mapBase, EVENT_CITY_TAKEN, {
     cityName: svCity.name, attacker: civSlot, defender: svOldOwner,

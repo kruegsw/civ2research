@@ -773,7 +773,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
                   }
                 }
                 // 7. Check civ elimination (binary: thunk_kill_civ)
-                checkCivElimination(state, defOwner);
+                checkCivElimination(state, defOwner, true);
               }
             }
           }
@@ -904,7 +904,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
 
     // Check civ elimination for the losing side
     const eliminatedCiv = result.attackerWins ? defOwner : unit.owner;
-    checkCivElimination(state, eliminatedCiv);
+    checkCivElimination(state, eliminatedCiv, true);
 
     // NOTE: the binary's kill_civ (FUN_004AA378 in block_004A0000.c:3378)
     // does NOT spawn barbarians when a civ is destroyed by city capture —
@@ -1089,7 +1089,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
           gx: dest.gx, gy: dest.gy,
         };
         // Check civ elimination for the old owner
-        checkCivElimination(state, defOwner);
+        checkCivElimination(state, defOwner, true);
         // NOTE: binary kill_civ does NOT spawn barbarians on civ death
         // (see move-unit.js:778 comment for verification details).
       }

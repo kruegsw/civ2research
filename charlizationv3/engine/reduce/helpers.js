@@ -490,16 +490,21 @@ export function killUnit(state, idx) {
 }
 
 /** Check if a civ has no cities and no alive units → eliminate. */
-export function checkCivElimination(state, civSlot) {
+export function checkCivElimination(state, civSlot, forceOnNoCities = false) {
   if (civSlot <= 0 || !(state.civsAlive & (1 << civSlot))) return;
-  // Binary: civ is eliminated when it has NO CITIES, regardless of surviving units.
-  // thunk_kill_civ kills all remaining units as part of the elimination cleanup.
   const hasCity = state.cities.some(c => c.owner === civSlot && c.size > 0);
-  if (!hasCity) {
+  const hasUnit = state.units.some(u => u.owner === civSlot && u.gx >= 0);
+  // Binary kill_civ: civ eliminated when no cities remain. But for safety,
+  // only use cities-only check when explicitly forced (combat destruction).
+  // Otherwise require BOTH no cities AND no units to prevent false elimination.
+  const eliminated = forceOnNoCities ? !hasCity : (!hasCity && !hasUnit);
+  if (eliminated) {
     // Kill all surviving units belonging to this civ
-    for (let i = 0; i < state.units.length; i++) {
-      if (state.units[i].owner === civSlot && state.units[i].gx >= 0) {
-        state.units[i] = { ...state.units[i], gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    if (hasUnit) {
+      for (let i = 0; i < state.units.length; i++) {
+        if (state.units[i].owner === civSlot && state.units[i].gx >= 0) {
+          state.units[i] = { ...state.units[i], gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+        }
       }
     }
     const aliveBefore = state.civsAlive.toString(2);

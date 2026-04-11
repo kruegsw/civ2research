@@ -488,7 +488,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
-      checkCivElimination(state, civSlot);
+      checkCivElimination(state, civSlot, true);
       break;
     }
 
@@ -1194,7 +1194,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
         // Check eliminations for all affected civs
         for (const affectedCiv of nukeResult.affectedCivs) {
-          checkCivElimination(state, affectedCiv);
+          checkCivElimination(state, affectedCiv, true);
         }
       }
       break;
