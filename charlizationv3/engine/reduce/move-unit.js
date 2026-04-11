@@ -976,6 +976,20 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       return;
     }
 
+    // ── Sea units cannot enter non-ocean tiles (except coastal cities) ──
+    if (domain === 2 && destTerrain !== 10) {
+      // Sea units can only enter land tiles if there's a city (port)
+      const destCity = state.cities.find(c =>
+        c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
+      if (!destCity) {
+        if (unit.orders === 'goto') {
+          unit.orders = 'none'; unit.goToX = undefined; unit.goToY = undefined;
+          state.units[unitIndex] = unit;
+        }
+        return;
+      }
+    }
+
     // ── C.4: Transport boarding — land unit moving to ocean tile ──
     if (domain === 0 && destTerrain === 10) {
       const transportIdx = findAvailableTransport(dest.gx, dest.gy, unit.owner, state.units);

@@ -1228,7 +1228,7 @@ function formatCombatLog(cr, gs) {
   const roundParts = [];
   let atkHpTrack = cr.atkStartHp;
   let defHpTrack = cr.defStartHp;
-  for (let i = 0; i < cr.rounds.length; i++) {
+  for (let i = 0; i < (cr.rounds || []).length; i++) {
     if (cr.rounds[i]) {
       defHpTrack -= cr.atkFp * 10;
       roundParts.push('A hit');
