@@ -749,21 +749,10 @@ export function showTurnEvents(events) {
         if (ev._debug) console.log(`[${ev.type}] civ=${ev.civSlot} ${ev._debug}`);
 
         if (isMe) {
-          // Binary FUN_0048b165 case 4 → FUN_004702e0 (death sequence): when
-          // the local player loses their last city, show a prominent DEFEAT
-          // dialog. Real Civ2 plays a death cinematic; we show a final
-          // "your civilization has been destroyed" screen.
-          const flavor = killerName
-            ? `Conquered by the ${killerName}, the ${civName} civilization is no more.`
-            : `The ${civName} civilization is no more.`;
-          createCiv2Dialog('defeat-dialog', 'DEFEAT', panel => {
-            const msg = document.createElement('div');
-            msg.style.cssText = 'text-align:center;padding:24px 28px;font:bold 20px "Times New Roman",Georgia,serif;color:#660000;text-shadow:1px 1px 0 rgba(191,191,191,0.5);max-width:380px';
-            msg.innerHTML =
-              `Your civilization has fallen.<br><br>` +
-              `<span style="font:16px \\'Times New Roman\\',Georgia,serif;color:#333">${flavor}</span>`;
-            panel.appendChild(msg);
-          }, [{ label: 'OK', action: showNext }], { showClose: false });
+          // Binary FUN_0048b165 case 4 → FUN_004702e0 (death sequence):
+          // Full-screen defeat outro with LOSER.AVI and dramatic presentation
+          showDefeatOutro(killerName || 'barbarians', S.mpGameState);
+          showNext(); // allow remaining events to process
         } else {
           const title = 'Defense Minister';
           const text = killerName
@@ -1303,31 +1292,122 @@ export function showTaxAdvisoryDialog(treasury, netIncome, onDismiss) {
 export function showGameOverDialog(winnerCivSlot, gameState) {
   const winnerName = gameState.civNames?.[winnerCivSlot] || `Civ ${winnerCivSlot}`;
   const isWinner = winnerCivSlot === S.mpCivSlot;
-  const title = isWinner ? 'Victory!' : 'Defeat';
+
+  if (!isWinner) {
+    // ── DEFEAT OUTRO: Full-screen dramatic overlay matching Civ2's death sequence ──
+    // Binary FUN_0048b165 case 4 → FUN_004702e0: plays LOSER.AVI then shows defeat screen
+    showDefeatOutro(winnerName, gameState);
+    return;
+  }
+
+  // ── VICTORY ──
+  sfx('FANFARE1');
   const color = CIV_COLORS[winnerCivSlot] || '#fff';
 
-  sfx(isWinner ? 'FANFARE1' : 'FUNERAL');
-
-  createCiv2Dialog('game-over-dialog', title, panel => {
+  createCiv2Dialog('game-over-dialog', 'Victory!', panel => {
     const content = document.createElement('div');
     content.style.cssText = 'text-align:center;padding:16px 24px';
 
     const headline = document.createElement('div');
     headline.style.cssText = `font:bold 22px "Times New Roman",Georgia,serif;color:${color};text-shadow:1px 1px 2px rgba(0,0,0,0.5);margin-bottom:10px`;
-    headline.textContent = isWinner
-      ? 'Your civilization stands triumphant!'
-      : `The ${winnerName} have conquered the world!`;
+    headline.textContent = 'Your civilization stands triumphant!';
     content.appendChild(headline);
 
     const detail = document.createElement('div');
     detail.style.cssText = 'font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-    detail.textContent = isWinner
-      ? 'All rival civilizations have been vanquished. You are the supreme ruler!'
-      : 'Your civilization has fallen. The world belongs to another.';
+    detail.textContent = 'All rival civilizations have been vanquished. You are the supreme ruler!';
     content.appendChild(detail);
 
     panel.appendChild(content);
   }, [{ label: 'OK' }]);
+}
+
+/**
+ * Full-screen defeat outro matching Civ2's LOSER.AVI death sequence.
+ * Shows dramatic overlay with optional video, then defeat message.
+ */
+function showDefeatOutro(winnerName, gameState) {
+  sfx('FUNERAL');
+
+  // Create full-screen overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'defeat-outro-overlay';
+  overlay.style.cssText = `
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:#000; z-index:99999; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    opacity:0; transition:opacity 1.5s ease-in;
+  `;
+
+  // Try to load LOSER.AVI (converted to mp4) — falls back to text if unavailable
+  const video = document.createElement('video');
+  video.style.cssText = 'max-width:640px; max-height:240px; margin-bottom:40px; display:none';
+  video.autoplay = true;
+  video.muted = false;
+  video.playsInline = true;
+
+  // Try multiple formats
+  for (const ext of ['mp4', 'webm', 'avi']) {
+    const src = document.createElement('source');
+    src.src = `assets/LOSER.${ext}`;
+    src.type = ext === 'mp4' ? 'video/mp4' : ext === 'webm' ? 'video/webm' : 'video/avi';
+    video.appendChild(src);
+  }
+
+  video.addEventListener('canplay', () => { video.style.display = 'block'; });
+  video.addEventListener('error', () => { video.style.display = 'none'; });
+
+  // Defeat title — fades in after video or immediately
+  const title = document.createElement('div');
+  title.style.cssText = `
+    font:bold 48px "Times New Roman",Georgia,serif;
+    color:#8b0000; text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+    letter-spacing:6px; text-transform:uppercase;
+    opacity:0; transition:opacity 2s ease-in 1.5s;
+  `;
+  title.textContent = 'DEFEAT';
+
+  // Flavor text
+  const flavor = document.createElement('div');
+  flavor.style.cssText = `
+    font:20px "Times New Roman",Georgia,serif;
+    color:#999; text-shadow:1px 1px 2px rgba(0,0,0,0.6);
+    margin-top:20px; text-align:center; max-width:500px; line-height:1.6;
+    opacity:0; transition:opacity 2s ease-in 3s;
+  `;
+  const civName = gameState.civs?.[S.mpCivSlot]?.name || 'Your civilization';
+  flavor.innerHTML = `Your civilization has fallen.<br><br>` +
+    `Conquered by the ${winnerName}, the ${civName} civilization is no more.`;
+
+  // "OK" button — appears last
+  const btn = document.createElement('button');
+  btn.style.cssText = `
+    margin-top:40px; padding:10px 40px;
+    font:bold 16px "Times New Roman",Georgia,serif;
+    color:#ccc; background:#333; border:2px solid #666;
+    cursor:pointer; opacity:0; transition:opacity 1s ease-in 5s;
+  `;
+  btn.textContent = 'OK';
+  btn.addEventListener('click', () => {
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 1500);
+  });
+  btn.addEventListener('mouseover', () => { btn.style.background = '#555'; });
+  btn.addEventListener('mouseout', () => { btn.style.background = '#333'; });
+
+  overlay.appendChild(video);
+  overlay.appendChild(title);
+  overlay.appendChild(flavor);
+  overlay.appendChild(btn);
+  document.body.appendChild(overlay);
+
+  // Trigger fade-in
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    title.style.opacity = '1';
+    flavor.style.opacity = '1';
+    btn.style.opacity = '1';
+  });
 }
 
 // ── Retirement rank names (from binary, 0-23) ──
