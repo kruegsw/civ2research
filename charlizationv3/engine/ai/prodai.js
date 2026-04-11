@@ -666,23 +666,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     }
   }
 
-  // Binary FUN_00498e8b: proactive naval need — enemies on OTHER continents
-  // If any alive enemy civ has cities on a different continent, trigger naval need
-  // so the AI builds transports and naval escorts for cross-ocean invasion.
-  if (!coastalFlag && mapBase?.getBodyId) {
-    const myContinent = cityCtx.continentId;
-    for (let c = 1; c < 8; c++) {
-      if (c === civSlot || !(civsAlive & (1 << c))) continue;
-      // Check if this civ has cities on a DIFFERENT continent
-      const hasOtherCont = gameState.cities.some(ci =>
-        ci.owner === c && ci.size > 0 &&
-        mapBase.getBodyId(ci.gx, ci.gy) !== myContinent);
-      if (hasOtherCont) {
-        coastalFlag = 1;
-        break;
-      }
-    }
-  }
+  // Note: binary uses unit concentration thresholds for coastalFlag (local_b0),
+  // not cross-ocean detection. The JS coastalFlag is set by continent posture,
+  // alliance-war, and enemy-count conditions above.
 
   // Strongest civ
   let strongestCiv = 1;
@@ -984,52 +970,31 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
 
   // ── Domain-specific adjustments ──
 
-  // ── Naval production scoring (binary FUN_00498e8b) ──
+  // ── Naval scoring (binary FUN_00498e8b lines 5823-5866) ──
   if (domain === 2) {
     if (!cityCtx.isCoastal) return -1;
 
-    // Count existing sea units for this civ
-    const existingSeaCount = gameState.units.filter(u =>
-      u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 2).length;
-    const ownCityCount = gameState.cities.filter(c => c.owner === civSlot && c.size > 0).length;
-
-    // Binary: naval need based on coastal flag + existing navy size
-    if (coastalFlag) {
-      // Strong need — enemies on other continents or at war
-      rawScore = rawScore << 2; // 4x base
-
-      // Extra boost when navy is small relative to cities
-      // Binary creates naval units proportional to city count
-      if (existingSeaCount < Math.floor(ownCityCount / 3)) {
-        rawScore = rawScore << 1; // another 2x when underbuilt
-      }
-    } else {
-      // Modest coastal defense
-      rawScore = Math.floor(rawScore * 3 / 2);
-    }
-
-    // Transport/carrier special handling
-    if (role === 5 || unitId === 42 || unitId === 43) {
-      if (coastalFlag && existingSeaCount < 3) {
-        rawScore = rawScore << 1; // priority when no transports exist
-      }
-      if (unitId === 42) { // Carrier
-        const airCount = gameState.units.filter(u =>
-          u.owner === civSlot && u.gx >= 0 && (UNIT_DOMAIN[u.type] ?? 0) === 1).length;
-        if (airCount >= 3) rawScore += rawScore;
-        else rawScore = Math.floor(rawScore / 2);
+    // Binary line 5843: Transport (43) excluded from generic doubling
+    if (unitId !== 43) {
+      // Binary lines 5823-5825: 4x when coastalFlag active, 2x otherwise
+      if (coastalFlag) {
+        rawScore = rawScore << 2; // 4x
+      } else {
+        rawScore = rawScore << 1; // 2x
       }
     }
 
-    // Port Facility bonus
-    if (city.buildings && city.buildings.has(34)) {
-      rawScore += Math.floor(rawScore / 4);
+    // Binary lines 5857-5864: Transport uses distance-based scoring
+    // (local_378 - cVar2 - local_100) * score
+    // Simplified: transports get base score scaled by strategic need
+    if (unitId === 43) {
+      if (coastalFlag) {
+        rawScore = rawScore << 1;
+      }
     }
 
-    // Early game Trireme/Caravel exploration bonus
-    if ((unitId === 32 || unitId === 33) && existingSeaCount === 0) {
-      rawScore += 50; // flat bonus to get the first ship built
-    }
+    // Binary line 5700: Carrier (42) excluded from land scoring path
+    // but NOT blocked — it scores through this naval path normally
   }
 
   // ── Army balance: defenders less needed when garrison is adequate ──

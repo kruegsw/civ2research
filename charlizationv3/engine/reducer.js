@@ -17,7 +17,7 @@ import { resolveDirection, moveCost } from './movement.js';
 import { findPath, calcGotoDirection, findRoadPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
 import { getProductionCost, calcCityTrade } from './production.js';
-import { calcRushBuyCost } from './happiness.js';
+import { calcRushBuyCost, calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from './utils.js';
 import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, applyGovernmentChangeEffects, calcTributeDemand, goldToAttitude, adjustAttitude } from './diplomacy.js';
 import { grantAdvance } from './research.js';
@@ -174,11 +174,25 @@ export function applyAction(prev, mapBase, action, civSlot) {
     case SET_WORKERS: {
       const { cityIndex, workedTiles, specialists } = action;
       state.cities = [...prev.cities];
-      state.cities[cityIndex] = {
+      const updCity = {
         ...state.cities[cityIndex],
         workedTiles: [...workedTiles],
         specialists: [...specialists],
       };
+      state.cities[cityIndex] = updCity;
+
+      // Recalculate happiness immediately so entertainer effects are visible
+      // Binary recalculates happiness in real-time when specialists change
+      if (mapBase) {
+        const hap = calcHappiness(updCity, cityIndex, state, mapBase);
+        state.cities[cityIndex] = {
+          ...updCity,
+          civilDisorder: hap.civilDisorder,
+          weLoveKingDay: hap.weLoveKingDay,
+          happyCitizens: hap.happy,
+          unhappyCitizens: hap.unhappy,
+        };
+      }
       break;
     }
 
