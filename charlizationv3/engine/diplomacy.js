@@ -850,10 +850,9 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
   const events = [];
   const currentTreaty = getTreaty(state, aggressor, target);
 
-  // Already at war — nothing to do
-  if (currentTreaty === 'war' && haveContact(state, aggressor, target)) {
-    return { events };
-  }
+  // Binary FUN_0045ac71: does NOT early-return for already-at-war.
+  // The C code continues through the "no treaty" path, applying attitude
+  // penalties to third parties even when war already exists.
 
   // Binary FUN_0045ac71 line 4893: treaty_violations[third_party][violator] += 1
   if (thirdParty >= 0) {

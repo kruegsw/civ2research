@@ -61,9 +61,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       }
     }
 
-    // ── #77: Power rankings — calculate ONCE at cycle start using end-of-previous-turn state ──
-    // Binary FUN_004853e7: calc_power_graph_rankings() runs at start of turn cycle,
-    // computing raw power scores and ranking all alive civs before any civ processes.
+    // ── Binary line 3293: barbarian spawning runs BEFORE power rankings ──
+    // Binary order: spawn_barbarians → update_pollution → calc_rankings
+    spawnBarbarians(state, mapBase);
+    processBarbarianAI(state, prev, mapBase);
+    processBarbCampProduction(state, mapBase);
+
+    // ── #77: Power rankings — calculate ONCE at cycle start AFTER barbarian spawn ──
+    // Binary FUN_004853e7: calc_power_graph_rankings() runs after barbarian processing.
     {
       const powerRanking = new Array(8).fill(0);
       for (let c = 1; c < 8; c++) {
@@ -205,12 +210,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       }
     }
 
-    // #76: Barbarian spawning BEFORE any civ processes (binary: FUN_00489553)
-    spawnBarbarians(state, mapBase);
-
-    // Barbarian AI movement phase
-    processBarbarianAI(state, prev, mapBase);
-    processBarbCampProduction(state, mapBase);
+    // Barbarian spawn + AI already moved above (before power rankings)
 
     // #35: Reset ALL units for ALL civs at once at turn start (civ 0)
     // Binary: FUN_005b2a39 resets all units at the start of the turn cycle,

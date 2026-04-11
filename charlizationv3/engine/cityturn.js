@@ -428,9 +428,17 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
 
   // Calculate net shield production
   const { netShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
-  let newShields = (city.shieldsInBox || 0) + netShields;
-
   const item = city.itemInProduction;
+
+  // Binary FUN_004ec3fe line 4850: skip shield accumulation when nothing is in production
+  if (!item) {
+    return {
+      newShieldsInBox: city.shieldsInBox || 0,
+      newBuildings: null, completedItem: null, newSize: null, newWorked: null, events,
+    };
+  }
+
+  let newShields = (city.shieldsInBox || 0) + netShields;
 
   // ── #10: Capitalization (item index 38) — convert shields to gold ──
   // Instead of accumulating shields, each turn's net shield production
@@ -467,9 +475,8 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     // ═══ PRODUCTION COMPLETE ═══
     completedItem = { ...item };
 
-    // Overflow: cap at item cost (Civ2 rule)
-    const overflow = newShields - cost;
-    newShields = Math.min(overflow, cost);
+    // Binary FUN_004ec3fe line 4984: subtract cost, preserve ALL overflow
+    newShields = newShields - cost;
 
     if (item.type === 'unit') {
       // ── Create unit ──
