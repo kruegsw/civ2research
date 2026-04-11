@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER, SET_HOME_CITY, UNLOAD_TRANSPORT } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
 import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
@@ -143,6 +143,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // Only claim unclaimed tiles (tileOwnership 0 or 0x0F means unclaimed)
         if (rTile.tileOwnership === 0 || rTile.tileOwnership === 0x0F) {
           rTile.tileOwnership = unit.owner;
+        }
+      }
+
+      // Binary FUN_0058fda9: claim adjacent ocean tiles for the founding civ
+      const adjDirs = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+      for (const [adx, ady] of adjDirs) {
+        let ax = unit.gx + adx, ay = unit.gy + ady;
+        if (ay < 0 || ay >= mapBase.mh) continue;
+        if (mapBase.wraps) ax = ((ax % mapBase.mw) + mapBase.mw) % mapBase.mw;
+        else if (ax < 0 || ax >= mapBase.mw) continue;
+        const aTile = mapBase.tileData[ay * mapBase.mw + ax];
+        if (aTile && aTile.terrain === 10 &&
+            (aTile.tileOwnership === 0 || aTile.tileOwnership === 0x0F || aTile.tileOwnership === undefined)) {
+          aTile.tileOwnership = unit.owner;
         }
       }
 
@@ -1353,6 +1367,40 @@ export function applyAction(prev, mapBase, action, civSlot) {
         cityName: helpCity.name, cityIndex: helpCi,
         shieldsAdded: helpShields,
       });
+      break;
+    }
+
+    case SET_HOME_CITY: {
+      // Binary FUN_0058cbe1: set unit's home city to city at current tile
+      const { unitIndex: shUi } = action;
+      const shUnit = state.units[shUi];
+      const shCity = state.cities.findIndex(c =>
+        c.gx === shUnit.gx && c.gy === shUnit.gy && c.owner === shUnit.owner && c.size > 0);
+      if (shCity >= 0) {
+        state.units[shUi] = { ...shUnit, homeCityId: shCity };
+      }
+      break;
+    }
+
+    case UNLOAD_TRANSPORT: {
+      // Binary FUN_0058ddce: unload ALL passengers from transport
+      const { unitIndex: utUi } = action;
+      const utUnit = state.units[utUi];
+      const utCap = UNIT_CARRY_CAP[utUnit.type] || 0;
+      if (utCap <= 0) break; // not a transport
+
+      for (let i = 0; i < state.units.length; i++) {
+        const u = state.units[i];
+        if (u.gx === utUnit.gx && u.gy === utUnit.gy && u.owner === utUnit.owner &&
+            u.gx >= 0 && i !== utUi) {
+          const uDomain = UNIT_DOMAIN[u.type] ?? 0;
+          // Only unload land units (domain 0) from sea transports
+          if (uDomain === 0) {
+            state.units[i] = { ...u, orders: 'none' };
+          }
+        }
+      }
+      state.units[utUi] = { ...utUnit, movesLeft: 0 };
       break;
     }
 

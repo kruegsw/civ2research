@@ -611,6 +611,22 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
   const owner = ship.owner;
   const loaded = [];
 
+  // Binary FUN_005b542e: eject air units from non-carrier transports.
+  // Only carriers (type 42) can carry air units. Regular transports eject them.
+  const isCarrier = ship.type === 42;
+  if (!isCarrier) {
+    for (let i = 0; i < state.units.length; i++) {
+      if (i === shipIndex) continue;
+      const u = state.units[i];
+      if (u.gx === ship.gx && u.gy === ship.gy && u.owner === owner && u.gx >= 0) {
+        if ((UNIT_DOMAIN[u.type] ?? 0) === 1) {
+          // Air unit on non-carrier — eject (kill if no landing site)
+          state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+        }
+      }
+    }
+  }
+
   // Count current cargo already aboard (units at ship's position, owned by same civ,
   // that are land or air domain and not the ship itself)
   let currentCargo = 0;
@@ -619,7 +635,7 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     const u = state.units[i];
     if (u.gx === ship.gx && u.gy === ship.gy && u.owner === owner && u.gx >= 0) {
       const d = UNIT_DOMAIN[u.type] ?? 0;
-      if (d === 0 || d === 1) currentCargo++;
+      if (d === 0 || (d === 1 && isCarrier)) currentCargo++;
     }
   }
 

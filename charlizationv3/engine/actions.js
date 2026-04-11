@@ -85,6 +85,14 @@ export const RENAME_CITY = 'RENAME_CITY';
 //   { type: 'RENAME_CITY', cityIndex, name }
 //   Rename one of your cities.
 
+export const SET_HOME_CITY = 'SET_HOME_CITY';
+//   { type: 'SET_HOME_CITY', unitIndex }
+//   Reassign a unit's home city to the city at its current tile.
+
+export const UNLOAD_TRANSPORT = 'UNLOAD_TRANSPORT';
+//   { type: 'UNLOAD_TRANSPORT', unitIndex }
+//   Unload all passengers from a transport ship at current tile.
+
 export const BRIBE_UNIT = 'BRIBE_UNIT';
 //   { type: 'BRIBE_UNIT', unitIndex, targetIndex }
 //   Diplomat/Spy bribes an enemy unit. Always succeeds (unless Democracy).
@@ -102,8 +110,13 @@ export const INCITE_REVOLT = 'INCITE_REVOLT';
 //   Diplomat/Spy at an enemy city pays gold to flip it. Diplomat consumed.
 
 export const DEMAND_TRIBUTE = 'DEMAND_TRIBUTE';
-//   { type: 'DEMAND_TRIBUTE', targetCiv, amount }
-//   Demand gold from another civ. They can accept or refuse.
+//   { type: 'DEMAND_TRIBUTE', targetCiv, amount, accept }
+//   Demand gold from another civ. The target's tribute amount is computed
+//   server-side (FUN_0045705e); the player accepts or refuses the offer.
+//   - amount: server-computed gold amount (validated against calcTributeDemand)
+//   - accept: true → gold transfers, false → relations sour
+//   For backwards-compatible AI-initiated demands, amount may be omitted
+//   and the server will store a pending demand (legacy RESPOND_DEMAND flow).
 
 export const RESPOND_DEMAND = 'RESPOND_DEMAND';
 //   { type: 'RESPOND_DEMAND', demandIndex, accept: boolean }

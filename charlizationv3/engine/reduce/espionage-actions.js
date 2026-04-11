@@ -28,8 +28,8 @@ export function handleBribeUnit(state, prev, mapBase, action, civSlot) {
   const bCiv = { ...state.civs[civSlot] };
   bCiv.treasury = (bCiv.treasury || 0) - bCost;
   state.civs[civSlot] = bCiv;
-  // Transfer unit ownership
-  state.units[action.targetIndex] = { ...target, owner: civSlot, homeCityId: 0xFFFF, orders: 'none' };
+  // Transfer unit ownership — binary FUN_004c9528: veteran status RESET to 0 on bribe
+  state.units[action.targetIndex] = { ...target, owner: civSlot, homeCityId: 0xFFFF, orders: 'none', veteran: 0 };
   // Spy survival check (uses decompiled formula)
   const bribeSurvival = checkSpySurvival(spy, 0, state.rng);
   if (bribeSurvival.survives) {
