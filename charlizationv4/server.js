@@ -49,7 +49,7 @@ import { initFromSav, initNewGame } from "../charlizationv3/engine/init.js";
 import { generateMap } from "../charlizationv3/engine/mapgen.js";
 import { generateMapWithAlgorithm, MAPGEN_ALGORITHMS, DEFAULT_ALGORITHM } from "../charlizationv3/engine/mapgen-dispatch.js";
 import { applyAction } from "../charlizationv3/engine/reducer.js";
-import { resetAIState, generateUnitActions } from "../charlizationv3/engine/ai/index.js";
+import { resetAIState, processUnitsSequentially } from "../charlizationv3/engine/ai/index.js";
 import { filterStateForCiv, computeLOS } from "../charlizationv3/engine/visibility.js";
 import { createAccessors, tileToBytes } from "../charlizationv3/engine/state.js";
 import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS, BUSY_ORDERS } from "../charlizationv3/engine/defs.js";
@@ -1110,67 +1110,65 @@ async function processAiTurns(roomId, room) {
       }
     }
 
-    // Phase 2: Per-unit actions — generate against CURRENT state.
-    // Binary FUN_0053184D: each unit sees the updated state from
-    // previous units' actions. We generate all unit actions against
-    // the current (post-batch) state, then apply them one at a time.
-    // Each application updates the state so subsequent units' actions
-    // (which were decided against the same state) still make sense
-    // for movement/combat tracking.
-    let unitActions;
-    try {
-      unitActions = generateUnitActions(room.gameState, room.mapBase, activeCiv, strategy, goals, debugLog);
-    } catch (err) {
-      console.error(`[CRASH] generateUnitActions threw for civ ${activeCiv}:`, err);
-      unitActions = [];
-    }
+    // Phase 2: Per-unit processing — binary FUN_0053184D sequential model.
+    // Each unit decides its action against the CURRENT state, then the
+    // action is applied before the next unit decides. This ensures units
+    // see each other's movements, combat results, and city captures.
     const t2b = Date.now();
-    console.log(`[ai]   ${unitActions.length} unit actions generated in ${t2b - t2}ms`);
+    let unitActionCount = 0;
 
-    for (const action of unitActions) {
-      // Track unit position before move for animation
-      let prevUnit = null;
-      if (action.type === 'MOVE_UNIT' && action.unitIndex != null) {
-        const u = room.gameState.units[action.unitIndex];
-        if (u && u.gx >= 0) prevUnit = { gx: u.gx, gy: u.gy };
-      }
-      let result;
-      try {
-        result = applyAction(room.gameState, room.mapBase, action, activeCiv);
-      } catch (err) {
-        console.error(`[CRASH] AI unit applyAction threw for civ ${activeCiv}, action ${action.type}:`, err);
-        continue;
-      }
-      if (result !== room.gameState) {
-        room.gameState = result;
-        // Queue combat results for client animation
-        if (room.gameState.combatResult) {
-          room.aiCombatQueue.push({ ...room.gameState.combatResult });
+    room.gameState = processUnitsSequentially(
+      room.gameState, room.mapBase, activeCiv, strategy, goals,
+      // applyFn callback — applies action, tracks moves/combats for animation
+      (state, action) => {
+        // Track unit position before move for animation
+        let prevUnit = null;
+        if (action.type === 'MOVE_UNIT' && action.unitIndex != null) {
+          const u = state.units[action.unitIndex];
+          if (u && u.gx >= 0) prevUnit = { gx: u.gx, gy: u.gy };
         }
-        // Queue visible unit movements for client animation
-        if (action.type === 'MOVE_UNIT' && prevUnit && action.unitIndex != null) {
-          const newU = room.gameState.units[action.unitIndex];
-          if (newU && newU.gx >= 0 && (newU.gx !== prevUnit.gx || newU.gy !== prevUnit.gy)) {
-            room.aiMoveQueue.push({
-              unitIndex: action.unitIndex,
-              fromGx: prevUnit.gx, fromGy: prevUnit.gy,
-              toGx: newU.gx, toGy: newU.gy,
-            });
+        let result;
+        try {
+          result = applyAction(state, room.mapBase, action, activeCiv);
+        } catch (err) {
+          console.error(`[CRASH] AI unit applyAction threw for civ ${activeCiv}, action ${action.type}:`, err);
+          return state; // skip this action, return unchanged state
+        }
+        unitActionCount++;
+        if (result !== state) {
+          // Queue combat results for client animation
+          if (result.combatResult) {
+            room.aiCombatQueue.push({ ...result.combatResult });
           }
+          // Queue visible unit movements for client animation
+          if (action.type === 'MOVE_UNIT' && prevUnit && action.unitIndex != null) {
+            const newU = result.units[action.unitIndex];
+            if (newU && newU.gx >= 0 && (newU.gx !== prevUnit.gx || newU.gy !== prevUnit.gy)) {
+              room.aiMoveQueue.push({
+                unitIndex: action.unitIndex,
+                fromGx: prevUnit.gx, fromGy: prevUnit.gy,
+                toGx: newU.gx, toGy: newU.gy,
+              });
+            }
+          }
+          // Preserve turnEvents before clearing
+          if (result.turnEvents) {
+            accumulatedTurnEvents.push(...result.turnEvents);
+          }
+          room.gameState = result;
+          emitGameLogs(roomId, room);
+          clearOneshotNotifications(room);
         }
-        // Preserve turnEvents before clearing — they must reach the client
-        if (room.gameState.turnEvents) {
-          accumulatedTurnEvents.push(...room.gameState.turnEvents);
-        }
-        emitGameLogs(roomId, room);
-        clearOneshotNotifications(room);
-      }
-    }
+        return result !== state ? result : state;
+      },
+      debugLog
+    );
+
     // Restore accumulated turnEvents so client receives all of them
     if (accumulatedTurnEvents.length > 0) {
       room.gameState.turnEvents = accumulatedTurnEvents;
     }
-    console.log(`[ai]   applied ${batchActions.length + unitActions.length} actions in ${Date.now() - t2}ms — ${room.aiMoveQueue.length} moves, ${room.aiCombatQueue.length} combats queued`);
+    console.log(`[ai]   ${unitActionCount} unit actions applied in ${Date.now() - t2b}ms — ${room.aiMoveQueue.length} moves, ${room.aiCombatQueue.length} combats queued`);
 
     // End the AI civ's turn
     let endResult;

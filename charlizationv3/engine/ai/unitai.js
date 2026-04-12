@@ -5119,6 +5119,194 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
   return actions;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Per-unit processing API — matches binary FUN_0053184D's sequential
+// unit-by-unit processing where each unit sees the state after all
+// previous units have acted.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Initialize shared context for per-unit military processing.
+ * Call ONCE before the per-unit loop. The context can be refreshed
+ * between units by calling refreshMilitaryContext().
+ */
+export function initMilitaryContext(gameState, mapBase, civSlot) {
+  const WAKE_ORDERS = new Set(['sentry', 'fortified', 'sleep']);
+  const wakeUpUnits = new Set();
+  for (let i = 0; i < gameState.units.length; i++) {
+    const unit = gameState.units[i];
+    if (unit.owner !== civSlot || unit.gx < 0 || unit.movesLeft <= 0) continue;
+    if (!WAKE_ORDERS.has(unit.orders)) continue;
+    const inOwnCity = gameState.cities.some(c =>
+      c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+    if (inOwnCity) continue;
+    wakeUpUnits.add(i);
+  }
+  // Cargo turn counter increment
+  for (let i = 0; i < gameState.units.length; i++) {
+    const u = gameState.units[i];
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) === 2 && (UNIT_ROLE[u.type] ?? 0) === 5) {
+      const hasCargo = gameState.units.some(cu =>
+        cu.gx === u.gx && cu.gy === u.gy && cu.owner === civSlot &&
+        (UNIT_DOMAIN[cu.type] ?? 0) === 0 && cu !== u && cu.gx >= 0);
+      if (hasCargo) u._cargoTurns = (u._cargoTurns || 0) + 1;
+    }
+  }
+  return {
+    spatialIdx: buildUnitSpatialIndex(gameState),
+    cityDefense: analyzeCityDefense(gameState, mapBase, civSlot),
+    wakeUpUnits,
+  };
+}
+
+/**
+ * Refresh the spatial index and city defense analysis after a unit action
+ * has been applied. Call between per-unit iterations.
+ */
+export function refreshMilitaryContext(ctx, gameState, mapBase, civSlot) {
+  ctx.spatialIdx = buildUnitSpatialIndex(gameState);
+  ctx.cityDefense = analyzeCityDefense(gameState, mapBase, civSlot);
+}
+
+/**
+ * Decide a single military unit's action. Returns null if the unit
+ * should be skipped (not ours, no moves, busy, settler, etc.).
+ *
+ * This is the per-unit body extracted from generateMilitaryActions,
+ * matching binary FUN_0053184D's inline unit processing.
+ */
+export function decideMilitaryUnit(unitIndex, gameState, mapBase, civSlot, strategy, ctx, debugLog = null) {
+  const unit = gameState.units[unitIndex];
+  if (!unit || unit.owner !== civSlot || unit.gx < 0 || unit.movesLeft <= 0) return null;
+  if (BUSY_ORDERS.has(unit.orders) && !ctx.wakeUpUnits.has(unitIndex)) return null;
+  if (unit.type === 0 || unit.type === 1) return null; // settlers → cityai
+  let role = UNIT_ROLE[unit.type] ?? 0;
+  const domain = UNIT_DOMAIN[unit.type] ?? 0;
+  if (role === 6) return null; // settle role → cityai
+
+  const { spatialIdx, cityDefense } = ctx;
+
+  // Fix 6A: garrison override
+  if (role === 0 && domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+    const inCityIdx = _findOwnCityAtTile(gameState, unit.gx, unit.gy, civSlot);
+    if (inCityIdx >= 0) {
+      const otherDefenders = _countDefendRoleUnitsExcluding(
+        gameState, spatialIdx, unit.gx, unit.gy, civSlot, unitIndex);
+      if (otherDefenders === 0) role = 1;
+    }
+  }
+
+  let action = null;
+
+  // Fix 6B: nearby undefended city
+  if (role === 0 && domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+    const unitBodyIdNow = mapBase.getBodyId(unit.gx, unit.gy);
+    let nearestUndefended = null;
+    let nearestDist = Infinity;
+    for (let ci = 0; ci < gameState.cities.length; ci++) {
+      const c = gameState.cities[ci];
+      if (!c || c.owner !== civSlot || c.size <= 0 || c.gx < 0) continue;
+      if (unitBodyIdNow > 0) {
+        const cityBody = mapBase.getBodyId(c.gx, c.gy);
+        if (cityBody > 0 && cityBody !== unitBodyIdNow) continue;
+      }
+      const d = tileDist(unit.gx, unit.gy, c.gx, c.gy, mapBase);
+      if (d > 12) continue;
+      const defenders = _countDefendersAtTile(gameState, spatialIdx, c.gx, c.gy, civSlot);
+      if (defenders > 0) continue;
+      if (d < nearestDist) { nearestDist = d; nearestUndefended = c; }
+    }
+    if (nearestUndefended) {
+      const moveDir = _evaluateDirections(
+        unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+        nearestUndefended.gx, nearestUndefended.gy, { role: 1, explore: false });
+      if (moveDir) action = { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+    }
+  }
+
+  // Goal-directed behavior
+  const goals = strategy?.goals;
+  if (goals && !action) {
+    const unitGoal = goals.getGoalForUnit(unitIndex);
+    if (unitGoal) {
+      const gt = unitGoal.goalType;
+      const tgx = unitGoal.targetGx;
+      const tgy = unitGoal.targetGy;
+      if (tgx >= 0 && tgy >= 0) {
+        if (gt === GOAL_BUILD_ROAD && unit.gx === tgx && unit.gy === tgy) {
+          action = { type: 'WORKER_ORDER', unitIndex, order: 'road' };
+        } else if (gt === GOAL_AIR_STRIKE && tgx >= 0) {
+          action = { type: 'BOMBARD', unitIndex, targetGx: tgx, targetGy: tgy };
+        } else if (gt === GOAL_BUILD_ROAD || gt === GOAL_ESCORT ||
+                   gt === GOAL_TRANSPORT || gt === GOAL_AIR_STRIKE) {
+          const moveDir = _evaluateDirections(
+            unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+            tgx, tgy, { role, explore: false });
+          if (moveDir) action = { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+        }
+      }
+    }
+  }
+
+  // Diplomatic encounter check
+  if (!action) {
+    const dipAction = _checkDiplomaticEncounter(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain);
+    if (dipAction) action = dipAction;
+  }
+
+  // Threat-radius override
+  if (!action && domain === 0 && (UNIT_ATK[unit.type] || 0) > 0) {
+    const immediateRadius = 4;
+    let nearestEnemyDist = Infinity, nearestEnemyGx = -1, nearestEnemyGy = -1;
+    for (const eu of gameState.units) {
+      if (eu.gx < 0 || eu.owner === civSlot || eu.owner === 0) continue;
+      if ((UNIT_ATK[eu.type] || 0) === 0) continue;
+      if (!isAtWar(gameState, civSlot, eu.owner)) continue;
+      const d = tileDist(unit.gx, unit.gy, eu.gx, eu.gy, mapBase);
+      if (d <= 6 && d < nearestEnemyDist) {
+        nearestEnemyDist = d; nearestEnemyGx = eu.gx; nearestEnemyGy = eu.gy;
+      }
+    }
+    if (nearestEnemyDist <= immediateRadius && role !== 0 && role !== 1) {
+      const moveDir = _evaluateDirections(
+        unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+        nearestEnemyGx, nearestEnemyGy, { role: 0, explore: false });
+      if (moveDir) action = { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+    }
+  }
+
+  // Nuclear missile
+  if (!action && unit.type === 45) {
+    action = aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot);
+  }
+  // Explorer
+  else if (!action && unit.type === 50) {
+    action = aiExplorer(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot);
+  }
+  // Role dispatch
+  else if (!action) {
+    switch (role) {
+      case 0: action = aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, strategy); break;
+      case 1: action = aiDefender(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, strategy, cityDefense); break;
+      case 2: action = aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      case 3: action = aiAirAttack(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      case 4: action = aiAirDefense(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      case 5: action = aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      case 7: action = aiDiplomat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      case 8: action = aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot); break;
+      default:
+        if ((UNIT_ATK[unit.type] || 0) > 0) action = aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, strategy);
+        else action = aiExplorer(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot);
+        break;
+    }
+  }
+
+  if (!action) return null;
+  const err = validateAction(gameState, mapBase, action, civSlot);
+  return err ? null : action;
+}
+
 /**
  * Generate skip/fortify orders for units that still have moves left
  * but have nothing useful to do. This ensures END_TURN validation

@@ -24,8 +24,8 @@ import { assessStrategy, analyzeTerritory } from './strategyai.js';
 import { generateEconActions } from './econai.js';
 import { generateDiplomacyActions } from './diplomai.js';
 import { generateProductionActions, generateRushBuyActions, generateSellObsoleteActions } from './prodai.js';
-import { generateSettlerActions } from './cityai.js';
-import { generateMilitaryActions, generateCleanupActions } from './unitai.js';
+import { generateSettlerActions, initSettlerContext, decideSettlerUnit } from './cityai.js';
+import { generateMilitaryActions, generateCleanupActions, initMilitaryContext, refreshMilitaryContext, decideMilitaryUnit } from './unitai.js';
 import { generateBarbarianActions } from './barbarian.js';
 import {
   GoalList,
@@ -1320,39 +1320,52 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
 }
 
 /**
- * Generate per-unit actions (settler + military + cleanup).
+ * Process all units for an AI civ one at a time, applying each action
+ * to the state before deciding the next unit's action.
  *
- * Binary FUN_0053184D processes units sequentially — each unit's action is
- * executed before the next unit decides. The server should apply each
- * returned action to the game state before calling this function again
- * with the UPDATED state. This is the key architectural difference from
- * the old approach where all actions were generated against a stale snapshot.
+ * This matches binary FUN_0053184D's sequential unit processing where
+ * each unit sees the state after all previous units have acted.
  *
- * For practical efficiency, this function generates all actions in one call
- * but the SERVER applies them one at a time, updating the state between each.
- * The settler/military AIs already process one unit at a time internally.
+ * The caller (server) provides an `applyFn(state, action)` callback
+ * that applies the action and returns the new state. This ensures
+ * the server can track moves/combats for client animation.
  *
- * @param {object} gameState - current game state
+ * @param {object} gameState - MUTABLE current game state
  * @param {object} mapBase - map data
  * @param {number} civSlot - AI civ slot
  * @param {object} strategy - from runAiTurn
  * @param {object} goals - from runAiTurn
+ * @param {function} applyFn - (state, action) => newState
  * @param {Array} [debugLog] - optional debug log
- * @returns {Array<object>} actions — server MUST apply each and re-generate
- *   for remaining units against updated state for full binary fidelity
+ * @returns {object} final gameState after all unit actions
  */
-export function generateUnitActions(gameState, mapBase, civSlot, strategy, goals, debugLog = null) {
-  const actions = [];
-
+export function processUnitsSequentially(gameState, mapBase, civSlot, strategy, goals, applyFn, debugLog = null) {
   try {
-    // Settler/Worker AI — one action per settler
-    for (const a of generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog)) {
-      actions.push(a);
+    // Initialize contexts for per-unit processing
+    let settlerCtx = initSettlerContext(gameState, civSlot, strategy);
+    let militaryCtx = initMilitaryContext(gameState, mapBase, civSlot);
+
+    // Binary FUN_0053184D: iterate ALL units. Settlers first, then military.
+    // Each action is applied before the next unit decides.
+
+    // Pass 1: Settlers/Workers
+    for (let i = 0; i < gameState.units.length; i++) {
+      const action = decideSettlerUnit(i, gameState, mapBase, civSlot, settlerCtx, strategy, debugLog);
+      if (action) {
+        gameState = applyFn(gameState, action);
+        // Refresh settler context (new cities may have been founded)
+        settlerCtx = initSettlerContext(gameState, civSlot, strategy);
+      }
     }
 
-    // Military unit AI — one action per unit
-    for (const a of generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog)) {
-      actions.push(a);
+    // Pass 2: Military units
+    for (let i = 0; i < gameState.units.length; i++) {
+      const action = decideMilitaryUnit(i, gameState, mapBase, civSlot, strategy, militaryCtx, debugLog);
+      if (action) {
+        gameState = applyFn(gameState, action);
+        // Refresh military context (positions changed, units may have died)
+        refreshMilitaryContext(militaryCtx, gameState, mapBase, civSlot);
+      }
     }
 
     // Goal cleanup
@@ -1363,10 +1376,12 @@ export function generateUnitActions(gameState, mapBase, civSlot, strategy, goals
 
     // Cleanup: fortify/skip remaining units with moves
     const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog);
-    actions.push(...cleanupActions);
+    for (const action of cleanupActions) {
+      gameState = applyFn(gameState, action);
+    }
   } catch (err) {
-    console.error(`[ai] Error during unit actions for civ ${civSlot}:`, err);
+    console.error(`[ai] Error during sequential unit processing for civ ${civSlot}:`, err);
   }
 
-  return actions;
+  return gameState;
 }

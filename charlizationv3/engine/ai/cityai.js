@@ -1566,3 +1566,80 @@ function _tryCityJoin(unit, unitIndex, gameState, mapBase, civSlot, debugLog) {
 
   return null;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Per-unit settler processing API
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Initialize shared context for per-unit settler processing.
+ */
+export function initSettlerContext(gameState, civSlot, strategy) {
+  const ownCities = gameState.cities.filter(c => c.owner === civSlot && c.size > 0);
+  const difficulty = getDifficultyIndex(gameState, civSlot);
+  const maxPerCity = MAX_SETTLERS_PER_CITY[difficulty] ?? 3;
+  const desiredSettlers = Math.max(1, ownCities.length) * maxPerCity;
+  let effectiveSettlers = 0;
+  for (const u of gameState.units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if (u.type === 0) effectiveSettlers += 1;
+    else if (u.type === 1) effectiveSettlers += ENGINEER_SETTLER_WEIGHT;
+  }
+  const expansionAllowed = strategy?.expansionDesired ?? true;
+  const wantExpand = expansionAllowed && (
+    ownCities.length === 0 || effectiveSettlers <= desiredSettlers
+  );
+  return { ownCities, wantExpand, effectiveSettlers, desiredSettlers };
+}
+
+/**
+ * Decide a single settler/worker unit's action.
+ * Returns null if unit should be skipped.
+ */
+export function decideSettlerUnit(unitIndex, gameState, mapBase, civSlot, ctx, strategy, debugLog = null) {
+  const unit = gameState.units[unitIndex];
+  if (!unit || unit.owner !== civSlot || unit.gx < 0 || unit.movesLeft <= 0) return null;
+  if (unit.type !== 0 && unit.type !== 1) return null;
+  if (BUSY_ORDERS.has(unit.orders)) return null;
+
+  const { ownCities, wantExpand } = ctx;
+
+  if (unit.type === 0) {
+    const isFirstCity = ownCities.length === 0;
+    if (isFirstCity) {
+      const foundAction = _tryFoundFirstCity(unit, unitIndex, gameState, mapBase, civSlot, debugLog);
+      if (foundAction) return foundAction;
+    }
+    if (wantExpand && !isFirstCity) {
+      const expandAction = _tryExpandCity(unit, unitIndex, gameState, mapBase, civSlot, ownCities, debugLog, strategy);
+      if (expandAction) return expandAction;
+      const joinAction = _tryCityJoin(unit, unitIndex, gameState, mapBase, civSlot, debugLog);
+      if (joinAction) return joinAction;
+    }
+  }
+
+  // Worker logic
+  if (ownCities.length === 0) return null;
+  const workerOrder = getWorkerOrder(unit, unitIndex, gameState, mapBase, civSlot);
+  if (workerOrder) return workerOrder;
+  const moveDir = findWorkerMoveTarget(unit, gameState, mapBase, civSlot);
+  if (moveDir) {
+    const moveAction = { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+    const err = validateAction(gameState, mapBase, moveAction, civSlot);
+    if (!err) return moveAction;
+  }
+  const inCity = ownCities.some(c => c.gx === unit.gx && c.gy === unit.gy);
+  if (!inCity && ownCities.length > 0) {
+    let bestCity = null, bestDist = Infinity;
+    for (const c of ownCities) {
+      const d = Math.abs(unit.gx - c.gx) + Math.abs(unit.gy - c.gy);
+      if (d < bestDist) { bestDist = d; bestCity = c; }
+    }
+    if (bestCity) {
+      const gotoAction = { type: 'GOTO', unitIndex, targetGx: bestCity.gx, targetGy: bestCity.gy, path: [] };
+      const err = validateAction(gameState, mapBase, gotoAction, civSlot);
+      if (!err) return gotoAction;
+    }
+  }
+  return null;
+}

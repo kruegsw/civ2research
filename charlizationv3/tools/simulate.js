@@ -23,7 +23,7 @@ import { generateMap } from '../engine/mapgen.js';
 import { initNewGame } from '../engine/init.js';
 import { applyAction } from '../engine/reducer.js';
 import { validateAction } from '../engine/rules.js';
-import { runAiTurn, generateUnitActions } from '../engine/ai/index.js';
+import { runAiTurn, processUnitsSequentially } from '../engine/ai/index.js';
 import { getGameYear } from '../engine/year.js';
 import {
   UNIT_NAMES, ADVANCE_NAMES, GOVERNMENT_NAMES, WONDER_NAMES,
@@ -246,8 +246,14 @@ for (let turn = 0; turn < NUM_TURNS * NUM_PLAYERS; turn++) {
   const aiResult = runAiTurn(gameState, mapBase, activeCiv, debugLog);
   // Phase 1: batch actions (econ/diplo/production)
   const batchActions = aiResult.actions;
-  // Phase 2: per-unit actions (settlers/military/cleanup) against current state
-  const unitActions = generateUnitActions(gameState, mapBase, activeCiv, aiResult.strategy, aiResult.goals, debugLog);
+  // Phase 2: per-unit actions — process sequentially with state updates
+  const unitActions = [];
+  processUnitsSequentially(gameState, mapBase, activeCiv, aiResult.strategy, aiResult.goals,
+    (state, action) => {
+      unitActions.push(action);
+      const result = applyAction(state, mapBase, action, activeCiv);
+      return result !== state ? result : state;
+    }, debugLog);
   const actions = [...batchActions, ...unitActions];
 
   const st = stats[activeCiv];
