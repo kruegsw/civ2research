@@ -865,6 +865,7 @@ export function showTurnEvents(events) {
 
       case 'civilDisorder': {
         playCityStatusSound('civilDisorder');
+        const disorderCity = S.mpGameState?.cities?.[ev.cityIndex];
         createCiv2Dialog('turn-event-dialog', 'Civil Disorder!', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -872,7 +873,15 @@ export function showTurnEvents(events) {
             ? `Civil disorder continues in ${ev.cityName}! Production has ceased.`
             : `Civil disorder in ${ev.cityName}! Citizens are rioting in the streets.`;
           panel.appendChild(msg);
-        }, [{ label: 'OK', action: showNext }]);
+        }, [
+          { label: 'Zoom to City', action: () => {
+            if (disorderCity && _deps.centerOnTile) {
+              _deps.centerOnTile(disorderCity.gx, disorderCity.gy);
+            }
+            showNext();
+          }},
+          { label: 'OK', action: showNext },
+        ]);
         break;
       }
 
@@ -1017,6 +1026,9 @@ export function showTurnEvents(events) {
           let text = `${capturerName} ${verb} ${capName}.`;
           if (ev.plunder > 0) {
             text += `  ${ev.plunder} gold pieces plundered.`;
+          }
+          if (ev.stolenAdvanceName) {
+            text += `\n${ev.stolenAdvanceName} stolen!`;
           }
           if (ev.destroyed) {
             text += `\n\nThe city has been razed to the ground.`;

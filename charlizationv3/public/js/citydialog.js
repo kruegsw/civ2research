@@ -2978,13 +2978,17 @@ const Civ2CityDialog = {
     const iconAvailW = 40;  // FUN_00472cf0(0x40, -3) — available width for icons
     const iconSize = 10;    // FUN_00511690(10) in mode 2
 
-    const perRow = Math.floor(PW / unitW);   // 192/43 = 4
     const maxRows = Math.floor(PH / unitH);  // 78/32 = 2
-    const maxShow = Math.min(perRow * maxRows, supported.length);
-    const singleRow = supported.length <= perRow;
+    const singleRow = supported.length <= Math.floor(PW / unitW);
+    // Dynamic perRow: when many units, compress to fit all
+    const basePerRow = Math.floor(PW / unitW);  // 4 at normal spacing
+    const perRow = singleRow ? basePerRow
+      : Math.max(basePerRow, Math.ceil(supported.length / maxRows));
+    const colSpacing = Math.min(unitW, Math.floor(PW / perRow));
+    const maxShow = supported.length;  // show ALL supported units
 
     // Centering offsets (from decompiled FUN_00505666)
-    const xStart = PX + ((PW - unitW * perRow + 3) >> 1);  // 0 + 11 = 11
+    const xStart = PX + ((PW - colSpacing * Math.min(perRow, supported.length) + 3) >> 1);
     const yStart = singleRow
       ? PY + ((PH - 30) >> 1)                              // 212 + 24 = 236
       : PY + ((PH - unitH * maxRows + 2) >> 1);            // 212 + 8 = 220
@@ -2998,6 +3002,7 @@ const Civ2CityDialog = {
     let col = 0, row = 0;
     for (let idx = 0; idx < maxShow; idx++) {
       const u = supported[idx];
+      if (!u || u.gx < 0) continue;
       const template = mapSprites.unitTemplates[u.type];
       if (!template) continue;
       const cacheKey = `${u.type}-${u.owner}`;
@@ -3005,7 +3010,7 @@ const Civ2CityDialog = {
       if (!colored) {
         colored = Civ2Renderer._recolorUnit(template, CIV_COLORS[u.owner] || '#ccc');
       }
-      const ux = xStart + col * unitW;
+      const ux = xStart + col * colSpacing;
       const uy = yStart + row * unitH;
       this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, unitW, unitH, city);
 
@@ -3014,7 +3019,7 @@ const Civ2CityDialog = {
       if (ov && cdSprites) {
         const numIcons = ov.food + (ov.shield ? 1 : 0) + ov.unhappy;
         if (numIcons > 0) {
-          const { spacing } = this._iconSpacing(numIcons, iconSize, iconAvailW);
+          const { spacing } = this._iconSpacing(numIcons, iconSize, Math.min(iconAvailW, colSpacing - 3));
           let ix = ux;
           const iy = uy + iconYOff;
 
@@ -3560,25 +3565,27 @@ const Civ2CityDialog = {
       const supported = this.getSupportedUnits(cityIndex, mapData);
       const PX = 0, PY = 212, PW = 192, PH = 78;
       const unitW = 43, unitH = 32;
-      const perRow = Math.floor(PW / unitW);
       const maxRows = Math.floor(PH / unitH);
-      const maxShow = Math.min(perRow * maxRows, supported.length);
-      const singleRow = supported.length <= perRow;
-      const xStart = PX + ((PW - unitW * perRow + 3) >> 1);
+      const basePerRow = Math.floor(PW / unitW);
+      const singleRow = supported.length <= basePerRow;
+      const perRow = singleRow ? basePerRow
+        : Math.max(basePerRow, Math.ceil(supported.length / maxRows));
+      const colSpacing = Math.min(unitW, Math.floor(PW / perRow));
+      const xStart = PX + ((PW - colSpacing * Math.min(perRow, supported.length) + 3) >> 1);
       const yStart = singleRow
         ? PY + ((PH - 30) >> 1)
         : PY + ((PH - unitH * maxRows + 2) >> 1);
 
-      for (let idx = 0; idx < maxShow; idx++) {
+      for (let idx = 0; idx < supported.length; idx++) {
         const u = supported[idx];
         const col = idx % perRow;
         const row = Math.floor(idx / perRow);
-        const ux = xStart + col * unitW;
+        const ux = xStart + col * colSpacing;
         const uy = yStart + row * unitH;
         const unitIndex = mapData.units.indexOf(u);
         if (unitIndex >= 0) {
           regions.push({
-            x: ux, y: uy, w: unitW, h: unitH,
+            x: ux, y: uy, w: colSpacing, h: unitH,
             action: 'unitSupported', unitIndex,
           });
         }

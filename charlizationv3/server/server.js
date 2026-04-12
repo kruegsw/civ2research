@@ -611,7 +611,7 @@ wss.on("connection", (ws) => {
           }
         }
 
-        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now(), difficulty: 'prince' };
+        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now(), difficulty: 'deity' };
         // AI is always ready
         room.ready[targetSeat] = true;
 

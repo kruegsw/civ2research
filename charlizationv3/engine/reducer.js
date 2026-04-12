@@ -507,6 +507,13 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.treatyProposals = [...(prev.treatyProposals || [])];
       const proposal = { ...state.treatyProposals[rtIdx], resolved: true, accepted: rtAccept };
       state.treatyProposals[rtIdx] = proposal;
+      // Set diplomacy cooldown so AI won't immediately re-propose
+      // Binary DAT_0064ca82: 3-turn cooldown between diplomatic contacts
+      if (!state._diploContactTurns) state._diploContactTurns = { ...(prev._diploContactTurns || {}) };
+      else state._diploContactTurns = { ...state._diploContactTurns };
+      const dcA = Math.min(proposal.from, proposal.to);
+      const dcB = Math.max(proposal.from, proposal.to);
+      state._diploContactTurns[`diplo_${dcA}_${dcB}`] = state.turn.number;
       if (rtAccept) {
         let rtResult;
         switch (proposal.treaty) {
@@ -977,6 +984,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.tributeDemands = [...(prev.tributeDemands || [])];
       const demand = { ...state.tributeDemands[action.demandIndex], resolved: true, accepted: action.accept };
       state.tributeDemands[action.demandIndex] = demand;
+      // Set diplomacy cooldown (binary DAT_0064ca82: 3-turn cooldown)
+      if (!state._diploContactTurns) state._diploContactTurns = { ...(prev._diploContactTurns || {}) };
+      else state._diploContactTurns = { ...state._diploContactTurns };
+      const rdA = Math.min(demand.from, civSlot);
+      const rdB = Math.max(demand.from, civSlot);
+      state._diploContactTurns[`diplo_${rdA}_${rdB}`] = state.turn.number;
       if (action.accept) {
         state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
         // Deduct from target, add to demander

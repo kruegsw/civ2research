@@ -366,7 +366,7 @@ export function directionFromDelta(dx, dy) {
  * @returns {boolean} true if movement is blocked by ZOC
  */
 export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBase, units, gameState) {
-  // Units that ignore ZOC
+  // Units that ignore ZOC (binary: unit_flags & 2)
   if (UNIT_IGNORE_ZOC[unitType]) return false;
 
   // Binary FUN_005b4d8c: city at tile → no ZOC. Move is rejected only if
@@ -374,66 +374,65 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   // so units leaving a city are never ZOC-blocked.
   if (hasCityAt(fromGx, fromGy, mapBase)) return false;
 
-  const domain = UNIT_DOMAIN[unitType] ?? 0;
+  // Binary FUN_005b4c63: ZOC only applies between tiles of matching terrain
+  // class (both land or both ocean). FUN_005b89e4 returns true if terrain==10
+  // (ocean). Enemy units on ocean tiles don't exert ZOC on land moves.
+  const fromIsOcean = mapBase.getTerrain(fromGx, fromGy) === 10;
 
-  // Check if 'from' tile is adjacent to enemy combat unit of same domain
-  const fromNeighbors = mapBase.getNeighbors(fromGx, fromGy);
-  let fromAdjacentToEnemy = false;
-  for (const dir in fromNeighbors) {
-    const [nx, ny] = fromNeighbors[dir];
-    if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyUnit(nx, ny, owner, domain, units, gameState)) {
-      fromAdjacentToEnemy = true;
-      break;
-    }
+  // Check if 'from' tile is adjacent to enemy on matching terrain
+  if (!_hasAdjacentEnemy(fromGx, fromGy, fromIsOcean, owner, mapBase, units, gameState)) {
+    return false;
   }
 
-  // If not adjacent to enemy, ZOC doesn't restrict
-  if (!fromAdjacentToEnemy) return false;
-
-  // We're adjacent to enemy — check if destination is a city (any city bypasses ZOC)
-  // or has friendly presence (own unit or own city)
-  // In Civ2, units can always enter any city tile regardless of ZOC
+  // Source is ZOC'd — check if destination is a city or has friendly presence
   if (hasCityAt(toGx, toGy, mapBase)) return false;
   if (hasFriendlyPresence(toGx, toGy, owner, units, mapBase)) return false;
 
-  // Check if destination is adjacent to enemy combat unit
-  const toNeighbors = mapBase.getNeighbors(toGx, toGy);
-  for (const dir in toNeighbors) {
-    const [nx, ny] = toNeighbors[dir];
-    if (ny < 0 || ny >= mapBase.mh) continue;
-    if (hasEnemyUnit(nx, ny, owner, domain, units, gameState)) {
-      return true; // blocked by ZOC
-    }
-  }
+  // Check if destination is also adjacent to enemy on matching terrain
+  const toIsOcean = mapBase.getTerrain(toGx, toGy) === 10;
+  return _hasAdjacentEnemy(toGx, toGy, toIsOcean, owner, mapBase, units, gameState);
+}
 
+/**
+ * Binary FUN_005b4c63: check if any adjacent tile has an enemy unit on the
+ * same terrain class (land/ocean) as the source tile.
+ *
+ * For each of 8 neighbors: if there's a non-allied enemy unit AND the
+ * neighbor's terrain matches (both ocean or both land), the tile is ZOC'd.
+ *
+ * This is terrain-based, NOT unit-domain-based. A land unit on a transport
+ * at sea does NOT exert ZOC on adjacent land tiles.
+ */
+function _hasAdjacentEnemy(gx, gy, tileIsOcean, owner, mapBase, units, gameState) {
+  const neighbors = mapBase.getNeighbors(gx, gy);
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (ny < 0 || ny >= mapBase.mh) continue;
+    // Binary line 1848: adjacent tile terrain must match (both ocean or both land)
+    const adjIsOcean = mapBase.getTerrain(nx, ny) === 10;
+    if (adjIsOcean !== tileIsOcean) continue;
+    // Check for non-allied enemy unit at this adjacent tile
+    if (_hasEnemyUnitAt(nx, ny, owner, units, gameState)) return true;
+  }
   return false;
 }
 
 /**
  * Check if any foreign NON-ALLIED unit exists at the given tile.
  *
- * Binary FUN_005b4b66 (check_adjacent_enemy_simple, block_005B0000.c):
- *   For each unit at (x,y): if owner >= 0 AND owner != civSlot AND
- *   `(treaty[civSlot*0x594 + owner*4] & 8) == 0` → enemy present.
- *   Bit 8 = TF.ALLIANCE — allied units do NOT exert ZOC.
- *
- * The previous JS only checked `u.owner !== owner`, which incorrectly
- * treated allied units as ZOC-exerting. This blocked movement near allies.
- *
- * @param {number} gx - tile x
- * @param {number} gy - tile y
- * @param {number} owner - moving unit's civ slot
- * @param {number} domain - moving unit's domain (0=land, 1=air, 2=sea)
- * @param {Array} units - all units
- * @param {object} [gameState] - game state (for treaty lookup)
+ * Binary FUN_005b8d62 + alliance check (block_005B0000.c line 1849):
+ *   Returns true if any unit at (gx,gy) belongs to a different, non-allied civ.
+ *   Alliance flag = bit 3 (0x08) in treaty flags.
  */
-function hasEnemyUnit(gx, gy, owner, domain, units, gameState) {
+function _hasEnemyUnitAt(gx, gy, owner, units, gameState) {
   for (const u of units) {
     if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
     if (u.owner === owner) continue;
-    if (UNIT_DOMAIN[u.type] !== domain) continue;
     // Alliance check: allied units don't exert ZOC
+    if (gameState?.treaties) {
+      const key = owner < u.owner ? `${owner}-${u.owner}` : `${u.owner}-${owner}`;
+      if (gameState.treaties[key] === 'alliance') continue;
+    }
     if (gameState?.treatyFlags) {
       const key = `${owner}-${u.owner}`;
       const flags = gameState.treatyFlags[key] || 0;

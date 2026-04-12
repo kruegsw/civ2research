@@ -628,7 +628,7 @@ wss.on("connection", (ws) => {
           }
         }
 
-        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now(), difficulty: 'prince' };
+        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now(), difficulty: 'deity' };
         // AI is always ready
         room.ready[targetSeat] = true;
 
@@ -793,8 +793,9 @@ wss.on("connection", (ws) => {
           console.error(`[CRASH] sendGameStateToAll failed:`, broadcastErr);
           try { ws.send(JSON.stringify({ type: "ERROR", message: `Broadcast error: ${broadcastErr.message}` })); } catch (_) {}
         }
-        // Clear AI combat queue after broadcast
+        // Clear AI queues after broadcast
         if (room.aiCombatQueue) room.aiCombatQueue = [];
+        if (room.aiMoveQueue) room.aiMoveQueue = [];
 
         // Clear one-shot notifications AFTER broadcast so clients receive them
         clearOneshotNotifications(room);
@@ -1051,10 +1052,22 @@ async function processAiTurns(roomId, room) {
     }
 
     // Apply each AI action through the reducer
-    // Accumulate combat results visible to human players for animation
+    // Accumulate combat results and unit movements for client animation.
+    // Binary FUN_0059062c: each AI move goes through the same movement
+    // function as human units. Visible moves play the full animation.
     if (!room.aiCombatQueue) room.aiCombatQueue = [];
+    if (!room.aiMoveQueue) room.aiMoveQueue = [];
     const t2 = Date.now();
+    // Accumulate turnEvents across ALL AI actions so critical events
+    // (civEliminated, cityCapture, etc.) aren't lost by clearOneshotNotifications
+    const accumulatedTurnEvents = [];
     for (const action of aiActions) {
+      // Track unit position before move for animation
+      let prevUnit = null;
+      if (action.type === 'MOVE_UNIT' && action.unitIndex != null) {
+        const u = room.gameState.units[action.unitIndex];
+        if (u && u.gx >= 0) prevUnit = { gx: u.gx, gy: u.gy };
+      }
       let result;
       try {
         result = applyAction(room.gameState, room.mapBase, action, activeCiv);
@@ -1064,16 +1077,34 @@ async function processAiTurns(roomId, room) {
       }
       if (result !== room.gameState) {
         room.gameState = result;
-        // Queue all AI combat results — client decides whether to animate
-        // based on its FOW/LOS settings
+        // Queue combat results for client animation
         if (room.gameState.combatResult) {
           room.aiCombatQueue.push({ ...room.gameState.combatResult });
+        }
+        // Queue visible unit movements for client animation
+        if (action.type === 'MOVE_UNIT' && prevUnit && action.unitIndex != null) {
+          const newU = room.gameState.units[action.unitIndex];
+          if (newU && newU.gx >= 0 && (newU.gx !== prevUnit.gx || newU.gy !== prevUnit.gy)) {
+            room.aiMoveQueue.push({
+              unitIndex: action.unitIndex,
+              fromGx: prevUnit.gx, fromGy: prevUnit.gy,
+              toGx: newU.gx, toGy: newU.gy,
+            });
+          }
+        }
+        // Preserve turnEvents before clearing — they must reach the client
+        if (room.gameState.turnEvents) {
+          accumulatedTurnEvents.push(...room.gameState.turnEvents);
         }
         emitGameLogs(roomId, room);
         clearOneshotNotifications(room);
       }
     }
-    console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms`);
+    // Restore accumulated turnEvents so client receives all of them
+    if (accumulatedTurnEvents.length > 0) {
+      room.gameState.turnEvents = accumulatedTurnEvents;
+    }
+    console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms — ${room.aiMoveQueue.length} moves, ${room.aiCombatQueue.length} combats queued`);
 
     // End the AI civ's turn
     let endResult;
@@ -1613,6 +1644,7 @@ function buildStatePayload(room, civSlot) {
     barbarianActivity: gs.barbarianActivity,
     discoveredAdvance: gs.discoveredAdvance,
     combatResult: gs.combatResult || null,
+    aiMoveQueue: room.aiMoveQueue?.length > 0 ? room.aiMoveQueue : null,
     aiCombatQueue: room.aiCombatQueue?.length > 0 ? room.aiCombatQueue : null,
     cityFounded: gs.cityFounded,
     goodyHutResult: gs.goodyHutResult,

@@ -411,15 +411,101 @@ async function handleMapClick(e, isLongPress = false) {
   const activeUnitOnTile = activeUnit && activeUnit.gx === tile.gx && activeUnit.gy === tile.gy;
   const cityHit = findCityAt(tile.gx, tile.gy);
 
+  // City click handling:
+  //   Short click: if own units in city → select unit; else open city dialog
+  //   Long click: always show context menu with all options
   if (cityHit && !activeUnitOnTile) {
-    if (isLongPress && isMyTurn && S.mpSelectedUnit != null) {
-      const validActions = getValidActions(S.mpGameState, S.mpMapBase, S.mpSelectedUnit, tile);
-      if (validActions.length > 0) {
-        const menuItems = validActions.map(va => actionToMenuItem(va, S.mpSelectedUnit));
+    // Find own units in this city
+    const cityUnits = [];
+    if (isMyTurn) {
+      S.mpGameState.units.forEach((u, idx) => {
+        if (u.gx === tile.gx && u.gy === tile.gy && u.owner === S.mpCivSlot && u.gx >= 0) {
+          cityUnits.push(idx);
+        }
+      });
+    }
+
+    if (isLongPress && isMyTurn) {
+      // Long click on city: full context menu
+      const menuItems = [];
+
+      // Go To option if a unit is selected elsewhere
+      if (S.mpSelectedUnit != null) {
+        const selU = S.mpGameState.units[S.mpSelectedUnit];
+        if (selU && selU.movesLeft > 0 && (selU.gx !== tile.gx || selU.gy !== tile.gy)) {
+          const capturedUnit = S.mpSelectedUnit;
+          menuItems.push({
+            label: `Go To ${cityHit.city.name}`,
+            action: () => {
+              const u = S.mpGameState.units[capturedUnit];
+              if (!u || u.gx < 0) return;
+              const path = findPath(u.type, u.gx, u.gy, tile.gx, tile.gy, S.mpMapBase, u.owner, S.mpGameState.units, S.mpGameState.cities);
+              if (path && path.length > 0) {
+                S.transport.sendRaw({
+                  type: 'ACTION',
+                  action: { type: GOTO, unitIndex: capturedUnit, targetGx: tile.gx, targetGy: tile.gy, path },
+                });
+                S.pendingAutoAdvanceFrom = capturedUnit;
+              } else {
+                showOverlayMessage('No path found');
+              }
+            },
+          });
+        }
+        // Other valid actions for the selected unit at this tile
+        const moveActions = getValidActions(S.mpGameState, S.mpMapBase, S.mpSelectedUnit, tile);
+        for (const va of moveActions) {
+          menuItems.push(actionToMenuItem(va, S.mpSelectedUnit));
+        }
+      }
+
+      // Open City option
+      if (menuItems.length > 0) menuItems.push({ separator: true });
+      menuItems.push({
+        label: 'Open City',
+        action: () => openCityDialog(cityHit.city, cityHit.index),
+      });
+
+      // Units in city: select + orders
+      if (cityUnits.length > 0) {
+        menuItems.push({ separator: true });
+        menuItems.push({ header: 'Units in City' });
+        for (const idx of cityUnits) {
+          const u = S.mpGameState.units[idx];
+          const baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+          const orderDesc = (u.orders && u.orders !== 'none') ? ORDER_NAMES[u.orders] || u.orders : '';
+          const label = orderDesc ? `${baseName} (${orderDesc})` : baseName;
+          const sprite = renderUnitThumbnail(u);
+          menuItems.push({
+            label, sprite, selected: false,
+            action: () => {
+              selectUnit(idx);
+              if (u.orders && u.orders !== 'none') {
+                S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'wake' } });
+              }
+            },
+          });
+        }
+      }
+
+      if (menuItems.length > 0) {
         showUnitMenu(e.clientX, e.clientY, menuItems);
         return;
       }
     }
+
+    // Short click: if own units in city, select the top unit instead of opening dialog
+    if (!isLongPress && cityUnits.length > 0) {
+      const topUnit = cityUnits[0];
+      const topU = S.mpGameState.units[topUnit];
+      selectUnit(topUnit);
+      if (topU.orders && topU.orders !== 'none') {
+        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
+      }
+      return;
+    }
+
+    // Short click with no own units: open city dialog
     openCityDialog(cityHit.city, cityHit.index);
     return;
   }

@@ -593,25 +593,29 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   }
 
   // ── #5: Tech theft — ALWAYS guaranteed on city capture ──
-  // Binary ref: FUN_0057a27a — always steals one tech, no probability check
+  // Binary FUN_0057b5df lines 5067-5084: iterate techs from highest index
+  // (0x3E=62) to 0, take the FIRST stealable tech found. No player choice,
+  // no randomness — deterministic highest-index selection.
+  let stolenAdvanceId = -1;
   if (capturerCivSlot !== 0 && state.civTechs) {
     const theirTechs = state.civTechs[oldOwner];
     const myTechs = state.civTechs[capturerCivSlot];
     if (theirTechs && myTechs) {
-      const stealable = [];
-      for (const techId of theirTechs) {
-        if (!myTechs.has(techId)) stealable.push(techId);
+      // Binary: reverse iterate, take first match (highest tech index)
+      for (let t = 88; t >= 0; t--) {
+        if (theirTechs.has(t) && !myTechs.has(t)) {
+          stolenAdvanceId = t;
+          break;
+        }
       }
-      if (stealable.length > 0) {
-        // Always steal one random tech (no probability gate)
-        const stolenTech = stealable[rand() % stealable.length];
-        grantAdvance(state, capturerCivSlot, stolenTech);
+      if (stolenAdvanceId >= 0) {
+        grantAdvance(state, capturerCivSlot, stolenAdvanceId);
         events.push({
           type: 'techStolen',
           civSlot: capturerCivSlot,
           from: oldOwner,
-          advanceId: stolenTech,
-          advanceName: ADVANCE_NAMES[stolenTech] || `Tech ${stolenTech}`,
+          advanceId: stolenAdvanceId,
+          advanceName: ADVANCE_NAMES[stolenAdvanceId] || `Tech ${stolenAdvanceId}`,
         });
       }
     }
@@ -671,6 +675,8 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       wasOurs,
       gx: cityGx,
       gy: cityGy,
+      stolenAdvanceId,
+      stolenAdvanceName: stolenAdvanceId >= 0 ? (ADVANCE_NAMES[stolenAdvanceId] || `Tech ${stolenAdvanceId}`) : null,
     });
 
     // Civ elimination check — match the survived branch and the binary:
@@ -1243,6 +1249,8 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     wasOurs,
     gx: cityGx,
     gy: cityGy,
+    stolenAdvanceId,
+    stolenAdvanceName: stolenAdvanceId >= 0 ? (ADVANCE_NAMES[stolenAdvanceId] || `Tech ${stolenAdvanceId}`) : null,
   });
 
   return { events };

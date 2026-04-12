@@ -373,44 +373,45 @@ export function animateCombat(cr, onComplete) {
       sprite.width * pxPerMap, sprite.height * pxPerMap);
   }
 
-  // Update a unit's existing HP bar in place. Mirrors the renderer's main
-  // unit-draw HP bar logic (renderer.js:1371-1379) EXACTLY — draws ONLY
-  // the colored portion (no separate black background) so it overwrites
-  // the snapshot's existing bar without adding any new visual element.
-  // The shield underneath (civ-colored background, drawn into bgSnapshot
-  // by the main renderer) shows through where the bar ends.
-  //
-  // This works because the animation always goes from MORE HP → LESS HP,
-  // so the per-event bar is always at least as wide as the snapshot's
-  // final-state bar — drawing the new colored portion completely covers
-  // the snapshot's bar.
-  function updateHpBarAt(unitType, mx, my, curHp, maxHp) {
+  // Draw a unit's shield (shadow, front, HP bar) at the given map position.
+  // Mirrors the renderer's shield draw (renderer.js:1338-1379) exactly.
+  // By drawing the full shield, we completely cover any shield/HP bar
+  // artifacts from the bgSnapshot underneath.
+  function drawShieldAt(unitType, owner, mx, my, curHp, maxHp) {
     const sprites = S.mapSprites;
     const so = sprites?.shieldOffsets?.[unitType];
-    if (!so) return; // no shield position known — skip
+    if (!so || !sprites.shieldFront) return;
     const shieldX = mx + so.x - 1;
-    const shieldY = my - 16 + so.y - 1;
-    const barWmap = 12;
-    const barHmap = 3;
-    const barX = shieldX;
-    const barY = shieldY + 2;
+    const shieldY = my + so.y - 1;
+
+    // Shadow
+    if (sprites.shieldShadow) {
+      const sdx = (so.x < 32) ? -1 : 1;
+      drawSpriteAt(sprites.shieldShadow, shieldX + sdx, shieldY + 1);
+    }
+
+    // Shield front (civ-colored)
+    const frontKey = 'shieldFront-' + owner;
+    if (!sprites.shieldFrontColored[frontKey]) {
+      const color = Civ2Renderer.CIV_COLORS[owner] || '#cccccc';
+      sprites.shieldFrontColored[frontKey] = Civ2Renderer._recolorUnit(sprites.shieldFront, color);
+    }
+    drawSpriteAt(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
+
+    // HP bar — 12×3 at map scale, offset +2 from shield top
+    const barWmap = 12, barHmap = 3;
+    const barX = shieldX, barY = shieldY + 2;
     const ratio = Math.max(0, Math.min(1, curHp / Math.max(1, maxHp)));
     const greenWmap = Math.floor(ratio * barWmap);
-    if (greenWmap <= 0) return;
-
-    // Same color thresholds as the main renderer (renderer.js:1376-1378)
-    if (greenWmap > 8) S.vCtx.fillStyle = 'rgb(87,171,39)';      // green
-    else if (greenWmap > 3) S.vCtx.fillStyle = 'rgb(255,223,79)'; // yellow
-    else S.vCtx.fillStyle = 'rgb(243,0,0)';                       // red
-
-    // Draw only the colored portion, matching renderer.js:1379:
-    //   ctx.fillRect(barX, barY, greenW, barH)
-    S.vCtx.fillRect(
-      screenX(barX),
-      screenY(barY),
-      greenWmap * pxPerMap,
-      barHmap * pxPerMap
-    );
+    if (greenWmap > 0) {
+      if (greenWmap > 8) S.vCtx.fillStyle = 'rgb(87,171,39)';
+      else if (greenWmap > 3) S.vCtx.fillStyle = 'rgb(255,223,79)';
+      else S.vCtx.fillStyle = 'rgb(243,0,0)';
+      S.vCtx.fillRect(
+        screenX(barX), screenY(barY),
+        greenWmap * pxPerMap, barHmap * pxPerMap
+      );
+    }
   }
 
   const rounds = cr.rounds;
@@ -475,14 +476,16 @@ export function animateCombat(cr, onComplete) {
   }
 
   // Restore the snapshot and draw BOTH units at their original tiles WITH
-  // HP bars showing the given hp values. This is the "between explosion
-  // frames" baseline — what the binary shows after each tile redraw.
+  // full shields and HP bars. This is the "between explosion frames"
+  // baseline — what the binary shows after each FUN_005802fd tile redraw.
+  // Drawing full shields (shadow + front + HP bar) covers any shield/HP
+  // artifacts from the bgSnapshot underneath.
   function drawCombatScene(atkHp, defHp) {
     S.vCtx.putImageData(bgSnapshot, 0, 0);
     drawSpriteAt(atkSprite, atkTileX, atkTileY);
+    drawShieldAt(cr.attacker, cr.atkOwner, atkTileX, atkTileY, atkHp, atkMaxHp);
     drawSpriteAt(defSprite, defTileX, defTileY);
-    updateHpBarAt(cr.attacker, atkTileX, atkTileY, atkHp, atkMaxHp);
-    updateHpBarAt(cr.defender, defTileX, defTileY, defHp, defMaxHp);
+    drawShieldAt(cr.defender, cr.defOwner, defTileX, defTileY, defHp, defMaxHp);
   }
 
   // Play attack sound — binary dispatch from FUN_00580341:581-679
@@ -495,16 +498,18 @@ export function animateCombat(cr, onComplete) {
   const combatSound = getCombatAttackSound(cr.attacker, atkDom, defDom, isMissile, atkAtk, atkRange, hasCarryAir);
   if (combatSound.sound) sfx(combatSound.sound);
 
+  // ── Initial draw IMMEDIATELY: both units at their tiles with full HP ──
+  // Draw synchronously BEFORE awaiting explosion frames so the user never
+  // sees the post-combat state flash (where the loser is already gone).
+  let prevAtkHp = atkStartHp;
+  let prevDefHp = defStartHp;
+  drawCombatScene(prevAtkHp, prevDefHp);
+
   _ensureExplosionFrames().then(expFrames => {
     if (!expFrames || expFrames.length === 0) {
       if (onComplete) onComplete();
       return;
     }
-
-    // ── Initial draw: both units at their tiles with full HP bars ──
-    let prevAtkHp = atkStartHp;
-    let prevDefHp = defStartHp;
-    drawCombatScene(prevAtkHp, prevDefHp);
 
     // ── Play visual events sequentially ──
     // Binary FUN_00580341:805-870: each frame-boundary crossing plays an
@@ -516,15 +521,13 @@ export function animateCombat(cr, onComplete) {
         // All events done. Restore snapshot (which already shows the
         // post-combat state with the loser removed) and complete.
         S.vCtx.putImageData(bgSnapshot, 0, 0);
-        // Draw the survivor at its original tile (with full survivor HP).
-        // The bgSnapshot is the post-combat render, so it already shows
-        // the survivor; this explicit draw is just to be safe.
+        // Draw the survivor at its original tile with full shield + HP bar.
         if (attackerWins) {
           drawSpriteAt(atkSprite, atkTileX, atkTileY);
-          updateHpBarAt(cr.attacker, atkTileX, atkTileY, prevAtkHp, atkMaxHp);
+          drawShieldAt(cr.attacker, cr.atkOwner, atkTileX, atkTileY, prevAtkHp, atkMaxHp);
         } else {
           drawSpriteAt(defSprite, defTileX, defTileY);
-          updateHpBarAt(cr.defender, defTileX, defTileY, prevDefHp, defMaxHp);
+          drawShieldAt(cr.defender, cr.defOwner, defTileX, defTileY, prevDefHp, defMaxHp);
         }
         // Brief settling delay before triggering the next render
         setTimeout(() => { if (onComplete) onComplete(); }, 100);
@@ -539,10 +542,17 @@ export function animateCombat(cr, onComplete) {
       const newAtkHp = ev.atkHp;
       const newDefHp = ev.defHp;
       playExplosion(tx, ty, prevAtkHp, prevDefHp, () => {
-        // After the explosion: redraw with NEW HP values
+        // After the explosion: update HP values
         prevAtkHp = newAtkHp;
         prevDefHp = newDefHp;
-        drawCombatScene(prevAtkHp, prevDefHp);
+        // Binary FUN_00580341:817-819: FUN_005802fd (redraw both tiles)
+        // is ONLY called if the loser is still alive (FUN_005b29d7 != 0).
+        // When the killing blow lands, the explosion plays but the dead
+        // unit is NOT redrawn — the scene goes straight to post-combat.
+        const loserDead = (attackerWins && newDefHp <= 0) || (!attackerWins && newAtkHp <= 0);
+        if (!loserDead) {
+          drawCombatScene(prevAtkHp, prevDefHp);
+        }
         // Brief delay between events so the user sees the HP bar change
         setTimeout(playNextEvent, 100);
       });

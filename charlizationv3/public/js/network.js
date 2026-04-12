@@ -248,7 +248,7 @@ function renderRoomDetail(msg) {
       const removeBtnHtml = (isCreator && isPreGame)
         ? ` <button class="seat-remove-ai" data-seat="${s.seat}" title="Remove AI">x</button>`
         : '';
-      const currentDiff = s.difficulty || 'prince';
+      const currentDiff = s.difficulty || 'deity';
       let diffHtml = '';
       if (isCreator && isPreGame) {
         const opts = DIFFICULTY_KEYS.map(k => {
@@ -904,10 +904,12 @@ function updatePendingDiploInChat() {
     .map((d, i) => ({ ...d, index: i }))
     .filter(d => d.to === S.mpCivSlot && !d.resolved);
 
-  const hasPending = pendingProposals.length > 0 || pendingDemands.length > 0;
+  // Only flash the chat badge for human proposals and demands (AI uses dialog windows)
+  const humanMaskFlash = S.mpHumanPlayers ?? 0xFF;
+  const hasHumanPending = pendingProposals.some(p => !!((1 << p.from) & humanMaskFlash)) || pendingDemands.length > 0;
 
   // Start/stop flash interval
-  if (hasPending && !_pendingDiploFlashInterval) {
+  if (hasHumanPending && !_pendingDiploFlashInterval) {
     _pendingDiploFlashInterval = setInterval(() => {
       if (!S.chatOpen) {
         sfx('FEEDBK03');
@@ -918,13 +920,37 @@ function updatePendingDiploInChat() {
     // Immediately show chat + play sound
     if (!S.chatOpen) toggleChat();
     sfx('LETTER');
-  } else if (!hasPending && _pendingDiploFlashInterval) {
+  } else if (!hasHumanPending && _pendingDiploFlashInterval) {
     clearInterval(_pendingDiploFlashInterval);
     _pendingDiploFlashInterval = null;
   }
 
-  // Add pending proposals to chat
-  for (const p of pendingProposals) {
+  // Add pending proposals — AI proposals use dialog windows, human proposals use chat
+  const humanMask = S.mpHumanPlayers ?? 0xFF;
+  const aiProposals = pendingProposals.filter(p => !((1 << p.from) & humanMask));
+  const humanProposals = pendingProposals.filter(p => !!((1 << p.from) & humanMask));
+
+  // AI proposals: show as Civ2-style dialog window (matches binary behavior)
+  for (const p of aiProposals) {
+    const fromName = S.mpGameState.civNames?.[p.from] || `Civ ${p.from}`;
+    const treatyLabel = (p.treaty || 'peace').charAt(0).toUpperCase() + (p.treaty || 'peace').slice(1);
+    createCiv2Dialog('diplo-ai-proposal', 'Foreign Minister', panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+      msg.textContent = `${fromName} proposes ${treatyLabel}.`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Accept', action: () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_TREATY', proposalIndex: p.index, accept: true } });
+      }},
+      { label: 'Decline', action: () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_TREATY', proposalIndex: p.index, accept: false } });
+      }},
+    ]);
+  }
+
+  // Human proposals: show in chat panel (async multiplayer interaction)
+  for (const p of humanProposals) {
     const fromName = S.mpGameState.civNames?.[p.from] || `Civ ${p.from}`;
     const fromColor = CIV_COLORS[p.from] || '#fff';
     const treatyLabel = (p.treaty || 'peace').charAt(0).toUpperCase() + (p.treaty || 'peace').slice(1);
@@ -1593,29 +1619,44 @@ function initNetwork(appCallbacks) {
             }
           };
 
-          // ── AI unit movement animation: show visible moves before combat ──
-          const fowOn = document.getElementById('fow-toggle')?.checked;
+          // ── AI unit movement animation: filter by explored + LOS ──
+          // Binary FUN_0059062c: animations only play on tiles that are BOTH
+          // explored by the player AND in current line of sight.
+          // When FOW is off: all tiles treated as explored (user sees everything).
+          // When LOS is off: no LOS filter (all explored tiles are "visible").
+          const mw = S.mpMapBase?.mw || 1;
+          const myVisBit = 1 << S.mpCivSlot;
+          const _fowOn = document.getElementById('fow-toggle')?.checked;
+
+          function isVisibleToPlayer(gx, gy) {
+            // When FOW is on, tile must be explored
+            if (_fowOn && S.mpMapBase?.tileData) {
+              const tile = S.mpMapBase.tileData[gy * mw + gx];
+              if (!tile || !(tile.visibility & myVisBit)) return false;
+            }
+            // When LOS data is available (LOS toggle on), tile must be in LOS
+            if (S.cachedLosData) {
+              return !!S.cachedLosData[gy * mw + gx];
+            }
+            // LOS off — all (explored) tiles pass
+            return true;
+          }
+
           const aiMoves = [];
           if (statePayload.aiMoveQueue) {
             for (const mv of statePayload.aiMoveQueue) {
               if (!mv || mv.toGx == null) continue;
-              // Skip moves already covered by combat (combat will center there)
-              const hasCombatAtDest = statePayload.aiCombatQueue?.some(cr =>
-                cr.gx === mv.toGx && cr.gy === mv.toGy);
-              if (hasCombatAtDest) continue;
-              if (!fowOn) {
+              // Binary: show move only if source OR destination is in player's
+              // current line of sight (not just explored)
+              const srcInLOS = mv.fromGx != null ? isVisibleToPlayer(mv.fromGx, mv.fromGy) : false;
+              const dstInLOS = isVisibleToPlayer(mv.toGx, mv.toGy);
+              if (srcInLOS || dstInLOS) {
                 aiMoves.push(mv);
-              } else {
-                // FOW on — only show if destination is visible
-                const tile = S.mpMapBase?.tileData?.[mv.toGy * S.mpMapBase.mw + mv.toGx];
-                if (tile && (tile.visibility & (1 << S.mpCivSlot))) {
-                  aiMoves.push(mv);
-                }
               }
             }
           }
 
-          // Collect combat results, filtered by client's current LOS/FOW setting
+          // Collect combat results — only those in player's current LOS
           const allCombats = [];
           if (statePayload.combatResult && statePayload.combatResult.gx != null) {
             // Player's own combat — always show
@@ -1624,15 +1665,8 @@ function initNetwork(appCallbacks) {
           if (statePayload.aiCombatQueue) {
             for (const aiCr of statePayload.aiCombatQueue) {
               if (!aiCr || aiCr.gx == null) continue;
-              if (!fowOn) {
-                // FOW off — show all battles
+              if (isVisibleToPlayer(aiCr.gx, aiCr.gy)) {
                 allCombats.push(aiCr);
-              } else {
-                // FOW on — only show if tile is explored by our civ
-                const tile = S.mpMapBase?.tileData?.[aiCr.gy * S.mpMapBase.mw + aiCr.gx];
-                if (tile && (tile.visibility & (1 << S.mpCivSlot))) {
-                  allCombats.push(aiCr);
-                }
               }
             }
           }
@@ -1640,52 +1674,116 @@ function initNetwork(appCallbacks) {
           if (aiMoves.length > 0) console.log(`[ai-moves] ${aiMoves.length} visible AI movements`);
           if (allCombats.length > 0) console.log(`[ai-combat] ${allCombats.length} visible AI combats`);
 
-          // ── Step 1: Play AI movement animations (sequential, before combat) ──
-          function playAiMoves(onDone) {
-            let mi = 0;
-            function next() {
-              if (mi >= aiMoves.length) { onDone(); return; }
-              const mv = aiMoves[mi++];
-              centerOnTile(mv.toGx, mv.toGy);
-              doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
-              sfx('MOVPIECE');
-              setTimeout(next, 400);
-            }
-            next();
+          // ── Interleaved AI moves + combats ──
+          // Binary FUN_0059062c: each AI move plays through the same movement
+          // function as human units. Movement animation (~240ms) is followed
+          // by post-move delay (FUN_0046e287(10) → ~167ms). If combat occurs
+          // at the destination, the combat animation plays immediately after
+          // the move. Player sees: move → combat → move → combat, in order.
+          //
+          // Build a unified timeline of moves and combats, ordered by the
+          // server's processing sequence. Combats that match a move's
+          // destination are interleaved after that move.
+
+          // Index combats by destination tile for interleaving
+          const combatsByTile = new Map();
+          for (const cr of allCombats) {
+            const key = `${cr.gx},${cr.gy}`;
+            if (!combatsByTile.has(key)) combatsByTile.set(key, []);
+            combatsByTile.get(key).push(cr);
           }
 
-          // ── Step 2: Play combat animations (original working code) ──
-          function playCombats(onDone) {
-            if (allCombats.length === 0) { onDone(); return; }
-            const firstCr = allCombats[0];
-            if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
-              centerOnTile(firstCr.gx, firstCr.gy);
+          // Build timeline: each entry is { type: 'move', mv } or { type: 'combat', cr }
+          const timeline = [];
+          const usedCombats = new Set();
+          for (const mv of aiMoves) {
+            timeline.push({ type: 'move', mv });
+            // Attach any combat at this move's destination
+            const key = `${mv.toGx},${mv.toGy}`;
+            const crs = combatsByTile.get(key);
+            if (crs) {
+              for (const cr of crs) {
+                const crIdx = allCombats.indexOf(cr);
+                if (!usedCombats.has(crIdx)) {
+                  usedCombats.add(crIdx);
+                  timeline.push({ type: 'combat', cr });
+                }
+              }
             }
-            doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
-            let ci = 0;
-            function nextCombat() {
-              if (ci >= allCombats.length) {
-                setTimeout(onDone, 400);
+          }
+          // Append any combats not tied to a move (e.g. player's own combat)
+          for (let i = 0; i < allCombats.length; i++) {
+            if (!usedCombats.has(i)) {
+              timeline.push({ type: 'combat', cr: allCombats[i] });
+            }
+          }
+
+          function playTimeline(onDone) {
+            if (timeline.length === 0) { onDone(); return; }
+            let ti = 0;
+
+            function nextEntry() {
+              if (ti >= timeline.length) {
+                setTimeout(onDone, 200);
                 return;
               }
-              const cr = allCombats[ci++];
-              if (!isTileInViewport(cr.gx, cr.gy)) {
-                centerOnTile(cr.gx, cr.gy);
-              }
-              if (S.mapSprites) {
-                animateCombat(cr, nextCombat);
+              const entry = timeline[ti++];
+
+              if (entry.type === 'move') {
+                const mv = entry.mv;
+                // Binary FUN_0059062c lines 218-226, exact sequence:
+                //   1. FUN_004105f8(srcGx, srcGy): center camera on SOURCE
+                //   2. FUN_0046e287(10): 167ms pause (camera settle)
+                //   3. FUN_0056c705: movement animation ~240ms (unit slides)
+                //   4. FUN_0047cea6(destGx, destGy): center on DESTINATION
+                //
+                // We can't animate the slide (only have final state), so
+                // step 3 becomes "re-render showing unit at dest + sound".
+                const srcGx = mv.fromGx ?? mv.toGx;
+                const srcGy = mv.fromGy ?? mv.toGy;
+
+                // Step 1: Center on source tile (FUN_004105f8)
+                centerOnTile(srcGx, srcGy);
+                doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+
+                // Step 2: 167ms camera settle (FUN_0046e287(10))
+                setTimeout(() => {
+                  // Step 3: Center on dest, render (unit now at dest), play sound
+                  // Binary FUN_0056c705: unit slides from src to dest over ~256ms
+                  // (8 frames × 32ms). We can't slide (only have final state),
+                  // so we show the unit at dest and add the slide duration as
+                  // observation time.
+                  centerOnTile(mv.toGx, mv.toGy);
+                  doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+                  sfx('MOVPIECE');
+
+                  // Step 4: Post-move delay = slide time (~256ms) + settle (167ms)
+                  // Binary total per move: 167 + 256 + 167 ≈ 590ms
+                  setTimeout(nextEntry, 420);
+                }, 167);
               } else {
-                const atkSfxName = UNIT_ATK_SFX[cr.attacker];
-                if (atkSfxName) sfx(atkSfxName);
-                setTimeout(nextCombat, 200);
+                // Combat — same center-settle-animate sequence
+                // Binary: FUN_004105f8 → FUN_0046e287(10) → FUN_00580341
+                const cr = entry.cr;
+                centerOnTile(cr.gx, cr.gy);
+                doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+                // 167ms camera settle (FUN_0046e287(10))
+                setTimeout(() => {
+                  if (S.mapSprites) {
+                    animateCombat(cr, nextEntry);
+                  } else {
+                    setTimeout(nextEntry, 200);
+                  }
+                }, 167);
               }
             }
-            nextCombat();
+
+            nextEntry();
           }
 
-          // Chain: moves → combats → afterCombatAnim
-          if (aiMoves.length > 0 || allCombats.length > 0) {
-            playAiMoves(() => playCombats(afterCombatAnim));
+          // Play unified timeline, then afterCombatAnim
+          if (timeline.length > 0) {
+            playTimeline(afterCombatAnim);
           } else {
             afterCombatAnim();
           }

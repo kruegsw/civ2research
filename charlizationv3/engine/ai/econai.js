@@ -755,26 +755,25 @@ export function chooseResearch(gameState, mapBase, civSlot) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 4. balanceRates — Port of FUN_004bd2a3
+// 4. balanceRates — Port of FUN_00487a41 lines 2001-2064
 //
-// Evaluates city happiness/disorder state and adjusts tax/science/
-// luxury rates accordingly.
+// The binary's AI rate-setting code runs INSIDE process_civ_turn,
+// AFTER all city turns complete. It uses an incremental approach:
+//   - Compute current luxury from existing sci+tax
+//   - If disorder detected: bump luxury by 1 (max 4 = 40%)
+//   - Reduce luxury on quiet turns (every 4th turn, no disorder)
+//   - Science = leader expansionism + (10 - luxury) / 2
+//   - Treasury bonuses push science higher
+//   - Tax = remainder
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Assess the economic/happiness situation and compute optimal rates.
+ * Adjust tax/science/luxury rates based on city happiness state.
  *
- * Port of FUN_004bd2a3 + rate-setting logic:
- *
- * FUN_004bd2a3 scans all cities and returns a "situation code" (1-6):
- *   1 = disorder with WLTKD cities in democracy → max luxury (panic)
- *   2 = disorder but rates already tuned → minor tweak
- *   3 = disorder, not democracy → increase luxury
- *   4 = no disorder, rates already optimal → no change needed
- *   5 = no disorder, rates adjustable, no WLTKD → can push science
- *   6 = no disorder, WLTKD present → can push science more
- *
- * We then translate the situation code into concrete rate changes.
+ * Faithful port of FUN_00487a41 lines 2001-2064 (AI rate-setting
+ * inside process_civ_turn). The binary's approach is incremental:
+ * it adjusts luxury ±1 from current rates each turn rather than
+ * recomputing from scratch.
  *
  * @param {object} gameState
  * @param {object} mapBase
@@ -787,235 +786,84 @@ export function balanceRates(gameState, mapBase, civSlot) {
 
   const govt = civ.government || 'despotism';
   const govtIdx = getGovtIndex(gameState, civSlot);
-  const maxRate = GOVT_MAX_RATE[govt] ?? 6;
-  const maxSci = GOVT_MAX_SCIENCE[govt] ?? 6;
   const currentSciRate = civ.scienceRate ?? 0;
   const currentTaxRate = civ.taxRate ?? 0;
 
-  // ── Scan cities for disorder/WLTKD state (FUN_004bd2a3 lines 5908-5927) ──
-  let disorderCount = 0;      // local_10: cities where happy < unhappy
-  let wltkdDisorder = 0;      // local_c: disordered cities with WLTKD flag
-  let borderlineCount = 0;    // local_18: cities where happy == unhappy
-  let wltkdCount = 0;         // local_14: cities with WLTKD flag
-
+  // ── Scan cities for disorder flag (FUN_00487a41 lines 1972-1982) ──
+  // local_1c bit 1 = any city in civil disorder
+  let hasDisorder = false;
   if (gameState.cities) {
     for (const city of gameState.cities) {
       if (!city || city.owner !== civSlot || city.gx < 0) continue;
-
       if (city.civilDisorder) {
-        disorderCount++;
-        if (city.weLoveKingDay) {
-          wltkdDisorder++;
-        }
-      } else {
-        // Check borderline (happy == unhappy approximation)
-        // In decompiled code: compares DAT_0064f392 (happy) vs DAT_0064f393 (unhappy)
-        // We use civilDisorder as the proxy — if not in disorder, check if close
-        if (city.happy != null && city.unhappy != null) {
-          if (city.happy === city.unhappy) borderlineCount++;
-        } else {
-          borderlineCount++; // conservative: treat as borderline if unknown
-        }
-      }
-      if (city.weLoveKingDay) {
-        wltkdCount++;
+        hasDisorder = true;
+        break;
       }
     }
   }
 
-  // ── Assess whether rates need changing (FUN_004bd2a3 lines 5928-5963) ──
-  // bVar1 = true if rates need adjustment
-  let needsAdjustment;
-  if (govtIdx < 5) {
-    // Government < republic
-    needsAdjustment = true;
-    if (disorderCount === 0 && borderlineCount > 0 && wltkdCount === 0 &&
-        currentSciRate + currentTaxRate === 10) {
-      needsAdjustment = false;
-    }
-  } else {
-    // Republic or Democracy: needs adjustment if science+tax < 9
-    needsAdjustment = (currentSciRate + currentTaxRate) < 9;
+  // ── Compute luxury (lines 2002-2010) ──
+  // Start from current luxury = 10 - sci - tax
+  let luxury = 10 - currentSciRate - currentTaxRate;
+
+  // If disorder AND luxury < 4: bump by 1
+  if (hasDisorder && luxury < 4) {
+    luxury = luxury + 1;
   }
 
-  // ── Compute situation code (lines 5940-5963) ──
-  let situation;
-  if (disorderCount === 0) {
-    if (needsAdjustment) {
-      if (wltkdCount === 0) {
-        situation = 5; // No disorder, adjustable, no WLTKD → push science
-      } else {
-        situation = 6; // No disorder, WLTKD → push science hard
-      }
-    } else {
-      situation = 4; // Everything fine, no change needed
-    }
-  } else {
-    // There IS disorder
-    if (needsAdjustment) {
-      if (wltkdDisorder === 0 || govtIdx !== 6) {
-        // Democracy check: wltkdDisorder > 0 AND democracy → panic mode (1)
-        situation = 3; // Disorder, needs luxury increase
-      } else {
-        situation = 1; // Panic: disorder + WLTKD in democracy
-      }
-    } else {
-      situation = 2; // Disorder but rates already tuned
-    }
-  }
-
-  // ── (#15) Science rate lookahead: push science harder when close to key tech ──
-  let sciencePriority = false;
-  if (disorderCount === 0 && (situation === 5 || situation === 6)) {
-    const researchId = civ.techBeingResearched;
-    if (researchId != null && researchId >= 0 && researchId < NUM_ADVANCES) {
-      // Check if this is a critical tech (enables aqueduct, government, or military)
-      const isAqueductTech = researchId === IMPROVE_PREREQS[AQUEDUCT_BUILDING_ID];
-      const isSewerTech = researchId === IMPROVE_PREREQS[SEWER_BUILDING_ID];
-      const isGovtTech = Object.values({ 2: 54, 3: 15, 4: 31, 5: 71, 6: 21 })
-        .includes(researchId);
-      // Check research progress — if we're > 60% done, push harder
-      const researchProgress = civ.researchBeakers ?? 0;
-      const researchCost = calcResearchCost(gameState, civSlot) || 40;
-      const progressRatio = researchProgress / researchCost;
-
-      if (progressRatio > 0.6 || isAqueductTech || isSewerTech || isGovtTech) {
-        sciencePriority = true;
-      }
-    }
-  }
-
-  // ── Translate situation into rate changes ──
-  let science, tax, luxury;
-
-  switch (situation) {
-    case 1:
-      // Panic mode: maximize luxury to quell disorder
-      luxury = Math.min(maxRate, 6);
-      tax = Math.min(maxRate, 2);
-      science = 10 - luxury - tax;
-      break;
-
-    case 2:
-      // Minor disorder, rates okay: bump luxury slightly
-      luxury = 10 - currentSciRate - currentTaxRate;
-      luxury = Math.min(maxRate, luxury + 1);
-      science = Math.min(maxSci, currentSciRate);
-      tax = 10 - science - luxury;
-      if (tax < 0) { science += tax; tax = 0; }
-      break;
-
-    case 3:
-      // Disorder, increase luxury
-      luxury = Math.min(maxRate, 3);
-      science = Math.min(maxSci, 10 - luxury - 2);
-      tax = 10 - science - luxury;
-      if (tax < 0) { science += tax; tax = 0; }
-      if (tax > maxRate) {
-        const excess = tax - maxRate;
-        tax = maxRate;
-        luxury = Math.min(maxRate, luxury + excess);
-      }
-      break;
-
-    case 4:
-      // No change needed
-      return null;
-
-    case 5:
-      // No disorder, push science (#15: push harder when close to critical tech)
-      science = Math.min(maxSci, sciencePriority ? 9 : 8);
-      luxury = 0;
-      tax = 10 - science;
-      if (tax > maxRate) {
-        const excess = tax - maxRate;
-        tax = maxRate;
-        luxury = Math.min(maxRate, excess);
-      }
-      break;
-
-    case 6:
-      // No disorder, WLTKD active — maximize science
-      science = Math.min(maxSci, 9);
-      luxury = Math.min(maxRate, 1);
-      tax = 10 - science - luxury;
-      if (tax < 0) { science += tax; tax = 0; }
-      if (tax > maxRate) {
-        const excess = tax - maxRate;
-        tax = maxRate;
-        luxury = Math.min(maxRate, luxury + excess);
-      }
-      break;
-
-    default:
-      return null;
-  }
-
-  // ── G.3: Treasury threshold adjustments ──
-  // Binary: wealthy AI increases science based on treasury level
-  const treasury = civ.treasury || 0;
+  // On quiet turns (no disorder, every 4th turn), reduce luxury if > 2
   const turnNum = gameState.turn?.number || 0;
-  if (treasury > turnNum + 100 && science < maxSci) science += 1;
-  if (treasury > 2000 && science < maxSci) science += 1;
-  if (treasury > 8000) science = Math.min(maxSci, 10 - tax);
-
-  // ── Iterative optimization: greedily push science higher while treasury stays positive ──
-  // After the situation-based selection, try incrementing science by 1 and decrementing
-  // tax by 1 repeatedly. Accept only if treasury won't go negative.
-  // This matches the binary's iterative optimization approach (FUN_004bd2a3).
-  if (science < maxSci && tax > 0 && disorderCount === 0 && mapBase) {
-    // Estimate net income at current rates to see if we can afford more science
-    let trialSci = science;
-    let trialTax = tax;
-    while (trialSci < maxSci && trialTax > 0) {
-      const nextSci = trialSci + 1;
-      const nextTax = trialTax - 1;
-      // Estimate treasury impact: compute total tax income - maintenance at trial rates
-      let trialTaxIncome = 0;
-      let trialMaintenance = 0;
-      // Build simulated state once per trial iteration
-      const simCiv = { ...civ, scienceRate: nextSci, taxRate: nextTax };
-      const simState = { ...gameState, civs: [...gameState.civs] };
-      simState.civs[civSlot] = simCiv;
-      const cities = gameState.cities || [];
-      for (let ci = 0; ci < cities.length; ci++) {
-        const city = cities[ci];
-        if (!city || city.owner !== civSlot || city.size <= 0) continue;
-        if (city.resistanceTurns > 0) continue;
-        const tradeResult = calcCityTrade(city, ci, simState, mapBase);
-        trialTaxIncome += tradeResult.tax || 0;
-        trialMaintenance += tradeResult.maintenance || 0;
-      }
-      const netIncome = trialTaxIncome - trialMaintenance;
-      if (netIncome + (treasury || 0) < 0) break; // would cause deficit
-      trialSci = nextSci;
-      trialTax = nextTax;
-    }
-    science = trialSci;
-    tax = trialTax;
-    luxury = 10 - science - tax;
+  if ((turnNum & 3) === 0 && !hasDisorder && luxury > 2) {
+    luxury = luxury - 1;
   }
+
+  // Clamp luxury to [0, 4] — binary: clamp(local_18, 0, 4)
+  luxury = Math.max(0, Math.min(4, luxury));
+
+  // ── Compute science (lines 2012-2014) ──
+  // science = expansionism + (10 - luxury) / 2
+  const leaderIdx = civ.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0];
+  const expansionism = personality[0]; // DAT_006554fa
+  let science = expansionism + ((10 - luxury) >> 1);
+
+  // ── Treasury bonuses (lines 2015-2022) ──
+  const treasury = civ.treasury || 0;
+  if (treasury > turnNum + 100) science += 1;
+  if (treasury > 2000) science += 1;
+  if (treasury > 8000) science = 10 - luxury;
+
+  // ── Check if AI has researched all techs — if so, set science to 0 (lines 2056-2061) ──
+  // Binary: if civ has all 5 "final" techs, science = 0
+  // We approximate: if no research target, science = 0
+  const civTechs = gameState.civTechs?.[civSlot];
+  if (civTechs && civTechs.size >= 89) {
+    // Near or at tech cap
+    science = 0;
+  }
+
+  // ── Clamp science to government max (lines 2040-2055) ──
+  // Binary: govtIdx determines maxSci: 0→6, 1→6, 2→7, 3→7, 4→7, 5→8, 6→10
+  let maxSci = 6;
+  if (govtIdx > 1) maxSci = 7;
+  if (govtIdx > 4) maxSci = 8;
+  if (govtIdx > 5) maxSci = 10;
+  const sciCap = Math.min(maxSci, 10 - luxury);
+  science = Math.max(0, Math.min(science, sciCap));
+
+  // ── Tax = remainder (line 2063) ──
+  let tax = 10 - science - luxury;
 
   // ── Final sanity clamps ──
+  const maxRate = GOVT_MAX_RATE[govt] ?? 6;
+  if (tax < 0) { science += tax; tax = 0; }
+  if (tax > maxRate) {
+    const excess = tax - maxRate;
+    tax = maxRate;
+    science = Math.max(0, science - excess);
+  }
   science = Math.max(0, Math.min(maxSci, science));
-  tax = Math.max(0, Math.min(maxRate, tax));
   luxury = 10 - science - tax;
-
-  if (luxury > maxRate) {
-    const excess = luxury - maxRate;
-    luxury = maxRate;
-    if (tax + excess <= maxRate) {
-      tax += excess;
-    } else {
-      tax = maxRate;
-      science = 10 - tax - luxury;
-    }
-  }
-  if (luxury < 0) {
-    luxury = 0;
-    science = Math.min(maxSci, 10 - tax);
-    tax = 10 - science;
-  }
 
   // Validate sum
   if (tax + luxury + science !== 10 || tax < 0 || luxury < 0 || science < 0) {
@@ -1145,6 +993,24 @@ export function considerRevolution(gameState, mapBase, civSlot) {
     if (getTreaty(gameState, civSlot, i) === 'war') { atWar = true; break; }
   }
 
+  // Count happiness infrastructure for republic/democracy scoring:
+  // Under republic/democracy, martial law doesn't work and military abroad
+  // causes unhappiness. Cities NEED temples/colosseums/cathedrals to avoid
+  // disorder. Penalty if most cities lack these.
+  let citiesWithHappyBuilding = 0;
+  let totalCities = 0;
+  let disorderCities = 0;
+  for (const city of (gameState.cities || [])) {
+    if (!city || city.owner !== civSlot || city.size <= 0) continue;
+    totalCities++;
+    if (city.civilDisorder) disorderCities++;
+    if (city.buildings && (city.buildings.has(4) || city.buildings.has(14) ||
+        city.buildings.has(11))) {
+      citiesWithHappyBuilding++;
+    }
+  }
+  const happyCoverage = totalCities > 0 ? citiesWithHappyBuilding / totalCities : 0;
+
   for (let g = 1; g <= maxGovtIdx; g++) {
     if (!canUseGovernment(gameState, civSlot, g)) continue;
 
@@ -1168,16 +1034,25 @@ export function considerRevolution(gameState, mapBase, civSlot) {
         govScore = 6;
         if (atWar) govScore += 10;
         if (!atWar) govScore -= 5; // bad for peaceful growth
+        // Fundamentalism nullifies all unhappiness — great during disorder
+        if (disorderCities > 0) govScore += disorderCities * 3;
         break;
       case 5: // Republic
         govScore = 12 + cityCount;
         if (atWar) govScore -= 4;
         if (treasury > 200) govScore += 3;
+        // Penalty if cities lack happiness buildings — republic loses martial law
+        // and military abroad causes unhappiness
+        if (happyCoverage < 0.5) govScore -= 10;
+        else if (happyCoverage < 0.75) govScore -= 5;
         break;
       case 6: // Democracy
         govScore = 15 + cityCount * 2;
         if (atWar) govScore -= 8;
         if (treasury > 200) govScore += 5;
+        // Democracy is even more punishing — double war weariness penalty
+        if (happyCoverage < 0.5) govScore -= 15;
+        else if (happyCoverage < 0.75) govScore -= 8;
         break;
     }
 

@@ -814,11 +814,39 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         }
       }
 
-      // Attacker stays on its original tile after winning combat.
-      // Player must issue a separate move command to advance to the tile.
-      // Combat costs 1 MP but does NOT change the attacker's position.
-      unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
-      if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+      // Binary FUN_0059062c: after winning combat at a CITY tile, the
+      // attacker advances into the city and captures it as part of the
+      // same move. On OPEN GROUND, the attacker stays on its original
+      // tile (no auto-advance).
+      if (defInCity) {
+        // Advance into city — the city capture code runs below
+        unit.gx = dest.gx;
+        unit.gy = dest.gy;
+        unit.x = dest.gx * 2 + (dest.gy % 2);
+        unit.y = dest.gy;
+        unit.movesLeft = 0; // all MP consumed
+        if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+
+        // Capture undefended city (same logic as normal movement path)
+        const captureTarget = state.cities.find(c =>
+          c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.size > 0);
+        if (captureTarget && (UNIT_ATK[unit.type] || 0) > 0) {
+          const capDefOwner = captureTarget.owner;
+          state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+          const capCityIdx = state.cities.indexOf(captureTarget);
+          if (capCityIdx >= 0) {
+            captureCity(state, prev, mapBase, capCityIdx, civSlot, capDefOwner);
+            state.combatResult = state.combatResult || {};
+            state.combatResult.cityCapture = true;
+            state.combatResult.cityName = captureTarget.name;
+            checkCivElimination(state, capDefOwner, true);
+          }
+        }
+      } else {
+        // Open ground: attacker stays on original tile (no auto-advance)
+        unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+        if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+      }
     } else {
       // Attacker destroyed
       unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
@@ -1008,7 +1036,9 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       unit.x = dest.gx * 2 + (dest.gy % 2);
       unit.y = dest.gy;
       unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
-      if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+      // Clear standing orders so auto-cargo won't skip this unit
+      if (unit.orders === 'fortified' || unit.orders === 'fortifying' ||
+          unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
       state.units[unitIndex] = unit;
       // Update visibility
       if (unit.gx >= 0) {

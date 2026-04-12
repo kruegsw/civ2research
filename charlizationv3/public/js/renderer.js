@@ -772,6 +772,45 @@ const Civ2Renderer = {
       return !losData[gy * mw + gxW];
     }
 
+    // Binary FUN_0056baff:3948 — enemy units AND cities outside LOS are
+    // hidden or shown as stale, regardless of FOW toggle. Compute LOS
+    // from own units (radius 1) and cities (radius 2) for filtering.
+    const _viewCiv = options.fowCiv ?? -1;
+    let _unitLos = losData; // reuse existing losData if available
+    if (!_unitLos && _viewCiv >= 0) {
+      _unitLos = new Uint8Array(mw * mh);
+      const _mw2 = mw * 2;
+      const _R1 = [[0,0],[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1],
+        [0,-2],[0,2],[-2,0],[2,0],[-1,-2],[1,-2],[-1,2],[1,2],[-2,-1],[-2,1],[2,-1],[2,1]];
+      const _R2 = [[0,-3],[0,3],[-2,-2],[2,-2],[-2,2],[2,2],[-3,-1],[-3,0],[-3,1],
+        [3,-1],[3,0],[3,1],[0,-4],[0,4],[-1,-3],[1,-3],[-1,3],[1,3],[-2,-3],[2,-3],
+        [-2,3],[2,3],[-3,-2],[-3,2],[3,-2],[3,2]];
+      function _markLos(dx, dy, offs) {
+        for (const [ox, oy] of offs) {
+          let nx = dx + ox; const ny = dy + oy;
+          if (ny < 0 || ny >= mh) continue;
+          if (wraps) nx = ((nx % _mw2) + _mw2) % _mw2;
+          else if (nx < 0 || nx >= _mw2) continue;
+          _unitLos[ny * mw + (nx >> 1)] = 1;
+        }
+      }
+      for (const u of mapData.units) {
+        if (u.owner !== _viewCiv || u.gx < 0) continue;
+        _markLos(u.x != null ? u.x : u.gx * 2 + (u.gy % 2), u.gy, _R1);
+      }
+      for (const c of mapData.cities) {
+        if (c.owner !== _viewCiv || c.size <= 0) continue;
+        const cx = c.cx != null ? c.cx : c.gx * 2 + (c.gy % 2);
+        _markLos(cx, c.gy, _R1);
+        _markLos(cx, c.gy, _R2);
+      }
+    }
+    function _tileInLOS(gx, gy) {
+      if (!_unitLos) return true;
+      const gxW = wraps ? ((gx % mw) + mw) % mw : gx;
+      return !!_unitLos[gy * mw + gxW];
+    }
+
     // ────────────────────────────────────────
     // PASS 1: Base terrain
     // ────────────────────────────────────────
@@ -1101,8 +1140,13 @@ const Civ2Renderer = {
     if (onProgress) onProgress('Drawing cities...');
     await this._yield();
 
+    // Filter destroyed cities (size 0 means deleted; owner 0xFF marks ruins).
+    // Engine convention: cities are kept in the array with size=0 to preserve
+    // indices, but they should not render anywhere on the map.
+    const liveCities = mapData.cities.filter(c => c && c.size > 0 && c.owner < 8);
+
     const citiesByRow = {};
-    for (const c of mapData.cities) {
+    for (const c of liveCities) {
       if (!citiesByRow[c.gy]) citiesByRow[c.gy] = [];
       citiesByRow[c.gy].push(c);
     }
@@ -1208,6 +1252,13 @@ const Civ2Renderer = {
             continue;
           }
 
+          // Enemy cities outside LOS: render dimmed (stale/last-known).
+          // Binary: explored-but-not-in-LOS tiles show city at 50% opacity
+          // with last-known data. Own cities are always fully visible.
+          if (c.owner !== _viewCiv && !_tileInLOS(c.gx, c.gy)) {
+            ctx.globalAlpha = 0.5;
+          }
+
           // Visible city
           const drawPositions = [c.gx];
           if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
@@ -1234,6 +1285,7 @@ const Civ2Renderer = {
               ctx.drawImage(sprites.cityFlags[c.owner], fx, fy);
             }
           }
+          ctx.globalAlpha = 1.0; // reset after possible dimming
         }
       }
     }
@@ -1250,7 +1302,13 @@ const Civ2Renderer = {
 
       // Build set of city tiles so we don't draw garrisoned units over cities
       const cityTiles = new Set();
-      for (const c of mapData.cities) cityTiles.add(c.gx + ',' + c.gy);
+      for (const c of liveCities) cityTiles.add(c.gx + ',' + c.gy);
+
+      // Use _tileInLOS computed earlier for unit visibility
+      function _enemyInLOS(u) {
+        if (u.owner === _viewCiv) return true; // own units always visible
+        return _tileInLOS(u.gx, u.gy);
+      }
 
       // Pre-build unit counts per tile (for stacked unit badge)
       const unitCounts = {};
@@ -1259,7 +1317,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.hpLost != null && !(u.hpLost & fowBit)) continue;
+        if (!_enemyInLOS(u)) continue;
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
@@ -1278,7 +1336,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.hpLost != null && !(u.hpLost & fowBit)) continue;
+        if (!_enemyInLOS(u)) continue;
         if (u.prevInStack === -1) {
           bestUnit[tileKey] = u;
         } else if (!bestUnit[tileKey]) {
@@ -1432,7 +1490,7 @@ const Civ2Renderer = {
     ctx.letterSpacing = '0px';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    for (const c of mapData.cities) {
+    for (const c of liveCities) {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       const drawPositions = [c.gx];
       if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
@@ -1489,7 +1547,7 @@ const Civ2Renderer = {
     // ────────────────────────────────────────
     // When FOW is enabled, only draw labels for currently visible cities.
     // Ghost city labels are already drawn in Pass 4 with reduced opacity (dimmed by shroud).
-    for (const c of mapData.cities) {
+    for (const c of liveCities) {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       const namePositions = [c.gx];
       if (wraps && c.gx < xExtra) namePositions.push(c.gx + mw);
