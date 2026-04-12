@@ -1215,10 +1215,12 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
   // ── Barbarian AI (civ slot 0): separate simpler logic ──
   if (civSlot === 0) {
     const barbActions = generateBarbarianActions(gameState, mapBase, debugLog);
-    return { actions: barbActions, debugLog };
+    return { actions: barbActions, strategy: null, goals: null, debugLog };
   }
 
   const actions = [];
+  let strategy = null;
+  let goals = null;
 
   try {
     // ═══════════════════════════════════════════════════════════════
@@ -1227,12 +1229,12 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
 
     // ── P0. Strategic assessment (advisory — no actions) ──
     const territory = analyzeTerritory(gameState, mapBase, civSlot);
-    const strategy = assessStrategy(gameState, mapBase, civSlot, undefined, debugLog);
+    strategy = assessStrategy(gameState, mapBase, civSlot, undefined, debugLog);
     // Attach territory analysis for downstream AI modules
     strategy.territory = territory;
 
     // ── P0b. Goal list initialization and decay ──
-    const goals = getGoalList(civSlot);
+    goals = getGoalList(civSlot);
     goals.decayGoals();
     goals.cleanupDeadUnits(gameState, civSlot);
     goals.cleanupCapturedCities(gameState, civSlot);
@@ -1303,30 +1305,68 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
       actions.push(a);
     }
 
-    // ── Settler/Worker AI ──
+    // ── Settler/Worker and Military AI are now processed unit-by-unit ──
+    // by the server via generateUnitActions(), which applies each action
+    // to the state before deciding the next unit's action (matching
+    // binary FUN_0053184D's inline unit processing).
+    //
+    // The batch actions returned here are econ/diplo/production only.
+
+  } catch (err) {
+    console.error(`[ai] Error during AI turn for civ ${civSlot}:`, err);
+  }
+
+  return { actions, strategy, goals, debugLog };
+}
+
+/**
+ * Generate per-unit actions (settler + military + cleanup).
+ *
+ * Binary FUN_0053184D processes units sequentially — each unit's action is
+ * executed before the next unit decides. The server should apply each
+ * returned action to the game state before calling this function again
+ * with the UPDATED state. This is the key architectural difference from
+ * the old approach where all actions were generated against a stale snapshot.
+ *
+ * For practical efficiency, this function generates all actions in one call
+ * but the SERVER applies them one at a time, updating the state between each.
+ * The settler/military AIs already process one unit at a time internally.
+ *
+ * @param {object} gameState - current game state
+ * @param {object} mapBase - map data
+ * @param {number} civSlot - AI civ slot
+ * @param {object} strategy - from runAiTurn
+ * @param {object} goals - from runAiTurn
+ * @param {Array} [debugLog] - optional debug log
+ * @returns {Array<object>} actions — server MUST apply each and re-generate
+ *   for remaining units against updated state for full binary fidelity
+ */
+export function generateUnitActions(gameState, mapBase, civSlot, strategy, goals, debugLog = null) {
+  const actions = [];
+
+  try {
+    // Settler/Worker AI — one action per settler
     for (const a of generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog)) {
       actions.push(a);
     }
 
-    // ── Military unit AI ──
+    // Military unit AI — one action per unit
     for (const a of generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog)) {
       actions.push(a);
     }
 
-    // ── Goal cleanup: remove completed goals, update assignments ──
-    goals.cleanupDeadUnits(gameState, civSlot);
-    goals.cleanupCapturedCities(gameState, civSlot);
+    // Goal cleanup
+    if (goals) {
+      goals.cleanupDeadUnits(gameState, civSlot);
+      goals.cleanupCapturedCities(gameState, civSlot);
+    }
 
-    // ── Cleanup: skip/fortify ALL units that still have moves ──
-    // Must come last. Does NOT skip "handled" units — see JSDoc above
-    // for why this is safe and necessary to prevent END_TURN rejection.
+    // Cleanup: fortify/skip remaining units with moves
     const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog);
     actions.push(...cleanupActions);
-
   } catch (err) {
-    // Never crash the server — log and return whatever we have
-    console.error(`[ai] Error during AI turn for civ ${civSlot}:`, err);
+    console.error(`[ai] Error during unit actions for civ ${civSlot}:`, err);
   }
 
-  return { actions, debugLog };
+  return actions;
 }
