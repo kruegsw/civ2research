@@ -1516,7 +1516,13 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   // once before food/production processing, once after. The second pass
   // recalculates yields with updated city size and completed buildings.
   if (!cityDestroyed) {
-    const cityPost = state.cities[cityIndex];
+    // Build city snapshot with newly completed buildings so happiness
+    // recalc sees the temple/cathedral/etc. that was just built.
+    // Binary FUN_004f0a9c: second yield pass runs AFTER production
+    // completes, with updated building set.
+    const cityPost = newBuildings !== state.cities[cityIndex].buildings
+      ? { ...state.cities[cityIndex], buildings: newBuildings, hasWalls: newBuildings.has(8), hasPalace: newBuildings.has(1) }
+      : state.cities[cityIndex];
     // Recalculate happiness after production changes (buildings may have completed)
     const hap2 = calcHappiness(cityPost, cityIndex, state, mapBase);
     if (cityPost.civilDisorder !== hap2.civilDisorder ||
@@ -1599,13 +1605,16 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   }
 
   // ── Apply accumulated changes to city ──
+  // Use current state.cities[cityIndex] as base — it may have been
+  // updated by the second happiness calc (hap2) with new disorder/WLTKD.
+  const cityBase = state.cities[cityIndex];
   const soldThisTurn = false;
-  if (newSize !== cityAfterHap.size || newFood !== cityAfterHap.foodInBox ||
-      newShields !== (cityAfterHap.shieldsInBox || 0) ||
-      newWorked !== cityAfterHap.workedTiles || newSpecs !== cityAfterHap.specialists ||
-      newBuildings !== cityAfterHap.buildings || cityAfterHap.soldThisTurn) {
+  if (newSize !== cityBase.size || newFood !== cityBase.foodInBox ||
+      newShields !== (cityBase.shieldsInBox || 0) ||
+      newWorked !== cityBase.workedTiles || newSpecs !== cityBase.specialists ||
+      newBuildings !== cityBase.buildings || cityBase.soldThisTurn) {
     state.cities[cityIndex] = {
-      ...cityAfterHap,
+      ...cityBase,
       size: newSize,
       foodInBox: Math.max(0, newFood),
       shieldsInBox: newShields,
