@@ -21,72 +21,44 @@ export function sfx(name) {
 
 // ═══════════════════════════════════════════════════════════════════
 // 1. SOUND_ID_MAP — Complete hex sound ID → WAV filename mapping
-// Binary ref: string table at 0x0062AF70, 9-byte entries (8-char + NUL)
-// Max sound ID: 0x84 (132), enforced at 0x0046E020
+// AUTHORITATIVE: extracted directly from civ2.exe string table at 0x0062AF70
+// (file offset 0x229f70), 9-byte entries, 133 slots (0x00..0x84)
 // ═══════════════════════════════════════════════════════════════════
 export const SOUND_ID_MAP = {
-  // -- Combat sounds (0x00..0x1D) --
-  0x00: 'AIRCOMBT',  0x01: 'SWORDFGT', 0x02: 'SWRDHORS', 0x03: 'INFANTRY',
-  0x04: 'INFANTRY',  0x05: 'MCHNGUNS', 0x06: 'CAVALRY',  0x07: 'CATAPULT',
-  0x08: 'BIGGUN',    0x09: 'MEDGUN',   0x0A: 'DIESEL',   0x0B: 'NAVBTTLE',
-  0x0C: 'TORPEDOS',  0x0D: 'TORPEDOS', 0x0E: 'BOATSINK', 0x0F: 'HELISHOT',
-  0x10: 'HELISHOT',  0x11: 'DIVEBOMB', 0x12: 'DIVCRASH', 0x13: 'JETCOMBT',
-  0x14: 'JETCOMBT',  0x15: 'JETBOMB',  0x16: 'JETCRASH', 0x17: 'JETSPUTR',
-  0x18: 'DIVEBOMB',  0x19: 'MISSILE',  0x1A: 'SMALLEXP', 0x1B: 'MEDEXPL',
-  0x1C: 'LARGEXPL',  0x1D: 'NUKEXPLO',
-
-  // -- City/Building sounds (0x1E..0x29) --
-  0x1E: 'BLDCITY',   0x1F: 'AQUEDUCT', 0x20: 'BARRACKS', 0x21: 'CATHEDRL',
-  0x22: 'MRKTPLCE',  0x23: 'NEWBANK',  0x24: 'STKMARKT', 0x25: 'NEWONDER',
-  0x26: 'BLDSPCSH',  0x27: 'NEWGOVT',  0x28: 'REVOLT',   0x29: 'CIVDISOR',
-
-  // -- Government/Event sounds (0x2A..0x32) --
-  0x2A: 'CHEERS',    0x2B: 'CRWDBUGL', 0x2C: 'GUILLOTN', 0x2D: 'SPYSOUND',
-  0x2E: 'MOVPIECE',  0x2F: 'ENDOTURN', 0x30: 'MENUOK',   0x31: 'MENULOOP',
-  0x32: 'MENUEND',
-
-  // -- UI/Misc sounds (0x33..0x3A) --
-  0x33: 'LETTER',    0x34: 'DIESEL',   0x35: 'ENGNSPUT', 0x36: 'FIRE---',
-  0x37: 'ELEPHANT',  0x38: 'CHEERS1',  0x39: 'CHEERS2',  0x3A: 'CHEERS3',
-
-  // -- Undocumented slots (0x3B..0x3D) --
-  // WAV files exist on disk but have no confirmed table entry.
-  // Likely candidates based on address spacing:
-  0x3B: 'NEG1',      // negative diplomacy response
-  0x3C: 'POS1',      // positive diplomacy response
-  0x3D: 'POMPCIRC',  // pomp & circumstance fanfare
-
-  // -- Fanfare sounds (0x3E..0x45) --
-  0x3E: 'FANFARE1',  0x3F: 'FANFARE2', 0x40: 'FANFARE3', 0x41: 'FANFARE4',
-  0x42: 'FANFARE5',  0x43: 'FANFARE6', 0x44: 'FANFARE7', 0x45: 'FANFARE8',
-
-  // -- Feedback sounds (0x46..0x4D) --
-  0x46: 'FEEDBKXX',  0x47: 'FEEDBKXX', 0x48: 'FEEDBK03', 0x49: 'FEEDBK04',
-  0x4A: 'FEEDBK03',  0x4B: 'FEEDBK04', 0x4C: 'FEEDBK03', 0x4D: 'FEEDBK04',
-
-  // -- Duplicate/alternate refs (0x4E..0x52) --
-  0x4E: 'NUKEXPLO',  0x4F: 'JETSPUTR', 0x50: 'DIVEBOMB', 0x51: 'NAVBTTLE',
-  0x52: 'BOATSINK',
-
-  // -- Drum rolls (0x53..0x5E, combat animations) --
-  // 3 sets (A/B/C) x 4 variants (L/Y/0/N)
-  0x53: 'DRUMAL',    0x54: 'DRUMAY',   0x55: 'DRUMA0',   0x56: 'DRUMAN',
-  0x57: 'DRUMBL',    0x58: 'DRUMBY',   0x59: 'DRUMB0',   0x5A: 'DRUMBN',
-  0x5B: 'DRUMCL',    0x5C: 'DRUMCY',   0x5D: 'DRUMC0',   0x5E: 'DRUMCN',
-
-  // -- Custom/Extra sounds (0x5F..0x68) --
-  0x5F: 'CUSTOM1',   0x60: 'CUSTOM2',  0x61: 'CUSTOM3',
-  0x62: 'EXTRA1',    0x63: 'EXTRA2',   0x64: 'EXTRA3',
-  0x65: 'EXTRA4',    0x66: 'EXTRA5',   0x67: 'EXTRA6',   0x68: 'EXTRA7',
-
-  // -- Special system sounds (re-mapped duplicates 0x69..0x6F) --
-  0x69: 'MOVPIECE',  0x6A: 'MENUOK',   0x6B: 'MENULOOP', 0x6C: 'MENUEND',
-  0x6D: 'SELL',      0x6E: 'LETTER',   0x6F: 'ENDOTURN',
-
-  // -- Missile unit sounds (0x65..0x67 overloaded, 0x7D..0x84) --
-  // 0x65-0x67 are EXTRA4-6 in base table, MISSILE1-3 when used by missile units
-  // 0x7D: 'NUKE1', 0x7E: 'NUKE2', 0x7F: 'NUKE3', 0x80: 'NUKE4',
-  // 0x81: 'NUKE5', 0x82: 'NUKE6', 0x83: 'NUKE7', 0x84: 'NUKE8',
+  0x00: 'AIRCOMBT',  0x01: 'AIRPLANE',  0x02: 'CHEERS',    0x03: 'CRWDBUGL',
+  0x04: 'AQUEDUCT',  0x05: 'BARRACKS',  0x06: 'BIGGUN',    0x07: 'BLDCITY',
+  0x08: 'BLDSPCSH',  0x09: 'BOATSINK',  0x0a: 'CATAPULT',  0x0b: 'CATHEDRL',
+  0x0c: 'CAVALRY',   0x0d: 'CHEERS',    0x0e: 'CIVDISOR',  0x0f: 'CHEERS',
+  0x10: 'CHEERS',    0x11: 'NEWGOVT',   0x12: 'CHEERS',    0x13: 'CRWDBUGL',
+  0x14: 'NEWGOVT',   0x15: 'NEWGOVT',   0x16: 'DIESEL',    0x17: 'DIVCRASH',
+  0x18: 'DIVEBOMB',  0x19: 'ELEPHANT',  0x1a: 'ENGNSPUT',  0x1b: 'CHEERS',
+  0x1c: 'FIRE---',   0x1d: 'NEWGOVT',   0x1e: 'CHEERS',    0x1f: 'CHEERS',
+  0x20: 'HELICPTR',  0x21: 'HELISHOT',  0x22: 'INFANTRY',  0x23: 'LARGEXPL',
+  0x24: 'CHEERS',    0x25: 'CHEERS',    0x26: 'MCHNGUNS',  0x27: 'MEDEXPL',
+  0x28: 'MEDGUN',    0x29: 'MISSILE',   0x2a: 'MRKTPLCE',  0x2b: 'NEWGOVT',
+  0x2c: 'CHEERS',    0x2d: 'CHEERS',    0x2e: 'NAVBTTLE',  0x2f: 'NEWBANK',
+  0x30: 'NEWONDER',  0x31: 'CHEERS',    0x32: 'NUKEXPLO',  0x33: 'CHEERS',
+  0x34: 'CHEERS',    0x35: 'CRWDBUGL',  0x36: 'CHEERS',    0x37: 'CHEERS',
+  0x38: 'CHEERS',    0x39: 'CHEERS',    0x3a: 'CHEERS',    0x3b: 'CHEERS',
+  0x3c: 'CHEERS',    0x3d: 'NEWGOVT',   0x3e: 'REVOLT',    0x3f: 'RIFLE',
+  0x40: 'CHEERS',    0x41: 'CHEERS',    0x42: 'CHEERS',    0x43: 'SMALLEXP',
+  0x44: 'SPYSOUND',  0x45: 'STKMARKT',  0x46: 'SUBMRINE',  0x47: 'CHEERS',
+  0x48: 'CHEERS',    0x49: 'SWORDFGT',  0x4a: 'SWRDHORS',  0x4b: 'TANKMOTR',
+  0x4c: 'CHEERS',    0x4d: 'TORPEDOS',  0x4e: 'JETSPUTR',  0x4f: 'JETCRASH',
+  0x50: 'JETBOMB',   0x51: 'JETPLANE',  0x52: 'JETCOMBT',  0x53: 'FANFARE1',
+  0x54: 'FANFARE2',  0x55: 'FANFARE3',  0x56: 'FANFARE4',  0x57: 'FANFARE5',
+  0x58: 'FANFARE6',  0x59: 'FANFARE7',  0x5a: 'FANFARE8',  0x5b: 'FEEDBK01',
+  0x5c: 'FEEDBK02',  0x5d: 'FEEDBK03',  0x5e: 'FEEDBK04',  0x5f: 'FEEDBK05',
+  0x60: 'FEEDBK06',  0x61: 'FEEDBK07',  0x62: 'FEEDBK08',  0x63: 'MOVPIECE',
+  0x64: 'ENDOTURN',  0x65: 'CUSTOM1',   0x66: 'CUSTOM2',   0x67: 'CUSTOM3',
+  0x68: 'POS1',      0x69: 'NEG1',      0x6a: 'MENUOK',    0x6b: 'MENULOOP',
+  0x6c: 'MENUEND',   0x6d: 'BUY',       0x6e: 'SELL',      0x6f: 'GUILLOTN',
+  0x70: 'DRUMAL',    0x71: 'DRUMAY',    0x72: 'DRUMA0',    0x73: 'DRUMAN',
+  0x74: 'DRUMBL',    0x75: 'DRUMBY',    0x76: 'DRUMB0',    0x77: 'DRUMBN',
+  0x78: 'DRUMCL',    0x79: 'DRUMCY',    0x7a: 'DRUMC0',    0x7b: 'DRUMCN',
+  0x7c: 'LETTER',    0x7d: 'EXTRA1',    0x7e: 'EXTRA2',    0x7f: 'EXTRA3',
+  0x80: 'EXTRA4',    0x81: 'EXTRA5',    0x82: 'EXTRA6',    0x83: 'EXTRA7',
+  0x84: 'EXTRA8',
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -205,16 +177,20 @@ sfxLoad('DIVEBOMB');   // propeller airplane
 // 5. UNIT_ATK_SFX — Unit type → attack sound name
 // Binary ref: sound_editor_populate_slots @ 0x0058AFB6
 // ═══════════════════════════════════════════════════════════════════
+// UNIT_ATK_SFX — Simplified per-unit-type attack sound (fallback when full dispatch unavailable)
+// Derived from binary FUN_00580341 ground combat switch (lines 648-675).
+// All sound names use the authoritative mapping from civ2.exe string table at 0x0062AF70.
+// For accurate dispatch including domain/era/range checks, use getCombatAttackSound().
 export const UNIT_ATK_SFX = [
-  null,       null,       'SWORDFGT','SWORDFGT','MEDGUN',  'SWORDFGT', // 0-5
-  'SWORDFGT','SWORDFGT','SWORDFGT','SWORDFGT','INFANTRY','SWORDFGT', // 6-11
-  'INFANTRY','INFANTRY','INFANTRY','CAVALRY', 'SWRDHORS','ELEPHANT', // 12-17
-  'SWRDHORS','CAVALRY', 'CAVALRY', 'CAVALRY', 'MCHNGUNS','CATAPULT', // 18-23
-  'CATAPULT','CATAPULT','BIGGUN',  'AIRCOMBT','DIVEBOMB','HELISHOT', // 24-29
-  'AIRCOMBT','DIVEBOMB','ENGNSPUT','ENGNSPUT','ENGNSPUT','FIRE---',  // 30-35
-  'NAVBTTLE','NAVBTTLE','BIGGUN',  'NAVBTTLE','BIGGUN',  'TORPEDOS', // 36-41
-  'DIESEL',  'DIESEL',  'JETBOMB', 'MISSILE', 'SPYSOUND','SPYSOUND', // 42-47
-  null,       null,       'MEDGUN',  null,                             // 48-51
+  null,       null,       'SWORDFGT','SWORDFGT','SWORDFGT','SWORDFGT', // 0-5: Settlers,Engineers,Warriors,Phalanx,Archers,Legion → default
+  'SWORDFGT','INFANTRY','MCHNGUNS','INFANTRY','INFANTRY','INFANTRY',   // 6-11: Pikemen,Musketeers,Fanatics,Partisans,Alpine,Riflemen
+  'MCHNGUNS','MCHNGUNS','MCHNGUNS','SWRDHORS','SWRDHORS','ELEPHANT',   // 12-17: Marines,Paratroopers,Mech.Inf,Horsemen,Chariot,Elephant
+  'SWRDHORS','SWRDHORS','CAVALRY', 'CAVALRY', 'SWORDFGT','CATAPULT',   // 18-23: Crusaders,Knights,Dragoons,Cavalry,Armor,Catapult
+  'FIRE---', 'FIRE---', 'FIRE---', 'AIRCOMBT','DIVEBOMB','HELISHOT',   // 24-29: Cannon,Artillery,Howitzer,Fighter,Bomber,Helicopter
+  'AIRCOMBT','JETBOMB', 'CATAPULT', 'CATAPULT','CATAPULT','FIRE---',    // 30-35: StlthFtr,StlthBmb,Trireme,Caravel,Galleon,Frigate
+  'FIRE---', 'FIRE---', 'FIRE---', 'FIRE---', 'FIRE---', 'FIRE---',  // 36-41: Ironclad,Destroyer,Cruiser,AEGIS,Battleship,Submarine
+  null,       null,      'MISSILE', 'MISSILE', 'SPYSOUND','SPYSOUND',  // 42-47: Carrier,Transport,CruiseMsl,NuclearMsl,Diplomat,Spy
+  null,       null,      null,      null,                              // 48-51: Caravan,Freight,Explorer,ExtraLand
 ];
 
 // Unit type → death sound
@@ -269,39 +245,152 @@ export const MOVE_UNIT_DELAYS = {
 
 /**
  * Get the combat attack sound for an attacker unit type.
- * Implements the binary's priority-based dispatch:
- *   1. Unit-specific (missile/nuke types)
- *   2. Domain-based (air, sea, ground) with era branching
+ * Faithful port of FUN_00580341 lines 581-679 (block_00580000.c).
  *
- * @param {number} unitType - attacker unit type index
- * @param {number} [defenderType] - defender unit type (for domain checks)
- * @returns {string|null} WAV filename to play
+ * Priority chain:
+ *   1. Scenario unit types 51-61 → direct sound mapping
+ *   2. Missile flag (flags_hi & 0x10) → CIVDISOR for non-nuclear
+ *   3. Air domain → air-vs-air / bombing / no-bombard branching
+ *   4. Sea domain → stealth flag check
+ *   5. Ground → type-specific switch
+ *
+ * @param {number} atkType - attacker unit type index
+ * @param {number} atkDomain - attacker domain (0=land, 1=air, 2=sea)
+ * @param {number} defDomain - defender domain (0=land, 1=air, 2=sea)
+ * @param {boolean} atkHasMissileFlag - attacker flags_hi & 0x10
+ * @param {number} atkAttack - attacker attack value (for nuclear check)
+ * @param {number} atkRange - attacker range value (for bombard check)
+ * @param {boolean} atkHasCarryAirFlag - attacker flags_lo & 0x08
+ * @returns {{ sound: string|null, animDelay: number, navalAnim: number }}
  */
-export function getCombatAttackSound(unitType, defenderType) {
-  // Priority 1: Nuke/missile-specific sounds (unit types 0x33-0x3D)
-  const missileMap = {
-    0x33: 'EXTRA4',   0x34: 'EXTRA5',   0x35: 'EXTRA6',   // scenario missiles
-    0x36: 'NUKE1',    0x37: 'NUKE2',    0x38: 'NUKE3',    0x39: 'NUKE4',
-    0x3A: 'NUKE5',    0x3B: 'NUKE6',    0x3C: 'NUKE7',    0x3D: 'NUKE8',
-  };
-  if (missileMap[unitType]) return missileMap[unitType];
+export function getCombatAttackSound(atkType, atkDomain, defDomain, atkHasMissileFlag, atkAttack, atkRange, atkHasCarryAirFlag) {
+  let sound = null;
+  let animDelay = 0;
+  let navalAnim = 0; // local_ac in binary
 
-  // Fall back to UNIT_ATK_SFX table (which covers the common dispatch)
-  return UNIT_ATK_SFX[unitType] || null;
+  // All sound IDs below are looked up in SOUND_ID_MAP (authoritative, extracted
+  // from civ2.exe string table at 0x0062AF70).
+
+  // Priority 1: Scenario/extra unit types 51-61 (0x33-0x3D) — C lines 584-616
+  //   type 0x33-0x35 → sound IDs 0x65-0x67 (CUSTOM1-3)
+  //   type 0x36-0x3D → sound IDs 0x7D-0x84 (EXTRA1-8)
+  const scenarioMap = {
+    0x33: 0x65, 0x34: 0x66, 0x35: 0x67,
+    0x36: 0x7D, 0x37: 0x7E, 0x38: 0x7F, 0x39: 0x80,
+    0x3A: 0x81, 0x3B: 0x82, 0x3C: 0x83, 0x3D: 0x84,
+  };
+  if (scenarioMap[atkType] != null) {
+    return { sound: SOUND_ID_MAP[scenarioMap[atkType]], animDelay, navalAnim };
+  }
+
+  // Priority 2: Missile flag gate — C line 617 and 677-678
+  if (atkHasMissileFlag) {
+    // non-nuclear missile → sound ID 0x29 = MISSILE
+    if (atkAttack < 99) sound = SOUND_ID_MAP[0x29]; // MISSILE
+    return { sound, animDelay, navalAnim };
+  }
+
+  // Priority 3: Air domain — C lines 618-635
+  if (atkDomain === 1) {
+    if (defDomain === 1) {
+      // air-vs-air: era-based
+      // ancient (type < 0x1E): sound 0x00 = AIRCOMBT
+      // modern: sound 0x52 = JETCOMBT
+      sound = atkType < 0x1E ? SOUND_ID_MAP[0x00] : SOUND_ID_MAP[0x52];
+    } else if (atkRange === 0) {
+      // no bombard ability: sound 0x21 = HELISHOT (C: FUN_0046e020(0x21,1,0,0))
+      sound = SOUND_ID_MAP[0x21]; // HELISHOT
+    } else {
+      // bombing:
+      // ancient (type < 0x1E): sound 0x18 = DIVEBOMB
+      // modern: sound 0x50 = JETBOMB
+      sound = atkType < 0x1E ? SOUND_ID_MAP[0x18] : SOUND_ID_MAP[0x50];
+    }
+    return { sound, animDelay, navalAnim };
+  }
+
+  // Priority 4: Sea domain — C lines 637-646
+  if (atkDomain === 2) {
+    if (!atkHasCarryAirFlag) {
+      // standard naval — lines 638-642 (no sound, just animation)
+      navalAnim = 6;
+      if (atkType === 0x28 || atkType === 0x26 || atkType === 0x27 || atkType === 0x25) {
+        navalAnim = 0x2E;
+      }
+    } else {
+      // carrier/stealth — line 645 → sound 0x4D = TORPEDOS
+      sound = SOUND_ID_MAP[0x4D]; // TORPEDOS
+    }
+    return { sound, animDelay, navalAnim };
+  }
+
+  // Priority 5: Ground domain — C lines 648-675
+  // ALL sound IDs here confirmed against the binary's string table at 0x0062AF70.
+  if (atkType === 0x11) {
+    // Elephant (17) → sound 0x19 = ELEPHANT
+    sound = SOUND_ID_MAP[0x19];
+  } else if (atkType === 0x0F || atkType === 0x10 || atkType === 0x13 || atkType === 0x12) {
+    // Horsemen(15), Chariot(16), Knights(19), Crusaders(18) → sound 0x4a = SWRDHORS
+    sound = SOUND_ID_MAP[0x4A];
+  } else if (atkType === 0x14 || atkType === 0x15) {
+    // Dragoons(20), Cavalry(21) → sound 0x0c = CAVALRY
+    sound = SOUND_ID_MAP[0x0C];
+  } else if (atkType === 7 || atkType === 0x0B || atkType === 0x0A || atkType === 9) {
+    // Musketeers(7), Riflemen(11), Alpine(10), Partisans(9) → sound 0x22 = INFANTRY
+    sound = SOUND_ID_MAP[0x22];
+  } else if (atkType === 8 || atkType === 0x0D || atkType === 0x0C || atkType === 0x0E) {
+    // Fanatics(8), Paratroopers(13), Marines(12), Mech.Inf(14) → sound 0x26 = MCHNGUNS
+    sound = SOUND_ID_MAP[0x26];
+  } else if (atkType < 0x16 || atkType > 0x1A) {
+    // Default ground (Warriors, Phalanx, Archers, Legion, etc.) → sound 0x49 = SWORDFGT
+    sound = SOUND_ID_MAP[0x49];
+  } else if (atkType === 0x17) {
+    // Catapult (23) → sound 0x0a = CATAPULT
+    sound = SOUND_ID_MAP[0x0A];
+  } else {
+    // Cannon(24), Artillery(25), Howitzer(26) → sound 0x1c = FIRE--- + delay
+    navalAnim = 0x28;
+    if (atkType > 0x17) {
+      sound = SOUND_ID_MAP[0x1C]; // FIRE---
+      animDelay = 0x14;
+    }
+  }
+
+  return { sound, animDelay, navalAnim };
 }
 
 /**
- * Get the post-combat resolution sound based on outcome and unit era.
- * Binary ref: FUN_00580341 lines 880-903
+ * Get the post-combat resolution sound based on outcome and unit type.
+ * Binary ref: FUN_00580341 lines 880-903 (block_00580000.c).
+ *
+ * IMPORTANT — binary semantics:
+ *   - sound 0x23 = LARGEXPL plays only when local_ac != 0 (naval / heavy weapon
+ *     combat where the attack-sound dispatch set a non-zero animation flag)
+ *   - sound 0x17 = DIVCRASH plays when an AIR unit dies and is ancient (type<30)
+ *   - sound 0x4F = JETCRASH plays when an AIR unit dies and is modern (type>=30)
+ *   - For ordinary GROUND combat the binary plays NO post-combat resolution
+ *     sound — only the attack sound is heard. This function returns null in
+ *     that case.
+ *
+ * Previous JS implementations played JETSPUTR for every ground combat. That
+ * was a port of the OLD wrong sound-ID table where 0x17 was mistakenly labelled
+ * "JETSPUTR" — the corrected table (extracted from civ2.exe at 0x0062AF70)
+ * has 0x17 = DIVCRASH and 0x4f = JETCRASH, and JETSPUTR is at 0x4e.
  *
  * @param {number} deadUnitType - type of the unit that was destroyed
- * @param {boolean} wasNavalOrAir - true if naval/air combat (local_ac != 0)
- * @returns {string} WAV filename
+ * @param {number} deadUnitDomain - domain of the dead unit (0=land, 1=air, 2=sea)
+ * @param {boolean} navalAnimSet - true if attack dispatch set local_ac != 0
+ * @returns {string|null} WAV filename to play, or null if none
  */
-export function getCombatResolutionSound(deadUnitType, wasNavalOrAir) {
-  if (wasNavalOrAir) return 'NEWBANK';      // 0x23 — naval/aircraft explosion
-  if (deadUnitType < 0x1E) return 'JETSPUTR'; // 0x17 — ancient unit death
-  return 'JETSPUTR';                          // 0x4F — modern unit death (same WAV)
+export function getCombatResolutionSound(deadUnitType, deadUnitDomain, navalAnimSet) {
+  // Naval / heavy-weapon combat → LARGEXPL (binary line 887)
+  if (navalAnimSet) return SOUND_ID_MAP[0x23]; // LARGEXPL
+  // Air unit death → DIVCRASH (ancient) or JETCRASH (modern) (lines 891-902)
+  if (deadUnitDomain === 1) {
+    return deadUnitType < 0x1E ? SOUND_ID_MAP[0x17] : SOUND_ID_MAP[0x4f]; // DIVCRASH | JETCRASH
+  }
+  // Ground / sea-without-anim → no resolution sound
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -318,39 +407,42 @@ export function playRandomCheers() {
 // Binary ref: FUN_004ec3fe @ block_004E0000.c:5024-5056
 // ═══════════════════════════════════════════════════════════════════
 
-// Building ID → sound ID mapping from binary switch statement
+// Building ID → sound ID mapping from binary FUN_004ec3fe:5024-5048.
+// Sound IDs use the corrected table (extracted from civ2.exe at 0x0062AF70).
 const PRODUCTION_BUILDING_SOUNDS = {
-  2:  0x20,  // Barracks   → BARRACKS
-  9:  0x1F,  // Aqueduct   → AQUEDUCT
-  10: 0x2F,  // Bank       → ENDOTURN (sound ID 0x2F)
-  11: 0x21,  // Cathedral  → CATHEDRL
-  12: 0x37,  // University → ELEPHANT (sound ID 0x37)
-  22: 0x45,  // Stock Exch → FANFARE8
+  2:  0x05,  // Barracks       → BARRACKS
+  9:  0x04,  // Aqueduct       → AQUEDUCT
+  10: 0x2f,  // Bank           → NEWBANK
+  11: 0x0b,  // Cathedral      → CATHEDRL
+  12: 0x37,  // University     → CHEERS (binary plays generic cheers)
+  22: 0x45,  // Stock Exchange → STKMARKT
 };
 
 /**
  * Get the WAV name to play when a production item completes.
+ * Binary ref: FUN_004ec3fe @ block_004E0000.c:5024-5056
+ *
  * @param {'unit'|'building'|'wonder'} itemType
  * @param {number} itemId - building/wonder/unit index
  * @returns {string|null} WAV filename to play, or null for units
  */
 export function getProductionSound(itemType, itemId) {
-  if (itemType === 'unit') return null; // units have no special completion sound
+  if (itemType === 'unit') return null; // units have no completion sound
 
   if (itemType === 'wonder') {
-    return SOUND_ID_MAP[0x25]; // NEWONDER (wonder ID 0x25 = NEWONDER)
+    return SOUND_ID_MAP[0x30]; // NEWONDER (binary line 5055)
   }
 
-  // Spaceship parts: building IDs 35-37 (0x23-0x25)
+  // Spaceship parts: building IDs 35-37 (0x23-0x25 in binary)
   if (itemType === 'building' && itemId >= 35 && itemId <= 37) {
-    return SOUND_ID_MAP[0x08]; // BIGGUN
+    return SOUND_ID_MAP[0x08]; // BLDSPCSH (binary line 5051)
   }
 
-  // Building-specific sounds
+  // Building-specific sounds (binary switch at line 5026)
   if (itemType === 'building') {
     const soundId = PRODUCTION_BUILDING_SOUNDS[itemId];
     if (soundId !== undefined) return SOUND_ID_MAP[soundId];
-    return SOUND_ID_MAP[0x02]; // default: SWRDHORS
+    return SOUND_ID_MAP[0x02]; // default: CHEERS (binary line 5031)
   }
 
   return null;
@@ -504,63 +596,67 @@ export function playSoundForEvent(eventType, data) {
       if (drumName) sfx(drumName);
       break;
     }
+    // NOTE: combat sounds are dispatched directly in unit-ui.js
+    // animateCombat() via getCombatAttackSound + getCombatResolutionSound,
+    // matching binary FUN_00580341. The cases below are JS-only event hooks
+    // for non-combat or out-of-band notifications.
     case 'combatHitShields':
-      sfx('FANFARE7');       // 0x44 — shield hit, most common combat sound
+      sfx('FANFARE7');       // 0x59 — shield hit (JS-only event, no binary equivalent)
       break;
     case 'combatUnitDestroyed':
-      sfx('NEWGOVT');        // 0x27 — unit destroyed in combat
+      sfx('NEWGOVT');        // 0x11 — unit destroyed (JS-only)
       break;
     case 'combatExplosion':
-      sfx('NEWBANK');        // 0x23 — explosion effect
+      sfx('NEWBANK');        // 0x2f — explosion effect (JS-only)
       break;
     case 'combatVictoryFanfare':
-      sfx('FANFARE6');       // 0x43 — city captured in combat
+      sfx('FANFARE6');       // 0x58 — city captured fanfare
       break;
 
     // -- Tech/Science --
     case 'techDiscovered':
-      sfx('DRUMC0');         // 0x5D — technology advance discovered
+      sfx('DRUMC0');         // 0x7a — technology advance discovered
       break;
 
     // -- City Events --
     case 'cityGrowth':
-      sfx('POS1');           // positive feedback
+      sfx('POS1');           // 0x68 — positive feedback
       break;
     case 'famine':
-      sfx('NEG1');           // negative feedback
+      sfx('NEG1');           // 0x69 — negative feedback
       break;
     case 'wonderBuilt':
-      sfx('NEWONDER');       // 0x25 — wonder completion
+      sfx('NEWONDER');       // 0x30 — wonder completion
       break;
     case 'cityFounded':
-      sfx('BLDCITY');        // 0x1E — city established by settler
+      sfx('BLDCITY');        // 0x07 — city established by settler
       break;
     case 'cityCaptured':
-      sfx('MCHNGUNS');       // 0x05 — city capture (all variants)
+      sfx('MCHNGUNS');       // 0x26 — city capture
       break;
 
     // -- Unit Events --
     case 'unitPromotion':
-      sfx('FANFARE2');       // 0x3F — unit promotion fanfare
+      sfx('FANFARE2');       // 0x54 — unit promotion fanfare
       break;
     case 'unitFortified':
-      sfx('TORPEDOS');       // 0x0D — unit fortification/sentry
+      sfx('TORPEDOS');       // 0x4d — unit fortification/sentry
       break;
 
     // -- Government --
     case 'governmentChanged':
-      sfx('NEWGOVT');        // 0x27 — new government adopted
+      sfx('NEWGOVT');        // 0x11 — new government adopted
       break;
 
     // -- Diplomacy/Trade --
     case 'caravanArrived':
-      sfx('JETCRASH');       // 0x16 — caravan arrives at destination
+      sfx('JETCRASH');       // 0x4f — caravan arrives at destination
       break;
     case 'freightArrived':
-      sfx('GUILLOTN');       // 0x2C — freight arrives at destination
+      sfx('GUILLOTN');       // 0x6f — freight arrives at destination
       break;
     case 'letterReceived':
-      sfx('LETTER');         // 0x33/0x6E — diplomatic letter received
+      sfx('LETTER');         // 0x7c — diplomatic letter received
       break;
     case 'parleyDiplomatMeeting': {
       // Formula: ((turn + civId) & 7) + 0x53
@@ -574,20 +670,20 @@ export function playSoundForEvent(eventType, data) {
 
     // -- Nuke --
     case 'nukeExplosion':
-      sfx('NUKEXPLO');       // 0x1D/0x4E — nuclear detonation
+      sfx('NUKEXPLO');       // 0x32 — nuclear detonation
       break;
     case 'nuclearLaunch':
-      sfx('NUKEXPLO');       // 0x4E — nuclear missile launch
+      sfx('NUKEXPLO');       // 0x32 — nuclear missile launch
       break;
 
     // -- Spy --
     case 'spyAction':
-      sfx('SPYSOUND');       // 0x2D — spy/diplomat action
+      sfx('SPYSOUND');       // 0x44 — spy/diplomat action
       break;
 
     // -- Turn --
     case 'endOfTurn':
-      sfx('ENDOTURN');       // 0x2F/0x6F — end of turn
+      sfx('ENDOTURN');       // 0x64 — end of turn
       break;
 
     // -- Production --
@@ -602,12 +698,12 @@ export function playSoundForEvent(eventType, data) {
     // -- Palace/Capital (10. MOVE_CAPITAL_SOUND) --
     case 'palaceBuilt':
     case 'capitalMoved':
-      sfx('FANFARE1');       // 0x3E — palace completion / capital relocation
+      sfx('FANFARE1');       // 0x53 — palace completion / capital relocation
       break;
 
     // -- Manhattan Project (8. MANHATTAN_PROJECT_SOUND) --
     case 'manhattanProject':
-      sfx('NEWBANK');        // 0x23 — Manhattan Project completion broadcast
+      sfx('NEWBANK');        // 0x2f — Manhattan Project completion broadcast (FUN_0046e020(0x23,...) → LARGEXPL in binary, but this is the JS event hook)
       break;
 
     // -- City Status (9. CITY_STATUS_SOUNDS) --
@@ -628,12 +724,12 @@ export function playSoundForEvent(eventType, data) {
 
     // -- Score/Retirement --
     case 'retirementScore':
-      sfx(SOUND_ID_MAP[0x03]); // RIFLE — retirement/score screen
+      sfx(SOUND_ID_MAP[0x3f]); // RIFLE — retirement/score screen
       break;
 
     // -- Scenario --
     case 'scenarioEvent':
-      sfx('FANFARE1');       // 0x3E — generic scenario event trigger
+      sfx('FANFARE1');       // 0x53 — generic scenario event trigger
       break;
 
     // -- Spaceship --

@@ -1399,6 +1399,10 @@ function initNetwork(appCallbacks) {
                 // No overlay — the cityCapture turnEvent dialog (in
                 // dialogs.js) shows the binary-faithful @CITYCAPTURE
                 // message with plunder + razing info.
+              } else if (cr.type === 'bombard') {
+                // Play bombardment sound
+                const bmbSfx = UNIT_ATK_SFX[cr.attacker];
+                if (bmbSfx) sfx(bmbSfx);
               } else {
                 const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
                 const defName = UNIT_NAMES[cr.defender] || 'Unit';
