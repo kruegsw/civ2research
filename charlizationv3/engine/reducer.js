@@ -1038,7 +1038,18 @@ export function applyAction(prev, mapBase, action, civSlot) {
         state.units[bmbUi].x = -1;
         state.units[bmbUi].y = -1;
       }
-      state.combatResult = { type: 'bombard', attacker: bmbUnit.type, targetGx: bmbTgx, targetGy: bmbTgy };
+      const bmbDefType = bmbDefenders.length > 0 ? bmbDefenders.reduce((a, b) => (UNIT_DEF[b.type] || 0) > (UNIT_DEF[a.type] || 0) ? b : a).type : -1;
+      state.combatResult = {
+        type: 'bombard', attacker: bmbUnit.type, defender: bmbDefType,
+        atkOwner: bmbUnit.owner, defOwner: bmbDefenders[0]?.owner ?? -1,
+        gx: bmbTgx, gy: bmbTgy, targetGx: bmbTgx, targetGy: bmbTgy,
+        atkMaxHp: (UNIT_HP[bmbUnit.type] || 1) * 10,
+        defMaxHp: bmbDefType >= 0 ? (UNIT_HP[bmbDefType] || 1) * 10 : 10,
+        atkHpLost: 0, defHpLost: 2,
+        rounds: [], atkFp: 1, defFp: 1,
+        atkStartHp: (UNIT_HP[bmbUnit.type] || 1) * 10,
+        defStartHp: bmbDefType >= 0 ? (UNIT_HP[bmbDefType] || 1) * 10 : 10,
+      };
       break;
     }
 

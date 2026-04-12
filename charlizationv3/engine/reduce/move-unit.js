@@ -1217,8 +1217,12 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
   // Update visibility for this civ around new position
   if (unit.gx >= 0) {
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
-    // Check for first contact with other civs now visible
-    discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+    // Check for first contact — land units and diplomats only (not ships)
+    // Binary: contact requires meeting on land, not just proximity at sea
+    const unitDomain = UNIT_DOMAIN[unit.type] ?? 0;
+    if (unitDomain !== 2) {
+      discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+    }
 
     // Binary FUN_004274a6 (process_unit_move_visibility) lines 2541-2685:
     // After a unit finishes moving, scan immediate neighbors for OTHER civs'
