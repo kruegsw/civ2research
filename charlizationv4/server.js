@@ -274,6 +274,8 @@ function roomRoster(roomId) {
     ready: room.ready,
     mapAlgorithm: room.mapAlgorithm || DEFAULT_ALGORITHM,
     mapSize: room.mapSize || '50x80',
+    difficulty: room.difficulty || null,
+    barbarianActivity: room.barbarianActivity || 'villages',
   };
 }
 
@@ -521,6 +523,9 @@ wss.on("connection", (ws) => {
         }
         if (typeof msg.mapSize === 'string' && /^\d+\s*[xX×]\s*\d+$/.test(msg.mapSize)) {
           optRoom.mapSize = msg.mapSize;
+        }
+        if (msg.difficulty && DIFFICULTY_KEYS.includes(msg.difficulty)) {
+          optRoom.difficulty = msg.difficulty;
         }
         // Re-broadcast room state so all clients see the updated dropdowns
         broadcastToRoom(optRoomId, roomRoster(optRoomId));
@@ -823,7 +828,17 @@ wss.on("connection", (ws) => {
         // Re-build seat list from current seats
         const restartSeats = [];
         for (let i = 0; i < 7; i++) {
-          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i + 1}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
+          if (restartRoom.seats[i]) {
+            const isAi = restartRoom.seats[i].ai || false;
+            restartSeats.push({
+              seatIndex: i,
+              name: restartRoom.seats[i].name || `Player ${i + 1}`,
+              ai: isAi,
+              difficulty: isAi
+                ? (restartRoom.seats[i].difficulty || 'deity')
+                : (restartRoom.difficulty || restartRoom.seats[i].difficulty || null),
+            });
+          }
         }
 
         // Algorithm selection: defaults to binary-faithful 'civ2' if not specified
@@ -1501,11 +1516,16 @@ async function startGame(roomId, room, occupiedSeats) {
   // Reset AI module-level state from any previous game
   resetAIState();
 
+  // Room-level difficulty (from lobby selector) applies to human seats.
+  // AI seats keep their own per-seat difficulty.
+  const roomDifficulty = room.difficulty || null;
   const seatList = occupiedSeats.map(i => ({
     seatIndex: i,
     name: room.seats[i]?.name || `Player ${i + 1}`,
     ai: room.seats[i]?.ai || false,
-    difficulty: room.seats[i]?.difficulty || null,
+    difficulty: room.seats[i]?.ai
+      ? (room.seats[i]?.difficulty || 'deity')
+      : (roomDifficulty || room.seats[i]?.difficulty || null),
   }));
 
   // Generate a new map for multiplayer

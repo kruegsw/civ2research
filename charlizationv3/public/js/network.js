@@ -319,6 +319,7 @@ function renderRoomDetail(msg) {
   const algoSelect = document.getElementById('room-mapgen-select');
   const sizeSelect = document.getElementById('room-mapsize-select');
   const barbSelect = document.getElementById('room-barbarian-select');
+  const diffSelect = document.getElementById('room-difficulty-select');
 
   // Populate game options dropdowns (once per render to keep them fresh)
   if (algoSelect && sizeSelect && optionsPanel) {
@@ -354,16 +355,30 @@ function renderRoomDetail(msg) {
       sizeSelect.innerHTML = sizes.map(([id, lab]) => `<option value="${id}"${id === '40x50' ? ' selected' : ''}>${lab}</option>`).join('');
       sizeSelect.dataset.populated = '1';
     }
+    if (diffSelect && !diffSelect.dataset.populated) {
+      // Default to highest AI difficulty in the room
+      const aiDiffs = msg.clients.filter(s => s.ai && s.difficulty).map(s => s.difficulty);
+      const highestAi = aiDiffs.length > 0
+        ? DIFFICULTY_KEYS[Math.max(...aiDiffs.map(d => DIFFICULTY_KEYS.indexOf(d)))]
+        : 'deity';
+      const diffs = DIFFICULTY_KEYS.map(k =>
+        `<option value="${k}"${k === highestAi ? ' selected' : ''}>${k.charAt(0).toUpperCase() + k.slice(1)}</option>`
+      ).join('');
+      diffSelect.innerHTML = diffs;
+      diffSelect.dataset.populated = '1';
+    }
     // Reflect server's current selection if provided
     if (msg.mapAlgorithm && algoSelect.value !== msg.mapAlgorithm) algoSelect.value = msg.mapAlgorithm;
     if (msg.mapSize && sizeSelect.value !== msg.mapSize) sizeSelect.value = msg.mapSize;
     if (msg.barbarianActivity && barbSelect && barbSelect.value !== msg.barbarianActivity) barbSelect.value = msg.barbarianActivity;
+    if (msg.difficulty && diffSelect && diffSelect.value !== msg.difficulty) diffSelect.value = msg.difficulty;
     // Only the room creator can change options before game starts
     const isCreator = S.wsPlayerIndex === 0;
     const canEdit = isCreator && !msg.started;
     algoSelect.disabled = !canEdit;
     sizeSelect.disabled = !canEdit;
     if (barbSelect) barbSelect.disabled = !canEdit;
+    if (diffSelect) diffSelect.disabled = !canEdit;
     optionsPanel.style.display = msg.started ? 'none' : '';
     // Wire change handlers
     const sendOpts = () => {
@@ -371,11 +386,13 @@ function renderRoomDetail(msg) {
         mapAlgorithm: algoSelect.value,
         mapSize: sizeSelect.value,
         barbarianActivity: barbSelect ? barbSelect.value : 'villages',
+        difficulty: diffSelect ? diffSelect.value : 'deity',
       });
     };
     algoSelect.onchange = sendOpts;
     sizeSelect.onchange = sendOpts;
     if (barbSelect) barbSelect.onchange = sendOpts;
+    if (diffSelect) diffSelect.onchange = sendOpts;
   }
 
   if (msg.started) {
