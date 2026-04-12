@@ -1258,8 +1258,12 @@ const Civ2Renderer = {
           // Enemy cities outside LOS: render dimmed with STALE data.
           // Binary FUN_0047ba1d: uses believedSize[civSlot] for enemy cities
           // outside LOS, and current size for cities in LOS or own cities.
+          // Cities never seen by this civ (believedSize=0) are NOT shown.
           const _cityOutsideLOS = c.owner !== _viewCiv && _viewCiv >= 0 && !_tileInLOS(c.gx, c.gy);
           if (_cityOutsideLOS) {
+            // Skip cities the player has never seen
+            const knownSize = c.believedSize ? c.believedSize[_viewCiv] : 0;
+            if (!knownSize) continue;
             ctx.globalAlpha = 0.5;
           }
 
@@ -1502,6 +1506,10 @@ const Civ2Renderer = {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       // Use believed (stale) size for enemy cities outside LOS
       const _labelOutsideLOS = c.owner !== _viewCiv && _viewCiv >= 0 && !_tileInLOS(c.gx, c.gy);
+      if (_labelOutsideLOS) {
+        const knownLabelSize = c.believedSize ? c.believedSize[_viewCiv] : 0;
+        if (!knownLabelSize) continue; // never seen — skip label entirely
+      }
       const _labelSize = _labelOutsideLOS && c.believedSize && c.believedSize[_viewCiv]
         ? c.believedSize[_viewCiv] : c.size;
       if (_labelOutsideLOS) ctx.globalAlpha = 0.5;
