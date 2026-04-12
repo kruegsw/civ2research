@@ -677,6 +677,12 @@ function updateTurnUI() {
   // ── Civ-colored status bar tint ──
   updateStatusBarColor(isSpectator ? S.mpGameState.turn.activeCiv : S.mpCivSlot);
 
+  // ── Year display ──
+  const yearEl = document.getElementById('status-year');
+  if (yearEl) {
+    yearEl.textContent = getGameYear(S.mpGameState.turn?.number || 0);
+  }
+
   // ── Gold display ──
   const goldEl = document.getElementById('status-gold');
   if (goldEl) {
