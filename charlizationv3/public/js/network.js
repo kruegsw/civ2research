@@ -572,7 +572,7 @@ async function renderAtomicSwap(mapData, opts = {}) {
   }
   const newBase = document.createElement('canvas');
   const result = await Civ2Renderer.render(newBase, mapData, S.mapSprites, null,
-    { fowEnabled: false, fowCiv, gridEnabled: false, blinkUnitTiles, selectedUnitIndex: S.mpSelectedUnit });
+    { fowEnabled: false, gridEnabled: false, blinkUnitTiles, selectedUnitIndex: S.mpSelectedUnit });
 
   // 2. Render FOW/LOS canvas if needed (still all offscreen)
   let newFow = null, newFowLos = null, newLos = null;
