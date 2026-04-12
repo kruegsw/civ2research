@@ -1674,14 +1674,11 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   }
 
   // ── Step 7: Building upkeep — per-city (binary FUN_004f0a9c line 390) ──
-  // Binary: FUN_004f0221 runs per-city, only for human players.
+  // Binary: FUN_004f0221 runs per-city for ALL civs (human and AI).
   // Deducts maintenance from treasury; auto-sells if treasury goes negative.
   if (!cityDestroyed) {
-    const isHumanOwner = !!((state.humanPlayers || 0) & (1 << state.cities[cityIndex].owner));
-    if (isHumanOwner) {
-      const upkeepResult = payBuildingUpkeep(cityIndex, state);
-      events.push(...upkeepResult.events);
-    }
+    const upkeepResult = payBuildingUpkeep(cityIndex, state);
+    events.push(...upkeepResult.events);
   }
 
   // ── Step 8: City expansion (binary FUN_004f0a9c line 392: FUN_004f080d) ──

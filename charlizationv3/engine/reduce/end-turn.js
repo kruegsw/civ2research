@@ -720,7 +720,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // calcTradeRouteIncome — no separate accumulation needed.
   let civTaxTotal = 0;
   let civSciTotal = 0;
-  let civMaintenanceTotal = 0;
+  // civMaintenanceTotal removed — maintenance handled per-city in processCityTurn
   // #147: Per-civ score accumulators during city processing
   // civPopulationTotal: linear sum (Σ city.size) — matches binary civ+0x6c, the
   //   "total city population" field used by happiness calcs.
@@ -774,10 +774,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
     civSciTotal += citySci;
 
-    // #12: Skip building maintenance for AI civs
-    if (isActiveCivHuman) {
-      civMaintenanceTotal += maintenance;
-    }
+    // Maintenance is NOT deducted here — it's handled per-city in
+    // processCityTurn → payBuildingUpkeep (binary FUN_004f0221).
+    // The per-city approach matches the binary and handles auto-sell
+    // on a per-city basis when treasury goes negative.
   }
 
   // Update civ treasury and research progress
@@ -786,14 +786,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // mutations like unitsLostNotified from casualty report.
     state.civs = state.civs !== prev.civs ? [...state.civs] : [...prev.civs];
     const civ = { ...state.civs[activeCiv] };
-    civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
+    // Only add tax income — maintenance already deducted per-city
+    civ.treasury = (civ.treasury || 0) + civTaxTotal;
 
     // #147: Store accumulated population for score computations
     civ.totalPopulation = civPopulationTotal;
 
-    // #71: Building upkeep — civ-level fallback for AI civs.
-    // Binary FUN_004f0221 runs per-city for HUMAN players (now in processCityTurn).
-    // This civ-level loop handles AI civs and any remaining deficit.
+    // #71: Building upkeep — civ-level fallback: auto-sell if treasury
+    // is still negative after per-city upkeep (shouldn't normally happen).
     while (civ.treasury < 0) {
       let sold = false;
       for (let sci = 0; sci < state.cities.length && civ.treasury < 0; sci++) {
@@ -830,7 +830,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     civ.treasury = Math.max(0, Math.min(30000, civ.treasury));
 
     // Treasury warning — alert player when net income is negative and they have cities
-    const netIncomeThisTurn = civTaxTotal - civMaintenanceTotal;
+    const netIncomeThisTurn = civTaxTotal; // maintenance already deducted per-city
     const myCityCount = state.cities.filter(c => c.owner === activeCiv && c.size > 0).length;
     if (netIncomeThisTurn < 0 && myCityCount > 1) {
       if (!state.turnEvents) state.turnEvents = [];
