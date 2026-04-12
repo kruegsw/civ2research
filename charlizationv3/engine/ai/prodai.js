@@ -2440,13 +2440,13 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
       bestUnitScore = Math.floor(bestUnitScore * (1.0 + Math.min(defNeed, 5) * 0.08));
     }
 
-    // Boost naval units when NAVAL_ASSAULT goals exist
-    if (bestUnitDomain === 1 && (navalGoals > 0 || transportGoals > 0)) {
+    // Boost naval units when NAVAL_ASSAULT goals exist (domain 2 = sea)
+    if (bestUnitDomain === 2 && (navalGoals > 0 || transportGoals > 0)) {
       bestUnitScore = Math.floor(bestUnitScore * 1.15);
     }
 
-    // Boost transport when transport goals exist
-    if (bestUnitRole === 5 && bestUnitDomain === 1 && transportGoals > 0) {
+    // Boost transport when transport goals exist (domain 2 = sea)
+    if (bestUnitRole === 5 && bestUnitDomain === 2 && transportGoals > 0) {
       bestUnitScore = Math.floor(bestUnitScore * 1.2);
     }
 
@@ -2552,19 +2552,15 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   }
 
   // ── Emergency defense override (binary lines 6019-6026) ──
-  // Binary: when local_80 > 1 (0 defenders = local_a8 < 1), the binary uses
-  // a HARD OVERRIDE that forces a defensive unit to be built regardless of
-  // building/wonder scores. This is NOT score-based — it's unconditional.
-  // Binary condition: local_58 < 0 (current best is building/wonder) AND
-  //                   local_80 > 1 (urgentDefense = 2, meaning 0 defenders)
-  //                   → force local_30 = unit score, local_58 = unit type
-  if (cityCtx.defenders === 0) {
+  // Binary condition: local_58 < 0 (best is building/wonder) AND local_80 > 1
+  // (0 defenders). Override ONLY if best candidate is NOT a unit — if a unit
+  // (including naval) already won the scoring, respect that choice.
+  if (cityCtx.defenders === 0 && (!bestItem || bestItem.type !== 'unit')) {
     const bestDefId = bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase);
     if (bestDefId >= 0) {
       const defScore = scoreUnit(bestDefId, city, cityCtx, civTechs,
         gameState, mapBase, civSlot, strategy);
       if (defScore > 0) {
-        // Hard override: defender ALWAYS wins when 0 defenders (binary behavior)
         bestItem = { type: 'unit', id: bestDefId };
         bestScore = defScore;
       }
