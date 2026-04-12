@@ -927,10 +927,14 @@ const Civ2Renderer = {
           ctx.drawImage(rivers[rm], px, py);
         }
 
-        // When FOW is enabled and tile is dimmed, use last-known improvements (Block 1)
+        // Binary FUN_0047a8c9:4043-4049: when viewing a specific civ's knowledge
+        // (FOW on), use LAST-KNOWN improvements for tiles outside LOS.
+        // Also applies when LOS is on (even with FOW off) — enemy improvements
+        // outside LOS should show stale data.
         let imp = getImprovements(gx, gy);
-        if (fowEnabled && isDimmed(gx, gy)) {
-          imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+        const _tileOutsideLOS = _viewCiv >= 0 && !_tileInLOS(gx, gy);
+        if (_tileOutsideLOS && mapData.getKnownImprovements) {
+          imp = mapData.getKnownImprovements(gx, gy, _viewCiv);
         }
 
         // ── Step 1: Irrigation/farmland (ground-level, beneath everything) ──
@@ -976,9 +980,9 @@ const Civ2Renderer = {
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = nb[DIR_KEYS[di]];
             let nimp = getImprovements(nx, ny);
-            // G4: Use known improvements for neighbor on dimmed tiles
-            if (fowEnabled && isDimmed(nx, ny)) {
-              nimp = mapData.getKnownImprovements(nx, ny, options.fowCiv);
+            // Use known improvements for neighbor tiles outside LOS
+            if (_viewCiv >= 0 && !_tileInLOS(nx, ny) && mapData.getKnownImprovements) {
+              nimp = mapData.getKnownImprovements(nx, ny, _viewCiv);
             }
             if ((imp.road || imp.city) && (nimp.road || nimp.city)) { ctx.drawImage(roads[di], px, py); roadSegs++; }
             if ((imp.railroad || imp.city) && (nimp.railroad || nimp.city)) { ctx.drawImage(railroads[di], px, py); rrSegs++; }
@@ -1163,11 +1167,10 @@ const Civ2Renderer = {
       if (sprites.fortress || sprites.airbase) {
         for (let gx = 0; gx < xMax; gx++) {
           let imp = getImprovements(gx, gy);
-          if (fowEnabled) {
-            if (isUnexplored(gx, gy)) continue;
-            if (isDimmed(gx, gy)) {
-              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
-            }
+          if (fowEnabled && isUnexplored(gx, gy)) continue;
+          // Use stale improvements for tiles outside LOS
+          if (_viewCiv >= 0 && !_tileInLOS(gx, gy) && mapData.getKnownImprovements) {
+            imp = mapData.getKnownImprovements(gx, gy, _viewCiv);
           }
           if (!imp.fortress) continue;
           const [px, py] = tilePos(gx, gy);
@@ -1252,12 +1255,17 @@ const Civ2Renderer = {
             continue;
           }
 
-          // Enemy cities outside LOS: render dimmed (stale/last-known).
-          // Binary: explored-but-not-in-LOS tiles show city at 50% opacity
-          // with last-known data. Own cities are always fully visible.
-          if (c.owner !== _viewCiv && !_tileInLOS(c.gx, c.gy)) {
+          // Enemy cities outside LOS: render dimmed with STALE data.
+          // Binary FUN_0047ba1d: uses believedSize[civSlot] for enemy cities
+          // outside LOS, and current size for cities in LOS or own cities.
+          const _cityOutsideLOS = c.owner !== _viewCiv && _viewCiv >= 0 && !_tileInLOS(c.gx, c.gy);
+          if (_cityOutsideLOS) {
             ctx.globalAlpha = 0.5;
           }
+
+          // Use believed (stale) size for enemy cities outside LOS
+          const _displaySize = _cityOutsideLOS && c.believedSize && c.believedSize[_viewCiv]
+            ? c.believedSize[_viewCiv] : c.size;
 
           // Visible city
           const drawPositions = [c.gx];
@@ -1269,9 +1277,9 @@ const Civ2Renderer = {
             const color = this.CIV_COLORS[c.owner] || '#ccc';
             const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
             const row = this._getCityRow(epoch, c.style || 0);
-            let col = this._getCitySizeCol(c.size, epoch);
+            let col = this._getCitySizeCol(_displaySize, epoch);
             if (c.hasPalace && col < 3) col++;
-            if (c.hasWalls) col += 4;
+            if (!_cityOutsideLOS && c.hasWalls) col += 4;
             if (citySprites[row] && citySprites[row][col]) {
               ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
             } else {
@@ -1492,6 +1500,11 @@ const Civ2Renderer = {
     ctx.textBaseline = 'top';
     for (const c of liveCities) {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
+      // Use believed (stale) size for enemy cities outside LOS
+      const _labelOutsideLOS = c.owner !== _viewCiv && _viewCiv >= 0 && !_tileInLOS(c.gx, c.gy);
+      const _labelSize = _labelOutsideLOS && c.believedSize && c.believedSize[_viewCiv]
+        ? c.believedSize[_viewCiv] : c.size;
+      if (_labelOutsideLOS) ctx.globalAlpha = 0.5;
       const drawPositions = [c.gx];
       if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
       for (const drawGx of drawPositions) {
@@ -1500,11 +1513,11 @@ const Civ2Renderer = {
         const color = this.CIV_COLORS[c.owner] || '#ccc';
         const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
         const row = this._getCityRow(epoch, c.style || 0);
-        let col = this._getCitySizeCol(c.size, epoch);
+        let col = this._getCitySizeCol(_labelSize, epoch);
         if (c.hasPalace && col < 3) col++;
-        if (c.hasWalls) col += 4;
+        if (!_labelOutsideLOS && c.hasWalls) col += 4;
 
-        if (c.civilDisorder && sprites.revoltFist) {
+        if (c.civilDisorder && !_labelOutsideLOS && sprites.revoltFist) {
           // Disorder: draw civ-colored fist at fixed position on city sprite
           // Binary (FUN_0056d289) draws fist at city sprite origin with sprite-object
           // internal offsets — same for ALL city styles/sizes (not per-sprite sizeLoc).
@@ -1516,7 +1529,7 @@ const Civ2Renderer = {
           ctx.drawImage(fist, tpx + 2, tpy - 16);
         } else {
           // Normal: draw city size box
-          const sizeStr = String(c.size);
+          const sizeStr = String(_labelSize);
           const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
           const tm = ctx.measureText(sizeStr);
           const padL = 1, padR = 2;
@@ -1540,6 +1553,7 @@ const Civ2Renderer = {
           ctx.fillText(sizeStr, ssx + padL, ssy);
         }
       }
+      ctx.globalAlpha = 1.0; // reset after possible dimming
     }
 
     // ────────────────────────────────────────
