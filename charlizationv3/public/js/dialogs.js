@@ -427,7 +427,7 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
     const btn = document.createElement('button');
     btn.textContent = b.label;
     btn.className = 'civ2-btn';
-    btn.addEventListener('click', () => { dismiss(); if (b.action) b.action(); });
+    btn.addEventListener('click', () => { if (b.action) b.action(); dismiss(); });
     btnRow.appendChild(btn);
   }
   frame.appendChild(btnRow);
