@@ -1479,6 +1479,12 @@ function initNetwork(appCallbacks) {
                   hutSfx = 'CHEERS2';
                   hutText = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
                   break;
+                case 'advancedTribe':
+                  hutSfx = 'FANFARE1';
+                  hutText = hr.cityName
+                    ? `You have discovered an advanced tribe!\nThe city of ${hr.cityName} joins your civilization.`
+                    : 'You have discovered an advanced tribe!\nA new city joins your civilization.';
+                  break;
                 case 'barbarians':
                   hutSfx = 'DRUMAY';
                   hutText = 'You have unleashed a horde of barbarians!';
