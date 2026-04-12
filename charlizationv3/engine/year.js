@@ -7,46 +7,50 @@
 // Difficulty mapping: 0,1→table 0; 2→table 1; 3→table 2; 4,5→table 3.
 // ═══════════════════════════════════════════════════════════════════
 
-// Per-difficulty year schedule tables.
-// Each entry: { until: cumulative turn threshold, perTurn: years advanced per turn }
+// Per-difficulty year schedule tables (from binary DAT_0062c490).
+// Each segment: { startYear, turns, perTurn }
 // Table index: 0=Chieftain/Warlord, 1=Prince, 2=King, 3=Emperor/Deity
+// Spec sections 4.4-4.5, binary FUN_00484fec lines 881-900
 const SCHEDULES = [
-  // Table 0: Chieftain / Warlord — slower, more turns per era
+  // Table 0: Chieftain / Warlord — simpler 5-segment table
   [
-    { until: 250, perTurn: 20 },   // turns 1-250: 20 years/turn
-    { until: 300, perTurn: 10 },   // turns 251-300: 10 years/turn
-    { until: 350, perTurn: 5 },    // turns 301-350: 5 years/turn
-    { until: 400, perTurn: 2 },    // turns 351-400: 2 years/turn
-    { until: Infinity, perTurn: 1 }, // turns 401+: 1 year/turn
+    { startYear: -4000, turns: 250, perTurn: 20 },  // -4000 to 1000
+    { startYear:  1000, turns:  50, perTurn: 10 },   // 1000 to 1500
+    { startYear:  1500, turns:  50, perTurn:  5 },   // 1500 to 1750
+    { startYear:  1750, turns:  50, perTurn:  2 },   // 1750 to 1850
+    { startYear:  1850, turns:   0, perTurn:  1 },   // 1850+ at 1yr/turn
   ],
-  // Table 1: Prince — standard schedule
+  // Table 1: Prince — 6-segment table with 50/25yr early segments
   [
-    { until: 250, perTurn: 20 },
-    { until: 300, perTurn: 10 },
-    { until: 350, perTurn: 5 },
-    { until: 400, perTurn: 2 },
-    { until: Infinity, perTurn: 1 },
+    { startYear: -4000, turns:  60, perTurn: 50 },   // -4000 to -1000
+    { startYear: -1000, turns:  40, perTurn: 25 },   // -1000 to 0
+    { startYear:     0, turns: 150, perTurn: 10 },   // AD 1 to 1500
+    { startYear:  1500, turns:  50, perTurn:  5 },   // 1500 to 1750
+    { startYear:  1750, turns:  50, perTurn:  2 },   // 1750 to 1850
+    { startYear:  1850, turns:   0, perTurn:  1 },   // 1850+ at 1yr/turn
   ],
-  // Table 2: King — slightly faster
+  // Table 2: King — 6-segment table
   [
-    { until: 200, perTurn: 20 },
-    { until: 250, perTurn: 10 },
-    { until: 300, perTurn: 5 },
-    { until: 350, perTurn: 2 },
-    { until: Infinity, perTurn: 1 },
+    { startYear: -4000, turns:  60, perTurn: 50 },   // -4000 to -1000
+    { startYear: -1000, turns:  40, perTurn: 25 },   // -1000 to 0
+    { startYear:     0, turns:  50, perTurn: 20 },   // AD 1 to 1000
+    { startYear:  1000, turns:  50, perTurn: 10 },   // 1000 to 1500
+    { startYear:  1500, turns:  50, perTurn:  5 },   // 1500 to 1750
+    { startYear:  1750, turns:  50, perTurn:  2 },   // 1750 to 1850
   ],
-  // Table 3: Emperor / Deity — fastest
+  // Table 3: Emperor / Deity — 6-segment table
   [
-    { until: 150, perTurn: 20 },
-    { until: 200, perTurn: 10 },
-    { until: 250, perTurn: 5 },
-    { until: 300, perTurn: 2 },
-    { until: Infinity, perTurn: 1 },
+    { startYear: -4000, turns:  60, perTurn: 50 },   // -4000 to -1000
+    { startYear: -1000, turns:  40, perTurn: 25 },   // -1000 to 0
+    { startYear:     0, turns:  75, perTurn: 20 },   // AD 1 to 1500
+    { startYear:  1500, turns:  25, perTurn: 10 },   // 1500 to 1750
+    { startYear:  1750, turns:  50, perTurn:  2 },   // 1750 to 1850
+    { startYear:  1850, turns:   0, perTurn:  1 },   // 1850+ at 1yr/turn
   ],
 ];
 
-// Legacy alias for backward compatibility
-const SCHEDULE = SCHEDULES[1]; // Prince-level (default)
+// Maximum segments per table (binary has 6 segments per table)
+const MAX_SEGMENTS = 6;
 
 /**
  * Get the year schedule table index for a given difficulty.
@@ -67,25 +71,55 @@ function getScheduleIndex(difficulty) {
 }
 
 /**
+ * Compute numeric year from turn number using the binary's piecewise-linear table.
+ * Faithful to FUN_00484fec (block_00480000.c:855-912), spec section 4.4.
+ *
+ * Algorithm (lines 882-900):
+ *   if param_1 != 0: param_1 -= 1
+ *   Walk segments: subtract each segment's turn_count from remaining turns.
+ *   When remaining turns fit within a segment, year = startYear + perTurn * remaining.
+ *   Past all segments: 1 year per turn from last segment's end.
+ *   If year == 0: year = 1 (skip year 0, no 0 AD).
+ *
+ * @param {number} turn - turn number (param_1 in binary)
+ * @param {number} tableIdx - schedule table index (0-3)
+ * @returns {number} year (negative = BC, positive = AD)
+ */
+function computeYear(turn, tableIdx) {
+  const schedule = SCHEDULES[tableIdx];
+  // Binary: if (param_1 != 0) param_1-- before walking table (line 882)
+  let remaining = turn > 0 ? turn - 1 : 0;
+
+  for (let seg = 0; seg < schedule.length; seg++) {
+    const entry = schedule[seg];
+    // If turns == 0, this is the overflow segment (1yr/turn past last real segment)
+    if (entry.turns === 0 || remaining < entry.turns) {
+      // Remaining turns fit within this segment
+      let year = entry.startYear + entry.perTurn * remaining;
+      if (year === 0) year = 1; // skip year 0 (line 899)
+      return year;
+    }
+    remaining -= entry.turns;
+  }
+
+  // Past all segments: 1 year per turn from end of last segment
+  const lastSeg = schedule[schedule.length - 1];
+  const lastEnd = lastSeg.startYear + lastSeg.perTurn * lastSeg.turns;
+  let year = lastEnd + remaining;
+  if (year === 0) year = 1;
+  return year;
+}
+
+/**
  * Convert turnsPassed to a display year string.
  * @param {number} turnsPassed - number of turns elapsed
  * @param {string} [difficulty] - difficulty key (default: 'prince')
  * @returns {string} e.g. "4000 B.C.", "A.D. 1", "A.D. 1994"
  */
 export function getGameYear(turnsPassed, difficulty) {
-  // Binary: if (param_1 != 0) param_1-- before walking table
-  const turn = Math.max(0, (turnsPassed || 0) - 1);
-  const schedule = SCHEDULES[getScheduleIndex(difficulty)];
-  let year = -4000, t = 0;
-  for (const seg of schedule) {
-    const turnsInSeg = Math.min(turn, seg.until) - t;
-    if (turnsInSeg <= 0) break;
-    year += turnsInSeg * seg.perTurn;
-    t += turnsInSeg;
-    if (t >= turn) break;
-  }
+  const year = computeYear(turnsPassed || 0, getScheduleIndex(difficulty));
   if (year < 0) return `${-year} B.C.`;
-  if (year === 0) return 'A.D. 1';
+  if (year === 0) return 'A.D. 1'; // shouldn't happen (computeYear skips 0)
   return `A.D. ${year}`;
 }
 
@@ -96,17 +130,7 @@ export function getGameYear(turnsPassed, difficulty) {
  * @returns {number}
  */
 export function getNumericYear(turnsPassed, difficulty) {
-  const turn = turnsPassed || 0;
-  const schedule = SCHEDULES[getScheduleIndex(difficulty)];
-  let year = -4000, t = 0;
-  for (const seg of schedule) {
-    const turnsInSeg = Math.min(turn, seg.until) - t;
-    if (turnsInSeg <= 0) break;
-    year += turnsInSeg * seg.perTurn;
-    t += turnsInSeg;
-    if (t >= turn) break;
-  }
-  return year;
+  return computeYear(turnsPassed || 0, getScheduleIndex(difficulty));
 }
 
 /**

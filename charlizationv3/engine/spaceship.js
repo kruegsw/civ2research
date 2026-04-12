@@ -10,7 +10,7 @@
 //   FUN_0048aedc (check_game_end_conditions)
 // ═══════════════════════════════════════════════════════════════════
 
-import { WONDER_NAMES, WONDER_OBSOLETE, DIFFICULTY_KEYS, ADVANCE_NAMES } from './defs.js';
+import { WONDER_OBSOLETE, DIFFICULTY_KEYS } from './defs.js';
 import { getNumericYear } from './year.js';
 
 // ── Retirement score difficulty multipliers (from binary) ──
@@ -33,60 +33,71 @@ const SS_MODULE     = 37;  // building ID for SS Module
 // Apollo Program wonder index
 const WONDER_APOLLO = 25;
 
-// COSMIC parameter #20 default: base flight time constant
-const COSMIC_FLIGHT_TIME = 220;
+// Fusion Power tech index (0x20 = 32) — grants nuclear power bonus for spaceship
+// Spec §1.2: ss_flags bit 3 (0x08) "has_nuclear_power" set when civ has tech 0x20
+// C ref: FUN_00596eec:1638-1640
+const TECH_FUSION_POWER = 32;
 
-// ── K.1: Binary-accurate mass per part type (tons) ──
-// Structural parts: 800 tons each
-// Components have two sub-types (propulsion/fuel) but in our building system
-// they're one type; the binary uses 400 for propulsion + 600 for fuel.
-// Average component mass = 500 tons (split evenly propulsion/fuel)
-// Modules have three sub-types: habitation (1000), life support (800), solar panel (800)
-// Average module mass = ~867 tons, but binary counts them separately.
-// Since we track aggregate counts, we use the per-part averages:
-const SS_MASS_STRUCTURAL = 800;   // 800 tons each
-const SS_MASS_COMPONENT  = 500;   // avg of propulsion(400) + fuel(600)
-const SS_MASS_MODULE     = 867;   // avg of hab(1000) + life(800) + solar(800)
+// ── Mass/Thrust paradigm from RULES.TXT @COSMIC line 41 (default: 75) ──
+// Spec §5.2: DAT_0064bcdc = Mass/Thrust paradigm
+// C ref: FUN_00596eec:1676
+const COSMIC_MASS_THRUST_PARADIGM = 75;
+
+// ── Binary-accurate mass per part type (from config table at DAT_00634f68) ──
+// Spec §1.4: 6 entries at base 0x00634F60, 12-byte stride, mass at +0x08
+// Extracted from civ2.exe binary static data segment
+// C ref: FUN_00596eec:1644-1648 — *(int *)(&DAT_00634f68 + i * 0xc)
+const SS_PART_MASS = [
+  1,   // [0] Structural    (DAT_00634f68)
+  4,   // [1] Fuel          (DAT_00634f74)
+  4,   // [2] Propulsion    (DAT_00634f80)
+  16,  // [3] Habitation    (DAT_00634f8c)
+  16,  // [4] Life Support  (DAT_00634f98)
+  16,  // [5] Solar Panel   (DAT_00634fa4)
+];
+
+// ── Max part counts (from config table at DAT_00634f64) ──
+// Spec §3: (&DAT_00634f64)[part_index * 3]
+const SS_PART_MAX = [
+  39,  // [0] Structural    (DAT_00634f64)
+  8,   // [1] Fuel          (DAT_00634f70)
+  8,   // [2] Propulsion    (DAT_00634f7c)
+  4,   // [3] Habitation    (DAT_00634f88)
+  4,   // [4] Life Support  (DAT_00634f94)
+  4,   // [5] Solar Panel   (DAT_00634fa0)
+];
 
 /**
- * (#99) Count spaceship parts across all cities owned by a civ.
- * Tracks 6 individual part sub-types: structural, propulsion, fuel,
- * habitation, life-support, solar-panel.
- *
- * The binary tracks these individually via civ record fields.
- * Since our building system uses 3 aggregate types (35/36/37),
- * we also check the per-civ spaceship state for detailed counts.
+ * Get spaceship part counts for a civ.
+ * The binary tracks 6 individual sub-types per civ (ss_parts[0..5]).
+ * Spec §1.1: offsets +0x408 through +0x412 in civ record.
+ * C ref: *(short *)(&DAT_0064caa8 + civ * 0x594 + part_index * 2)
  *
  * @param {object} state - game state
  * @param {number} civSlot
- * @returns {{ structurals: number, components: number, modules: number, propulsion: number, fuel: number, habitation: number, lifeSupport: number, solarPanel: number }}
+ * @returns {{ structural: number, fuel: number, propulsion: number, habitation: number, lifeSupport: number, solarPanel: number }}
  */
-function countSpaceshipParts(state, civSlot) {
-  let structurals = 0, components = 0, modules = 0;
-  for (let ci = 0; ci < state.cities.length; ci++) {
-    const city = state.cities[ci];
-    if (city.owner !== civSlot || city.size <= 0) continue;
-    if (!city.buildings) continue;
-    if (city.buildings.has(SS_STRUCTURAL)) structurals++;
-    if (city.buildings.has(SS_COMPONENT))  components++;
-    if (city.buildings.has(SS_MODULE))     modules++;
-  }
-
-  // (#99) Retrieve detailed sub-type counts from spaceship state if available
+function getSpaceshipParts(state, civSlot) {
   const existing = state.spaceships?.[civSlot] || {};
-  const propulsion = existing.propulsion ?? Math.ceil(components / 2);
-  const fuel = existing.fuel ?? Math.floor(components / 2);
-  const habitation = existing.habitation ?? Math.ceil(modules / 3);
-  const lifeSupport = existing.lifeSupport ?? Math.ceil((modules - Math.ceil(modules / 3)) / 2);
-  const solarPanel = existing.solarPanel ?? Math.max(0, modules - Math.ceil(modules / 3) - Math.ceil((modules - Math.ceil(modules / 3)) / 2));
-
-  return { structurals, components, modules, propulsion, fuel, habitation, lifeSupport, solarPanel };
+  return {
+    structural:  existing.structural  ?? 0,
+    fuel:        existing.fuel        ?? 0,
+    propulsion:  existing.propulsion  ?? 0,
+    habitation:  existing.habitation  ?? 0,
+    lifeSupport: existing.lifeSupport ?? 0,
+    solarPanel:  existing.solarPanel  ?? 0,
+  };
 }
 
 /**
- * Check if a civ has Apollo Program active (not obsoleted).
+ * Check if Apollo Program has been built by any civ (not destroyed).
+ * Spec §4.2, §9.2: Apollo enables spaceship construction for ALL civs.
+ * C ref: block_004C0000.c:2358-2359
+ *
+ * @param {object} state - game state
+ * @returns {boolean}
  */
-function hasApollo(state, civSlot) {
+function isApolloBuilt(state) {
   const obsTech = WONDER_OBSOLETE[WONDER_APOLLO];
   if (obsTech >= 0 && state.civTechs) {
     for (let c = 0; c < 8; c++) {
@@ -95,74 +106,154 @@ function hasApollo(state, civSlot) {
   }
   const w = state.wonders?.[WONDER_APOLLO];
   if (!w || w.cityIndex == null || w.destroyed) return false;
-  // Apollo benefits everyone once built, but only the owner gets the flight bonus
   const city = state.cities[w.cityIndex];
-  return city && city.owner === civSlot;
+  return city && city.size > 0;
+}
+
+/**
+ * Check if a civ has Fusion Power tech (nuclear power bonus for spaceship).
+ * Spec §1.2: ss_flags bit 3 (0x08) = has_nuclear_power, set when civ has tech 0x20.
+ * Spec §5.2: nuclear power reduces Mass/Thrust paradigm to 75%.
+ * C ref: FUN_00596eec:1638-1640
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot
+ * @returns {boolean}
+ */
+function hasFusionPower(state, civSlot) {
+  const techs = state.civTechs?.[civSlot];
+  return techs ? techs.has(TECH_FUSION_POWER) : false;
+}
+
+/**
+ * Progressive thrust function — converts a part count into a thrust value.
+ * First 4 parts add 1 each, parts 5-6 add 2 each, parts 7+ add 3 each.
+ * Spec §5.3: FUN_00596e92
+ * C ref: block_00590000.c:1591-1610
+ *
+ * @param {number} count - number of parts
+ * @returns {number} thrust value
+ */
+function thrustFromParts(count) {
+  let result = 0;
+  for (let i = 0; i < count; i++) {
+    let inc = 1;
+    if (i > 3) inc = 2;   // C: if (3 < local_c) iVar1 = local_8 + 2
+    result += inc;
+    if (i > 5) result++;   // C: if (5 < local_c) local_8 = local_8 + 1
+  }
+  return result;
 }
 
 /**
  * Recalculate spaceship stats for a civ — ported from FUN_00596eec.
  *
- * Computes mass, success probability, flight time, and arrival estimate.
- * Stores results in state.spaceships[civSlot].
+ * Computes mass, success probability, flight time, and arrival estimate
+ * using individual part sub-type counts (6 types, not 3 aggregates).
+ *
+ * Spec §5 (travel time), §6 (success probability).
+ * C ref: FUN_00596eec (block_00590000.c:1619-1722)
  *
  * @param {object} state - mutable game state
  * @param {number} civSlot
  * @returns {object} the spaceship stats object
  */
 export function recalcSpaceshipStats(state, civSlot) {
-  const parts = countSpaceshipParts(state, civSlot);
+  const parts = getSpaceshipParts(state, civSlot);
   if (!state.spaceships) state.spaceships = {};
 
   const existing = state.spaceships[civSlot] || {};
   const launched = existing.launched || false;
   const launchTurn = existing.launchTurn ?? -1;
 
-  // ── K.1: Mass calculation using binary's weight table ──
-  const mass = parts.structurals * SS_MASS_STRUCTURAL
-    + parts.components * SS_MASS_COMPONENT
-    + parts.modules * SS_MASS_MODULE;
+  // ── §5.1: Mass calculation — sum of (part_count * mass_per_part) for all 6 types ──
+  // C ref: FUN_00596eec:1644-1648
+  // DAT_006ad0e4 += ss_parts[i] * configTable[i].mass
+  const partCounts = [parts.structural, parts.fuel, parts.propulsion,
+                      parts.habitation, parts.lifeSupport, parts.solarPanel];
+  let mass = 0;
+  for (let i = 0; i < 6; i++) {
+    mass += partCounts[i] * SS_PART_MASS[i];
+  }
 
-  // ── K.1: Success probability — fuel ratio × energy ratio × flight penalty ──
+  // ── §6: Success probability — 3 multiplicative coverage ratios ──
+  // C ref: FUN_00596eec:1656-1675
+  // Starts at 100%, each ratio reduces multiplicatively.
   let success = 100;
 
-  // Success requires at least 1 of each part type for basic integrity
-  if (parts.structurals === 0 || parts.components === 0 || parts.modules === 0) {
-    success = 0;
-  } else {
-    // Fuel ratio: components (propulsion+fuel) vs modules (habitation+life+solar)
-    // Higher component-to-module ratio = better fuel coverage
-    // fuel_ratio = min(100, components * 100 / modules)
-    const fuelRatio = Math.min(100, Math.floor((parts.components * 100) / Math.max(1, parts.modules)));
+  // Propulsion coverage (C lines 1657-1663):
+  //   propulsion_pct = (life_support * 100) / clamp(habitation, 1, 99)
+  //   success = (clamp(propulsion_pct, 0, 100) * success) / 100
+  const habClamped = Math.max(1, Math.min(99, parts.habitation));
+  const propulsionPct = Math.floor((parts.lifeSupport * 100) / habClamped);
+  success = Math.floor((Math.max(0, Math.min(100, propulsionPct)) * success) / 100);
 
-    // Energy ratio: structurals (shielding) vs total payload (components + modules)
-    // energy_ratio = min(100, structurals * 200 / (components + modules))
-    const energyRatio = Math.min(100,
-      Math.floor((parts.structurals * 200) / Math.max(1, parts.components + parts.modules)));
+  // Energy coverage (C lines 1665-1671):
+  //   denom = clamp(habitation + life_support, 1, ...)
+  //   energy_pct = (solar * 200) / denom
+  //   success = (clamp(energy_pct, 0, 100) * success) / 100
+  const energyDenom = Math.max(1, parts.habitation + parts.lifeSupport);
+  const energyPct = Math.floor((parts.solarPanel * 200) / energyDenom);
+  success = Math.floor((Math.max(0, Math.min(100, energyPct)) * success) / 100);
 
-    // Binary formula: success = (fuelRatio * energyRatio) / 100
-    // This is fuel ratio × energy ratio as multiplicative percentages
-    success = Math.floor((fuelRatio * energyRatio) / 100);
+  // Fuel coverage (C lines 1672-1675):
+  //   fuel_pct = (propulsion * 100) / clamp(fuel, 1, 99)
+  //   (stored as DAT_006ad0dc but NOT applied to success in C — see note)
+  const fuelClamped = Math.max(1, Math.min(99, parts.fuel));
+  const fuelPct = Math.floor((parts.propulsion * 100) / fuelClamped);
+  // Note: In the C code, fuel_pct is stored in DAT_006ad0dc but is NOT
+  // multiplied into DAT_006ad0ec (success). Only propulsion_pct and
+  // energy_pct are applied. Fuel coverage is displayed but doesn't
+  // affect success probability directly.
+
+  // ── §5.2-5.3: Flight time using Mass/Thrust paradigm ──
+  // C ref: FUN_00596eec:1676-1704
+  let massThrust = COSMIC_MASS_THRUST_PARADIGM;
+  const hasNuclearPower = hasFusionPower(state, civSlot);
+
+  // Nuclear power bonus: 75% of paradigm
+  // C: if ((bVar1 & 8) != 0) local_c = (local_c * 3) >> 2;
+  if (hasNuclearPower) {
+    massThrust = (massThrust * 3) >> 2;  // integer: 75 * 3 / 4 = 56
   }
 
-  // ── Flight time (in 10ths of a turn) ──
-  let flightConstant = COSMIC_FLIGHT_TIME;
-  const hasApolloBonus = hasApollo(state, civSlot);
-  if (hasApolloBonus) {
-    flightConstant = Math.floor(flightConstant * 3 / 4);
+  // Scale factor for large paradigm values
+  // C lines 1680-1683: while (100 < local_c) { local_c >>= 1; local_8 <<= 1; }
+  let scaleFactor = 1;
+  while (massThrust > 100) {
+    massThrust >>= 1;
+    scaleFactor <<= 1;
   }
 
-  // Thrust from components, population from modules
-  const thrust = Math.max(1, parts.components * 10);
-  let flightTime = mass > 0 ? Math.floor((mass * flightConstant) / (thrust + 1)) : 0;
+  // Thrust calculation using progressive thrustFromParts
+  // C lines 1684-1690 and 1697-1700:
+  //   prop_thrust = thrustFromParts(clamped_propulsion)
+  //   fuel_thrust = thrustFromParts(clamped_fuel)
+  //   thrust_speed = clamp(fuel_thrust * 10, 0, prop_thrust * 10)
+  //   flight_time = (mass * massThrust) / (thrust_speed + 1)
+  // The stack-artifact pattern at lines 1697-1699 shows:
+  //   FUN_00596e92(propulsion) → result used as upper bound
+  //   FUN_00596e92(fuel) → result * 10 clamped to [0, prop_thrust * 10]
+  const clampedPropulsion = Math.max(0, Math.min(SS_PART_MAX[2], parts.propulsion));
+  const clampedFuel = Math.max(0, Math.min(SS_PART_MAX[1], parts.fuel));
+  const propThrust = thrustFromParts(clampedPropulsion);
+  const fuelThrust = thrustFromParts(clampedFuel);
+  const thrustSpeed = Math.max(1, Math.min(fuelThrust * 10, propThrust * 10));
+  let flightTime = Math.floor((mass * massThrust) / (thrustSpeed + 1));
 
-  // Penalty for long flight: if flightTime > 150 (15.0 turns), -1% per turn over
+  // Apply scale factor (C lines 1701-1704)
+  if (scaleFactor > 1) {
+    flightTime *= scaleFactor;
+  }
+
+  // ── §5.5: Mass penalty on success probability ──
+  // C lines 1706-1709: if (flight_time > 150) success -= (flight_time - 150) / 10
   if (flightTime > 150) {
     success -= Math.floor((flightTime - 150) / 10);
   }
   success = Math.max(0, Math.min(100, success));
 
-  // Convert flight time from 10ths to turns (integer)
+  // Convert flight time from years×10 to turns (integer)
   const flightTurns = Math.max(1, Math.ceil(flightTime / 10));
 
   // ── Arrival turn estimate ──
@@ -171,27 +262,28 @@ export function recalcSpaceshipStats(state, civSlot) {
     ? launchTurn + flightTurns
     : currentTurn + flightTurns;
 
-  // ── Can launch? Need at least 1 of each part ──
-  const canLaunch = !launched &&
-    parts.structurals >= 1 && parts.components >= 1 && parts.modules >= 1;
+  // ── Can launch? Need at least 1 of each aggregate category ──
+  // Spec §3: minimum 1 structural, 1 fuel or propulsion, 1 module sub-type
+  const hasStructural = parts.structural >= 1;
+  const hasComponent = (parts.fuel >= 1 || parts.propulsion >= 1);
+  const hasModule = (parts.habitation >= 1 || parts.lifeSupport >= 1 || parts.solarPanel >= 1);
+  const canLaunch = !launched && hasStructural && hasComponent && hasModule;
 
-  // (#99) Store 6 individual part sub-types alongside aggregates
   const ss = {
     ...parts,
-    // Individual sub-types
-    propulsion: parts.propulsion,
-    fuel: parts.fuel,
-    habitation: parts.habitation,
-    lifeSupport: parts.lifeSupport,
-    solarPanel: parts.solarPanel,
     mass,
     successProb: success,
+    propulsionPct,
+    energyPct,
+    fuelPct,
+    flightTime,   // raw value in years×10
     flightTurns,
     arrivalTurn,
     launched,
     launchTurn,
     canLaunch,
-    hasApollo: hasApolloBonus,
+    hasNuclearPower,
+    apolloBuilt: isApolloBuilt(state),
   };
 
   state.spaceships = { ...state.spaceships, [civSlot]: ss };
@@ -331,9 +423,10 @@ export function calcCivScore(state, civSlot, mapBase) {
   if (ss && ss.launched) {
     const arrived = ss.arrivalTurn <= turnNum;
     if (arrived) {
-      // Spaceship bonus: spaceshipMult * 100 + max(0, (570 - turnNumber)) * 2 + 400
-      const spaceshipMult = (ss.structurals || 0) + (ss.components || 0) + (ss.modules || 0);
-      spaceshipScore = spaceshipMult * 100 + Math.max(0, (570 - turnNum)) * 2 + 400;
+      // Spaceship bonus: totalParts * 100 + max(0, (570 - turnNumber)) * 2 + 400
+      const totalParts = (ss.structural || 0) + (ss.fuel || 0) + (ss.propulsion || 0)
+        + (ss.habitation || 0) + (ss.lifeSupport || 0) + (ss.solarPanel || 0);
+      spaceshipScore = totalParts * 100 + Math.max(0, (570 - turnNum)) * 2 + 400;
     }
   }
 
@@ -428,13 +521,14 @@ export function calcFinalScore(state, civSlot) {
   const scaledScore = Math.floor(baseScore * difficultyPct / 100);
 
   // Alpha Centauri bonus: only if spaceship arrived
+  // +100 per structural, +200 per component (fuel+propulsion), +300 per module (hab+life+solar)
   let acBonus = 0;
   const ss = state.spaceships?.[civSlot];
   const turnNum = state.turn?.number || 0;
   if (ss && ss.launched && ss.arrivalTurn <= turnNum && !ss.destroyed) {
-    acBonus += (ss.structurals || 0) * AC_BONUS_STRUCTURAL;
-    acBonus += (ss.components || 0) * AC_BONUS_COMPONENT;
-    acBonus += (ss.modules || 0) * AC_BONUS_MODULE;
+    acBonus += (ss.structural || 0) * AC_BONUS_STRUCTURAL;
+    acBonus += ((ss.fuel || 0) + (ss.propulsion || 0)) * AC_BONUS_COMPONENT;
+    acBonus += ((ss.habitation || 0) + (ss.lifeSupport || 0) + (ss.solarPanel || 0)) * AC_BONUS_MODULE;
   }
 
   const finalScore = scaledScore + acBonus;
@@ -620,34 +714,58 @@ export function checkSpaceRaceCapability(state, civSlot) {
   return 1;
 }
 
-// ── K.5: Spaceship part weight escalation ──
-// Port of binary weight table: parts 0-3 weigh 1, parts 4-5 weigh 2, parts 6+ weigh 3.
-// Used for mass/cost escalation when building multiple parts of the same type.
+// ── Spaceship thrust escalation (also used for weight) ──
+// Port of FUN_00596e92: progressive thrust from parts.
+// Spec §5.3: first 4 parts add 1, parts 5-6 add 2, parts 7+ add 3.
 /**
- * Calculate the weight multiplier for a spaceship part by its index.
- * @param {number} partIndex - 0-based index of the part within its type
- * @returns {number} weight: 1 for parts 0-3, 2 for parts 4-5, 3 for parts 6+
+ * Calculate the thrust/weight value for a number of spaceship parts.
+ * Same logic as thrustFromParts (FUN_00596e92), exported for external use.
+ * @param {number} partCount - number of parts
+ * @returns {number} thrust value
  */
-export function calcPartWeight(partIndex) {
-  return 1 + (partIndex > 3 ? 1 : 0) + (partIndex > 5 ? 1 : 0);
+export function calcPartWeight(partCount) {
+  return thrustFromParts(partCount);
 }
 
-// ── K.6: Spaceship success rate (alternate detailed formula) ──
-// Port of binary success calculation using individual component sub-types
-// (lifeSupport, solarEnergy, fuel, propulsion) rather than aggregate counts.
-// Use this when the spaceship tracks individual sub-type counts.
+// ── Standalone success probability calculation ──
+// Uses the same 3-ratio formula as recalcSpaceshipStats (FUN_00596eec:1656-1675).
+// Spec §6: success = propulsion_coverage * energy_coverage, then flight penalty.
 /**
- * Calculate spaceship success rate from detailed component sub-types.
- * @param {object} ship - { fuel, propulsion, lifeSupport, solarEnergy, structurals, components, modules }
+ * Calculate spaceship success rate from individual part sub-type counts.
+ * Spec §6: 3 coverage ratios (propulsion, energy, fuel display).
+ * C ref: FUN_00596eec:1656-1709
+ *
+ * @param {object} ship - { fuel, propulsion, lifeSupport, solarPanel, habitation, structural }
  * @returns {number} success probability 0-100
  */
 export function calcSpaceshipSuccessRate(ship) {
   let success = 100;
-  const totalFuelPropulsion = Math.max(1, (ship.fuel || 0) + (ship.propulsion || 0));
-  success = Math.min(success, Math.floor((ship.lifeSupport || 0) * 100 / totalFuelPropulsion));
-  success = Math.min(success, Math.floor((ship.solarEnergy || 0) * 200 / totalFuelPropulsion));
-  const totalMass = (ship.structurals || 0) * 4 + (ship.components || 0) * 6 + (ship.modules || 0) * 8;
-  if (totalMass > 150) success -= Math.floor((totalMass - 150) / 10);
+
+  // Propulsion coverage: (life_support * 100) / clamp(habitation, 1, 99)
+  const habClamped = Math.max(1, Math.min(99, ship.habitation || 0));
+  const propPct = Math.floor(((ship.lifeSupport || 0) * 100) / habClamped);
+  success = Math.floor((Math.max(0, Math.min(100, propPct)) * success) / 100);
+
+  // Energy coverage: (solar * 200) / clamp(habitation + life_support, 1, ...)
+  const energyDenom = Math.max(1, (ship.habitation || 0) + (ship.lifeSupport || 0));
+  const energyPct = Math.floor(((ship.solarPanel || 0) * 200) / energyDenom);
+  success = Math.floor((Math.max(0, Math.min(100, energyPct)) * success) / 100);
+
+  // Flight time mass penalty
+  let mass = 0;
+  const counts = [ship.structural || 0, ship.fuel || 0, ship.propulsion || 0,
+                  ship.habitation || 0, ship.lifeSupport || 0, ship.solarPanel || 0];
+  for (let i = 0; i < 6; i++) mass += counts[i] * SS_PART_MASS[i];
+
+  let massThrust = COSMIC_MASS_THRUST_PARADIGM;
+  const clampedProp = Math.max(0, Math.min(SS_PART_MAX[2], ship.propulsion || 0));
+  const clampedFl = Math.max(0, Math.min(SS_PART_MAX[1], ship.fuel || 0));
+  const propTh = thrustFromParts(clampedProp);
+  const fuelTh = thrustFromParts(clampedFl);
+  const thrustSpd = Math.max(1, Math.min(fuelTh * 10, propTh * 10));
+  const flightTime = Math.floor((mass * massThrust) / (thrustSpd + 1));
+
+  if (flightTime > 150) success -= Math.floor((flightTime - 150) / 10);
   return Math.max(0, Math.min(100, success));
 }
 

@@ -7,13 +7,38 @@
 //   FUN_0057febc — nuclear_response_retaliation (1084 bytes)
 //
 // These functions implement the full nuclear weapon pipeline:
-//   1. handleNuclearAttack — SDI check, 9-tile destruction, treaty flags
-//   2. applyNuclearFallout — per-tile improvement destruction (50% each)
+//   1. handleNuclearAttack — SDI check, 9-tile destruction, treaty flags, reputation
+//   2. applyNuclearFallout — per-tile: fortress, railroad, irrigation/mining; 66.7% pollution
 //   3. handleNuclearResponse — AI interceptor launch + ground unit rally
 // ═══════════════════════════════════════════════════════════════════
 
 import { UNIT_DOMAIN, UNIT_ATK, UNIT_MOVE_POINTS } from './defs.js';
 import { getTreatyFlags, setTreatyFlags, TF } from './diplomacy.js';
+
+/**
+ * Compute map distance matching binary FUN_005ae1b0.
+ * Binary formula: (abs(dx) + abs(dy)) >> 1, using full cx/cy coords.
+ * Our gx = cx >> 1, gy = cy. Convert back to cx for the computation.
+ *
+ * @param {number} gx1 - tile 1 grid X (half-column)
+ * @param {number} gy1 - tile 1 grid Y (row)
+ * @param {number} gx2 - tile 2 grid X (half-column)
+ * @param {number} gy2 - tile 2 grid Y (row)
+ * @param {boolean} wraps - whether map wraps horizontally
+ * @param {number} mw2 - full map width in cx-space (= mw * 2)
+ * @returns {number} map distance (integer, matching binary)
+ */
+function mapDistance(gx1, gy1, gx2, gy2, wraps, mw2) {
+  // Convert gx back to cx: cx = 2*gx + (gy % 2)
+  const cx1 = 2 * gx1 + (gy1 & 1);
+  const cy1 = gy1;
+  const cx2 = 2 * gx2 + (gy2 & 1);
+  const cy2 = gy2;
+  let dx = Math.abs(cx1 - cx2);
+  if (wraps && dx > (mw2 >> 1)) dx = mw2 - dx;
+  const dy = Math.abs(cy1 - cy2);
+  return (dx + dy) >> 1;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // 1. NUCLEAR_ATTACK — Full nuclear strike handler
@@ -23,46 +48,49 @@ import { getTreatyFlags, setTreatyFlags, TF } from './diplomacy.js';
 /**
  * Handle a nuclear attack on a target tile.
  *
- * Steps (matching decompiled binary order):
+ * Steps (matching decompiled binary FUN_0057f9e3 order):
  *   1. SDI interception: scan for cities with SDI Defense (building 17)
- *      within Manhattan distance < 4 of target. If found, nuke is intercepted.
- *   2. For each of 9 tiles (center + 8 neighbors):
- *      - 50% chance destroy irrigation
- *      - 50% chance destroy mining
- *      - Remove standalone fortress (fortress without city)
- *      - Place pollution (on non-ocean tiles)
- *      - Kill all units on tile
- *      - If city on tile: halve city size
- *   3. Set treaty flags: victim→attacker = WAR flags, attacker→victim = NUCLEAR_ATTACK
- *   4. Add to global pollution counter (2/3 chance per tile)
+ *      within FUN_005ae1b0 distance < 4 of target. If found, nuke intercepted.
+ *   2. For each of 9 tiles (center + 8 neighbors) — unit destruction:
+ *      - Set diplomacy flags (0x110 victim→attacker, 0x20000 attacker→victim)
+ *      - Reputation penalty +100 per tile with foreign units (FUN_00456f20)
+ *      - Kill ALL units on tile (FUN_005b47fa)
+ *   3. Nuclear fallout via FUN_005b9179:
+ *      - Non-city tiles: fortress removal, 50% railroad, irrigation/mining
+ *        with farmland protection, 66.7% pollution. Roads and forests NOT destroyed.
+ *      - City tiles: population halved (size -= size >> 1), NO terrain damage
+ *   4. Update global pollution counter
  *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map data + accessor functions
  * @param {number} attackerCiv - civ slot of the nuke launcher
  * @param {number} targetGx - target tile grid X
  * @param {number} targetGy - target tile grid Y
+ * @param {boolean} [checkSdi=true] - whether SDI can intercept. Binary param_4:
+ *   combat/movement calls pass 1 (check SDI), spy sabotage passes 0 (bypass SDI).
  * @returns {{ intercepted: boolean, affectedCivs: Set, events: Array }}
  */
-export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targetGy) {
+export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targetGy, checkSdi = true) {
   const events = [];
 
   // ── SDI Defense interception check ──
-  // Binary: scan all cities; if any city within distance < 4 has SDI Defense
-  // (building 17) and is owned by a different civ, the nuke is intercepted.
-  for (let ci = 0; ci < state.cities.length; ci++) {
-    const sdiCity = state.cities[ci];
-    if (sdiCity.size <= 0 || sdiCity.owner === attackerCiv) continue;
-    if (!(sdiCity.buildings && sdiCity.buildings.has(17))) continue; // SDI Defense = building 17
-    let ddx = Math.abs(sdiCity.gx - targetGx);
-    if (mapBase.wraps) ddx = Math.min(ddx, mapBase.mw - ddx);
-    const ddy = Math.abs(sdiCity.gy - targetGy);
-    const dist = ddx + ddy;
-    if (dist < 4) {
-      events.push({
-        type: 'nukeIntercepted', attackerCiv, targetGx, targetGy,
-        interceptorCiv: sdiCity.owner, interceptorCity: sdiCity.name,
-      });
-      return { intercepted: true, affectedCivs: new Set(), events };
+  // Binary FUN_0057f9e3:5883-5917: only when param_4 != 0 (checkSdi == true).
+  // Spy-planted nukes call with checkSdi=false, bypassing SDI entirely.
+  // Distance uses binary formula: (abs(cx_diff) + abs(cy_diff)) >> 1
+  const mw2 = mapBase.mw * 2;
+  if (checkSdi) {
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const sdiCity = state.cities[ci];
+      if (sdiCity.size <= 0 || sdiCity.owner === attackerCiv) continue;
+      if (!(sdiCity.buildings && sdiCity.buildings.has(17))) continue; // SDI Defense = building 17
+      const dist = mapDistance(sdiCity.gx, sdiCity.gy, targetGx, targetGy, mapBase.wraps, mw2);
+      if (dist < 4) {
+        events.push({
+          type: 'nukeIntercepted', attackerCiv, targetGx, targetGy,
+          interceptorCiv: sdiCity.owner, interceptorCity: sdiCity.name,
+        });
+        return { intercepted: true, affectedCivs: new Set(), events };
+      }
     }
   }
 
@@ -90,57 +118,83 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
   };
 
   const affectedCivs = new Set();
-  let globalPollutionAdded = 0;
 
+  // ── Phase 5 (binary lines 5928-5943): Destroy units in blast radius ──
+  // Binary destroys units FIRST, then calls FUN_005b9179 for fallout.
+  // Diplomacy flags + reputation penalty applied per tile with foreign units.
   for (const nt of nukeTiles) {
     const tileIdx = nt.gy * mapBase.mw + nt.gx;
     const tile = mapBase.tileData?.[tileIdx];
     if (!tile) continue;
-    const isOcean = tile.terrain === 10;
 
-    // ── Apply fallout to non-ocean tiles ──
-    if (!isOcean) {
-      applyNuclearFallout(tile, rand);
-
-      // Global pollution: 2/3 chance per tile (rand() % 3 != 0)
-      if (rand() % 3 !== 0) {
-        globalPollutionAdded++;
-      }
-    }
-
-    // ── Kill all units on this tile ──
+    // Find the first foreign unit on this tile (for diplomacy, like binary's FUN_005b2e69)
+    let foreignOwner = -1;
     for (let i = 0; i < state.units.length; i++) {
       const u = state.units[i];
       if (u.gx === nt.gx && u.gy === nt.gy && u.gx >= 0) {
-        if (u.owner !== attackerCiv && u.owner > 0) {
-          affectedCivs.add(u.owner);
+        if (u.owner !== attackerCiv && u.owner > 0 && foreignOwner < 0) {
+          foreignOwner = u.owner;
         }
-        state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
       }
     }
 
-    // ── Halve city population + destroy ~50% buildings on this tile ──
+    // Set diplomacy flags + reputation penalty BEFORE destroying units
+    // Binary FUN_0057f9e3:5933-5940: per tile with foreign units
+    if (foreignOwner >= 0) {
+      affectedCivs.add(foreignOwner);
+
+      // victim→attacker: |= 0x110 (WAR + nuclear vendetta)
+      const victimFlags = getTreatyFlags(state, foreignOwner, attackerCiv);
+      setTreatyFlags(state, foreignOwner, attackerCiv,
+        victimFlags | TF.WAR | TF.NUKE_AWARENESS | TF.CONTACT);
+
+      // attacker→victim: |= 0x20000 (NUCLEAR_ATTACK flag)
+      const attackerFlags = getTreatyFlags(state, attackerCiv, foreignOwner);
+      setTreatyFlags(state, attackerCiv, foreignOwner,
+        attackerFlags | TF.NUCLEAR_ATTACK | TF.CONTACT);
+
+      // Reputation penalty: +100 hostility (FUN_00456f20)
+      // This is per-tile, not per-civ; if the same civ has units on multiple
+      // tiles, they get the penalty multiple times (matching binary).
+      if (state.civs?.[foreignOwner]) {
+        state.civs = [...state.civs];
+        const civ = { ...state.civs[foreignOwner] };
+        const curRep = civ.reputation ?? 100;
+        // FUN_00456f20 adds param_3 to attitude score (worsens relations).
+        // In our model, lower reputation = worse. Penalty of 100 is catastrophic.
+        civ.reputation = Math.max(0, curRep - 100);
+        state.civs[foreignOwner] = civ;
+      }
+    }
+
+    // Kill ALL units on this tile (binary FUN_005b47fa: walks entire stack)
+    for (let i = 0; i < state.units.length; i++) {
+      const u = state.units[i];
+      if (u.gx === nt.gx && u.gy === nt.gy && u.gx >= 0) {
+        state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      }
+    }
+  }
+
+  // ── Phase 6 (binary line 5945): Nuclear fallout via FUN_005b9179 ──
+  // This handles ALL terrain/city effects in one pass over the 9 tiles.
+  const falloutResult = applyNuclearFalloutArea(mapBase, targetGx, targetGy, rand, state.cities);
+
+  // ── Track city damage for events ──
+  for (const nt of nukeTiles) {
     for (let ci = 0; ci < state.cities.length; ci++) {
       const c = state.cities[ci];
       if (c.gx !== nt.gx || c.gy !== nt.gy || c.size <= 0) continue;
 
-      const newSize = Math.max(1, Math.floor(c.size / 2));
+      // Binary FUN_005b9179:3760-3761: city.size -= city.size >> 1
+      // This is "subtract half" — size 5→3, size 3→2, size 1→1
+      const half = c.size >> 1;
+      const newSize = c.size - half;
       const newWorked = c.workedTiles && c.workedTiles.length > newSize
         ? c.workedTiles.slice(0, newSize) : (c.workedTiles || []);
 
-      // Destroy ~50% of buildings (wonders id >= 39 are exempt)
-      let nukeBuildings = new Set(c.buildings);
-      const buildingList = [...nukeBuildings];
-      for (const bid of buildingList) {
-        if (bid >= 39) continue; // wonders are never destroyed by nukes
-        if ((rand() & 1) === 0) nukeBuildings.delete(bid);
-      }
-
       state.cities[ci] = {
         ...c, size: newSize, workedTiles: newWorked,
-        buildings: nukeBuildings,
-        hasWalls: nukeBuildings.has(8),
-        hasPalace: nukeBuildings.has(1),
       };
 
       if (c.owner !== attackerCiv && c.owner > 0) {
@@ -155,25 +209,13 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
   }
 
   // ── Update global pollution counter ──
-  if (globalPollutionAdded > 0) {
-    state.currentPollution = (state.currentPollution || 0) + globalPollutionAdded;
+  if (falloutResult.globalPollutionAdded > 0) {
+    state.currentPollution = (state.currentPollution || 0) + falloutResult.globalPollutionAdded;
   }
 
-  // ── Diplomatic consequences ──
-  // Binary: treaty[victim][attacker] |= 0x110 (WAR + bit 8 trespass)
-  //         treaty[attacker][victim] |= 0x20000 (NUCLEAR_ATTACK flag)
+  // ── Diplomatic consequences: set canonical treaty to 'war' ──
+  // Treaty flags and reputation were already set per-tile above.
   for (const victimCiv of affectedCivs) {
-    // Victim→attacker: set WAR + hostility flags
-    const victimFlags = getTreatyFlags(state, victimCiv, attackerCiv);
-    setTreatyFlags(state, victimCiv, attackerCiv,
-      victimFlags | TF.WAR | TF.NUKE_AWARENESS | TF.CONTACT);
-
-    // Attacker→victim: set NUCLEAR_ATTACK flag
-    const attackerFlags = getTreatyFlags(state, attackerCiv, victimCiv);
-    setTreatyFlags(state, attackerCiv, victimCiv,
-      attackerFlags | TF.NUCLEAR_ATTACK | TF.CONTACT);
-
-    // Also set the canonical treaty to 'war'
     if (state.treaties) {
       const key = attackerCiv < victimCiv
         ? `${attackerCiv}-${victimCiv}` : `${victimCiv}-${attackerCiv}`;
@@ -187,7 +229,8 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
 
   events.push({
     type: 'nuclearStrike', civSlot: attackerCiv, targetGx, targetGy,
-    tilesAffected: nukeTiles.length, globalPollutionAdded,
+    tilesAffected: falloutResult.tilesAffected,
+    globalPollutionAdded: falloutResult.globalPollutionAdded,
   });
 
   return { intercepted: false, affectedCivs, events };
@@ -200,67 +243,115 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Apply nuclear fallout effects to a single tile.
- * Destroys improvements with 50% chance each, removes standalone
- * fortresses, and places pollution.
+ * Apply nuclear fallout effects to a single non-city, non-ocean tile.
  *
- * Binary reference (block_005B0000.c):
- *   - irrigation (0x08): 50% chance removed
- *   - mining (0x04): 50% chance removed
- *   - fortress (0x40) without city (0x02): always removed
- *   - pollution (0x20): always placed
+ * Faithfully ported from FUN_005b9179 (block_005B0000.c:3716-3757).
+ * Binary processes tiles in this exact order:
+ *   1. Remove fortress if no city (0x42 check)
+ *   2. 50% chance remove railroad (bit 0x20)
+ *   3. Irrigation/mining destruction with farmland protection
+ *   4. 2/3 chance pollution (via FUN_005b90df)
+ *
+ * Bits in byte 1 of tile record (confirmed by worker construction code):
+ *   0x04 = irrigation, 0x08 = mining, 0x10 = road, 0x20 = railroad,
+ *   0x40 = fortress, 0x80 = pollution
+ *
+ * The binary does NOT destroy roads (0x10) or forests (terrain byte 0).
+ * Only: fortress, railroad, irrigation, mining are at risk.
+ *
+ * Note: City tiles are NOT processed by this function in the binary.
+ * City tiles only get population halved (handled separately).
  *
  * @param {object} tile - mapBase.tileData[idx] (mutated in place)
  * @param {function} rand - PRNG function returning an integer
+ * @returns {boolean} true if pollution was placed (for global counter)
  */
 export function applyNuclearFallout(tile, rand) {
-  if (!tile || tile.terrain === 10) return; // skip ocean
+  if (!tile || tile.terrain === 10) return false; // skip ocean
 
   const imp = { ...tile.improvements };
 
-  // 50% chance destroy irrigation
-  if (imp.irrigation && (rand() & 1) === 0) {
-    imp.irrigation = false;
-    // If farmland was present (irrigation + mining), farmland is also lost
-    if (imp.farmland) imp.farmland = false;
-  }
-
-  // 50% chance destroy mining
-  if (imp.mining && (rand() & 1) === 0) {
-    imp.mining = false;
-    // If farmland was present, farmland is also lost
-    if (imp.farmland) imp.farmland = false;
-  }
-
-  // Remove standalone fortress (fortress present but no city on tile)
-  // Binary: (bVar1 & 0x42) == 0x02 means fortress without city
-  // In our model, city presence is indicated by tile having a city
-  // We check for fortress flag; city tiles have a separate city object
-  // but the tile improvement also has a 'city' or 'cityBit' indicator.
-  // For safety, remove fortress unconditionally (cities are tracked
-  // separately and their fortress is part of the city building set).
-  if (imp.fortress) {
+  // Step 1: Remove standalone fortress (fortress without city)
+  // Binary line 3722: (bVar1 & 0x42) == 0x40 means fortress set, city NOT set
+  if (imp.fortress && !imp.city) {
     imp.fortress = false;
   }
 
-  // Place pollution
-  imp.pollution = true;
+  // Step 2: 50% chance remove railroad (bit 0x20)
+  // Binary line 3725-3728: rand() odd check, then FUN_005b94fc(x,y,0x20,0,1)
+  // Bit 0x20 is RAILROAD in the improvements byte (NOT forest — forest is
+  // terrain type 3 in byte 0, and is not touched by nuclear fallout).
+  if (_isOdd(rand())) {
+    imp.railroad = false;
+  }
+
+  // Step 3: Irrigation/mining destruction with farmland protection
+  // Binary lines 3730-3748: Conditional on both mining(0x08) and irrigation(0x04)
+  //   If NOT farmland (not both irrigation AND mining):
+  //     50% chance clear mining(0x08), then 50% chance clear irrigation(0x04)
+  //   If farmland (both present):
+  //     50% chance clear mining(0x08) only — irrigation protected
+  if (!imp.irrigation || !imp.mining) {
+    // NOT farmland: each independently at risk
+    if (_isOdd(rand())) {
+      imp.mining = false;
+      imp.farmland = false;
+    }
+    if (_isOdd(rand())) {
+      imp.irrigation = false;
+      imp.farmland = false;
+    }
+  } else {
+    // Farmland: only mining at risk, irrigation protected
+    if (_isOdd(rand())) {
+      imp.mining = false;
+      imp.farmland = false; // farmland requires both irrigation + mining
+    }
+  }
+
+  // Step 4: 2/3 chance to place pollution
+  // Binary line 3752-3754: rand() % 3 != 0 → FUN_005b90df (set pollution + increment global)
+  let pollutionPlaced = false;
+  if (rand() % 3 !== 0) {
+    imp.pollution = true;
+    pollutionPlaced = true;
+  }
 
   tile.improvements = imp;
+  return pollutionPlaced;
+}
+
+/**
+ * Binary's odd-check pattern: tests absolute-value oddness of rand() result.
+ * Ghidra decompiles this as ((uVar5 ^ uVar6) - uVar6 & 1 ^ uVar6) != uVar6
+ * where uVar6 = (int)uVar5 >> 31. For positive rand(), this is just (rand & 1).
+ * For negative rand(), it tests if abs(rand) is odd.
+ * Our PRNG always returns positive (& 0x7FFFFFFF), so this simplifies to (rand & 1).
+ */
+function _isOdd(val) {
+  return (val & 1) !== 0;
 }
 
 /**
  * Apply nuclear fallout to 9 tiles (center + 8 neighbors).
- * Standalone version for use outside of handleNuclearAttack
- * (e.g., for spy-planted nukes or meltdown scenarios).
+ * Faithfully ports FUN_005b9179 (block_005B0000.c:3692).
+ *
+ * Binary behavior per tile:
+ *   - If city exists on tile → halve city population (handled by caller)
+ *   - If no city AND not ocean → apply terrain fallout (improvements + pollution)
+ *   - City tiles get NO terrain damage in the binary
+ *
+ * This function only handles the terrain fallout. City population halving
+ * is done by the caller (handleNuclearAttack).
  *
  * @param {object} mapBase - map data + accessor functions
  * @param {number} centerGx - center tile grid X
  * @param {number} centerGy - center tile grid Y
  * @param {function} [rng] - optional PRNG function; defaults to seeded LCG
+ * @param {Array} [cities] - optional city array for city-tile exclusion
  * @returns {{ tilesAffected: number, globalPollutionAdded: number }}
  */
-export function applyNuclearFalloutArea(mapBase, centerGx, centerGy, rng) {
+export function applyNuclearFalloutArea(mapBase, centerGx, centerGy, rng, cities) {
   // Build PRNG if not provided
   let seed = ((centerGx * 31 + centerGy * 17 + 7) & 0x7FFFFFFF) || 1;
   const defaultRand = () => {
@@ -290,13 +381,29 @@ export function applyNuclearFalloutArea(mapBase, centerGx, centerGy, rng) {
   for (const t of tiles) {
     const tileIdx = t.gy * mapBase.mw + t.gx;
     const tile = mapBase.tileData?.[tileIdx];
-    if (!tile || tile.terrain === 10) continue;
+    if (!tile) continue;
 
-    applyNuclearFallout(tile, rand);
+    // Binary FUN_005b9179:3716-3717: check for city on tile FIRST
+    // If city exists → skip terrain fallout (city population handled separately)
+    const hasCityOnTile = cities
+      ? cities.some(c => c.gx === t.gx && c.gy === t.gy && c.size > 0)
+      : (tile.improvements && tile.improvements.city);
+
+    if (hasCityOnTile) {
+      // City tiles: no terrain fallout in the binary
+      // Population halving is done by the caller
+      continue;
+    }
+
+    // Non-city, non-ocean tiles: apply terrain fallout
+    if (tile.terrain === 10) continue; // ocean
+
+    const polluted = applyNuclearFallout(tile, rand);
     tilesAffected++;
 
-    // Global pollution: 2/3 chance per tile
-    if (rand() % 3 !== 0) {
+    // Global pollution counter: pollution placement is inside applyNuclearFallout
+    // which returns whether pollution was placed (2/3 chance)
+    if (polluted) {
       globalPollutionAdded++;
     }
   }

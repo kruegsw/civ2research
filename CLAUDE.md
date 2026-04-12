@@ -18,14 +18,30 @@ Civilization II MGE reimplementation — save file parser, HTML5 Canvas renderer
 - `reverse_engineering/transpiler/output/` — generated JS (never hand-edit, always re-generable)
 - `reverse_engineering/archive/` — superseded work (binary_js, function_docs, function_audit, call_graphs, decompiled_raw)
 
-## Binary Fidelity Reference (reverse_engineering/)
-The **source of truth** for game logic is the decompiled C code in `reverse_engineering/decompiled/`.
-These are the raw Ghidra output files from the civ2.exe binary — they contain the exact logic
-the game uses, expressed in C with raw memory addresses and stride arithmetic.
+## Foundational Sources of Truth
+Three complementary sources define the game. Everything downstream derives from these:
 
-`reverse_engineering/transpiler/` contains an automated C→JS transpiler that produces output
-with strict 1:1 line correspondence to the C source. Every C line maps to the same JS line number.
-Verification is a mechanical diff. See `transpiler/RULES.md` for conversion rules.
+1. **Decompiled C** (`reverse_engineering/decompiled/`) — 34 Ghidra-decompiled .c files (225K lines).
+   The **logic**: what the game does — algorithms, control flow, function behavior.
+   Raw memory addresses and stride arithmetic; meaningless without the byte analysis below.
+
+2. **Byte Analysis** (`reverse_engineering/findings/`) — memory layout and data structures.
+   The **data**: what the game is — struct layouts, field meanings, access formulas.
+   - `byte_verification_plan.md` — master index, 100% byte-mapped for all major objects
+   - `Civ2_City_Struct.md` (in `reverse_engineering/`) — full 88-byte city struct
+   - `Data_Structures.md` (in `reverse_engineering/`) — Civ, Unit, Building, Unit Type, Globals
+   - `findings/memory_map/` — per-topic deep dives (tiles, unit types, cosmic params, etc.)
+
+3. **RULES.TXT** (`/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT`) —
+   The game's own configuration: units, buildings, techs, terrain, costs, prerequisites.
+   Parsed at runtime by both the original binary and the reimplementation.
+
+## Transpiler (reverse_engineering/transpiler/)
+Automated C→JS transpiler producing output with strict 1:1 line correspondence to the
+decompiled C source. Every C line maps to the same JS line number. Verification is a
+mechanical diff. See `transpiler/RULES.md` for conversion rules.
+
+`reverse_engineering/transpiler/output/` — generated JS (never hand-edit, always re-generable).
 
 `reverse_engineering/archive/binary_js/` contains the old manual transpilation (5,149 functions,
 84K lines). Archived because it had no verifiable line mapping, systematic bugs kept appearing

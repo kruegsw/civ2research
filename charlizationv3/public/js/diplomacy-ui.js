@@ -784,50 +784,99 @@ class DiplomacySession {
     ]);
   }
 
-  /** @DIPLOMACYMENU option 5: "Demand tribute for our patience." */
+  /** @DIPLOMACYMENU option 5: "Demand tribute for our patience."
+   *
+   * Civ2 MGE behavior: the player does NOT specify an amount. The AI
+   * (via FUN_0045705e) computes how much it is willing to pay based on
+   * tech disparity, attitude, military balance, and wonders. The dialog
+   * shows that offer; the player accepts (gold transfers) or refuses
+   * (relations sour, possibly war).
+   *
+   * Here `payerCiv` is the AI being asked, `receiverCiv` is the player.
+   */
   showDemandTributeInline() {
-    const suggestedTribute = calcTributeDemand(this.state, this.myCiv, this.targetCiv, 16);
-    const defaultAmount = Math.max(50, suggestedTribute || 50);
+    // The AI being asked is the payer; the player is the receiver.
+    const offer = calcTributeDemand(this.state, this.targetCiv, this.myCiv);
+    const civName = this.civName;
 
-    this.setScreen(`${this.civName} Emissary`, panel => {
-      const msg = document.createElement('div');
-      msg.style.cssText = STYLE_MSG;
-      msg.textContent = `Demand gold tribute from the ${this.civName}:`;
-      panel.appendChild(msg);
-
-      const inputRow = document.createElement('div');
-      inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 16px;justify-content:center';
-      const label = document.createElement('span');
-      label.textContent = 'Amount:';
-      label.style.cssText = 'font:14px "Times New Roman",serif;color:#e0d8c0';
-      inputRow.appendChild(label);
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.min = '1';
-      input.max = '10000';
-      input.value = String(defaultAmount);
-      input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:4px 6px;border:2px inset #8b6914;background:#3d2815;color:#f0e8d0';
-      inputRow.appendChild(input);
-      panel.appendChild(inputRow);
-
-      // Store reference for the button handler
-      panel._tributeInput = input;
-      setTimeout(() => { input.focus(); input.select(); }, 0);
-    }, [
-      { label: 'Back', action: () => {
-        this.showGreetingAndMenu();
-      }},
-      { label: 'Demand!', action: () => {
-        const input = this.panel._tributeInput;
-        const amount = Math.max(1, Math.min(10000, parseInt(input?.value) || defaultAmount));
-        sfx('NEG1');
-        this.sendAction({
-          type: 'ACTION',
-          action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, amount },
-        });
-        this.showAIResponse('tribute');
-      }},
-    ]);
+    // Three branches based on AI willingness:
+    //  - 'pay':    AI offers an amount → show Accept/Refuse
+    //  - 'refuse': AI ignores → show contemptuous dismissal
+    //  - 'war':    AI is provoked → show war declaration
+    if (offer.willingness === 'pay' && offer.amount > 0) {
+      this.setScreen(`${civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.innerHTML =
+          `The ${civName} reluctantly agree to pay ` +
+          `<b style="color:#ffd700">${offer.amount} gold</b> as tribute.`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Refuse', action: () => {
+          // Refusing free tribute insults the AI; relations sour.
+          sfx('NEG1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, accept: false },
+          });
+          this.setScreen(`${civName} Emissary`, p => {
+            const m = document.createElement('div');
+            m.style.cssText = STYLE_MSG;
+            m.textContent = `The ${civName} are insulted by your contempt for their generosity.`;
+            p.appendChild(m);
+          }, [{ label: 'Continue', action: () => this.showGreetingAndMenu() }]);
+        }},
+        { label: 'Accept', action: () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: {
+              type: DEMAND_TRIBUTE,
+              targetCiv: this.targetCiv,
+              amount: offer.amount,
+              accept: true,
+            },
+          });
+          this.setScreen(`${civName} Emissary`, p => {
+            const m = document.createElement('div');
+            m.style.cssText = STYLE_MSG;
+            m.innerHTML = `<b style="color:#ffd700">${offer.amount} gold</b> has been transferred to your treasury.`;
+            p.appendChild(m);
+          }, [{ label: 'Continue', action: () => this.showGreetingAndMenu() }]);
+        }},
+      ]);
+    } else if (offer.willingness === 'war') {
+      // AI is provoked into war by the demand (binary FUN_00460129:497-517)
+      // Send DEMAND_TRIBUTE { provoked: true } so the reducer flips the
+      // war declaration so the AI is the aggressor (not the player).
+      sfx('NEG1');
+      this.sendAction({
+        type: 'ACTION',
+        action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, provoked: true },
+      });
+      this.setScreen(`${civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent =
+          `Your impudent demand has provoked the ${civName}! ` +
+          `They prepare for war.`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Continue', action: () => this.dismiss() },
+      ]);
+    } else {
+      // AI refuses outright (binary FUN_00460129:519+)
+      this.setScreen(`${civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent =
+          `The ${civName} laugh at your demand. ` +
+          `They will give you nothing.`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Continue', action: () => this.showGreetingAndMenu() },
+      ]);
+    }
   }
 
   /** @DIPLOMACYMENU option 4: "Request a gift from you, our gracious allies." */
@@ -856,47 +905,52 @@ class DiplomacySession {
     ]);
   }
 
+  /** Request gold from an ally — same calculation, but with the
+   *  alliance cap (FUN_00460129:312-319) automatically applied inside
+   *  calcTributeDemand. */
   showRequestGoldInline() {
-    const suggestedAmount = Math.max(50, calcTributeDemand(this.state, this.myCiv, this.targetCiv, 16) || 50);
+    const offer = calcTributeDemand(this.state, this.targetCiv, this.myCiv);
+    const civName = this.civName;
 
-    this.setScreen(`${this.civName} Emissary`, panel => {
-      const msg = document.createElement('div');
-      msg.style.cssText = STYLE_MSG;
-      msg.textContent = `Request gold from our allies the ${this.civName}:`;
-      panel.appendChild(msg);
-
-      const inputRow = document.createElement('div');
-      inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 16px;justify-content:center';
-      const label = document.createElement('span');
-      label.textContent = 'Amount:';
-      label.style.cssText = 'font:14px "Times New Roman",serif;color:#e0d8c0';
-      inputRow.appendChild(label);
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.min = '1';
-      input.max = '10000';
-      input.value = String(suggestedAmount);
-      input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:4px 6px;border:2px inset #8b6914;background:#3d2815;color:#f0e8d0';
-      inputRow.appendChild(input);
-      panel.appendChild(inputRow);
-
-      panel._requestGoldInput = input;
-      setTimeout(() => { input.focus(); input.select(); }, 0);
-    }, [
-      { label: 'Back', action: () => {
-        this.showRequestGiftSubMenu();
-      }},
-      { label: 'Request', action: () => {
-        const input = this.panel._requestGoldInput;
-        const amount = Math.max(1, Math.min(10000, parseInt(input?.value) || suggestedAmount));
-        sfx('POS1');
-        this.sendAction({
-          type: 'ACTION',
-          action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, amount },
-        });
-        this.showAIResponse('requestGold');
-      }},
-    ]);
+    if (offer.willingness === 'pay' && offer.amount > 0) {
+      this.setScreen(`${civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.innerHTML =
+          `Our allies the ${civName} will gladly send ` +
+          `<b style="color:#ffd700">${offer.amount} gold</b> from their treasury.`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Decline', action: () => this.showRequestGiftSubMenu() },
+        { label: 'Accept', action: () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: {
+              type: DEMAND_TRIBUTE,
+              targetCiv: this.targetCiv,
+              amount: offer.amount,
+              accept: true,
+            },
+          });
+          this.setScreen(`${civName} Emissary`, p => {
+            const m = document.createElement('div');
+            m.style.cssText = STYLE_MSG;
+            m.innerHTML = `<b style="color:#ffd700">${offer.amount} gold</b> has been transferred to your treasury.`;
+            p.appendChild(m);
+          }, [{ label: 'Continue', action: () => this.showGreetingAndMenu() }]);
+        }},
+      ]);
+    } else {
+      this.setScreen(`${civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = `Our allies the ${civName} have nothing to spare at this time.`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Continue', action: () => this.showRequestGiftSubMenu() },
+      ]);
+    }
   }
 
   showRequestTechInline() {
