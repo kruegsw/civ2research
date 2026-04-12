@@ -11,7 +11,7 @@
 import {
   FOOD_BOX_MULTIPLIER,
   UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE, UNIT_FP, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER,
-  IMPROVE_COSTS, IMPROVE_MAINTENANCE,
+  IMPROVE_COSTS, IMPROVE_MAINTENANCE, IMPROVE_NAMES, WONDER_NAMES,
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
   CITY_RADIUS_DOUBLED,
   COMMODITY_NAMES,
@@ -381,6 +381,60 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     events.push(upgradeEvent);
     // Re-read city after production switch
     city = state.cities[cityIndex];
+  }
+
+  // ── Binary FUN_004ec3fe:4874-4886 — BADBUILD check ──
+  // At the START of each city turn, check if current production is invalid:
+  //   - Building already exists in this city
+  //   - Wonder already built by any civ
+  // If invalid: notify human player, force switch to Warriors.
+  // AI cities auto-switch silently.
+  const humanPlayers = state.humanPlayers || 0xFF;
+  const isHumanCity = !!((1 << activeCiv) & humanPlayers);
+  if (city.itemInProduction) {
+    const prod = city.itemInProduction;
+    let badBuild = false;
+    let badReason = '';
+
+    if (prod.type === 'building' && prod.id < 39 && city.buildings?.has(prod.id)) {
+      badBuild = true;
+      badReason = `${IMPROVE_NAMES[prod.id] || 'Building'} already exists`;
+    } else if (prod.type === 'building' && prod.id >= 39) {
+      // Wonder: check global wonders array
+      const wi = prod.id - 39;
+      const w = state.wonders?.[wi];
+      if (w && w.cityIndex != null && !w.destroyed) {
+        badBuild = true;
+        badReason = `${WONDER_NAMES[wi] || 'Wonder'} already built`;
+      }
+    } else if (prod.type === 'wonder') {
+      const wi = prod.id - 39;
+      const w = state.wonders?.[wi];
+      if (w && w.cityIndex != null && !w.destroyed) {
+        badBuild = true;
+        badReason = `${WONDER_NAMES[wi] || 'Wonder'} already built`;
+      }
+    }
+
+    if (badBuild) {
+      if (isHumanCity) {
+        events.push({
+          type: 'badBuild', cityName: city.name, cityIndex,
+          civSlot: activeCiv, reason: badReason,
+          itemName: prod.type === 'wonder'
+            ? (WONDER_NAMES[prod.id - 39] || 'Wonder')
+            : (IMPROVE_NAMES[prod.id] || 'Building'),
+        });
+      }
+      // Force switch to Warriors (binary: FUN_00441b11 with param_2=99)
+      state.cities = [...state.cities];
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        itemInProduction: { type: 'unit', id: 2 },
+        // Preserve shields for the new production
+      };
+      city = state.cities[cityIndex];
+    }
   }
 
   // #142: Coast guard barbarian check — prevent barbarian cities on

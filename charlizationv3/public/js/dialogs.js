@@ -839,6 +839,19 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'badBuild': {
+        // Binary FUN_004ec3fe:4885 — BADBUILD dialog when city is producing
+        // a building that already exists or a wonder already completed.
+        sfx('NEG1');
+        createCiv2Dialog('turn-event-dialog', 'Production Problem', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName}: ${ev.reason}. Production switched to Warriors.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'mapShared': {
         sfx('POS1');
         const shareName = S.mpGameState?.civNames?.[ev.targetCiv] || `Civ ${ev.targetCiv}`;
