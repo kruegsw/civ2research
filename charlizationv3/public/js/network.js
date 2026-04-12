@@ -1722,14 +1722,19 @@ function initNetwork(appCallbacks) {
           // the tile is on screen, don't move the camera. The standard
           // isTileInViewport uses a 64px margin (for player unit centering),
           // which causes unnecessary camera panning during AI observation.
+          const _viewW = S.vp.logicalW / S.vp.scale;
+          const _viewH = S.vp.logicalH / S.vp.scale;
+          // If the entire map fits in the viewport, never move the camera
+          const _mapPxW = (S.mpMapBase?.mw || 1) * 64 + 32;
+          const _mapPxH = (S.mpMapBase?.mh || 1) * 16 + 16;
+          const _mapFitsInView = _viewW >= _mapPxW && _viewH >= _mapPxH;
           function _tileOnScreen(gx, gy) {
+            if (_mapFitsInView) return true;
             const TW = 64, TH = 32;
             const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0) + TW / 2;
             const py = gy * (TH >> 1) + TH / 2;
-            const viewW = S.vp.logicalW / S.vp.scale;
-            const viewH = S.vp.logicalH / S.vp.scale;
-            return px > S.vp.x && px < S.vp.x + viewW
-                && py > S.vp.y && py < S.vp.y + viewH;
+            return px > S.vp.x && px < S.vp.x + _viewW
+                && py > S.vp.y && py < S.vp.y + _viewH;
           }
 
           function playTimeline(onDone) {
