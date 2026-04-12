@@ -1718,6 +1718,20 @@ function initNetwork(appCallbacks) {
             }
           }
 
+          // Zero-margin viewport check for AI animations — if any part of
+          // the tile is on screen, don't move the camera. The standard
+          // isTileInViewport uses a 64px margin (for player unit centering),
+          // which causes unnecessary camera panning during AI observation.
+          function _tileOnScreen(gx, gy) {
+            const TW = 64, TH = 32;
+            const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0) + TW / 2;
+            const py = gy * (TH >> 1) + TH / 2;
+            const viewW = S.vp.logicalW / S.vp.scale;
+            const viewH = S.vp.logicalH / S.vp.scale;
+            return px > S.vp.x && px < S.vp.x + viewW
+                && py > S.vp.y && py < S.vp.y + viewH;
+          }
+
           function playTimeline(onDone) {
             if (timeline.length === 0) { onDone(); return; }
             let ti = 0;
@@ -1738,8 +1752,8 @@ function initNetwork(appCallbacks) {
                 //   4. FUN_0047cea6: center on dest
                 const srcGx = mv.fromGx ?? mv.toGx;
                 const srcGy = mv.fromGy ?? mv.toGy;
-                const srcVisible = isTileInViewport(srcGx, srcGy);
-                const dstVisible = isTileInViewport(mv.toGx, mv.toGy);
+                const srcVisible = _tileOnScreen(srcGx, srcGy);
+                const dstVisible = _tileOnScreen(mv.toGx, mv.toGy);
 
                 if (srcVisible || dstVisible) {
                   // Both or one tile already in viewport — no camera move needed.
@@ -1761,7 +1775,7 @@ function initNetwork(appCallbacks) {
               } else {
                 // Combat — center only if not already visible
                 const cr = entry.cr;
-                const combatVisible = isTileInViewport(cr.gx, cr.gy);
+                const combatVisible = _tileOnScreen(cr.gx, cr.gy);
                 if (!combatVisible) {
                   centerOnTile(cr.gx, cr.gy);
                 }
