@@ -1372,37 +1372,73 @@ function initNetwork(appCallbacks) {
           // populateFowCivSelector is called inside with forceCiv to ensure correct civ
           doRenderFromState({ silent: false, forceCiv: S.mpCivSlot });
 
-          // Show game introduction dialog only on initial start (not reconnect)
+          // Show introduction or resume dialog
           if (isInitialStart) {
             const gs = S.mpGameState;
             const civName = gs.civNames?.[S.mpCivSlot] || 'your people';
             const leaderName = gs.civs?.[S.mpCivSlot]?.leaderName || 'Leader';
-            const civTechs = gs.civTechs?.[S.mpCivSlot];
-            const startingTechs = civTechs ? [...civTechs].map(id => ADVANCE_NAMES[id]).filter(Boolean) : [];
+            const turnNum = gs.turn?.number || 0;
+            const isResume = turnNum > 0;
 
-            // Build tech list string (Civ2 always includes "Irrigation, Mining, and Roads" as base knowledge)
-            let techStr = '';
-            if (startingTechs.length > 0) {
-              techStr = startingTechs.join(', ') + ', ';
-            }
+            if (isResume) {
+              // ── Resume: game summary dialog ──
+              const year = getGameYear(turnNum);
+              const myCiv = gs.civs?.[S.mpCivSlot];
+              const govt = myCiv?.government || 'despotism';
+              const govtLabel = govt.charAt(0).toUpperCase() + govt.slice(1);
+              const treasury = myCiv?.treasury || 0;
+              const cityCount = gs.cities.filter(c => c.owner === S.mpCivSlot && c.size > 0).length;
+              const unitCount = gs.units.filter(u => u.owner === S.mpCivSlot && u.gx >= 0).length;
+              const techCount = gs.civTechs?.[S.mpCivSlot]?.size || 0;
+              const pop = gs.cities.filter(c => c.owner === S.mpCivSlot && c.size > 0)
+                .reduce((sum, c) => sum + c.size, 0);
+              const activeCivName = gs.civNames?.[gs.turn.activeCiv] || `Civ ${gs.turn.activeCiv}`;
+              const isMyTurn = gs.turn.activeCiv === S.mpCivSlot;
+              const aliveCount = [1,2,3,4,5,6,7].filter(c => gs.civsAlive & (1 << c)).length;
 
-            createCiv2Dialog('game-intro-dialog', 'In the Beginning . . .', panel => {
-              panel.style.cssText += ';min-width:320px;max-width:460px;padding:16px 24px';
-              const FONT = '"Times New Roman", Georgia, serif';
-              const msg = document.createElement('div');
-              msg.style.cssText = `font:17px ${FONT};color:#333;line-height:1.6;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
-
+              createCiv2Dialog('game-intro-dialog', 'Game Resumed', panel => {
+                panel.style.cssText += ';min-width:320px;max-width:460px;padding:16px 24px';
+                const FONT = '"Times New Roman", Georgia, serif';
+                const msg = document.createElement('div');
+                msg.style.cssText = `font:16px ${FONT};color:#333;line-height:1.7;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+                msg.innerHTML = `<b>${civName}</b> — ${year}<br>`
+                  + `Government: ${govtLabel}<br>`
+                  + `Cities: ${cityCount} &nbsp; Population: ${pop * 10000}<br>`
+                  + `Units: ${unitCount} &nbsp; Treasury: ${treasury}g<br>`
+                  + `Technologies: ${techCount}<br>`
+                  + `Civilizations remaining: ${aliveCount}<br><br>`
+                  + (isMyTurn
+                    ? `<i>It is your turn, ${leaderName}.</i>`
+                    : `<i>Waiting for ${activeCivName}...</i>`);
+                panel.appendChild(msg);
+              }, [{ label: 'OK' }]);
+            } else {
+              // ── New game: "In the Beginning" dialog ──
+              const civTechs = gs.civTechs?.[S.mpCivSlot];
+              const startingTechs = civTechs ? [...civTechs].map(id => ADVANCE_NAMES[id]).filter(Boolean) : [];
+              let techStr = '';
               if (startingTechs.length > 0) {
-                msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
-                  + `May your reign be long and prosperous. `
-                  + `The ${civName} have knowledge of ${techStr}Irrigation, Mining, and Roads.`;
-              } else {
-                msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
-                  + `May your reign be long and prosperous. `
-                  + `The ${civName} have knowledge of Irrigation, Mining, and Roads.`;
+                techStr = startingTechs.join(', ') + ', ';
               }
-              panel.appendChild(msg);
-            }, [{ label: 'OK' }]);
+
+              createCiv2Dialog('game-intro-dialog', 'In the Beginning . . .', panel => {
+                panel.style.cssText += ';min-width:320px;max-width:460px;padding:16px 24px';
+                const FONT = '"Times New Roman", Georgia, serif';
+                const msg = document.createElement('div');
+                msg.style.cssText = `font:17px ${FONT};color:#333;line-height:1.6;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+
+                if (startingTechs.length > 0) {
+                  msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
+                    + `May your reign be long and prosperous. `
+                    + `The ${civName} have knowledge of ${techStr}Irrigation, Mining, and Roads.`;
+                } else {
+                  msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
+                    + `May your reign be long and prosperous. `
+                    + `The ${civName} have knowledge of Irrigation, Mining, and Roads.`;
+                }
+                panel.appendChild(msg);
+              }, [{ label: 'OK' }]);
+            }
           }
           break;
         }
