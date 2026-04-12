@@ -773,11 +773,10 @@ const Civ2Renderer = {
     }
 
     // Binary FUN_0056baff:3948 — enemy units AND cities outside LOS are
-    // hidden or shown as stale. LOS filtering only activates when:
-    //   - losData was passed (LOS toggle on), OR
-    //   - FOW is enabled (which implies LOS-based stale data)
-    // When both FOW and LOS are OFF, _viewCiv stays -1 → no filtering.
-    const _viewCiv = (losData || fowEnabled) ? (options.fowCiv ?? -1) : -1;
+    // hidden or shown as stale. LOS filtering activates when fowCiv is
+    // explicitly provided (meaning the caller wants LOS-based filtering).
+    // When fowCiv is not set (undefined), _viewCiv = -1 → no filtering.
+    const _viewCiv = options.fowCiv ?? -1;
     let _unitLos = losData; // reuse existing losData if available
     if (!_unitLos && _viewCiv >= 0) {
       _unitLos = new Uint8Array(mw * mh);
