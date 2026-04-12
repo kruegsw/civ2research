@@ -885,6 +885,18 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'orderRestored': {
+        // Binary handle_city_disorder_004ef578:5884 — FUN_004eb571("RESTORED", cityIndex)
+        // Shown when a city exits civil disorder (happy >= unhappy again)
+        createCiv2Dialog('turn-event-dialog', 'Order Restored', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Order has been restored in ${ev.cityName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'weLoveKingDay': {
         playCityStatusSound('weLoveKingDay');
         createCiv2Dialog('turn-event-dialog', 'Celebration!', panel => {

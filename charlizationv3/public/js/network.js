@@ -351,7 +351,7 @@ function renderRoomDetail(msg) {
         ['75x120', 'Large (75 × 120)'],
         ['100x100','XL (100 × 100)'],
       ];
-      sizeSelect.innerHTML = sizes.map(([id, lab]) => `<option value="${id}"${id === '50x80' ? ' selected' : ''}>${lab}</option>`).join('');
+      sizeSelect.innerHTML = sizes.map(([id, lab]) => `<option value="${id}"${id === '40x50' ? ' selected' : ''}>${lab}</option>`).join('');
       sizeSelect.dataset.populated = '1';
     }
     // Reflect server's current selection if provided
