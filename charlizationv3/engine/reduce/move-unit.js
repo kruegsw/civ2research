@@ -1102,8 +1102,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     // Treaty-breaking (peace/ceasefire) is handled BEFORE the move in the city
     // entry check above (via diplomacyDeclareWar). By the time we get here,
     // the treaty should already be 'war' or was never set (barbarian/first contact).
+    // Barbarians (civ 0) CAN capture player cities. Only skip if attacker
+    // owns the city or city is dead.
     const enemyCity = state.cities.find(c =>
-      c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.owner > 0 && c.size > 0);
+      c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.size > 0);
     if (enemyCity && (UNIT_ATK[unit.type] || 0) > 0) {
       const defOwner = enemyCity.owner;
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
