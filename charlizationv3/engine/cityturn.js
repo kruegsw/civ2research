@@ -688,6 +688,9 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         } else {
           state.wonders = [...state.wonders];
           state.wonders[wi] = { cityIndex, destroyed: false };
+          // Add wonder to city's buildings set (wonders use IDs 39-66)
+          newBuildings = new Set(city.buildings);
+          newBuildings.add(item.id);
 
           // Darwin's Voyage (18): 2 free advances on completion
           // Gap 80: If completed during revolution (anarchy), set a flag
