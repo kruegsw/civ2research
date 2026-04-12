@@ -1024,7 +1024,7 @@ function updatePendingDiploInChat() {
     chatMessages.appendChild(el);
   }
 
-  if (hasPending) {
+  if (hasHumanPending) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 }
