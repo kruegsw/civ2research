@@ -339,6 +339,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (!city.buildings || !city.buildings.has(buildingId)) return 'City does not have this building';
       if (buildingId === 1) return 'Cannot sell the Palace';
       if (buildingId >= 35 && buildingId <= 37) return 'Cannot sell spaceship parts';
+      if (buildingId >= 39) return 'Cannot sell wonders';
       if (city.soldThisTurn) return 'Already sold a building this turn';
       return null;
     }
