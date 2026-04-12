@@ -494,18 +494,7 @@ async function handleMapClick(e, isLongPress = false) {
       }
     }
 
-    // Short click: if own units in city, select the top unit instead of opening dialog
-    if (!isLongPress && cityUnits.length > 0) {
-      const topUnit = cityUnits[0];
-      const topU = S.mpGameState.units[topUnit];
-      selectUnit(topUnit);
-      if (topU.orders && topU.orders !== 'none') {
-        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
-      }
-      return;
-    }
-
-    // Short click with no own units: open city dialog
+    // Short click: always open city dialog (units selectable via long-click menu)
     openCityDialog(cityHit.city, cityHit.index);
     return;
   }
