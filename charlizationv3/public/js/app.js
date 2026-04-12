@@ -557,6 +557,31 @@ async function handleMapClick(e, isLongPress = false) {
           label: 'Open City',
           action: () => openCityDialog(cityHit.city, cityHit.index),
         });
+        // Add "Go To" option if player has a selected unit elsewhere
+        if (S.mpSelectedUnit != null) {
+          const gotoUnit = S.mpGameState.units[S.mpSelectedUnit];
+          if (gotoUnit && gotoUnit.movesLeft > 0 &&
+              (gotoUnit.gx !== tile.gx || gotoUnit.gy !== tile.gy)) {
+            const capturedGoto = S.mpSelectedUnit;
+            menuItems.push({
+              label: `Go To ${cityHit.city.name}`,
+              action: () => {
+                const u = S.mpGameState.units[capturedGoto];
+                if (!u || u.gx < 0) return;
+                const path = findPath(u.type, u.gx, u.gy, tile.gx, tile.gy, S.mpMapBase, u.owner, S.mpGameState.units, S.mpGameState.cities);
+                if (path && path.length > 0) {
+                  S.transport.sendRaw({
+                    type: 'ACTION',
+                    action: { type: GOTO, unitIndex: capturedGoto, targetGx: tile.gx, targetGy: tile.gy, path },
+                  });
+                  S.pendingAutoAdvanceFrom = capturedGoto;
+                } else {
+                  showOverlayMessage('No path found');
+                }
+              },
+            });
+          }
+        }
         menuItems.push({ separator: true });
       }
 

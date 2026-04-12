@@ -227,32 +227,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const prevIsWonder = prevItem && prevItem.type === 'wonder';
       const newIsWonder = item.type === 'wonder';
       if (prevIsWonder && newIsWonder && prevItem.id !== item.id) {
-        // (#130) Switching between two wonders: epoch-based shield penalty.
-        // If the new wonder is in a different epoch than the old one, apply additional penalty.
-        // Binary uses ADVANCE_EPOCH of the wonder's prerequisite tech.
-        const oldWonderIdx = prevItem.id - 39;
-        const newWonderIdx = item.id - 39;
-        let epochPenalty = false;
-        if (oldWonderIdx >= 0 && newWonderIdx >= 0) {
-          // Import WONDER_PREREQS indirectly through ADVANCE_EPOCH
-          const oldEpoch = (oldWonderIdx < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[oldWonderIdx] : 0;
-          const newEpoch = (newWonderIdx < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[newWonderIdx] : 0;
-          if (oldEpoch !== newEpoch) {
-            // Epoch mismatch: apply 50% penalty on top of normal cap
-            const capped = state.cities[cityIndex].shieldsInBox || 0;
-            state.cities[cityIndex] = {
-              ...state.cities[cityIndex],
-              shieldsInBox: Math.floor(capped / 2),
-            };
-            epochPenalty = true;
-          }
-        }
+        // Same category (wonder→wonder): no penalty. Binary keeps all shields.
         state.turnEvents.push({
           type: 'wonderSwitched', civSlot,
           cityName: city.name, cityIndex,
           oldWonderId: prevItem.id, oldWonderName: WONDER_NAMES[prevItem.id - 39] || `Wonder ${prevItem.id}`,
           newWonderId: item.id, newWonderName: WONDER_NAMES[item.id - 39] || `Wonder ${item.id}`,
-          epochPenalty,
         });
       } else if (newIsWonder && !prevIsWonder) {
         // Switching TO a wonder from non-wonder
@@ -419,6 +399,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // (#120) Auto-clamp rates for anarchy too
         _autoClampRates(civ, 'anarchy');
         state.civs[civSlot] = civ;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'revolution', civSlot,
+          newGovernment: government,
+          anarchyTurns: civ.anarchyTurns,
+        });
       }
       break;
     }

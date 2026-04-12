@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  NON_COMBAT_TYPES, SEA_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
+  NON_COMBAT_TYPES, UNIT_ATK, UNIT_DOMAIN,
   GOVT_CORRUPTION_DIVISOR, DIFFICULTY_KEYS, GOVT_INDEX,
   FOOD_BOX_MULTIPLIER,
 } from './defs.js';
@@ -41,6 +41,33 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
 
   const totalSpecs = (city.specialists || []).length;
 
+  // ── Pre-compute military unit counts (FUN_004e80b1 globals) ──
+  // Binary tracks DAT_006a65e4 (abroad) and DAT_006a655c (in city) for units
+  // homed to this city with ATK > 0. Used for Palace bonus and war weariness.
+  let militaryAbroad = 0;
+  let militaryInCity = 0;
+  for (const u of gameState.units) {
+    if (u.owner !== ownerSlot || u.gx < 0) continue;
+    if (u.homeCityId !== cityIndex) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+    const domain = UNIT_DOMAIN[u.type]; // 0=land, 1=air, 2=sea
+    if (domain === 1) {
+      // Air: count as "in city" if at city coordinates (either x or y match per binary)
+      if (u.gx === city.gx || u.gy === city.gy) {
+        militaryInCity++;
+      }
+      // Air units with ATK > 0 always count as abroad
+      militaryAbroad++;
+    } else {
+      // Land/Sea: "in city" only at exact coordinates
+      if (u.gx === city.gx && u.gy === city.gy) {
+        militaryInCity++;
+      } else {
+        militaryAbroad++;
+      }
+    }
+  }
+
   // Mutable state
   const st = { happy: 0, unhappy: 0, surplus: 0 };
 
@@ -50,11 +77,13 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     while (st.surplus > 0 && st.unhappy < st.surplus) { st.surplus--; st.unhappy++; }
     st.unhappy = clamp(st.unhappy, 0, pop);
     const cap = clamp(pop - totalSpecs, 0, 99);
+    // Binary FUN_004ea031: when happy+unhappy exceeds cap (due to specialists),
+    // reduce UNHAPPY first (specialists convert unhappy→content), then surplus.
+    // Only reduce happy as last resort.
     while (st.unhappy + st.happy > cap) {
-      if (st.surplus === 0) { st.happy--; st.happy = clamp(st.happy, 0, pop); }
-      else { st.surplus--; }
-      st.unhappy--;
-      st.unhappy = clamp(st.unhappy, 0, pop);
+      if (st.unhappy > 0) { st.unhappy--; }
+      else if (st.surplus > 0) { st.surplus--; }
+      else { st.happy--; st.happy = clamp(st.happy, 0, pop); }
     }
     while (st.surplus > 0 && st.unhappy + st.happy < cap) { st.surplus--; st.unhappy++; }
   };
@@ -66,7 +95,8 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
     // Binary: contentBase = RIOT_FACTOR + difficulty * -2 [+ 2 if Restless Tribes]
     let spread = RIOT_FACTOR + diffIdx * -2;
-    if (gameState.barbarianActivity === 'raging') spread += 2;
+    // Binary: (DAT_00655af0 & 4) != 0 — map size flag set when mapWidth*mapHeight > 5999
+    if (gameState.mapWidth && gameState.mapHeight && gameState.mapWidth * gameState.mapHeight > 5999) spread += 2;
 
     // Binary: contentCitizens = ((govtType >> 1) + 2) * contentBase / 2
     // govtType is the numeric government index (0=anarchy, 1=despotism, etc.)
@@ -77,7 +107,14 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
 
     // Binary: local_20 = CONTENT_BASE - difficulty (martial law base)
     // Binary: unhappy = (size - 1) - (local_20 - 2)
-    const martialLawBase = CONTENT_BASE - diffIdx;
+    let martialLawBase = CONTENT_BASE - diffIdx;
+    // FUN_004ea8e4:4089-4091 — Palace bonus at high difficulty:
+    // If martialLawBase < 3 (Deity with default CONTENT_BASE) AND city has Palace
+    // AND no military units abroad AND no military in city, clamp to 2
+    if (martialLawBase < 3 && cityHasBuilding(city, 1) &&
+        militaryAbroad === 0 && militaryInCity === 0) {
+      martialLawBase = 2;
+    }
     st.unhappy = (pop - 1) - (martialLawBase - 2);
 
     // Empire size penalty (Communism exempt) — uses govt-scaled contentCitizens as divisor
@@ -137,8 +174,6 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     st.unhappy = 0;
   } else if (govt === 'anarchy' || govt === 'despotism' || govt === 'monarchy' || govt === 'communism') {
     // Martial law
-    // Binary: maxMartialLaw = CONTENT_BASE(7) - difficulty
-    const diffIdx2 = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
     let garrison = 0;
     for (const u of gameState.units) {
       if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot &&
@@ -146,9 +181,8 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
         garrison += (govt === 'communism') ? 2 : 1;
       }
     }
-    const maxMartial = (govt === 'communism')
-      ? (CONTENT_BASE - diffIdx2) * 2
-      : (CONTENT_BASE - diffIdx2);
+    // Binary: hardcoded constants — communism allows 3 units * 2 each = 6, others max 3
+    const maxMartial = (govt === 'communism') ? 6 : 3;
     if (garrison > maxMartial) garrison = maxMartial;
     garrison = Math.max(0, Math.min(garrison, st.unhappy));
     st.unhappy -= garrison;
@@ -163,18 +197,8 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     if (govt === 'democracy') penalty++;
 
     if (penalty !== 0) {
-      let abroad = 0;
-      for (const u of gameState.units) {
-        if (u.owner !== ownerSlot || u.gx < 0) continue;
-        if (u.homeCityId !== cityIndex) continue;
-        if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
-        if (NON_COMBAT_TYPES.has(u.type)) continue;
-        if (SEA_COMBAT_TYPES.has(u.type)) { abroad++; continue; }
-        // Land/air: abroad if not at any friendly city
-        const atFriendlyCity = gameState.cities.some(c =>
-          c.owner === ownerSlot && c.gx === u.gx && c.gy === u.gy && c.size > 0);
-        if (!atFriendlyCity) abroad++;
-      }
+      // Use pre-computed militaryAbroad (ATK > 0, domain-based "in city" check)
+      let abroad = militaryAbroad;
       if (abroad > 0 && govt === 'republic') abroad--;
       st.unhappy += penalty * abroad;
     }
@@ -212,8 +236,8 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
   const content = pop - happy - unhappy - totalSpecs;
 
   const civilDisorder = unhappy > happy;
-  // Binary: WLtKD requires unhappy==0, size>2, govt!=anarchy(0)
-  const weLoveKingDay = !civilDisorder && unhappy === 0 && happy >= content
+  // Binary line 5894: (city_size + 1) >> 1 <= happy — i.e. happy >= ceil(size/2)
+  const weLoveKingDay = !civilDisorder && unhappy === 0 && happy >= ((pop + 1) >> 1)
     && pop > 2 && govt !== 'anarchy';
 
   return { happy, unhappy, civilDisorder, weLoveKingDay };

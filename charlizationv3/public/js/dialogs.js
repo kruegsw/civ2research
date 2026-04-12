@@ -887,11 +887,16 @@ export function showTurnEvents(events) {
       }
 
       case 'revolution': {
+        if (ev.civSlot !== S.mpCivSlot) { showNext(); break; }
         playCityStatusSound('revolution');
+        const govtName = (ev.newGovernment || 'new government').charAt(0).toUpperCase() + (ev.newGovernment || '').slice(1);
+        const anarchyMsg = ev.anarchyTurns
+          ? `The people are in revolt! Anarchy will reign for ${ev.anarchyTurns} turn${ev.anarchyTurns > 1 ? 's' : ''} while ${govtName} is established.`
+          : `Revolution! The government has been overthrown!`;
         createCiv2Dialog('turn-event-dialog', 'Revolution!', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
-          msg.textContent = ev.message || 'Revolution! Government overthrown!';
+          msg.textContent = anarchyMsg;
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;

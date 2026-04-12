@@ -1085,8 +1085,9 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         const u = state.units[i];
         if (u.gx === prevGx && u.gy === prevGy && u.owner === unit.owner &&
             UNIT_DOMAIN[u.type] === 0 && u.gx >= 0) {
-          // Skip sentry/sleep units — they chose to stay in the city
-          if (u.orders === 'sentry' || u.orders === 'sleep') continue;
+          // Skip units with standing orders — they chose to stay
+          if (u.orders === 'sentry' || u.orders === 'sleep' ||
+              u.orders === 'fortified' || u.orders === 'fortifying') continue;
           state.units[i] = { ...u,
             gx: dest.gx, gy: dest.gy,
             x: dest.gx * 2 + (dest.gy % 2), y: dest.gy,
