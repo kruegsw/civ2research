@@ -1731,50 +1731,55 @@ function initNetwork(appCallbacks) {
 
               if (entry.type === 'move') {
                 const mv = entry.mv;
-                // Binary FUN_0059062c lines 218-226, exact sequence:
-                //   1. FUN_004105f8(srcGx, srcGy): center camera on SOURCE
-                //   2. FUN_0046e287(10): 167ms pause (camera settle)
-                //   3. FUN_0056c705: movement animation ~240ms (unit slides)
-                //   4. FUN_0047cea6(destGx, destGy): center on DESTINATION
-                //
-                // We can't animate the slide (only have final state), so
-                // step 3 becomes "re-render showing unit at dest + sound".
+                // Binary FUN_0059062c lines 218-226:
+                //   1. FUN_004105f8: center on source (only if not in viewport)
+                //   2. FUN_0046e287(10): 167ms settle
+                //   3. FUN_0056c705: movement animation ~240ms
+                //   4. FUN_0047cea6: center on dest
                 const srcGx = mv.fromGx ?? mv.toGx;
                 const srcGy = mv.fromGy ?? mv.toGy;
+                const srcVisible = isTileInViewport(srcGx, srcGy);
+                const dstVisible = isTileInViewport(mv.toGx, mv.toGy);
 
-                // Step 1: Center on source tile (FUN_004105f8)
-                centerOnTile(srcGx, srcGy);
-                doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
-
-                // Step 2: 167ms camera settle (FUN_0046e287(10))
-                setTimeout(() => {
-                  // Step 3: Center on dest, render (unit now at dest), play sound
-                  // Binary FUN_0056c705: unit slides from src to dest over ~256ms
-                  // (8 frames × 32ms). We can't slide (only have final state),
-                  // so we show the unit at dest and add the slide duration as
-                  // observation time.
-                  centerOnTile(mv.toGx, mv.toGy);
+                if (srcVisible || dstVisible) {
+                  // Both or one tile already in viewport — no camera move needed.
+                  // Just render, play sound, brief observation delay.
                   doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
                   sfx('MOVPIECE');
-
-                  // Step 4: Post-move delay = slide time (~256ms) + settle (167ms)
-                  // Binary total per move: 167 + 256 + 167 ≈ 590ms
-                  setTimeout(nextEntry, 420);
-                }, 167);
+                  setTimeout(nextEntry, 300);
+                } else {
+                  // Neither tile visible — center camera, settle, then show move.
+                  // Binary: FUN_004105f8 centers only when tile is off-screen.
+                  centerOnTile(mv.toGx, mv.toGy);
+                  doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+                  // 167ms camera settle (FUN_0046e287(10)), then sound + observe
+                  setTimeout(() => {
+                    sfx('MOVPIECE');
+                    setTimeout(nextEntry, 300);
+                  }, 167);
+                }
               } else {
-                // Combat — same center-settle-animate sequence
-                // Binary: FUN_004105f8 → FUN_0046e287(10) → FUN_00580341
+                // Combat — center only if not already visible
                 const cr = entry.cr;
-                centerOnTile(cr.gx, cr.gy);
+                const combatVisible = isTileInViewport(cr.gx, cr.gy);
+                if (!combatVisible) {
+                  centerOnTile(cr.gx, cr.gy);
+                }
                 doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
-                // 167ms camera settle (FUN_0046e287(10))
-                setTimeout(() => {
-                  if (S.mapSprites) {
-                    animateCombat(cr, nextEntry);
-                  } else {
-                    setTimeout(nextEntry, 200);
-                  }
-                }, 167);
+                if (!combatVisible) {
+                  // 167ms camera settle before animation (FUN_0046e287(10))
+                  setTimeout(() => {
+                    if (S.mapSprites) {
+                      animateCombat(cr, nextEntry);
+                    } else {
+                      setTimeout(nextEntry, 200);
+                    }
+                  }, 167);
+                } else if (S.mapSprites) {
+                  animateCombat(cr, nextEntry);
+                } else {
+                  setTimeout(nextEntry, 200);
+                }
               }
             }
 
