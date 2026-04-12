@@ -470,31 +470,26 @@ const Civ2CityDialog = {
   // Waste must be computed independently from distance to capital
   _calcShieldWaste(city, grossShields, support, mapData) {
     const govt = this._getCityGovernment(city, mapData);
-    // Government exemptions: Fundamentalism, Democracy, Barbarians
     if (govt === 'fundamentalism' || govt === 'democracy' || city.owner === 0) return 0;
     if (city.hasPalace) return 0;
     const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
-    if (!capital) return 0;
-    const mw2 = mapData.mw2 || 0;
-    const mapShape = mapData.mapShape || 0;
-    const distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
-    // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
+    let distance = 32; // default when no capital
+    if (capital) {
+      const mw2 = mapData.mw2 || 0;
+      const mapShape = mapData.mapShape || 0;
+      distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    }
     const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
     const gf = GOVT_FACTOR[effGovt] || 4;
-    // Base waste from distance formula
     const available = grossShields - support;
     if (available <= 0) return 0;
-    const isCommunism = (govt === 'communism');
-    const distVal = isCommunism ? 3 : Math.min(distance, 16); // Communism uses COSMIC #8 (default 3) for flat waste
-    let baseWaste = Math.trunc((distVal * available * 3) / (gf * 20));
-    baseWaste = Math.max(0, Math.min(baseWaste, available));
-    // Courthouse (7) or Palace (1) halves waste
-    if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) baseWaste >>= 1;
-    // Government divisor
-    const govtDiv = GOVT_CORRUPTION_DIVISOR[govt] || 1;
-    // Modified waste: binary applies ((3 - courthouseFactor) * base) / 3 / govtDiv
-    // courthouseFactor requires pathfinding to capital (FUN_00488a45); approximated as 0
-    let waste = Math.trunc(baseWaste / govtDiv);
+    // Binary FUN_004e989a: same formula as corruption.
+    // Communism uses flat DAT_0064bcd8 (default 10), cap at 16 for others.
+    const distVal = (govt === 'communism') ? 10 : Math.min(distance, 16);
+    let waste = Math.trunc((distVal * available * 3) / (gf * 20));
+    waste = Math.max(0, Math.min(waste, available));
+    // Binary FUN_004e989a:3647-3648: Courthouse OR Palace halves waste
+    if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) waste >>= 1;
     // Cap: ensure at least 1 shield after support + waste
     const cap = grossShields - support - 1;
     if (waste > cap) waste = cap;
@@ -502,30 +497,27 @@ const Civ2CityDialog = {
     return waste;
   },
 
-  // Trade corruption (FUN_004ea8e4 line 4027 → FUN_004e989a)
-  // Same base formula as shield waste but: no distance cap, no road factor, no govtDiv
+  // Trade corruption (FUN_004e989a — same formula for both corruption and waste)
   _calcTradeCorruption(city, grossTrade, mapData) {
     const govt = this._getCityGovernment(city, mapData);
     if (govt === 'fundamentalism' || govt === 'democracy') return 0;
     if (city.hasPalace) return 0;
     if (grossTrade <= 0) return 0;
     const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
-    // No capital: game uses distance 32 (0x20) as default (FUN_004eb4ed line 2769)
-    let distance = 32;
+    let distance = 32; // default when no capital (DAT_006a6588 = 0x20)
     if (capital) {
       const mw2 = mapData.mw2 || 0;
       const mapShape = mapData.mapShape || 0;
       distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
     }
-    // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
     const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
     const gf = GOVT_FACTOR[effGovt] || 4;
-    // Communism uses COSMIC #8 (default 3) as flat distance
-    const isCommunism = (govt === 'communism');
-    const distVal = isCommunism ? 3 : distance; // NO cap at 16 (unlike shield waste)
+    // Binary FUN_004e989a:3635: communism uses flat DAT_0064bcd8 (default 10).
+    // Other governments: cap distance at 16 (line 3620: min(distance, 0x10)).
+    const distVal = (govt === 'communism') ? 10 : Math.min(distance, 16);
     let corruption = Math.trunc((distVal * grossTrade * 3) / (gf * 20));
     corruption = Math.max(0, Math.min(corruption, grossTrade));
-    // Courthouse (7) or City Hall (1) halves corruption
+    // Binary FUN_004e989a:3647-3648: Courthouse OR Palace halves corruption
     if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) corruption >>= 1;
     return corruption;
   },

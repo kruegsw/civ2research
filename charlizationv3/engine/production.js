@@ -364,10 +364,12 @@ export function calcUnitShieldSupport(city, cityIndex, units, gameState) {
  */
 export function calcShieldWaste(city, grossShields, support, gameState, mapBase) {
   const govt = getGovernment(city, gameState);
+  // Binary FUN_004ea8e4:4031/4070 — zero waste for these governments
   if (govt === 'fundamentalism' || govt === 'democracy' || city.owner === 0) return 0;
   if (city.hasPalace) return 0;
+
   const capital = gameState.cities.find(c => c.owner === city.owner && c.hasPalace);
-  let distance = 32; // default when no capital (maximum waste)
+  let distance = 32; // default when no capital
   if (capital) {
     const mw2 = (mapBase.mw || 0) * 2;
     const mapShape = mapBase.mapShape || 0;
@@ -380,20 +382,19 @@ export function calcShieldWaste(city, grossShields, support, gameState, mapBase)
   const available = grossShields - support;
   if (available <= 0) return 0;
 
-  const distVal = (govt === 'communism') ? 0 : Math.min(distance, 16);
-  let baseWaste = Math.trunc((distVal * available * 3) / (gf * 20));
-  baseWaste = Math.max(0, Math.min(baseWaste, available));
+  // Binary FUN_004e989a: same formula as trade corruption.
+  // Communism uses flat DAT_0064bcd8 (default 10), not 0.
+  // Other governments cap distance at 16.
+  const COSMIC_COMMUNISM_EQUIV_DISTANCE = 10;
+  const distVal = (govt === 'communism')
+    ? COSMIC_COMMUNISM_EQUIV_DISTANCE
+    : Math.min(distance, 16);
 
-  if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) baseWaste >>= 1;
+  let waste = Math.trunc((distVal * available * 3) / (gf * 20));
+  waste = Math.max(0, Math.min(waste, available));
 
-  // (#110) Wonder-based waste counters
-  // Adam Smith's Trading Co. (wonder 17): halves waste
-  if (hasWonderEffect(gameState, city.owner, 17)) baseWaste >>= 1;
-  // Women's Suffrage (wonder 21): halves waste
-  if (hasWonderEffect(gameState, city.owner, 21)) baseWaste >>= 1;
-
-  const govtDiv = GOVT_CORRUPTION_DIVISOR[govt] || 1;
-  let waste = Math.trunc(baseWaste / govtDiv);
+  // Binary FUN_004e989a:3647-3648: Courthouse OR Palace halves waste
+  if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) waste >>= 1;
 
   // Cap: ensure at least 1 shield after support + waste
   const cap = grossShields - support - 1;
@@ -440,55 +441,36 @@ export function getProductionCost(item) {
  */
 export function calcTradeCorruption(city, grossTrade, gameState, mapBase) {
   const govt = getGovernment(city, gameState);
+  // Binary FUN_004ea8e4:4031/4070 — zero corruption for these governments
   if (govt === 'fundamentalism' || govt === 'democracy') return 0;
   if (city.hasPalace) return 0;
   if (grossTrade <= 0) return 0;
 
+  // Binary FUN_004e989a: distance to capital via isometric distance
+  // (NOT road network — binary uses raw FUN_005ae31d)
   const capital = gameState.cities.find(c => c.owner === city.owner && c.hasPalace);
-  let distance = 32; // default when no capital
+  let distance = 32; // default when no capital (DAT_006a6588 = 0x20)
   if (capital) {
     const mw2 = (mapBase.mw || 0) * 2;
     const mapShape = mapBase.mapShape || 0;
-
-    // (#102) Check if capital and city share continent for road-network distance
-    let sameContinent = false;
-    if (mapBase.getBodyId) {
-      const cityBody = mapBase.getBodyId(city.gx, city.gy);
-      const capBody = mapBase.getBodyId(capital.gx, capital.gy);
-      sameContinent = (cityBody === capBody && cityBody >= 0);
-    }
-
-    if (sameContinent && mapBase.tileData) {
-      // Use road-network distance: BFS along road/railroad tiles
-      const roadDist = _roadNetworkDistance(city.gx, city.gy, capital.gx, capital.gy, mapBase);
-      if (roadDist >= 0) {
-        distance = roadDist;
-      } else {
-        // No road connection — fall back to raw isometric distance
-        distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
-      }
-    } else {
-      distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
-    }
+    distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
   }
 
   const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
   const gf = GOVT_FACTOR[effGovt] || 4;
-  // Binary FUN_004e989a (calc_corruption) lines 3635-3641: communism uses a
-  // flat "equivalent distance" (COSMIC param 16, DAT_0064bcd8, default 10)
-  // instead of real capital distance. This gives communism uniform corruption
-  // across all cities regardless of distance. The previous JS used 0, making
-  // communism have ZERO corruption — that was wrong.
-  const COSMIC_COMMUNISM_EQUIV_DISTANCE = 10; // DAT_0064bcd8 default
-  const distVal = (govt === 'communism') ? COSMIC_COMMUNISM_EQUIV_DISTANCE : distance;
+
+  // Binary FUN_004e989a:3635-3641: communism uses flat DAT_0064bcd8 (default 10)
+  // instead of real distance. Other governments cap distance at 16 (line 3620).
+  const COSMIC_COMMUNISM_EQUIV_DISTANCE = 10; // DAT_0064bcd8
+  const distVal = (govt === 'communism')
+    ? COSMIC_COMMUNISM_EQUIV_DISTANCE
+    : Math.min(distance, 16); // Binary: cap at 0x10
+
   let corruption = Math.trunc((distVal * grossTrade * 3) / (gf * 20));
   corruption = Math.max(0, Math.min(corruption, grossTrade));
 
+  // Binary FUN_004e989a:3647-3648: Courthouse OR Palace halves corruption
   if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) corruption >>= 1;
-
-  // (#110) Wonder-based corruption counters
-  if (hasWonderEffect(gameState, city.owner, 17)) corruption >>= 1; // Adam Smith's
-  if (hasWonderEffect(gameState, city.owner, 21)) corruption >>= 1; // Women's Suffrage
 
   return corruption;
 }
