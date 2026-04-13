@@ -34,9 +34,12 @@ function _hasWaterSource(gx, gy, mapBase) {
   // River on current tile counts as water source
   if (mapBase.hasRiver && mapBase.hasRiver(gx, gy)) return true;
 
-  // Check 8 adjacent tiles for ocean, river, or existing irrigation
+  // Binary FUN_004abfe5:3864-3870 — only EDGE-SHARING neighbors (dy=1)
+  // count for irrigation water source adjacency. Corner-touching tiles
+  // (N/S/E/W with dy=0 or dy=2) do NOT count.
+  // Edge-sharing in doubled-X isometric: NE(+1,-1), SE(+1,+1), SW(-1,+1), NW(-1,-1)
   const DIRS = [
-    [+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2]
+    [+1,-1],[+1,+1],[-1,+1],[-1,-1]
   ];
   const mw = mapBase.mw;
   const mh = mapBase.mh;

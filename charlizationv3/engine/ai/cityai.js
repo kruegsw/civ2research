@@ -696,13 +696,18 @@ function settlerDirectionToward(unit, toGx, toGy, gameState, mapBase, civSlot) {
 
 /**
  * Check if a tile has adjacent water source for irrigation.
- * Water sources: ocean, river, or existing irrigation on adjacent tile.
+ * Water sources: ocean, river, or existing irrigation on an EDGE-SHARING
+ * adjacent tile. Binary FUN_004abfe5:3864-3870 — only neighbors with
+ * abs(dy)=1 count (NE/SE/SW/NW in isometric grid). Corner-touching
+ * neighbors (N/S/E/W) do NOT provide water for irrigation.
  */
 function checkWaterSource(gx, gy, mapBase) {
   if (mapBase.hasRiver(gx, gy)) return true;
 
+  // Only check 4 edge-sharing neighbors (NE, SE, SW, NW)
   const neighbors = mapBase.getNeighbors(gx, gy);
-  for (const dir in neighbors) {
+  const EDGE_DIRS = ['NE', 'SE', 'SW', 'NW'];
+  for (const dir of EDGE_DIRS) {
     const [nx, ny] = neighbors[dir];
     if (!inBounds(nx, ny, mapBase)) continue;
     const wnx = wrapX(nx, mapBase);
