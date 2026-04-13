@@ -1368,7 +1368,7 @@ registerDialogDeps({
 
 registerUnitUiDeps({ renderAtomicSwap, updateUnitInfoStrip });
 registerAdvisorDeps({ openCityDialog, selectUnit, centerOnUnit, renderUnitThumbnail });
-registerCityUiDeps({ showUnitPresentDialog, showUnitSupportedDialog });
+registerCityUiDeps({ showUnitPresentDialog, showUnitSupportedDialog, openCityDialog });
 
 // ═══════════════════════════════════════════════════════════════════
 // Network initialization

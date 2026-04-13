@@ -154,6 +154,33 @@ function cdHandleClick(clientX, clientY) {
     closeCityDialog();
   } else if (result && result.action === 'info') {
     cdRerender();
+  } else if (result && result.action === 'map') {
+    // Binary citywin_BA07: sets DAT_006aa768 = 1 (resource/trade view)
+    Civ2CityDialog.infoPanelMode = 1;
+    cdRerender();
+  } else if (result && result.action === 'happy') {
+    // Binary citywin_BA6A: sets DAT_006aa768 = 2 (happiness breakdown)
+    Civ2CityDialog.infoPanelMode = 2;
+    cdRerender();
+  } else if (result && result.action === 'nextCity' || result && result.action === 'prevCity') {
+    // Binary: navigates to next/prev city in ALPHABETICAL order
+    if (!S.mpGameState || S.mpCivSlot == null) return;
+    const myCities = [];
+    for (let i = 0; i < S.mpGameState.cities.length; i++) {
+      const c = S.mpGameState.cities[i];
+      if (c.owner === S.mpCivSlot && c.size > 0) {
+        myCities.push({ index: i, name: c.name });
+      }
+    }
+    if (myCities.length <= 1) return;
+    myCities.sort((a, b) => a.name.localeCompare(b.name));
+    const curIdx = myCities.findIndex(c => c.index === cdCityIndex);
+    if (curIdx < 0) return;
+    const dir = result.action === 'nextCity' ? 1 : -1;
+    const nextIdx = (curIdx + dir + myCities.length) % myCities.length;
+    const next = myCities[nextIdx];
+    closeCityDialog();
+    _deps.openCityDialog(S.mpGameState.cities[next.index], next.index);
   } else if (result && result.action === 'panorama') {
     closeCityDialog();
     ensureCvSprites().then(ok => {
