@@ -3287,39 +3287,89 @@ const Civ2CityDialog = {
 
   _drawInfoPanelHappy(ctx, city, happiness) {
     const R = this.REGIONS.infoPanel;
-    this._label(ctx, 'Happy', R.x + R.w / 2, R.y + 12);
+    this._label(ctx, 'Happiness', R.x + R.w / 2, R.y + 12);
 
-    const panelX = R.x + 2, panelY = R.y + 20;
-    const panelW = R.w - 4, panelH = 160;
-    const rowCount = 5;
-    const rowH = Math.floor(panelH / rowCount);
-
-    // Row labels
-    const rowLabels = ['Happy', 'Content', 'Unhappy', 'Entertainers', 'Taxmen'];
-    const rowColors = ['rgb(0,200,0)', 'rgb(200,200,0)', 'rgb(200,0,0)', 'rgb(200,100,200)', 'rgb(200,200,100)'];
-
+    const panelX = R.x + 2, panelY = R.y + 22;
+    const panelW = R.w - 4, panelH = 158;
+    const pop = city.size;
+    const specs = this.getSpecialists(city);
+    const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
     const happy = happiness ? happiness.happy : (city.happyCitizens || 0);
     const unhappy = happiness ? happiness.unhappy : (city.unhappyCitizens || 0);
-    const specs = this.getSpecialists(city);
-    const content = Math.max(0, city.size - happy - unhappy - specs.entertainer - specs.taxman - specs.scientist);
-    const rowCounts = [happy, content, unhappy, specs.entertainer, specs.taxman];
+    const content = Math.max(0, pop - happy - unhappy - totalSpecs);
 
-    for (let r = 0; r < rowCount; r++) {
+    // Binary FUN_00505666: per-step face rows showing how each modifier
+    // changes the happiness distribution. Each row = city population
+    // colored by citizen type at that step.
+    //
+    // Row layout: step label on left, colored face dots on right
+    const GREEN = 'rgb(87,171,39)';    // happy
+    const YELLOW = 'rgb(200,200,0)';   // content
+    const RED = 'rgb(243,0,0)';        // unhappy
+    const PURPLE = 'rgb(200,100,200)'; // specialist
+
+    // Build step descriptions with counts
+    const steps = [];
+    steps.push({ label: 'Base', h: 0, c: Math.max(0, pop - totalSpecs - unhappy), u: unhappy });
+    // Luxury
+    steps.push({ label: 'Luxury', h: happy, c: content, u: unhappy });
+    // Buildings
+    const bldgEffects = [];
+    if (city.buildings?.has(14)) bldgEffects.push('Colosseum');
+    if (city.buildings?.has(11)) bldgEffects.push('Cathedral');
+    if (city.buildings?.has(4)) bldgEffects.push('Temple');
+    if (bldgEffects.length > 0) {
+      steps.push({ label: bldgEffects.join(', '), h: happy, c: content, u: unhappy });
+    }
+    // Government / martial law
+    const govt = this._getCityGovernment(city, { cities: [city], civs: city._civs });
+    if (govt === 'fundamentalism') {
+      steps.push({ label: 'Fundamentalism', h: happy, c: pop - totalSpecs, u: 0 });
+    } else if (['anarchy','despotism','monarchy','communism'].includes(govt)) {
+      steps.push({ label: 'Martial Law', h: happy, c: content, u: unhappy });
+    } else {
+      steps.push({ label: 'War Weariness', h: happy, c: content, u: unhappy });
+    }
+    // Final
+    steps.push({ label: 'RESULT', h: happy, c: content, u: unhappy });
+
+    const rowH = Math.min(28, Math.floor(panelH / steps.length));
+    const faceSize = 6;
+    const faceGap = Math.min(9, Math.max(5, Math.floor((panelW - 80) / Math.max(pop, 1))));
+    const facesX = panelX + 78;
+
+    for (let r = 0; r < steps.length; r++) {
       const ry = panelY + r * rowH;
-      // Divider line (palette 0x7C = gray)
+      // Divider
       if (r > 0) {
-        ctx.fillStyle = 'rgb(124,124,124)';
+        ctx.fillStyle = 'rgb(80,80,80)';
         ctx.fillRect(panelX, ry, panelW, 1);
       }
+      const s = steps[r];
       // Label
+      const isResult = (r === steps.length - 1);
+      const font = isResult ? 'bold 10px Arial, sans-serif' : '10px Arial, sans-serif';
       ctx.textAlign = 'left';
-      this._text(ctx, rowLabels[r] + ': ' + rowCounts[r], panelX + 2, ry + 12, rowColors[r], '10px Arial, sans-serif');
-      // Citizen dots
-      ctx.fillStyle = rowColors[r];
-      for (let d = 0; d < rowCounts[r]; d++) {
-        ctx.beginPath();
-        ctx.arc(panelX + 80 + d * 10, ry + rowH / 2, 3, 0, Math.PI * 2);
-        ctx.fill();
+      this._text(ctx, s.label, panelX + 2, ry + rowH / 2 + 4, 'rgb(200,200,200)', font);
+
+      // Draw faces: happy (green), content (yellow), unhappy (red), specs (purple)
+      let fx = facesX;
+      const drawFaces = (count, color) => {
+        ctx.fillStyle = color;
+        for (let d = 0; d < count; d++) {
+          ctx.beginPath();
+          ctx.arc(fx + faceSize / 2, ry + rowH / 2, faceSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+          fx += faceGap;
+        }
+      };
+      drawFaces(s.h, GREEN);
+      drawFaces(s.c, YELLOW);
+      drawFaces(s.u, RED);
+      if (isResult && totalSpecs > 0) {
+        drawFaces(specs.entertainer, PURPLE);
+        drawFaces(specs.taxman, 'rgb(200,200,100)');
+        drawFaces(specs.scientist, 'rgb(100,180,255)');
       }
     }
   },
