@@ -279,10 +279,15 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const toHasRoad = toImp.road || toImp.railroad;
   if (fromHasRoad && toHasRoad) return 1;
 
-  // 4. River crossing: both tiles have river AND diagonal adjacency (C lines 684-692, 698)
+  // 4. River crossing: both tiles have river AND edge-sharing adjacency
+  // Binary FUN_004abfe5:3861-3873 — abs(dx)==1 && abs(dy)==1
   if (isDiagonal && mapBase.hasRiver(fromGx, fromGy) && mapBase.hasRiver(toGx, toGy)) return 1;
 
-  // 5. Full terrain cost (C line 694)
+  // 5. Fortress/city entry: reduced cost (binary FUN_004abfe5:3854-3857)
+  // Entering a tile with fortress or city costs 1/3 MP instead of full terrain
+  if (toImp.fortress || toImp.city) return MOVEMENT_MULTIPLIER;
+
+  // 6. Full terrain cost (C line 694)
   const terrain = mapBase.getTerrain(toGx, toGy);
   return (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
 }
