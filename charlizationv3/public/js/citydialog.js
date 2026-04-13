@@ -3124,7 +3124,7 @@ const Civ2CityDialog = {
 
   infoPanelMode: 0,
 
-  _drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites, computed, happiness) {
+  _drawInfoPanel(ctx, city, cityIndex, mapData, cdSprites, mapSprites, computed, happiness) {
     const R = this.REGIONS.infoPanel;
     const C = this.COL;
     const mode = this.infoPanelMode || 0;
@@ -3136,8 +3136,8 @@ const Civ2CityDialog = {
       // Mode 1: Mini-map
       this._drawInfoPanelMap(ctx, city, mapData);
     } else if (mode === 2) {
-      // Mode 2: Happiness
-      this._drawInfoPanelHappy(ctx, city, happiness);
+      // Mode 2: Happiness — per-step breakdown matching binary FUN_004ea8e4
+      this._drawInfoPanelHappy(ctx, city, happiness, mapData, cityIndex);
     }
   },
 
@@ -3285,7 +3285,130 @@ const Civ2CityDialog = {
     ctx.fillRect(cx - 2, cy - 2, 5, 5);
   },
 
-  _drawInfoPanelHappy(ctx, city, happiness) {
+  // Compute per-step happiness snapshots matching binary FUN_004ea8e4.
+  // Each step stores { happy, unhappy } AFTER adjust() runs.
+  _calcHappinessSteps(city, cityIndex, mapData) {
+    if (!mapData?.gameState) return null;
+
+    // We need to replicate the happiness calc with snapshots.
+    // Instead of modifying the engine, we re-run the logic inline
+    // capturing state after each adjust() call.
+    const gs = mapData.gameState;
+    const govt = this._getCityGovernment(city, mapData);
+    const pop = city.size;
+    const ownerSlot = city.owner;
+    const totalSpecs = (city.specialists || []).length;
+    const civTechs = gs.civTechs?.[ownerSlot];
+    const hasTech = (id) => civTechs ? civTechs.has(id) : false;
+    const hasBuilding = (id) => city.buildings ? city.buildings.has(id) : false;
+
+    const st = { happy: 0, unhappy: 0, surplus: 0 };
+    const steps = [];
+
+    const adjust = (label) => {
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      st.happy = clamp(st.happy, 0, pop);
+      while (st.surplus > 0 && st.unhappy < st.surplus) { st.surplus--; st.unhappy++; }
+      st.unhappy = clamp(st.unhappy, 0, pop);
+      const cap = clamp(pop - totalSpecs, 0, 99);
+      while (st.unhappy + st.happy > cap) {
+        if (st.unhappy > 0) st.unhappy--;
+        else if (st.surplus > 0) st.surplus--;
+        else { st.happy--; st.happy = clamp(st.happy, 0, pop); }
+      }
+      while (st.surplus > 0 && st.unhappy + st.happy < cap) { st.surplus--; st.unhappy++; }
+      const content = Math.max(0, pop - st.happy - st.unhappy - totalSpecs);
+      steps.push({ label, happy: st.happy, content, unhappy: st.unhappy });
+    };
+
+    // Step 0: Initial unhappy (base + empire size)
+    const humanPlayers = gs.humanPlayers || 0xFF;
+    const isHuman = !!((1 << ownerSlot) & humanPlayers);
+    const difficulty = gs.difficulty || 'chieftain';
+    const diffIdx = Math.max(0, ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty));
+    if (!isHuman) {
+      st.unhappy = (pop - 1) - 2;
+    } else {
+      let martialLawBase = 7 - diffIdx;
+      st.unhappy = (pop - 1) - (martialLawBase - 2);
+      if (govt !== 'communism') {
+        const cityCount = gs.cities.filter(c => c.owner === ownerSlot && c.size > 0).length;
+        let spread = 14 + diffIdx * -2;
+        if (gs.mapWidth && gs.mapHeight && gs.mapWidth * gs.mapHeight > 5999) spread += 2;
+        const govtIdx = { anarchy:0, despotism:1, monarchy:2, communism:3, fundamentalism:4, republic:5, democracy:6 }[govt] ?? 1;
+        let contentCitizens = Math.trunc(((govtIdx >> 1) + 2) * spread / 2);
+        if (contentCitizens < 2) contentCitizens = 1;
+        const divisor = Math.max(1, contentCitizens);
+        st.unhappy += Math.trunc((cityCount - divisor + cityIndex % divisor) / divisor);
+      }
+    }
+    st.surplus = 0;
+    if (pop < st.unhappy) { st.surplus = st.unhappy - pop; st.unhappy = pop; }
+    adjust('Base');
+
+    // Step 1: Luxury
+    const tradeResult = this._calcGrossTileTrade ? this._calcGrossTileTrade(city, cityIndex, mapData) : 0;
+    const corruption = this._calcTradeCorruption ? this._calcTradeCorruption(city, tradeResult, mapData) : 0;
+    const netTrade = Math.max(0, tradeResult - corruption);
+    const dist = this._computeTradeDistribution ? this._computeTradeDistribution(netTrade, city, cityIndex, gs.civs?.[ownerSlot], mapData) : { lux: 0 };
+    st.happy = (dist.lux || 0) >> 1;
+    adjust('Luxury');
+
+    // Step 2: Buildings (colosseum, cathedral, temple, courthouse)
+    if (hasBuilding(14)) { st.unhappy -= 3; if (hasTech(24)) st.unhappy -= 1; }
+    if (hasTech(55) && (hasBuilding(11) || this._civHasWonder(mapData, ownerSlot, 10))) {
+      st.unhappy -= ((hasTech(15) ? 0 : 1) + (hasTech(82) ? 3 : 2));
+    }
+    if (hasBuilding(4)) {
+      let te = 0;
+      if (hasTech(56)) te++;
+      if (hasTech(9)) te++;
+      if (this._civHasWonder(mapData, ownerSlot, 5)) te <<= 1;
+      st.unhappy -= te;
+    }
+    if ((hasBuilding(7) || hasBuilding(1)) && govt === 'democracy') st.happy += 1;
+    adjust('Buildings');
+
+    // Step 3: Government
+    if (govt === 'fundamentalism') { st.surplus = 0; st.unhappy = 0; }
+    else if (['anarchy','despotism','monarchy','communism'].includes(govt)) {
+      let garrison = 0;
+      for (const u of gs.units) {
+        if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot && u.gx >= 0) {
+          const nonCombat = new Set([0,1,44,45,46,47,48,49,50]);
+          if (!nonCombat.has(u.type)) garrison += (govt === 'communism') ? 2 : 1;
+        }
+      }
+      const maxML = (govt === 'communism') ? 6 : 3;
+      if (garrison > maxML) garrison = maxML;
+      garrison = Math.max(0, Math.min(garrison, st.unhappy));
+      st.unhappy -= garrison;
+    }
+    adjust('Government');
+
+    // Step 4: Wonders
+    if (this._civHasWonder(mapData, ownerSlot, 1)) {
+      st.happy += 1;
+      const w = gs.wonders?.[1];
+      if (w && w.cityIndex === cityIndex && !w.destroyed) st.happy += 2;
+    }
+    if (this._civHasWonder(mapData, ownerSlot, 27)) st.happy += 1;
+    const shakeW = gs.wonders?.[13];
+    if (shakeW && shakeW.cityIndex === cityIndex && !shakeW.destroyed) st.unhappy = 0;
+    if (this._civHasWonder(mapData, ownerSlot, 15)) st.unhappy -= 2;
+    adjust('Wonders');
+
+    return steps;
+  },
+
+  _civHasWonder(mapData, civSlot, wonderIdx) {
+    const w = mapData.gameState?.wonders?.[wonderIdx];
+    if (!w || w.cityIndex == null || w.destroyed) return false;
+    const city = mapData.cities[w.cityIndex];
+    return city && city.owner === civSlot;
+  },
+
+  _drawInfoPanelHappy(ctx, city, happiness, mapData, cityIndex) {
     const R = this.REGIONS.infoPanel;
     this._label(ctx, 'Happiness', R.x + R.w / 2, R.y + 12);
 
@@ -3294,82 +3417,63 @@ const Civ2CityDialog = {
     const pop = city.size;
     const specs = this.getSpecialists(city);
     const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
-    const happy = happiness ? happiness.happy : (city.happyCitizens || 0);
-    const unhappy = happiness ? happiness.unhappy : (city.unhappyCitizens || 0);
-    const content = Math.max(0, pop - happy - unhappy - totalSpecs);
 
-    // Binary FUN_00505666: per-step face rows showing how each modifier
-    // changes the happiness distribution. Each row = city population
-    // colored by citizen type at that step.
-    //
-    // Row layout: step label on left, colored face dots on right
-    const GREEN = 'rgb(87,171,39)';    // happy
-    const YELLOW = 'rgb(200,200,0)';   // content
-    const RED = 'rgb(243,0,0)';        // unhappy
-    const PURPLE = 'rgb(200,100,200)'; // specialist
+    // Compute per-step snapshots matching binary FUN_004ea8e4
+    const steps = this._calcHappinessSteps(city, cityIndex, mapData) || [
+      { label: 'Result', happy: happiness?.happy || 0, content: Math.max(0, pop - (happiness?.happy || 0) - (happiness?.unhappy || 0) - totalSpecs), unhappy: happiness?.unhappy || 0 },
+    ];
 
-    // Build step descriptions with counts
-    const steps = [];
-    steps.push({ label: 'Base', h: 0, c: Math.max(0, pop - totalSpecs - unhappy), u: unhappy });
-    // Luxury
-    steps.push({ label: 'Luxury', h: happy, c: content, u: unhappy });
-    // Buildings
-    const bldgEffects = [];
-    if (city.buildings?.has(14)) bldgEffects.push('Colosseum');
-    if (city.buildings?.has(11)) bldgEffects.push('Cathedral');
-    if (city.buildings?.has(4)) bldgEffects.push('Temple');
-    if (bldgEffects.length > 0) {
-      steps.push({ label: bldgEffects.join(', '), h: happy, c: content, u: unhappy });
-    }
-    // Government / martial law
-    const govt = this._getCityGovernment(city, { cities: [city], civs: city._civs });
-    if (govt === 'fundamentalism') {
-      steps.push({ label: 'Fundamentalism', h: happy, c: pop - totalSpecs, u: 0 });
-    } else if (['anarchy','despotism','monarchy','communism'].includes(govt)) {
-      steps.push({ label: 'Martial Law', h: happy, c: content, u: unhappy });
-    } else {
-      steps.push({ label: 'War Weariness', h: happy, c: content, u: unhappy });
-    }
-    // Final
-    steps.push({ label: 'RESULT', h: happy, c: content, u: unhappy });
+    const GREEN = 'rgb(87,171,39)';
+    const YELLOW = 'rgb(220,200,40)';
+    const RED = 'rgb(243,0,0)';
+    const PURPLE = 'rgb(200,100,200)';
+    const GOLD = 'rgb(200,200,100)';
+    const BLUE = 'rgb(100,180,255)';
 
     const rowH = Math.min(28, Math.floor(panelH / steps.length));
-    const faceSize = 6;
-    const faceGap = Math.min(9, Math.max(5, Math.floor((panelW - 80) / Math.max(pop, 1))));
-    const facesX = panelX + 78;
+    const maxFaces = pop + totalSpecs;
+    const faceR = 4;
+    const faceGap = Math.min(10, Math.max(5, Math.floor((panelW - 70) / Math.max(maxFaces, 1))));
+    const facesX = panelX + 68;
 
     for (let r = 0; r < steps.length; r++) {
       const ry = panelY + r * rowH;
-      // Divider
-      if (r > 0) {
-        ctx.fillStyle = 'rgb(80,80,80)';
-        ctx.fillRect(panelX, ry, panelW, 1);
-      }
+      if (r > 0) { ctx.fillStyle = 'rgb(80,80,80)'; ctx.fillRect(panelX, ry, panelW, 1); }
       const s = steps[r];
-      // Label
-      const isResult = (r === steps.length - 1);
-      const font = isResult ? 'bold 10px Arial, sans-serif' : '10px Arial, sans-serif';
+      const isLast = (r === steps.length - 1);
       ctx.textAlign = 'left';
-      this._text(ctx, s.label, panelX + 2, ry + rowH / 2 + 4, 'rgb(200,200,200)', font);
+      this._text(ctx, s.label, panelX + 2, ry + rowH / 2 + 4, isLast ? '#fff' : 'rgb(180,180,180)',
+        isLast ? 'bold 10px Arial' : '10px Arial');
 
-      // Draw faces: happy (green), content (yellow), unhappy (red), specs (purple)
+      // Draw citizen faces as colored circles with expression indicators
       let fx = facesX;
-      const drawFaces = (count, color) => {
+      const cy = ry + rowH / 2;
+      const drawFace = (color, expression) => {
         ctx.fillStyle = color;
-        for (let d = 0; d < count; d++) {
-          ctx.beginPath();
-          ctx.arc(fx + faceSize / 2, ry + rowH / 2, faceSize / 2, 0, Math.PI * 2);
-          ctx.fill();
-          fx += faceGap;
+        ctx.beginPath(); ctx.arc(fx + faceR, cy, faceR, 0, Math.PI * 2); ctx.fill();
+        // Expression: smile for happy, neutral for content, frown for unhappy
+        ctx.fillStyle = '#000';
+        if (expression === 'happy') {
+          // Smile arc
+          ctx.beginPath(); ctx.arc(fx + faceR, cy + 1, 2, 0, Math.PI); ctx.stroke();
+        } else if (expression === 'unhappy') {
+          // Frown arc
+          ctx.beginPath(); ctx.arc(fx + faceR, cy + 3, 2, Math.PI, 0); ctx.stroke();
         }
+        // Eyes
+        ctx.fillRect(fx + faceR - 2, cy - 2, 1, 1);
+        ctx.fillRect(fx + faceR + 1, cy - 2, 1, 1);
+        fx += faceGap;
       };
-      drawFaces(s.h, GREEN);
-      drawFaces(s.c, YELLOW);
-      drawFaces(s.u, RED);
-      if (isResult && totalSpecs > 0) {
-        drawFaces(specs.entertainer, PURPLE);
-        drawFaces(specs.taxman, 'rgb(200,200,100)');
-        drawFaces(specs.scientist, 'rgb(100,180,255)');
+      ctx.lineWidth = 0.8; ctx.strokeStyle = '#000';
+      for (let i = 0; i < s.happy; i++) drawFace(GREEN, 'happy');
+      for (let i = 0; i < s.content; i++) drawFace(YELLOW, 'content');
+      for (let i = 0; i < s.unhappy; i++) drawFace(RED, 'unhappy');
+      // Specialists only on last row
+      if (isLast) {
+        for (let i = 0; i < specs.entertainer; i++) drawFace(PURPLE, 'happy');
+        for (let i = 0; i < specs.taxman; i++) drawFace(GOLD, 'content');
+        for (let i = 0; i < specs.scientist; i++) drawFace(BLUE, 'content');
       }
     }
   },
@@ -3538,7 +3642,7 @@ const Civ2CityDialog = {
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
-    this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites, computed, happiness);
+    this._drawInfoPanel(ctx, city, cityIndex, mapData, cdSprites, mapSprites, computed, happiness);
     this._drawButtons(ctx, cdSprites);
     } catch (renderErr) {
       console.error('[citydialog] render error:', renderErr);
