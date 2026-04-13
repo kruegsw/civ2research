@@ -115,41 +115,50 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   const defDomain = UNIT_DOMAIN[unit.type] ?? 0;
   const terrainMul = TERRAIN_DEFENSE[terrain] ?? 2;
 
-  // Base defense: terrain_defense × base_defense × 4
-  // River adds +1 to terrain defense multiplier (from pseudocode: (river_bonus + terrain_defense) * base * 4)
+  // Base defense: (river_bonus + terrain_defense) × base_defense × 4
+  // Binary FUN_0057e33a:5343
   const riverBonus = (onRiver && !inCity) ? 1 : 0;
   let defense = (riverBonus + terrainMul) * defBase * 4;
 
-  // ── Multiplier accumulation (from pseudocode mult starts at 2) ──
-  // The pseudocode uses mult/2 applied at end; we compute it inline.
+  // ── Multiplier system (binary FUN_0057e33a:5344-5388) ──
+  // Binary uses an OVERRIDE-based multiplier, NOT multiplicative stacking.
+  // mult starts at 2. Each check SETS mult to a higher value if applicable.
+  // At the end: defense = defense * mult / 2.
+  // So mult=2 → 1x, mult=3 → 1.5x, mult=4 → 2x, mult=6 → 3x.
   const atkDomain = (attackerType != null && attackerType >= 0) ? (UNIT_DOMAIN[attackerType] ?? 0) : -1;
+  let mult = 2;
 
-  // Fortification: mult goes from 2 to 3 (×1.5) for land units
+  // Line 5345-5348: Fortified land unit → mult = 3
   if (unit.orders === 'fortified' && defDomain === 0) {
-    defense = Math.floor(defense * 3 / 2);
+    mult = 3;
   }
 
-  // Fortress: ×2 (mult goes to 4) — only if not in a city, land domain only
-  // Binary FUN_0057e33a:5350-5357: fortress denied when attacker domain == air (1)
-  // OR attacker has flagsA 0x40 (negates walls, e.g. Howitzer)
-  // Binary FUN_0057e33a:5387-5388: non-land defenders (domain != 0) get mult reset
-  // to 2, effectively cancelling fortress/fortification/walls bonuses.
+  // Line 5349-5357: Fortress (not in city) → mult = 4
+  // Denied if attacker is air domain or has negates-walls flag
   if (hasFortress && !inCity && defDomain === 0) {
     if (attackerType == null || attackerType < 0 ||
         (atkDomain !== 1 && !UNIT_NEGATES_WALLS.has(attackerType))) {
-      defense *= 2;
+      mult = 4;
     }
   }
 
-  // City walls / Great Wall: ×3 for ground-domain defenders vs ground-domain attackers only
-  // Binary: walls multiplier only applied for ground defenders, and only vs ground attackers
-  // NOTE: Binary FUN_0057e33a:5381-5382 also excludes attackers with flags_lo & 0x40
-  // (can_carry_land). In standard RULES.TXT, no ground-domain unit has this flag,
-  // so this edge case doesn't arise. If custom RULES.TXT adds it, this needs updating.
+  // Line 5374-5384: City Walls / Great Wall → mult = 6
+  // Only for ground-domain defenders vs ground-domain attackers
   if (inCity && hasWalls && defDomain === 0) {
-    if (attackerType == null || attackerType < 0 || atkDomain === 0) {
-      defense *= 3;
+    if (attackerType == null || attackerType < 0 ||
+        (atkDomain === 0 && !UNIT_NEGATES_WALLS.has(attackerType))) {
+      mult = 6;
     }
+  }
+
+  // Line 5387-5388: Non-land defenders get mult reset to 2
+  if (defDomain !== 0) {
+    mult = 2;
+  }
+
+  // Line 5391-5393: Apply multiplier (defense = defense * mult / 2)
+  if (mult !== 2) {
+    defense = Math.floor(defense * mult / 2);
   }
 
   // Great Wall wonder: acts as City Walls for defense (passed in via hasWalls param).
