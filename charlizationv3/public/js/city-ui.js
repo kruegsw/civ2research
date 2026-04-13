@@ -182,7 +182,8 @@ function cdHandleClick(clientX, clientY) {
     closeCityDialog();
     _deps.openCityDialog(S.mpGameState.cities[next.index], next.index);
   } else if (result && result.action === 'panorama') {
-    closeCityDialog();
+    // Show panorama overlay WITHOUT closing city dialog — closing
+    // the panorama returns to the city dialog (binary behavior).
     ensureCvSprites().then(ok => {
       if (!ok) return;
       const cvCanvas = document.getElementById('cityview-canvas');
