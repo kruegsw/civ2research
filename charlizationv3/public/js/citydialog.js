@@ -3241,12 +3241,17 @@ const Civ2CityDialog = {
     ctx.fillStyle = '#000';
     ctx.fillRect(panelX, panelY, panelW, panelH);
 
-    // Draw terrain colored rects
+    // Draw terrain — only explored tiles (visibility bit set for this civ)
+    const visBit = city.owner < 8 ? (1 << city.owner) : 0;
     if (mapData.getTerrain) {
       const pw = Math.max(1, Math.ceil(scale));
       const ph = Math.max(1, Math.ceil(scale));
       for (let gy = 0; gy < mapData.mh; gy++) {
         for (let gx = gy % 2; gx < mapData.mw; gx += 2) {
+          // Only show explored tiles
+          if (visBit && mapData.getVisibility) {
+            if (!(mapData.getVisibility(gx, gy) & visBit)) continue;
+          }
           const ter = mapData.getTerrain(gx, gy);
           const col = this.TERRAIN_COLORS[ter];
           if (!col) continue;
@@ -3258,9 +3263,16 @@ const Civ2CityDialog = {
       }
     }
 
-    // City markers (palette 0x29 = yellow-ish)
+    // City markers — only own cities and cities on explored tiles
     ctx.fillStyle = '#ffff00';
     for (const c of mapData.cities) {
+      if (c.size <= 0) continue;
+      // Show own cities always; enemy cities only if tile is explored
+      if (c.owner !== city.owner) {
+        if (visBit && mapData.getVisibility) {
+          if (!(mapData.getVisibility(c.gx, c.gy) & visBit)) continue;
+        }
+      }
       const px = offX + Math.floor(c.gx * scale);
       const py = offY + Math.floor((c.gy / 2) * scale);
       ctx.fillRect(px - 1, py - 1, 3, 3);
