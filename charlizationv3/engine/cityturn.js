@@ -1716,7 +1716,7 @@ export function recalcCityAll(cityIndex, state, mapBase) {
   // 1. Happiness
   const hap = calcHappiness(city, cityIndex, state, mapBase);
   // 2. Food surplus
-  const foodSurplus = calcFoodSurplus(city, cityIndex, state, mapBase);
+  const foodSurplus = calcFoodSurplus(city, cityIndex, state, mapBase, state.units);
   // 3. Shield production
   const shields = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
   // 4. Trade/science
