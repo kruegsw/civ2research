@@ -605,6 +605,59 @@ function phaseCityProcessing(gameState, mapBase, civSlot, strategy, goals, debug
     }
   }
 
+  // ── Cross-ocean expansion: build transports to reach other continents ──
+  // Binary P5/P6: AI detects continents it hasn't reached and creates
+  // goals to build transports + load settlers for overseas expansion.
+  //
+  // Logic: if we have 2+ cities and a coastal city, and there are
+  // continents with enemy cities that we have NO presence on, create
+  // a TRANSPORT goal at our coastal city to trigger transport building.
+  {
+    const ourContinents = new Set();
+    const enemyContinents = new Set();
+    for (const [bodyId, cont] of aiData.continents) {
+      if (bodyId <= 0) continue;
+      if ((cont.cityCounts.get(civSlot) || 0) > 0) ourContinents.add(bodyId);
+      for (const [civ, count] of cont.cityCounts) {
+        if (civ !== civSlot && civ !== 0 && count > 0) enemyContinents.add(bodyId);
+      }
+    }
+    // Find continents with enemy cities but NO presence of ours
+    const unreachedContinents = [...enemyContinents].filter(b => !ourContinents.has(b));
+    const totalOurCities = gameState.cities.filter(c => c.owner === civSlot && c.size > 0).length;
+
+    if (unreachedContinents.length > 0 && totalOurCities >= 2) {
+      // Find our best coastal city to be the transport pickup point
+      let bestCoastalCity = null;
+      let bestCoastalIdx = -1;
+      for (let ci = 0; ci < gameState.cities.length; ci++) {
+        const c = gameState.cities[ci];
+        if (!c || c.owner !== civSlot || c.size <= 0) continue;
+        // Check if coastal
+        const nb = mapBase.getNeighbors(c.gx, c.gy);
+        let coastal = false;
+        for (const dir in nb) {
+          const [nx, ny] = nb[dir];
+          if (ny >= 0 && ny < mapBase.mh && mapBase.getTerrain(((nx % mw) + mw) % mw, ny) === 10) {
+            coastal = true; break;
+          }
+        }
+        if (coastal && (!bestCoastalCity || c.size > bestCoastalCity.size)) {
+          bestCoastalCity = c;
+          bestCoastalIdx = ci;
+        }
+      }
+      if (bestCoastalCity) {
+        // Create TRANSPORT goal at the coastal city — this triggers
+        // transport unit scoring boost in prodai and settler routing
+        goals.addStrategicGoal(GOAL_TRANSPORT, 80, bestCoastalCity.gx, bestCoastalCity.gy);
+        if (debugLog) {
+          debugLog.push(`P4-NAVAL: ${unreachedContinents.length} unreached continents — transport goal at ${bestCoastalCity.name}`);
+        }
+      }
+    }
+  }
+
   if (debugLog) {
     debugLog.push(`P4-CITIES: ${defenseGoals} defend, ${attackGoals} attack goals, ${wondersOwned.length} wonders owned`);
   }
