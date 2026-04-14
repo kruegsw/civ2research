@@ -102,12 +102,13 @@ export function checkTriremeSinking(unit, unitIndex, state, mapBase, hasWonderEf
   // Base denominator: COSMIC[1] (default 2)
   let denominator = 2;
 
-  // Navigation (tech 57): 2x multiplier on denominator (halves sinking chance)
+  // RULES.TXT: "1 in x chance Trireme lost (mod. by Seafaring, Navigation)"
+  // Seafaring (tech 75): 2x multiplier on denominator (halves sinking chance)
   const civTechs = state.civTechs?.[unit.owner];
-  if (civTechs && civTechs.has(57)) denominator *= 2;
+  if (civTechs && civTechs.has(75)) denominator *= 2;
 
-  // Magnetism (tech 45): 2x multiplier on denominator (halves sinking chance)
-  if (civTechs && civTechs.has(45)) denominator *= 2;
+  // Navigation (tech 57): 2x multiplier on denominator (halves sinking chance)
+  if (civTechs && civTechs.has(57)) denominator *= 2;
 
   // Open ocean: 1/denominator chance of sinking
   const roll = state.rng ? state.rng.nextInt(denominator) : Math.floor(Math.random() * denominator);
