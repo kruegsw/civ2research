@@ -2440,17 +2440,14 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
       bestUnitScore = Math.floor(bestUnitScore * (1.0 + Math.min(defNeed, 5) * 0.08));
     }
 
-    // Boost naval units when NAVAL_ASSAULT or TRANSPORT goals exist
-    // Binary: naval units get 4x when coastalFlag active (lines 984-988)
+    // Boost naval units when NAVAL_ASSAULT goals exist (domain 2 = sea)
     if (bestUnitDomain === 2 && (navalGoals > 0 || transportGoals > 0)) {
-      bestUnitScore = bestUnitScore << 1; // 2x boost
+      bestUnitScore = Math.floor(bestUnitScore * 1.15);
     }
 
-    // Boost transport specifically when transport goals exist — AI needs
-    // boats to reach other continents. Binary: transports get 2x when
-    // coastalFlag active (lines 995-997)
+    // Boost transport when transport goals exist (domain 2 = sea)
     if (bestUnitRole === 5 && bestUnitDomain === 2 && transportGoals > 0) {
-      bestUnitScore = bestUnitScore << 1; // 2x additional (4x total)
+      bestUnitScore = Math.floor(bestUnitScore * 1.2);
     }
 
     // Per-continent military balance: if we're outnumbered on this city's
