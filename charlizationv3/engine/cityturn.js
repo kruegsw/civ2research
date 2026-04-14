@@ -1511,6 +1511,14 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     }
   }
 
+  // ── Step 3c: Unit support deficit (binary FUN_004f0a9c line 316) ──
+  // Binary runs this IMMEDIATELY after production, BEFORE happiness/disorder.
+  // This matters because disbanding units changes garrison count for martial law.
+  if (!cityDestroyed) {
+    const deficitResult = processUnitSupportDeficit(state.cities[cityIndex], cityIndex, state, mapBase);
+    events.push(...deficitResult.events);
+  }
+
   // ── #73: Second yield calculation pass (post-growth, post-production) ──
   // Binary FUN_004f0a9c: runs calc_city_production TWICE per city turn —
   // once before food/production processing, once after. The second pass
@@ -1627,16 +1635,9 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     };
   }
 
-  // ── Step 4: Unit support deficit ──
-  if (!cityDestroyed) {
-    const deficitResult = processUnitSupportDeficit(state.cities[cityIndex], cityIndex, state, mapBase);
-    events.push(...deficitResult.events);
-  }
-
-  // NOTE: Building upkeep is handled at the civ level in END_TURN's
-  // trade/treasury section (reducer.js), NOT per-city here. This avoids
-  // double-counting maintenance. The payBuildingUpkeep() function is
-  // retained for potential future use but is not called by the orchestrator.
+  // NOTE: Unit support deficit (Step 3c) was moved to run immediately
+  // after production, before happiness — matching binary FUN_004f0a9c
+  // order: Food → Production → UnitSupportDeficit → Disorder → etc.
 
   // ── Step 5: Disorder check — BEFORE pollution per binary FUN_004f0a9c ──
   // Binary order: Food → Production → Support → Disorder → Trade → Upkeep → Pollution
