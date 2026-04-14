@@ -17,7 +17,7 @@ import {
   UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
   DIFFICULTY_KEYS, TERRAIN_DEFENSE,
 } from '../defs.js';
-import { GOAL_ESCORT } from './goals.js';
+import { GOAL_ESCORT, GOAL_TRANSPORT } from './goals.js';
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -1327,8 +1327,43 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
           continue;
         }
 
-        // No good site and can't join — fall through to worker mode
-        if (debugLog) debugLog.push(`CITY: Settler #${i}: no sites or join, switching to terraform`);
+        // ── Binary FUN_0053184D lines 3800-3857: No site on this continent ──
+        // Check if other continents have land. If so, create a transport
+        // goal (type 2) and put settler into "waiting for transport" mode.
+        // Conditions from C source:
+        //   local_dc != 0 (other continents with enemy presence exist)
+        //   continent landmass > 4 tiles
+        //   continent threat level == 0 (safe to leave)
+        //   settler HP is sufficient (DAT_0064bcc8 check)
+        const settlerBody = mapBase.getBodyId ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
+        const aiData = strategy?.aiData;
+        let otherContinentsExist = false;
+        if (aiData?.continents) {
+          for (const [bodyId, cont] of aiData.continents) {
+            if (bodyId <= 0 || bodyId === settlerBody) continue;
+            // Check if another continent has any civ cities (enemy or own)
+            for (const [civ, count] of cont.cityCounts) {
+              if (count > 0) { otherContinentsExist = true; break; }
+            }
+            if (otherContinentsExist) break;
+          }
+        }
+        if (otherContinentsExist && strategy?.goals) {
+          // Binary line 3813: create type 2 (transport) goal at settler location
+          strategy.goals.addTacticalGoal(GOAL_TRANSPORT, 80, unit.gx, unit.gy);
+          if (debugLog) debugLog.push(`CITY: Settler #${i}: no sites — requesting transport (other continents exist)`);
+          // Binary line 3815-3816: settler enters "waiting for transport" mode
+          // (order 0x55, stops moving). In JS: fortify in place and wait.
+          const fortAction = { type: 'UNIT_ORDER', unitIndex: i, order: 'fortify' };
+          const fortErr = validateAction(gameState, mapBase, fortAction, civSlot);
+          if (!fortErr) {
+            actions.push(fortAction);
+            continue;
+          }
+        }
+        if (debugLog && !otherContinentsExist) {
+          debugLog.push(`CITY: Settler #${i}: no sites, no other continents — switching to terraform`);
+        }
       }
 
       // ── TERRAFORM: settler acts as worker ──
@@ -1620,6 +1655,23 @@ export function decideSettlerUnit(unitIndex, gameState, mapBase, civSlot, ctx, s
       if (expandAction) return expandAction;
       const joinAction = _tryCityJoin(unit, unitIndex, gameState, mapBase, civSlot, debugLog);
       if (joinAction) return joinAction;
+      // Binary FUN_0053184D:3800-3857 — no site found, request transport
+      const settlerBody = mapBase.getBodyId ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
+      const aiData = strategy?.aiData;
+      let otherCont = false;
+      if (aiData?.continents) {
+        for (const [bid, cont] of aiData.continents) {
+          if (bid <= 0 || bid === settlerBody) continue;
+          for (const [, count] of cont.cityCounts) {
+            if (count > 0) { otherCont = true; break; }
+          }
+          if (otherCont) break;
+        }
+      }
+      if (otherCont && strategy?.goals) {
+        strategy.goals.addTacticalGoal(GOAL_TRANSPORT, 80, unit.gx, unit.gy);
+        return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+      }
     }
   }
 

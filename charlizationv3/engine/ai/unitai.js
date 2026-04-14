@@ -5302,6 +5302,24 @@ export function decideMilitaryUnit(unitIndex, gameState, mapBase, civSlot, strat
     }
   }
 
+  // Binary FUN_0053184D:3519-3605 — ground combat unit can't reach goal
+  // on another continent: create TRANSPORT goal (type 2) and fortify.
+  if (!action && domain === 0 && (UNIT_ATK[unit.type] || 0) > 0) {
+    const goals = strategy?.goals;
+    if (goals) {
+      const unitGoal = goals.getGoalForUnit(unitIndex);
+      if (unitGoal && unitGoal.targetGx >= 0) {
+        const unitBody = mapBase.getBodyId ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
+        const goalBody = mapBase.getBodyId ? mapBase.getBodyId(unitGoal.targetGx, unitGoal.targetGy) : -1;
+        if (unitBody >= 0 && goalBody >= 0 && unitBody !== goalBody) {
+          // Goal is on a different continent — request transport
+          goals.addTacticalGoal(GOAL_TRANSPORT, 60, unit.gx, unit.gy);
+          action = { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+        }
+      }
+    }
+  }
+
   if (!action) return null;
   const err = validateAction(gameState, mapBase, action, civSlot);
   return err ? null : action;

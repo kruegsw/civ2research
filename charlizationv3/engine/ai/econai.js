@@ -1126,8 +1126,12 @@ export function generateEconActions(gameState, mapBase, civSlot, strategy, debug
     }
   }
 
-  // 3. Government revolution
-  const revolAction = considerRevolution(gameState, mapBase, civSlot);
+  // 3. Government revolution — binary line 953: only every 8 turns
+  // ((turnNumber + civSlot) & 7) == 0
+  const turnNum = gameState.turn?.number || 0;
+  const revolAction = ((turnNum + civSlot) & 7) === 0
+    ? considerRevolution(gameState, mapBase, civSlot)
+    : null;
   if (revolAction) {
     actions.push(revolAction);
     if (debugLog) {

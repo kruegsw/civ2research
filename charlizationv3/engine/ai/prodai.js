@@ -2440,14 +2440,19 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
       bestUnitScore = Math.floor(bestUnitScore * (1.0 + Math.min(defNeed, 5) * 0.08));
     }
 
-    // Boost naval units when NAVAL_ASSAULT goals exist (domain 2 = sea)
+    // Binary FUN_00498e8b lines 984-997: naval scoring boost
+    // When coastalFlag (transport/assault goals) is active:
+    //   Non-transport naval: 4x when coastalFlag, 2x otherwise
+    //   Transport: 2x when coastalFlag
     if (bestUnitDomain === 2 && (navalGoals > 0 || transportGoals > 0)) {
-      bestUnitScore = Math.floor(bestUnitScore * 1.15);
+      bestUnitScore = bestUnitScore << 2; // 4x for naval with goals
+    } else if (bestUnitDomain === 2) {
+      bestUnitScore = bestUnitScore << 1; // 2x baseline for naval
     }
 
-    // Boost transport when transport goals exist (domain 2 = sea)
+    // Transport units get additional boost when transport goals exist
     if (bestUnitRole === 5 && bestUnitDomain === 2 && transportGoals > 0) {
-      bestUnitScore = Math.floor(bestUnitScore * 1.2);
+      bestUnitScore = bestUnitScore << 1; // additional 2x
     }
 
     // Per-continent military balance: if we're outnumbered on this city's
