@@ -330,11 +330,11 @@ const Civ2CityDialog = {
     lux += (lux * lgMult) >> 1;
     tax += (tax * lgMult) >> 1;
 
-    // Science multiplier: Library(6)/University(12)/Research Lab(26) or SETI(wonder 18)
+    // Science multiplier: Library(6)/University(12)/Research Lab(26) or SETI(wonder 26)
     let sciMult = 0;
     if (has(6)) sciMult++;    // Library
     if (has(12)) sciMult++;   // University
-    if (has(26) || this._civHasWonder(mapData, city.owner, 18)) sciMult++; // Research Lab or SETI
+    if (has(26) || this._civHasWonder(mapData, city.owner, 26)) sciMult++; // Research Lab or SETI(26)
 
     // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
     let sciBonus = sci * sciMult;
