@@ -481,6 +481,8 @@ function phaseCityProcessing(gameState, mapBase, civSlot, strategy, goals, debug
     }
 
     // ── Defense goals at our cities ──
+    // Binary FUN_0053184D line 777-779: create DEFEND goal (type 1)
+    // ONLY at ungarrisoned own cities, priority 5
     if (ourCities > 0) {
       for (const city of gameState.cities) {
         if (!city || city.size <= 0 || city.gx < 0) continue;
@@ -489,33 +491,29 @@ function phaseCityProcessing(gameState, mapBase, civSlot, strategy, goals, debug
         const tile = mapBase.tileData?.[idx];
         if (!tile || (tile.bodyId ?? 0) !== bodyId) continue;
 
-        // Base defense priority: scales with city size and threat
-        let priority = 40 + city.size * 3;
-
-        // Boost for cities with wonders
-        const cityWonders = gameState.wonders?.filter(w =>
-          w && w.cityIndex != null && gameState.cities[w.cityIndex] === city && !w.destroyed
-        ).length || 0;
-        if (cityWonders > 0) priority += 30;
-
-        // Boost if enemies are on this continent
-        if (enemyMil > 0) {
-          const threatRatio = enemyMil / Math.max(ourMil, 1);
-          priority += Math.floor(threatRatio * 30);
+        // Binary: only create defend goal if NO garrison at this city
+        const hasGarrison = gameState.units.some(u =>
+          u.gx === city.gx && u.gy === city.gy && u.owner === civSlot &&
+          u.gx >= 0 && (UNIT_ATK[u.type] || 0) > 0);
+        if (!hasGarrison) {
+          // Binary line 779: priority = 5
+          goals.addTacticalGoal(GOAL_DEFEND_CITY, 5, city.gx, city.gy);
+          defenseGoals++;
         }
-
-        // Boost for capital (has Palace, building 1)
-        if (cityHasBuilding(city, 1)) priority += 20;
-
-        priority = Math.min(255, priority);
-        goals.addTacticalGoal(GOAL_DEFEND_CITY, priority, city.gx, city.gy);
-        defenseGoals++;
       }
     }
 
     // ── Attack goals at enemy cities ──
+    // Binary FUN_0053184D lines 782-801:
+    //   - Visibility gate: late game (diff*turn>200), our vis bit, or AI owner
+    //   - Hostility check: at war OR hostile treaty (0x20 set, 0x08 not set)
+    //   - Stagger: (turnNum + cityIndex) % 3 != 0
+    //   - Priority: 2 (no walls) or 4 (has walls) — binary line 793
+    //   - Ungarrisoned enemy city: also create DEFEND(1,2) and ATTACK(0,3)
+    const turnNum = gameState.turn?.number || 0;
     if (enemyCities > 0 && (ourMil > 0 || ourCities > 0)) {
-      for (const city of gameState.cities) {
+      for (let ci = 0; ci < gameState.cities.length; ci++) {
+        const city = gameState.cities[ci];
         if (!city || city.size <= 0 || city.gx < 0) continue;
         if (city.owner === civSlot || city.owner === 0) continue;
         if (!isAtWar(gameState, civSlot, city.owner)) continue;
@@ -524,25 +522,22 @@ function phaseCityProcessing(gameState, mapBase, civSlot, strategy, goals, debug
         const tile = mapBase.tileData?.[idx];
         if (!tile || (tile.bodyId ?? 0) !== bodyId) continue;
 
-        // Base attack priority
-        const advRatio = ourMil / Math.max(enemyMil, 1);
-        let priority = Math.floor(50 + advRatio * 25 + city.size * 4);
+        // Binary line 791: stagger — only every 3rd turn per city
+        if ((turnNum + ci) % 3 === 0) continue;
 
-        // Bonus for cities WITHOUT City Walls (building 8) — easier to take
-        if (!cityHasBuilding(city, 8)) {
-          priority += 25;
-        }
-
-        // Bonus for cities without defenders (very attractive target)
-        const defendersHere = gameState.units.filter(u =>
-          u.gx === city.gx && u.gy === city.gy && u.owner === city.owner &&
-          u.gx >= 0 && (UNIT_DEF[u.type] || 0) > 0
-        ).length;
-        if (defendersHere === 0) priority += 30;
-
-        priority = Math.min(255, priority);
+        // Binary line 792-793: priority = 2 (no walls) or 4 (has walls)
+        const hasWalls = cityHasBuilding(city, 8);
+        const priority = hasWalls ? 4 : 2;
         goals.addTacticalGoal(GOAL_ATTACK_CITY, priority, city.gx, city.gy);
         attackGoals++;
+
+        // Binary lines 795-800: ungarrisoned enemy city — extra goals
+        const hasEnemyGarrison = gameState.units.some(u =>
+          u.gx === city.gx && u.gy === city.gy && u.owner === city.owner && u.gx >= 0);
+        if (!hasEnemyGarrison) {
+          goals.addTacticalGoal(GOAL_DEFEND_CITY, 2, city.gx, city.gy);
+          goals.addTacticalGoal(GOAL_ATTACK_CITY, 3, city.gx, city.gy);
+        }
       }
     }
 
