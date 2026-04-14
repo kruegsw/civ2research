@@ -267,6 +267,7 @@ const Civ2CityDialog = {
     if (city.buildings) {
       for (const id of [...city.buildings].sort((a, b) => a - b)) {
         if (id === 36) continue;  // Capitalization is a production option, not a building
+        if (id >= 39) continue;   // Wonders (39-66) handled below via state.wonders
         const name = IMPROVE_NAMES[id] || `#${id}`;
         result.push({ id, name, isWonder: false });
       }

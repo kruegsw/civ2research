@@ -538,8 +538,8 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     // ═══ PRODUCTION COMPLETE ═══
     completedItem = { ...item };
 
-    // Binary FUN_004ec3fe line 4984: subtract cost, preserve ALL overflow
-    newShields = newShields - cost;
+    // No shield overflow into next production — shields reset to 0 on completion
+    newShields = 0;
 
     if (item.type === 'unit') {
       // ── Create unit ──
