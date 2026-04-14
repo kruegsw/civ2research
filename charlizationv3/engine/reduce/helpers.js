@@ -173,11 +173,27 @@ export function radiusTileCoords(cityGx, cityGy, i, mapBase) {
  */
 export function autoAssignWorker(city, cityIndex, workedTiles, gameState, mapBase) {
   const worked = new Set(workedTiles);
+
+  // Build set of tiles already worked by OTHER cities (binary: tile ownership
+  // prevents two cities from working the same tile)
+  const otherWorked = new Set();
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    if (ci === cityIndex) continue;
+    const oc = gameState.cities[ci];
+    if (!oc || oc.size <= 0 || !oc.workedTiles) continue;
+    for (const oi of oc.workedTiles) {
+      const opos = radiusTileCoords(oc.gx, oc.gy, oi, mapBase);
+      if (opos) otherWorked.add(`${opos.gx},${opos.gy}`);
+    }
+  }
+
   let bestIdx = -1, bestScore = -1;
   for (let i = 0; i < 20; i++) {
     if (worked.has(i)) continue;
     const pos = radiusTileCoords(city.gx, city.gy, i, mapBase);
     if (!pos) continue;
+    // Skip tiles already worked by another city
+    if (otherWorked.has(`${pos.gx},${pos.gy}`)) continue;
     const ter = mapBase.getTerrain(pos.gx, pos.gy);
     if (ter < 0 || ter > 10) continue;
     const score = scoreTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
@@ -241,11 +257,24 @@ export function getCityName(owner, cities, civs) {
  * @returns {number[]} workedTiles indices (0-19)
  */
 export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, mapBase) {
-  // Gather all valid tiles with yields
+  // Build set of tiles already worked by OTHER cities
+  const otherWorked = new Set();
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    if (ci === cityIndex) continue;
+    const oc = gameState.cities[ci];
+    if (!oc || oc.size <= 0 || !oc.workedTiles) continue;
+    for (const oi of oc.workedTiles) {
+      const opos = radiusTileCoords(oc.gx, oc.gy, oi, mapBase);
+      if (opos) otherWorked.add(`${opos.gx},${opos.gy}`);
+    }
+  }
+
+  // Gather all valid tiles with yields (excluding tiles worked by other cities)
   const tileInfo = [];
   for (let i = 0; i < 20; i++) {
     const pos = radiusTileCoords(gx, gy, i, mapBase);
     if (!pos) continue;
+    if (otherWorked.has(`${pos.gx},${pos.gy}`)) continue; // already worked by another city
     const ter = mapBase.getTerrain(pos.gx, pos.gy);
     if (ter < 0 || ter > 10) continue;
     const [food, shields, trade] = getTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
