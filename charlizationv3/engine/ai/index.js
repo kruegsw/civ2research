@@ -975,8 +975,17 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
     }
 
     // Find the best matching goal for this unit
+    // Binary FUN_0053184D lines 1109-1192: MINIMIZE score formula:
+    //   score = (precomputedBase / divisor) * distance / (goalPriority + 1)
+    // where precomputedBase = clamp(totalOurUnits >> 3, 3, 99), doubled for attack
+    // and divisor = 2 for attack goals, 1 otherwise.
+    // Constraint: score / unitStrength < goalPriority * 4
+    const totalOurUnits = gameState.units.filter(uu => uu.owner === civSlot && uu.gx >= 0).length;
+    const precomputedBase = Math.max(3, Math.min(99, totalOurUnits >> 3));
+    const unitStrength = Math.max(1, atk + def);
+
     let bestEntry = null;
-    let bestScore = -Infinity;
+    let bestScore = Infinity; // MINIMIZE (binary uses lower = better)
 
     for (const entry of allGoals) {
       const g = entry.goal;
@@ -984,51 +993,24 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
       // Type matching: which unit roles fit which goal types
       if (!_goalMatchesUnit(g.goalType, role, domain, atk, def)) continue;
 
-      // Skip abstract goals with no coordinates (e.g. EXPLORE with bodyId encoding)
+      // Skip abstract goals with no coordinates
       if (g.targetGx < 0 && g.targetGy < 0) continue;
 
-      // Compute distance
+      // Binary line 1136: raw isometric distance
       const dist = tileDist(u.gx, u.gy, g.targetGx, g.targetGy, mapBase);
 
-      // (#92) Per-goal-type scoring with distance/priority weighting
-      // Binary uses different scoring formulas depending on goal type,
-      // rather than a uniform priority / (distance + 1).
-      let score;
-      switch (g.goalType) {
-        case GOAL_ATTACK_CITY:
-          // Attackers heavily penalized by distance, boosted by priority
-          score = (g.priority * 1.5) / (dist + 2);
-          // Bonus if unit has high ATK relative to DEF (offensive unit)
-          if (atk > def * 1.5) score *= 1.3;
-          break;
-        case GOAL_DEFEND_CITY:
-          // Defenders moderately penalized by distance, stable priority weight
-          score = g.priority / (dist + 1);
-          // Bonus for units with high DEF (pure defenders)
-          if (def > atk) score *= 1.2;
-          break;
-        case GOAL_REINFORCE:
-          // Reinforcement: moderate urgency, distance matters less
-          score = (g.priority * 0.8) / (dist * 0.5 + 1);
-          break;
-        case GOAL_NAVAL_ASSAULT:
-          // Naval: high distance tolerance (sea travel is fast)
-          score = g.priority / (dist * 0.3 + 1);
-          break;
-        case GOAL_TRANSPORT:
-          // Transport pickup: distance is critical (need to get there fast)
-          score = g.priority / (dist + 3);
-          break;
-        case GOAL_EXPLORE:
-          // Exploration: low priority weight, distance barely matters
-          score = (g.priority * 0.5) / (dist * 0.2 + 1);
-          break;
-        default:
-          score = g.priority / (dist + 1);
-          break;
-      }
+      // Binary lines 1162-1166: score formula
+      // Attack goals (type 0): precomputed is already 2x, then /2 = base
+      // Other goals: precomputed / 1 = base
+      const isAttack = (g.goalType === GOAL_ATTACK_CITY);
+      const base = isAttack ? precomputedBase : (precomputedBase >> 1) || 1;
+      let score = (base * Math.max(1, dist)) / (g.priority + 1);
 
-      if (score > bestScore) {
+      // Binary line 1189: constraint check — reject if score is too high
+      // relative to goal priority and unit strength
+      if (score / unitStrength >= g.priority * 4) continue;
+
+      if (score < bestScore) {
         bestScore = score;
         bestEntry = entry;
       }
@@ -1036,12 +1018,27 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
 
     if (!bestEntry) continue;
 
-    // Fortified unit threshold: only reassign if new goal priority > current * 1.5
-    if (u.orders === 'fortified' || u.orders === 'fortify') {
+    // Binary lines 1168-1176: fortified/sentry units only reassign if
+    // goal priority > 1 AND (score <= priority*unitStrength OR unit not in city)
+    if (u.orders === 'fortified' || u.orders === 'fortify' || u.orders === 'sentry') {
+      const bg = bestEntry.goal;
+      if (bg.priority <= 1) {
+        skippedFortified++;
+        continue;
+      }
+      const inCity = gameState.cities.some(c =>
+        c.gx === u.gx && c.gy === u.gy && c.owner === civSlot && c.size > 0);
+      if (inCity && bestScore > bg.priority * unitStrength) {
+        skippedFortified++;
+        continue;
+      }
+      // If not in city or score is good — proceed to reassign
       if (currentGoal) {
+        // Already has a goal — only switch if new one is better (lower score)
         const currentDist = tileDist(u.gx, u.gy, currentGoal.targetGx, currentGoal.targetGy, mapBase);
-        const currentScore = currentGoal.priority / (currentDist + 1);
-        if (bestScore <= currentScore * 1.5) {
+        const currentBase = (currentGoal.goalType === GOAL_ATTACK_CITY) ? precomputedBase : ((precomputedBase >> 1) || 1);
+        const currentScore = (currentBase * Math.max(1, currentDist)) / (currentGoal.priority + 1);
+        if (bestScore >= currentScore) {
           skippedFortified++;
           continue;
         }
