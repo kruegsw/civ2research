@@ -995,11 +995,13 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
       const dist = tileDist(u.gx, u.gy, g.targetGx, g.targetGy, mapBase);
 
       // Binary lines 1162-1166: score formula
-      // Attack goals (type 0): precomputed is already 2x, then /2 = base
-      // Other goals: precomputed / 1 = base
-      const isAttack = (g.goalType === GOAL_ATTACK_CITY);
-      const base = isAttack ? precomputedBase : (precomputedBase >> 1) || 1;
-      let score = (base * Math.max(1, dist)) / (g.priority + 1);
+      // aiStack_33c[goal] = base for non-attack, base << 1 for attack
+      // Then: score = (aiStack_33c / divisor) * distance / (priority + 1)
+      // where divisor = 2 for attack (type 0), 1 otherwise.
+      // Net: attack = (base*2 / 2) * dist / (pri+1) = base * dist / (pri+1)
+      //      other  = (base / 1) * dist / (pri+1) = base * dist / (pri+1)
+      // So the formula is the SAME for both — the doubling and halving cancel!
+      let score = (precomputedBase * Math.max(1, dist)) / (g.priority + 1);
 
       // Binary line 1189: constraint check — reject if score is too high
       // relative to goal priority and unit strength
@@ -1031,8 +1033,7 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
       if (currentGoal) {
         // Already has a goal — only switch if new one is better (lower score)
         const currentDist = tileDist(u.gx, u.gy, currentGoal.targetGx, currentGoal.targetGy, mapBase);
-        const currentBase = (currentGoal.goalType === GOAL_ATTACK_CITY) ? precomputedBase : ((precomputedBase >> 1) || 1);
-        const currentScore = (currentBase * Math.max(1, currentDist)) / (currentGoal.priority + 1);
+        const currentScore = (precomputedBase * Math.max(1, currentDist)) / (currentGoal.priority + 1);
         if (bestScore >= currentScore) {
           skippedFortified++;
           continue;
