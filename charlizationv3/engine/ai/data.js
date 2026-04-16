@@ -103,6 +103,25 @@ export function computeAiData(gameState, mapBase, civSlot) {
     cont.attackStrength.set(u.owner, (cont.attackStrength.get(u.owner) || 0) + atk);
   }
 
+  // ── (a1.5) Landmass tile counts — binary DAT_00666132 ─────────
+  // Binary FUN_0040897f:1377-1448 iterates all map tiles, counts land
+  // tiles per continent. Used in P5 threat capacity check.
+  if (mapBase.tileData) {
+    for (let y = 0; y < mapBase.mh; y++) {
+      for (let x = 0; x < mw; x++) {
+        const tile = mapBase.tileData[y * mw + x];
+        if (!tile) continue;
+        const bodyId = tile.bodyId ?? 0;
+        if (bodyId <= 0) continue;
+        // Only count land tiles (binary: FUN_005b89e4 == 0 → not ocean)
+        const terrain = tile.terrain ?? 10;
+        if (terrain === 10) continue; // skip ocean
+        const cont = getContinent(bodyId);
+        cont.tileCount = (cont.tileCount || 0) + 1;
+      }
+    }
+  }
+
   // ── (a2) L.1 Continent flags ──────────────────────────────────
   // continentFlags[civ][bodyId] — bitfield per continent:
   //   0x01 = enemy cities present

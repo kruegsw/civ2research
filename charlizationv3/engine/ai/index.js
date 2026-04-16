@@ -36,6 +36,7 @@ import {
 import {
   UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
   UNIT_OBSOLETE, UNIT_PREREQS, UNIT_COSTS,
+  UNIT_FUEL, UNIT_MOVE_POINTS,
   SETTLER_TYPES,
 } from '../defs.js';
 import { hasWonderEffect } from './data.js';
@@ -702,14 +703,20 @@ function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, g
       level = Math.min(THREAT_HOSTILE, level + 1);
     }
 
-    // Landmass capacity: if we dominate this continent, reduce threat
-    let totalCitiesOnCont = 0;
-    for (const [, count] of cont.cityCounts) {
-      totalCitiesOnCont += count;
-    }
-    if (totalCitiesOnCont > 0 && ourCities > 0) {
-      const dominanceRatio = ourCities / totalCitiesOnCont;
-      if (dominanceRatio > 0.7 && level >= THREAT_FRONTIER) {
+    // Binary FUN_0053184D:908-912 — DAT_00666132 landmass capacity check
+    // Binary counts total land tiles per continent (DAT_00666132).
+    // If tileCount >= (ourCities + settlers) * multiplier + 2, continent
+    // has room → reduce threat (binary: status 5 = safe).
+    // If tileCount < threshold, continent is at capacity → don't reduce.
+    const tileCount = cont.tileCount || 0;
+    if (tileCount > 0 && ourCities > 0) {
+      const ourSettlers = cont.settlerCount.get(civSlot) || 0;
+      // Binary: local_368 = personality_base + govt_modifier + 1
+      // Personality base ranges ~3-8 in binary; we use 5 as midpoint
+      const capacityMult = 5 + govtMod + 1;
+      if (tileCount >= (ourCities + ourSettlers) * capacityMult + 2 &&
+          level >= THREAT_FRONTIER) {
+        // Continent has room — our presence is small relative to land mass
         level = Math.max(THREAT_EXPANSION, level - 1);
       }
     }
@@ -955,8 +962,13 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
     const role = UNIT_ROLE[u.type] ?? 0;
     const domain = UNIT_DOMAIN[u.type] ?? 0;
 
-    // Skip air units from goal matching (they have their own AI)
-    if (domain === 1) continue;
+    // Binary FUN_0053184D:1141-1161 — air units participate in goal matching
+    // with fuel-based handling:
+    //   fuel==1 (fighters): range-limited, score = raw distance
+    //   fuel==2 (bombers):  staggered per turn, adjusted score
+    //   fuel==0 (heli):     no range limit, normal scoring
+    const airFuel = (domain === 1) ? (UNIT_FUEL[u.type] || 0) : 0;
+    const airMovePts = (domain === 1) ? (UNIT_MOVE_POINTS[u.type] || 0) : 0;
 
     // Check if unit already has a goal assignment
     const currentGoal = goals.getGoalForUnit(i);
@@ -994,14 +1006,40 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
       // Binary line 1136: raw isometric distance
       const dist = tileDist(u.gx, u.gy, g.targetGx, g.targetGy, mapBase);
 
-      // Binary lines 1162-1166: score formula
-      // aiStack_33c[goal] = base for non-attack, base << 1 for attack
-      // Then: score = (aiStack_33c / divisor) * distance / (priority + 1)
-      // where divisor = 2 for attack (type 0), 1 otherwise.
-      // Net: attack = (base*2 / 2) * dist / (pri+1) = base * dist / (pri+1)
-      //      other  = (base / 1) * dist / (pri+1) = base * dist / (pri+1)
-      // So the formula is the SAME for both — the doubling and halving cancel!
-      let score = (precomputedBase * Math.max(1, dist)) / (g.priority + 1);
+      let score;
+
+      if (domain === 1) {
+        // Binary FUN_0053184D:1141-1161 — air unit scoring
+        if (airFuel === 1) {
+          // Fighter-type (fuel=1): range-limited, use raw distance as score
+          // Binary: if (dist <= (movePoints / scale - 2) >> 1) → accept
+          // scale (DAT_0064bcc8) = 1 in standard game
+          const airRange = (airMovePts - 2) >> 1;
+          if (dist > airRange) continue; // out of range
+          score = dist; // fighters use raw distance (closer = better)
+        } else if (airFuel === 2) {
+          // Bomber-type (fuel=2): staggered matching
+          // Binary: only process when (priority & 1) AND (turnNum/2 + goalIdx) is odd
+          const turnNum = gameState.turnNum || 0;
+          if ((g.priority & 1) === 0) continue;
+          if (((turnNum >> 1) + (entry.index || 0) & 1) === 0) continue;
+          // Adjusted score formula from binary line 1152-1158
+          const rangeAdj = (airMovePts - 2) >> 1;
+          score = (((rangeAdj - 1 & 0xFFFFFFFE) + 4) * dist) / (g.priority + 1);
+        } else {
+          // Helicopter/no fuel: normal scoring, no range limit
+          score = (precomputedBase * Math.max(1, dist)) / (g.priority + 1);
+        }
+      } else {
+        // Binary lines 1162-1166: standard score formula for land/sea units
+        // aiStack_33c[goal] = base for non-attack, base << 1 for attack
+        // Then: score = (aiStack_33c / divisor) * distance / (priority + 1)
+        // where divisor = 2 for attack (type 0), 1 otherwise.
+        // Net: attack = (base*2 / 2) * dist / (pri+1) = base * dist / (pri+1)
+        //      other  = (base / 1) * dist / (pri+1) = base * dist / (pri+1)
+        // So the formula is the SAME for both — the doubling and halving cancel!
+        score = (precomputedBase * Math.max(1, dist)) / (g.priority + 1);
+      }
 
       // Binary line 1189: constraint check — reject if score is too high
       // relative to goal priority and unit strength
@@ -1063,12 +1101,13 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
 function _goalMatchesUnit(goalType, role, domain, atk, def) {
   switch (goalType) {
     case GOAL_ATTACK_CITY:
-      // Attack goals: attackers (role 0), or defenders with attack capability
-      return domain === 0 && atk > 0;
+      // Attack goals: land attackers, or air units with attack (bombers)
+      // Binary: air units match attack goals through P7 range/stagger logic
+      return (domain === 0 && atk > 0) || (domain === 1 && atk > 0);
 
     case GOAL_DEFEND_CITY:
-      // Defend goals: defenders (role 1), or any land unit with defense
-      return domain === 0 && def > 0;
+      // Defend goals: land defenders, or air units (fighters intercept)
+      return (domain === 0 && def > 0) || (domain === 1 && atk > 0);
 
     case GOAL_REINFORCE:
       // Reinforce: any land combat unit
