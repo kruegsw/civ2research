@@ -102,7 +102,10 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
 
   // Difficulty and human detection for food box scaling
   const difficulty = state.difficulty || 'chieftain';
-  const humanPlayers = state.humanPlayers || 0xFF;
+  // humanPlayers=0 is a valid all-AI game state; `||` would falsely flip
+  // it to 0xFF (all human) and change growth-threshold branch. Use `??`
+  // so we only fall through on null/undefined.
+  const humanPlayers = state.humanPlayers ?? 0xFF;
   const isHuman = !!((1 << activeCiv) & humanPlayers);
 
   const growthThreshold = calcFoodBoxWithDifficulty(city.size, difficulty, isHuman);
@@ -309,7 +312,7 @@ export function assignCaravanCommodity(city, cityIndex, state, mapBase) {
   // #70: For human players, return top 3 commodities for player choice
   // (AI auto-selects best). The caller should check the returned event
   // and let the player pick from the 3 options.
-  const humanPlayers = state.humanPlayers || 0xFF;
+  const humanPlayers = state.humanPlayers ?? 0xFF;
   const isHuman = !!((1 << city.owner) & humanPlayers);
 
   // Get the city's 3 available commodities (for player choice or AI selection)
@@ -389,7 +392,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
   //   - Wonder already built by any civ
   // If invalid: notify human player, force switch to Warriors.
   // AI cities auto-switch silently.
-  const humanPlayers = state.humanPlayers || 0xFF;
+  const humanPlayers = state.humanPlayers ?? 0xFF;
   const isHumanCity = !!((1 << activeCiv) & humanPlayers);
   if (city.itemInProduction) {
     const prod = city.itemInProduction;
@@ -569,17 +572,27 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
       }
 
       const unitMP = (UNIT_MOVE_POINTS[item.id] || 1) * MOVEMENT_MULTIPLIER;
+      // Observed live 2026-04-18 on fresh units produced by cities:
+      //   +0x08 moves (= moveSpent) = full maxMoves (unit can't move this turn)
+      //   +0x09 visMask (= hpLost in parser names) = 0 (not 0xFF)
+      //   +0x0F orders = 2 (fortified) for ground military, else 0xFF (none)
+      // Ground military units are unit types 2..15 in RULES order. Settlers
+      // (0), Engineers (1), naval, and air units don't auto-fortify.
+      const isGroundMilitary = item.id >= 2 && item.id <= 15;
       const newUnit = {
         type: item.id,
         owner: activeCiv,
         gx: city.gx, gy: city.gy,
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
         veteran: veteranStatus ? 1 : 0,
-        movesRemain: 0,
-        orders: 'none', movesMade: 0, movesLeft: unitMP,
+        movesRemain: 0,            // memory +0x0A damage_taken = 0 (full HP)
+        moveSpent: unitMP,         // memory +0x08 = all moves used this turn
+        orders: isGroundMilitary ? 'fortified' : 'none',
+        order: isGroundMilitary ? 2 : 0xFF,  // raw memory +0x0F byte
+        movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
         goToX: -1, goToY: -1,
-        hpLost: 0xFF,
+        hpLost: 0,                 // memory +0x09 visMask = 0 (unseen)
         commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,
       };
@@ -1011,7 +1024,7 @@ export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
 
   // A.8: AI auto-disband — every 8 turns, AI in Republic/Democracy with disorder
   // disbands excess units to restore order
-  const humanPlayers = state.humanPlayers || 0xFF;
+  const humanPlayers = state.humanPlayers ?? 0xFF;
   const isAI = !((1 << activeCiv) & humanPlayers);
   const govt = getGovernment(city, state);
   if (isAI && city.civilDisorder &&
@@ -1586,7 +1599,7 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   // Binary: when an AI city reaches size 2 for the first time, create a
   // free settler unit. This helps AI expand early game.
   if (!cityDestroyed) {
-    const humanPlayers = state.humanPlayers || 0xFF;
+    const humanPlayers = state.humanPlayers ?? 0xFF;
     const isAI = !((1 << activeCiv) & humanPlayers);
     if (isAI && newSize === 2 && city.size < 2) {
       // City just grew to size 2 — create a free settler

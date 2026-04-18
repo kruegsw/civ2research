@@ -321,7 +321,7 @@ export function calcUnitShieldSupport(city, cityIndex, units, gameState) {
   let shieldCost = 0;
 
   // A.2: AI uses difficulty-scaled free support; human uses cosmic constants
-  const humanPlayers = gameState?.humanPlayers || 0xFF;
+  const humanPlayers = gameState?.humanPlayers ?? 0xFF;
   const isAI = !((1 << city.owner) & humanPlayers);
   let freeSupport;
   if (government === 'anarchy' || government === 'despotism') {
@@ -553,7 +553,7 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
 
   // A.5: AI Fundamentalism gold→science conversion
   // Binary: applied BEFORE specialist bonuses and building multipliers
-  const humanPlayers = gameState.humanPlayers || 0xFF;
+  const humanPlayers = gameState.humanPlayers ?? 0xFF;
   const isAI = !((1 << city.owner) & humanPlayers);
   if (isAI && govt === 'fundamentalism') {
     sci += tax;

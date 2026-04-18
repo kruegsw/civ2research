@@ -16,10 +16,19 @@ import { G } from './globals.js';
 import { v, wv, w16, w32, s16, s32, u8, u16, ptrAdd, _MEM } from './mem.js';
 import { loopReset } from './mem.js';
 import { loadRules, initBinaryConstants } from './rules-loader.js';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
 initBinaryConstants();
-loadRules(readFileSync('/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT', 'utf8'));
+// Multi-path fallback — same as server.js / dump-server-state.js
+const RULES_CANDIDATES = [
+  process.env.CIV2_RULES,
+  '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT',
+  'civ2gamefolder/RULES.TXT',
+  'C:/Users/stuar/OneDrive/Documents/Games/Civilization II Multiplayer Gold Edition/RULES.TXT',
+].filter(Boolean);
+const RULES_PATH = RULES_CANDIDATES.find(p => existsSync(p));
+if (!RULES_PATH) throw new Error(`RULES.TXT not found at: ${RULES_CANDIDATES.join(', ')}`);
+loadRules(readFileSync(RULES_PATH, 'utf8'));
 
 // ── Headless turn runner (skips UI-only citywin functions that hang) ──
 const { FUN_00488cef, FUN_00489292 } = await import('./blocks/block_00480000.js');

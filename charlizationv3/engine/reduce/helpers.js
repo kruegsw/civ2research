@@ -307,8 +307,12 @@ export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, m
 
     for (const t of tileInfo) {
       if (assigned.has(t.i)) continue;
-      // Binary scoring: primary = food, tiebreaker = trade×2 + shields
-      const tiebreak = t.trade * 2 + t.shields;
+      // Tiebreaker prefers shields over trade — matches live Civ2
+      // behavior observed 2026-04-18 when a Deity Aztec city chose a
+      // Forest tile (1F 2S 0T) over an Ocean tile (1F 0S 2T) at the
+      // same food yield. The earlier "trade×2 + shields" formula had
+      // trade weighted higher and picked Ocean, diverging from Civ2.
+      const tiebreak = t.shields * 2 + t.trade;
       if (t.food > bestFood || (t.food === bestFood && tiebreak > bestTiebreak)) {
         bestIdx = t.i;
         bestFood = t.food;

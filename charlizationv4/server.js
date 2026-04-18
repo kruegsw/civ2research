@@ -61,12 +61,25 @@ import { v4EndTurn, initV4 } from './v4-bridge.js';
 
 const PORT = Number(process.env.PORT || 8788);
 
-// Initialize v4 engine at startup
+// __dirname needs to be defined BEFORE the v4 init since initV4 uses it.
+const __filename_early = fileURLToPath(import.meta.url);
+const __dirname_early = path.dirname(__filename_early);
+
+// Initialize v4 engine at startup — try multiple known RULES.TXT locations
+// so this works cross-platform (Linux dev, Windows user, other installs).
 try {
-  const rulesPath = '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT';
-  if (fs.existsSync(rulesPath)) {
+  const candidatePaths = [
+    process.env.CIV2_RULES,
+    '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT',
+    path.join(__dirname_early, '..', 'civ2gamefolder', 'RULES.TXT'),
+    'C:/Users/stuar/OneDrive/Documents/Games/Civilization II Multiplayer Gold Edition/RULES.TXT',
+  ].filter(Boolean);
+  const rulesPath = candidatePaths.find(p => fs.existsSync(p));
+  if (rulesPath) {
     initV4(fs.readFileSync(rulesPath, 'utf8'));
-    console.log('[v4] Binary engine initialized');
+    console.log(`[v4] Binary engine initialized from ${rulesPath}`);
+  } else {
+    console.warn(`[v4] RULES.TXT not found at any known path — v4EndTurn will no-op. Tried:\n  ${candidatePaths.join('\n  ')}`);
   }
 } catch (e) {
   console.error('[v4] Init failed:', e.message);

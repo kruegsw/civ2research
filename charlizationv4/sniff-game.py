@@ -92,8 +92,13 @@ def ri8(h, a):
 
 ADDR = {
     'turn':         0x00655af8,  # i16
-    'difficulty':   0x00655b04,  # u8 (0=Chieftain..5=Deity)
-    'activeCiv':    0x00655b05,  # u8
+    # difficulty was at 0x00655b04 — that byte is observed always 0.
+    # Real difficulty lives at 0x00655b08 (verified in sav-from-mem.js).
+    'difficulty':   0x00655b08,  # u8 (0=Chieftain..5=Deity)
+    # activeCiv was at 0x00655b05 — that byte is a different field (AI
+    # rotating counter). The human player's slot ("activeHumanPlayer" in
+    # parser terms) lives at 0x00655b03.
+    'activeCiv':    0x00655b03,  # u8 (human player's civ slot)
     'activeUnit':   0x00655afe,  # i16 — which unit AI is processing
     'humanPlayers': 0x00655b0b,  # u8 bitmask
     'totalUnits':   0x00655b16,  # i16
@@ -101,9 +106,16 @@ ADDR = {
     'mapWidth':     0x006d1160,  # i16
     'mapHeight':    0x006d1162,  # i16
     'mapSeed':      0x006d1168,  # i32
-    'pollution':    0x00655b04,  # u8
-    'globalWarming':0x00655b03,  # u8
-    'yearIncrement':0x00655afa,  # i16
+    # pollution was also claimed at 0x00655b04 (conflict with old
+    # difficulty label). Real pollution counter is at 0x00655b0e.
+    'pollution':    0x00655b0e,  # u8
+    # globalWarming was at 0x00655b03 — that's activeHumanPlayer. The
+    # warming counter lives at 0x00655b0f.
+    'globalWarming':0x00655b0f,  # u8
+    # currentYear is signed i16 — negative for BC. Earlier label
+    # "yearIncrement" was misleading; decompiled block_00480000.c:1817
+    # sets this from the turn, so it's the year itself.
+    'currentYear':  0x00655afa,  # i16
 }
 
 UNIT_TYPE_BASE = 0x0064B1B8;  UNIT_TYPE_STRIDE = 0x14  # unit type stats table
@@ -122,6 +134,11 @@ SNAPSHOT_REGIONS = [
     ('wonders',  WONDER_BASE, 56),                  # wonders (28 × 2)
     ('cosmic',   0x0064bcc8, 22),                   # cosmic parameters
     ('map_dims', 0x006d1160, 32),                   # map dimensions + seed
+    # Year-schedule table used by FUN_00484fec (calc_year_from_turn).
+    # 6 difficulties × 6 tiers × 3 int32 (year_start, duration, step)
+    # = 6 * 6 * 12 = 432 bytes. Plus trailing DAT_0062c4cc-0x4d8 entries
+    # used for post-tier extrapolation. Grab 0x1C0 (448) to be safe.
+    ('year_table', 0x0062c490, 0x1C0),
 ]
 
 UNIT_NAMES = [
@@ -209,7 +226,7 @@ WONDER_NAMES = [
 def read_globals(h):
     g = {}
     for k, a in ADDR.items():
-        if k in ('turn','totalUnits','totalCities','mapWidth','mapHeight','yearIncrement','activeUnit'):
+        if k in ('turn','totalUnits','totalCities','mapWidth','mapHeight','currentYear','activeUnit'):
             g[k] = ri16(h, a)
         elif k == 'mapSeed':
             g[k] = ri32(h, a)
@@ -222,7 +239,7 @@ UNIT_BYTE_MAP = {
     0x00:'x_lo', 0x01:'x_hi', 0x02:'y_lo', 0x03:'y_hi',
     0x04:'status_lo', 0x05:'status_hi', 0x06:'type', 0x07:'owner',
     0x08:'moves', 0x09:'visMask', 0x0A:'damage', 0x0B:'carrying',
-    0x0C:'aiRole', 0x0D:'home', 0x0E:'fuel', 0x0F:'order',
+    0x0C:'aiRole', 0x0D:'workTurns_or_cargo', 0x0E:'fuel', 0x0F:'order',
     0x10:'gotoTurn', 0x11:'_pad11', 0x12:'gotoX_lo', 0x13:'gotoX_hi',
     0x14:'gotoY_lo', 0x15:'gotoY_hi', 0x16:'prevStack_lo', 0x17:'prevStack_hi',
     0x18:'nextStack_lo', 0x19:'nextStack_hi',
@@ -245,7 +262,10 @@ def read_unit(h, idx):
     hp = d[0x0A]
     carrying = struct.unpack_from('<b', d, 0x0B)[0]
     ai_role = d[0x0C]
-    home = struct.unpack_from('<b', d, 0x0D)[0]
+    # +0x0D is multi-purpose per parser: workTurns for Settlers/Engineers,
+    # commodity for Caravans/Freight, fuel for Air units, cargo for transports.
+    # Earlier mislabeled as "home" — that's at +0x10 (u16 with 0xFFFF sentinel).
+    multipurpose_0D = struct.unpack_from('<b', d, 0x0D)[0]
     fuel = d[0x0E]
     order = d[0x0F]
     goto_turn = d[0x10]
@@ -256,8 +276,14 @@ def read_unit(h, idx):
     name = UNIT_NAMES[utype] if utype < len(UNIT_NAMES) else f'T{utype}'
     return dict(idx=idx, raw=d, x=x, y=y, type=utype, name=name, owner=owner,
                 moves=moves, order=order, orderName=ORDER_NAMES.get(order, f'o{order}'),
-                home=home, alive=uid!=0, id=uid, gotoX=goto_x, gotoY=goto_y,
-                veteran=(status>>6)&1, status=status, visMask=vis_mask,
+                # multi-purpose byte — label depends on unit type
+                workTurnsOrCargo=multipurpose_0D,
+                alive=uid!=0, id=uid, gotoX=goto_x, gotoY=goto_y,
+                # veteran is bit 13 of status u16 (bit 0x20 of high byte, = bit 0x2000 raw);
+                # earlier version read bit 6 which is actually firstMoved.
+                veteran=(status>>13)&1,
+                firstMoved=(status>>6)&1,
+                status=status, visMask=vis_mask,
                 hp=hp, aiRole=ai_role, aiRoleName=AI_ROLES.get(ai_role, f'r{ai_role:02X}'),
                 carrying=carrying, fuel=fuel, gotoTurn=goto_turn,
                 prevStack=prev_stack, nextStack=next_stack)
@@ -267,13 +293,17 @@ CITY_BYTE_MAP = {}
 for _o, _n in [(0x00,'x'),(0x02,'y'),(0x04,'flags'),(0x08,'owner'),(0x09,'size'),
     (0x0A,'origOwner'),(0x0B,'turnFounded'),(0x0C,'civVis'),
     (0x16,'workerTiles'),(0x1A,'foodBox'),(0x1C,'shieldBox'),(0x1E,'tradeRev'),
-    (0x30,'improvements'),(0x39,'production'),(0x3A,'numRoutes'),
-    (0x4A,'foodOut'),(0x4C,'shieldOut'),(0x4E,'tradeOut'),
-    (0x50,'foodSurplus'),(0x51,'shieldSurplus'),(0x52,'happy'),(0x53,'unhappy'),(0x54,'cityId')]:
+    # Per parser: +0x30-0x33 are worker-tile-inner/outerA/outerB bitmasks +
+    # specialistCount. +0x34..+0x38 are buildings (formerly mislabeled).
+    (0x30,'workersInner'),(0x31,'workersOuterA'),(0x32,'workersOuterB'),
+    (0x33,'specialistCount'),
+    (0x39,'production'),(0x3A,'numRoutes'),
+    (0x4A,'scienceOutput'),(0x4C,'taxOutput'),(0x4E,'totalTrade'),
+    (0x50,'foodProduction'),(0x51,'shieldProduction'),(0x52,'happy'),(0x53,'unhappy'),(0x54,'cityId')]:
     CITY_BYTE_MAP[_o] = _n
 for _i in range(8): CITY_BYTE_MAP[0x0D+_i] = f'popKnowledge_civ{_i}'
 for _i in range(16): CITY_BYTE_MAP[0x20+_i] = f'name[{_i}]'
-for _i in range(5): CITY_BYTE_MAP[0x34+_i] = f'tileImpr[{_i}]'
+for _i in range(5): CITY_BYTE_MAP[0x34+_i] = f'buildings[{_i}]'  # was mislabeled 'tileImpr'
 for _i in range(3): CITY_BYTE_MAP[0x3B+_i] = f'supply[{_i}]'
 for _i in range(3): CITY_BYTE_MAP[0x3E+_i] = f'demand[{_i}]'
 for _i in range(3): CITY_BYTE_MAP[0x41+_i] = f'routeType[{_i}]'
@@ -301,19 +331,36 @@ def read_city(h, idx):
     shields = struct.unpack_from('<h', d, 0x1C)[0]
     trade = struct.unpack_from('<h', d, 0x1E)[0]
     name = d[0x20:0x30].split(b'\x00')[0].decode('ascii', errors='replace')
-    improvements = struct.unpack_from('<I', d, 0x30)[0]
+    # Per parser: +0x30..0x33 are worker-tile bitmasks + specialistCount,
+    # NOT improvements. The actual buildings bitmask is at +0x34..+0x38.
+    # Keeping legacy var name `improvements` pointing at new correct spot to
+    # minimize other refactoring — it's now the real buildings bitfield.
+    # u32 at +0x34 covers bits 1-31 of building set; byte at +0x38 covers
+    # extra bits 32-38 (wonders). Pack into u64 for convenient bit access.
+    buildings_lo = struct.unpack_from('<I', d, 0x34)[0]
+    buildings_hi = struct.unpack_from('<B', d, 0x38)[0]
+    improvements = (buildings_hi << 32) | buildings_lo
     prod = struct.unpack_from('<b', d, 0x39)[0]
     num_trade_routes = struct.unpack_from('<b', d, 0x3A)[0]
     supply_commodities = [struct.unpack_from('<b', d, 0x3B+i)[0] for i in range(3)]
     demand_commodities = [struct.unpack_from('<b', d, 0x3E+i)[0] for i in range(3)]
     trade_route_type = [struct.unpack_from('<b', d, 0x41+i)[0] for i in range(3)]
     trade_route_partner = [struct.unpack_from('<h', d, 0x44+i*2)[0] for i in range(3)]
-    tile_improvements = d[0x34:0x39]
-    food_out = struct.unpack_from('<h', d, 0x4A)[0]
-    shield_out = struct.unpack_from('<h', d, 0x4C)[0]
-    trade_out = struct.unpack_from('<h', d, 0x4E)[0]
-    food_surplus = struct.unpack_from('<b', d, 0x50)[0]
-    shield_surplus = struct.unpack_from('<B', d, 0x51)[0]
+    # NOTE: bytes 0x34..0x38 are the BUILDINGS bitmask (not tile improvements).
+    # Already decoded into `improvements` above as a u64. Keeping this raw
+    # 5-byte slice for diagnostic purposes under a clearer name.
+    buildings_raw = d[0x34:0x39]
+    # Per parser.js (authoritative city-struct layout):
+    # 0x4A = scienceOutput (was mislabeled food_out)
+    # 0x4C = taxOutput     (was mislabeled shield_out)
+    # 0x4E = totalTrade    (was mislabeled trade_out; close enough — renamed for clarity)
+    # 0x50 = foodProduction (gross, before citizen consumption — was "food_surplus")
+    # 0x51 = shieldProduction (gross, before unit upkeep — was "shield_surplus")
+    science_output    = struct.unpack_from('<h', d, 0x4A)[0]
+    tax_output        = struct.unpack_from('<h', d, 0x4C)[0]
+    total_trade       = struct.unpack_from('<h', d, 0x4E)[0]
+    food_production   = struct.unpack_from('<b', d, 0x50)[0]
+    shield_production = struct.unpack_from('<B', d, 0x51)[0]
     happy = struct.unpack_from('<b', d, 0x52)[0]
     unhappy = struct.unpack_from('<b', d, 0x53)[0]
     exists = struct.unpack_from('<i', d, 0x54)[0]
@@ -335,9 +382,9 @@ def read_city(h, idx):
                 civPopKnowledge=civ_pop_knowledge, civVis=civ_vis,
                 supplyCommodities=supply_commodities, demandCommodities=demand_commodities,
                 tradeRouteType=trade_route_type, tradeRoutePartner=trade_route_partner,
-                tileImprovements=tile_improvements,
-                foodOut=food_out, shieldOut=shield_out, tradeOut=trade_out,
-                foodSurplus=food_surplus, shieldSurplus=shield_surplus,
+                buildingsRaw=buildings_raw,
+                scienceOutput=science_output, taxOutput=tax_output, totalTrade=total_trade,
+                foodProduction=food_production, shieldProduction=shield_production,
                 happy=happy, unhappy=unhappy,
                 wltk=wltk, disorder=disorder, coastal=coastal)
 
@@ -435,14 +482,21 @@ def read_civ(h, idx):
     # Tech/contact flags (offset 0x58, 12 bytes)
     tech_contact = d[H+0x58:H+0x64]
     # City/unit counts (offset 0x66, 14 bytes)
-    num_cities = struct.unpack_from('<h', d, H+0x66)[0]
-    num_units = struct.unpack_from('<h', d, H+0x68)[0]
+    # Per parser + auth docs: +0x66 = militaryUnitCount, +0x68 = cityCount.
+    # Earlier labels ("numCities" at +0x66, "numUnits" at +0x68) were swapped.
+    military_unit_count = struct.unpack_from('<h', d, H+0x66)[0]
+    num_cities = struct.unpack_from('<h', d, H+0x68)[0]
+    # Total units: counted separately from the units region (not a civ-struct field)
+    # For now keep numUnits slot alive for backward compat at 0 (real info is ARMY log)
+    num_units = 0
     # Tech list (offset 0x74, 93 bytes — 1 byte per tech)
     tech_list = d[H+0x74:H+0x74+93]
     # Unit counts by type (offset 0x0D8, 54 bytes)
     unit_type_counts = d[H+0xD8:H+0xD8+54]
-    # Improvement counts (offset 0x154, 54 bytes)
-    impr_counts = d[H+0x154:H+0x154+54]
+    # Units in production (offset 0x154, 63 bytes per parser — 54 covers all
+    # 51 unit types with margin). Was previously labeled "impr_counts" but
+    # indexing is by unit type, not building type.
+    units_in_production = d[H+0x154:H+0x154+54]
     # Last contact turn (offset 0x3E2, 16 bytes = short[8])
     last_contact = {}
     for j in range(8):
@@ -464,8 +518,10 @@ def read_civ(h, idx):
                 friction=friction, lastContact=last_contact,
                 spyLevel=spy_level,
                 numCities=num_cities, numUnits=num_units,
+                militaryUnitCount=military_unit_count,
                 techList=tech_list, unitTypeCounts=unit_type_counts,
-                imprCounts=impr_counts, techContact=tech_contact)
+                unitsInProduction=units_in_production,
+                techContact=tech_contact)
 
 def read_wonders(h):
     d = read_mem(h, WONDER_BASE, 56)
@@ -725,8 +781,8 @@ def diff_states(prev, curr, t0, handle=None):
             ch.append(f"researching→{rname}")
         if p.get('numCities',0) != c.get('numCities',0):
             ch.append(f"cities {p.get('numCities',0)}→{c.get('numCities',0)}")
-        if p.get('numUnits',0) != c.get('numUnits',0):
-            ch.append(f"units {p.get('numUnits',0)}→{c.get('numUnits',0)}")
+        if p.get('militaryUnitCount',0) != c.get('militaryUnitCount',0):
+            ch.append(f"military {p.get('militaryUnitCount',0)}→{c.get('militaryUnitCount',0)}")
         if ch:
             lines.append(f"[{ms:10.1f}ms]  {cn(i)}: {', '.join(ch)}")
         # Tech list changes — identify specific techs gained/lost
@@ -748,14 +804,14 @@ def diff_states(prev, curr, t0, handle=None):
                 if pu_counts[ui] != cu_counts[ui]:
                     uname = UNIT_NAMES[ui] if ui < len(UNIT_NAMES) else f'UnitType{ui}'
                     lines.append(f"[{ms:10.1f}ms]  ARMY: {cn(i)} {uname} count {pu_counts[ui]}→{cu_counts[ui]}")
-        # Improvement count changes
-        pi_counts = p.get('imprCounts', bytes(54))
-        ci_counts = c.get('imprCounts', bytes(54))
+        # Units-in-production changes (array indexed by unit type, at civ +0x154)
+        pi_counts = p.get('unitsInProduction', bytes(54))
+        ci_counts = c.get('unitsInProduction', bytes(54))
         if pi_counts != ci_counts:
             for ii in range(min(len(pi_counts), len(ci_counts), 54)):
                 if pi_counts[ii] != ci_counts[ii]:
-                    bname = BUILDING_NAMES[ii] if ii < len(BUILDING_NAMES) else f'Bldg{ii}'
-                    lines.append(f"[{ms:10.1f}ms]  BUILDINGS: {cn(i)} {bname} count {pi_counts[ii]}→{ci_counts[ii]}")
+                    uname = UNIT_NAMES[ii] if ii < len(UNIT_NAMES) else f'UnitType{ii}'
+                    lines.append(f"[{ms:10.1f}ms]  PRODUCTION: {cn(i)} {uname} in-production count {pi_counts[ii]}→{ci_counts[ii]}")
         # Diplomatic status changes
         for j in c.get('diplo', {}):
             pd = p.get('diplo', {}).get(j, set())
@@ -811,7 +867,7 @@ def diff_states(prev, curr, t0, handle=None):
             for off in range(H+0x66, H+0x6A): handled.add(off)  # numCities, numUnits
             for off in range(H+0x74, H+0x74+93): handled.add(off)  # techList
             for off in range(H+0xD8, H+0xD8+54): handled.add(off)  # unitTypeCounts
-            for off in range(H+0x154, H+0x154+54): handled.add(off)  # imprCounts
+            for off in range(H+0x154, H+0x154+54): handled.add(off)  # unitsInProduction
             for off in range(H+0x3E2, H+0x3F2): handled.add(off)  # lastContact
             for off in range(H+0x3F3, H+0x3FB): handled.add(off)  # spyLevel
             for off in range(len(pr)):
@@ -846,15 +902,17 @@ def diff_states(prev, curr, t0, handle=None):
         if p['prodItem'] != c['prodItem']: ch.append(f"build {p['prodName']}→{c['prodName']}")
         if p['happy'] != c['happy']: ch.append(f"happy {p['happy']}→{c['happy']}")
         if p['unhappy'] != c['unhappy']: ch.append(f"unhappy {p['unhappy']}→{c['unhappy']}")
-        if p['foodOut'] != c['foodOut']: ch.append(f"foodOut {p['foodOut']}→{c['foodOut']}")
-        if p['shieldOut'] != c['shieldOut']: ch.append(f"shieldOut {p['shieldOut']}→{c['shieldOut']}")
-        if p['tradeOut'] != c['tradeOut']: ch.append(f"tradeOut {p['tradeOut']}→{c['tradeOut']}")
-        if p['foodSurplus'] != c['foodSurplus']: ch.append(f"foodSur {p['foodSurplus']}→{c['foodSurplus']}")
-        if p['shieldSurplus'] != c['shieldSurplus']: ch.append(f"shldSur {p['shieldSurplus']}→{c['shieldSurplus']}")
+        if p['scienceOutput'] != c['scienceOutput']: ch.append(f"sci {p['scienceOutput']}→{c['scienceOutput']}")
+        if p['taxOutput'] != c['taxOutput']: ch.append(f"tax {p['taxOutput']}→{c['taxOutput']}")
+        if p['totalTrade'] != c['totalTrade']: ch.append(f"totalTrade {p['totalTrade']}→{c['totalTrade']}")
+        if p['foodProduction'] != c['foodProduction']: ch.append(f"foodProd {p['foodProduction']}→{c['foodProduction']}")
+        if p['shieldProduction'] != c['shieldProduction']: ch.append(f"shldProd {p['shieldProduction']}→{c['shieldProduction']}")
         if p['improvements'] != c['improvements']:
-            # Decode which improvement bits changed
+            # Buildings bitmask: bits 1-31 are standard improvements, 32-38 wonders
+            # (matches parser.js: `for bit = 1; bit <= 31` + 5 bits at offset +0x38).
+            # Bit 0 is reserved/unused ("Nothing" in BUILDING_NAMES).
             diff_bits = p['improvements'] ^ c['improvements']
-            for bit in range(26):
+            for bit in range(1, 40):
                 if diff_bits & (1 << bit):
                     bname = BUILDING_NAMES[bit] if bit < len(BUILDING_NAMES) else f'Bldg{bit}'
                     action = '+' if c['improvements'] & (1 << bit) else '-'
@@ -882,7 +940,9 @@ def diff_states(prev, curr, t0, handle=None):
     for u in curr['units']:
         p = pu.pop(u['id'], None)
         if not p:
-            lines.append(f"[{ms:10.1f}ms]  UNIT CREATED: {u['name']} ({cn(u['owner'])}) at ({u['x']},{u['y']}) home={u['home']} hp={u['hp']} role={u['aiRoleName']}")
+            # The "workTurnsOrCargo" (byte +0x0D) is multi-purpose — for new
+            # units it's usually 0. Earlier mislabeled as "home".
+            lines.append(f"[{ms:10.1f}ms]  UNIT CREATED: {u['name']} ({cn(u['owner'])}) at ({u['x']},{u['y']}) hp={u['hp']} role={u['aiRoleName']}")
             continue
         ch = []
         if p['x'] != u['x'] or p['y'] != u['y']:
@@ -897,8 +957,21 @@ def diff_states(prev, curr, t0, handle=None):
         if p['hp'] != u['hp']:
             ch.append(f"hp {p['hp']}->{u['hp']}")
             _log_hp_change(u['id'], p['hp'], u['hp'], ms, unit_info={'name': u['name'], 'owner': u['owner'], 'type': u['type'], 'veteran': u.get('veteran', 0)})
-        if p['home'] != u['home']:
-            ch.append(f"home {p['home']}->{u['home']}")
+        if p['workTurnsOrCargo'] != u['workTurnsOrCargo']:
+            # Label based on unit type:
+            #   Settlers/Engineers (0,1) → workTurns
+            #   Caravans/Freight (48,49) → cargo
+            #   Air units (26-31, 44-45) → fuel
+            utype = u['type']
+            if utype in (0, 1):
+                label = 'workTurns'
+            elif utype in (48, 49):
+                label = 'cargo'
+            elif utype in (26, 27, 28, 29, 30, 31, 44, 45):
+                label = 'fuel'
+            else:
+                label = 'byte0D'
+            ch.append(f"{label} {p['workTurnsOrCargo']}->{u['workTurnsOrCargo']}")
         if p['aiRole'] != u['aiRole']:
             ch.append(f"role {p['aiRoleName']}->{u['aiRoleName']}")
         if p['carrying'] != u['carrying']:
@@ -1297,6 +1370,17 @@ def main():
     prev_windows = enum_civ2_windows(pid)
     last_win_poll = time.perf_counter()
 
+    # Deferred dump logic — dump snapshot only when game has been "quiet"
+    # (no state changes) for N consecutive polls after a turn increment.
+    # This captures the moment when the game has paused waiting for human
+    # input, so ALL per-civ turn processing for the new turn is finished
+    # and state is stable. Earlier design dumped immediately at turn change,
+    # which caught a mid-round state (activeCiv still rotating through AI
+    # civs) and made fidelity diffs noisy.
+    pending_dump = False
+    quiet_polls = 0
+    QUIET_THRESHOLD = 150  # ~50ms at 2700 Hz — well after AI processing settles
+
     snap_log = os.path.join(snap_dir, 'game.log')
 
     try:
@@ -1318,13 +1402,14 @@ def main():
                 for line in lines: log(line)
                 prev = curr
                 changes += 1
+                quiet_polls = 0  # reset quiet counter on any change
 
                 if curr['turn'] != last_turn:
-                    fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
-                                          curr['mapWidth'] or 0, curr['mapHeight'] or 0,
-                                          curr['difficulty'] or 0)
-                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  Snapshot: {fname}")
+                    # Don't dump yet — mark as pending. The actual dump fires
+                    # once the game settles (below).
+                    pending_dump = True
                     last_turn = curr['turn']
+                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  Turn {last_turn} — waiting for quiet period before dump...")
 
                 flush()
                 if log_file:
@@ -1332,6 +1417,18 @@ def main():
                         with open(snap_log, 'a', encoding='utf-8') as f:
                             f.write('\n'.join(lines) + '\n')
                     except: pass
+            else:
+                # No state changes this poll — accumulate quiet counter
+                quiet_polls += 1
+                if pending_dump and quiet_polls >= QUIET_THRESHOLD:
+                    # Game has settled since last change. All per-civ
+                    # processing for this turn should be complete.
+                    fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
+                                          curr['mapWidth'] or 0, curr['mapHeight'] or 0,
+                                          curr['difficulty'] or 0)
+                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  Snapshot (quiet, activeCiv={curr.get('activeCiv','?')}): {fname}")
+                    flush()
+                    pending_dump = False
 
             # Window/dialog polling (every 0.5s to avoid overhead)
             now_wp = time.perf_counter()

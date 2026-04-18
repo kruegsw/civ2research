@@ -138,7 +138,10 @@ const Civ2Parser = {
 
     // ── 2.3 Core Game State Fields ──
     const turnsPassed        = this.u16(savBuf, 0x001C);
-    const turnsForYear       = this.u16(savBuf, 0x001E);
+    // currentYear is a signed i16 — negative for BC (e.g. -3900 = 3900 BC).
+    // Earlier name "turnsForYear" was a mislabel; confirmed by decompiled
+    // code at block_00480000.c:1817 which computes this from the turn.
+    const currentYear        = this.s16(savBuf, 0x001E);
     const sentinel_0x0020    = this.u16(savBuf, 0x0020);    // Always 0xFFFF (confirmed across 196+ saves)
     const selectedUnit       = this.u16(savBuf, 0x0022);  // 0xFFFF = none
     const unitCounterRelated = this.u16(savBuf, 0x0024);  // Correlated with totalUnits (r=0.74)
@@ -216,7 +219,7 @@ const Civ2Parser = {
       civTechCounts, civTechs,
       // New structured fields
       gameToggles,
-      turnsPassed, turnsForYear, selectedUnit,
+      turnsPassed, currentYear, selectedUnit,
       activeHumanPlayer, playerMap, mapRelatedByte,
       difficulty, barbarianActivity, humanPlayers,
       currentPollution, globalWarmingCount, turnsOfPeace,
@@ -277,7 +280,13 @@ const Civ2Parser = {
 
       // +0: state flags bitmask (bit 0=skip oedo, bit 1=at war, bit 2=senate override chance [1/3 per turn],
       //   bit 3=recovered from revolution, bit 5=free advance pending)
-      const stateFlags = savBuf[off];
+      // Flags are u16 (2 bytes at +0x0 and +0x1). Older version of this
+       // parser read only the low byte as u8, missing high-byte flags
+      // (real Civ2 sets bit 9 = 0x200 on some civs at init — unknown meaning).
+      // Low-byte bit definitions (skipNextOedoYear, atWar, senateOverride,
+      // recoveredFromRevolution, freeAdvancePending) still work since `&`
+      // masks to low byte. High-byte bits not yet decoded as named booleans.
+      const stateFlags = this.u16(savBuf, off);
 
       // +32–63: treaties (4 bytes × 8 target civs)
       //   Confirmed via FoxAhead TCiv struct (0x20) and empirical verification:
@@ -318,15 +327,29 @@ const Civ2Parser = {
       const firstDiscovererFlags = new Array(100);
       for (let i = 0; i < 100; i++) firstDiscovererFlags[i] = savBuf[off + 114 + i];
 
-      // +214–276: active unit counts (63 bytes)
+      // +216–269: active unit counts (54 bytes, indexed by unit type)
+      // Empirically verified on live Deity game turn 3: Indians had 2 Settlers
+      // + 1 Chariot → bytes at +216+0=2, +216+16=1. Prior offset +214 was off
+      // by 2 (read into trailing padding of prev field). Matches auth doc
+      // byte_verification_plan.md (0x0D8-0x10D in data block = decimal
+      // 216-269, 54 bytes). Civ2 has 51 unit types; extra 3 are padding.
+      // Keep old length (63) on the array so callers indexing types > 53
+      // don't fault; extra entries zero-fill since save bytes beyond the
+      // 54-byte region are a known 8-byte gap of unknown data before the
+      // casualty array.
       const activeUnitCounts = new Array(63);
-      for (let i = 0; i < 63; i++) activeUnitCounts[i] = savBuf[off + 214 + i];
+      for (let i = 0; i < 54; i++) activeUnitCounts[i] = savBuf[off + 216 + i];
+      for (let i = 54; i < 63; i++) activeUnitCounts[i] = 0;
 
-      // +277–339: unit casualty counts (63 bytes)
+      // +278–331: unit casualty counts (54 bytes)
+      // Auth doc 0x116-0x14B = decimal 278-331. Prior parser offset +277
+      // was off by 1 (reading from the 8-byte gap above).
       const unitCasualtyCounts = new Array(63);
-      for (let i = 0; i < 63; i++) unitCasualtyCounts[i] = savBuf[off + 277 + i];
+      for (let i = 0; i < 54; i++) unitCasualtyCounts[i] = savBuf[off + 278 + i];
+      for (let i = 54; i < 63; i++) unitCasualtyCounts[i] = 0;
 
-      // +340–402: units in production (63 bytes)
+      // +340–402: units in production (63 bytes). Empirically verified at
+      // this offset earlier (Washington producing Warriors → bytes[2]=1).
       const unitsInProduction = new Array(63);
       for (let i = 0; i < 63; i++) unitsInProduction[i] = savBuf[off + 340 + i];
 
@@ -1217,7 +1240,7 @@ const Civ2Parser = {
       },
       gameState: {
         gameToggles: gs.gameToggles,
-        turnsPassed: gs.turnsPassed, turnsForYear: gs.turnsForYear,
+        turnsPassed: gs.turnsPassed, currentYear: gs.currentYear,
         selectedUnit: gs.selectedUnit,
         activeHumanPlayer: gs.activeHumanPlayer, playerMap: gs.playerMap,
         playerCiv: gs.playerCiv, mapRelatedByte: gs.mapRelatedByte,

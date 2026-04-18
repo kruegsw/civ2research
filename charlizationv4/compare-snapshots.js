@@ -15,25 +15,29 @@ import { readFileSync } from 'fs';
 
 // ── Field maps for structured diffing ────────────────────────────
 
+// Layout per authoritative byte_verification_plan.md. Earlier version of
+// this file had several wrong labels (prevUnit/veteran/gotoX/homeCity/
+// linkIdx) that didn't match the CONFIRMED memory layout.
 const UNIT_FIELDS = [
   { off: 0x00, size: 2, name: 'x' },
   { off: 0x02, size: 2, name: 'y' },
-  { off: 0x04, size: 2, name: 'prevUnit' },
+  { off: 0x04, size: 2, name: 'statusFlags' },    // bit 0x2000 = veteran
   { off: 0x06, size: 1, name: 'type' },
   { off: 0x07, size: 1, name: 'owner' },
   { off: 0x08, size: 1, name: 'movesLeft' },
-  { off: 0x09, size: 1, name: 'status' },
+  { off: 0x09, size: 1, name: 'visibility' },
   { off: 0x0A, size: 1, name: 'damageTaken' },
-  { off: 0x0B, size: 1, name: 'veteran' },
-  { off: 0x0C, size: 2, name: 'gotoX' },
-  { off: 0x0E, size: 1, name: 'counter2' },
+  { off: 0x0B, size: 1, name: 'carrying' },       // transport link (0xFF = none)
+  { off: 0x0C, size: 1, name: 'aiRole' },
+  { off: 0x0D, size: 1, name: 'homeCity' },        // u8 not u16
+  { off: 0x0E, size: 1, name: 'fuel' },
   { off: 0x0F, size: 1, name: 'order' },
-  { off: 0x10, size: 2, name: 'homeCity' },
-  { off: 0x12, size: 2, name: 'gotoY' },
-  { off: 0x14, size: 2, name: 'linkIdx' },
-  { off: 0x16, size: 4, name: 'unknown_16' },
+  { off: 0x10, size: 1, name: 'gotoTurnCounter' },
+  { off: 0x12, size: 2, name: 'gotoX' },
+  { off: 0x14, size: 2, name: 'gotoY' },
+  { off: 0x16, size: 2, name: 'prevInStack' },
+  { off: 0x18, size: 2, name: 'nextInStack' },
   { off: 0x1A, size: 4, name: 'unitId' },
-  { off: 0x1E, size: 2, name: 'unknown_1E' },
 ];
 
 const CITY_FIELDS = [
@@ -55,10 +59,15 @@ const CIV_FIELDS = [
   { off: 0xA2, size: 4, name: 'treasury' },
   { off: 0xA8, size: 2, name: 'researchProgress' },
   { off: 0xAA, size: 1, name: 'researchingTech' },
-  { off: 0xB3, size: 1, name: 'taxRate' },
-  { off: 0xB4, size: 1, name: 'scienceRate' },
+  // NOTE: 0xB3 = science, 0xB4 = tax. Earlier versions had these
+  // swapped. Confirmed by byte_verification_plan.md line 121-122,
+  // fix_plan.md:54-55, and parser.js.
+  { off: 0xB3, size: 1, name: 'scienceRate' },
+  { off: 0xB4, size: 1, name: 'taxRate' },
   { off: 0xB5, size: 1, name: 'government' },
-  { off: 0xB6, size: 1, name: 'reputation' },
+  // reputation at data-block +0x1E = mem +0xBE; prior version had 0xB6.
+  { off: 0xBE, size: 1, name: 'reputation' },
+  { off: 0xBF, size: 1, name: 'patience' },
 ];
 
 // ── Parse CIV2SNAP ──────────────────────────────────────────────

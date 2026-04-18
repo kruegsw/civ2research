@@ -6,11 +6,12 @@ import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL,
 import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
-import { calcCityTrade, calcShieldProduction } from '../production.js';
+import { calcCityTrade, calcShieldProduction, calcGrossFood, calcGrossTrade, calcTradeCorruption, calcTradeDistribution } from '../production.js';
 import { cityHasBuilding, hasWonderEffect, markCitySeenByCiv } from '../utils.js';
 import { calcResearchCost, calcTechParadigmCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
+import { assignInitialWorkers } from './helpers.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
 import { dispatchEvents, pollReceivedTechTriggers, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
 import { completeWorkerOrder, getWorkerTurnsNeeded, countCooperatingWorkers, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
@@ -227,6 +228,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       const ownerHasMagellan = hasWonderEffect(state, ownerCiv, 12);
       const ownerHasNuclearPower = !!(state.civTechs?.[ownerCiv]?.has(59));
       const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
+      // Sync the raw numeric `order` byte too — it feeds the sniffer-
+      // schema dump. 'fortifying'=1, 'fortified'=2 per parser ORDERS_MAP.
+      const orderByte = orders === 'fortified' ? 2
+                      : orders === 'fortifying' ? 1
+                      : (u.order ?? 0xFF);
       // Sea bonuses are computed first, then passed to calcEffectiveMovementPoints
       // so damage scaling applies to the total (base + bonuses), matching binary
       // FUN_005b2a39 which adds sea bonuses (lines 772-786) before damage reduction (789-810).
@@ -244,7 +250,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       // last turn and is eligible for healing. The +1 tolerance is for
       // off-by-one where a unit may have spent one MP on a no-cost order.
       const idleLastTurn = (u.movesLeft || 0) >= mp;
-      return { ...u, movesLeft: mp, orders, idleLastTurn };
+      // Reset moveSpent to 0 at start of each new turn — matches real
+      // Civ2 where memory +0x08 (moves byte) goes back to 0 when the
+      // unit's turn begins. Without this, a unit stays "out of moves"
+      // in the sniffer-schema dump every subsequent turn.
+      return { ...u, movesLeft: mp, moveSpent: 0, orders, order: orderByte, idleLastTurn };
     });
 
     // ── #145: Future tech counter — increment after turn 199 ──
@@ -561,6 +571,16 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const city = state.cities[ci];
     if (city.owner !== activeCiv || city.size <= 0) continue;
 
+    // Bootstrap worker assignment before yield processing. Cities loaded
+    // from a mid-turn snapshot arrive with empty workedTiles and would
+    // report zero yields. Mirror Civ2's end-of-turn worker optimization.
+    if (!city.workedTiles || city.workedTiles.length === 0) {
+      const assigned = assignInitialWorkers(
+        city.gx, city.gy, city.size, city, ci, state, mapBase
+      );
+      state.cities[ci] = { ...state.cities[ci], workedTiles: assigned };
+    }
+
     const result = processCityTurn(ci, state, mapBase, {
       autoAssignWorker,
       removeWorstWorker,
@@ -571,6 +591,34 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push(...result.events);
     }
+  }
+
+  // ── Persist per-city yield stats to match Civ2's memory layout ──
+  // Real Civ2 stores per-turn yields at city+0x1E (netBaseTrade), +0x4A
+  // (scienceOutput), +0x4C (taxOutput), +0x4E (totalTrade), +0x50
+  // (foodProd), +0x51 (shieldProd). Parser reads these and the dump
+  // surfaces them. Without persistence they stay at whatever the input
+  // snapshot had, causing spurious diffs.
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const c = state.cities[ci];
+    if (c.owner !== activeCiv || c.size <= 0) continue;
+    try {
+      const grossFood = calcGrossFood(c, ci, state, mapBase);
+      const { grossShields } = calcShieldProduction(c, ci, state, mapBase, state.units);
+      const grossTrade = calcGrossTrade(c, ci, state, mapBase);
+      const corruption = calcTradeCorruption(c, grossTrade, state, mapBase);
+      const netTrade = Math.max(0, grossTrade - corruption);
+      const { tax: taxOutput, sci: scienceOutput } =
+        calcTradeDistribution(netTrade, c, ci, state);
+      state.cities[ci] = {
+        ...c,
+        foodProduction: grossFood,
+        shieldProduction: grossShields,
+        netBaseTrade: netTrade,
+        totalTrade: netTrade,
+        scienceOutput, taxOutput,
+      };
+    } catch (_) { /* skip on error */ }
   }
 
   // ── Recalc spaceship stats (may have built SS parts this turn) ──
@@ -747,6 +795,20 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const city = state.cities[ci];
     if (city.owner !== activeCiv || city.size <= 0) continue;
 
+    // Bootstrap worker assignment for cities that have none. Cities
+    // loaded from a snapshot captured mid-turn (before Civ2 had run
+    // end-of-turn auto-assignment) arrive with empty workedTiles, which
+    // zeroes their yields. Real Civ2 re-runs worker optimization at
+    // end-of-turn. Mirror that here so fresh cities get real yields.
+    if ((!city.workedTiles || city.workedTiles.length === 0) && city.size > 0) {
+      const assigned = assignInitialWorkers(
+        city.gx, city.gy, city.size, city, ci, state, mapBase
+      );
+      state.cities[ci] = { ...city, workedTiles: assigned };
+      // Reassign local reference for calcs below
+      Object.assign(city, state.cities[ci]);
+    }
+
     // #147: Accumulate population for score tracking
     // Linear sum mirrors binary's civ+0x6c "city size sum" (used internally
     // by happiness/AI). Triangular sum is the displayed population units.
@@ -758,16 +820,15 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const { tax, sci, maintenance } = calcCityTrade(city, ci, state, mapBase);
     civTaxTotal += tax;
 
-    // #123: Per-city science with per-city doubling and shield overflow
+    // #123: Per-city science with per-city doubling
     let citySci = sci;
 
-    // A.6: Shield overflow → research beakers (per-city)
-    // Binary: clamp(shieldSurplus - freeUnitSupport, 0, citySize) → civ research pool
-    const { grossShields, support } = calcShieldProduction(city, ci, state, mapBase, state.units);
-    const shieldSurplus = grossShields - support;
-    if (shieldSurplus > city.size) {
-      citySci += Math.min(shieldSurplus - city.size, city.size);
-    }
+    // A.6 shield-overflow-to-research removed 2026-04-18. Observed turn
+    // 4→5 diff across all 6 civs with cities showed each predicted +1
+    // beaker above actual when this block was active. Real Civ2 only
+    // converts leftover shields to beakers on item COMPLETION, not per
+    // turn. If this needs to be re-added later, gate it on production
+    // completion in the per-city production handler instead.
 
     // #123: Apply doubling PER CITY (not civ-level total)
     if (shouldDoubleScience) citySci *= 2;

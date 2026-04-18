@@ -75,12 +75,29 @@ export function buildSav() {
   // Header fields
   buf[0x0D] = 0; // flags (no scenario)
   buf[0x1C] = turn & 0xFF; buf[0x1D] = (turn >> 8) & 0xFF; // turns passed
-  buf[0x27] = _MEM[DAT_00655b05]; // active player
+  // 0x1E: turnsForYear (u16) — memory 0x00655afa
+  const tfy = u16(DAT_00655afa, 0);
+  buf[0x1E] = tfy & 0xFF; buf[0x1F] = (tfy >> 8) & 0xFF;
+  // 0x22: selectedUnit (u16) — memory 0x00655afe
+  const selUnit = u16(DAT_00655afe, 0);
+  buf[0x22] = selUnit & 0xFF; buf[0x23] = (selUnit >> 8) & 0xFF;
+  // save +0x27 is activeHumanPlayer (the human's civ slot) — memory 0x00655b03
+  // via save→mem delta. Earlier version read 0x00655b05 which is a different
+  // byte (currently-rotating civ during AI processing, unrelated to player).
+  buf[0x27] = _MEM[DAT_00655b03];
   buf[0x29] = 1; // player civ
-  buf[0x2C] = _MEM[DAT_00655b02 + 2]; // difficulty
+  // difficulty is at mem 0x00655b08 (save +0x2C via delta 0x00655ADC). Earlier
+  // version read DAT_00655b02 + 2 = 0x00655b04, which holds a different byte
+  // (always 0 in observed games) and caused v4 harness to always report
+  // difficulty=Chieftain regardless of actual game setting.
+  buf[0x2C] = _MEM[DAT_00655b08];
   buf[0x2D] = 1; // barbarian level
   buf[0x2E] = _MEM[DAT_00655b0a]; // civs alive
   buf[0x2F] = _MEM[DAT_00655b0b]; // human players
+  // 0x33: globalWarmingCount — memory 0x00655b0f (save +0x33 via delta).
+  // Earlier read from 0x00655b03 (sniff-game.py dict) — that byte is
+  // actually activeHumanPlayer, not globalWarming.
+  buf[0x33] = _MEM[DAT_00655b0f];
   buf[0x3A] = totalUnits & 0xFF; buf[0x3B] = (totalUnits >> 8) & 0xFF;
   buf[0x3C] = totalCities & 0xFF; buf[0x3D] = (totalCities >> 8) & 0xFF;
 

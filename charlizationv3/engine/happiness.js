@@ -33,7 +33,7 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
 
   // Difficulty and human player detection
   const difficulty = gameState.difficulty || 'chieftain';
-  const humanPlayers = gameState.humanPlayers || 0xFF; // default: all human in MP
+  const humanPlayers = gameState.humanPlayers ?? 0xFF; // default all-human only on null/undef; `||` would also flip 0 (all-AI game)
   const isHuman = !!((1 << ownerSlot) & humanPlayers);
 
   const civTechs = gameState.civTechs?.[ownerSlot];
@@ -254,7 +254,7 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
  * @returns {number} food needed to grow to next size
  */
 export function foodToGrowAI(citySize, gameState, ownerSlot) {
-  const humanPlayers = gameState?.humanPlayers || 0xFF;
+  const humanPlayers = gameState?.humanPlayers ?? 0xFF;
   const isHuman = !!((1 << ownerSlot) & humanPlayers);
 
   if (isHuman) {

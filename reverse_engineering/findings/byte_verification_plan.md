@@ -1,14 +1,21 @@
 # Byte-Level Verification Plan
 
+> **⚠ DO NOT USE AS PRIMARY REFERENCE. 2026-04-18: Entries marked CONFIRMED
+> have been contradicted by the live Civ2 process (sniff-game.py). Use
+> `charlizationv4/sniff-game.py` UNIT_BYTE_MAP / CITY_BYTE_MAP / ADDR and
+> the reading code in `read_unit` / `read_civ` / `read_globals` as the
+> authoritative oracle. Known wrong fields are called out inline below.**
+
 ## Goal
 Identify with 100% confidence every byte in the binary game objects (unit, city, civ, unit type, tile, globals). Use this understanding to build a complete difference engine, then a headless game, then a playable game.
 
 ## Source of Truth Hierarchy
-1. `reverse_engineering/decompiled/*.c` — Ghidra output (READ-ONLY)
-2. `reverse_engineering/findings/RULES.TXT` — game data tables (READ-ONLY)
-3. Live memory via `charlizationv4/sniff-game.py` — runtime verification
+1. **The running Civ2 process via `charlizationv4/sniff-game.py`** — authoritative
+2. `reverse_engineering/decompiled/*.c` — Ghidra output (reference only; comments may be wrong)
+3. `reverse_engineering/findings/RULES.TXT` — game data tables (READ-ONLY)
 
-Field names go in THIS file and `Data_Structures.md`, never in source files.
+Field names go in `sniff-game.py`'s BYTE_MAP dicts as live-verified truth.
+This file is historical notes; do not edit CONFIRMED labels based on it.
 
 ## Confidence Levels
 - **CONFIRMED** — all 3 sources agree, tested with sniffer
@@ -26,16 +33,16 @@ Field names go in THIS file and `Data_Structures.md`, never in source files.
 | 0x04 | 2 | CONFIRMED | status_flags | many | sniffer (veteran bit) + decompiled |
 | 0x06 | 1 | CONFIRMED | type_id | many | sniffer + decompiled |
 | 0x07 | 1 | CONFIRMED | owner | many | sniffer + decompiled |
-| 0x08 | 1 | CONFIRMED | moves_remaining | many | sniffer + decompiled |
+| 0x08 | 1 | ⚠ WRONG | ~~moves_remaining~~ — actually `moves_spent_this_turn`. Observed 2026-04-18: fresh unit = 0, after full move = 3. Earlier "CONFIRMED" label was backwards. | many | live sniffer observation of unit move |
 | 0x09 | 1 | DERIVED | visibility_mask | many | decompiled |
 | 0x0A | 1 | CONFIRMED | damage_taken (0=full, maxHp=dead) | many | sniffer combat + decompiled |
 | 0x0B | 1 | CONFIRMED | carrying/transport_link | many | sniffer + decompiled |
 | 0x0C | 1 | DERIVED | ai_role | many | decompiled |
-| 0x0D | 1 | CONFIRMED | home_city | many | sniffer + decompiled |
+| 0x0D | 1 | ⚠ WRONG | ~~home_city~~ — actually `workTurns_or_cargo` (multi-purpose: Settler work turns, caravan commodity, air fuel, transport cargo) | many | live sniffer 2026-04-18 |
 | 0x0E | 1 | DERIVED | fuel/turns_remaining | many | decompiled |
 | 0x0F | 1 | CONFIRMED | orders | many | sniffer keypress + decompiled |
-| 0x10 | 1 | DERIVED | goto_turn_counter | 99 | decompiled |
-| 0x11 | 1 | PADDING | unused | 0 | no references in 225K lines |
+| 0x10 | 2 | ⚠ REVISED | `home_city` (u16, 0xFFFF sentinel = none). Was labeled goto_turn_counter | many | live sniffer + parser.js 2026-04-18 |
+| 0x11 | 0 | — | (home_city high byte; formerly labeled PADDING) | — | — |
 | 0x12 | 2 | CONFIRMED | goto_x | 51 | sniffer + decompiled |
 | 0x14 | 2 | CONFIRMED | goto_y | 42 | sniffer + decompiled |
 | 0x16 | 2 | DERIVED | prev_unit_in_stack | 95 | decompiled (linked list, "Dead unit in stack" error) |

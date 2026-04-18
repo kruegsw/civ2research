@@ -437,7 +437,7 @@ export function applyNuclearFalloutArea(mapBase, centerGx, centerGy, rng, cities
  */
 export function handleNuclearResponse(state, mapBase, targetGx, targetGy, attackerCiv) {
   const events = [];
-  const humanPlayers = state.humanPlayers || 0xFF;
+  const humanPlayers = state.humanPlayers ?? 0xFF;
 
   // Get the continent/body ID at the nuke site
   const targetBodyId = mapBase.getBodyId ? mapBase.getBodyId(targetGx, targetGy) : -1;
