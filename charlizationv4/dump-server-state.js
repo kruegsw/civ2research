@@ -187,6 +187,24 @@ if (turns > 0) {
   let gameState = initResult.gameState;
   const mapBase = initResult.mapBase;
 
+  // When loading from a snapshot, read the real next_unit_sequence_id
+  // (DAT_00627fd8) from _MEM and seed v3's state counter. Without this,
+  // v3 falls back to max(existing_unit_id) + 1 which misses gaps from
+  // killed units, causing newly-created units to get wrong IDs in the
+  // diff. Only applies when _MEM has been populated (snapshot input).
+  if (sourceKind === 'snapshot' && memLoaded) {
+    try {
+      const { u32 } = await import('./mem.js');
+      const nextId = u32(0x00627fd8, 0);  // DAT_00627fd8 = next_unit_sequence_id
+      if (nextId && nextId > 0) {
+        gameState.nextUnitId = nextId;
+        process.stderr.write(`[snapshot] next_unit_sequence_id = ${nextId}\n`);
+      }
+    } catch (e) {
+      process.stderr.write(`[snapshot] Could not read unit counter: ${e.message}\n`);
+    }
+  }
+
   // ── Load and bucket replay events by turn, per civ ──────────────
   // events.jsonl is produced by sniff-game.py emit_action_events().
   // We apply a civ's events inside their END_TURN slot (before the
@@ -505,7 +523,14 @@ gameState.civs = (civsSource || []).slice(0, 8).map((c, i) => ({
 // the slot. Filter those out so the list matches the sniffer's alive-unit
 // list (which uses unique_id==0 for dead).
 const unitsSource = (post ? post.units : parsed.units) || [];
-gameState.units = unitsSource.filter(u => u && u.gx >= 0 && u.x >= 0).map((u, i) => ({
+// Sort by saveIndex so the output array matches the sniffer's
+// memory-slot ordering. v3's reducer appends new units to the end of
+// state.units (insertion order), which doesn't reflect actual Civ2
+// memory layout — the binary puts new units at the lowest free slot.
+gameState.units = unitsSource.filter(u => u && u.gx >= 0 && u.x >= 0)
+  .slice()
+  .sort((a, b) => (a.saveIndex ?? 0) - (b.saveIndex ?? 0))
+  .map((u, i) => ({
   slot:        u.saveIndex ?? i,
   x:           u.x ?? 0,
   y:           u.y ?? 0,

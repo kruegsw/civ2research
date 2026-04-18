@@ -21,6 +21,7 @@ import {
 } from './defs.js';
 import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
+  getEffectiveProductionCost,
   calcGrossShields, calcUnitShieldSupport, calcCityTrade,
   calcSupplyDemand,
   expandCityTerritory,
@@ -476,7 +477,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
   // disorder blocks shield accumulation, not completion of ready items)
   if (city.civilDisorder) {
     const item = city.itemInProduction;
-    const cost = item ? getProductionCost(item) : Infinity;
+    const cost = item ? getEffectiveProductionCost(item, city.owner, state) : Infinity;
     const storedShields = city.shieldsInBox || 0;
     if (storedShields < cost) {
       // Not ready — skip production entirely
@@ -530,7 +531,11 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     };
   }
 
-  const cost = getProductionCost(item);
+  // Effective cost uses per-civ shield-rows multiplier (binary
+  // DAT_006a657c). AI Deity pays 80% of human cost for the same item,
+  // AI Chieftain pays 150%. Binary FUN_004ec3fe:4870/4891/5208 compares
+  // shield_box to (cost_rows * multiplier), then deducts on completion.
+  const cost = getEffectiveProductionCost(item, city.owner, state);
 
   let newBuildings = null;
   let completedItem = null;
@@ -541,8 +546,10 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     // ═══ PRODUCTION COMPLETE ═══
     completedItem = { ...item };
 
-    // No shield overflow into next production — shields reset to 0 on completion
-    newShields = 0;
+    // Binary FUN_004ec3fe:5208 — shield_box -= cost (leftover carries
+    // forward). Earlier v3 reset to 0 which undercounted Aztec Deity
+    // warriors by 1 shield per build-cycle.
+    newShields = newShields - cost;
 
     if (item.type === 'unit') {
       // ── Create unit ──
@@ -575,11 +582,43 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
       // Observed live 2026-04-18 on fresh units produced by cities:
       //   +0x08 moves (= moveSpent) = full maxMoves (unit can't move this turn)
       //   +0x09 visMask (= hpLost in parser names) = 0 (not 0xFF)
-      //   +0x0F orders = 2 (fortified) for ground military, else 0xFF (none)
+      //   +0x0F orders = 1 (fortifying) for AI ground military observed in
+      //     real Civ2: binary FUN_005b3d06 creates unit with order=0xFF, then
+      //     AI's post-creation unit loop (block_00530000.c:1450,3374,5449 etc.)
+      //     sets order=1. Next turn's AI pass promotes 1→2 (fortified).
+      //   +0x0F orders = 0xFF for human-owned units (no auto-fortify).
       // Ground military units are unit types 2..15 in RULES order. Settlers
       // (0), Engineers (1), naval, and air units don't auto-fortify.
       const isGroundMilitary = item.id >= 2 && item.id <= 15;
+      const humanPlayers = state.humanPlayers ?? 0xFF;
+      const isAIOwner = !((1 << activeCiv) & humanPlayers);
+      const aiFortifying = isGroundMilitary && isAIOwner;
+      // Pick lowest free saveIndex — matches binary FUN_005b3d06:1436-1438
+      // which iterates slots 0..N looking for first empty (unique_id==0).
+      // Without this, v3 appended new units at state.units.length, causing
+      // slot collisions with existing parsed units that kept their original
+      // saveIndex from the .sav load.
+      const usedSlots = new Set();
+      for (const u of state.units) {
+        if (u && u.gx >= 0 && u.saveIndex != null) usedSlots.add(u.saveIndex);
+      }
+      let newSaveIndex = 0;
+      while (usedSlots.has(newSaveIndex)) newSaveIndex++;
+      // Assign sequenceId from state.nextUnitId counter (binary DAT_00627fd8).
+      // Falls back to max(existing)+1 at first call if counter not initialized.
+      if (state.nextUnitId == null) {
+        let maxId = 0;
+        for (const u of state.units) {
+          if (u?.sequenceId != null && u.sequenceId > maxId) maxId = u.sequenceId;
+          if (u?.id != null && u.id > maxId) maxId = u.id;
+        }
+        state.nextUnitId = maxId + 1;
+      }
+      const newSequenceId = state.nextUnitId++;
       const newUnit = {
+        saveIndex: newSaveIndex,
+        id: newSequenceId,
+        sequenceId: newSequenceId,
         type: item.id,
         owner: activeCiv,
         gx: city.gx, gy: city.gy,
@@ -587,11 +626,13 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         veteran: veteranStatus ? 1 : 0,
         movesRemain: 0,            // memory +0x0A damage_taken = 0 (full HP)
         moveSpent: unitMP,         // memory +0x08 = all moves used this turn
-        orders: isGroundMilitary ? 'fortified' : 'none',
-        order: isGroundMilitary ? 2 : 0xFF,  // raw memory +0x0F byte
+        orders: aiFortifying ? 'fortifying' : 'none',
+        order: aiFortifying ? 1 : 0xFF,  // raw memory +0x0F byte
         movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
+        homeCity: cityIndex,
         goToX: -1, goToY: -1,
+        gotoX: -1, gotoY: -1,
         hpLost: 0,                 // memory +0x09 visMask = 0 (unseen)
         commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,

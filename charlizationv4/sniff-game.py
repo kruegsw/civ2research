@@ -139,6 +139,12 @@ SNAPSHOT_REGIONS = [
     # = 6 * 6 * 12 = 432 bytes. Plus trailing DAT_0062c4cc-0x4d8 entries
     # used for post-tier extrapolation. Grab 0x1C0 (448) to be safe.
     ('year_table', 0x0062c490, 0x1C0),
+    # Unit-id counters. DAT_00627fd8 = next_unit_sequence_id, incremented
+    # each time a unit is created (binary FUN_005b3d06:1458-1459). Without
+    # this, v3's unit-creation reducer initializes its counter from
+    # max(existing) + 1, which is wrong when intermediate unit creations
+    # have been killed (leaves gaps in the id sequence).
+    ('unit_counter', 0x00627fd8, 8),
 ]
 
 UNIT_NAMES = [
@@ -452,8 +458,12 @@ def read_civ(h, idx):
     gold = struct.unpack_from('<H', d, H+0x02)[0]
     leader_gid = struct.unpack_from('<h', d, H+0x06)[0]
     civ_name = LEADER_CIVS[leader_gid] if 0 <= leader_gid < len(LEADER_CIVS) else f'Civ{idx}'
-    beakers = struct.unpack_from('<H', d, H+0x0A)[0]
-    researching = d[H+0x0C]
+    # researchProgress at data-block 0x08 (mem 0xA8), researchingTech at
+    # data-block 0x0A (mem 0xAA). Confirmed by Data_Structures.md:378,
+    # findings/fix_plan.md:18 (w16 writes 0xFFFF sentinel at 0xAA), and
+    # the authoritative snapshot schema in snapshot-to-state-json.py.
+    beakers = struct.unpack_from('<H', d, H+0x08)[0]
+    researching = d[H+0x0A]
     num_techs = d[H+0x10]
     sci_rate = d[H+0x13]
     tax_rate = d[H+0x14]
@@ -1179,8 +1189,15 @@ def emit_action_events(prev, curr, t0, events_path):
     turn = curr.get('turn')
     ac = curr.get('activeCiv')
 
-    # Turn advance — useful as a replay anchor
-    if prev.get('turn') != curr.get('turn'):
+    # Turn advance — useful as a replay anchor. When a poll catches a
+    # turn advance, any civ-level changes observed in the same poll
+    # were caused by END_TURN processing of the OLD turn, so tag those
+    # with prev.turn. The harness buckets events by turn:civ and looks
+    # them up during its END_TURN-for-old-turn loop — mis-tagging with
+    # the new turn causes those events to be silently skipped.
+    turn_advanced = prev.get('turn') != curr.get('turn')
+    civ_turn = prev.get('turn') if turn_advanced else turn
+    if turn_advanced:
         events.append({
             'time_ms': round(ms, 1), 'turn': turn, 'activeCiv': ac,
             'event': 'TURN_ADVANCED',
@@ -1193,11 +1210,11 @@ def emit_action_events(prev, curr, t0, events_path):
         c = curr['civs'][i] if i < len(curr.get('civs', [])) else None
         if not p or not c: continue
         if p.get('gov') != c.get('gov'):
-            events.append({'time_ms': round(ms, 1), 'turn': turn,
+            events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'GOV_CHANGED', 'civ': i,
                            'from': p.get('gov'), 'to': c.get('gov')})
         if p.get('stateFlags') != c.get('stateFlags'):
-            events.append({'time_ms': round(ms, 1), 'turn': turn,
+            events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'FLAGS_CHANGED', 'civ': i,
                            'from': p.get('stateFlags'),
                            'to': c.get('stateFlags')})
@@ -1205,12 +1222,12 @@ def emit_action_events(prev, curr, t0, events_path):
         if (p.get('sciRate') != c.get('sciRate')
                 or p.get('taxRate') != c.get('taxRate')
                 or p.get('luxRate') != c.get('luxRate')):
-            events.append({'time_ms': round(ms, 1), 'turn': turn,
+            events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'RATE_CHANGED', 'civ': i,
                            'tax': c.get('taxRate'), 'sci': c.get('sciRate'),
                            'lux': c.get('luxRate')})
         if p.get('researching') != c.get('researching'):
-            events.append({'time_ms': round(ms, 1), 'turn': turn,
+            events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'RESEARCH_PICKED', 'civ': i,
                            'techId': c.get('researching')})
         # Tech discovered: numTechs went up — identify which.
@@ -1218,12 +1235,12 @@ def emit_action_events(prev, curr, t0, events_path):
             # The just-discovered tech is what they WERE researching.
             discovered = p.get('researching')
             if discovered is not None and 0 <= discovered < 93:
-                events.append({'time_ms': round(ms, 1), 'turn': turn,
+                events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                                'event': 'TECH_DISCOVERED', 'civ': i,
                                'techId': discovered})
         # Gold — can be skipped on every tick but useful for tracking.
         if p.get('gold') != c.get('gold'):
-            events.append({'time_ms': round(ms, 1), 'turn': turn,
+            events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'GOLD_CHANGED', 'civ': i,
                            'from': p.get('gold'), 'to': c.get('gold')})
 

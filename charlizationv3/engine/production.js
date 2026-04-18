@@ -432,6 +432,45 @@ export function getProductionCost(item) {
   }
 }
 
+/**
+ * Per-civ shield-rows multiplier (binary DAT_006a657c, FUN_004e80b1
+ * block_004E0000.c:2957-2985). For humans this is the cosmic default
+ * (DAT_0064bccc = 10). AI civs use `13 - difficulty` with low-difficulty
+ * bonuses, giving AI Deity effective cost = rows * 8 (20% cheaper than
+ * human's rows * 10).
+ *
+ * UNIT_COSTS/IMPROVE_COSTS/WONDER_COSTS store rows×10 (human cost).
+ * Effective cost for a given civ = baseCost * multiplier / 10.
+ *
+ * Per-difficulty multipliers (cosmic=10):
+ *   Chieftain(0): 15   Warlord(1): 13   Prince(2): 12
+ *   King(3):     10   Emperor(4):  9    Deity(5):   8
+ */
+export function calcShieldRowsMultiplier(civSlot, gameState) {
+  const humanPlayers = gameState?.humanPlayers ?? 0xFF;
+  const isHuman = !!((1 << civSlot) & humanPlayers);
+  if (isHuman) return 10;
+  const diffIdx = ['chieftain','warlord','prince','king','emperor','deity']
+    .indexOf(gameState?.difficulty || 'chieftain');
+  const d = Math.max(0, diffIdx);
+  let rows = 13 - d;
+  if (d === 0) rows = 14;
+  if (d < 3)   rows += 1;
+  return rows;
+}
+
+/**
+ * Effective production cost for a given civ. Wraps getProductionCost
+ * with the per-civ rows multiplier — lets AI civs build things cheaper
+ * on higher difficulties (and more expensive on easier ones).
+ */
+export function getEffectiveProductionCost(item, civSlot, gameState) {
+  const base = getProductionCost(item);
+  if (!isFinite(base)) return base;
+  const mult = calcShieldRowsMultiplier(civSlot, gameState);
+  return Math.trunc((base * mult) / 10);
+}
+
 // ── Trade, corruption & distribution ──
 
 /**
