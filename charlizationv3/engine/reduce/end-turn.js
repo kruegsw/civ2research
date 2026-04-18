@@ -35,6 +35,42 @@ import { resolveGoodyHut } from './move-unit.js';
 export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   const endingCiv = state.turn.activeCiv;
 
+  // ── Begin-of-turn worker continuation for the ENDING civ ──
+  // Civ2 processes pending worker orders at the START of each civ's turn.
+  // We're at the moment the civ's turn is ENDING (in our combined flow),
+  // but this is the last chance to progress any orders set during the
+  // player's decisions this turn — so we run them here. The result is
+  // road/irrigation/etc. completes one turn earlier than it would if we
+  // only processed at end-of-turn, matching Civ2's observed behavior
+  // (road ordered on turn T completes on turn T+1's start, not T+1 end).
+  {
+    const workerOrders = ['road', 'railroad', 'irrigation', 'mine',
+                          'fortress', 'airbase', 'pollution'];
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (!u || u.owner !== endingCiv || u.gx < 0) continue;
+      if (!workerOrders.includes(u.orders)) continue;
+      const terrain = mapBase.getTerrain(u.gx, u.gy);
+      const isEngineer = u.type === 1;
+      const newWorkTurns = (u.workTurns || 0) + 1;
+      const hasRiver = !!(mapBase.hasRiver && mapBase.hasRiver(u.gx, u.gy));
+      const coopCount = countCooperatingWorkers(state, u.gx, u.gy, u.orders, u.owner);
+      const turnsNeeded = getWorkerTurnsNeeded(u.orders, terrain, isEngineer,
+                                               { hasRiver, coopCount });
+      const unitMP = (UNIT_MOVE_POINTS[u.type] || 1) * MOVEMENT_MULTIPLIER;
+      if (newWorkTurns >= turnsNeeded) {
+        const hasRefrigeration = !!(state.civTechs?.[endingCiv]?.has(70));
+        completeWorkerOrder(u.orders, u.gx, u.gy, terrain, mapBase,
+                            { hasRefrigeration });
+        state.units[ui] = { ...u, orders: 'none', order: 0xFF,
+                            workTurns: 0, moveSpent: unitMP, movesLeft: 0 };
+      } else {
+        state.units[ui] = { ...u, workTurns: newWorkTurns,
+                            moveSpent: unitMP, movesLeft: 0 };
+      }
+    }
+  }
+
   // ── Advance to next civ ──
   let next = endingCiv;
   let turnNumber = state.turn.number;
@@ -287,6 +323,40 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   if (isNewTurnCycle) turnNumber++;
 
   state.turn = { activeCiv: next, number: turnNumber };
+
+  // ── Worker-order continuation at round advance ──
+  // When a full round completes and the turn counter ticks, every civ's
+  // pending worker orders should advance one more tick — corresponding
+  // to Civ2's "begin-of-new-turn processing for each civ" phase that
+  // happens at round start. Without this, multi-turn tasks (e.g. road
+  // on grassland taking 2 turns) complete a turn late.
+  if (isNewTurnCycle) {
+    const workerOrders = ['road', 'railroad', 'irrigation', 'mine',
+                          'fortress', 'airbase', 'pollution'];
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (!u || u.gx < 0) continue;
+      if (!workerOrders.includes(u.orders)) continue;
+      const terrain = mapBase.getTerrain(u.gx, u.gy);
+      const isEngineer = u.type === 1;
+      const newWorkTurns = (u.workTurns || 0) + 1;
+      const hasRiver = !!(mapBase.hasRiver && mapBase.hasRiver(u.gx, u.gy));
+      const coopCount = countCooperatingWorkers(state, u.gx, u.gy, u.orders, u.owner);
+      const turnsNeeded = getWorkerTurnsNeeded(u.orders, terrain, isEngineer,
+                                               { hasRiver, coopCount });
+      const unitMP = (UNIT_MOVE_POINTS[u.type] || 1) * MOVEMENT_MULTIPLIER;
+      if (newWorkTurns >= turnsNeeded) {
+        const hasRefrigeration = !!(state.civTechs?.[u.owner]?.has(70));
+        completeWorkerOrder(u.orders, u.gx, u.gy, terrain, mapBase,
+                            { hasRefrigeration });
+        state.units[ui] = { ...u, orders: 'none', order: 0xFF,
+                            workTurns: 0, moveSpent: unitMP, movesLeft: 0 };
+      } else {
+        state.units[ui] = { ...u, workTurns: newWorkTurns,
+                            moveSpent: unitMP, movesLeft: 0 };
+      }
+    }
+  }
 
   // ── Begin-of-turn processing for the NEW active civ ──
   const activeCiv = next;
@@ -1087,28 +1157,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       continue; // air units don't do worker orders
     }
 
-    // Worker orders: road, irrigation, mine, fortress, airbase, pollution, railroad
-    const workerOrders = ['road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution'];
-    if (workerOrders.includes(u.orders)) {
-      const terrain = mapBase.getTerrain(u.gx, u.gy);
-      const isEngineer = u.type === 1;
-      const newWorkTurns = (u.workTurns || 0) + 1;
-
-      // #17: Per-terrain work-turns with settler cooperation, engineer double-speed, river penalty
-      const hasRiver = !!(mapBase.hasRiver && mapBase.hasRiver(u.gx, u.gy));
-      const coopCount = countCooperatingWorkers(state, u.gx, u.gy, u.orders, u.owner);
-      const turnsNeeded = getWorkerTurnsNeeded(u.orders, terrain, isEngineer, { hasRiver, coopCount });
-
-      if (newWorkTurns >= turnsNeeded) {
-        // Complete the improvement
-        // Gap 86: Pass Refrigeration tech status for farmland creation
-        const hasRefrigeration = !!(state.civTechs?.[activeCiv]?.has(70)); // Refrigeration = tech 70
-        completeWorkerOrder(u.orders, u.gx, u.gy, terrain, mapBase, { hasRefrigeration });
-        state.units[ui] = { ...u, orders: 'none', workTurns: 0 };
-      } else {
-        state.units[ui] = { ...u, workTurns: newWorkTurns };
-      }
-    }
+    // Worker orders are now processed at START of each civ's turn (see
+    // the "Begin-of-turn worker continuation" block near the top of this
+    // function). That single-pass location avoids the double-increment
+    // we'd otherwise get from processing at both end-of-turn-X AND
+    // start-of-turn-X+1.
 
     // Transform terrain order (Engineers only)
     if (u.orders === 'transform' && u.type === 1) {

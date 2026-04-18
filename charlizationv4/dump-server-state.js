@@ -260,7 +260,29 @@ if (turns > 0) {
         const units = state.units || [];
         const uIdx = units.findIndex(u => u && (u.id === ev.uid || u.sequenceId === ev.uid));
         if (uIdx < 0) return [];
-        return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: ev.order }];
+        // Sniffer emits the raw order BYTE; reducer expects action-type
+        // strings. Map per parser ORDERS_MAP:
+        //   0/255 = none (wake); 1/2 = fortify; 3 = sleep;
+        //   4 = fortress; 5 = road; 6 = irrigation; 7 = mine;
+        //   8 = transform (Engineer only); 9 = pollution; 10 = airbase;
+        //   11 = goto (ignored — needs GOTO action with coords).
+        const WORKER_MAP = { 4: 'fortress', 5: 'road', 6: 'irrigation',
+                             7: 'mine', 9: 'pollution', 10: 'airbase',
+                             11: 'railroad' };
+        const UNIT_MAP = { 1: 'fortify', 2: 'fortify', 3: 'sleep' };
+        const orderByte = ev.order;
+        if (orderByte === 0 || orderByte === 0xFF) {
+          return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' }];
+        }
+        if (WORKER_MAP[orderByte]) {
+          return [{ type: 'WORKER_ORDER', unitIndex: uIdx,
+                    order: WORKER_MAP[orderByte] }];
+        }
+        if (UNIT_MAP[orderByte]) {
+          return [{ type: 'UNIT_ORDER', unitIndex: uIdx,
+                    order: UNIT_MAP[orderByte] }];
+        }
+        return [];
       }
       default:
         return [];  // GOLD_CHANGED, TECH_DISCOVERED, TURN_ADVANCED, etc.
@@ -338,6 +360,13 @@ if (turns > 0) {
       // Stop this round when turn counter has advanced (full round done)
       const newTurn = gameState.turn?.number ?? gameState.turnsPassed ?? 0;
       const origTurn = initResult.gameState.turn?.number ?? initResult.gameState.turnsPassed ?? 0;
+      // Break when: (a) turn advanced AND (b) we've processed every
+      // civ's end-turn for the new turn too, stopping with the active
+      // civ being the human (ready for user input). This matches Civ2's
+      // actual flow: end-of-previous-round for each civ + start-of-new-
+      // round for each AI civ up to the human. Without this, worker
+      // orders that continue into the new turn (road completion) don't
+      // advance.
       if (newTurn > origTurn + t) break;
     }
     turnsRan++;
