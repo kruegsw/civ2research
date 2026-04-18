@@ -1135,6 +1135,157 @@ def diff_states(prev, curr, t0, handle=None):
 
     return lines
 
+
+# ═══════════════════════════════════════════════════════════════════
+# Action events — structured JSONL for harness replay
+#
+# The human-readable `diff_states` output is great for inspecting a game
+# but hard to consume programmatically. `emit_action_events` detects the
+# same deltas and writes structured events to `events.jsonl` in the
+# session directory. The fidelity harness (`dump-server-state.js
+# --replay`) reads these and feeds real Civ2's AI decisions into the
+# v3 reducer, so we can validate deterministic mechanics (yields, tech
+# progression, etc.) without also having to replicate Civ2's AI.
+#
+# Event types:
+#   CITY_FOUNDED     {cityIdx, x, y, owner, name, producerUid?}
+#   CITY_DESTROYED   {cityIdx, x, y, owner, name}
+#   UNIT_CREATED     {slot, uid, x, y, type, owner, home}
+#   UNIT_KILLED      {slot, uid, x, y, type, owner}
+#   UNIT_MOVED       {slot, uid, from:[x,y], to:[x,y]}
+#   UNIT_ORDER       {slot, uid, order} — fortify/sleep/build-road/etc.
+#   RATE_CHANGED     {civ, tax, sci, lux}
+#   GOV_CHANGED      {civ, from, to}
+#   RESEARCH_PICKED  {civ, techId}
+#   TECH_DISCOVERED  {civ, techId}
+#   GOLD_CHANGED     {civ, from, to}
+#   TURN_ADVANCED    {turn, currentYear}
+# ═══════════════════════════════════════════════════════════════════
+
+def emit_action_events(prev, curr, t0, events_path):
+    """Compare prev/curr state, write structured action events to JSONL.
+
+    Called after each diff_states batch. Only writes when there are
+    events to emit. Each event is one JSON object per line.
+    """
+    import json
+    events = []
+    ms = (time.perf_counter() - t0) * 1000
+    turn = curr.get('turn')
+    ac = curr.get('activeCiv')
+
+    # Turn advance — useful as a replay anchor
+    if prev.get('turn') != curr.get('turn'):
+        events.append({
+            'time_ms': round(ms, 1), 'turn': turn, 'activeCiv': ac,
+            'event': 'TURN_ADVANCED',
+            'currentYear': curr.get('currentYear'),
+        })
+
+    # Per-civ: gold, government, rates, research target, techs discovered
+    for i in range(8):
+        p = prev['civs'][i] if i < len(prev.get('civs', [])) else None
+        c = curr['civs'][i] if i < len(curr.get('civs', [])) else None
+        if not p or not c: continue
+        if p.get('gov') != c.get('gov'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'GOV_CHANGED', 'civ': i,
+                           'from': p.get('gov'), 'to': c.get('gov')})
+        # Rate changes: sci + tax + lux as a set. Only emit if any changed.
+        if (p.get('sciRate') != c.get('sciRate')
+                or p.get('taxRate') != c.get('taxRate')
+                or p.get('luxRate') != c.get('luxRate')):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'RATE_CHANGED', 'civ': i,
+                           'tax': c.get('taxRate'), 'sci': c.get('sciRate'),
+                           'lux': c.get('luxRate')})
+        if p.get('researching') != c.get('researching'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'RESEARCH_PICKED', 'civ': i,
+                           'techId': c.get('researching')})
+        # Tech discovered: numTechs went up — identify which.
+        if p.get('numTechs', 0) < c.get('numTechs', 0):
+            # The just-discovered tech is what they WERE researching.
+            discovered = p.get('researching')
+            if discovered is not None and 0 <= discovered < 93:
+                events.append({'time_ms': round(ms, 1), 'turn': turn,
+                               'event': 'TECH_DISCOVERED', 'civ': i,
+                               'techId': discovered})
+        # Gold — can be skipped on every tick but useful for tracking.
+        if p.get('gold') != c.get('gold'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'GOLD_CHANGED', 'civ': i,
+                           'from': p.get('gold'), 'to': c.get('gold')})
+
+    # Cities: founded (new at same slot), destroyed (was there, now gone),
+    # or renamed/moved (same slot but different identity — rare).
+    prev_cities = prev.get('cities', [])
+    curr_cities = curr.get('cities', [])
+    for idx in range(max(len(prev_cities), len(curr_cities))):
+        p = prev_cities[idx] if idx < len(prev_cities) else None
+        c = curr_cities[idx] if idx < len(curr_cities) else None
+        p_alive = p and p.get('size', 0) > 0
+        c_alive = c and c.get('size', 0) > 0
+        if not p_alive and c_alive:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'CITY_FOUNDED', 'cityIdx': idx,
+                           'x': c.get('x'), 'y': c.get('y'),
+                           'owner': c.get('owner'), 'name': c.get('name')})
+        elif p_alive and not c_alive:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'CITY_DESTROYED', 'cityIdx': idx,
+                           'x': p.get('x'), 'y': p.get('y'),
+                           'owner': p.get('owner'), 'name': p.get('name')})
+
+    # Units: created (uid went 0→N), killed (N→0), moved (x/y changed),
+    # order changed. Iterate by slot index.
+    prev_units = {u.get('idx'): u for u in prev.get('units', []) if u}
+    curr_units = {u.get('idx'): u for u in curr.get('units', []) if u}
+    all_slots = set(prev_units.keys()) | set(curr_units.keys())
+    for slot in sorted(all_slots):
+        p = prev_units.get(slot)
+        c = curr_units.get(slot)
+        p_uid = p.get('id', 0) if p else 0
+        c_uid = c.get('id', 0) if c else 0
+        if p_uid == 0 and c_uid != 0 and c:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_CREATED', 'slot': slot,
+                           'uid': c_uid, 'x': c.get('x'), 'y': c.get('y'),
+                           'type': c.get('type'), 'owner': c.get('owner')})
+            continue
+        if p_uid != 0 and c_uid == 0 and p:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_KILLED', 'slot': slot,
+                           'uid': p_uid, 'x': p.get('x'), 'y': p.get('y'),
+                           'type': p.get('type'), 'owner': p.get('owner')})
+            continue
+        if not p or not c: continue
+        # Movement
+        if (p.get('x'), p.get('y')) != (c.get('x'), c.get('y')):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_MOVED', 'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'), 'type': c.get('type'),
+                           'from': [p.get('x'), p.get('y')],
+                           'to': [c.get('x'), c.get('y')]})
+        # Order change (fortify, sleep, build-road, etc.)
+        if p.get('order') != c.get('order'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_ORDER', 'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'order': c.get('order'),
+                           'orderName': c.get('orderName')})
+
+    if events:
+        try:
+            with open(events_path, 'a', encoding='utf-8') as f:
+                for ev in events:
+                    f.write(json.dumps(ev, separators=(',', ':')) + '\n')
+        except Exception:
+            pass
+
+    return events
+
+
 # ═══════════════════════════════════════════════════════════════════
 # Input hooks (--hooks, toggle with F12)
 # ═══════════════════════════════════════════════════════════════════
@@ -1399,6 +1550,13 @@ def main():
 
             lines = diff_states(prev, curr, t0, handle=handle)
             if lines:
+                # Emit structured action events in parallel with the readable
+                # log. Replay harness consumes `events.jsonl`.
+                try:
+                    events_path = os.path.join(snap_dir, 'events.jsonl')
+                    emit_action_events(prev, curr, t0, events_path)
+                except Exception:
+                    pass
                 for line in lines: log(line)
                 prev = curr
                 changes += 1

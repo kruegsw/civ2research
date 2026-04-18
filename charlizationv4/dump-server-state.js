@@ -67,6 +67,19 @@ const turns = turnsArg
 // also runs.
 const skipV4Bridge = args.includes('--no-v4-bridge');
 
+// --replay <events.jsonl>: apply captured AI actions through the reducer
+// between END_TURN calls. Lets us validate deterministic mechanics (yields,
+// research progress, tech completion) without replicating Civ2's AI.
+// Events are emitted by sniff-game.py's emit_action_events().
+function getFlagValue(name) {
+  const flagArg = args.find(a => a.startsWith(name));
+  if (!flagArg) return null;
+  if (flagArg.includes('=')) return flagArg.split('=')[1];
+  const idx = args.indexOf(flagArg);
+  return args[idx + 1] || null;
+}
+const replayPath = getFlagValue('--replay');
+
 // The parser post-processes a few raw bytes into friendly names.
 // Map them back to ints so the schema matches what the sniffer reads
 // directly from memory.
@@ -174,6 +187,85 @@ if (turns > 0) {
   let gameState = initResult.gameState;
   const mapBase = initResult.mapBase;
 
+  // ── Load and bucket replay events by turn, per civ ──────────────
+  // events.jsonl is produced by sniff-game.py emit_action_events().
+  // We apply a civ's events inside their END_TURN slot (before the
+  // END_TURN action itself), so downstream reducer logic sees them.
+  const replayEventsByTurnCiv = new Map(); // key = `${turn}:${civ}`, value = [events]
+  if (replayPath && existsSync(replayPath)) {
+    try {
+      const raw = readFileSync(replayPath, 'utf8');
+      for (const line of raw.split(/\r?\n/)) {
+        if (!line.trim()) continue;
+        try {
+          const ev = JSON.parse(line);
+          const t = ev.turn;
+          // Prefer event's `civ` field if present; otherwise use `owner`
+          // (for unit events). Events without a civ target (TURN_ADVANCED)
+          // are skipped for replay purposes.
+          const c = ev.civ ?? ev.owner;
+          if (t == null || c == null) continue;
+          const key = `${t}:${c}`;
+          if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
+          replayEventsByTurnCiv.get(key).push(ev);
+        } catch (_) { /* skip malformed line */ }
+      }
+      process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
+    } catch (e) {
+      process.stderr.write(`[replay] Failed to read ${replayPath}: ${e.message}\n`);
+    }
+  }
+
+  // Translate one sniffer event into v3 reducer actions. Returns an
+  // array of actions (some events map to multiple actions). Returns
+  // [] for events that don't need replay (e.g., already-happened-
+  // during-reducer events like TECH_DISCOVERED which is a by-product
+  // of research progress, not a decision).
+  function eventToActions(ev, state) {
+    switch (ev.event) {
+      case 'CITY_FOUNDED': {
+        // Need to find the unit at (ev.x, ev.y) owned by ev.owner that's
+        // a Settler/Engineer. That's the one that founded.
+        const units = state.units || [];
+        const owner = ev.owner ?? ev.civ;
+        const uIdx = units.findIndex(u =>
+          u && u.owner === owner && u.gx >= 0
+          && (u.type === 0 || u.type === 1)
+          && Math.floor(u.x / 2) === Math.floor(ev.x / 2)
+          && u.y === ev.y);
+        if (uIdx < 0) return [];
+        return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
+      }
+      case 'RESEARCH_PICKED': {
+        if (ev.techId == null || ev.techId === 0xFF) return [];
+        return [{ type: 'SET_RESEARCH', advanceId: ev.techId }];
+      }
+      case 'RATE_CHANGED': {
+        // Sniffer emits rates as percentages (e.g. tax=50, sci=40, lux=10).
+        // Reducer CHANGE_RATES takes { scienceRate, taxRate } in 0..10.
+        return [{ type: 'CHANGE_RATES',
+                  scienceRate: Math.round((ev.sci ?? 0) / 10),
+                  taxRate: Math.round((ev.tax ?? 0) / 10) }];
+      }
+      case 'UNIT_MOVED': {
+        // UID-based lookup — slot may have been reused.
+        const units = state.units || [];
+        const uIdx = units.findIndex(u => u && (u.id === ev.uid || u.sequenceId === ev.uid));
+        if (uIdx < 0) return [];
+        // Convert from [x,y] to direction delta. v3's MOVE_UNIT expects
+        // a direction (0..7) or goto coordinates.
+        return [{ type: 'GOTO', unitIndex: uIdx, gx: Math.floor(ev.to[0] / 2), gy: ev.to[1] }];
+      }
+      case 'UNIT_ORDER': {
+        const units = state.units || [];
+        const uIdx = units.findIndex(u => u && (u.id === ev.uid || u.sequenceId === ev.uid));
+        if (uIdx < 0) return [];
+        return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: ev.order }];
+      }
+      default:
+        return [];  // GOLD_CHANGED, TECH_DISCOVERED, TURN_ADVANCED, etc.
+    }
+  }
 
   for (let t = 0; t < turns; t++) {
     // Walk civs in activeCiv order. Before each END_TURN, exhaust moves
@@ -186,12 +278,28 @@ if (turns > 0) {
       if (!(gameState.civsAlive & (1 << civ))) { break; }
 
       // NOTE: v3 runAiTurn disabled here intentionally. Enabling it makes
-      // prediction worse (72 vs 65 mismatches on 2026-04-18 turn 4→5
-      // test) because v3's AI heuristics pick different research targets,
-      // tax/science rates, and settler destinations than real Civ2.
-      // Reimplementing Civ2's AI is a separate project — for now, we
-      // only run the deterministic end-turn reducer (yields, tech
-      // progression, fortify transitions, etc.).
+      // prediction worse because v3's AI heuristics pick different research
+      // targets, tax/science rates, and settler destinations than real Civ2.
+      // With --replay we inject the REAL Civ2 AI's decisions from the
+      // sniffer-captured events.jsonl instead — preserves deterministic
+      // mechanics validation without replicating Civ2's AI.
+      const currentTurn = gameState.turn?.number ?? gameState.turnsPassed ?? 1;
+      const replayKey = `${currentTurn}:${civ}`;
+      const replayEvents = replayEventsByTurnCiv.get(replayKey) || [];
+      if (replayEvents.length > 0) {
+        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ}: ${replayEvents.length} events\n`);
+        for (const ev of replayEvents) {
+          const actions = eventToActions(ev, gameState);
+          for (const action of actions) {
+            try {
+              const next = applyAction(gameState, mapBase, action, civ);
+              if (next && next !== gameState) gameState = next;
+            } catch (e) {
+              process.stderr.write(`[replay] ${ev.event} action failed: ${e.message}\n`);
+            }
+          }
+        }
+      }
 
       // Zero out movesLeft for this civ's units so END_TURN validation passes
       gameState = {
@@ -338,8 +446,11 @@ gameState.civs = (civsSource || []).slice(0, 8).map((c, i) => ({
 
 // ── Per-unit: field names matching sniffer's UNIT_FIELDS (0x20 stride) ──
 // parser.units[] holds alive units; saveIndex is the slot position in memory.
-const unitsSource = post ? post.units : parsed.units;
-gameState.units = (unitsSource || []).map((u, i) => ({
+// For post-turn state, the reducer marks dead units with gx=-1 but keeps
+// the slot. Filter those out so the list matches the sniffer's alive-unit
+// list (which uses unique_id==0 for dead).
+const unitsSource = (post ? post.units : parsed.units) || [];
+gameState.units = unitsSource.filter(u => u && u.gx >= 0 && u.x >= 0).map((u, i) => ({
   slot:        u.saveIndex ?? i,
   x:           u.x ?? 0,
   y:           u.y ?? 0,
