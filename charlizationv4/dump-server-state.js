@@ -424,7 +424,16 @@ const gameState = {
   difficulty:    toInt(get('difficulty'), DIFFICULTY_TO_INT),
   civsAlive:     get('civsAlive', 0),
   humanPlayers:  get('humanPlayers', 0),
-  totalUnits:    post ? (post.units?.length ?? 0) : gs.totalUnits,
+  // totalUnits in Civ2's memory is the HIGH WATER MARK of unit slots
+  // allocated, not the number currently alive. It only GROWS (dead
+  // slots remain allocated). initFromSav filters out dead units so
+  // state.units.length is lower than the memory counter. Use the max
+  // of the input's counter and the current engine unit count so new
+  // units produced during replay bump the value correctly.
+  totalUnits:    post
+                   ? Math.max(post.units?.length ?? 0,
+                              parsed.gameState?.totalUnits ?? 0)
+                   : gs.totalUnits,
   totalCities:   post ? (post.cities?.length ?? 0) : gs.totalCities,
   globalWarming: get('globalWarmingCount', 0),
   // activeUnit, pollution not exposed by parser — leave off for now
