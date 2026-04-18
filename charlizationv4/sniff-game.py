@@ -445,6 +445,10 @@ def read_civ(h, idx):
     d = raw
     # Core fields (offsets from CIV_BASE, which has 0xA0 header before civ[0] fields)
     H = 0xA0  # header offset
+    # stateFlags at data-block +0 (mem civ_struct + 0xA0). Tracks
+    # transient bits like senateOverride (bit 2), recoveredFromRevolution
+    # (bit 3), and per-civ status flags (bit 9 = activeAI-processing).
+    state_flags = struct.unpack_from('<H', d, H+0x00)[0]
     gold = struct.unpack_from('<H', d, H+0x02)[0]
     leader_gid = struct.unpack_from('<h', d, H+0x06)[0]
     civ_name = LEADER_CIVS[leader_gid] if 0 <= leader_gid < len(LEADER_CIVS) else f'Civ{idx}'
@@ -508,6 +512,7 @@ def read_civ(h, idx):
         if j == idx: continue
         spy_level[j] = d[H+0x3F3+j]
     return dict(idx=idx, raw=raw, civName=civ_name,
+                stateFlags=state_flags,
                 gold=gold, gov=gov, govName=gov_name,
                 beakers=beakers, researching=researching,
                 numTechs=num_techs,
@@ -1191,6 +1196,11 @@ def emit_action_events(prev, curr, t0, events_path):
             events.append({'time_ms': round(ms, 1), 'turn': turn,
                            'event': 'GOV_CHANGED', 'civ': i,
                            'from': p.get('gov'), 'to': c.get('gov')})
+        if p.get('stateFlags') != c.get('stateFlags'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'FLAGS_CHANGED', 'civ': i,
+                           'from': p.get('stateFlags'),
+                           'to': c.get('stateFlags')})
         # Rate changes: sci + tax + lux as a set. Only emit if any changed.
         if (p.get('sciRate') != c.get('sciRate')
                 or p.get('taxRate') != c.get('taxRate')

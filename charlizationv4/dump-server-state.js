@@ -247,6 +247,13 @@ if (turns > 0) {
                   scienceRate: Math.round((ev.sci ?? 0) / 10),
                   taxRate: Math.round((ev.tax ?? 0) / 10) }];
       }
+      case 'FLAGS_CHANGED': {
+        // No reducer action exists for raw state-flag writes (these
+        // are set by deep Civ2 internals — senateOverride RNG, etc.).
+        // Apply directly to state.civs[civ].stateFlags. The event is
+        // at the civ level so ev.civ is the target.
+        return [{ type: '__RAW_FLAGS__', civ: ev.civ, flags: ev.to }];
+      }
       case 'UNIT_MOVED': {
         // UID-based lookup — slot may have been reused.
         const units = state.units || [];
@@ -313,6 +320,16 @@ if (turns > 0) {
         for (const ev of replayEvents) {
           const actions = eventToActions(ev, gameState);
           for (const action of actions) {
+            // Synthetic __RAW_FLAGS__ action — apply directly without
+            // going through the reducer (no existing action matches).
+            if (action.type === '__RAW_FLAGS__') {
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) =>
+                  i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
             try {
               const next = applyAction(gameState, mapBase, action, civ);
               if (next && next !== gameState) gameState = next;
