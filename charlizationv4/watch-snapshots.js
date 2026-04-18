@@ -93,8 +93,15 @@ function runDiff(prevSnap, currSnap) {
   const predictedJson = join(GAPS_DIR, `live_${SESSION}_predicted_turn${currSnap.turn}.json`);
   const actualJson    = join(GAPS_DIR, `live_${SESSION}_actual_turn${currSnap.turn}.json`);
 
-  const pred = spawnSync('node',
-    [join(__dirname, 'dump-server-state.js'), prevSnap.path, '--turns', '1'],
+  // Use --no-v4-bridge (much faster, v4-bridge has cross-civ contamination
+  // bugs) and --replay with the session's events.jsonl if present — feeds
+  // real Civ2 AI decisions into the engine so the diff reflects only
+  // deterministic-mechanic bugs, not AI-heuristic drift.
+  const eventsPath = join(SESSION_DIR, 'events.jsonl');
+  const predictArgs = [join(__dirname, 'dump-server-state.js'),
+                       prevSnap.path, '--turns', '1', '--no-v4-bridge'];
+  if (existsSync(eventsPath)) predictArgs.push('--replay', eventsPath);
+  const pred = spawnSync('node', predictArgs,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
   if (pred.status !== 0) {
     return { ok: false, error: `predict step failed: ${pred.stderr?.slice(0, 300)}` };
