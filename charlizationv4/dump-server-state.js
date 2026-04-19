@@ -330,22 +330,28 @@ if (turns > 0) {
                   scienceRate: Math.round((ev.sci ?? 0) / 10),
                   taxRate: Math.round((ev.tax ?? 0) / 10) }];
       }
-      case 'FLAGS_CHANGED': {
-        // No reducer action exists for raw state-flag writes (these
-        // are set by deep Civ2 internals — senateOverride RNG, etc.).
-        // Apply directly to state.civs[civ].stateFlags. The event is
-        // at the civ level so ev.civ is the target.
-        return [{ type: '__RAW_FLAGS__', civ: ev.civ, flags: ev.to }];
-      }
-      case 'TECH_DISCOVERED': {
-        // Real Civ2's research progression (beaker accumulation rate +
-        // AI-difficulty bonus) differs from v3's; replaying the exact
-        // turn a tech was discovered in real Civ2 keeps the predicted
-        // civTechs / researchProgress / researchingTech aligned with
-        // the snapshot's view of reality.
-        if (ev.techId == null || ev.techId === 0xFF) return [];
-        return [{ type: '__TECH_DISCOVERED__', civ: ev.civ, techId: ev.techId }];
-      }
+      case 'FLAGS_CHANGED':
+        // stateFlags changes (atWar, senateOverride, freeAdvancePending,
+        // etc.) are v3's responsibility to compute. Previously applied
+        // via __RAW_FLAGS__ synthetic — that hid v3 bugs where v3
+        // didn't set flags real Civ2 did. Now ignored here; the diff
+        // tool will surface mismatches for manual v3-reducer fixing.
+        return [];
+      case 'TECH_DISCOVERED':
+        // Tech completion is a v3 calculation (beaker accumulation +
+        // calcResearchCost threshold). Previously applied via
+        // __TECH_DISCOVERED__ which forced the discovery regardless
+        // of v3's cost calc, hiding the research-cost-off-by-N bugs
+        // this whole fidelity project is supposed to surface. Now
+        // ignored; when v3 drifts from real Civ2's discoveries, the
+        // diff will show it at civs[N].researchingTech / civTechs and
+        // we fix v3's research.js to match binary FUN_004c2788.
+        //
+        // NOTE: this will cascade when real Civ2 gives a FREE tech
+        // (hut, Great Library, Philosophy first-to-discover bonus).
+        // v3 has to implement those effects correctly too — if it
+        // doesn't, the mismatch is genuine and fixable.
+        return [];
       case 'UNIT_KILLED': {
         if (ev.uid == null) return [];
         return [{ type: '__UNIT_KILL__', uid: ev.uid }];
