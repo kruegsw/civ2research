@@ -62,7 +62,7 @@ def main():
         'turn', 'currentYear', 'activeCiv', 'activeUnit',
         'difficulty', 'civsAlive', 'humanPlayers',
         'totalUnits', 'totalCities',
-        'globalWarming', 'pollution',
+        'globalWarming', 'pollution', 'nextUnitId',
     ]
     for f in scalar_fields:
         if f in ga or f in gb:

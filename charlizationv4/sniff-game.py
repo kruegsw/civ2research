@@ -116,6 +116,8 @@ ADDR = {
     # "yearIncrement" was misleading; decompiled block_00480000.c:1817
     # sets this from the turn, so it's the year itself.
     'currentYear':  0x00655afa,  # i16
+    # nextUnitId (DAT_00627fd8) is captured in the `unit_counter`
+    # snapshot region, not here — SNAPSHOT_REGIONS below dumps it.
 }
 
 UNIT_TYPE_BASE = 0x0064B1B8;  UNIT_TYPE_STRIDE = 0x14  # unit type stats table
@@ -1318,11 +1320,21 @@ def emit_action_events(prev, curr, t0, events_path):
         if not p or not c: continue
         # Movement
         if (p.get('x'), p.get('y')) != (c.get('x'), c.get('y')):
+            # Include gotoX/gotoY/moveSpent/statusFlags in the event —
+            # when the poll interval misses an intermediate step (AI
+            # multi-tile goto), replay can still land on the correct
+            # final state using the captured fields. Without these,
+            # the harness can only infer moveSpent from the final
+            # tile's terrain cost, which undershoots for multi-tile
+            # moves.
             events.append({'time_ms': round(ms, 1), 'turn': turn,
                            'event': 'UNIT_MOVED', 'slot': slot, 'uid': c_uid,
                            'owner': c.get('owner'), 'type': c.get('type'),
                            'from': [p.get('x'), p.get('y')],
-                           'to': [c.get('x'), c.get('y')]})
+                           'to': [c.get('x'), c.get('y')],
+                           'gotoX': c.get('gotoX'), 'gotoY': c.get('gotoY'),
+                           'moveSpent': c.get('moveSpent'),
+                           'statusFlags': c.get('statusFlags')})
         # Order change (fortify, sleep, build-road, etc.)
         if p.get('order') != c.get('order'):
             events.append({'time_ms': round(ms, 1), 'turn': turn,

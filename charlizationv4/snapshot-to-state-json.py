@@ -222,6 +222,15 @@ def main():
             read(wbuf, i * 2, '<h') for i in range(28) if i * 2 + 2 <= len(wbuf)
         ]
 
+    # nextUnitId — binary's monotonic unit-creation counter
+    # (DAT_00627fd8). First 4 bytes of the `unit_counter` region.
+    # Lets us verify v3's state.nextUnitId stays in sync with the
+    # binary's counter (critical for uid-assignment fidelity).
+    if 'unit_counter' in regions:
+        _, ucbuf = regions['unit_counter']
+        if len(ucbuf) >= 4:
+            game_state['nextUnitId'] = read(ucbuf, 0, '<I')
+
     # Tile visibility per civ — byte 4 of each 6-byte tile record is the
     # civ-visibility bitmask (bit N = civ N has seen this tile). Emit
     # per-civ count of visible tiles so the diff can validate fog-reveal

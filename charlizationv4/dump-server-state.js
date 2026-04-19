@@ -727,29 +727,38 @@ if (turns > 0) {
         for (let c = 1; c < 8; c++) { if (hMask & (1 << c)) { hCiv = c; break; } }
         const isHumanOwner = hCiv > 0 && evOwner === hCiv;
         const ownerAfterHuman = hCiv > 0 && evOwner > hCiv;
-        // moveSpent rules:
+        // If the sniffer captured authoritative gotoX/gotoY/moveSpent
+        // at the event time, use those directly — they handle multi-
+        // tile AI goto moves where the poll interval missed intermediate
+        // steps (e.g., Diplomat with 2 MP moving 2 tiles to a waypoint).
+        // Older events.jsonl files (pre-2026-04-19) won't have these;
+        // fall back to the owner-based heuristic below.
+        const hasSniffedFields = ev.moveSpent != null || ev.gotoX != null;
+        // moveSpent rules (heuristic fallback):
         //   - Human-owned: 0 (their turn-start reset has fired by
         //     snapshot time, refreshing the unit's MP).
         //   - AI after human: 0 (AI-mobilized multi-turn goto; binary
         //     clears moveSpent in anticipation of next turn).
         //   - AI before human: destCost*3 (turn-start hasn't cleared
         //     it yet in the binary flow).
-        const newMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
-        // gotoX/Y rules:
+        const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
+        const newMoveSpent = ev.moveSpent != null ? ev.moveSpent : heuristicMoveSpent;
+        // gotoX/Y rules (heuristic fallback):
         //   - Human: leave -1 (single-step click, no goto target).
         //   - AI: set to destination (AI multi-turn goto bookkeeping).
         const setGoto = !isHumanOwner;
+        const newGotoX = ev.gotoX != null ? ev.gotoX : (setGoto ? tx : -1);
+        const newGotoY = ev.gotoY != null ? ev.gotoY : (setGoto ? ty : -1);
         gameState = {
           ...gameState,
           units: gameState.units.map(u => {
             if (!u || !(u.id === ev.uid || u.sequenceId === ev.uid)) return u;
             const patched = { ...u, x: tx, y: ty, cx: tx, cy: ty,
                     gx: Math.floor(tx / 2), gy: ty,
-                    moveSpent: newMoveSpent };
-            if (setGoto) {
-              patched.gotoX = tx; patched.gotoY = ty;
-              patched.goToX = tx; patched.goToY = ty;
-            }
+                    moveSpent: newMoveSpent,
+                    gotoX: newGotoX, gotoY: newGotoY,
+                    goToX: newGotoX, goToY: newGotoY };
+            if (ev.statusFlags != null) patched.statusFlags = ev.statusFlags;
             return patched;
           }),
         };
@@ -1049,6 +1058,24 @@ const gameState = {
                    : gs.totalUnits,
   totalCities:   post ? (post.cities?.length ?? 0) : gs.totalCities,
   globalWarming: get('globalWarmingCount', 0),
+  // nextUnitId — v3's monotonic uid counter (state.nextUnitId). Exposed
+  // to match the sniffer's capture of binary DAT_00627fd8; divergence
+  // here directly explains uid-ordering mismatches on UNIT_CREATED.
+  // cityturn.js initializes state.nextUnitId lazily (on first unit
+  // creation) from max(existing uids)+1. When no units were created
+  // this turn the counter stays undefined — fall back to the same
+  // max+1 derivation so the output doesn't report 0.
+  nextUnitId:    (() => {
+    const explicit = post ? post.nextUnitId : gs.nextUnitId;
+    if (explicit != null) return explicit;
+    const units = (post ? post.units : parsed.gameState?.units) || [];
+    let maxId = 0;
+    for (const u of units) {
+      if (u?.sequenceId != null && u.sequenceId > maxId) maxId = u.sequenceId;
+      if (u?.id != null && u.id > maxId) maxId = u.id;
+    }
+    return maxId + 1;
+  })(),
   // activeUnit, pollution not exposed by parser — leave off for now
 };
 
