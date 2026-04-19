@@ -94,8 +94,18 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
   const units = state.units || [];
 
   // ── Calculate food surplus ──
+  //
+  // Order of operations (binary FUN_004ebbde at block_004E0000.c:4578,
+  // called from FUN_004ef*** → food surplus added at block_004F0000.c:309):
+  //   1. Growth check against CURRENT foodInBox (pre-surplus).
+  //   2. After growth (or not), caller adds this turn's surplus to foodInBox.
+  //
+  // v3 used to add surplus first then check — caused 1-turn-early growth.
+  // E.g., Washington turn 10 foodInBox=18, surplus=+2, threshold=20:
+  //   wrong: 18+2=20 >= 20 → grow at turn 11 (observed: didn't grow).
+  //   right: 18 < 20 → don't grow; foodInBox=20 at turn 11 → grow at turn 12.
   const { surplus } = calcFoodSurplus(city, cityIndex, state, mapBase, units);
-  let newFood = (city.foodInBox || 0) + surplus;
+  let newFood = city.foodInBox || 0;
   let newSize = city.size;
   let newWorked = city.workedTiles;
   let newSpecs = city.specialists;
@@ -119,6 +129,8 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
   // Granary effect: building 3 or Pyramids wonder (index 0)
   const hasGranary = cityHasBuilding(city, 3) || hasWonderEffect(state, activeCiv, 0);
 
+  // Growth check against PRE-SURPLUS foodInBox (newFood currently
+  // equals city.foodInBox — surplus hasn't been added yet).
   if (newFood >= growthThreshold || wltkdGrowth) {
     // ── Growth ──
     if (newFood >= growthThreshold) {
@@ -183,7 +195,17 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
         }
       }
     }
-  } else if (newFood < 0) {
+  }
+
+  // Add this turn's surplus to foodInBox AFTER the growth check.
+  // Binary ref: block_004F0000.c:309 does `foodInBox += surplus` after
+  // returning from FUN_004ebbde (which handles growth/famine). v3 was
+  // adding surplus BEFORE the growth check, triggering growth one turn
+  // early whenever foodInBox + surplus crossed the threshold.
+  newFood += surplus;
+
+  // ── Famine (foodInBox went negative after adding surplus) ──
+  if (newFood < 0) {
     // ── A.7: Famine (binary-faithful path) ──
     newFood = 0;
 
