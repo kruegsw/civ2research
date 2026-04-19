@@ -35,7 +35,21 @@ rebalances, same diplomatic choices.
   AI decision's output as structured events. Already provides
   ground truth for the whole plan.
 
-## Approach
+## Approach (refined 2026-04-18)
+
+**Primary driver: the per-turn fidelity diff is the work queue.**
+
+Rather than rigidly "finish slice 1, then slice 2, ...", we run the
+existing fidelity harness (`charlizationv4/dump-server-state.js
+--replay`) every turn the user plays and fix whatever diverges. The
+"slice" is just a label for whichever decision type is currently
+causing the diff to fail.
+
+When a slice becomes irrelevant — because its events don't fire in
+the current game state — we watch for the next category that breaks
+and move to it. When the slice becomes relevant again (e.g., an AI
+discovers a tech and needs a new target), we're already positioned
+to fix it because the adapter + transpiled call site is in place.
 
 **Two paths, run in order:**
 

@@ -82,3 +82,67 @@ to the capture protocol is TODO.
 **End state for slice 1**: v3 emits correct RESEARCH_PICKED events
 without needing the sniffer to replay them. Fidelity harness still
 shows 179/179 with RESEARCH_PICKED filtered out of replay.
+
+---
+
+### Trigger decoding (FUN_004c21d5) — done 2026-04-18
+
+The gatekeeper for AI research pick. Signature: `void FUN_004c21d5(int
+civ, 0)`. Calls `FUN_004c21ad(civ)` (which wraps `FUN_004c195e` →
+`FUN_004c09b0`) under four simultaneous conditions:
+
+1. `*(short*)(&DAT_0064c6aa + civ*0x594) < 0` — current research ID is
+   `0xFFFF` (the "no target" sentinel, read as signed short).
+2. Player is AI — `(1 << civ) & DAT_00655b0b != 0`.
+3. Game is active — `DAT_00655af8 != 0`.
+4. No dialog blocking — `DAT_00654fa8 == 0`.
+
+Three call sites inside FUN_004c21d5 that invoke the picker:
+
+- **Line 821** (entry guard): if target is 0xFFFF when the civ enters
+  this function, pick one immediately.
+- **Line 885** (post tech-discovery popup): after the tech-discovery
+  dialog is resolved for an AI civ.
+- **Line 1066** (turn-loop gate, in FUN_004c2b73): when research points
+  have accumulated (`DAT_0064c6a8 > 0`) AND target is 0xFFFF. This
+  explains why civ 4 (Aztec) currently shows `researchingTech=0xFFFF`
+  and `researchProgress=0` and the picker is NOT firing — the turn-loop
+  gate needs points > 0.
+
+External callers of FUN_004c21d5: `new_civ` in block_004A0000.c,
+tech-discovery handler in block_004E0000.c, turn-loop via
+FUN_00554423. Matching these triggers in v3 is part of the integration
+step (not required to test the picker itself).
+
+### Scorer decoding (FUN_004bdb2c) — done 2026-04-18
+
+Summary of axes:
+- **Base**: `cost × personality[0] + base_constant`. Dominant factor.
+- **Personality[0]** at `DAT_006554fa + leader*0x30`, offset 0x00.
+- **Civ archetype bumps** (0-20 index at civ+0xA6): each archetype
+  has 2-5 favored tech IDs boosted +1 to +3, plus 0-2 disfavored
+  techs penalized -1 to -2.
+- **Wonder-prereq chains**: +0 to +5 if this tech leads to a wonder
+  the civ values.
+- **Diplomatic demand**: 0-6 points based on how many other civs
+  want this tech (doubled in multiplayer).
+- **First-to-discover rarity**: +1 if `DAT_00655b82[tech] == 0`.
+
+Rough early-game ordering (no wonders, default personality):
+Alphabet > Bronze Working ≈ Horseback Riding > Pottery. Matches
+what our picker returned — reassuring.
+
+---
+
+### Refined approach (2026-04-18)
+
+User preference (per conversation): rather than rigidly "finish one
+slice then move to the next," continue using the per-turn fidelity
+diff as the driver. Whichever event type diverges next becomes the
+focus. For this session the focus stays on RESEARCH_PICKED until it
+fires in the capture — might take several turns of play before an AI
+civ accumulates research, gets a target, and eventually discovers a
+tech that triggers a re-pick.
+
+The slice-by-slice structure stays in the plan doc for reference but
+execution is now "fix what the diff shows."
