@@ -122,6 +122,10 @@ if (magic === 'CIVILIZE') {
     globalThis.__SNAPSHOT_TIME_MS = info.snapTimeMs;
     process.stderr.write(`[snap] Capture timestamp: ${info.snapTimeMs.toFixed(1)}ms\n`);
   }
+  if (info.randSeed != null) {
+    globalThis.__SNAPSHOT_RAND_SEED = info.randSeed;
+    process.stderr.write(`[snap] MSVC rand seed: 0x${info.randSeed.toString(16).padStart(8, '0')}\n`);
+  }
   savBuf = buildSav();
   sourceKind = 'snapshot';
   process.stderr.write(`[snap] Synthesized .sav (${savBuf.length} bytes) from snapshot _MEM state\n`);
@@ -191,6 +195,18 @@ if (turns > 0) {
   const initResult = initFromSav(parsed, seatList);
   let gameState = initResult.gameState;
   const mapBase = initResult.mapBase;
+
+  // RNG sync: when the snapshot includes the MSVC CRT rand seed
+  // (DAT_00639e50), seed v3's SeededRNG with that value instead of
+  // init's mapSeed-derived hash. Both use the same MSVC LCG so the
+  // next draw from v3's rng matches what civ2.exe would produce at
+  // this instant. Re-sync happens on every snapshot load; within a
+  // turn, drift is still possible if v3 and the binary call rand()
+  // in different orders/counts, but turn-boundary state converges.
+  if (globalThis.__SNAPSHOT_RAND_SEED != null && gameState.rng?.state != null) {
+    gameState.rng.state = globalThis.__SNAPSHOT_RAND_SEED >>> 0;
+    process.stderr.write(`[rng] Seeded v3 SeededRNG from snapshot rand_seed: 0x${gameState.rng.state.toString(16).padStart(8, '0')}\n`);
+  }
 
   // When loading from a snapshot, read the real next_unit_sequence_id
   // (DAT_00627fd8) from _MEM and seed v3's state counter. Without this,

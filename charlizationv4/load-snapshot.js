@@ -131,9 +131,26 @@ export function loadSnapshotIntoMem(path) {
     }
   }
 
+  // rand_seed — MSVC CRT rand()'s current state (holdrand at
+  // DAT_00639e50). v3's SeededRNG uses the same LCG (state = state *
+  // 214013 + 2531011; output (state>>16) & 0x7FFF), so seeding v3
+  // with this value aligns the RNG stream with civ2.exe AT THIS
+  // MOMENT. After that, alignment depends on whether v3 calls rand()
+  // in the same order/count as the binary, which it generally won't
+  // within a turn — but re-seeding each turn start keeps drift bounded.
+  let randSeed = null;
+  if (regions.has('rand_seed')) {
+    const { bytes } = regions.get('rand_seed');
+    if (bytes.length >= 4) {
+      const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      randSeed = dv.getUint32(0, true);
+    }
+  }
+
   return {
     regionCount: regions.size,
     tileBytes: regions.get('tiles')?.size ?? 0,
     snapTimeMs,
+    randSeed,
   };
 }
