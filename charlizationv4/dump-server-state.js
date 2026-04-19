@@ -118,6 +118,10 @@ if (magic === 'CIVILIZE') {
   }
   const info = loadSnapshotIntoMem(savPath);
   process.stderr.write(`[snap] Loaded ${info.regionCount} regions, ${info.tileBytes} tile bytes into _MEM\n`);
+  if (info.snapTimeMs != null) {
+    globalThis.__SNAPSHOT_TIME_MS = info.snapTimeMs;
+    process.stderr.write(`[snap] Capture timestamp: ${info.snapTimeMs.toFixed(1)}ms\n`);
+  }
   savBuf = buildSav();
   sourceKind = 'snapshot';
   process.stderr.write(`[snap] Synthesized .sav (${savBuf.length} bytes) from snapshot _MEM state\n`);
@@ -223,6 +227,17 @@ if (turns > 0) {
   // turn-advance tend to reflect changes the snapshot DOESN'T show —
   // they belong to the next turn's prediction. 500ms let events like
   // uid=33 settler creation (delta 255ms) leak into the wrong turn.
+  // Late-event shift strategy. Two modes:
+  //
+  // 1) PRECISE — if the sniffer emitted SNAPSHOT_DUMPED events (each
+  //    records the exact time the .bin was captured), we know the
+  //    capture time T(N) for each turn's snapshot. An event tagged
+  //    turn=N belongs in the turn-N replay iff time_ms ≤ T(N); events
+  //    after T(N) land in the turn-(N+1) prediction.
+  //
+  // 2) HEURISTIC — when SNAPSHOT_DUMPED events aren't present (older
+  //    recordings), fall back to the 200ms post-TURN_ADVANCED window.
+  //    Imprecise; a single universal cutoff mismatches both ways.
   const LATE_EVENT_WINDOW_MS = 200;
   const replayEventsByTurnCiv = new Map();
   if (replayPath && existsSync(replayPath)) {
@@ -230,6 +245,7 @@ if (turns > 0) {
       const raw = readFileSync(replayPath, 'utf8');
       const allEvents = [];
       const turnAdvancedTime = new Map();
+      const snapshotTime = new Map(); // turn → time_ms snapshot was captured
       for (const line of raw.split(/\r?\n/)) {
         if (!line.trim()) continue;
         try {
@@ -238,31 +254,40 @@ if (turns > 0) {
           if (ev.event === 'TURN_ADVANCED' && ev.turn != null && ev.time_ms != null) {
             turnAdvancedTime.set(ev.turn, ev.time_ms);
           }
+          if (ev.event === 'SNAPSHOT_DUMPED' && ev.turn != null && ev.time_ms != null) {
+            snapshotTime.set(ev.turn, ev.time_ms);
+          }
         } catch (_) { /* skip malformed line */ }
+      }
+      const hasPreciseRouting = snapshotTime.size > 0;
+      if (hasPreciseRouting) {
+        process.stderr.write(`[replay] Precise routing: ${snapshotTime.size} SNAPSHOT_DUMPED events found\n`);
       }
       for (const ev of allEvents) {
         const c = ev.civ ?? ev.owner;
         if (c == null || ev.turn == null) continue;
+        if (ev.event === 'SNAPSHOT_DUMPED') continue; // metadata only
         let routedTurn = ev.turn;
-        // Late-event shift: fire AFTER TURN_ADVANCED(ev.turn) by more
-        // than LATE_EVENT_WINDOW_MS → this event is actions DURING
-        // turn ev.turn, not the transition TO it. Bump to ev.turn+1.
-        const taTime = turnAdvancedTime.get(ev.turn);
-        if (taTime != null && ev.time_ms != null
-            && ev.time_ms > taTime + LATE_EVENT_WINDOW_MS) {
-          routedTurn = ev.turn + 1;
-        }
-        // CITY_DESTROYED special case: empirically, the sniffer often
-        // captures a snapshot in a 200-400ms window AFTER TURN_ADVANCED
-        // but BEFORE the destroy event fires. The destroy therefore
-        // belongs to the NEXT turn's prediction, not the current one.
-        // Force-shift regardless of the time-window rule. (Verified on
-        // turn 46 Philadelphia: CITY_DESTROYED at +259ms was inside the
-        // 500ms window and applied to turn-46 postWrap, but the turn-46
-        // snapshot has Philadelphia alive — destruction shows up in
-        // turn 47's snapshot.)
-        if (ev.event === 'CITY_DESTROYED' && routedTurn === ev.turn) {
-          routedTurn = ev.turn + 1;
+        if (hasPreciseRouting) {
+          // Precise: compare event time to the tagged-turn snapshot time.
+          // If the event fired AFTER that snapshot was captured, the
+          // event's effect wasn't in the snapshot — route to turn+1.
+          const snapT = snapshotTime.get(ev.turn);
+          if (snapT != null && ev.time_ms != null && ev.time_ms > snapT) {
+            routedTurn = ev.turn + 1;
+          }
+        } else {
+          // Heuristic fallback.
+          const taTime = turnAdvancedTime.get(ev.turn);
+          if (taTime != null && ev.time_ms != null
+              && ev.time_ms > taTime + LATE_EVENT_WINDOW_MS) {
+            routedTurn = ev.turn + 1;
+          }
+          // CITY_DESTROYED special case in heuristic mode (see earlier
+          // analysis turn 46 Philadelphia).
+          if (ev.event === 'CITY_DESTROYED' && routedTurn === ev.turn) {
+            routedTurn = ev.turn + 1;
+          }
         }
         const key = `${routedTurn}:${c}`;
         if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
@@ -404,20 +429,32 @@ if (turns > 0) {
         }
         return [];
       }
-      case 'GOLD_CHANGED': {
-        // Sniffer-observed treasury transition. Most changes are driven
-        // by end-of-turn economy (tax, upkeep) which v3 reproduces on
-        // its own. But large deltas (rush-buy, tribute, ransom, barb
-        // gold) are one-shot events v3 wouldn't recompute — apply
-        // those directly so civ treasury matches the snapshot.
-        // Heuristic: ignore +/- 1-3 deltas (routine economy noise);
-        // apply larger ones as an authoritative set.
-        const delta = Math.abs((ev.to ?? 0) - (ev.from ?? 0));
-        if (delta < 4) return [];
-        return [{ type: '__SET_TREASURY__', civ: ev.civ, to: ev.to }];
+      case 'UNIT_DAMAGE': {
+        // Observed combat-round damage change. Replay mode skips v3's
+        // combat resolution, so we apply damage directly to keep unit
+        // state consistent with the snapshot. NOT treated as a v3 bug;
+        // combat fidelity is a separate (harder) project.
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_DAMAGE__', uid: ev.uid, to: ev.to }];
       }
+      case 'UNIT_VIS_CHANGED': {
+        // Per-unit visibility mask (which civs have spotted this unit)
+        // — purely observed state that v3 doesn't track. Apply the new
+        // mask byte directly.
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_VIS__', uid: ev.uid, to: ev.to }];
+      }
+      case 'CITY_YIELD':
+        // Diagnostic only — NOT applied to state. The diff tooling
+        // surfaces these so we can attribute per-city shield/food/trade
+        // mismatches to the specific turn and see the binary's actual
+        // yields alongside v3's predicted yields. Returning [] means
+        // the harness ignores the event while still keeping it in the
+        // event stream for other consumers (e.g. state-diff comparing
+        // predicted vs observed).
+        return [];
       default:
-        return [];  // TECH_DISCOVERED, TURN_ADVANCED, etc.
+        return [];  // TECH_DISCOVERED, TURN_ADVANCED, GOLD_CHANGED (v3 predicts), etc.
     }
   }
 
@@ -503,11 +540,23 @@ if (turns > 0) {
               };
               continue;
             }
-            if (action.type === '__SET_TREASURY__') {
+            if (action.type === '__UNIT_DAMAGE__') {
               gameState = {
                 ...gameState,
-                civs: gameState.civs.map((c, i) =>
-                  i === action.civ ? { ...c, treasury: action.to } : c),
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, hpLost: action.to, damageTaken: action.to }
+                    : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_VIS__') {
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, visibility: action.to }
+                    : u),
               };
               continue;
             }
@@ -1175,11 +1224,23 @@ if (turns > 0) {
             };
             continue;
           }
-          if (action.type === '__SET_TREASURY__') {
+          if (action.type === '__UNIT_DAMAGE__') {
             gameState = {
               ...gameState,
-              civs: gameState.civs.map((c, i) =>
-                i === action.civ ? { ...c, treasury: action.to } : c),
+              units: gameState.units.map(u =>
+                u && (u.id === action.uid || u.sequenceId === action.uid)
+                  ? { ...u, hpLost: action.to, damageTaken: action.to }
+                  : u),
+            };
+            continue;
+          }
+          if (action.type === '__UNIT_VIS__') {
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u =>
+                u && (u.id === action.uid || u.sequenceId === action.uid)
+                  ? { ...u, visibility: action.to }
+                  : u),
             };
             continue;
           }

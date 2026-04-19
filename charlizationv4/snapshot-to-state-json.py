@@ -231,6 +231,16 @@ def main():
         if len(ucbuf) >= 4:
             game_state['nextUnitId'] = read(ucbuf, 0, '<I')
 
+    # snap_meta — sniffer-emitted capture metadata: u64 time_ms at
+    # snapshot capture, u32 flags, u32 reserved. Lets the harness route
+    # events precisely by timestamp instead of using a heuristic window.
+    # Old snapshots (pre-2026-04-19 sniffer) don't have this region; the
+    # harness falls back to the window heuristic in that case.
+    if 'snap_meta' in regions:
+        _, mbuf = regions['snap_meta']
+        if len(mbuf) >= 8:
+            game_state['snapTimeMs'] = read(mbuf, 0, '<Q')
+
     # Tile visibility per civ — byte 4 of each 6-byte tile record is the
     # civ-visibility bitmask (bit N = civ N has seen this tile). Emit
     # per-civ count of visible tiles so the diff can validate fog-reveal

@@ -668,14 +668,28 @@ def read_state(h):
 # Snapshots
 # ═══════════════════════════════════════════════════════════════════
 
-def dump_snapshot(h, snap_dir, turn, map_w, map_h, difficulty):
-    """Dump key memory regions to a binary file for offline analysis."""
+def dump_snapshot(h, snap_dir, turn, map_w, map_h, difficulty, t0=None):
+    """Dump key memory regions to a binary file for offline analysis.
+
+    Adds a synthetic 'snap_meta' region (always first after header) that
+    holds the capture timestamp in milliseconds since sniff-game.py start.
+    The harness uses this to match snapshot time against event time_ms
+    precisely instead of using a heuristic late-event window. Old
+    snapshots without this region still parse — the reader just falls
+    back to the heuristic.
+    """
     diff_str = DIFF_NAMES[difficulty].lower() if difficulty < 6 else f'd{difficulty}'
     fname = f"turn_{turn:04d}_{map_w}x{map_h}_{diff_str}.bin"
     path = os.path.join(snap_dir, fname)
 
+    snap_ms = (time.perf_counter() - t0) * 1000 if t0 is not None else 0.0
+
     with open(path, 'wb') as f:
         regions_data = []
+
+        # snap_meta: first region. 16 bytes — u64 time_ms (Q), u32 flags, u32 reserved.
+        meta_bytes = struct.pack('<Q', int(round(snap_ms))) + struct.pack('<II', 0, 0)
+        regions_data.append(('snap_meta', 0, meta_bytes))
 
         # Static regions
         for name, addr, size in SNAPSHOT_REGIONS:
@@ -1291,6 +1305,34 @@ def emit_action_events(prev, curr, t0, events_path):
                            'event': 'CITY_DESTROYED', 'cityIdx': idx,
                            'x': p.get('x'), 'y': p.get('y'),
                            'owner': p.get('owner'), 'name': p.get('name')})
+        elif p_alive and c_alive:
+            # CITY_YIELD diagnostic — emitted whenever a stored-box or
+            # size value changes. NOT used to override v3's predicted
+            # yields; instead used by the fidelity diff tooling to
+            # attribute shield/food/trade mismatches to the right turn
+            # and make v3's yield-calc bugs reproducible. Includes the
+            # per-turn production rates (foodProduction, shieldProduction,
+            # totalTrade) as captured by the binary so the diff can
+            # show "v3 predicted shield=X, binary reports shield=Y".
+            if (p.get('food') != c.get('food')
+                    or p.get('shields') != c.get('shields')
+                    or p.get('trade') != c.get('trade')
+                    or p.get('size') != c.get('size')):
+                events.append({'time_ms': round(ms, 1), 'turn': turn,
+                               'event': 'CITY_YIELD', 'cityIdx': idx,
+                               'owner': c.get('owner'),
+                               'size': c.get('size'),
+                               'sizeFrom': p.get('size'),
+                               'foodBox': c.get('food'), 'foodBoxFrom': p.get('food'),
+                               'shieldBox': c.get('shields'), 'shieldBoxFrom': p.get('shields'),
+                               'tradeNet': c.get('trade'), 'tradeNetFrom': p.get('trade'),
+                               'foodProd': c.get('foodProduction'),
+                               'shieldProd': c.get('shieldProduction'),
+                               'totalTrade': c.get('totalTrade'),
+                               'sciOut': c.get('scienceOutput'),
+                               'taxOut': c.get('taxOutput'),
+                               'disorder': c.get('disorder'),
+                               'wltk': c.get('wltk')})
 
     # Units: created (uid went 0→N), killed (N→0), moved (x/y changed),
     # order changed. Iterate by slot index.
@@ -1343,6 +1385,26 @@ def emit_action_events(prev, curr, t0, events_path):
                            'owner': c.get('owner'),
                            'order': c.get('order'),
                            'orderName': c.get('orderName')})
+        # Damage change (combat round, healing, pillage). Binary writes
+        # the damage byte at unit+0x0A each round of combat. The harness
+        # needs these because replay mode skips v3's combat resolution
+        # (which would rely on v3's attack/defense matching binary, not
+        # guaranteed). Emitting each delta lets the harness apply the
+        # damage directly so damageTaken matches the snapshot.
+        if p.get('hp') != c.get('hp'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_DAMAGE', 'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'from': p.get('hp'), 'to': c.get('hp')})
+        # Visibility mask change (civ+0x09 visMask byte — bitmask of
+        # which civs have spotted this unit). Changes when another civ's
+        # unit comes into sight range. Replay needs this because v3
+        # doesn't recompute per-unit visibility masks.
+        if p.get('visMask') != c.get('visMask'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_VIS_CHANGED', 'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'from': p.get('visMask'), 'to': c.get('visMask')})
 
     if events:
         try:
@@ -1578,7 +1640,7 @@ def main():
 
     fname = dump_snapshot(handle, snap_dir, prev['turn'] or 0,
                           prev['mapWidth'] or 0, prev['mapHeight'] or 0,
-                          prev['difficulty'] or 0)
+                          prev['difficulty'] or 0, t0=t0)
     log(f"  Snapshot: {fname}")
     flush()
 
@@ -1650,10 +1712,28 @@ def main():
                 if pending_dump and quiet_polls >= QUIET_THRESHOLD:
                     # Game has settled since last change. All per-civ
                     # processing for this turn should be complete.
+                    snap_ms = (time.perf_counter() - t0) * 1000
                     fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
                                           curr['mapWidth'] or 0, curr['mapHeight'] or 0,
-                                          curr['difficulty'] or 0)
-                    log(f"[{(time.perf_counter()-t0)*1000:10.1f}ms]  Snapshot (quiet, activeCiv={curr.get('activeCiv','?')}): {fname}")
+                                          curr['difficulty'] or 0, t0=t0)
+                    log(f"[{snap_ms:10.1f}ms]  Snapshot (quiet, activeCiv={curr.get('activeCiv','?')}): {fname}")
+                    # Emit SNAPSHOT_DUMPED event so the replay harness can
+                    # route events by the snapshot's exact capture time
+                    # instead of using a heuristic post-TURN_ADVANCED window.
+                    # Events with time_ms < snapshot.time_ms belong in the
+                    # current prediction; later events belong in the next.
+                    try:
+                        import json as _json
+                        with open(events_path, 'a', encoding='utf-8') as ef:
+                            ef.write(_json.dumps({
+                                'time_ms': round(snap_ms, 1),
+                                'turn': curr['turn'] or 0,
+                                'event': 'SNAPSHOT_DUMPED',
+                                'fname': fname,
+                                'activeCiv': curr.get('activeCiv'),
+                            }, separators=(',', ':')) + '\n')
+                    except Exception:
+                        pass
                     flush()
                     pending_dump = False
 

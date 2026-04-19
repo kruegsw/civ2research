@@ -117,8 +117,23 @@ export function loadSnapshotIntoMem(path) {
     initMapTiles(new Uint8Array(tileBytes));
   }
 
+  // snap_meta — sniffer-captured timestamp at the moment of dump.
+  // Lets the harness route events by exact capture time vs a heuristic
+  // window. Snapshots from older sniffer versions don't include it.
+  let snapTimeMs = null;
+  if (regions.has('snap_meta')) {
+    const { bytes } = regions.get('snap_meta');
+    if (bytes.length >= 8) {
+      const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const lo = dv.getUint32(0, true);
+      const hi = dv.getUint32(4, true);
+      snapTimeMs = hi * 0x100000000 + lo;
+    }
+  }
+
   return {
     regionCount: regions.size,
     tileBytes: regions.get('tiles')?.size ?? 0,
+    snapTimeMs,
   };
 }
