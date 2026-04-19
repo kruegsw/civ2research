@@ -243,3 +243,27 @@ The browser parser currently reads these from the save file tail section. They c
 2. **Next**: Happiness panel, icon spacing algorithm, panel coordinate corrections
 3. **Soon**: Trade distribution formulas, unit support display, mini-map panel
 4. **Later**: Turn engine, combat, AI, multiplayer
+
+---
+
+## AI Fidelity (new phase, 2026-04-18)
+
+Mechanics fidelity reached 100% (179/179 fields matching on per-turn diff)
+via `charlizationv4/dump-server-state.js --replay`. That proves v3's
+reducer matches the binary *given* the AI's decisions; it does NOT prove
+v3 would *originate* those decisions.
+
+Next phase: bring v3's AI into fidelity so the JS game plays identically
+to Civ2 without a live sniffer replaying events.
+
+**Full plan:** `findings/ai_fidelity_plan.md`
+
+TL;DR:
+- Path 1 — add `charlizationv3/engine/binary-ai.js` adapter that calls
+  transpiled AI functions from `transpiler/output/` (FUN_0053184D and
+  friends). Dispatch from reducer on a per-slice basis. Leave
+  `engine/ai/` untouched as live fallback.
+- Path 2 — decision-level fidelity harness that diffs v3's emitted events
+  against real Civ2's captured events.
+- Slice order: research target → rates → city production → unit movement
+  → diplomacy → government.
