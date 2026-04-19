@@ -317,7 +317,8 @@ if (turns > 0) {
                   unitType: ev.type,
                   owner: ev.owner, order: ev.order,
                   gotoX: ev.gotoX, gotoY: ev.gotoY,
-                  moveSpent: ev.moveSpent, statusFlags: ev.statusFlags }];
+                  moveSpent: ev.moveSpent, statusFlags: ev.statusFlags,
+                  slot: ev.slot }];
       }
       case 'UNIT_MOVED': {
         // UID-based lookup — slot may have been reused.
@@ -545,6 +546,12 @@ if (turns > 0) {
                   else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
                   if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
                   if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  // Sniffer's UNIT_CREATED event captures the REAL slot
+                  // assignment. v3's production picks lowest-free-slot
+                  // at production time, which may differ if settlers
+                  // die later in the same cycle (freeing slots real
+                  // Civ2 used for later uids). Override.
+                  if (action.slot != null) patched.saveIndex = action.slot;
                   return patched;
                 }),
               };
@@ -587,6 +594,10 @@ if (turns > 0) {
         units: gameState.units.map(u =>
           u.owner === civ && u.gx >= 0 ? { ...u, movesLeft: 0 } : u),
       };
+      // Mark state as replay-mode so END_TURN skips autonomous AI
+      // behavior (barbarian spawn, AI actions) that v3's engine would
+      // normally run. In replay we get those from events.jsonl.
+      gameState.replayMode = true;
       try {
         const next = applyAction(gameState, mapBase, { type: 'END_TURN' }, civ);
         if (next && next !== gameState) {
@@ -686,6 +697,37 @@ if (turns > 0) {
   }
   if (postWrapEvents.length > 0) {
     process.stderr.write(`[replay] post-wrap: ${postWrapEvents.length} events at turn ${postWrapTurn}\n`);
+
+    // Very first pass: CITY_FOUNDED events. Each one fires BUILD_CITY
+    // which kills the founding Settler (frees a saveIndex slot).
+    // Must happen BEFORE the new-unit pre-pass so subsequent UNIT_
+    // CREATED events can reuse those just-freed slots (matches binary
+    // lowest-free-slot assignment). Without this, e.g., New York
+    // founded frees slot 1 (uid=2 dies), but we'd create uid=20 at
+    // slot 12 first, missing the reuse.
+    const cityFoundedEvents = postWrapEvents.filter(e => e.event === 'CITY_FOUNDED');
+    for (const ev of cityFoundedEvents) {
+      const actions = eventToActions(ev, gameState);
+      for (const action of actions) {
+        try {
+          const evCiv = ev.civ ?? ev.owner ?? 0;
+          const savedActive = gameState.turn?.activeCiv;
+          if (savedActive !== evCiv) {
+            gameState = { ...gameState,
+              turn: { ...gameState.turn, activeCiv: evCiv } };
+          }
+          const next = applyAction(gameState, mapBase, action, evCiv);
+          if (next && next !== gameState) gameState = next;
+          if (savedActive !== evCiv) {
+            gameState = { ...gameState,
+              turn: { ...gameState.turn, activeCiv: savedActive } };
+          }
+        } catch (e) {
+          process.stderr.write(`[replay] pre-pre CITY_FOUNDED failed: ${e.message}\n`);
+        }
+      }
+    }
+
     // Pre-pass: funnel UNIT_CREATED events for NEW units (not in
     // preExistingUnitIds) into deferredPostEvents EARLY, so the
     // applyBatch below creates the unit record BEFORE the postWrap
@@ -707,7 +749,21 @@ if (turns > 0) {
         // applyBatch's UNIT_CREATED_PLACE handler.
         const existing = gameState.units.find(u => u &&
           (u.id === action.uid || u.sequenceId === action.uid));
-        if (existing) continue;
+        if (existing) {
+          // If the sniffer captured a specific slot and existing
+          // differs, reassign. This handles the case where v3's
+          // production picked a higher slot (because a settler that
+          // would later die was still occupying the low slot at
+          // production time).
+          if (action.slot != null && existing.saveIndex !== action.slot) {
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u =>
+                u === existing ? { ...u, saveIndex: action.slot } : u),
+            };
+          }
+          continue;
+        }
         const owner = action.owner;
         // Unit types 16+ (Diplomat, Spy, Caravan, Freight, Explorer)
         // don't consume from a home city; real Civ2 stores 0xFF (255)
@@ -724,8 +780,14 @@ if (turns > 0) {
         for (const u of gameState.units) {
           if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
         }
-        let newSaveIndex = 0;
-        while (usedSave.has(newSaveIndex)) newSaveIndex++;
+        // Prefer the sniffer-captured slot if present; otherwise pick
+        // the lowest free slot to match binary's slot-reuse behavior.
+        let newSaveIndex = action.slot != null && !usedSave.has(action.slot)
+          ? action.slot : 0;
+        if (action.slot == null || usedSave.has(action.slot)) {
+          newSaveIndex = 0;
+          while (usedSave.has(newSaveIndex)) newSaveIndex++;
+        }
         const hc = homeCityIdx != null ? gameState.cities[homeCityIdx] : null;
         const hcX = hc ? (hc.cx ?? hc.x) : null;
         const hcY = hc ? (hc.cy ?? hc.y) : null;
@@ -1045,8 +1107,22 @@ if (turns > 0) {
             continue;
           }
           try {
-            const next = applyAction(gameState, mapBase, action, ev.civ ?? ev.owner ?? 0);
+            // Temporarily set activeCiv so reducer validation doesn't
+            // reject with "Not your turn". Events like CITY_FOUNDED
+            // belong to a specific civ whose turn may not currently
+            // be active (cycle has wrapped past them).
+            const evCiv = ev.civ ?? ev.owner ?? 0;
+            const savedActive = gameState.turn?.activeCiv;
+            if (savedActive !== evCiv) {
+              gameState = { ...gameState,
+                turn: { ...gameState.turn, activeCiv: evCiv } };
+            }
+            const next = applyAction(gameState, mapBase, action, evCiv);
             if (next && next !== gameState) gameState = next;
+            if (savedActive !== evCiv) {
+              gameState = { ...gameState,
+                turn: { ...gameState.turn, activeCiv: savedActive } };
+            }
           } catch (e) {
             process.stderr.write(`[replay] deferred ${ev.event} failed: ${e.message}\n`);
           }

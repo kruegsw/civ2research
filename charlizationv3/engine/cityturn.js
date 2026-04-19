@@ -1687,35 +1687,14 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     }
   }
 
-  // ── #154: AI auto-settler at size 2 ──
-  // Binary: when an AI city reaches size 2 for the first time, create a
-  // free settler unit. This helps AI expand early game.
-  if (!cityDestroyed) {
-    const humanPlayers = state.humanPlayers ?? 0xFF;
-    const isAI = !((1 << activeCiv) & humanPlayers);
-    if (isAI && newSize === 2 && city.size < 2) {
-      // City just grew to size 2 — create a free settler
-      const freeSettler = {
-        type: 0, // Settlers
-        owner: activeCiv,
-        gx: city.gx, gy: city.gy,
-        x: city.gx * 2 + (city.gy % 2), y: city.gy,
-        veteran: 0,
-        movesRemain: 0,
-        orders: 'none', movesMade: 0, movesLeft: 0,
-        homeCityId: cityIndex,
-        goToX: -1, goToY: -1,
-        hpLost: 0xFF,
-        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
-        prevInStack: -1, nextInStack: -1,
-      };
-      state.units = [...state.units, freeSettler];
-      events.push({
-        type: 'aiAutoSettler', cityName: city.name, cityIndex,
-        civSlot: activeCiv,
-      });
-    }
-  }
+  // #154 "AI auto-settler at size 2" REMOVED — this was a v3-invented
+  // feature that spawned a free Settler when an AI city grew to size 2.
+  // Real Civ2 doesn't do this; AI expansion goes through normal
+  // production. Empirically: Tenochtitlan (AI Zulu) grew to size 2 on
+  // turn 17→18 and real Civ2 produced no Settler. The ghost unit
+  // this code created was missing saveIndex/id/sequenceId, so it
+  // sorted to slot 0 in output and cascaded slot misalignment across
+  // 100+ per-unit diff fields on the turn its city grew.
 
   // ── Apply accumulated changes to city ──
   // Use current state.cities[cityIndex] as base — it may have been

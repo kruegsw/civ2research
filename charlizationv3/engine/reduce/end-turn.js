@@ -101,9 +101,16 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
     // ── Binary line 3293: barbarian spawning runs BEFORE power rankings ──
     // Binary order: spawn_barbarians → update_pollution → calc_rankings
-    spawnBarbarians(state, mapBase);
-    processBarbarianAI(state, prev, mapBase);
-    processBarbCampProduction(state, mapBase);
+    //
+    // In replay mode (sniffer-driven event replay), barbarian spawn/AI
+    // comes from UNIT_CREATED/UNIT_MOVED events, not v3's own RNG-driven
+    // generation. Running v3's spawn here would create DUPLICATE ghost
+    // barbarians with random positions/types. Skip.
+    if (!state.replayMode) {
+      spawnBarbarians(state, mapBase);
+      processBarbarianAI(state, prev, mapBase);
+      processBarbCampProduction(state, mapBase);
+    }
 
     // ── #77: Power rankings — calculate ONCE at cycle start AFTER barbarian spawn ──
     // Binary FUN_004853e7: calc_power_graph_rankings() runs after barbarian processing.
