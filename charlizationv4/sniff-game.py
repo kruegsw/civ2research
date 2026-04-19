@@ -1746,7 +1746,14 @@ def main():
         mw = s.get('mapWidth') or 0
         mh = s.get('mapHeight') or 0
         seed = s.get('mapSeed') or 0
-        return 'loaded' if (mw > 0 and mh > 0 and seed != 0) else 'unloaded'
+        # Civ2 writes map dims and mapSeed earlier in init than the civ
+        # data / starting units. Also require totalUnits > 0 so the
+        # first turn-0 snapshot doesn't fire before settlers are placed
+        # — otherwise the dump captures all-zero civ governments/rates
+        # and a diff against turn 1 explodes with 90+ mismatches that
+        # aren't v3 bugs, they're "sniffer captured too early."
+        nu = s.get('totalUnits') or 0
+        return 'loaded' if (mw > 0 and mh > 0 and seed != 0 and nu > 0) else 'unloaded'
 
     current_game_state = game_state(prev)
     events_path = os.path.join(snap_dir, 'events.jsonl')

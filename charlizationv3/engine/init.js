@@ -506,10 +506,19 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
   }
   civTechCounts[civSlot] = civTechs[civSlot].size;
 
+  // Binary FUN_0055c69d (government-change handler, block_00550000.c:5115)
+  // sets bit 0x08 of stateFlags (civ_struct +0x00 u16) whenever a
+  // government is assigned. Since createNewCiv assigns 'despotism',
+  // we mirror that: bit 0x08 = "government has been set" sentinel.
+  // Labeled "recoveredFromRevolution" in parser.js — the binary uses
+  // the same bit for both "new-civ gov assigned" and "finished anarchy."
+  const stateFlags = 0x08;
+
   return {
     name,
     style,
     government,
+    stateFlags,
     treasury,
     scienceRate,
     taxRate,
