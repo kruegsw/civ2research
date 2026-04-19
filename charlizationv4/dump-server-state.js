@@ -471,8 +471,18 @@ if (turns > 0) {
                 const terrain = mapBase.getTerrain(Math.floor(tx / 2), ty);
                 destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
               }
-              const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
-              const newMoveSpent = action.moveSpent != null ? action.moveSpent : heuristicMoveSpent;
+              // For AI civs AFTER the human in cycle order, moveSpent
+              // gets cleared to 0 between their END_TURN (which set
+              // it to the movement cost) and the next human-pause
+              // snapshot. The sniffer captures the event-time value
+              // (3/6/9) but the snapshot shows 0. Force 0 for
+              // after-human AI regardless of the captured value.
+              // Human: always 0 (their start-of-turn reset fires
+              // before the next snapshot). Before-human AI: use
+              // the captured event value (or destCost*3 fallback).
+              const newMoveSpent = (isHumanOwner || ownerAfterHuman)
+                ? 0
+                : (action.moveSpent != null ? action.moveSpent : destCost * 3);
               const setGoto = !isHumanOwner;
               const newGotoX = action.gotoX != null ? action.gotoX : (setGoto ? tx : -1);
               const newGotoY = action.gotoY != null ? action.gotoY : (setGoto ? ty : -1);
