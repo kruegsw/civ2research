@@ -1,26 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════
 // start-turn.js — Per-civ start-of-turn processing
 //
-// Binary reference: FUN_0048710a @ block_00480000.c:1741-1787 is called
-// once per civ at that civ's turn start (from FUN_00487371 line 1822).
-// It runs per-unit reset logic:
-//   - Active unit (order=none): moveSpent=0, movesLeft=max, flags cleared.
-//   - Idle unit (fortify-like orders): decrement the fortify-delay
-//     counter (+0x0E); when it reaches 0, promote to 'fortified'.
+// Invoked via the START_TURN action by the harness / server at each
+// civ's turn begin. Decoupled from END_TURN so callers drive timing
+// explicitly, matching the binary's per-civ model (FUN_0048710a @
+// block_00480000.c:1741 is called per-civ from the turn driver).
 //
-// This file extracts that logic so it can be invoked BOTH during the
-// reducer's END_TURN cycle-wrap AND via the new START_TURN action
-// (fired per civ by the harness / server). Decoupling the start-of-
-// turn reset from END_TURN lets callers drive timing explicitly,
-// matching the binary's per-civ model.
+// Scope of this function:
+//   1. moveSpent / movesLeft reset for each of `civ`'s units:
+//        - Active unit (no idle order): moveSpent=0, movesLeft=mp.
+//        - Idle unit (fortify/sleep/worker-build): moveSpent=mp for AI
+//          owners, UNCHANGED for human owners. The split is empirical:
+//          AI-auto-fortified units end a cycle with moveSpent already
+//          at max (binary sets it during creation/promotion), while
+//          human-fortified units hold moveSpent at whatever the user
+//          left it (usually 0 if never moved before fortify). Setting
+//          idle→max unconditionally would over-write human values;
+//          leaving idle→unchanged unconditionally would under-write AI
+//          values. The split preserves both observations.
 //
-// Current rule (empirically matched, full binary mechanism pending):
-//   Idle units → moveSpent UNCHANGED for human owners, BUMPED to max
-//   for AI owners. This split is a snapshot-timing shortcut — the
-//   underlying binary likely uses the +0x0E delay counter with a
-//   fortify_promote_and_clear() that bumps moveSpent when delay hits
-//   zero. Once we understand that fully, the human/AI branch can be
-//   replaced with a delay-driven rule.
+// NOT handled here (intentionally separate mechanisms):
+//   - fortifying→fortified promotion: global at cycle wrap, gated by
+//     `fortifyIssuedTurn < postWrapTurn`. See end-turn.js. This is
+//     NOT a per-civ start-of-turn event in the binary — the issue-turn
+//     vs current-turn comparison works regardless of which civ's turn
+//     is active.
+//   - Worker-order progress (road, irrigation, mine, etc.): accumulator
+//     `workTurns` at memory +0x0D, incremented during the OWNER civ's
+//     END_TURN (not START_TURN). Completion when accumulator reaches
+//     terrain-specific threshold.
 // ═══════════════════════════════════════════════════════════════════
 
 import { ORDER_BYTES } from '../order-bytes.js';
@@ -82,8 +90,10 @@ export function processCivTurnStart(state, civ) {
 
     let newMoveSpent, newMovesLeft;
     if (idle) {
-      // See file-level comment: empirical human/AI split pending
-      // binary-mechanism analysis.
+      // Idle unit (fortify-like order). See file header for the
+      // rationale behind the human/AI split: binary writes moveSpent
+      // during AI auto-fortify creation/promotion; human-fortified
+      // units retain whatever moveSpent the user left.
       newMoveSpent = isHumanOwner ? (u.moveSpent ?? 0) : mp;
       newMovesLeft = 0;
     } else {

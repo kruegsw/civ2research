@@ -640,16 +640,22 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         moveSpent: 0,
         orders: aiFortifying ? 'fortifying' : 'none',
         order: aiFortifying ? 1 : 0xFF,  // raw memory +0x0F byte
-        // fortifyIssuedTurn gates the fortifying→fortified promotion so
-        // a warrior created+fortified on turn N stays fortifying through
-        // turn N+1's transition (matching real Civ2's per-owner turn-start
-        // promotion). For auto-fortify AT CREATION we offset by +1
-        // because the binary treats a unit's creation turn as the
-        // "start" of its fortify state — it doesn't promote until the
-        // cycle AFTER its first full fortifying turn. This mirrors the
-        // observed delta between manual fortify (user click on turn N
-        // → promotes at N+1) and auto-fortify on creation (AI creates
-        // +fortifies on turn N → promotes at N+2).
+        // fortifyIssuedTurn drives the fortifying→fortified promotion
+        // via end-turn.js's cycle-wrap gate (`fortifyIssuedTurn <
+        // postWrapTurn`). For auto-fortify AT CREATION we store N+1
+        // because the binary doesn't count the creation turn as a full
+        // fortifying turn — the unit needs one more cycle before
+        // promoting. Observed (verified across multiple civs):
+        //   - Manual fortify on turn N (user click): promotes at N+1.
+        //     Store N → `N < N+1` at cycle N→N+1 wrap = true.
+        //   - Auto-fortify at creation on turn N: promotes at N+2.
+        //     Store N+1 → `N+1 < N+1` false at first wrap, `N+1 < N+2`
+        //     true at second wrap.
+        // Fortify progression is GLOBAL at cycle wrap (not per-civ
+        // START_TURN) — the binary's check is issue-turn vs current-
+        // turn, independent of which civ's turn is currently active.
+        // This is distinct from worker-order progress (`workTurns`
+        // accumulator at memory +0x0D), which is per-civ at END_TURN.
         fortifyIssuedTurn: aiFortifying ? ((state.turn?.number ?? 0) + 1) : null,
         movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,

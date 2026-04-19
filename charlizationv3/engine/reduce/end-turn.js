@@ -273,17 +273,22 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // Order-byte sync table is in ../order-bytes.js (shared with the
     // reducer's UNIT_ORDER handler). Local const ORDER_BYTES used to
     // live here; extracted so both reducer and end-turn stay in sync.
-    // GLOBAL fortifying→fortified promotion at turn wrap. Applies to
-    // every unit whose fortify order was issued on a prior turn,
-    // regardless of whether that unit's owner has processed their next
-    // turn yet. Matches observed sniffer behavior where a Carthaginian
-    // warrior fortified turn 4 shows order=2 at turn 6 even though
-    // civ 6's turn 6 is still waiting.
+    // GLOBAL fortifying→fortified promotion at turn wrap. Runs once
+    // per cycle boundary for EVERY unit, not per-civ at START_TURN.
+    // This is genuinely a cycle-boundary event in the binary, not a
+    // per-owner event — empirically confirmed by observing a civ-6
+    // (after-human) warrior fortified on turn 4 showing fortified at
+    // snapshot 6 even though civ 6's cycle-6 turn hadn't started yet.
+    // A per-civ START_TURN model can't produce this behavior cleanly
+    // with a single delay value; the binary's check is issue-turn vs
+    // current-turn, independent of turn ordering within the cycle.
     //
-    // Per-civ start-of-turn reset (moveSpent/movesLeft) is NO LONGER
-    // handled here — callers (harness, server) fire START_TURN per
-    // civ explicitly. This decoupling matches the binary's per-civ
-    // model (FUN_0048710a is called when each civ's turn begins).
+    // This is distinct from:
+    //   - Per-civ moveSpent/movesLeft reset → START_TURN action
+    //     (start-turn.js), fired by harness/server per civ.
+    //   - Worker-order progress (road, irrigation, etc.) → workTurns
+    //     accumulator at memory +0x0D, incremented during the owner
+    //     civ's END_TURN (above in this file, ~line 56).
     const postWrapTurn = turnNumber + 1;
     state.units = state.units.map(u => {
       if (u.gx < 0) return u;
