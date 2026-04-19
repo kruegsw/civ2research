@@ -222,6 +222,21 @@ def main():
             read(wbuf, i * 2, '<h') for i in range(28) if i * 2 + 2 <= len(wbuf)
         ]
 
+    # Tile visibility per civ — byte 4 of each 6-byte tile record is the
+    # civ-visibility bitmask (bit N = civ N has seen this tile). Emit
+    # per-civ count of visible tiles so the diff can validate fog-reveal
+    # without comparing ~12KB of raw bytes. Map dimensions come from the
+    # snapshot's tiles region (ms = bytecount / 6).
+    if 'tiles' in regions:
+        _, tbuf = regions['tiles']
+        ms = len(tbuf) // 6
+        vis_counts = [0] * 8
+        for i in range(ms):
+            vis_byte = tbuf[i * 6 + 4]
+            for civ in range(8):
+                if vis_byte & (1 << civ): vis_counts[civ] += 1
+        game_state['visibilityCounts'] = vis_counts
+
     out = {
         'source': 'real-civ2-sniffer',
         'snapshotPath': path,

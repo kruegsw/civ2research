@@ -285,6 +285,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       'airbase':     10,  'buildAirbase':     10,
       'railroad':    11,
       'goto':        11,
+      'goto_ai':     27,
     };
     // Build the set of civs whose turn-start reset SHOULD run during
     // this cycle boundary. Real Civ2 runs start-of-turn processing

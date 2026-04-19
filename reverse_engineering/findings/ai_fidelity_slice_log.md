@@ -334,3 +334,73 @@ Three interlocking fixes closed the last gaps on turns 7→8 and 8→9.
 `order`, `gotoX`, `gotoY`, `moveSpent`, and `statusFlags` — future
 captures will carry authoritative data instead of relying on the
 off-city heuristic.
+
+### Session 2026-04-18 (part 3): visibility + post-wrap unit creation + order byte sync
+
+Six fixes land this session, driven by a single human settler move
+into unexplored territory + an AI Diplomat being born on the turn
+advance.
+
+1. **Tile visibility diff** (`state-diff.py` + both dump tools). New
+   category: per-civ count of visible tiles (byte 4 of each 6-byte
+   tile record, bit N = civ N has seen it). Validates fog-of-war
+   reveals. Adds to both `snapshot-to-state-json.py` and
+   `dump-server-state.js`; state-diff compares.
+
+2. **Post-wrap visibility update** (`dump-server-state.js`). Reducer
+   bypass in postWrap UNIT_MOVED handler — reveals tiles within a
+   fixed radius-1 around the destination. Uses a local offset array
+   rather than `updateVisibility()` because v3's helper applies
+   `Hills +1 / Mountains +2` terrain boost, but real Civ2 does NOT
+   apply that boost to movement reveals (verified: Carthage warrior
+   moving onto a mountain reveals 5 new tiles, not 37).
+
+3. **Human UNIT_MOVED in postWrap.** Owner-dependent:
+   - Human: moveSpent=0 (turn-start reset has fired), leave
+     gotoX/Y=-1 (single-step click, no goto waypoint).
+   - AI: moveSpent = 0 (AI-mobilized clears it) OR destCost×3
+     depending on cycle position; gotoX/Y = destination (goto
+     bookkeeping). Also skip the `(-1200,-1200)` transit-state
+     sentinel event.
+
+4. **Post-wrap unit CREATION** (`dump-server-state.js`). Units
+   created in the post-wrap phase (e.g., Zulu Diplomat uid=10 at
+   turn 10 start, born AFTER v3's END_TURN loop broke) had no v3
+   record. New pre-pass synthesizes a unit from the event data +
+   heuristics, then appends to `gameState.units`. Types ≥ 16
+   (Diplomat/Spy/Caravan/Freight/Explorer) default `homeCity=255`;
+   types < 16 get the first owner-matching city as home.
+
+5. **Order byte sync** (`dump-server-state.js` + `end-turn.js`). v3's
+   reducer only updates `u.orders` (string) on UNIT_ORDER. End-turn
+   cycle-wrap then re-derives `u.order` (byte) from the string via
+   `ORDER_BYTES`, killing any externally-set byte. New synthetic
+   `__UNIT_ORDER_BYTE__` action sets BOTH byte and string via a
+   byte→orders reverse-map (`27 → 'goto_ai'` etc.). Added
+   `'goto_ai': 27` to `ORDER_BYTES` so the cycle-wrap reset
+   preserves it.
+
+6. **Pre-pass skip semantics.** Pre-pass only adds a uid to
+   `prepassHandledUids` when it actually creates the unit — not
+   when it skips because v3 production already made one. Otherwise
+   the deferred applyBatch wouldn't run the "existing" patch path
+   for v3-created-then-moved units (e.g., Carthage warrior spawn at
+   (66,22) away from the city tile).
+
+**Results (all pairs 100%):**
+- turn 4→5: 166/166
+- turn 5→6: 179/179
+- turn 6→7: 179/179
+- turn 7→8: 192/192
+- turn 8→9: 205/205
+- turn 9→10: **218/218** (includes new visibility category)
+
+**AI behavior learned:**
+- Real Civ2 movement reveals use fixed radius 1 — no terrain boost.
+  v3's `updateVisibility()` includes a Hills/Mountain/Fortress
+  bonus; that bonus applies to something else (map view, LOS
+  queries, etc.) but NOT to the snapshot visibility bitmask after
+  a move. Documented but not yet fixed in v3's helper.
+- Fog-reveal is deterministic from movement events — v3 can produce
+  byte-identical fog state given the same move sequence, validated
+  via the new visibility diff.

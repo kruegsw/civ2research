@@ -35,6 +35,7 @@ CATEGORY_SEVERITY = {
     'per-city':    3,  # per-city size, stored resources
     'per-unit':    4,  # per-unit position, HP, orders
     'wonders':     5,  # wonder ownership
+    'visibility':  6,  # per-civ fog-of-war tile counts
     'other':       9,
 }
 
@@ -131,6 +132,22 @@ def main():
         diff_scalar(f"wonders[{i}]", va, vb, mismatches, 'wonders')
     if len(wa) == len(wb) and all(a == b for a, b in zip(wa, wb)):
         print(f"  OKall {len(wa)} wonders match")
+
+    # -- Tile visibility (fog-of-war) per civ --------------------─
+    print("\n-- Tile visibility per civ --")
+    va = ga.get('visibilityCounts', [])
+    vb = gb.get('visibilityCounts', [])
+    if not va and not vb:
+        print("  (neither side exposes visibilityCounts)")
+    else:
+        nvc = max(len(va), len(vb))
+        for i in range(nvc):
+            ai = va[i] if i < len(va) else None
+            bi = vb[i] if i < len(vb) else None
+            if ai == bi and ai not in (None, 0):
+                print(f"  OK visibilityCounts[civ{i}] {ai}")
+            elif ai != bi:
+                diff_scalar(f"visibilityCounts[civ{i}]", ai, bi, mismatches, 'visibility')
 
     # -- Structural checks ---------------------------------------─
     # Flag shape-level issues BEFORE value-level mismatches: if array

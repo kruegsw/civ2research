@@ -20,6 +20,7 @@ import { Civ2Parser } from '../charlizationv3/engine/parser.js';
 import { initFromSav } from '../charlizationv3/engine/init.js';
 import { applyAction } from '../charlizationv3/engine/reducer.js';
 import { runAiTurn } from '../charlizationv3/engine/ai/index.js';
+import { updateVisibility } from '../charlizationv3/engine/visibility.js';
 import { v4EndTurn, initV4 } from './v4-bridge.js';
 import { loadSav as loadSavIntoMem } from './sav-loader.js';
 import { loadSnapshotIntoMem } from './load-snapshot.js';
@@ -313,6 +314,7 @@ if (turns > 0) {
         // city's tile (auto-fortify) or not (AI goto).
         if (ev.uid == null) return [];
         return [{ type: '__UNIT_CREATED_PLACE__', uid: ev.uid, x: ev.x, y: ev.y,
+                  unitType: ev.type,
                   owner: ev.owner, order: ev.order,
                   gotoX: ev.gotoX, gotoY: ev.gotoY,
                   moveSpent: ev.moveSpent, statusFlags: ev.statusFlags }];
@@ -335,24 +337,27 @@ if (turns > 0) {
         //   0/255 = none (wake); 1/2 = fortify; 3 = sleep;
         //   4 = fortress; 5 = road; 6 = irrigation; 7 = mine;
         //   8 = transform (Engineer only); 9 = pollution; 10 = airbase;
-        //   11 = goto (ignored — needs GOTO action with coords).
+        //   11 = goto; 27 = goto_ai (AI multi-turn waypoint).
         const WORKER_MAP = { 4: 'fortress', 5: 'road', 6: 'irrigation',
                              7: 'mine', 9: 'pollution', 10: 'airbase',
                              11: 'railroad' };
         const UNIT_MAP = { 1: 'fortify', 2: 'fortify', 3: 'sleep' };
         const orderByte = ev.order;
+        // Always set the raw order byte (u.order) to match the sniffer
+        // snapshot — the v3 reducer only updates u.orders (string) and
+        // leaves u.order (byte) stale. Emit a synthetic byte-setter
+        // action alongside the semantic reducer action.
+        const actions = [{ type: '__UNIT_ORDER_BYTE__', uid: ev.uid, orderByte }];
         if (orderByte === 0 || orderByte === 0xFF) {
-          return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' }];
+          actions.push({ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' });
+        } else if (WORKER_MAP[orderByte]) {
+          actions.push({ type: 'WORKER_ORDER', unitIndex: uIdx,
+                    order: WORKER_MAP[orderByte] });
+        } else if (UNIT_MAP[orderByte]) {
+          actions.push({ type: 'UNIT_ORDER', unitIndex: uIdx,
+                    order: UNIT_MAP[orderByte] });
         }
-        if (WORKER_MAP[orderByte]) {
-          return [{ type: 'WORKER_ORDER', unitIndex: uIdx,
-                    order: WORKER_MAP[orderByte] }];
-        }
-        if (UNIT_MAP[orderByte]) {
-          return [{ type: 'UNIT_ORDER', unitIndex: uIdx,
-                    order: UNIT_MAP[orderByte] }];
-        }
-        return [];
+        return actions;
       }
       default:
         return [];  // GOLD_CHANGED, TECH_DISCOVERED, TURN_ADVANCED, etc.
@@ -441,6 +446,27 @@ if (turns > 0) {
               };
               continue;
             }
+            if (action.type === '__UNIT_ORDER_BYTE__') {
+              // Map byte → orders string so end-turn.js's cycle-wrap
+              // reset (which re-derives order from orders via
+              // ORDER_BYTES) preserves the byte we just wrote.
+              const BYTE_TO_ORDERS_LOCAL = { 0xFF: 'none', 0: 'none',
+                1: 'fortifying', 2: 'fortified', 3: 'sleep',
+                4: 'buildFortress', 5: 'buildRoad', 6: 'buildIrrigation',
+                7: 'buildMine', 8: 'transform', 9: 'cleanPollution',
+                10: 'buildAirbase', 11: 'railroad', 27: 'goto_ai' };
+              const newOrders = BYTE_TO_ORDERS_LOCAL[action.orderByte];
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u => {
+                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  const patched = { ...u, order: action.orderByte };
+                  if (newOrders != null) patched.orders = newOrders;
+                  return patched;
+                }),
+              };
+              continue;
+            }
             if (action.type === '__UNIT_CREATED_PLACE__') {
               // Skip if this unit already existed in the starting
               // state — the event is a past-turn creation shifted
@@ -464,8 +490,14 @@ if (turns > 0) {
                   const patched = { ...u, x: action.x, y: action.y,
                           cx: action.x, cy: action.y,
                           gx: Math.floor(action.x / 2), gy: action.y };
+                  const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
+                    2: 'fortified', 3: 'sleep', 4: 'buildFortress',
+                    5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
+                    8: 'transform', 9: 'cleanPollution', 10: 'buildAirbase',
+                    11: 'railroad', 27: 'goto_ai' };
                   if (action.order != null) patched.order = action.order;
                   else if (placedOffCity) patched.order = 27;
+                  if (B2O[patched.order] != null) patched.orders = B2O[patched.order];
                   if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
                   else if (placedOffCity) { patched.gotoX = action.x; patched.goToX = action.x; }
                   if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
@@ -585,21 +617,98 @@ if (turns > 0) {
   }
   if (postWrapEvents.length > 0) {
     process.stderr.write(`[replay] post-wrap: ${postWrapEvents.length} events at turn ${postWrapTurn}\n`);
+    // Pre-pass: funnel UNIT_CREATED events for NEW units (not in
+    // preExistingUnitIds) into deferredPostEvents EARLY, so the
+    // applyBatch below creates the unit record BEFORE the postWrap
+    // UNIT_MOVED/UNIT_ORDER events for that uid fire. Without this,
+    // e.g., Zulu Diplomat UNIT_CREATED at (13,5) + UNIT_MOVED to
+    // (14,4) would first try to move a non-existent unit, then
+    // create it at the event's (13,5) — net wrong position.
+    const newUnitCreates = postWrapEvents.filter(e =>
+      e.event === 'UNIT_CREATED' && e.uid != null
+      && !preExistingUnitIds.has(e.uid));
+    const prepassHandledUids = new Set();
+    process.stderr.write(`[replay] pre-pass: ${newUnitCreates.length} new-unit creates\n`);
+    for (const ev of newUnitCreates) {
+      const actions = eventToActions(ev, gameState);
+      for (const action of actions) {
+        if (action.type !== '__UNIT_CREATED_PLACE__') continue;
+        // Inline the creation path (no homeCity lookup after — this
+        // runs before subsequent moves). Modeled after deferred
+        // applyBatch's UNIT_CREATED_PLACE handler.
+        const existing = gameState.units.find(u => u &&
+          (u.id === action.uid || u.sequenceId === action.uid));
+        if (existing) continue;
+        const owner = action.owner;
+        // Unit types 16+ (Diplomat, Spy, Caravan, Freight, Explorer)
+        // don't consume from a home city; real Civ2 stores 0xFF (255)
+        // in the homeCity byte. Units 0..15 (Settlers/Engineers/
+        // military) need a home city for upkeep.
+        const unitType = action.unitType != null ? action.unitType : 0;
+        let homeCityIdx = 255;
+        if (unitType < 16 && owner != null && gameState.cities) {
+          const idx = gameState.cities.findIndex(c =>
+            c && c.owner === owner && c.gx >= 0);
+          if (idx >= 0) homeCityIdx = idx;
+        }
+        const usedSave = new Set();
+        for (const u of gameState.units) {
+          if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
+        }
+        let newSaveIndex = 0;
+        while (usedSave.has(newSaveIndex)) newSaveIndex++;
+        const hc = homeCityIdx != null ? gameState.cities[homeCityIdx] : null;
+        const hcX = hc ? (hc.cx ?? hc.x) : null;
+        const hcY = hc ? (hc.cy ?? hc.y) : null;
+        const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
+        const order = action.order != null ? action.order
+                    : (placedOffCity ? 27 : 0xFF);
+        const gotoX = action.gotoX != null ? action.gotoX
+                    : (placedOffCity ? action.x : -1);
+        const gotoY = action.gotoY != null ? action.gotoY
+                    : (placedOffCity ? action.y : -1);
+        const newUnit = {
+          saveIndex: newSaveIndex,
+          id: action.uid, sequenceId: action.uid,
+          createdTurn: gameState.turn?.number ?? 0,
+          type: action.unitType != null ? action.unitType : 0,
+          owner,
+          gx: Math.floor(action.x / 2), gy: action.y,
+          x: action.x, y: action.y,
+          cx: action.x, cy: action.y,
+          veteran: 0, movesRemain: 0,
+          moveSpent: action.moveSpent ?? 0,
+          order, orders: 'none',
+          fortifyIssuedTurn: null,
+          movesMade: 0, movesLeft: 0,
+          homeCityId: homeCityIdx, homeCity: homeCityIdx,
+          goToX: gotoX, goToY: gotoY,
+          gotoX, gotoY,
+          hpLost: 0, damageTaken: 0,
+          statusFlags: action.statusFlags ?? 0,
+          commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+          prevInStack: -1, nextInStack: -1,
+        };
+        gameState = {
+          ...gameState,
+          units: [...gameState.units, newUnit],
+          totalUnits: (gameState.totalUnits ?? gameState.units.length) + 1,
+        };
+        prepassHandledUids.add(ev.uid);
+      }
+    }
     for (const ev of postWrapEvents) {
       if (ev.event === 'UNIT_MOVED') {
         const [tx, ty] = ev.to || [];
+        // Skip the transit-state sentinel (-1200,-1200) — it's a mid-
+        // animation marker, not a real destination. Real Civ2 emits a
+        // second UNIT_MOVED for the final position.
+        if (tx === -1200 || ty === -1200) continue;
         // UNIT_MOVED events for AI civs (civ 4 etc. processing after
         // the cycle wrap) include an ongoing goto — reflected in the
         // snapshot's gotoX/gotoY fields matching the destination.
-        // v3 doesn't otherwise track goto targets from replay; set
-        // them here to match.
-        //
-        // moveSpent tracks cumulative MP expenditure in thirds
-        // (MOVEMENT_MULTIPLIER=3). When a unit enters a tile, the
-        // binary adds the tile's terrain move-cost × 3 to its
-        // moveSpent — NOT clamped to max MP. So a 1-MP warrior
-        // entering Forest (2 MP cost) has moveSpent=6, not 3. Look
-        // up the destination terrain to match.
+        // Human single-step moves leave gotoX/Y=-1 (no multi-turn
+        // waypoint). Distinguish by owner.
         const TERRAIN_MOVE_COST = [1, 1, 1, 2, 2, 3, 1, 2, 2, 2, 1];
         let destCost = 1;
         if (mapBase?.getTerrain) {
@@ -607,36 +716,67 @@ if (turns > 0) {
           const terrain = mapBase.getTerrain(gxTo, ty);
           destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
         }
-        // Replace moveSpent with the move's cost (not accumulate).
-        // Empirically, the binary sets moveSpent to the movement
-        // expenditure at the end of a move, regardless of prior
-        // idle-max state — so a fortified (moveSpent=3) warrior that
-        // de-fortifies and moves into forest ends at moveSpent=6,
-        // not 3+6=9.
-        // Owner-dependent post-move moveSpent (observed):
-        //   - Civs processing BEFORE the human in the cycle (e.g.,
-        //     civ 4 when human is civ 5): moveSpent = terrain_cost*3.
-        //   - Civs processing AFTER the human (e.g., civ 6): binary
-        //     clears moveSpent to 0, presumably because the AI
-        //     mobilized the unit for a multi-turn goto and needs
-        //     fresh MP for next turn. Snapshot at the human's next
-        //     turn shows the cleared value.
         const evOwner = ev.owner ?? ev.civ;
         const hMask = parsed.gameState?.humanPlayers ?? 0;
         let hCiv = -1;
         for (let c = 1; c < 8; c++) { if (hMask & (1 << c)) { hCiv = c; break; } }
+        const isHumanOwner = hCiv > 0 && evOwner === hCiv;
         const ownerAfterHuman = hCiv > 0 && evOwner > hCiv;
-        const newMoveSpent = ownerAfterHuman ? 0 : destCost * 3;
+        // moveSpent rules:
+        //   - Human-owned: 0 (their turn-start reset has fired by
+        //     snapshot time, refreshing the unit's MP).
+        //   - AI after human: 0 (AI-mobilized multi-turn goto; binary
+        //     clears moveSpent in anticipation of next turn).
+        //   - AI before human: destCost*3 (turn-start hasn't cleared
+        //     it yet in the binary flow).
+        const newMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
+        // gotoX/Y rules:
+        //   - Human: leave -1 (single-step click, no goto target).
+        //   - AI: set to destination (AI multi-turn goto bookkeeping).
+        const setGoto = !isHumanOwner;
         gameState = {
           ...gameState,
           units: gameState.units.map(u => {
             if (!u || !(u.id === ev.uid || u.sequenceId === ev.uid)) return u;
-            return { ...u, x: tx, y: ty, cx: tx, cy: ty,
+            const patched = { ...u, x: tx, y: ty, cx: tx, cy: ty,
                     gx: Math.floor(tx / 2), gy: ty,
-                    gotoX: tx, gotoY: ty, goToX: tx, goToY: ty,
                     moveSpent: newMoveSpent };
+            if (setGoto) {
+              patched.gotoX = tx; patched.gotoY = ty;
+              patched.goToX = tx; patched.goToY = ty;
+            }
+            return patched;
           }),
         };
+        // Update fog-of-war visibility for the moving civ. Real Civ2
+        // reveals tiles within sight radius on every movement; the
+        // postWrap path bypasses the reducer's move-unit.js which
+        // normally calls updateVisibility. Mirror that here.
+        if (evOwner != null && mapBase?.tileData) {
+          // Real Civ2's movement-reveal uses a fixed radius of 1 —
+          // no terrain boost. v3's updateVisibility applies a +1
+          // bonus for Hills and +2 for Mountains, which over-reveals
+          // on high-ground moves. Write visibility directly with
+          // the 9-tile radius-1 offset pattern to match binary.
+          const dx0 = (Math.floor(tx / 2)) * 2 + (ty % 2);
+          const gy0 = ty;
+          const bit = 1 << evOwner;
+          const mw = mapBase.mw;
+          const mh = mapBase.mh;
+          const mw2 = mw * 2;
+          const R1 = [[0,0],[-1,-1],[1,-1],[1,1],[-1,1],[0,-2],[0,2],[2,0],[-2,0]];
+          for (const [odx, ody] of R1) {
+            let ndx = dx0 + odx;
+            const ndy = gy0 + ody;
+            if (ndy < 0 || ndy >= mh) continue;
+            if (mapBase.wraps) ndx = ((ndx % mw2) + mw2) % mw2;
+            else if (ndx < 0 || ndx >= mw2) continue;
+            const idx = ndy * mw + (ndx >> 1);
+            if (mapBase.tileData[idx]) {
+              mapBase.tileData[idx].visibility |= bit;
+            }
+          }
+        }
       } else if (ev.event === 'UNIT_ORDER') {
         const orderByte = ev.order;
         gameState = {
@@ -659,6 +799,12 @@ if (turns > 0) {
       // picks them up. These events, shifted here by the late-event-
       // shift rule (time_ms > TURN_ADVANCED(ev.turn).time + 500ms),
       // represent state changes that land in THIS snapshot's view.
+      // Skip UNIT_CREATED events that the pre-pass already handled —
+      // otherwise deferred handling would stomp the subsequent
+      // UNIT_MOVED's position change.
+      if (ev.event === 'UNIT_CREATED' && prepassHandledUids.has(ev.uid)) {
+        continue;
+      }
       if (ev.event !== 'UNIT_MOVED' && ev.event !== 'UNIT_ORDER'
           && ev.event !== 'TURN_ADVANCED') {
         deferredPostEvents.push(ev);
@@ -684,6 +830,24 @@ if (turns > 0) {
             };
             continue;
           }
+          if (action.type === '__UNIT_ORDER_BYTE__') {
+            const BYTE_TO_ORDERS = { 0xFF: 'none', 0: 'none',
+              1: 'fortifying', 2: 'fortified', 3: 'sleep',
+              4: 'buildFortress', 5: 'buildRoad', 6: 'buildIrrigation',
+              7: 'buildMine', 8: 'transform', 9: 'cleanPollution',
+              10: 'buildAirbase', 11: 'railroad', 27: 'goto_ai' };
+            const newOrders = BYTE_TO_ORDERS[action.orderByte];
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u => {
+                if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                const patched = { ...u, order: action.orderByte };
+                if (newOrders != null) patched.orders = newOrders;
+                return patched;
+              }),
+            };
+            continue;
+          }
           if (action.type === '__TECH_DISCOVERED__') {
             const newTechs = gameState.civTechs
               ? [...gameState.civTechs]
@@ -703,28 +867,100 @@ if (turns > 0) {
           }
           if (action.type === '__UNIT_CREATED_PLACE__') {
             if (preExistingUnitIds.has(action.uid)) continue;
-            gameState = {
-              ...gameState,
-              units: gameState.units.map(u => {
-                if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
-                const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
-                const hcX = hc ? (hc.cx ?? hc.x) : null;
-                const hcY = hc ? (hc.cy ?? hc.y) : null;
-                const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
-                const patched = { ...u, x: action.x, y: action.y,
-                        cx: action.x, cy: action.y,
-                        gx: Math.floor(action.x / 2), gy: action.y };
-                if (action.order != null) patched.order = action.order;
-                else if (placedOffCity) patched.order = 27;
-                if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
-                else if (placedOffCity) { patched.gotoX = action.x; patched.goToX = action.x; }
-                if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
-                else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
-                if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
-                if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
-                return patched;
-              }),
-            };
+            const existing = gameState.units.find(u => u &&
+              (u.id === action.uid || u.sequenceId === action.uid));
+            if (existing) {
+              // v3's production already created the unit record; patch
+              // its position + captured/heuristic fields to match.
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u => {
+                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
+                  const hcX = hc ? (hc.cx ?? hc.x) : null;
+                  const hcY = hc ? (hc.cy ?? hc.y) : null;
+                  const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
+                  const patched = { ...u, x: action.x, y: action.y,
+                          cx: action.x, cy: action.y,
+                          gx: Math.floor(action.x / 2), gy: action.y };
+                  const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
+                    2: 'fortified', 3: 'sleep', 4: 'buildFortress',
+                    5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
+                    8: 'transform', 9: 'cleanPollution', 10: 'buildAirbase',
+                    11: 'railroad', 27: 'goto_ai' };
+                  if (action.order != null) patched.order = action.order;
+                  else if (placedOffCity) patched.order = 27;
+                  if (B2O[patched.order] != null) patched.orders = B2O[patched.order];
+                  if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
+                  else if (placedOffCity) { patched.gotoX = action.x; patched.goToX = action.x; }
+                  if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
+                  else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
+                  if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
+                  if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  return patched;
+                }),
+              };
+            } else {
+              // No v3 record exists — real Civ2 created this unit in
+              // the post-wrap phase (after v3's END_TURN loop broke,
+              // e.g., AI producing a unit at turn-start of the next
+              // cycle). Synthesize a unit record from the event and
+              // heuristics, then append it.
+              const owner = action.owner;
+              let homeCityIdx = null;
+              if (owner != null && gameState.cities) {
+                homeCityIdx = gameState.cities.findIndex(c =>
+                  c && c.owner === owner && c.gx >= 0);
+                if (homeCityIdx < 0) homeCityIdx = null;
+              }
+              let usedSave = new Set();
+              for (const u of gameState.units) {
+                if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
+              }
+              let newSaveIndex = 0;
+              while (usedSave.has(newSaveIndex)) newSaveIndex++;
+              const hc = homeCityIdx != null ? gameState.cities[homeCityIdx] : null;
+              const hcX = hc ? (hc.cx ?? hc.x) : null;
+              const hcY = hc ? (hc.cy ?? hc.y) : null;
+              const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
+              const order = action.order != null ? action.order
+                          : (placedOffCity ? 27 : 0xFF);
+              const gotoX = action.gotoX != null ? action.gotoX
+                          : (placedOffCity ? action.x : -1);
+              const gotoY = action.gotoY != null ? action.gotoY
+                          : (placedOffCity ? action.y : -1);
+              const newUnit = {
+                saveIndex: newSaveIndex,
+                id: action.uid,
+                sequenceId: action.uid,
+                createdTurn: gameState.turn?.number ?? 0,
+                type: action.unitType != null ? action.unitType : 0,
+                owner: owner,
+                gx: Math.floor(action.x / 2), gy: action.y,
+                x: action.x, y: action.y,
+                cx: action.x, cy: action.y,
+                veteran: 0,
+                movesRemain: 0,
+                moveSpent: action.moveSpent ?? 0,
+                order,
+                orders: 'none',
+                fortifyIssuedTurn: null,
+                movesMade: 0, movesLeft: 0,
+                homeCityId: homeCityIdx,
+                homeCity: homeCityIdx,
+                goToX: gotoX, goToY: gotoY,
+                gotoX, gotoY,
+                hpLost: 0, damageTaken: 0,
+                statusFlags: action.statusFlags ?? 0,
+                commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+                prevInStack: -1, nextInStack: -1,
+              };
+              gameState = {
+                ...gameState,
+                units: [...gameState.units, newUnit],
+                totalUnits: (gameState.totalUnits ?? gameState.units.length) + 1,
+              };
+            }
             continue;
           }
           try {
@@ -922,6 +1158,17 @@ gameState.wonders = wondersRaw.slice(0, 28).map(w => {
   if (w && typeof w === 'object') return w.cityId ?? w.raw ?? -1;
   return -1;
 });
+
+// ── Tile visibility per civ — count of tiles where bit N is set in
+// tile.visibility byte. Mirrors the sniffer-side calc in
+// snapshot-to-state-json.py for fog-reveal validation.
+const tileSource = (post?.tileData) || (gs?.tileData) || (parsed.tileData) || [];
+const visCounts = [0, 0, 0, 0, 0, 0, 0, 0];
+for (const t of tileSource) {
+  const vb = t?.visibility ?? 0;
+  for (let c = 0; c < 8; c++) if (vb & (1 << c)) visCounts[c]++;
+}
+gameState.visibilityCounts = visCounts;
 
 const out = {
   source: 'v4-server',
