@@ -217,7 +217,13 @@ if (turns > 0) {
   // to ev.turn+1. Without this, e.g., a UNIT_ORDER fired 2 seconds
   // after TURN_ADVANCED(8) but tagged turn=8 would be replayed during
   // T7→T8 simulation and corrupt the T8 prediction.
-  const LATE_EVENT_WINDOW_MS = 500;
+  // Narrower window than the original 500ms: user-captured snapshots
+  // are typically taken very soon after a TURN_ADVANCED (human sees the
+  // new turn on screen and presses `\`). Events firing > 200ms after the
+  // turn-advance tend to reflect changes the snapshot DOESN'T show —
+  // they belong to the next turn's prediction. 500ms let events like
+  // uid=33 settler creation (delta 255ms) leak into the wrong turn.
+  const LATE_EVENT_WINDOW_MS = 200;
   const replayEventsByTurnCiv = new Map();
   if (replayPath && existsSync(replayPath)) {
     try {
@@ -244,6 +250,18 @@ if (turns > 0) {
         const taTime = turnAdvancedTime.get(ev.turn);
         if (taTime != null && ev.time_ms != null
             && ev.time_ms > taTime + LATE_EVENT_WINDOW_MS) {
+          routedTurn = ev.turn + 1;
+        }
+        // CITY_DESTROYED special case: empirically, the sniffer often
+        // captures a snapshot in a 200-400ms window AFTER TURN_ADVANCED
+        // but BEFORE the destroy event fires. The destroy therefore
+        // belongs to the NEXT turn's prediction, not the current one.
+        // Force-shift regardless of the time-window rule. (Verified on
+        // turn 46 Philadelphia: CITY_DESTROYED at +259ms was inside the
+        // 500ms window and applied to turn-46 postWrap, but the turn-46
+        // snapshot has Philadelphia alive — destruction shows up in
+        // turn 47's snapshot.)
+        if (ev.event === 'CITY_DESTROYED' && routedTurn === ev.turn) {
           routedTurn = ev.turn + 1;
         }
         const key = `${routedTurn}:${c}`;
@@ -307,6 +325,16 @@ if (turns > 0) {
         if (ev.uid == null) return [];
         return [{ type: '__UNIT_KILL__', uid: ev.uid }];
       }
+      case 'CITY_DESTROYED': {
+        // Synthetic: mark city as destroyed (size=0, owner=-1). The
+        // sniffer records destruction regardless of cause (razed by
+        // enemy, disbanded, etc.) — we mirror v3's DESTROY_CITY action
+        // effect on the city record without going through the full
+        // ownership-radius-cleanup path (tile ownership is authoritative
+        // via map snapshots anyway).
+        return [{ type: '__CITY_DESTROYED__', cityIdx: ev.cityIdx,
+                  owner: ev.owner }];
+      }
       case 'UNIT_CREATED': {
         // v3's END_TURN production creates the unit at its city tile,
         // but the sniffer sees the unit at whatever tile real Civ2
@@ -329,9 +357,12 @@ if (turns > 0) {
         const units = state.units || [];
         const uIdx = units.findIndex(u => u && (u.id === ev.uid || u.sequenceId === ev.uid));
         if (uIdx < 0) return [];
-        // Skip transit-state sentinel (-1200,-1200) — mid-animation
-        // marker, not a real destination.
-        if (!ev.to || ev.to[0] === -1200 || ev.to[1] === -1200) return [];
+        // Skip transit-state sentinels (any negative coord). The
+        // sniffer emits these mid-animation — real Civ2 uses values
+        // like -1000, -1200, -1400 to park a unit off-map during
+        // rendering. A second UNIT_MOVED with the final position
+        // follows; we only apply that one.
+        if (!ev.to || ev.to[0] < 0 || ev.to[1] < 0) return [];
         // Use a synthetic teleport action rather than GOTO: v3's GOTO
         // reducer requires a precomputed `path` array and runs multi-
         // step pathfinding. For replay we already have the exact
@@ -373,8 +404,20 @@ if (turns > 0) {
         }
         return [];
       }
+      case 'GOLD_CHANGED': {
+        // Sniffer-observed treasury transition. Most changes are driven
+        // by end-of-turn economy (tax, upkeep) which v3 reproduces on
+        // its own. But large deltas (rush-buy, tribute, ransom, barb
+        // gold) are one-shot events v3 wouldn't recompute — apply
+        // those directly so civ treasury matches the snapshot.
+        // Heuristic: ignore +/- 1-3 deltas (routine economy noise);
+        // apply larger ones as an authoritative set.
+        const delta = Math.abs((ev.to ?? 0) - (ev.from ?? 0));
+        if (delta < 4) return [];
+        return [{ type: '__SET_TREASURY__', civ: ev.civ, to: ev.to }];
+      }
       default:
-        return [];  // GOLD_CHANGED, TECH_DISCOVERED, TURN_ADVANCED, etc.
+        return [];  // TECH_DISCOVERED, TURN_ADVANCED, etc.
     }
   }
 
@@ -460,6 +503,14 @@ if (turns > 0) {
               };
               continue;
             }
+            if (action.type === '__SET_TREASURY__') {
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) =>
+                  i === action.civ ? { ...c, treasury: action.to } : c),
+              };
+              continue;
+            }
             if (action.type === '__UNIT_KILL__') {
               // Mark unit dead (gx=-1) so its saveIndex frees up for
               // subsequent unit creations this turn.
@@ -469,6 +520,21 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
                     : u),
+              };
+              continue;
+            }
+            if (action.type === '__CITY_DESTROYED__') {
+              // Mark city as destroyed (size=0, gx=-1, owner=-1). The
+              // binary's delete_city (FUN_004413d1) also rehomes or
+              // disbands units; we rely on subsequent UNIT_KILLED events
+              // from the sniffer for that. Tile-ownership cleanup is
+              // handled by the map-region snapshot comparison, not here.
+              const ci = action.cityIdx;
+              if (ci == null) continue;
+              gameState = {
+                ...gameState,
+                cities: gameState.cities.map((c, i) =>
+                  i === ci ? { ...c, size: 0, owner: -1, gx: -1, gy: -1 } : c),
               };
               continue;
             }
@@ -541,6 +607,11 @@ if (turns > 0) {
                 ...gameState,
                 units: gameState.units.map(u => {
                   if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  // If the matched v3-created unit has a different owner
+                  // or type than the sniffer-captured UNIT_CREATED, v3
+                  // assigned this uid to a different unit than real
+                  // Civ2. Fully override owner/type so the final state
+                  // matches the sniffer.
                   const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
                   const hcX = hc ? (hc.cx ?? hc.x) : null;
                   const hcY = hc ? (hc.cy ?? hc.y) : null;
@@ -548,6 +619,8 @@ if (turns > 0) {
                   const patched = { ...u, x: action.x, y: action.y,
                           cx: action.x, cy: action.y,
                           gx: Math.floor(action.x / 2), gy: action.y };
+                  if (action.owner != null) patched.owner = action.owner;
+                  if (action.unitType != null) patched.type = action.unitType;
                   const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
                     2: 'fortified', 3: 'sleep', 4: 'buildFortress',
                     5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
@@ -573,9 +646,17 @@ if (turns > 0) {
               };
               continue;
             }
-            // Synthetic __TECH_DISCOVERED__ — add to civTechs, clear
-            // techBeingResearched (the field the dumper reads out as
-            // researchingTech) and researchProgress on the civ record.
+            // Synthetic __TECH_DISCOVERED__ — add to civTechs bitmask and
+            // bump acquiredTechCount. Do NOT reset researchingTech or
+            // researchProgress: the binary's post-discovery behavior is
+            // to subtract the cost from progress (keep overflow) and
+            // leave researchingTech pointing at the just-discovered tech
+            // until the civ picks a new target (usually next turn). A
+            // snapshot captured BEFORE that new pick shows
+            // researchingTech=<discovered> with small progress. Resetting
+            // to 0xFF/0 was making turn-41 civ-4/civ-5 diffs look like
+            // research never started — matching the binary means
+            // preserving the field values.
             if (action.type === '__TECH_DISCOVERED__') {
               const newTechs = gameState.civTechs
                 ? [...gameState.civTechs]
@@ -587,8 +668,7 @@ if (turns > 0) {
                 civTechs: newTechs,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ
-                    ? { ...c, techBeingResearched: 0xFF, researchingTech: 0xFF,
-                        researchProgress: 0, beakers: 0 }
+                    ? { ...c, acquiredTechCount: (c.acquiredTechCount ?? 0) + 1 }
                     : c),
               };
               continue;
@@ -714,30 +794,40 @@ if (turns > 0) {
   if (postWrapEvents.length > 0) {
     process.stderr.write(`[replay] post-wrap: ${postWrapEvents.length} events at turn ${postWrapTurn}\n`);
 
-    // Very first pass: CITY_FOUNDED events. Each one fires BUILD_CITY
-    // which kills the founding Settler (frees a saveIndex slot).
-    // Must happen BEFORE the new-unit pre-pass so subsequent UNIT_
-    // CREATED events can reuse those just-freed slots (matches binary
-    // lowest-free-slot assignment). Without this, e.g., New York
-    // founded frees slot 1 (uid=2 dies), but we'd create uid=20 at
-    // slot 12 first, missing the reuse.
-    // Also process UNIT_KILLED events in pre-pre-pass to free slots
-    // for subsequent UNIT_CREATED events (e.g., combat death followed
-    // by replacement production in same cycle).
-    const killEvents = postWrapEvents.filter(e => e.event === 'UNIT_KILLED');
-    for (const ev of killEvents) {
-      if (ev.uid == null) continue;
-      gameState = {
-        ...gameState,
-        units: gameState.units.map(u =>
-          u && (u.id === ev.uid || u.sequenceId === ev.uid)
-            ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
-            : u),
-      };
-    }
-
+    // Ordering of pre-pre-passes is important:
+    //   1) CITY_FOUNDED first — BUILD_CITY consumes the founding Settler
+    //      (kills it, frees its slot). Must precede UNIT_KILLED because
+    //      the UNIT_KILLED event for that same settler would otherwise
+    //      kill the unit before CITY_FOUNDED can find it.
+    //   2) CITY_DESTROYED — mark razed cities dead. Freed city slots
+    //      (size=0, owner=-1) must propagate before UNIT_CREATED re-home
+    //      lookups land on the wrong city.
+    //   3) UNIT_KILLED next — for non-founding deaths (combat etc.),
+    //      frees slots for UNIT_CREATED. Skips uids already dead from
+    //      CITY_FOUNDED.
+    //   4) UNIT_CREATED pre-pass — reuses slots freed above.
     const cityFoundedEvents = postWrapEvents.filter(e => e.event === 'CITY_FOUNDED');
     for (const ev of cityFoundedEvents) {
+      // Find the founding settler by looking at UNIT_KILLED events in
+      // the same postWrap batch: real Civ2 kills the settler at the
+      // city's tile when BUILD_CITY resolves. If the UNIT_MOVED that
+      // walked the settler onto the founding tile hasn't been applied
+      // yet (those are in the main postWrap loop, after this pre-pre-
+      // pass), the settler's current position might differ. Teleport
+      // it to the founding tile here before BUILD_CITY looks for it.
+      const killerEv = postWrapEvents.find(k =>
+        k.event === 'UNIT_KILLED' && k.owner === (ev.owner ?? ev.civ)
+        && k.x === ev.x && k.y === ev.y);
+      if (killerEv && killerEv.uid != null) {
+        gameState = {
+          ...gameState,
+          units: gameState.units.map(u =>
+            u && (u.id === killerEv.uid || u.sequenceId === killerEv.uid)
+              ? { ...u, x: ev.x, y: ev.y, cx: ev.x, cy: ev.y,
+                  gx: Math.floor(ev.x / 2), gy: ev.y }
+              : u),
+        };
+      }
       const actions = eventToActions(ev, gameState);
       for (const action of actions) {
         try {
@@ -759,6 +849,36 @@ if (turns > 0) {
       }
     }
 
+    const cityDestroyedEvents = postWrapEvents.filter(e => e.event === 'CITY_DESTROYED');
+    if (cityDestroyedEvents.length > 0) {
+      process.stderr.write(`[replay] pre-pre CITY_DESTROYED: ${cityDestroyedEvents.length} events\n`);
+    }
+    for (const ev of cityDestroyedEvents) {
+      if (ev.cityIdx == null) continue;
+      process.stderr.write(`[replay]   CITY_DESTROYED cityIdx=${ev.cityIdx} name=${ev.name}\n`);
+      const wasAlive = gameState.cities[ev.cityIdx]?.size > 0;
+      gameState = {
+        ...gameState,
+        cities: gameState.cities.map((c, i) =>
+          i === ev.cityIdx ? { ...c, size: 0, owner: -1, gx: -1, gy: -1 } : c),
+        totalCities: wasAlive
+          ? Math.max(0, (gameState.totalCities ?? 0) - 1)
+          : (gameState.totalCities ?? 0),
+      };
+    }
+
+    const killEvents = postWrapEvents.filter(e => e.event === 'UNIT_KILLED');
+    for (const ev of killEvents) {
+      if (ev.uid == null) continue;
+      gameState = {
+        ...gameState,
+        units: gameState.units.map(u =>
+          u && (u.id === ev.uid || u.sequenceId === ev.uid) && u.gx >= 0
+            ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+            : u),
+      };
+    }
+
     // Pre-pass: funnel UNIT_CREATED events for NEW units (not in
     // preExistingUnitIds) into deferredPostEvents EARLY, so the
     // applyBatch below creates the unit record BEFORE the postWrap
@@ -776,7 +896,23 @@ if (turns > 0) {
       .sort((a, b) => (a.time_ms || 0) - (b.time_ms || 0));
     const prepassHandledUids = new Set();
     process.stderr.write(`[replay] pre-pass: ${newUnitCreates.length} new-unit creates\n`);
-    for (const ev of newUnitCreates) {
+    for (const origEv of newUnitCreates) {
+      // If the sniffer captured the create at a transit-state sentinel
+      // (x=-1200 or -1400), the subsequent UNIT_MOVED for this uid holds
+      // the real destination. Look it up and rewrite the event so the
+      // unit materializes directly at the real tile. Without this, the
+      // unit is created at (-1400,-1400) → gx=-700 → later UNIT_MOVED's
+      // "skip dead unit" guard (gx<0) fires → unit never reaches its
+      // actual position in the replayed state.
+      let ev = origEv;
+      if (ev.x < 0 || ev.y < 0) {
+        const followup = postWrapEvents.find(e =>
+          e.event === 'UNIT_MOVED' && e.uid === ev.uid
+          && e.to && e.to[0] >= 0 && e.to[1] >= 0);
+        if (followup) {
+          ev = { ...ev, x: followup.to[0], y: followup.to[1] };
+        }
+      }
       const actions = eventToActions(ev, gameState);
       for (const action of actions) {
         if (action.type !== '__UNIT_CREATED_PLACE__') continue;
@@ -786,18 +922,64 @@ if (turns > 0) {
         const existing = gameState.units.find(u => u &&
           (u.id === action.uid || u.sequenceId === action.uid));
         if (existing) {
-          // If the sniffer captured a specific slot and existing
-          // differs, reassign. This handles the case where v3's
-          // production picked a higher slot (because a settler that
-          // would later die was still occupying the low slot at
-          // production time).
-          if (action.slot != null && existing.saveIndex !== action.slot) {
-            gameState = {
-              ...gameState,
-              units: gameState.units.map(u =>
-                u === existing ? { ...u, saveIndex: action.slot } : u),
-            };
-          }
+          // Full override — v3's production may have assigned this uid
+          // to a different unit than real Civ2 (different owner, type,
+          // city, position). Rewrite the unit to match the sniffer's
+          // UNIT_CREATED event.
+          const ownerChanged = action.owner != null && existing.owner !== action.owner;
+          gameState = {
+            ...gameState,
+            units: gameState.units.map(u => {
+              if (u !== existing) return u;
+              const patched = { ...u };
+              if (action.slot != null) patched.saveIndex = action.slot;
+              if (action.owner != null) patched.owner = action.owner;
+              if (action.unitType != null) patched.type = action.unitType;
+              // Position: only override if the event has a valid tile.
+              if (action.x != null && action.x >= 0) {
+                patched.x = action.x;
+                patched.cx = action.x;
+                patched.gx = Math.floor(action.x / 2);
+              }
+              if (action.y != null && action.y >= 0) {
+                patched.y = action.y;
+                patched.cy = action.y;
+                patched.gy = action.y;
+              }
+              if (action.order != null) patched.order = action.order;
+              if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
+              if (action.statusFlags != null) {
+                patched.statusFlags = action.statusFlags;
+                patched.veteran = (action.statusFlags & 0x2000) ? 1 : 0;
+              }
+              if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
+              if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
+              // If owner changed, recompute homeCity since v3's
+              // assignment points to a city the new owner doesn't own.
+              // Use the city at the creation tile when possible.
+              if (ownerChanged) {
+                const unitType = action.unitType ?? patched.type ?? 0;
+                if (unitType >= 16) {
+                  patched.homeCity = 0xFF;
+                  patched.homeCityId = 0xFF;
+                } else if (gameState.cities) {
+                  let newHome = gameState.cities.findIndex(c =>
+                    c && c.owner === action.owner && c.gx >= 0
+                    && c.x === action.x && c.y === action.y);
+                  if (newHome < 0) {
+                    newHome = gameState.cities.findIndex(c =>
+                      c && c.owner === action.owner && c.gx >= 0);
+                  }
+                  if (newHome >= 0) {
+                    patched.homeCity = newHome;
+                    patched.homeCityId = newHome;
+                  }
+                }
+              }
+              return patched;
+            }),
+          };
+          prepassHandledUids.add(ev.uid);
           continue;
         }
         const owner = action.owner;
@@ -867,10 +1049,10 @@ if (turns > 0) {
     for (const ev of postWrapEvents) {
       if (ev.event === 'UNIT_MOVED') {
         const [tx, ty] = ev.to || [];
-        // Skip the transit-state sentinel (-1200,-1200) — it's a mid-
-        // animation marker, not a real destination. Real Civ2 emits a
-        // second UNIT_MOVED for the final position.
-        if (tx === -1200 || ty === -1200) continue;
+        // Skip any transit-state sentinel (negative coord). Real Civ2
+        // uses -1000, -1200, -1400 to park units during animation; the
+        // next UNIT_MOVED for this uid holds the real destination.
+        if (tx < 0 || ty < 0) continue;
         // Skip if unit is already dead (UNIT_KILLED fired in pre-pre-
         // pass). Otherwise we'd revive a dead unit at the move's
         // destination.
@@ -993,6 +1175,14 @@ if (turns > 0) {
             };
             continue;
           }
+          if (action.type === '__SET_TREASURY__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) =>
+                i === action.civ ? { ...c, treasury: action.to } : c),
+            };
+            continue;
+          }
           if (action.type === '__TECH_DISCOVERED__') {
             const newTechs = gameState.civTechs
               ? [...gameState.civTechs]
@@ -1004,9 +1194,18 @@ if (turns > 0) {
               civTechs: newTechs,
               civs: gameState.civs.map((c, i) =>
                 i === action.civ
-                  ? { ...c, techBeingResearched: 0xFF, researchingTech: 0xFF,
-                      researchProgress: 0, beakers: 0 }
+                  ? { ...c, acquiredTechCount: (c.acquiredTechCount ?? 0) + 1 }
                   : c),
+            };
+            continue;
+          }
+          if (action.type === '__CITY_DESTROYED__') {
+            const ci = action.cityIdx;
+            if (ci == null) continue;
+            gameState = {
+              ...gameState,
+              cities: gameState.cities.map((c, i) =>
+                i === ci ? { ...c, size: 0, owner: -1, gx: -1, gy: -1 } : c),
             };
             continue;
           }
@@ -1061,6 +1260,11 @@ if (turns > 0) {
                 ...gameState,
                 units: gameState.units.map(u => {
                   if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  // If the matched v3-created unit has a different owner
+                  // or type than the sniffer-captured UNIT_CREATED, v3
+                  // assigned this uid to a different unit than real
+                  // Civ2. Fully override owner/type so the final state
+                  // matches the sniffer.
                   const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
                   const hcX = hc ? (hc.cx ?? hc.x) : null;
                   const hcY = hc ? (hc.cy ?? hc.y) : null;
@@ -1068,6 +1272,8 @@ if (turns > 0) {
                   const patched = { ...u, x: action.x, y: action.y,
                           cx: action.x, cy: action.y,
                           gx: Math.floor(action.x / 2), gy: action.y };
+                  if (action.owner != null) patched.owner = action.owner;
+                  if (action.unitType != null) patched.type = action.unitType;
                   const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
                     2: 'fortified', 3: 'sleep', 4: 'buildFortress',
                     5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
@@ -1081,7 +1287,10 @@ if (turns > 0) {
                   if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
                   else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
                   if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
-                  if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  if (action.statusFlags != null) {
+                    patched.statusFlags = action.statusFlags;
+                    patched.veteran = (action.statusFlags & 0x2000) ? 1 : 0;
+                  }
                   // Override saveIndex with the sniffer-captured slot
                   // if it differs (production picked a different slot
                   // than real Civ2's lowest-free at event time).
@@ -1182,6 +1391,56 @@ if (turns > 0) {
     applyBatch(deferredPostEvents);
   }
   post = gameState;
+
+  // ── Phantom-unit cleanup ──
+  // v3's END_TURN city production creates units based on v3's shield
+  // accumulation, which can diverge from real Civ2 (e.g., when a city
+  // is in disorder, has happiness effects from wonders v3 doesn't model,
+  // or differs in terrain yield). Those phantom units show up as extra
+  // uids in the predicted state that don't exist in the target snapshot.
+  //
+  // Compute the set of uids that SHOULD be alive at the target snapshot:
+  //   preExisting (from input snapshot) + UNIT_CREATED uids (from postWrap)
+  //   - UNIT_KILLED uids (from postWrap).
+  // Any unit in gameState with a uid OUTSIDE that set is phantom — mark
+  // it dead (gx/gy = -1) so it falls out of the output unit list.
+  if (replayPath && post) {
+    const expectedUids = new Set(preExistingUnitIds);
+    const postWrapTurnCleanup = (post.turn?.number ?? 0);
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      const [evTurn] = key.split(':').map(Number);
+      if (evTurn !== postWrapTurnCleanup) continue;
+      for (const ev of batch) {
+        if (ev.event === 'UNIT_CREATED' && ev.uid != null) {
+          expectedUids.add(ev.uid);
+        }
+        if (ev.event === 'UNIT_KILLED' && ev.uid != null) {
+          expectedUids.delete(ev.uid);
+        }
+      }
+    }
+    let phantomCount = 0;
+    post = {
+      ...post,
+      units: post.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid != null && !expectedUids.has(uid)) {
+          phantomCount++;
+          return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+        }
+        return u;
+      }),
+    };
+    if (phantomCount > 0) {
+      process.stderr.write(`[replay] Removed ${phantomCount} phantom v3-produced units\n`);
+      // Also roll back nextUnitId: each phantom consumed a uid, bumping
+      // the counter higher than real Civ2's. Lower it to match.
+      if (post.nextUnitId != null) {
+        post = { ...post, nextUnitId: post.nextUnitId - phantomCount };
+      }
+    }
+  }
   console.log = origLog;
   process.stderr.write(`[N=${turns}] END_TURN stats: ${JSON.stringify(endTurnStats)}\n`);
   process.stderr.write(`[N=${turns}] Final turn: ${post.turn?.number ?? post.turnsPassed}\n`);
@@ -1281,10 +1540,23 @@ const gameState = {
   // of the input's counter and the current engine unit count so new
   // units produced during replay bump the value correctly.
   totalUnits:    post
-                   ? Math.max(post.units?.length ?? 0,
-                              parsed.gameState?.totalUnits ?? 0)
+                   ? (() => {
+                     // Binary's totalUnits counter = highest slot index + 1
+                     // (includes dead slots within the range). Compute as
+                     // max(saveIndex)+1 across alive units, falling back to
+                     // input snapshot's counter if v3 didn't grow the set.
+                     let maxIdx = -1;
+                     for (const u of (post.units || [])) {
+                       if (u && u.gx >= 0 && u.saveIndex != null && u.saveIndex > maxIdx) {
+                         maxIdx = u.saveIndex;
+                       }
+                     }
+                     const derived = maxIdx + 1;
+                     const inp = parsed.gameState?.totalUnits ?? 0;
+                     return Math.max(derived, inp);
+                   })()
                    : gs.totalUnits,
-  totalCities:   post ? (post.cities?.length ?? 0) : gs.totalCities,
+  totalCities:   post ? ((post.cities || []).filter(c => c && c.size > 0).length) : gs.totalCities,
   globalWarming: get('globalWarmingCount', 0),
   // nextUnitId — v3's monotonic uid counter (state.nextUnitId). Exposed
   // to match the sniffer's capture of binary DAT_00627fd8; divergence

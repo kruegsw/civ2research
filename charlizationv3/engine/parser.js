@@ -641,7 +641,13 @@ const Civ2Parser = {
       const id             = isSav ? this.u32(savBuf, off + 26) : null;  // save-format: uint32 unique sequential ID (0 = dead/empty)
       const padding_30     = isSav ? [savBuf[off+30], savBuf[off+31]] : null;  // padding to 0x20 boundary
 
-      const dead = counter2 !== 0;
+      // Earlier this used `counter2 !== 0` (byte at +0x0E) as the dead
+      // marker — that byte is actually fuel/turns-remaining (nonzero
+      // for Carriers/Transports and Crusaders with a fortify counter),
+      // not a death flag. Live units were being filtered out whenever
+      // their fuel field was nonzero. The authoritative marker is the
+      // uint32 unique ID at +0x1A: 0 = dead/empty slot, nonzero = live.
+      const dead = isSav ? (id === 0) : (counter2 !== 0);
       const inBounds = ux >= 0 && ux < mw2 && uy >= 0 && uy < mh;
 
       const record = {

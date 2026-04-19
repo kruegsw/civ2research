@@ -986,44 +986,42 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
     // A.3: Science doubling now handled per-city in the loop above (#123)
 
-    // ── Research completion check BEFORE accumulating this turn's
-    // science. Mirrors binary order: check current progress against
-    // cost, then add this turn's beakers. Same pattern as city growth
-    // (cityturn.js processCityFood). Progress=cost is NOT completion
-    // — takes one more turn's science to overflow past cost.
-    // Previously v3 accumulated first then checked `>=`, causing
-    // techs to complete one turn early when progress landed exactly
-    // on cost.
+    // ── Research accumulation + completion ──
+    // Binary FUN_0049a48e: beakers are added FIRST, then the total is
+    // compared against cost. On completion, cost is SUBTRACTED (overflow
+    // carries forward), and techBeingResearched KEEPS pointing at the
+    // just-discovered tech — the AI (or human) sets a new target next
+    // turn. Previous v3 order (check, then accumulate) combined with
+    // progress=0 / techBeingResearched=0xFF reset caused two kinds of
+    // mismatch vs real Civ2:
+    //   (a) progress reset to 0 instead of overflow (civ 4 at turn 95
+    //       ended with progress=0 instead of 1)
+    //   (b) researchingTech cleared to 0xFF instead of keeping the
+    //       discovered tech (civ 4 at turn 41 showed researching=255
+    //       instead of 65)
     const techId = civ.techBeingResearched;
+    if (!state.scenarioTechRestrictions?.noResearch) {
+      civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
+    }
     if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
       const cost = calcResearchCost(state, activeCiv);
       if ((civ.researchProgress || 0) >= cost) {
-        // Grant the advance
         grantAdvance(state, activeCiv, techId);
-        civ.researchProgress = 0;
-        civ.techBeingResearched = 0xFF; // clear — player must pick next
-        // Notify via discoveredAdvance field (client will show picker)
+        civ.researchProgress = Math.max(0, civ.researchProgress - cost);
+        // Do NOT reset techBeingResearched — binary leaves it at the
+        // just-discovered tech until a new target is picked.
         state.discoveredAdvance = { civSlot: activeCiv, advanceId: techId };
-        // Phase G: handle tech discovery effects (barracks refund, wonder obsolescence, Leonardo's)
         const techEvents = handleTechDiscovery(state, activeCiv, techId);
         if (techEvents.length > 0) {
           if (!state.turnEvents) state.turnEvents = [];
           state.turnEvents.push(...techEvents);
         }
-        // Sync treasury in case handleTechDiscovery modified it (barracks refund)
         civ.treasury = state.civs[activeCiv]?.treasury ?? civ.treasury;
-        // Scenario events: tech discovered
         if (state.scenarioEvents && state.scenarioEvents.length > 0) {
           dispatchEvents(state, mapBase, EVENT_RECEIVED_TECH, { civSlot: activeCiv, techId });
         }
         console.log(`[tech] Civ ${activeCiv} discovered ${ADVANCE_NAMES[techId]} (id=${techId}), civTechs now:`, [...state.civTechs[activeCiv]]);
       }
-    }
-
-    // Accumulate this turn's beakers AFTER the completion check.
-    // Q.4: If scenario restricts tech advances, don't accumulate science.
-    if (!state.scenarioTechRestrictions?.noResearch) {
-      civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
     }
 
     state.civs[activeCiv] = civ;

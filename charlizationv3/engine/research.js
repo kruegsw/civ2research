@@ -78,8 +78,21 @@ export function getAvailableResearch(gameState, civSlot) {
  * @returns {number} beakers needed for the next tech
  */
 export function calcResearchCost(gameState, civSlot) {
+  // Binary FUN_004c2788 uses tech_counter + futureTechCount (at civ_struct
+  // offsets +0xB0 and +0xB1, aka save data_block +16 and +17). This is
+  // NOT the same as civTechs.size: the counter includes the currently-in-
+  // progress tech as +1, while civTechs only counts *discovered* techs.
+  // Mismatched-by-one totalTechs yields a too-low cost, causing techs to
+  // complete a turn early (e.g., civ 5 at turn 16 with 10 beakers would
+  // complete Bronze Working because v3's cost=10 vs real cost=18).
+  //
+  // Prefer the parsed counter fields; fall back to civTechs size so old
+  // tests and callers without the counter fields still work.
+  const civ = gameState.civs?.[civSlot];
   const civTechs = gameState.civTechs?.[civSlot];
-  const totalTechs = Math.max(1, civTechs ? civTechs.size : 1);
+  const counterTotal = (civ?.acquiredTechCount ?? 0) + (civ?.futureTechCount ?? 0);
+  const techsSizeTotal = civTechs ? civTechs.size : 0;
+  const totalTechs = Math.max(1, counterTotal || techsSizeTotal);
 
   const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain'));
 

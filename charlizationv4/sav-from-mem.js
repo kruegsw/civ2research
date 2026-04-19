@@ -72,6 +72,22 @@ export function buildSav() {
   // Tech first discoverer: 100 bytes at 0x0042 — 0xFF = nobody
   for (let i = 0; i < 100; i++) buf[0x42 + i] = 0xFF;
 
+  // Tech discovery bitmask: 100 bytes at 0x00A6. Each byte[i] is a
+  // bitmask of which civs have discovered tech i (bit N = civ N).
+  // Derive from each civ's tech_status[93] array (civ_struct +0x074,
+  // 0xFF = not discovered, otherwise discovered). Without this the
+  // parser sees zeroed bits → every civ starts with 0 known techs →
+  // calcResearchCost = baseCost * 0 = 0 → next tech completes on
+  // first science drop. Breaks everything downstream.
+  for (let i = 0; i < 100; i++) buf[0xA6 + i] = 0;
+  for (let slot = 0; slot < NUM_CIVS; slot++) {
+    const techBase = DAT_0064c600 + slot * 0x594 + 0xA0 + 0x074;
+    for (let tech = 0; tech < 89; tech++) {
+      const status = _MEM[techBase + tech];
+      if (status !== 0xFF) buf[0xA6 + tech] |= (1 << slot);
+    }
+  }
+
   // Header fields
   buf[0x0D] = 0; // flags (no scenario)
   buf[0x1C] = turn & 0xFF; buf[0x1D] = (turn >> 8) & 0xFF; // turns passed
