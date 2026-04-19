@@ -182,6 +182,52 @@ civ ID, or order-age. Open question — likely needs deeper binary
 inspection (specifically: which function actually writes
 `+0x08` (moveSpent) at turn start).
 
+### Post-cycle-wrap raw replay for AI unit actions (2026-04-18, turn 8→9)
+
+Turns 8→9 and 9→onward surface the next big class of divergence: AI
+civs that process AFTER the cycle wrap (civs 0..H in the new turn)
+take actions — unit moves, new unit creations, order changes — that
+v3's harness wasn't replaying because it broke out at cycle boundary.
+
+First attempt was to let v3 run another full END_TURN for civ 4 at
+turn N+1, but that triggered v3's quirk where END_TURN processes the
+NEXT civ's (civ 5, human) cities — resulting in double-counting
+Washington's food/shields. Bad.
+
+Fix taken: keep break at cycle boundary, add a **post-cycle-wrap
+raw-state replay** that scans events tagged with the new turn and
+applies unit-level effects directly (no reducer, no trade/treasury
+processing). Initial handling:
+- `UNIT_MOVED`: write x/y/cx/cy/gx/gy and also gotoX/gotoY (the
+  sniffer-schema field matched the destination for goto_ai orders).
+- `UNIT_ORDER`: write the raw order byte.
+
+Turn 8→9 fidelity went from 195/205 → **202/205** (10 → 3
+mismatches). Turn 5→6 regression-checked at 179/179.
+
+Remaining 3 mismatches (all `moveSpent` nuances):
+- `units[0].moveSpent: 3 vs 6` — Aztec Warrior moved one tile via
+  goto_ai but snapshot shows moveSpent=6, which is *2× the unit's
+  1-MP max × 3 multiplier*. Unexplained by simple move cost.
+- `units[3].moveSpent: 3 vs 0` — American Warrior (ongoing gap from
+  earlier slice, idle-but-moveSpent=0 case).
+- `units[5].moveSpent: 0 vs 3` — Aztec Phalanx (just created +
+  auto-fortified, moveSpent=3 observed). Inverse of the American
+  Warrior puzzle.
+
+These form a `moveSpent` cluster that doesn't follow a simple
+"idle → moveSpent=max" rule, and isn't deducible from observation
+alone. Pending deeper binary inspection of which function writes
+unit +0x08 at turn start.
+
+Also still present:
+- Turn 7→8: UNIT_CREATED event tagged turn 7 places the Carthage
+  warrior at (66,22), but v3's production creates it at the city
+  tile (65,23). Need UNIT_CREATED position override in the replay
+  pipeline — TODO.
+- Settler irrigation completion timing (turn 7→8 slot 1 order
+  diverges).
+
 ### Refined approach (2026-04-18)
 
 User preference (per conversation): rather than rigidly "finish one

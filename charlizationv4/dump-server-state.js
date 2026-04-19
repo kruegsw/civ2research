@@ -326,6 +326,21 @@ if (turns > 0) {
   // Deferred post-END_TURN events — see inline comment at the defer site
   // for why these can't apply immediately after each civ's END_TURN.
   const deferredPostEvents = [];
+  // Target activeCiv for simulation stop: the human civ (matches
+  // real Civ2 snapshot flow — user awaits input at activeCiv=human).
+  // v3's `state.turn.activeCiv` is its own rotating "next-to-process"
+  // value (often initialized to the first alive civ), which is NOT the
+  // same thing. Derive from humanPlayers bitmask.
+  const humanMaskForStop = parsed.gameState?.humanPlayers ?? 0;
+  let origActiveCiv = -1;
+  for (let c = 1; c < 8; c++) {
+    if (humanMaskForStop & (1 << c)) { origActiveCiv = c; break; }
+  }
+  // Fallback: if no human, use whatever v3 picked.
+  if (origActiveCiv < 0) {
+    origActiveCiv = initResult.gameState.turn?.activeCiv
+                 ?? initResult.gameState.activeCiv ?? 1;
+  }
   for (let t = 0; t < turns; t++) {
     // Walk civs in activeCiv order. Before each END_TURN, exhaust moves
     // for that civ's units so the "units still need orders" validation
@@ -452,20 +467,72 @@ if (turns > 0) {
         process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
         deferredPostEvents.push(...postEvents);
       }
-      // Stop this round when turn counter has advanced (full round done)
+      // Stop at cycle boundary. v3's END_TURN has a quirk where the
+      // trade/treasury/production processing uses activeCiv=next (the
+      // civ STARTING its turn, not the one ending). If we kept
+      // iterating past the wrap, civ 4's END_TURN for turn N+1 would
+      // reprocess civ 5's (human's) cities and over-count their
+      // yields. To capture AI civs' turn-N+1 ACTIONS (unit moves,
+      // new unit creations) without the double-processing, we defer
+      // post-wrap events to a raw-state pass below.
       const newTurn = gameState.turn?.number ?? gameState.turnsPassed ?? 0;
       const origTurn = initResult.gameState.turn?.number ?? initResult.gameState.turnsPassed ?? 0;
-      // Break when: (a) turn advanced AND (b) we've processed every
-      // civ's end-turn for the new turn too, stopping with the active
-      // civ being the human (ready for user input). This matches Civ2's
-      // actual flow: end-of-previous-round for each civ + start-of-new-
-      // round for each AI civ up to the human. Without this, worker
-      // orders that continue into the new turn (road completion) don't
-      // advance.
       if (newTurn > origTurn + t) break;
     }
     turnsRan++;
   }
+
+  // Post-cycle-wrap raw-state replay: after the END_TURN loop stops,
+  // snapshots reflect state AFTER AI civs before the human have
+  // started their next turn (taken actions). Those actions include
+  // unit moves, new units, worker completions, order changes. Replay
+  // them as direct state mutations (no reducer) — avoids v3's
+  // END_TURN double-processing of human cities while still landing
+  // at the snapshot's expected unit layout.
+  const postWrapTurn = (gameState.turn?.number ?? 0);
+  const postWrapEvents = [];
+  for (const [key, batch] of replayEventsByTurnCiv) {
+    const [evTurn] = key.split(':').map(Number);
+    if (evTurn === postWrapTurn) postWrapEvents.push(...batch);
+  }
+  if (postWrapEvents.length > 0) {
+    process.stderr.write(`[replay] post-wrap: ${postWrapEvents.length} events at turn ${postWrapTurn}\n`);
+    for (const ev of postWrapEvents) {
+      if (ev.event === 'UNIT_MOVED') {
+        const [tx, ty] = ev.to || [];
+        // UNIT_MOVED events for AI civs (civ 4 etc. processing after
+        // the cycle wrap) include an ongoing goto — reflected in the
+        // snapshot's gotoX/gotoY fields matching the destination.
+        // v3 doesn't otherwise track goto targets from replay; set
+        // them here to match.
+        gameState = {
+          ...gameState,
+          units: gameState.units.map(u =>
+            u && (u.id === ev.uid || u.sequenceId === ev.uid)
+              ? { ...u, x: tx, y: ty, cx: tx, cy: ty,
+                  gx: Math.floor(tx / 2), gy: ty,
+                  gotoX: tx, gotoY: ty, goToX: tx, goToY: ty }
+              : u),
+        };
+      } else if (ev.event === 'UNIT_ORDER') {
+        const orderByte = ev.order;
+        gameState = {
+          ...gameState,
+          units: gameState.units.map(u =>
+            u && (u.id === ev.uid || u.sequenceId === ev.uid)
+              ? { ...u, order: orderByte }
+              : u),
+        };
+      }
+      // UNIT_CREATED is tricky — new units need full setup. v3's
+      // reducer already created a unit during civ 4's END_TURN via
+      // production. If real Civ2 created a unit in the post-wrap
+      // phase (e.g., barbarian spawn, tech free unit), we'd need a
+      // fresh unit record here. Defer to later if this becomes the
+      // blocker.
+    }
+  }
+
   // Apply all deferred post-END_TURN events now that every civ's trade
   // has been computed. These are civ-level state changes the binary
   // writes at the very end of the turn cycle.
