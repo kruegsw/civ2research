@@ -797,16 +797,14 @@ if (turns > 0) {
         // steps (e.g., Diplomat with 2 MP moving 2 tiles to a waypoint).
         // Older events.jsonl files (pre-2026-04-19) won't have these;
         // fall back to the owner-based heuristic below.
-        const hasSniffedFields = ev.moveSpent != null || ev.gotoX != null;
-        // moveSpent rules (heuristic fallback):
-        //   - Human-owned: 0 (their turn-start reset has fired by
-        //     snapshot time, refreshing the unit's MP).
-        //   - AI after human: 0 (AI-mobilized multi-turn goto; binary
-        //     clears moveSpent in anticipation of next turn).
-        //   - AI before human: destCost*3 (turn-start hasn't cleared
-        //     it yet in the binary flow).
-        const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
-        const newMoveSpent = ev.moveSpent != null ? ev.moveSpent : heuristicMoveSpent;
+        // moveSpent rules: same as __UNIT_TELEPORT__ handler. The
+        // sniffer captures the event-time value, but by the snapshot
+        // the binary has cleared moveSpent for human-owned and after-
+        // human AI units. Force 0 for both; only trust the captured
+        // value for before-human AI.
+        const newMoveSpent = (isHumanOwner || ownerAfterHuman)
+          ? 0
+          : (ev.moveSpent != null ? ev.moveSpent : destCost * 3);
         // gotoX/Y rules (heuristic fallback):
         //   - Human: leave -1 (single-step click, no goto target).
         //   - AI: set to destination (AI multi-turn goto bookkeeping).
@@ -921,8 +919,9 @@ if (turns > 0) {
               const terrain = mapBase.getTerrain(Math.floor(tx / 2), ty);
               destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
             }
-            const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
-            const newMoveSpent = action.moveSpent != null ? action.moveSpent : heuristicMoveSpent;
+            const newMoveSpent = (isHumanOwner || ownerAfterHuman)
+              ? 0
+              : (action.moveSpent != null ? action.moveSpent : destCost * 3);
             const setGoto = !isHumanOwner;
             const newGotoX = action.gotoX != null ? action.gotoX : (setGoto ? tx : -1);
             const newGotoY = action.gotoY != null ? action.gotoY : (setGoto ? ty : -1);

@@ -979,16 +979,18 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
     // A.3: Science doubling now handled per-city in the loop above (#123)
 
-    // Q.4: If scenario restricts tech advances, don't accumulate science
-    if (!state.scenarioTechRestrictions?.noResearch) {
-      civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
-    }
-
-    // ── Research completion check ──
+    // ── Research completion check BEFORE accumulating this turn's
+    // science. Mirrors binary order: check current progress against
+    // cost, then add this turn's beakers. Same pattern as city growth
+    // (cityturn.js processCityFood). Progress=cost is NOT completion
+    // — takes one more turn's science to overflow past cost.
+    // Previously v3 accumulated first then checked `>=`, causing
+    // techs to complete one turn early when progress landed exactly
+    // on cost.
     const techId = civ.techBeingResearched;
     if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
       const cost = calcResearchCost(state, activeCiv);
-      if (civ.researchProgress >= cost) {
+      if ((civ.researchProgress || 0) >= cost) {
         // Grant the advance
         grantAdvance(state, activeCiv, techId);
         civ.researchProgress = 0;
@@ -1009,6 +1011,12 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         }
         console.log(`[tech] Civ ${activeCiv} discovered ${ADVANCE_NAMES[techId]} (id=${techId}), civTechs now:`, [...state.civTechs[activeCiv]]);
       }
+    }
+
+    // Accumulate this turn's beakers AFTER the completion check.
+    // Q.4: If scenario restricts tech advances, don't accumulate science.
+    if (!state.scenarioTechRestrictions?.noResearch) {
+      civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
     }
 
     state.civs[activeCiv] = civ;
