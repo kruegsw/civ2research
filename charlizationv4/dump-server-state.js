@@ -352,20 +352,18 @@ if (turns > 0) {
         // v3 has to implement those effects correctly too — if it
         // doesn't, the mismatch is genuine and fixable.
         return [];
-      case 'UNIT_KILLED': {
-        if (ev.uid == null) return [];
-        return [{ type: '__UNIT_KILL__', uid: ev.uid }];
-      }
-      case 'CITY_DESTROYED': {
-        // Synthetic: mark city as destroyed (size=0, owner=-1). The
-        // sniffer records destruction regardless of cause (razed by
-        // enemy, disbanded, etc.) — we mirror v3's DESTROY_CITY action
-        // effect on the city record without going through the full
-        // ownership-radius-cleanup path (tile ownership is authoritative
-        // via map snapshots anyway).
-        return [{ type: '__CITY_DESTROYED__', cityIdx: ev.cityIdx,
-                  owner: ev.owner }];
-      }
+      case 'UNIT_KILLED':
+        // Unit death is typically a combat result. v3 combat should
+        // kill the unit during its combat resolution. Not wired to
+        // UNIT_MOVED replay yet — diff will show zombies (units that
+        // should be dead still alive in v3 state) until combat is
+        // routed.
+        return [];
+      case 'CITY_DESTROYED':
+        // City razing is typically the result of a successful attack
+        // on a size-1 city. Same as UNIT_KILLED: v3 combat path would
+        // produce it. Accept diff noise until combat routing is done.
+        return [];
       case 'UNIT_CREATED': {
         // v3's END_TURN production creates the unit at its city tile,
         // but the sniffer sees the unit at whatever tile real Civ2
@@ -435,21 +433,18 @@ if (turns > 0) {
         }
         return [];
       }
-      case 'UNIT_DAMAGE': {
-        // Observed combat-round damage change. Replay mode skips v3's
-        // combat resolution, so we apply damage directly to keep unit
-        // state consistent with the snapshot. NOT treated as a v3 bug;
-        // combat fidelity is a separate (harder) project.
-        if (ev.uid == null || ev.to == null) return [];
-        return [{ type: '__UNIT_DAMAGE__', uid: ev.uid, to: ev.to }];
-      }
-      case 'UNIT_VIS_CHANGED': {
-        // Per-unit visibility mask (which civs have spotted this unit)
-        // — purely observed state that v3 doesn't track. Apply the new
-        // mask byte directly.
-        if (ev.uid == null || ev.to == null) return [];
-        return [{ type: '__UNIT_VIS__', uid: ev.uid, to: ev.to }];
-      }
+      case 'UNIT_DAMAGE':
+        // Combat result. v3 combat.js computes damage per round; we
+        // should be routing UNIT_MOVED-onto-enemy through v3's combat
+        // reducer so this is produced endogenously. Not done yet —
+        // diff will surface damageTaken mismatches until combat is
+        // wired up.
+        return [];
+      case 'UNIT_VIS_CHANGED':
+        // Per-unit "has been spotted by civs X,Y,Z" bitmask. v3 doesn't
+        // track this yet (no per-unit fog tracking). Diff will surface
+        // visibility byte mismatches until v3 implements it.
+        return [];
       case 'CITY_YIELD':
         // Diagnostic only — NOT applied to state. The diff tooling
         // surfaces these so we can attribute per-city shield/food/trade
@@ -904,35 +899,11 @@ if (turns > 0) {
       }
     }
 
-    const cityDestroyedEvents = postWrapEvents.filter(e => e.event === 'CITY_DESTROYED');
-    if (cityDestroyedEvents.length > 0) {
-      process.stderr.write(`[replay] pre-pre CITY_DESTROYED: ${cityDestroyedEvents.length} events\n`);
-    }
-    for (const ev of cityDestroyedEvents) {
-      if (ev.cityIdx == null) continue;
-      process.stderr.write(`[replay]   CITY_DESTROYED cityIdx=${ev.cityIdx} name=${ev.name}\n`);
-      const wasAlive = gameState.cities[ev.cityIdx]?.size > 0;
-      gameState = {
-        ...gameState,
-        cities: gameState.cities.map((c, i) =>
-          i === ev.cityIdx ? { ...c, size: 0, owner: -1, gx: -1, gy: -1 } : c),
-        totalCities: wasAlive
-          ? Math.max(0, (gameState.totalCities ?? 0) - 1)
-          : (gameState.totalCities ?? 0),
-      };
-    }
-
-    const killEvents = postWrapEvents.filter(e => e.event === 'UNIT_KILLED');
-    for (const ev of killEvents) {
-      if (ev.uid == null) continue;
-      gameState = {
-        ...gameState,
-        units: gameState.units.map(u =>
-          u && (u.id === ev.uid || u.sequenceId === ev.uid) && u.gx >= 0
-            ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
-            : u),
-      };
-    }
+    // CITY_DESTROYED / UNIT_KILLED pre-passes intentionally removed.
+    // These are combat results — v3's combat reducer should produce
+    // them endogenously once UNIT_MOVED-onto-enemy is routed through
+    // it. Until then, expect zombie units / phantom cities in the
+    // diff. That's a v3-combat-infrastructure gap, not a v3 calc bug.
 
     // Pre-pass: funnel UNIT_CREATED events for NEW units (not in
     // preExistingUnitIds) into deferredPostEvents EARLY, so the
@@ -1459,71 +1430,14 @@ if (turns > 0) {
   }
   post = gameState;
 
-  // ── Phantom-unit cleanup ──
-  // v3's END_TURN city production creates units based on v3's shield
-  // accumulation, which can diverge from real Civ2 (e.g., when a city
-  // is in disorder, has happiness effects from wonders v3 doesn't model,
-  // or differs in terrain yield). Those phantom units show up as extra
-  // uids in the predicted state that don't exist in the target snapshot.
-  //
-  // Compute the set of uids that SHOULD be alive at the target snapshot:
-  //   preExisting (from input snapshot) + UNIT_CREATED uids (from postWrap)
-  //   - UNIT_KILLED uids (from postWrap).
-  // Any unit in gameState with a uid OUTSIDE that set is phantom — mark
-  // it dead (gx/gy = -1) so it falls out of the output unit list.
-  if (replayPath && post) {
-    const expectedUids = new Set(preExistingUnitIds);
-    const postWrapTurnCleanup = (post.turn?.number ?? 0);
-    for (const [key, batch] of replayEventsByTurnCiv) {
-      const [evTurn] = key.split(':').map(Number);
-      if (evTurn !== postWrapTurnCleanup) continue;
-      for (const ev of batch) {
-        if (ev.event === 'UNIT_CREATED' && ev.uid != null) {
-          expectedUids.add(ev.uid);
-        }
-        if (ev.event === 'UNIT_KILLED' && ev.uid != null) {
-          expectedUids.delete(ev.uid);
-        }
-      }
-    }
-    let phantomCount = 0;
-    post = {
-      ...post,
-      units: post.units.map(u => {
-        if (!u || u.gx < 0) return u;
-        const uid = u.id ?? u.sequenceId;
-        if (uid != null && !expectedUids.has(uid)) {
-          phantomCount++;
-          return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
-        }
-        return u;
-      }),
-    };
-    if (phantomCount > 0) {
-      process.stderr.write(`[replay] Removed ${phantomCount} phantom v3-produced units\n`);
-      // Also roll back nextUnitId: each phantom consumed a uid, bumping
-      // the counter higher than real Civ2's. Lower it to match.
-      if (post.nextUnitId != null) {
-        post = { ...post, nextUnitId: post.nextUnitId - phantomCount };
-      }
-    }
-    // Bump nextUnitId to reflect the highest uid the real game assigned
-    // up to this snapshot, even if my simulation didn't witness the
-    // assignment (UNIT_CREATED event was shifted out of this turn by
-    // the 200ms window but the real game created it before the
-    // snapshot). Using max(current, max_uid_in_expected + 1) is a safe
-    // ceiling since expected uids include all UNIT_CREATED events for
-    // the postWrap turn.
-    if (post.nextUnitId != null && expectedUids.size > 0) {
-      let maxExpected = 0;
-      for (const uid of expectedUids) {
-        if (uid > maxExpected) maxExpected = uid;
-      }
-      if (maxExpected + 1 > post.nextUnitId) {
-        post = { ...post, nextUnitId: maxExpected + 1 };
-      }
-    }
-  }
+  // Phantom-unit cleanup and nextUnitId ceiling both removed. They
+  // were hiding v3 bugs: the cleanup silently disappeared v3-produced
+  // units that real Civ2 didn't create (e.g. when v3's shield accrual
+  // diverged from the binary and a city "completed" a unit early), and
+  // the nextUnitId ceiling papered over the counter drift. Expect the
+  // diff to show those as extra units, wrong uids, and slot shifts —
+  // those are the v3 production-timing bugs this project is meant to
+  // fix at the source.
   console.log = origLog;
   process.stderr.write(`[N=${turns}] END_TURN stats: ${JSON.stringify(endTurnStats)}\n`);
   process.stderr.write(`[N=${turns}] Final turn: ${post.turn?.number ?? post.turnsPassed}\n`);
