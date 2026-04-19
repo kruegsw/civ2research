@@ -1693,10 +1693,16 @@ def main():
         wlist = [WONDER_NAMES[w] if w < len(WONDER_NAMES) else f'W{w}' for w in wonders]
         log(f"  Wonders: {', '.join(wlist)}")
 
-    fname = dump_snapshot(handle, snap_dir, prev['turn'] or 0,
-                          prev['mapWidth'] or 0, prev['mapHeight'] or 0,
-                          prev['difficulty'] or 0, t0=t0)
-    log(f"  Snapshot: {fname}")
+    # Initial baseline dump only if a game is actually loaded. When the
+    # sniffer attaches during Civ2's title/menu screen, mapWidth/Height
+    # are 0 and a dump would just be noise.
+    if (prev.get('mapWidth') or 0) and (prev.get('mapHeight') or 0):
+        fname = dump_snapshot(handle, snap_dir, prev['turn'] or 0,
+                              prev['mapWidth'] or 0, prev['mapHeight'] or 0,
+                              prev['difficulty'] or 0, t0=t0)
+        log(f"  Snapshot: {fname}")
+    else:
+        log("  (No game loaded yet — waiting for GAME_STARTED.)")
     flush()
 
     log(f"\nMonitoring... (Ctrl+C to stop)\n")
@@ -1720,16 +1726,100 @@ def main():
 
     snap_log = os.path.join(snap_dir, 'game.log')
 
+    # Game lifecycle state machine
+    #   - 'loaded'  : mapWidth/mapHeight > 0, real game in memory
+    #   - 'unloaded': mapWidth or mapHeight == 0 (title screen, menu,
+    #                 just-closed game — memory freed but process alive)
+    #   - 'no_process': civ2.exe died; sniffer needs to reattach
+    #
+    # Transitions emit typed events:
+    #   loaded → unloaded   : GAME_CLOSED
+    #   unloaded → loaded   : GAME_STARTED (also rotates session dir)
+    #   * → no_process      : PROCESS_DIED  (sniffer exits)
+    def game_state(s):
+        mw = s.get('mapWidth') or 0
+        mh = s.get('mapHeight') or 0
+        return 'loaded' if (mw > 0 and mh > 0) else 'unloaded'
+
+    current_game_state = game_state(prev)
+    events_path = os.path.join(snap_dir, 'events.jsonl')
+
+    def _emit_lifecycle(ev_type, **extra):
+        import json as _json
+        ms = (time.perf_counter() - t0) * 1000
+        payload = {'time_ms': round(ms, 1), 'event': ev_type}
+        payload.update(extra)
+        try:
+            with open(events_path, 'a', encoding='utf-8') as ef:
+                ef.write(_json.dumps(payload, separators=(',', ':')) + '\n')
+        except Exception:
+            pass
+        log(f"[{ms:10.1f}ms]  {ev_type}: {extra}")
+        flush()
+
+    def _rotate_session(reason):
+        """Start a fresh snapshots/game_<ts>/ directory. Used when a new
+        game is detected so snapshots and events for each distinct game
+        live in their own dir. time_ms stays relative to sniffer start."""
+        nonlocal snap_dir, events_path, snap_log
+        new_id = time.strftime('%Y%m%d_%H%M%S')
+        new_dir = os.path.join(script_dir, 'snapshots', f'game_{new_id}')
+        os.makedirs(new_dir, exist_ok=True)
+        snap_dir = new_dir
+        events_path = os.path.join(snap_dir, 'events.jsonl')
+        snap_log = os.path.join(snap_dir, 'game.log')
+        log(f"  [session rotated -> {snap_dir}] ({reason})")
+
     try:
         while True:
             try:
                 curr = read_state(handle)
             except Exception:
                 flush()
-                log("\nProcess closed.")
-                break
+                _emit_lifecycle('PROCESS_DIED')
+                log("\nProcess closed. Looking for new civ2.exe...")
+                # Reset lifecycle so the next GAME_STARTED fires correctly.
+                current_game_state = 'unloaded'
+                new_handle = None
+                new_pid = None
+                while not new_handle:
+                    new_pid = find_process('civ2.exe')
+                    if new_pid and new_pid != pid:
+                        new_handle = open_process(new_pid)
+                        if new_handle:
+                            pid = new_pid
+                            handle = new_handle
+                            _emit_lifecycle('PROCESS_ATTACHED', pid=pid)
+                            log(f"Reattached to PID {pid}.")
+                            prev = read_state(handle)
+                            prev_windows = enum_civ2_windows(pid)
+                            break
+                    time.sleep(2)
+                continue
 
             polls += 1
+
+            # Lifecycle transitions — check BEFORE the None-turn skip below
+            # because a just-freed game memory can have turn=None while map
+            # dims are still nonzero briefly. Using mapWidth/mapHeight as
+            # the canonical "is a game loaded" indicator.
+            new_game_state = game_state(curr)
+            if new_game_state != current_game_state:
+                if current_game_state == 'loaded' and new_game_state == 'unloaded':
+                    _emit_lifecycle('GAME_CLOSED', turn=prev.get('turn'),
+                                    lastCities=len([c for c in prev.get('cities', []) if c.get('size', 0) > 0]))
+                elif current_game_state == 'unloaded' and new_game_state == 'loaded':
+                    _rotate_session(reason='new game detected')
+                    _emit_lifecycle('GAME_STARTED',
+                                    mapWidth=curr.get('mapWidth'),
+                                    mapHeight=curr.get('mapHeight'),
+                                    difficulty=curr.get('difficulty'),
+                                    mapSeed=curr.get('mapSeed'))
+                    # Reset turn tracking so the first real dump fires.
+                    last_turn = curr.get('turn')
+                    pending_dump = True
+                current_game_state = new_game_state
+
             if curr['turn'] is None:
                 time.sleep(0.1)
                 continue
@@ -1739,7 +1829,6 @@ def main():
                 # Emit structured action events in parallel with the readable
                 # log. Replay harness consumes `events.jsonl`.
                 try:
-                    events_path = os.path.join(snap_dir, 'events.jsonl')
                     emit_action_events(prev, curr, t0, events_path)
                 except Exception:
                     pass
