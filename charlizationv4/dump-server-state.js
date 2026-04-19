@@ -206,27 +206,48 @@ if (turns > 0) {
   }
 
   // ── Load and bucket replay events by turn, per civ ──────────────
-  // events.jsonl is produced by sniff-game.py emit_action_events().
-  // We apply a civ's events inside their END_TURN slot (before the
-  // END_TURN action itself), so downstream reducer logic sees them.
-  const replayEventsByTurnCiv = new Map(); // key = `${turn}:${civ}`, value = [events]
+  // Primary routing: the sniffer's turn tag (ev.turn) — events tagged
+  // turn X belong to "transition TO X" and are applied during the
+  // simulation step that advances to turn X.
+  //
+  // Late-event shift: if an event's time_ms is FAR AFTER its own
+  // TURN_ADVANCED(ev.turn) (more than 500ms), it's actually a
+  // mid-turn-X action, NOT a transition-to-X event. Shift its target
+  // to ev.turn+1. Without this, e.g., a UNIT_ORDER fired 2 seconds
+  // after TURN_ADVANCED(8) but tagged turn=8 would be replayed during
+  // T7→T8 simulation and corrupt the T8 prediction.
+  const LATE_EVENT_WINDOW_MS = 500;
+  const replayEventsByTurnCiv = new Map();
   if (replayPath && existsSync(replayPath)) {
     try {
       const raw = readFileSync(replayPath, 'utf8');
+      const allEvents = [];
+      const turnAdvancedTime = new Map();
       for (const line of raw.split(/\r?\n/)) {
         if (!line.trim()) continue;
         try {
           const ev = JSON.parse(line);
-          const t = ev.turn;
-          // Prefer event's `civ` field if present; otherwise use `owner`
-          // (for unit events). Events without a civ target (TURN_ADVANCED)
-          // are skipped for replay purposes.
-          const c = ev.civ ?? ev.owner;
-          if (t == null || c == null) continue;
-          const key = `${t}:${c}`;
-          if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
-          replayEventsByTurnCiv.get(key).push(ev);
+          allEvents.push(ev);
+          if (ev.event === 'TURN_ADVANCED' && ev.turn != null && ev.time_ms != null) {
+            turnAdvancedTime.set(ev.turn, ev.time_ms);
+          }
         } catch (_) { /* skip malformed line */ }
+      }
+      for (const ev of allEvents) {
+        const c = ev.civ ?? ev.owner;
+        if (c == null || ev.turn == null) continue;
+        let routedTurn = ev.turn;
+        // Late-event shift: fire AFTER TURN_ADVANCED(ev.turn) by more
+        // than LATE_EVENT_WINDOW_MS → this event is actions DURING
+        // turn ev.turn, not the transition TO it. Bump to ev.turn+1.
+        const taTime = turnAdvancedTime.get(ev.turn);
+        if (taTime != null && ev.time_ms != null
+            && ev.time_ms > taTime + LATE_EVENT_WINDOW_MS) {
+          routedTurn = ev.turn + 1;
+        }
+        const key = `${routedTurn}:${c}`;
+        if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
+        replayEventsByTurnCiv.get(key).push(ev);
       }
       process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
     } catch (e) {
@@ -281,6 +302,21 @@ if (turns > 0) {
         if (ev.techId == null || ev.techId === 0xFF) return [];
         return [{ type: '__TECH_DISCOVERED__', civ: ev.civ, techId: ev.techId }];
       }
+      case 'UNIT_CREATED': {
+        // v3's END_TURN production creates the unit at its city tile,
+        // but the sniffer sees the unit at whatever tile real Civ2
+        // placed it (often adjacent after an immediate AI move).
+        // Override position and, where the sniffer captured them,
+        // order/goto/moveSpent/statusFlags. Older events.jsonl files
+        // (pre-2026-04-18) won't have these fields; fall back to
+        // heuristics based on whether the placement is at the home
+        // city's tile (auto-fortify) or not (AI goto).
+        if (ev.uid == null) return [];
+        return [{ type: '__UNIT_CREATED_PLACE__', uid: ev.uid, x: ev.x, y: ev.y,
+                  owner: ev.owner, order: ev.order,
+                  gotoX: ev.gotoX, gotoY: ev.gotoY,
+                  moveSpent: ev.moveSpent, statusFlags: ev.statusFlags }];
+      }
       case 'UNIT_MOVED': {
         // UID-based lookup — slot may have been reused.
         const units = state.units || [];
@@ -326,6 +362,16 @@ if (turns > 0) {
   // Deferred post-END_TURN events — see inline comment at the defer site
   // for why these can't apply immediately after each civ's END_TURN.
   const deferredPostEvents = [];
+  // Track unit IDs that existed BEFORE this simulation started. A
+  // UNIT_CREATED event for an already-present unit is a past-turn event
+  // shifted forward by the late-event-shift rule; re-applying it would
+  // stomp on a UNIT_MOVED that already moved the unit to its final
+  // position. Only apply UNIT_CREATED_PLACE for genuinely-new units.
+  const preExistingUnitIds = new Set(
+    (initResult.gameState.units || [])
+      .filter(u => u && u.gx >= 0)
+      .flatMap(u => [u.id, u.sequenceId].filter(v => v != null))
+  );
   // Target activeCiv for simulation stop: the human civ (matches
   // real Civ2 snapshot flow — user awaits input at activeCiv=human).
   // v3's `state.turn.activeCiv` is its own rotating "next-to-process"
@@ -369,7 +415,13 @@ if (turns > 0) {
       // under the previous rate. Split the batch into pre-end-turn and
       // post-end-turn queues based on event type.
       const POST_END_TYPES = new Set(['RATE_CHANGED', 'RESEARCH_PICKED',
-        'TECH_DISCOVERED', 'FLAGS_CHANGED', 'GOLD_CHANGED', 'GOV_CHANGED']);
+        'TECH_DISCOVERED', 'FLAGS_CHANGED', 'GOLD_CHANGED', 'GOV_CHANGED',
+        // UNIT_CREATED handled post-END because v3's production inside
+        // END_TURN creates the unit; we then override its position/
+        // flags to match real Civ2 (which places the unit at the
+        // event's x/y, NOT the city tile — AI moves the new unit
+        // post-production in the same turn).
+        'UNIT_CREATED']);
       const preEvents = replayEvents.filter(e => !POST_END_TYPES.has(e.event));
       const postEvents = replayEvents.filter(e => POST_END_TYPES.has(e.event));
       if (preEvents.length > 0) {
@@ -386,6 +438,42 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_CREATED_PLACE__') {
+              // Skip if this unit already existed in the starting
+              // state — the event is a past-turn creation shifted
+              // forward by late-event-shift, and applying it would
+              // clobber a subsequent UNIT_MOVED.
+              if (preExistingUnitIds.has(action.uid)) continue;
+              // Override position + flags for a unit that v3's
+              // production just created at the city tile. Real Civ2
+              // may have moved the unit to an adjacent tile during
+              // the same civ's turn (AI post-creation action). The
+              // sniffer's UNIT_CREATED event captures the final
+              // position, so we adopt it here.
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u => {
+                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
+                  const hcX = hc ? (hc.cx ?? hc.x) : null;
+                  const hcY = hc ? (hc.cy ?? hc.y) : null;
+                  const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
+                  const patched = { ...u, x: action.x, y: action.y,
+                          cx: action.x, cy: action.y,
+                          gx: Math.floor(action.x / 2), gy: action.y };
+                  if (action.order != null) patched.order = action.order;
+                  else if (placedOffCity) patched.order = 27;
+                  if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
+                  else if (placedOffCity) { patched.gotoX = action.x; patched.goToX = action.x; }
+                  if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
+                  else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
+                  if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
+                  if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  return patched;
+                }),
               };
               continue;
             }
@@ -525,7 +613,20 @@ if (turns > 0) {
         // idle-max state — so a fortified (moveSpent=3) warrior that
         // de-fortifies and moves into forest ends at moveSpent=6,
         // not 3+6=9.
-        const newMoveSpent = destCost * 3;
+        // Owner-dependent post-move moveSpent (observed):
+        //   - Civs processing BEFORE the human in the cycle (e.g.,
+        //     civ 4 when human is civ 5): moveSpent = terrain_cost*3.
+        //   - Civs processing AFTER the human (e.g., civ 6): binary
+        //     clears moveSpent to 0, presumably because the AI
+        //     mobilized the unit for a multi-turn goto and needs
+        //     fresh MP for next turn. Snapshot at the human's next
+        //     turn shows the cleared value.
+        const evOwner = ev.owner ?? ev.civ;
+        const hMask = parsed.gameState?.humanPlayers ?? 0;
+        let hCiv = -1;
+        for (let c = 1; c < 8; c++) { if (hMask & (1 << c)) { hCiv = c; break; } }
+        const ownerAfterHuman = hCiv > 0 && evOwner > hCiv;
+        const newMoveSpent = ownerAfterHuman ? 0 : destCost * 3;
         gameState = {
           ...gameState,
           units: gameState.units.map(u => {
@@ -552,6 +653,16 @@ if (turns > 0) {
       // phase (e.g., barbarian spawn, tech free unit), we'd need a
       // fresh unit record here. Defer to later if this becomes the
       // blocker.
+      //
+      // Funnel all non-UNIT_MOVED/non-UNIT_ORDER events shifted
+      // into postWrap into deferredPostEvents so the applyBatch below
+      // picks them up. These events, shifted here by the late-event-
+      // shift rule (time_ms > TURN_ADVANCED(ev.turn).time + 500ms),
+      // represent state changes that land in THIS snapshot's view.
+      if (ev.event !== 'UNIT_MOVED' && ev.event !== 'UNIT_ORDER'
+          && ev.event !== 'TURN_ADVANCED') {
+        deferredPostEvents.push(ev);
+      }
     }
   }
 
@@ -587,6 +698,32 @@ if (turns > 0) {
                   ? { ...c, techBeingResearched: 0xFF, researchingTech: 0xFF,
                       researchProgress: 0, beakers: 0 }
                   : c),
+            };
+            continue;
+          }
+          if (action.type === '__UNIT_CREATED_PLACE__') {
+            if (preExistingUnitIds.has(action.uid)) continue;
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u => {
+                if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                const hc = u.homeCity != null ? gameState.cities?.[u.homeCity] : null;
+                const hcX = hc ? (hc.cx ?? hc.x) : null;
+                const hcY = hc ? (hc.cy ?? hc.y) : null;
+                const placedOffCity = hc && (hcX !== action.x || hcY !== action.y);
+                const patched = { ...u, x: action.x, y: action.y,
+                        cx: action.x, cy: action.y,
+                        gx: Math.floor(action.x / 2), gy: action.y };
+                if (action.order != null) patched.order = action.order;
+                else if (placedOffCity) patched.order = 27;
+                if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
+                else if (placedOffCity) { patched.gotoX = action.x; patched.goToX = action.x; }
+                if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
+                else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
+                if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
+                if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                return patched;
+              }),
             };
             continue;
           }

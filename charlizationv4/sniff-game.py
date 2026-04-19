@@ -1303,7 +1303,11 @@ def emit_action_events(prev, curr, t0, events_path):
             events.append({'time_ms': round(ms, 1), 'turn': turn,
                            'event': 'UNIT_CREATED', 'slot': slot,
                            'uid': c_uid, 'x': c.get('x'), 'y': c.get('y'),
-                           'type': c.get('type'), 'owner': c.get('owner')})
+                           'type': c.get('type'), 'owner': c.get('owner'),
+                           'order': c.get('order'),
+                           'gotoX': c.get('gotoX'), 'gotoY': c.get('gotoY'),
+                           'moveSpent': c.get('moveSpent'),
+                           'statusFlags': c.get('statusFlags')})
             continue
         if p_uid != 0 and c_uid == 0 and p:
             events.append({'time_ms': round(ms, 1), 'turn': turn,

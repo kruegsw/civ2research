@@ -291,3 +291,46 @@ tech that triggers a re-pick.
 
 The slice-by-slice structure stays in the plan doc for reference but
 execution is now "fix what the diff shows."
+
+### Session 2026-04-18 (continued): Carthage spawn + post-wrap moveSpent
+
+Three interlocking fixes closed the last gaps on turns 7→8 and 8→9.
+
+1. **Late-event-shift rule** (`dump-server-state.js`, LATE_EVENT_WINDOW_MS=500).
+   Events tagged `turn=N` but fired >500 ms after `TURN_ADVANCED(N)`
+   describe actions during turn N itself, not the N-1→N transition.
+   Bump their routing to `turn=N+1` so they land in the next
+   simulation run instead of corrupting this one.
+
+2. **UNIT_CREATED position/goto propagation** (`__UNIT_CREATED_PLACE__` action).
+   v3's production creates units at the city tile with order=1
+   (auto-fortify). But the sniffer may capture a unit placed at a
+   non-city tile with order=27 (goto_ai) and goto target = its own
+   position — the AI's "send unit to waypoint, just arrived" state.
+   The PLACE handler now:
+   - Skips if the unit already existed in the starting state
+     (prevents a past-turn UNIT_CREATED from stomping a subsequent
+     UNIT_MOVED after late-event-shift).
+   - Applies order/gotoXY/moveSpent/statusFlags from the event
+     when the sniffer captured them (new fields added to
+     `sniff-game.py`'s UNIT_CREATED emitter).
+   - Falls back to a heuristic for old captures: if placement
+     differs from the home city tile, set order=27 and
+     gotoXY=(x,y).
+
+3. **Cities use cx/cy, not x/y.** Initial heuristic incorrectly
+   compared against `cities[i].x`/`.y` which are undefined in v3's
+   parser output; must read `cx`/`cy` (or fall back to `x`/`y` for
+   future-proofing).
+
+**Results (all pairs now clean):**
+- turn 4→5: 166/166
+- turn 5→6: 179/179
+- turn 6→7: 179/179
+- turn 7→8: **192/192** (was 187/192)
+- turn 8→9: **205/205** (was 204/205)
+
+**Sniffer change:** UNIT_CREATED events now include
+`order`, `gotoX`, `gotoY`, `moveSpent`, and `statusFlags` — future
+captures will carry authoritative data instead of relying on the
+off-city heuristic.
