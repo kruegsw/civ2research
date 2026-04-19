@@ -1195,8 +1195,26 @@ def emit_action_events(prev, curr, t0, events_path):
     # with prev.turn. The harness buckets events by turn:civ and looks
     # them up during its END_TURN-for-old-turn loop — mis-tagging with
     # the new turn causes those events to be silently skipped.
+    #
+    # BUT: Civ2 writes these civ-level fields AFTER the turn counter has
+    # incremented, so a poll sampled shortly after TURN_ADVANCED sees
+    # prev.turn == curr.turn == new_turn with flags suddenly changed.
+    # Track the last-turn-advance timestamp and back-tag civ events
+    # within 200ms of the advance to the old turn — this window covers
+    # end-of-turn bookkeeping without touching real within-turn changes.
     turn_advanced = prev.get('turn') != curr.get('turn')
-    civ_turn = prev.get('turn') if turn_advanced else turn
+    if turn_advanced:
+        emit_action_events.last_advance_ms = ms
+        emit_action_events.last_turn_before_advance = prev.get('turn')
+    recent_advance = (hasattr(emit_action_events, 'last_advance_ms')
+                      and (ms - emit_action_events.last_advance_ms) < 200.0
+                      and emit_action_events.last_turn_before_advance is not None)
+    if turn_advanced:
+        civ_turn = prev.get('turn')
+    elif recent_advance:
+        civ_turn = emit_action_events.last_turn_before_advance
+    else:
+        civ_turn = turn
     if turn_advanced:
         events.append({
             'time_ms': round(ms, 1), 'turn': turn, 'activeCiv': ac,

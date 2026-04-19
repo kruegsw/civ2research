@@ -615,6 +615,12 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         state.nextUnitId = maxId + 1;
       }
       const newSequenceId = state.nextUnitId++;
+      // Live snapshot: newly-created units show moveSpent=0 even for
+      // ground military auto-fortified at creation (order=1 fortifying).
+      // moveSpent only becomes max once the owner's NEXT turn reset runs
+      // on a unit already promoted to fortified (order=2). So the freshly-
+      // created warrior carries moveSpent=0 into the turn boundary — the
+      // turn-start reset then sees order=fortifying and keeps it at 0.
       const newUnit = {
         saveIndex: newSaveIndex,
         id: newSequenceId,
@@ -625,9 +631,15 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
         veteran: veteranStatus ? 1 : 0,
         movesRemain: 0,            // memory +0x0A damage_taken = 0 (full HP)
-        moveSpent: unitMP,         // memory +0x08 = all moves used this turn
+        moveSpent: 0,              // memory +0x08 — binary FUN_005b3d06 does
+                                   //   not set this; 0 matches live observation
         orders: aiFortifying ? 'fortifying' : 'none',
         order: aiFortifying ? 1 : 0xFF,  // raw memory +0x0F byte
+        // fortifyIssuedTurn gates the fortifying→fortified promotion so
+        // a warrior created+fortified on turn N stays fortifying through
+        // turn N+1's transition (matching real Civ2's per-owner turn-start
+        // promotion). Without this the reset would promote to 2 immediately.
+        fortifyIssuedTurn: aiFortifying ? (state.turn?.number ?? 0) : null,
         movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
         homeCity: cityIndex,

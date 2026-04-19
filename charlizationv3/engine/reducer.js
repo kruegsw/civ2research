@@ -343,8 +343,11 @@ export function applyAction(prev, mapBase, action, civSlot) {
         unit.movesLeft = 0;
         // Binary sets flag 0x4000 on unit — in JS we just skip without changing orders
       } else if (order === 'fortify') {
-        // Takes 1 turn to fortify — set to 'fortifying', END_TURN will promote to 'fortified'
+        // Takes 1 turn to fortify — set to 'fortifying', END_TURN will promote
+        // to 'fortified' on a LATER cycle (not the one in which the order was
+        // issued). fortifyIssuedTurn gates the promotion per real Civ2 timing.
         unit.orders = 'fortifying';
+        unit.fortifyIssuedTurn = state.turn?.number ?? 0;
         unit.movesLeft = 0;
       } else if (order === 'sentry') {
         unit.orders = 'sentry';

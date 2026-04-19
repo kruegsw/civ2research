@@ -249,26 +249,73 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
     // Barbarian spawn + AI already moved above (before power rankings)
 
-    // #35: Reset ALL units for ALL civs at once at turn start (civ 0)
-    // Binary: FUN_005b2a39 resets all units at the start of the turn cycle,
-    // not per-civ. This ensures consistent state for all civs.
+    // Real Civ2 splits "turn boundary" processing into two parts:
     //
-    // Heal eligibility (binary FUN_00488cef): a unit may heal at the start of
-    // its civ's next turn ONLY if its 0x40 flag is clear — i.e., it did not
-    // move during its last turn. We capture that decision here, before mp is
-    // reset, by recording `idleLastTurn = (movesLeft >= maxFresh)`.
+    //   1. GLOBAL at turn wrap — fortifying→fortified promotion fires
+    //      for every unit whose fortify order is at least one turn old.
+    //      Observed in the sniffer: a Carthaginian warrior fortified on
+    //      turn 4 shows order=1 at turn 5 snapshot and order=2 at turn 6
+    //      snapshot, even though civ 6's turn 6 hasn't started yet.
+    //
+    //   2. PER-CIV at that civ's turn start — moveSpent reset, movesLeft
+    //      top-up, idleLastTurn capture. Real Civ2 resets a civ's units
+    //      only when that civ's turn comes up, so a mid-cycle snapshot
+    //      (activeCiv=human) shows the civs that already processed this
+    //      turn with fresh move state and the civs still to come with
+    //      their prior-turn end state intact.
+    //
+    // Heal eligibility (binary FUN_00488cef): a unit may heal at the
+    // start of its civ's next turn ONLY if its 0x40 flag is clear — i.e.,
+    // it did not move during its last turn. We capture that decision
+    // here, before mp is reset, by recording
+    // `idleLastTurn = (movesLeft >= maxFresh)`.
+    // Order-byte sync table — used both in the global promote branch
+    // and the per-civ reset branch.
+    const ORDER_BYTES = {
+      'none':        0xFF,
+      'fortifying':  1,
+      'fortified':   2,
+      'sleep':       3,
+      'fortress':    4,   'buildFortress':    4,
+      'road':        5,   'buildRoad':        5,
+      'irrigation':  6,   'buildIrrigation':  6,
+      'mine':        7,   'buildMine':        7,
+      'transform':   8,
+      'pollution':   9,   'cleanPollution':   9,
+      'airbase':     10,  'buildAirbase':     10,
+      'railroad':    11,
+      'goto':        11,
+    };
     state.units = state.units.map(u => {
       if (u.gx < 0) return u;
       const ownerCiv = u.owner;
+      // (A) GLOBAL fortifying→fortified promotion at turn wrap. Applies
+      // to every unit whose fortify order was issued on a prior turn,
+      // regardless of whether that unit's owner has processed their next
+      // turn yet. This matches the observed sniffer behavior where a
+      // Carthaginian warrior fortified turn 4 shows order=2 at turn 6
+      // even though civ 6's turn 6 is still waiting.
+      const shouldPromote = u.orders === 'fortifying'
+        && (u.fortifyIssuedTurn == null || u.fortifyIssuedTurn < turnNumber);
+      const orders = shouldPromote ? 'fortified' : u.orders;
+      const orderByte = (orders in ORDER_BYTES)
+        ? ORDER_BYTES[orders]
+        : (u.order ?? 0xFF);
+
+      // (B) PER-CIV moveSpent/movesLeft reset. Only applies to the civ
+      // whose turn is STARTING (i.e., the next civ in the order). Other
+      // civs keep their prior turn's end state until their turn comes
+      // up. This preserves the mid-cycle snapshot observation: at
+      // activeCiv=human, civs that already processed this turn show
+      // reset move state, while civs still queued keep their previous-
+      // turn end state.
+      if (ownerCiv !== next) {
+        return { ...u, orders, order: orderByte };
+      }
+
       const ownerHasLighthouse = hasWonderEffect(state, ownerCiv, 3);
       const ownerHasMagellan = hasWonderEffect(state, ownerCiv, 12);
       const ownerHasNuclearPower = !!(state.civTechs?.[ownerCiv]?.has(59));
-      const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
-      // Sync the raw numeric `order` byte too — it feeds the sniffer-
-      // schema dump. 'fortifying'=1, 'fortified'=2 per parser ORDERS_MAP.
-      const orderByte = orders === 'fortified' ? 2
-                      : orders === 'fortifying' ? 1
-                      : (u.order ?? 0xFF);
       // Sea bonuses are computed first, then passed to calcEffectiveMovementPoints
       // so damage scaling applies to the total (base + bonuses), matching binary
       // FUN_005b2a39 which adds sea bonuses (lines 772-786) before damage reduction (789-810).
@@ -281,16 +328,22 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         if (ownerHasNuclearPower) seaBonus += MOVEMENT_MULTIPLIER;
       }
       let mp = calcEffectiveMovementPoints(u, seaBonus);
-      // Capture idleness BEFORE resetting movesLeft. If the unit still has
-      // its full mp (the value we're about to assign), it didn't move/attack
-      // last turn and is eligible for healing. The +1 tolerance is for
-      // off-by-one where a unit may have spent one MP on a no-cost order.
+      // Capture idleness BEFORE resetting movesLeft.
       const idleLastTurn = (u.movesLeft || 0) >= mp;
-      // Reset moveSpent to 0 at start of each new turn — matches real
-      // Civ2 where memory +0x08 (moves byte) goes back to 0 when the
-      // unit's turn begins. Without this, a unit stays "out of moves"
-      // in the sniffer-schema dump every subsequent turn.
-      return { ...u, movesLeft: mp, moveSpent: 0, orders, order: orderByte, idleLastTurn };
+      // moveSpent reset: units that won't actually move this turn
+      // (fortified, sleeping, active work order) keep moveSpent at mp to
+      // signal "moves unavailable". Units with no active order get
+      // moveSpent=0 so they can move.
+      const idleOrder = orders === 'fortified' || orders === 'sleep'
+        || orders === 'road' || orders === 'buildRoad'
+        || orders === 'irrigation' || orders === 'buildIrrigation'
+        || orders === 'mine' || orders === 'buildMine'
+        || orders === 'fortress' || orders === 'buildFortress'
+        || orders === 'airbase' || orders === 'buildAirbase'
+        || orders === 'transform' || orders === 'pollution'
+        || orders === 'cleanPollution' || orders === 'railroad';
+      const newMoveSpent = idleOrder ? mp : 0;
+      return { ...u, movesLeft: mp, moveSpent: newMoveSpent, orders, order: orderByte, idleLastTurn };
     });
 
     // ── #145: Future tech counter — increment after turn 199 ──

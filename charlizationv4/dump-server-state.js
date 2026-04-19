@@ -272,6 +272,15 @@ if (turns > 0) {
         // at the civ level so ev.civ is the target.
         return [{ type: '__RAW_FLAGS__', civ: ev.civ, flags: ev.to }];
       }
+      case 'TECH_DISCOVERED': {
+        // Real Civ2's research progression (beaker accumulation rate +
+        // AI-difficulty bonus) differs from v3's; replaying the exact
+        // turn a tech was discovered in real Civ2 keeps the predicted
+        // civTechs / researchProgress / researchingTech aligned with
+        // the snapshot's view of reality.
+        if (ev.techId == null || ev.techId === 0xFF) return [];
+        return [{ type: '__TECH_DISCOVERED__', civ: ev.civ, techId: ev.techId }];
+      }
       case 'UNIT_MOVED': {
         // UID-based lookup — slot may have been reused.
         const units = state.units || [];
@@ -314,6 +323,9 @@ if (turns > 0) {
     }
   }
 
+  // Deferred post-END_TURN events — see inline comment at the defer site
+  // for why these can't apply immediately after each civ's END_TURN.
+  const deferredPostEvents = [];
   for (let t = 0; t < turns; t++) {
     // Walk civs in activeCiv order. Before each END_TURN, exhaust moves
     // for that civ's units so the "units still need orders" validation
@@ -333,9 +345,23 @@ if (turns > 0) {
       const currentTurn = gameState.turn?.number ?? gameState.turnsPassed ?? 1;
       const replayKey = `${currentTurn}:${civ}`;
       const replayEvents = replayEventsByTurnCiv.get(replayKey) || [];
-      if (replayEvents.length > 0) {
-        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ}: ${replayEvents.length} events\n`);
-        for (const ev of replayEvents) {
+      // Some events describe state changes that the binary applies
+      // AFTER the civ's END_TURN has finished (e.g., AI rate re-balance
+      // following tech discovery, senate-override flag writes). If we
+      // replay them BEFORE END_TURN they perturb this-turn's economy
+      // calculations — e.g., a tax-rate bump applied pre-end-turn would
+      // pull extra gold from the same trade that real Civ2 processed
+      // under the previous rate. Split the batch into pre-end-turn and
+      // post-end-turn queues based on event type.
+      const POST_END_TYPES = new Set(['RATE_CHANGED', 'RESEARCH_PICKED',
+        'TECH_DISCOVERED', 'FLAGS_CHANGED', 'GOLD_CHANGED', 'GOV_CHANGED']);
+      const preEvents = replayEvents.filter(e => !POST_END_TYPES.has(e.event));
+      const postEvents = replayEvents.filter(e => POST_END_TYPES.has(e.event));
+      if (preEvents.length > 0) {
+        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} pre: ${preEvents.length} events\n`);
+      }
+      const applyReplayBatch = (batch) => {
+        for (const ev of batch) {
           const actions = eventToActions(ev, gameState);
           for (const action of actions) {
             // Synthetic __RAW_FLAGS__ action — apply directly without
@@ -348,6 +374,26 @@ if (turns > 0) {
               };
               continue;
             }
+            // Synthetic __TECH_DISCOVERED__ — add to civTechs, clear
+            // techBeingResearched (the field the dumper reads out as
+            // researchingTech) and researchProgress on the civ record.
+            if (action.type === '__TECH_DISCOVERED__') {
+              const newTechs = gameState.civTechs
+                ? [...gameState.civTechs]
+                : new Array(8).fill(null).map(() => new Set());
+              newTechs[action.civ] = new Set(newTechs[action.civ] || []);
+              newTechs[action.civ].add(action.techId);
+              gameState = {
+                ...gameState,
+                civTechs: newTechs,
+                civs: gameState.civs.map((c, i) =>
+                  i === action.civ
+                    ? { ...c, techBeingResearched: 0xFF, researchingTech: 0xFF,
+                        researchProgress: 0, beakers: 0 }
+                    : c),
+              };
+              continue;
+            }
             try {
               const next = applyAction(gameState, mapBase, action, civ);
               if (next && next !== gameState) gameState = next;
@@ -356,7 +402,8 @@ if (turns > 0) {
             }
           }
         }
-      }
+      };
+      applyReplayBatch(preEvents);
 
       // Zero out movesLeft for this civ's units so END_TURN validation passes
       gameState = {
@@ -392,6 +439,19 @@ if (turns > 0) {
         process.stderr.write(`[turn ${t} civ ${civ}] END_TURN threw: ${e.message}\n`);
         break;
       }
+      // Post-END_TURN events: flag changes, rate rebalances, research
+      // target swaps, tech discoveries. The binary applies these AFTER
+      // the civ's turn processing. Complication: v3's END_TURN(civ X)
+      // actually computes the NEXT civ's (Y's) trade during X's call —
+      // meaning applying civ X's post-events right after END_TURN(X)
+      // would bleed into civ X's own trade calc, which happens inside
+      // END_TURN of a LATER civ. To avoid this, defer ALL post-events
+      // until the entire END_TURN loop has finished; at that point
+      // every civ's trade has been computed with its pre-event rates.
+      if (postEvents.length > 0) {
+        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
+        deferredPostEvents.push(...postEvents);
+      }
       // Stop this round when turn counter has advanced (full round done)
       const newTurn = gameState.turn?.number ?? gameState.turnsPassed ?? 0;
       const origTurn = initResult.gameState.turn?.number ?? initResult.gameState.turnsPassed ?? 0;
@@ -405,6 +465,52 @@ if (turns > 0) {
       if (newTurn > origTurn + t) break;
     }
     turnsRan++;
+  }
+  // Apply all deferred post-END_TURN events now that every civ's trade
+  // has been computed. These are civ-level state changes the binary
+  // writes at the very end of the turn cycle.
+  if (deferredPostEvents.length > 0) {
+    process.stderr.write(`[replay] applying ${deferredPostEvents.length} deferred post events\n`);
+    // Use an anonymous civ label — each event carries its own civ target.
+    const applyBatch = (batch) => {
+      for (const ev of batch) {
+        const actions = eventToActions(ev, gameState);
+        for (const action of actions) {
+          if (action.type === '__RAW_FLAGS__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) =>
+                i === action.civ ? { ...c, stateFlags: action.flags } : c),
+            };
+            continue;
+          }
+          if (action.type === '__TECH_DISCOVERED__') {
+            const newTechs = gameState.civTechs
+              ? [...gameState.civTechs]
+              : new Array(8).fill(null).map(() => new Set());
+            newTechs[action.civ] = new Set(newTechs[action.civ] || []);
+            newTechs[action.civ].add(action.techId);
+            gameState = {
+              ...gameState,
+              civTechs: newTechs,
+              civs: gameState.civs.map((c, i) =>
+                i === action.civ
+                  ? { ...c, techBeingResearched: 0xFF, researchingTech: 0xFF,
+                      researchProgress: 0, beakers: 0 }
+                  : c),
+            };
+            continue;
+          }
+          try {
+            const next = applyAction(gameState, mapBase, action, ev.civ ?? ev.owner ?? 0);
+            if (next && next !== gameState) gameState = next;
+          } catch (e) {
+            process.stderr.write(`[replay] deferred ${ev.event} failed: ${e.message}\n`);
+          }
+        }
+      }
+    };
+    applyBatch(deferredPostEvents);
   }
   post = gameState;
   console.log = origLog;
