@@ -1440,6 +1440,22 @@ if (turns > 0) {
         post = { ...post, nextUnitId: post.nextUnitId - phantomCount };
       }
     }
+    // Bump nextUnitId to reflect the highest uid the real game assigned
+    // up to this snapshot, even if my simulation didn't witness the
+    // assignment (UNIT_CREATED event was shifted out of this turn by
+    // the 200ms window but the real game created it before the
+    // snapshot). Using max(current, max_uid_in_expected + 1) is a safe
+    // ceiling since expected uids include all UNIT_CREATED events for
+    // the postWrap turn.
+    if (post.nextUnitId != null && expectedUids.size > 0) {
+      let maxExpected = 0;
+      for (const uid of expectedUids) {
+        if (uid > maxExpected) maxExpected = uid;
+      }
+      if (maxExpected + 1 > post.nextUnitId) {
+        post = { ...post, nextUnitId: maxExpected + 1 };
+      }
+    }
   }
   console.log = origLog;
   process.stderr.write(`[N=${turns}] END_TURN stats: ${JSON.stringify(endTurnStats)}\n`);
