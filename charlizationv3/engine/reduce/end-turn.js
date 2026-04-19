@@ -273,141 +273,25 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // Order-byte sync table is in ../order-bytes.js (shared with the
     // reducer's UNIT_ORDER handler). Local const ORDER_BYTES used to
     // live here; extracted so both reducer and end-turn stay in sync.
-    // Build the set of civs whose turn-start reset SHOULD run during
-    // this cycle boundary. Real Civ2 runs start-of-turn processing
-    // per civ in order: civ 0 (barbs), civ 1, ..., up to the civ that
-    // holds the active slot at the moment a snapshot is captured.
-    // For a single-human game where the human's slot is H, snapshots
-    // land at activeCiv=H and reflect reset state for civs 0..H and
-    // pre-reset state for civs H+1..7.
+    // GLOBAL fortifying→fortified promotion at turn wrap. Applies to
+    // every unit whose fortify order was issued on a prior turn,
+    // regardless of whether that unit's owner has processed their next
+    // turn yet. Matches observed sniffer behavior where a Carthaginian
+    // warrior fortified turn 4 shows order=2 at turn 6 even though
+    // civ 6's turn 6 is still waiting.
     //
-    // The harness starts with activeCiv=H and calls END_TURN for each
-    // civ in order until the cycle wraps. To match the snapshot's
-    // intermediate state, we need to reset civs from `next` (first
-    // civ of the new cycle) up to AND INCLUDING the original human
-    // civ. Civs after the human don't get reset here — their turn
-    // hasn't started yet in the new cycle.
-    const humanMask = state.humanPlayers ?? 0;
-    let humanCiv = -1;
-    for (let c = 1; c < 8; c++) {
-      if (humanMask & (1 << c)) { humanCiv = c; break; }
-    }
-    // Walk alive civs starting at `next`, collecting until we pass the
-    // human civ. If no human (all-AI game), fall back to just `next`
-    // — keeps behavior conservative for scenarios we haven't observed
-    // yet. Guard the walk to 8 iterations so a malformed civsAlive
-    // can't infinite-loop.
-    const resetCivs = new Set([next]);
-    if (humanCiv >= 0 && humanCiv !== next) {
-      let c = next;
-      for (let i = 0; i < 8; i++) {
-        c = (c % 7) + 1;
-        if (!(state.civsAlive & (1 << c))) continue;
-        resetCivs.add(c);
-        if (c === humanCiv) break;
-      }
-    }
-
-    // Promotion gate uses the NEW (post-increment) turn number. The
-    // increment happens at line 323 below; we precompute it here so
-    // the gate compares against the turn the game is entering, not
-    // the one it's leaving. This matters because a unit fortified
-    // manually DURING its owner's turn N should promote at turn N+1
-    // (gate: fortifyIssuedTurn=N < newTurn=N+1 = true). Units
-    // auto-fortified at creation (cityturn.js stores
-    // fortifyIssuedTurn=N+1 for them) stay fortifying until N+2
-    // (gate: N+1 < N+1 = false at wrap N→N+1; N+1 < N+2 = true at
-    // wrap N+1→N+2).
+    // Per-civ start-of-turn reset (moveSpent/movesLeft) is NO LONGER
+    // handled here — callers (harness, server) fire START_TURN per
+    // civ explicitly. This decoupling matches the binary's per-civ
+    // model (FUN_0048710a is called when each civ's turn begins).
     const postWrapTurn = turnNumber + 1;
     state.units = state.units.map(u => {
       if (u.gx < 0) return u;
-      const ownerCiv = u.owner;
-      // (A) GLOBAL fortifying→fortified promotion at turn wrap. Applies
-      // to every unit whose fortify order was issued on a prior turn,
-      // regardless of whether that unit's owner has processed their next
-      // turn yet. This matches the observed sniffer behavior where a
-      // Carthaginian warrior fortified turn 4 shows order=2 at turn 6
-      // even though civ 6's turn 6 is still waiting.
       const shouldPromote = u.orders === 'fortifying'
         && (u.fortifyIssuedTurn == null || u.fortifyIssuedTurn < postWrapTurn);
-      const orders = shouldPromote ? 'fortified' : u.orders;
-      const orderByte = (orders in ORDER_BYTES)
-        ? ORDER_BYTES[orders]
-        : (u.order ?? 0xFF);
-
-      // (B) PER-CIV moveSpent/movesLeft reset for civs 0..human (as
-      // scoped by resetCivs above). Civs after the human are skipped;
-      // their turn hasn't started yet.
-      if (!resetCivs.has(ownerCiv)) {
-        return { ...u, orders, order: orderByte };
-      }
-
-      const ownerHasLighthouse = hasWonderEffect(state, ownerCiv, 3);
-      const ownerHasMagellan = hasWonderEffect(state, ownerCiv, 12);
-      const ownerHasNuclearPower = !!(state.civTechs?.[ownerCiv]?.has(59));
-      // Sea bonuses are computed first, then passed to calcEffectiveMovementPoints
-      // so damage scaling applies to the total (base + bonuses), matching binary
-      // FUN_005b2a39 which adds sea bonuses (lines 772-786) before damage reduction (789-810).
-      let seaBonus = 0;
-      if (UNIT_DOMAIN[u.type] === 2) { // sea domain
-        if (ownerHasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
-          seaBonus += MOVEMENT_MULTIPLIER;
-        }
-        if (ownerHasMagellan) seaBonus += 2 * MOVEMENT_MULTIPLIER;
-        if (ownerHasNuclearPower) seaBonus += MOVEMENT_MULTIPLIER;
-      }
-      let mp = calcEffectiveMovementPoints(u, seaBonus);
-      // Capture idleness BEFORE resetting movesLeft.
-      const idleLastTurn = (u.movesLeft || 0) >= mp;
-      // Owner-dependent moveSpent rule (observed from snapshots):
-      //
-      //   AI civ's turn-start reset:
-      //     - IDLE unit (fortified/sleeping/active work/fortifying):
-      //       moveSpent = mp (max), movesLeft = 0.
-      //     - ACTIVE unit (no order): moveSpent = 0, movesLeft = mp.
-      //
-      //   Human civ's turn-start reset:
-      //     - IDLE unit: moveSpent UNCHANGED (so a just-fortified
-      //       unit with moveSpent=0 stays 0; a long-fortified unit
-      //       with moveSpent=3 stays 3).
-      //     - ACTIVE unit: moveSpent = 0, movesLeft = mp.
-      //
-      // Verified via turn 8→9 and turn 6→7 diffs:
-      //   - Aztec Phalanx (civ 4 AI, created turn 8, fortifying at
-      //     turn 9): moveSpent=3 ✓ — AI reset bumps idle to max.
-      //   - American Warrior (civ 5 human, fortifying→fortified via
-      //     promotion, moveSpent was 0 before): stays 0 ✓ — human
-      //     reset leaves idle moveSpent alone.
-      //   - Aztec Warrior (civ 4 AI, fortified long-term): already
-      //     moveSpent=3 before reset, stays 3 ✓.
-      const idleOrder = orders === 'fortified' || orders === 'fortifying'
-        || orders === 'sleep'
-        || orders === 'road' || orders === 'buildRoad'
-        || orders === 'irrigation' || orders === 'buildIrrigation'
-        || orders === 'mine' || orders === 'buildMine'
-        || orders === 'fortress' || orders === 'buildFortress'
-        || orders === 'airbase' || orders === 'buildAirbase'
-        || orders === 'transform' || orders === 'pollution'
-        || orders === 'cleanPollution' || orders === 'railroad';
-      const humanMaskMS = state.humanPlayers ?? 0;
-      const isHumanOwner = !!(humanMaskMS & (1 << ownerCiv));
-      let newMoveSpent, newMovesLeft;
-      if (idleOrder) {
-        if (isHumanOwner) {
-          // Human: leave moveSpent as-is.
-          newMoveSpent = u.moveSpent ?? 0;
-          newMovesLeft = 0;
-        } else {
-          // AI: bump idle moveSpent to max.
-          newMoveSpent = mp;
-          newMovesLeft = 0;
-        }
-      } else {
-        // Active (no order): fresh moves for everyone.
-        newMoveSpent = 0;
-        newMovesLeft = mp;
-      }
-      return { ...u, movesLeft: newMovesLeft, moveSpent: newMoveSpent, orders, order: orderByte, idleLastTurn };
+      if (!shouldPromote) return u;
+      const orders = 'fortified';
+      return { ...u, orders, order: ORDER_BYTES[orders] };
     });
 
     // ── #145: Future tech counter — increment after turn 199 ──

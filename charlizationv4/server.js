@@ -1049,11 +1049,31 @@ async function processAiTurns(roomId, room) {
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
     const activeCiv = room.gameState.turn.activeCiv;
 
-    // If this civ is human, stop — it's their turn now
-    if (humanPlayers & (1 << activeCiv)) break;
+    // If this civ is human, fire START_TURN for them and stop —
+    // they resume control next.
+    if (humanPlayers & (1 << activeCiv)) {
+      try {
+        const st = applyAction(room.gameState, room.mapBase,
+          { type: 'START_TURN', civ: activeCiv }, activeCiv);
+        if (st && st !== room.gameState) room.gameState = st;
+      } catch (err) {
+        console.error(`[CRASH] START_TURN(human=${activeCiv}) threw:`, err);
+      }
+      break;
+    }
 
     // If civ is not alive, skip (END_TURN should have already skipped, but guard)
     if (!(room.gameState.civsAlive & (1 << activeCiv))) break;
+
+    // Fire per-civ START_TURN before AI plays — moveSpent/movesLeft
+    // reset, fortify-delay decrement (binary FUN_0048710a semantics).
+    try {
+      const st = applyAction(room.gameState, room.mapBase,
+        { type: 'START_TURN', civ: activeCiv }, activeCiv);
+      if (st && st !== room.gameState) room.gameState = st;
+    } catch (err) {
+      console.error(`[CRASH] START_TURN(${activeCiv}) threw:`, err);
+    }
 
     // Run AI for this civ — two-phase approach matching binary FUN_0053184D:
     //

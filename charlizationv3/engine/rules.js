@@ -105,7 +105,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
   if (!action || !action.type) return 'Missing action type';
 
   // Actions that can be performed even when it's not your turn
-  const ANYTIME_ACTIONS = [RESPOND_TREATY, RESPOND_DEMAND, RENAME_CITY, CHANGE_PRODUCTION, SET_WORKERS, SET_RESEARCH, CHANGE_RATES];
+  const ANYTIME_ACTIONS = [RESPOND_TREATY, RESPOND_DEMAND, RENAME_CITY, CHANGE_PRODUCTION, SET_WORKERS, SET_RESEARCH, CHANGE_RATES, 'START_TURN'];
   if (!ANYTIME_ACTIONS.includes(action.type) && civSlot !== gameState.turn.activeCiv) {
     return 'Not your turn';
   }
@@ -993,6 +993,16 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const hasUnitNeedingOrders = gameState.units.some(u =>
         u.owner === civSlot && u.gx >= 0 && u.movesLeft > 0 && !BUSY_ORDERS.has(u.orders));
       if (hasUnitNeedingOrders) return 'Units still need orders';
+      return null;
+    }
+
+    case 'START_TURN': {
+      // Per-civ start-of-turn reset. Fired by harness/server at each
+      // civ's turn begin. The `civ` parameter overrides civSlot so a
+      // harness can drive START_TURN for multiple civs during one
+      // simulation step.
+      if (action.civ == null) return null;
+      if (action.civ < 0 || action.civ > 7) return 'Invalid civ slot';
       return null;
     }
 

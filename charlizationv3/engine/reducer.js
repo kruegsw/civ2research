@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER, SET_HOME_CITY, UNLOAD_TRANSPORT } from './actions.js';
+import { MOVE_UNIT, END_TURN, START_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER, SET_HOME_CITY, UNLOAD_TRANSPORT } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
 import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
@@ -28,6 +28,7 @@ import { getCityName, assignInitialWorkers, radiusTileCoords, discoverContacts, 
 import { spawnBarbarianUprising } from './reduce/barbarians.js';
 import { handleMoveUnit, resolveGoodyHut } from './reduce/move-unit.js';
 import { handleEndTurn } from './reduce/end-turn.js';
+import { processCivTurnStart } from './reduce/start-turn.js';
 import { handleBribeUnit, handleStealTech, handleSabotageCity, handleInciteRevolt, handleSpyPoisonWater, handleSpyPlantNuke, handleSpySabotageProduction, handleSpyInvestigateCity, handleSpyEstablishEmbassy, handleSpySabotageUnit, handleSpySubvertCity } from './reduce/espionage-actions.js';
 
 // (#176) Max unit limits from binary
@@ -1387,6 +1388,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
     case END_TURN: {
       handleEndTurn(state, prev, mapBase, action, civSlot);
+      break;
+    }
+
+    case START_TURN: {
+      // Per-civ start-of-turn processing. Fired by harness/server
+      // at each civ's turn begin. Decoupled from END_TURN so callers
+      // drive timing explicitly (matches binary's per-civ model).
+      const targetCiv = action.civ ?? civSlot;
+      processCivTurnStart(state, targetCiv);
       break;
     }
 

@@ -192,6 +192,13 @@ for (let turn = 0; turn < NUM_TURNS * NUM_PLAYERS; turn++) {
     continue;
   }
 
+  // Fire per-civ START_TURN — moveSpent/movesLeft reset, fortify-
+  // delay decrement (binary FUN_0048710a). Decoupled from END_TURN
+  // so callers drive timing explicitly.
+  const stResult = applyAction(gameState, mapBase,
+    { type: 'START_TURN', civ: activeCiv }, activeCiv);
+  if (stResult !== gameState) gameState = stResult;
+
   const turnNum = gameState.turn.number;
   const isNewFullTurn = prevState.turn.number !== turnNum;
 

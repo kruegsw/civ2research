@@ -15,6 +15,13 @@ export const END_TURN = 'END_TURN';
 //   { type: 'END_TURN' }
 //   Advance to next civ's turn. Resets movement for next civ's units.
 
+export const START_TURN = 'START_TURN';
+//   { type: 'START_TURN', civ }
+//   Per-civ start-of-turn processing: moveSpent/movesLeft reset,
+//   fortify-delay decrement. Binary ref: FUN_0048710a @
+//   block_00480000.c:1741. Fired by the harness/server at each civ's
+//   turn begin; decoupled from END_TURN so callers control timing.
+
 export const BUILD_CITY = 'BUILD_CITY';
 //   { type: 'BUILD_CITY', unitIndex }
 //   Settler builds a city at its current position. Settler is consumed.

@@ -579,6 +579,34 @@ if (turns > 0) {
     turnsRan++;
   }
 
+  // Post-cycle-wrap: fire START_TURN for each civ whose turn has
+  // BEGUN in the new cycle at snapshot time (civs 0..human inclusive
+  // in cycle order). This is the canonical per-civ start-of-turn
+  // processing (binary ref: FUN_0048710a) — moveSpent/movesLeft
+  // reset, fortify-delay decrement. Fired here explicitly rather
+  // than implicitly during END_TURN's cycle-wrap so the harness
+  // controls timing. Civs AFTER the human in cycle order do NOT get
+  // START_TURN here — their snapshot state reflects last cycle's
+  // end state (they haven't begun their new-cycle turn yet).
+  const humanCivPW = (() => {
+    const hMask = parsed.gameState?.humanPlayers ?? 0;
+    for (let c = 1; c < 8; c++) if (hMask & (1 << c)) return c;
+    return -1;
+  })();
+  if (humanCivPW >= 0) {
+    // Walk cycle order starting from civ 1 (civ 0 barbs handled by
+    // cycle-wrap barbarian logic, not per-civ START_TURN).
+    for (let c = 1; c <= humanCivPW; c++) {
+      if (!(gameState.civsAlive & (1 << c))) continue;
+      try {
+        const next = applyAction(gameState, mapBase, { type: 'START_TURN', civ: c }, c);
+        if (next && next !== gameState) gameState = next;
+      } catch (e) {
+        process.stderr.write(`[replay] START_TURN(${c}) failed: ${e.message}\n`);
+      }
+    }
+  }
+
   // Post-cycle-wrap raw-state replay: after the END_TURN loop stops,
   // snapshots reflect state AFTER AI civs before the human have
   // started their next turn (taken actions). Those actions include
