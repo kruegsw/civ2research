@@ -290,7 +290,8 @@ def read_unit(h, idx):
     uid = struct.unpack_from('<i', d, 0x1A)[0]
     name = UNIT_NAMES[utype] if utype < len(UNIT_NAMES) else f'T{utype}'
     return dict(idx=idx, raw=d, x=x, y=y, type=utype, name=name, owner=owner,
-                moves=moves, order=order, orderName=ORDER_NAMES.get(order, f'o{order}'),
+                moves=moves, moveSpent=moves, statusFlags=status,
+                order=order, orderName=ORDER_NAMES.get(order, f'o{order}'),
                 # multi-purpose byte — label depends on unit type
                 workTurnsOrCargo=multipurpose_0D,
                 alive=uid!=0, id=uid, gotoX=goto_x, gotoY=goto_y,

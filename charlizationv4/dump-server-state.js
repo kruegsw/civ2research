@@ -324,9 +324,20 @@ if (turns > 0) {
         const units = state.units || [];
         const uIdx = units.findIndex(u => u && (u.id === ev.uid || u.sequenceId === ev.uid));
         if (uIdx < 0) return [];
-        // Convert from [x,y] to direction delta. v3's MOVE_UNIT expects
-        // a direction (0..7) or goto coordinates.
-        return [{ type: 'GOTO', unitIndex: uIdx, gx: Math.floor(ev.to[0] / 2), gy: ev.to[1] }];
+        // Skip transit-state sentinel (-1200,-1200) — mid-animation
+        // marker, not a real destination.
+        if (!ev.to || ev.to[0] === -1200 || ev.to[1] === -1200) return [];
+        // Use a synthetic teleport action rather than GOTO: v3's GOTO
+        // reducer requires a precomputed `path` array and runs multi-
+        // step pathfinding. For replay we already have the exact
+        // destination from the sniffer, so we directly set the unit's
+        // position (mirroring the postWrap handler). This avoids
+        // silently failing when GOTO's validation rejects no-path
+        // actions.
+        return [{ type: '__UNIT_TELEPORT__', uid: ev.uid,
+                  to: ev.to, owner: ev.owner ?? ev.civ,
+                  gotoX: ev.gotoX, gotoY: ev.gotoY,
+                  moveSpent: ev.moveSpent, statusFlags: ev.statusFlags }];
       }
       case 'UNIT_ORDER': {
         const units = state.units || [];
@@ -442,6 +453,49 @@ if (turns > 0) {
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
               };
+              continue;
+            }
+            if (action.type === '__UNIT_TELEPORT__') {
+              // Direct position set matching postWrap UNIT_MOVED
+              // handler. Used for in-loop UNIT_MOVED events where
+              // the reducer's GOTO action would fail (no path).
+              const [tx, ty] = action.to;
+              const hMask = parsed.gameState?.humanPlayers ?? 0;
+              let hCiv = -1;
+              for (let c = 1; c < 8; c++) { if (hMask & (1 << c)) { hCiv = c; break; } }
+              const isHumanOwner = hCiv > 0 && action.owner === hCiv;
+              const ownerAfterHuman = hCiv > 0 && action.owner > hCiv;
+              const TERRAIN_MOVE_COST = [1, 1, 1, 2, 2, 3, 1, 2, 2, 2, 1];
+              let destCost = 1;
+              if (mapBase?.getTerrain) {
+                const terrain = mapBase.getTerrain(Math.floor(tx / 2), ty);
+                destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
+              }
+              const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
+              const newMoveSpent = action.moveSpent != null ? action.moveSpent : heuristicMoveSpent;
+              const setGoto = !isHumanOwner;
+              const newGotoX = action.gotoX != null ? action.gotoX : (setGoto ? tx : -1);
+              const newGotoY = action.gotoY != null ? action.gotoY : (setGoto ? ty : -1);
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u => {
+                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  const patched = { ...u, x: tx, y: ty, cx: tx, cy: ty,
+                          gx: Math.floor(tx / 2), gy: ty,
+                          moveSpent: newMoveSpent,
+                          gotoX: newGotoX, gotoY: newGotoY,
+                          goToX: newGotoX, goToY: newGotoY };
+                  if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  return patched;
+                }),
+              };
+              // Fog-of-war reveal for the moving civ.
+              if (action.owner != null && mapBase?.tileData) {
+                try {
+                  updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                    action.owner, Math.floor(tx / 2), ty, mapBase.wraps);
+                } catch (_) { /* swallow */ }
+              }
               continue;
             }
             if (action.type === '__UNIT_CREATED_PLACE__') {
@@ -842,6 +896,45 @@ if (turns > 0) {
                       researchProgress: 0, beakers: 0 }
                   : c),
             };
+            continue;
+          }
+          if (action.type === '__UNIT_TELEPORT__') {
+            const [tx, ty] = action.to;
+            const hMask = parsed.gameState?.humanPlayers ?? 0;
+            let hCiv = -1;
+            for (let c = 1; c < 8; c++) { if (hMask & (1 << c)) { hCiv = c; break; } }
+            const isHumanOwner = hCiv > 0 && action.owner === hCiv;
+            const ownerAfterHuman = hCiv > 0 && action.owner > hCiv;
+            const TERRAIN_MOVE_COST = [1, 1, 1, 2, 2, 3, 1, 2, 2, 2, 1];
+            let destCost = 1;
+            if (mapBase?.getTerrain) {
+              const terrain = mapBase.getTerrain(Math.floor(tx / 2), ty);
+              destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
+            }
+            const heuristicMoveSpent = (isHumanOwner || ownerAfterHuman) ? 0 : destCost * 3;
+            const newMoveSpent = action.moveSpent != null ? action.moveSpent : heuristicMoveSpent;
+            const setGoto = !isHumanOwner;
+            const newGotoX = action.gotoX != null ? action.gotoX : (setGoto ? tx : -1);
+            const newGotoY = action.gotoY != null ? action.gotoY : (setGoto ? ty : -1);
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u => {
+                if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                const patched = { ...u, x: tx, y: ty, cx: tx, cy: ty,
+                        gx: Math.floor(tx / 2), gy: ty,
+                        moveSpent: newMoveSpent,
+                        gotoX: newGotoX, gotoY: newGotoY,
+                        goToX: newGotoX, goToY: newGotoY };
+                if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                return patched;
+              }),
+            };
+            if (action.owner != null && mapBase?.tileData) {
+              try {
+                updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                  action.owner, Math.floor(tx / 2), ty, mapBase.wraps);
+              } catch (_) { /* swallow */ }
+            }
             continue;
           }
           if (action.type === '__UNIT_CREATED_PLACE__') {
