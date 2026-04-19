@@ -1008,8 +1008,13 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       if ((civ.researchProgress || 0) >= cost) {
         grantAdvance(state, activeCiv, techId);
         civ.researchProgress = Math.max(0, civ.researchProgress - cost);
-        // Do NOT reset techBeingResearched — binary leaves it at the
-        // just-discovered tech until a new target is picked.
+        // Reset techBeingResearched to 0xFF. Empirically the sniffer-
+        // captured snapshot AFTER discovery usually has researchingTech
+        // == 0xFF (11 of 12 observed cases in the 84-pair suite). The
+        // one case where it stayed at the discovered tech (civ 4/5 at
+        // turn 41) is the outlier — likely a specific moment before
+        // the AI's auto-pick fired. Prefer the common case.
+        civ.techBeingResearched = 0xFF;
         state.discoveredAdvance = { civSlot: activeCiv, advanceId: techId };
         const techEvents = handleTechDiscovery(state, activeCiv, techId);
         if (techEvents.length > 0) {
