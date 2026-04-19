@@ -346,8 +346,17 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // Takes 1 turn to fortify — set to 'fortifying', END_TURN will promote
         // to 'fortified' on a LATER cycle (not the one in which the order was
         // issued). fortifyIssuedTurn gates the promotion per real Civ2 timing.
+        //
+        // Units auto-fortified AT CREATION take an extra turn to promote
+        // (binary treats the creation turn as a handshake). We detect that
+        // case via `createdTurn === currentTurn` (set by cityturn.js when
+        // the unit is produced) and shift fortifyIssuedTurn by +1 so the
+        // promotion gate `fortifyIssuedTurn < postWrapTurn` waits one
+        // extra cycle.
         unit.orders = 'fortifying';
-        unit.fortifyIssuedTurn = state.turn?.number ?? 0;
+        const currentTurn = state.turn?.number ?? 0;
+        const justCreated = unit.createdTurn === currentTurn;
+        unit.fortifyIssuedTurn = justCreated ? currentTurn + 1 : currentTurn;
         unit.movesLeft = 0;
       } else if (order === 'sentry') {
         unit.orders = 'sentry';

@@ -286,6 +286,52 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       'railroad':    11,
       'goto':        11,
     };
+    // Build the set of civs whose turn-start reset SHOULD run during
+    // this cycle boundary. Real Civ2 runs start-of-turn processing
+    // per civ in order: civ 0 (barbs), civ 1, ..., up to the civ that
+    // holds the active slot at the moment a snapshot is captured.
+    // For a single-human game where the human's slot is H, snapshots
+    // land at activeCiv=H and reflect reset state for civs 0..H and
+    // pre-reset state for civs H+1..7.
+    //
+    // The harness starts with activeCiv=H and calls END_TURN for each
+    // civ in order until the cycle wraps. To match the snapshot's
+    // intermediate state, we need to reset civs from `next` (first
+    // civ of the new cycle) up to AND INCLUDING the original human
+    // civ. Civs after the human don't get reset here — their turn
+    // hasn't started yet in the new cycle.
+    const humanMask = state.humanPlayers ?? 0;
+    let humanCiv = -1;
+    for (let c = 1; c < 8; c++) {
+      if (humanMask & (1 << c)) { humanCiv = c; break; }
+    }
+    // Walk alive civs starting at `next`, collecting until we pass the
+    // human civ. If no human (all-AI game), fall back to just `next`
+    // — keeps behavior conservative for scenarios we haven't observed
+    // yet. Guard the walk to 8 iterations so a malformed civsAlive
+    // can't infinite-loop.
+    const resetCivs = new Set([next]);
+    if (humanCiv >= 0 && humanCiv !== next) {
+      let c = next;
+      for (let i = 0; i < 8; i++) {
+        c = (c % 7) + 1;
+        if (!(state.civsAlive & (1 << c))) continue;
+        resetCivs.add(c);
+        if (c === humanCiv) break;
+      }
+    }
+
+    // Promotion gate uses the NEW (post-increment) turn number. The
+    // increment happens at line 323 below; we precompute it here so
+    // the gate compares against the turn the game is entering, not
+    // the one it's leaving. This matters because a unit fortified
+    // manually DURING its owner's turn N should promote at turn N+1
+    // (gate: fortifyIssuedTurn=N < newTurn=N+1 = true). Units
+    // auto-fortified at creation (cityturn.js stores
+    // fortifyIssuedTurn=N+1 for them) stay fortifying until N+2
+    // (gate: N+1 < N+1 = false at wrap N→N+1; N+1 < N+2 = true at
+    // wrap N+1→N+2).
+    const postWrapTurn = turnNumber + 1;
     state.units = state.units.map(u => {
       if (u.gx < 0) return u;
       const ownerCiv = u.owner;
@@ -296,20 +342,16 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       // Carthaginian warrior fortified turn 4 shows order=2 at turn 6
       // even though civ 6's turn 6 is still waiting.
       const shouldPromote = u.orders === 'fortifying'
-        && (u.fortifyIssuedTurn == null || u.fortifyIssuedTurn < turnNumber);
+        && (u.fortifyIssuedTurn == null || u.fortifyIssuedTurn < postWrapTurn);
       const orders = shouldPromote ? 'fortified' : u.orders;
       const orderByte = (orders in ORDER_BYTES)
         ? ORDER_BYTES[orders]
         : (u.order ?? 0xFF);
 
-      // (B) PER-CIV moveSpent/movesLeft reset. Only applies to the civ
-      // whose turn is STARTING (i.e., the next civ in the order). Other
-      // civs keep their prior turn's end state until their turn comes
-      // up. This preserves the mid-cycle snapshot observation: at
-      // activeCiv=human, civs that already processed this turn show
-      // reset move state, while civs still queued keep their previous-
-      // turn end state.
-      if (ownerCiv !== next) {
+      // (B) PER-CIV moveSpent/movesLeft reset for civs 0..human (as
+      // scoped by resetCivs above). Civs after the human are skipped;
+      // their turn hasn't started yet.
+      if (!resetCivs.has(ownerCiv)) {
         return { ...u, orders, order: orderByte };
       }
 
@@ -342,8 +384,15 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         || orders === 'airbase' || orders === 'buildAirbase'
         || orders === 'transform' || orders === 'pollution'
         || orders === 'cleanPollution' || orders === 'railroad';
+      // Idle units (fortified/sleeping/active work order) use their
+      // moves on the passive state. movesLeft stays 0 and moveSpent
+      // climbs to mp — "no moves available this turn". Active units
+      // get fresh moves: moveSpent=0, movesLeft=mp. This matches the
+      // dumper's hasMoves check (moveSpent < movesLeft+moveSpent) —
+      // idle units correctly show "no active unit" in activeUnit.
       const newMoveSpent = idleOrder ? mp : 0;
-      return { ...u, movesLeft: mp, moveSpent: newMoveSpent, orders, order: orderByte, idleLastTurn };
+      const newMovesLeft = idleOrder ? 0 : mp;
+      return { ...u, movesLeft: newMovesLeft, moveSpent: newMoveSpent, orders, order: orderByte, idleLastTurn };
     });
 
     // ── #145: Future tech counter — increment after turn 199 ──

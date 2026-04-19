@@ -625,6 +625,11 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         saveIndex: newSaveIndex,
         id: newSequenceId,
         sequenceId: newSequenceId,
+        // createdTurn lets the fortify-reducer distinguish "replay of
+        // auto-fortify at creation" (needs +1 promotion delay) from
+        // "user manual fortify of an existing unit" (no extra delay).
+        // See reducer.js handling of UNIT_ORDER 'fortify'.
+        createdTurn: state.turn?.number ?? 0,
         type: item.id,
         owner: activeCiv,
         gx: city.gx, gy: city.gy,
@@ -638,8 +643,14 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         // fortifyIssuedTurn gates the fortifying→fortified promotion so
         // a warrior created+fortified on turn N stays fortifying through
         // turn N+1's transition (matching real Civ2's per-owner turn-start
-        // promotion). Without this the reset would promote to 2 immediately.
-        fortifyIssuedTurn: aiFortifying ? (state.turn?.number ?? 0) : null,
+        // promotion). For auto-fortify AT CREATION we offset by +1
+        // because the binary treats a unit's creation turn as the
+        // "start" of its fortify state — it doesn't promote until the
+        // cycle AFTER its first full fortifying turn. This mirrors the
+        // observed delta between manual fortify (user click on turn N
+        // → promotes at N+1) and auto-fortify on creation (AI creates
+        // +fortifies on turn N → promotes at N+2).
+        fortifyIssuedTurn: aiFortifying ? ((state.turn?.number ?? 0) + 1) : null,
         movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
         homeCity: cityIndex,
