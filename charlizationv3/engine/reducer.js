@@ -381,9 +381,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { unitIndex, order } = action;
       const unit = { ...state.units[unitIndex] };
 
-      // Begin the work order — progress tracked by workTurns, completed in END_TURN
+      // Begin the work order — progress tracked by workTurns. Real
+      // Civ2 credits the order-issued turn as 1 work-turn of
+      // progress (observed via snapshots: Settler issued order=6
+      // mid-turn-4 landed at workTurns=2 at turn-5 snapshot, i.e.,
+      // 1 from the issue turn + 1 from turn-5's start-of-turn
+      // increment). v3 was starting at 0, so irrigation completion
+      // landed one turn late in the fidelity diff.
       unit.orders = order;
-      unit.workTurns = 0;
+      unit.workTurns = 1;
       unit.movesLeft = 0;
 
       state.units[unitIndex] = unit;

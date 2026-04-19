@@ -505,14 +505,36 @@ if (turns > 0) {
         // snapshot's gotoX/gotoY fields matching the destination.
         // v3 doesn't otherwise track goto targets from replay; set
         // them here to match.
+        //
+        // moveSpent tracks cumulative MP expenditure in thirds
+        // (MOVEMENT_MULTIPLIER=3). When a unit enters a tile, the
+        // binary adds the tile's terrain move-cost × 3 to its
+        // moveSpent — NOT clamped to max MP. So a 1-MP warrior
+        // entering Forest (2 MP cost) has moveSpent=6, not 3. Look
+        // up the destination terrain to match.
+        const TERRAIN_MOVE_COST = [1, 1, 1, 2, 2, 3, 1, 2, 2, 2, 1];
+        let destCost = 1;
+        if (mapBase?.getTerrain) {
+          const gxTo = Math.floor(tx / 2);
+          const terrain = mapBase.getTerrain(gxTo, ty);
+          destCost = TERRAIN_MOVE_COST[terrain] ?? 1;
+        }
+        // Replace moveSpent with the move's cost (not accumulate).
+        // Empirically, the binary sets moveSpent to the movement
+        // expenditure at the end of a move, regardless of prior
+        // idle-max state — so a fortified (moveSpent=3) warrior that
+        // de-fortifies and moves into forest ends at moveSpent=6,
+        // not 3+6=9.
+        const newMoveSpent = destCost * 3;
         gameState = {
           ...gameState,
-          units: gameState.units.map(u =>
-            u && (u.id === ev.uid || u.sequenceId === ev.uid)
-              ? { ...u, x: tx, y: ty, cx: tx, cy: ty,
-                  gx: Math.floor(tx / 2), gy: ty,
-                  gotoX: tx, gotoY: ty, goToX: tx, goToY: ty }
-              : u),
+          units: gameState.units.map(u => {
+            if (!u || !(u.id === ev.uid || u.sequenceId === ev.uid)) return u;
+            return { ...u, x: tx, y: ty, cx: tx, cy: ty,
+                    gx: Math.floor(tx / 2), gy: ty,
+                    gotoX: tx, gotoY: ty, goToX: tx, goToY: ty,
+                    moveSpent: newMoveSpent };
+          }),
         };
       } else if (ev.event === 'UNIT_ORDER') {
         const orderByte = ev.order;
@@ -644,8 +666,19 @@ const gameState = {
     for (let i = 0; i < units.length; i++) {
       const u = units[i];
       if (!u || u.owner !== humanCiv || u.gx < 0) continue;
+      // Units with an active non-actionable order (fortified, sleep,
+      // work-in-progress) aren't candidates for "active unit" even if
+      // their movesLeft counter happens to be 0. Their moveSpent=0
+      // reflects "no moves used" rather than "no moves available".
+      const order = u.order ?? 0xFF;
+      const isIdleOrder = order === 2 || order === 3 || // fortified, sleep
+        (order >= 4 && order <= 11) || order === 27;     // work orders, goto_ai
+      if (isIdleOrder) continue;
+      // For active units, "has moves" means moveSpent is below the
+      // unit's maximum allotted MP for this turn.
       const maxMoves = (u.movesLeft ?? 0) + (u.moveSpent ?? 0);
-      const hasMoves = (u.moveSpent ?? 0) < (maxMoves || Infinity);
+      if (maxMoves === 0) continue; // unit has literally no MP this turn
+      const hasMoves = (u.moveSpent ?? 0) < maxMoves;
       if (hasMoves) {
         const slot = u.saveIndex ?? i;
         if (best < 0 || slot < best) best = slot;

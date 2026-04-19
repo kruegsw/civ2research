@@ -372,11 +372,29 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       let mp = calcEffectiveMovementPoints(u, seaBonus);
       // Capture idleness BEFORE resetting movesLeft.
       const idleLastTurn = (u.movesLeft || 0) >= mp;
-      // moveSpent reset: units that won't actually move this turn
-      // (fortified, sleeping, active work order) keep moveSpent at mp to
-      // signal "moves unavailable". Units with no active order get
-      // moveSpent=0 so they can move.
-      const idleOrder = orders === 'fortified' || orders === 'sleep'
+      // Owner-dependent moveSpent rule (observed from snapshots):
+      //
+      //   AI civ's turn-start reset:
+      //     - IDLE unit (fortified/sleeping/active work/fortifying):
+      //       moveSpent = mp (max), movesLeft = 0.
+      //     - ACTIVE unit (no order): moveSpent = 0, movesLeft = mp.
+      //
+      //   Human civ's turn-start reset:
+      //     - IDLE unit: moveSpent UNCHANGED (so a just-fortified
+      //       unit with moveSpent=0 stays 0; a long-fortified unit
+      //       with moveSpent=3 stays 3).
+      //     - ACTIVE unit: moveSpent = 0, movesLeft = mp.
+      //
+      // Verified via turn 8→9 and turn 6→7 diffs:
+      //   - Aztec Phalanx (civ 4 AI, created turn 8, fortifying at
+      //     turn 9): moveSpent=3 ✓ — AI reset bumps idle to max.
+      //   - American Warrior (civ 5 human, fortifying→fortified via
+      //     promotion, moveSpent was 0 before): stays 0 ✓ — human
+      //     reset leaves idle moveSpent alone.
+      //   - Aztec Warrior (civ 4 AI, fortified long-term): already
+      //     moveSpent=3 before reset, stays 3 ✓.
+      const idleOrder = orders === 'fortified' || orders === 'fortifying'
+        || orders === 'sleep'
         || orders === 'road' || orders === 'buildRoad'
         || orders === 'irrigation' || orders === 'buildIrrigation'
         || orders === 'mine' || orders === 'buildMine'
@@ -384,14 +402,24 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         || orders === 'airbase' || orders === 'buildAirbase'
         || orders === 'transform' || orders === 'pollution'
         || orders === 'cleanPollution' || orders === 'railroad';
-      // Idle units (fortified/sleeping/active work order) use their
-      // moves on the passive state. movesLeft stays 0 and moveSpent
-      // climbs to mp — "no moves available this turn". Active units
-      // get fresh moves: moveSpent=0, movesLeft=mp. This matches the
-      // dumper's hasMoves check (moveSpent < movesLeft+moveSpent) —
-      // idle units correctly show "no active unit" in activeUnit.
-      const newMoveSpent = idleOrder ? mp : 0;
-      const newMovesLeft = idleOrder ? 0 : mp;
+      const humanMaskMS = state.humanPlayers ?? 0;
+      const isHumanOwner = !!(humanMaskMS & (1 << ownerCiv));
+      let newMoveSpent, newMovesLeft;
+      if (idleOrder) {
+        if (isHumanOwner) {
+          // Human: leave moveSpent as-is.
+          newMoveSpent = u.moveSpent ?? 0;
+          newMovesLeft = 0;
+        } else {
+          // AI: bump idle moveSpent to max.
+          newMoveSpent = mp;
+          newMovesLeft = 0;
+        }
+      } else {
+        // Active (no order): fresh moves for everyone.
+        newMoveSpent = 0;
+        newMovesLeft = mp;
+      }
       return { ...u, movesLeft: newMovesLeft, moveSpent: newMoveSpent, orders, order: orderByte, idleLastTurn };
     });
 

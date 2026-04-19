@@ -615,12 +615,40 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         state.nextUnitId = maxId + 1;
       }
       const newSequenceId = state.nextUnitId++;
-      // Live snapshot: newly-created units show moveSpent=0 even for
-      // ground military auto-fortified at creation (order=1 fortifying).
-      // moveSpent only becomes max once the owner's NEXT turn reset runs
-      // on a unit already promoted to fortified (order=2). So the freshly-
-      // created warrior carries moveSpent=0 into the turn boundary — the
-      // turn-start reset then sees order=fortifying and keeps it at 0.
+      // moveSpent at creation depends on when in the turn the unit is
+      // produced. Observed:
+      //   - Aztec Phalanx created turn 8 via AI production, auto-fortified:
+      //     at the next (turn 9 start) snapshot, moveSpent=3 (full MP).
+      //   - Carthage Warrior created turn 4 via AI production, auto-fortified:
+      //     at the next (turn 5 start) snapshot, moveSpent=0.
+      // Both cases are "created+auto-fortified by AI". The difference is
+      // whether the unit's owner has started its NEXT turn at snapshot
+      // time — Aztec is civ 4 (before human, processes at turn start);
+      // Carthage is civ 6 (after human, hasn't processed yet).
+      // So moveSpent=max is set by the owner's turn-start code, which we
+      // capture via the per-civ reset in end-turn.js. For creation
+      // itself, keep moveSpent=0 — the reset handles the bump.
+      // moveSpent at creation depends on whether the owner's next
+      // turn-start reset will have fired by snapshot time:
+      //   - Owner BEFORE the human in turn order (e.g., civ 4 when
+      //     human is civ 5): turn-start reset will run before the
+      //     human gets control, bumping idle-order moveSpent to max.
+      //     Pre-apply here because v3's reset block runs BEFORE this
+      //     creation in the cycle-wrap END_TURN flow.
+      //   - Owner AFTER the human (e.g., civ 6): reset won't fire
+      //     before next snapshot; moveSpent stays at 0 from creation.
+      // Observed: Aztec Phalanx (civ 4) created turn 8 shows
+      // moveSpent=3 at turn 9; Carthage Warrior (civ 6) created
+      // turn 4 shows moveSpent=0 at turn 5.
+      const humanMaskCT = state.humanPlayers ?? 0;
+      let humanCivCT = -1;
+      for (let c = 1; c < 8; c++) {
+        if (humanMaskCT & (1 << c)) { humanCivCT = c; break; }
+      }
+      // "Before human in turn order" = lower civ slot (Civ2 processes
+      // civs 0..7 each cycle; human at slot H; slots 0..H-1 process
+      // turn-start before the human gets control).
+      const ownerBeforeHuman = humanCivCT > 0 && activeCiv < humanCivCT;
       const newUnit = {
         saveIndex: newSaveIndex,
         id: newSequenceId,
@@ -636,8 +664,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
         veteran: veteranStatus ? 1 : 0,
         movesRemain: 0,            // memory +0x0A damage_taken = 0 (full HP)
-        moveSpent: 0,              // memory +0x08 — binary FUN_005b3d06 does
-                                   //   not set this; 0 matches live observation
+        moveSpent: (aiFortifying && ownerBeforeHuman) ? unitMP : 0,
         orders: aiFortifying ? 'fortifying' : 'none',
         order: aiFortifying ? 1 : 0xFF,  // raw memory +0x0F byte
         // fortifyIssuedTurn gates the fortifying→fortified promotion so

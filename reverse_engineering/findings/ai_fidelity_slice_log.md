@@ -228,6 +228,57 @@ Also still present:
 - Settler irrigation completion timing (turn 7→8 slot 1 order
   diverges).
 
+### Terrain-driven fidelity (2026-04-18 session)
+
+Parsing the snapshot's `tiles` region (already captured, just needed
+decoding) cracked the remaining moveSpent cluster:
+
+**Findings from real tile terrain:**
+- Settler at (54,42) = **Plains** with `imp=irrigation,road` at turn 9.
+  Irrigation completed. Plains IRRIGATION_TURNS=5.
+- Aztec Warrior moved (11,3 Plains) → (13,3) = **Forest**. Forest move
+  cost = 2 MP. In 3-per-MP units, moveSpent=6 — explains the "moveSpent
+  exceeds max" mystery. Not combat (agent hypothesis), just terrain cost.
+- Carthage city (65,23) = Plains. Warrior spawned at (66,22) = Hills.
+- Carthage warrior moved to (68,22) = also Hills.
+
+**moveSpent rules (verified):**
+1. Creation: moveSpent = 0, **unless** unit is auto-fortified AND
+   owner processes turn-start before human in the cycle, in which
+   case moveSpent = unitMP (max). Pre-applied in cityturn.js to
+   account for v3's production-after-reset ordering.
+2. Owner turn-start reset (idle units):
+   - AI civs: moveSpent = mp (max).
+   - Human civs: moveSpent UNCHANGED (leave 0 as 0, 3 as 3).
+3. Unit move: moveSpent = destination_terrain_move_cost × 3
+   (overrides prior). Not clamped at unit's max MP.
+
+**Irrigation counting:** WORKER_ORDER now starts workTurns at 1 (not
+0) to match the observed "mid-turn order set counts as first tick of
+progress" — derived from Settler's workTurns=2 at the first turn
+snapshot after the order event.
+
+**activeUnit logic:** the dumper's "unit with available moves" check
+was falsely flagging idle units with movesLeft=0 as active (due to an
+`Infinity` fallback for 0 maxMoves). Now skips units with active
+non-actionable orders (fortified, sleep, work orders, goto_ai).
+
+**Results:**
+- turn 5→6: 179/179 (unchanged).
+- turn 6→7: **179/179** 🎯 (was 178/179).
+- turn 7→8: 187/192 (was 185/192). Remaining: Carthage warrior
+  spawn position (still at city tile in v3).
+- turn 8→9: **204/205** (was 195/205). Remaining: Carthage warrior
+  moveSpent=6 vs 0 after a post-wrap move.
+
+**Open gaps after this session:**
+- Carthage warrior UNIT_CREATED at (66,22) not city tile — unknown
+  Civ2 spawn logic (maybe AI immediately moves new unit one tile).
+- Post-wrap moved warrior showing moveSpent=0 (Carthage) while our
+  replay computes 6 from terrain cost. Suggests real Civ2 clears
+  moveSpent at some point in the post-move processing for AI civs
+  after the human.
+
 ### Refined approach (2026-04-18)
 
 User preference (per conversation): rather than rigidly "finish one
