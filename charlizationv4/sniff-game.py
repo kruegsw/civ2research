@@ -129,6 +129,13 @@ TILE_PTR_ADDR = 0x00636598  # pointer to heap-allocated tile array (ms * 6 bytes
 
 # Memory regions to dump in snapshots
 SNAPSHOT_REGIONS = [
+    # game_flags: save-header bytes 0x00-0x13 (magic + game-toggle
+    # bitfields: cheatMenu, cheatPenalty, bloodlust, barbariansRaging,
+    # scenarioFile, etc. — 60+ named flags parsed by parser.js). Mapped
+    # to memory via save→mem delta 0x00655ADC, so mem 0x00655ADC is the
+    # CIVILIZE magic-string start. Captures 0x14 bytes to cover all
+    # gameplay-relevant flag bytes (0x0C, 0x0D, 0x0F, 0x10, 0x12, 0x13).
+    ('game_flags', 0x00655adc, 0x14),
     ('globals',  0x00655af0, 0x40),               # key globals (turn, difficulty, etc.)
     ('units',    UNIT_BASE,  512 * UNIT_STRIDE),   # all units (16KB)
     ('cities',   CITY_BASE,  256 * CITY_STRIDE),   # all cities (22KB)
@@ -247,6 +254,35 @@ def read_globals(h):
             g[k] = ri32(h, a)
         else:
             g[k] = ru8(h, a)
+    # Game-toggle bytes (save offset 0x0C-0x14 → mem 0x00655AE8-AF0). The
+    # parser decodes 60+ named bits here: bloodlust, cheatMenu/Penalty,
+    # barbariansRaging, scenarioFile, etc. Read the whole word so a
+    # single diff tick can spot any flag flip. Per-bit names resolve in
+    # emit_action_events below.
+    flag_bytes = read_mem(h, 0x00655AE8, 12)  # covers save 0x0C..0x17
+    if flag_bytes and len(flag_bytes) == 12:
+        g['gameFlags'] = {
+            # Offsets below are RELATIVE to save 0x0C (flag_bytes[0]).
+            'f0C': flag_bytes[0x00],
+            'f0D': flag_bytes[0x01],
+            'f0E': flag_bytes[0x02],
+            'f0F': flag_bytes[0x03],
+            'f10': flag_bytes[0x04],
+            # Decoded flags — mirrors parser.js gameToggles. The diff
+            # tooling compares these bit-by-bit to emit typed events.
+            'bloodlust':             bool(flag_bytes[0x00] & 0x80),
+            'simplifiedCombat':      bool(flag_bytes[0x00] & 0x10),
+            'barbariansPeaceful':    bool(flag_bytes[0x00] & 0x04),
+            'barbariansRaging':      bool(flag_bytes[0x00] & 0x08),
+            'flatEarth':             bool(flag_bytes[0x01] & 0x80),
+            'dontRestartEliminated': bool(flag_bytes[0x01] & 0x01),
+            'cheatMenu':             bool(flag_bytes[0x03] & 0x80),
+            'cheatPenalty':          bool(flag_bytes[0x08] & 0x10),  # save 0x14
+            'scenarioFile':          bool(flag_bytes[0x08] & 0x40),
+            'scenarioNoTechLimits':  bool(flag_bytes[0x08] & 0x80),
+        }
+    else:
+        g['gameFlags'] = {}
     return g
 
 # Unit byte map — for raw diff labeling
@@ -1245,6 +1281,25 @@ def emit_action_events(prev, curr, t0, events_path):
             'event': 'TURN_ADVANCED',
             'currentYear': curr.get('currentYear'),
         })
+
+    # Game-flag bit changes (bloodlust, cheatMenu, cheatPenalty, etc.).
+    # The parser decodes 60+ named flags from save 0x0C..0x17; we track
+    # the gameplay-relevant subset here. Each flipped bit emits a typed
+    # event so the replay harness and diff tooling can react (cheat mode
+    # zeroes out trophies/score — the diff should ignore those columns).
+    prev_flags = (prev or {}).get('gameFlags') or {}
+    curr_flags = curr.get('gameFlags') or {}
+    FLAG_NAMES = ('bloodlust', 'simplifiedCombat', 'barbariansPeaceful',
+                  'barbariansRaging', 'flatEarth', 'dontRestartEliminated',
+                  'cheatMenu', 'cheatPenalty', 'scenarioFile',
+                  'scenarioNoTechLimits')
+    for name in FLAG_NAMES:
+        pv, cv = prev_flags.get(name), curr_flags.get(name)
+        if pv is None and cv is None: continue
+        if pv != cv:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'GAME_FLAG_CHANGED', 'flag': name,
+                           'from': pv, 'to': cv})
 
     # Per-civ: gold, government, rates, research target, techs discovered
     for i in range(8):
