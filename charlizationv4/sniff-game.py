@@ -1767,6 +1767,14 @@ def main():
                 if pending_dump and quiet_polls >= QUIET_THRESHOLD:
                     # Game has settled since last change. All per-civ
                     # processing for this turn should be complete.
+                    # Skip bogus captures from the title/menu screen —
+                    # if mapWidth == 0 the game isn't actually loaded
+                    # (memory is uninitialized or freed). The resulting
+                    # snapshot would be rejected by the harness (zero
+                    # map dims) and just clutter the session dir.
+                    if not (curr.get('mapWidth') or 0) or not (curr.get('mapHeight') or 0):
+                        pending_dump = False
+                        continue
                     snap_ms = (time.perf_counter() - t0) * 1000
                     fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
                                           curr['mapWidth'] or 0, curr['mapHeight'] or 0,

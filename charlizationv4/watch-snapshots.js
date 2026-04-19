@@ -46,21 +46,26 @@ function findNewestSession() {
   return sessions[0]?.name ?? null;
 }
 
-const SESSION = sessionName || findNewestSession();
+// If --session was passed, pin to that dir. Otherwise follow the newest
+// session dir live — so starting a new Civ2 game (which creates a new
+// game_<date>_<time>/ directory) doesn't leave the watcher stuck on
+// the old one.
+const FOLLOW_NEWEST = !sessionName;
+let SESSION = sessionName || findNewestSession();
 if (!SESSION) {
   console.error('No sessions found under', SNAPSHOTS_DIR);
   process.exit(1);
 }
-const SESSION_DIR = join(SNAPSHOTS_DIR, SESSION);
+let SESSION_DIR = join(SNAPSHOTS_DIR, SESSION);
 if (!existsSync(SESSION_DIR)) {
   console.error(`Session dir does not exist: ${SESSION_DIR}`);
   process.exit(1);
 }
 
-const LOG_FILE = join(GAPS_DIR, `live_${SESSION}.log`);
+let LOG_FILE = join(GAPS_DIR, `live_${SESSION}.log`);
 writeFileSync(LOG_FILE, `=== Live fidelity monitor session ${SESSION} started at ${new Date().toISOString()} ===\n\n`);
 
-console.log(`[watch] Session: ${SESSION}`);
+console.log(`[watch] Session: ${SESSION}${FOLLOW_NEWEST ? ' (auto-follow)' : ' (pinned)'}`);
 console.log(`[watch] Dir:     ${SESSION_DIR}`);
 console.log(`[watch] Log:     ${LOG_FILE}`);
 console.log(`[watch] Polling every ${pollMs}ms for new turn dumps...`);
@@ -133,6 +138,21 @@ if (initial.length > 0) {
 }
 
 function tick() {
+  // Auto-follow: if a newer session dir appeared since we started (e.g.,
+  // user closed Civ2 and started a new game), switch to it.
+  if (FOLLOW_NEWEST) {
+    const newest = findNewestSession();
+    if (newest && newest !== SESSION) {
+      console.log(`[watch] session changed: ${SESSION} -> ${newest}`);
+      SESSION = newest;
+      SESSION_DIR = join(SNAPSHOTS_DIR, SESSION);
+      LOG_FILE = join(GAPS_DIR, `live_${SESSION}.log`);
+      writeFileSync(LOG_FILE, `=== Live fidelity monitor session ${SESSION} started at ${new Date().toISOString()} ===\n\n`);
+      lastSeenTurn = -1;
+      const initialNew = listTurns();
+      if (initialNew.length > 0) lastSeenTurn = initialNew[initialNew.length - 1].turn;
+    }
+  }
   const turns = listTurns();
   if (turns.length === 0) return;
   const newest = turns[turns.length - 1];
