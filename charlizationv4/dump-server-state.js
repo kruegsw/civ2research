@@ -341,23 +341,21 @@ if (turns > 0) {
         const WORKER_MAP = { 4: 'fortress', 5: 'road', 6: 'irrigation',
                              7: 'mine', 9: 'pollution', 10: 'airbase',
                              11: 'railroad' };
-        const UNIT_MAP = { 1: 'fortify', 2: 'fortify', 3: 'sleep' };
+        const UNIT_MAP = { 1: 'fortify', 2: 'fortify', 3: 'sleep',
+                           27: 'goto_ai' };
         const orderByte = ev.order;
-        // Always set the raw order byte (u.order) to match the sniffer
-        // snapshot — the v3 reducer only updates u.orders (string) and
-        // leaves u.order (byte) stale. Emit a synthetic byte-setter
-        // action alongside the semantic reducer action.
-        const actions = [{ type: '__UNIT_ORDER_BYTE__', uid: ev.uid, orderByte }];
         if (orderByte === 0 || orderByte === 0xFF) {
-          actions.push({ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' });
-        } else if (WORKER_MAP[orderByte]) {
-          actions.push({ type: 'WORKER_ORDER', unitIndex: uIdx,
-                    order: WORKER_MAP[orderByte] });
-        } else if (UNIT_MAP[orderByte]) {
-          actions.push({ type: 'UNIT_ORDER', unitIndex: uIdx,
-                    order: UNIT_MAP[orderByte] });
+          return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' }];
         }
-        return actions;
+        if (WORKER_MAP[orderByte]) {
+          return [{ type: 'WORKER_ORDER', unitIndex: uIdx,
+                    order: WORKER_MAP[orderByte] }];
+        }
+        if (UNIT_MAP[orderByte]) {
+          return [{ type: 'UNIT_ORDER', unitIndex: uIdx,
+                    order: UNIT_MAP[orderByte] }];
+        }
+        return [];
       }
       default:
         return [];  // GOLD_CHANGED, TECH_DISCOVERED, TURN_ADVANCED, etc.
@@ -443,27 +441,6 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
-              };
-              continue;
-            }
-            if (action.type === '__UNIT_ORDER_BYTE__') {
-              // Map byte → orders string so end-turn.js's cycle-wrap
-              // reset (which re-derives order from orders via
-              // ORDER_BYTES) preserves the byte we just wrote.
-              const BYTE_TO_ORDERS_LOCAL = { 0xFF: 'none', 0: 'none',
-                1: 'fortifying', 2: 'fortified', 3: 'sleep',
-                4: 'buildFortress', 5: 'buildRoad', 6: 'buildIrrigation',
-                7: 'buildMine', 8: 'transform', 9: 'cleanPollution',
-                10: 'buildAirbase', 11: 'railroad', 27: 'goto_ai' };
-              const newOrders = BYTE_TO_ORDERS_LOCAL[action.orderByte];
-              gameState = {
-                ...gameState,
-                units: gameState.units.map(u => {
-                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
-                  const patched = { ...u, order: action.orderByte };
-                  if (newOrders != null) patched.orders = newOrders;
-                  return patched;
-                }),
               };
               continue;
             }
@@ -753,28 +730,11 @@ if (turns > 0) {
         // postWrap path bypasses the reducer's move-unit.js which
         // normally calls updateVisibility. Mirror that here.
         if (evOwner != null && mapBase?.tileData) {
-          // Real Civ2's movement-reveal uses a fixed radius of 1 —
-          // no terrain boost. v3's updateVisibility applies a +1
-          // bonus for Hills and +2 for Mountains, which over-reveals
-          // on high-ground moves. Write visibility directly with
-          // the 9-tile radius-1 offset pattern to match binary.
-          const dx0 = (Math.floor(tx / 2)) * 2 + (ty % 2);
-          const gy0 = ty;
-          const bit = 1 << evOwner;
-          const mw = mapBase.mw;
-          const mh = mapBase.mh;
-          const mw2 = mw * 2;
-          const R1 = [[0,0],[-1,-1],[1,-1],[1,1],[-1,1],[0,-2],[0,2],[2,0],[-2,0]];
-          for (const [odx, ody] of R1) {
-            let ndx = dx0 + odx;
-            const ndy = gy0 + ody;
-            if (ndy < 0 || ndy >= mh) continue;
-            if (mapBase.wraps) ndx = ((ndx % mw2) + mw2) % mw2;
-            else if (ndx < 0 || ndx >= mw2) continue;
-            const idx = ndy * mw + (ndx >> 1);
-            if (mapBase.tileData[idx]) {
-              mapBase.tileData[idx].visibility |= bit;
-            }
+          try {
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+              evOwner, Math.floor(tx / 2), ty, mapBase.wraps);
+          } catch (e) {
+            process.stderr.write(`[replay] updateVisibility failed: ${e.message}\n`);
           }
         }
       } else if (ev.event === 'UNIT_ORDER') {
@@ -827,24 +787,6 @@ if (turns > 0) {
               ...gameState,
               civs: gameState.civs.map((c, i) =>
                 i === action.civ ? { ...c, stateFlags: action.flags } : c),
-            };
-            continue;
-          }
-          if (action.type === '__UNIT_ORDER_BYTE__') {
-            const BYTE_TO_ORDERS = { 0xFF: 'none', 0: 'none',
-              1: 'fortifying', 2: 'fortified', 3: 'sleep',
-              4: 'buildFortress', 5: 'buildRoad', 6: 'buildIrrigation',
-              7: 'buildMine', 8: 'transform', 9: 'cleanPollution',
-              10: 'buildAirbase', 11: 'railroad', 27: 'goto_ai' };
-            const newOrders = BYTE_TO_ORDERS[action.orderByte];
-            gameState = {
-              ...gameState,
-              units: gameState.units.map(u => {
-                if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
-                const patched = { ...u, order: action.orderByte };
-                if (newOrders != null) patched.orders = newOrders;
-                return patched;
-              }),
             };
             continue;
           }

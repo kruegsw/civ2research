@@ -16,6 +16,7 @@ import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { findPath, calcGotoDirection, findRoadPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
+import { ORDER_BYTES } from './order-bytes.js';
 import { getProductionCost, calcCityTrade } from './production.js';
 import { calcRushBuyCost, calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from './utils.js';
@@ -371,6 +372,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // Wake: clear all orders, cancel any work in progress
         unit.orders = 'none';
         unit.workTurns = 0;
+      } else if (order === 'goto_ai') {
+        // AI multi-turn goto state — order byte 27. Human players
+        // never issue this directly; it's set during replay of AI
+        // decisions captured by the sniffer.
+        unit.orders = 'goto_ai';
+      }
+
+      // Keep u.order (byte, +0x0F in memory) in sync with u.orders
+      // (string). Without this, the byte stays stale from the previous
+      // state until end-turn's cycle wrap re-derives it, and any diff
+      // that reads u.order mid-cycle sees the wrong value.
+      if (unit.orders != null && ORDER_BYTES[unit.orders] != null) {
+        unit.order = ORDER_BYTES[unit.orders];
       }
 
       state.units[unitIndex] = unit;
@@ -391,6 +405,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
       unit.orders = order;
       unit.workTurns = 1;
       unit.movesLeft = 0;
+      if (ORDER_BYTES[unit.orders] != null) {
+        unit.order = ORDER_BYTES[unit.orders];
+      }
 
       state.units[unitIndex] = unit;
       break;

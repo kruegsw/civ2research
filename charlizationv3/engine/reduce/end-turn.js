@@ -6,6 +6,7 @@ import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL,
 import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
+import { ORDER_BYTES } from '../order-bytes.js';
 import { calcCityTrade, calcShieldProduction, calcGrossFood, calcGrossTrade, calcTradeCorruption, calcTradeDistribution } from '../production.js';
 import { cityHasBuilding, hasWonderEffect, markCitySeenByCiv } from '../utils.js';
 import { calcResearchCost, calcTechParadigmCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
@@ -269,24 +270,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     // it did not move during its last turn. We capture that decision
     // here, before mp is reset, by recording
     // `idleLastTurn = (movesLeft >= maxFresh)`.
-    // Order-byte sync table — used both in the global promote branch
-    // and the per-civ reset branch.
-    const ORDER_BYTES = {
-      'none':        0xFF,
-      'fortifying':  1,
-      'fortified':   2,
-      'sleep':       3,
-      'fortress':    4,   'buildFortress':    4,
-      'road':        5,   'buildRoad':        5,
-      'irrigation':  6,   'buildIrrigation':  6,
-      'mine':        7,   'buildMine':        7,
-      'transform':   8,
-      'pollution':   9,   'cleanPollution':   9,
-      'airbase':     10,  'buildAirbase':     10,
-      'railroad':    11,
-      'goto':        11,
-      'goto_ai':     27,
-    };
+    // Order-byte sync table is in ../order-bytes.js (shared with the
+    // reducer's UNIT_ORDER handler). Local const ORDER_BYTES used to
+    // live here; extracted so both reducer and end-turn stay in sync.
     // Build the set of civs whose turn-start reset SHOULD run during
     // this cycle boundary. Real Civ2 runs start-of-turn processing
     // per civ in order: civ 0 (barbs), civ 1, ..., up to the civ that

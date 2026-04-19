@@ -120,7 +120,13 @@ export function computeLOS(mapData, civSlot) {
  * Uses fixed 25-tile city-spiral pattern for cities (radius=2).
  * For tiles 8-24 (outer ring), applies an "attacker gate": only reveals
  * if the tile is not occupied by an enemy military unit.
- * For units (radius=1), terrain elevation and fortress still boost radius.
+ * For units, always radius 1 — the binary's FUN_004274a6
+ * (block_00420000.c:2541-2561) iterates the CITY_RADIUS_DOUBLED offsets
+ * but filters to indices 0-7 + center (20), i.e. 9 tiles = radius 1.
+ * NO terrain-based boost is applied — empirical: a warrior moving onto
+ * a mountain reveals 5 new tiles, not 37. Hills/Mountain/Fortress
+ * radius bonuses apply to LOS rendering queries (computeLOS) only, not
+ * to the persistent visibility bitmask written on movement.
  *
  * @param {Array} tileData - mw*mh array of byte arrays
  * @param {number} mw - map width
@@ -136,23 +142,7 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
   const bit = 1 << civSlot;
   const mw2 = mw * 2;
   const dx = gx * 2 + (gy % 2); // doubled-X coordinate
-
-  // For units (radius !== 2 i.e. not city), apply terrain-based LOS boost
-  let effectiveRadius = radius || 1;
-  if (effectiveRadius !== 2) {
-    // Read terrain and improvements from tileData to determine boost
-    const wgx = wraps ? ((gx % mw) + mw) % mw : gx;
-    if (gy >= 0 && gy < mh && wgx >= 0 && wgx < mw) {
-      const tile = tileData[gy * mw + wgx];
-      if (tile) {
-        if (tile.terrain === 4) effectiveRadius += 1;       // Hills: +1
-        else if (tile.terrain === 5) effectiveRadius += 2;   // Mountains: +2
-        if (tile.improvements && tile.improvements.fortress) effectiveRadius += 1; // Fortress: +1
-        if (effectiveRadius > 3) effectiveRadius = 3;
-      }
-    }
-  }
-
+  const effectiveRadius = radius || 1;
   const offsets = radiusOffsets(effectiveRadius);
 
   for (let oi = 0; oi < offsets.length; oi++) {

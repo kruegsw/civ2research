@@ -383,7 +383,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
     case UNIT_ORDER: {
       const { unitIndex, order } = action;
       if (unitIndex == null) return 'Missing unitIndex';
-      if (!['fortify', 'sentry', 'sleep', 'skip', 'disband', 'wake'].includes(order)) return 'Invalid order';
+      if (!['fortify', 'sentry', 'sleep', 'skip', 'disband', 'wake', 'goto_ai'].includes(order)) return 'Invalid order';
       const unit = gameState.units[unitIndex];
       if (!unit) return 'Unit not found';
       if (unit.owner !== civSlot) return 'Not your unit';
