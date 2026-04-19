@@ -871,6 +871,12 @@ if (turns > 0) {
         // animation marker, not a real destination. Real Civ2 emits a
         // second UNIT_MOVED for the final position.
         if (tx === -1200 || ty === -1200) continue;
+        // Skip if unit is already dead (UNIT_KILLED fired in pre-pre-
+        // pass). Otherwise we'd revive a dead unit at the move's
+        // destination.
+        const targetUnit = gameState.units.find(u => u &&
+          (u.id === ev.uid || u.sequenceId === ev.uid));
+        if (targetUnit && targetUnit.gx < 0) continue;
         // UNIT_MOVED events for AI civs (civ 4 etc. processing after
         // the cycle wrap) include an ongoing goto — reflected in the
         // snapshot's gotoX/gotoY fields matching the destination.
