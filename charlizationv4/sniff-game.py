@@ -145,6 +145,13 @@ SNAPSHOT_REGIONS = [
     # max(existing) + 1, which is wrong when intermediate unit creations
     # have been killed (leaves gaps in the id sequence).
     ('unit_counter', 0x00627fd8, 8),
+    # MSVC CRT rand() seed (holdrand). Every AI decision that uses
+    # rand() — research scoring, combat, AI unit dispatch — needs our
+    # JS _randSeed to match civ2.exe's at the exact call point, or
+    # decisions diverge. Capturing the 4-byte seed lets snapshot-load
+    # sync our RNG to the binary's current state. Located via
+    # block_005F0000.c:2494 (_rand reads/writes DAT_00639e50).
+    ('rand_seed', 0x00639e50, 4),
 ]
 
 UNIT_NAMES = [

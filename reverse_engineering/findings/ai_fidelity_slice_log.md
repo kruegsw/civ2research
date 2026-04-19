@@ -45,11 +45,16 @@ to the capture protocol is TODO.
 
 **Known issues to address before integrating into reducer**:
 
-1. **RNG divergence** — `FUN_004c09b0` calls `_rand()` for AI scoring
-   (line 143 of transpiled file). JS's `Math.random()` ≠ MSVC's LCG.
-   Decision can shift by one score tier even with identical inputs.
-   Needs MSVC LCG implementation (seed from `DAT_006d1168` + call
-   order tracking) for deterministic per-decision fidelity.
+1. ~~**RNG divergence**~~ **RESOLVED** (2026-04-18). MSVC LCG was
+   already implemented in `charlizationv4/crt.js` with the correct
+   multiplier (214013) and increment (2531011), but used a
+   module-local `_randSeed` variable. Rewired to read/write
+   `_MEM[0x00639e50]` — civ2.exe's actual `holdrand` address per
+   `block_005F0000.c:2494`. Also added `rand_seed` region to
+   `sniff-game.py` SNAPSHOT_REGIONS and wired it into
+   `load-snapshot.js`. After sniffer restart + a captured turn,
+   loading the snapshot auto-syncs our RNG to civ2.exe's. Mechanics
+   fidelity still 179/179 after the rewire — no regression.
 
 2. **State → _MEM sync for live calls** — the test uses
    `loadSnapshotIntoMem` (full binary copy). For v3's reducer flow,

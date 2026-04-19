@@ -84,7 +84,7 @@ export function loadSnapshotIntoMem(path) {
   // Optional regions — load if present so downstream functions that read
   // from them (e.g., FUN_00484fec reading the year-schedule table at
   // DAT_0062c490) get the right data instead of zeros.
-  for (const name of ['year_table', 'unit_counter']) {
+  for (const name of ['year_table', 'unit_counter', 'rand_seed']) {
     if (!regions.has(name)) continue;
     const { addr, bytes } = regions.get(name);
     const memOff = addr - MEM_BASE;

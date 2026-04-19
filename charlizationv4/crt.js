@@ -16,15 +16,42 @@ import { GlobalAlloc } from './extern-stubs.js';
 // ── Random number generator (MSVC-compatible) ──
 // Binary uses MSVC's rand(): seed = seed * 214013 + 2531011
 // Returns (seed >> 16) & 0x7FFF (range 0-32767)
-let _randSeed = 0;
+//
+// The CRT's `holdrand` static lives at DAT_00639e50 in civ2.exe
+// (confirmed via decompiled block_005F0000.c:2494-2499). Reading and
+// writing the seed through _MEM at that address means when a snapshot
+// captures holdrand, loading the snapshot into _MEM automatically
+// syncs our RNG to civ2.exe's state — so subsequent _rand() calls
+// produce the same sequence the binary would.
+//
+// Earlier impl used a module-local `_randSeed` which drifted from
+// civ2.exe's state immediately, causing every AI decision that calls
+// rand() to diverge. See ai_fidelity_slice_log.md.
+const HOLDRAND_ADDR = 0x00639e50;
+
+function _readHoldrand() {
+  // u32 little-endian, unsigned.
+  const o = HOLDRAND_ADDR;
+  return ((_MEM[o]) | (_MEM[o + 1] << 8) | (_MEM[o + 2] << 16) | (_MEM[o + 3] << 24)) >>> 0;
+}
+
+function _writeHoldrand(v) {
+  const o = HOLDRAND_ADDR;
+  const vv = v >>> 0;
+  _MEM[o]     = vv         & 0xFF;
+  _MEM[o + 1] = (vv >>> 8) & 0xFF;
+  _MEM[o + 2] = (vv >>> 16) & 0xFF;
+  _MEM[o + 3] = (vv >>> 24) & 0xFF;
+}
 
 export function _srand(seed) {
-  _randSeed = seed >>> 0;
+  _writeHoldrand(seed >>> 0);
 }
 
 export function _rand() {
-  _randSeed = (Math.imul(_randSeed, 214013) + 2531011) >>> 0;
-  return (_randSeed >>> 16) & 0x7FFF;
+  const next = (Math.imul(_readHoldrand(), 214013) + 2531011) >>> 0;
+  _writeHoldrand(next);
+  return (next >>> 16) & 0x7FFF;
 }
 
 // ── Memory operations ──
