@@ -1171,7 +1171,10 @@ const gameState = {
   nextUnitId:    (() => {
     const explicit = post ? post.nextUnitId : gs.nextUnitId;
     if (explicit != null) return explicit;
-    const units = (post ? post.units : parsed.gameState?.units) || [];
+    // parsed.units is at the top level, NOT inside parsed.gameState.
+    // Earlier version used parsed.gameState?.units which was always
+    // undefined — maxId stayed 0, fallback returned 1.
+    const units = (post ? post.units : parsed.units) || [];
     let maxId = 0;
     for (const u of units) {
       if (u?.sequenceId != null && u.sequenceId > maxId) maxId = u.sequenceId;
