@@ -303,6 +303,10 @@ if (turns > 0) {
         if (ev.techId == null || ev.techId === 0xFF) return [];
         return [{ type: '__TECH_DISCOVERED__', civ: ev.civ, techId: ev.techId }];
       }
+      case 'UNIT_KILLED': {
+        if (ev.uid == null) return [];
+        return [{ type: '__UNIT_KILL__', uid: ev.uid }];
+      }
       case 'UNIT_CREATED': {
         // v3's END_TURN production creates the unit at its city tile,
         // but the sniffer sees the unit at whatever tile real Civ2
@@ -453,6 +457,18 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_KILL__') {
+              // Mark unit dead (gx=-1) so its saveIndex frees up for
+              // subsequent unit creations this turn.
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+                    : u),
               };
               continue;
             }
@@ -705,6 +721,21 @@ if (turns > 0) {
     // lowest-free-slot assignment). Without this, e.g., New York
     // founded frees slot 1 (uid=2 dies), but we'd create uid=20 at
     // slot 12 first, missing the reuse.
+    // Also process UNIT_KILLED events in pre-pre-pass to free slots
+    // for subsequent UNIT_CREATED events (e.g., combat death followed
+    // by replacement production in same cycle).
+    const killEvents = postWrapEvents.filter(e => e.event === 'UNIT_KILLED');
+    for (const ev of killEvents) {
+      if (ev.uid == null) continue;
+      gameState = {
+        ...gameState,
+        units: gameState.units.map(u =>
+          u && (u.id === ev.uid || u.sequenceId === ev.uid)
+            ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+            : u),
+      };
+    }
+
     const cityFoundedEvents = postWrapEvents.filter(e => e.event === 'CITY_FOUNDED');
     for (const ev of cityFoundedEvents) {
       const actions = eventToActions(ev, gameState);
@@ -737,7 +768,12 @@ if (turns > 0) {
     // create it at the event's (13,5) — net wrong position.
     const newUnitCreates = postWrapEvents.filter(e =>
       e.event === 'UNIT_CREATED' && e.uid != null
-      && !preExistingUnitIds.has(e.uid));
+      && !preExistingUnitIds.has(e.uid))
+      // Sort chronologically so slot assignments cascade correctly:
+      // if real Civ2 created uid=A at slot X first, then uid=B at
+      // slot Y (where X had been vacated by a death), we must mirror
+      // that order or we collide on slot reuse.
+      .sort((a, b) => (a.time_ms || 0) - (b.time_ms || 0));
     const prepassHandledUids = new Set();
     process.stderr.write(`[replay] pre-pass: ${newUnitCreates.length} new-unit creates\n`);
     for (const ev of newUnitCreates) {
@@ -1040,6 +1076,10 @@ if (turns > 0) {
                   else if (placedOffCity) { patched.gotoY = action.y; patched.goToY = action.y; }
                   if (action.moveSpent != null) patched.moveSpent = action.moveSpent;
                   if (action.statusFlags != null) patched.statusFlags = action.statusFlags;
+                  // Override saveIndex with the sniffer-captured slot
+                  // if it differs (production picked a different slot
+                  // than real Civ2's lowest-free at event time).
+                  if (action.slot != null) patched.saveIndex = action.slot;
                   return patched;
                 }),
               };
@@ -1060,8 +1100,12 @@ if (turns > 0) {
               for (const u of gameState.units) {
                 if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
               }
-              let newSaveIndex = 0;
-              while (usedSave.has(newSaveIndex)) newSaveIndex++;
+              let newSaveIndex = action.slot != null && !usedSave.has(action.slot)
+                ? action.slot : 0;
+              if (action.slot == null || usedSave.has(action.slot)) {
+                newSaveIndex = 0;
+                while (usedSave.has(newSaveIndex)) newSaveIndex++;
+              }
               const hc = homeCityIdx != null ? gameState.cities[homeCityIdx] : null;
               const hcX = hc ? (hc.cx ?? hc.x) : null;
               const hcY = hc ? (hc.cy ?? hc.y) : null;
