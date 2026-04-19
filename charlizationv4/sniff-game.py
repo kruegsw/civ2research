@@ -1727,19 +1727,26 @@ def main():
     snap_log = os.path.join(snap_dir, 'game.log')
 
     # Game lifecycle state machine
-    #   - 'loaded'  : mapWidth/mapHeight > 0, real game in memory
-    #   - 'unloaded': mapWidth or mapHeight == 0 (title screen, menu,
-    #                 just-closed game — memory freed but process alive)
-    #   - 'no_process': civ2.exe died; sniffer needs to reattach
+    #   - 'loaded'  : game fully initialized — map dims nonzero AND
+    #                 mapSeed nonzero. Civ2 allocates the map buffer
+    #                 before writing difficulty/seed, so requiring
+    #                 mapSeed != 0 waits for init to finish (~4 seconds
+    #                 empirically). Otherwise GAME_STARTED fires mid-
+    #                 init and the first dump captures stale zero bytes
+    #                 for difficulty, humanPlayers, civsAlive, etc.
+    #   - 'unloaded': pre-init, title screen, menu, or just-closed game
+    #                 (memory freed but process alive).
+    #   - 'no_process': civ2.exe died; sniffer reattaches on new PID
     #
     # Transitions emit typed events:
     #   loaded → unloaded   : GAME_CLOSED
     #   unloaded → loaded   : GAME_STARTED (also rotates session dir)
-    #   * → no_process      : PROCESS_DIED  (sniffer exits)
+    #   * → no_process      : PROCESS_DIED  → PROCESS_ATTACHED on reattach
     def game_state(s):
         mw = s.get('mapWidth') or 0
         mh = s.get('mapHeight') or 0
-        return 'loaded' if (mw > 0 and mh > 0) else 'unloaded'
+        seed = s.get('mapSeed') or 0
+        return 'loaded' if (mw > 0 and mh > 0 and seed != 0) else 'unloaded'
 
     current_game_state = game_state(prev)
     events_path = os.path.join(snap_dir, 'events.jsonl')
