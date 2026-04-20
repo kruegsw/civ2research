@@ -1494,6 +1494,18 @@ def emit_action_events(prev, curr, t0, events_path):
                            'owner': c.get('owner'),
                            'order': c.get('order'),
                            'orderName': c.get('orderName')})
+        # Status-flags change without movement (combat veteran promotion,
+        # fortify bit transitions, etc.). If the unit MOVED this tick, the
+        # UNIT_MOVED event above already carried statusFlags — skip here
+        # to avoid duplicate replay.
+        if (p.get('x'), p.get('y')) == (c.get('x'), c.get('y')) \
+                and p.get('statusFlags') != c.get('statusFlags'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_STATUS_CHANGED',
+                           'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'from': p.get('statusFlags'),
+                           'to': c.get('statusFlags')})
         # Damage change (combat round, healing, pillage). Binary writes
         # the damage byte at unit+0x0A each round of combat. The harness
         # needs these because replay mode skips v3's combat resolution

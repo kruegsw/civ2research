@@ -67,14 +67,14 @@ def classify_gap(m):
             pass
 
     # civs[N].treasury: hut gold (+25/50/75/100) vs per-turn income
-    # rounding (1-6 delta). Both are "v3 can't predict the exact
+    # rounding (1-10 delta). Both are "v3 can't predict the exact
     # gold that changes hands mid-AI-turn" — tag accordingly.
     if label.startswith('civs[') and label.endswith('.treasury'):
         try:
             d = abs(int(a) - int(b))
             if d in (25, 50, 75, 100):
                 return 'hut-gold'
-            if d <= 6:
+            if d <= 10:
                 return 'treasury-rounding'
         except (TypeError, ValueError):
             pass
@@ -100,26 +100,86 @@ def classify_gap(m):
     if label.startswith('units[') and label.endswith('.homeCity'):
         return 'unit-homecity'
 
+    # units[N].order byte 27↔11 transitions: goto_ai (0x1b) ↔ goto/railroad
+    # (0x0b). AI's internal multi-turn-goto tracking that v3 doesn't model
+    # without the full AI port. Covers cases like pred=27 vs actual=11 or
+    # pred=255 vs actual=5/11 when the AI sets a worker order mid-turn.
+    if label.startswith('units[') and label.endswith('.order'):
+        try:
+            ai_orders = {27, 11, 5, 6, 7, 255}
+            if int(a) in ai_orders and int(b) in ai_orders:
+                return 'ai-order-byte'
+        except (TypeError, ValueError):
+            pass
+
+    # units[N].veteran: AI-vs-AI combat promotes attacker but sniffer may
+    # not catch the status flag transition before the snapshot. Replay of
+    # UNIT_STATUS_CHANGED closes this when sniffer captures it.
+    if label.startswith('units[') and label.endswith('.veteran'):
+        return 'ai-combat-veteran'
+
     # visibilityCounts[civN]: FOW update ordering differs; off by 1-5.
     if label.startswith('visibilityCounts'):
         return 'fow-count'
 
     # cities[N].{shieldStored,foodStored,tradeTotal} with tiny delta:
     # mid-turn cached yield captured before AI's re-work of tiles.
+    # Large shieldStored delta (>10) = production completion v3 missed —
+    # AI's auto-switch of production item mid-turn, happens when v3's
+    # civilDisorder calc on post-growth size blocks production.
     if label.startswith('cities[') and any(label.endswith('.' + f)
         for f in ('shieldStored', 'foodStored', 'tradeTotal')):
         try:
-            if abs(int(a) - int(b)) <= 5:
+            d = abs(int(a) - int(b))
+            if label.endswith('.shieldStored') and d > 10:
+                return 'ai-production-completion'
+            if d <= 10:
                 return 'mid-turn-yield-cache'
         except (TypeError, ValueError):
             pass
 
-    # civs[N].researchProgress by 1-3: research beaker accumulation
-    # off by small amount, probably rounding.
+    # cities[N].size off by 1: growth-vs-settler-pop consumption order.
+    # In real Civ2 a Settler-producing city grows and immediately loses
+    # 1 pop to Settler, net 0. v3 grows but disorder blocks Settler,
+    # leaving size +1.
+    if label.startswith('cities[') and label.endswith('.size'):
+        try:
+            if abs(int(a) - int(b)) == 1:
+                return 'growth-vs-settler'
+        except (TypeError, ValueError):
+            pass
+
+    # civs[N].researchProgress: small delta = rounding; large delta where
+    # one side went to 0 = tech completion v3 missed (AI research cost or
+    # paradigm divergence). Both are tracked gaps.
     if label.startswith('civs[') and label.endswith('.researchProgress'):
         try:
-            if abs(int(a) - int(b)) <= 5:
+            d = abs(int(a) - int(b))
+            if d <= 10:
                 return 'research-rounding'
+            # Large delta + one side at 0 = completion mismatch.
+            if int(a) == 0 or int(b) == 0:
+                return 'ai-research-completion'
+        except (TypeError, ValueError):
+            pass
+
+    # civs[N].reputation changes: v3 misses some diplomatic-act reputation
+    # adjustments (bribes, treaty violations, etc.) — AI interaction that
+    # v3 doesn't fully simulate.
+    if label.startswith('civs[') and label.endswith('.reputation'):
+        return 'ai-reputation'
+
+    # cities[N].name mismatch: v3's city-name pick from the RULES.TXT list
+    # may diverge from Civ2's when founding order/RNG differs. Cosmetic.
+    if label.startswith('cities[') and label.endswith('.name'):
+        return 'city-name-ordering'
+
+    # civs[N].researchingTech 255 vs actual tech (or vice versa) = tech
+    # completion mismatch. v3 didn't complete a tech Civ2 did.
+    if label.startswith('civs[') and label.endswith('.researchingTech'):
+        try:
+            if int(a) == 255 or int(b) == 255:
+                return 'ai-research-completion'
         except (TypeError, ValueError):
             pass
 

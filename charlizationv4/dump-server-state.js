@@ -486,6 +486,15 @@ if (turns > 0) {
         // diff will surface damageTaken mismatches until combat is
         // wired up.
         return [];
+      case 'UNIT_STATUS_CHANGED': {
+        // Unit statusFlags changed without position change (veteran
+        // promotion from combat, flag transitions). v3 can't detect
+        // these without running the same combat resolution — replay
+        // the observed new flags directly. Same rationale as
+        // UNIT_KILLED.
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_STATUS__', uid: ev.uid, flags: ev.to }];
+      }
       case 'UNIT_VIS_CHANGED':
         // Per-unit "has been spotted by civs X,Y,Z" bitmask. v3 doesn't
         // track this yet (no per-unit fog tracking). Diff will surface
@@ -639,6 +648,17 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, visibility: action.to }
                     : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_STATUS__') {
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u => {
+                  if (!u || !(u.id === action.uid || u.sequenceId === action.uid)) return u;
+                  return { ...u, statusFlags: action.flags,
+                    veteran: (action.flags & 0x2000) ? 1 : 0 };
+                }),
               };
               continue;
             }

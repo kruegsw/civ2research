@@ -139,6 +139,11 @@ CITY_FIELDS = {
     'foodStored':   (0x1A, '<H'),
     'shieldStored': (0x1C, '<H'),
     'tradeTotal':   (0x1E, '<H'),
+    # +0x39: production target byte. Low 7 bits = item id; bit 0x80 set
+    # = building/wonder, clear = unit. See parser.js cityProducingBuilding
+    # and cityProducingUnit. Needed by state-diff to spot v3/Civ2 divergence
+    # when v3 has the wrong build target and shields accumulate wrongly.
+    'production':   (0x39, '<B'),
 }
 
 
