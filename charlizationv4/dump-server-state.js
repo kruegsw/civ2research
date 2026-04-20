@@ -1670,27 +1670,23 @@ const gameState = {
   difficulty:    toInt(get('difficulty'), DIFFICULTY_TO_INT),
   civsAlive:     get('civsAlive', 0),
   humanPlayers:  get('humanPlayers', 0),
-  // totalUnits in Civ2's memory is the HIGH WATER MARK of unit slots
-  // allocated, not the number currently alive. It only GROWS (dead
-  // slots remain allocated). initFromSav filters out dead units so
-  // state.units.length is lower than the memory counter. Use the max
-  // of the input's counter and the current engine unit count so new
-  // units produced during replay bump the value correctly.
+  // totalUnits in Civ2's memory (DAT_00655b16) is the HIGH WATER MARK
+  // of unit slots, with one specific decrement: block_004E0000.c:769
+  // drops it by 1 when the unit AT index (HWM-1) dies. In practice it
+  // tracks `max(saveIndex of alive units) + 1` exactly — when the
+  // top-slot unit dies, the HWM drops; new units grow it back.
+  // Earlier code took max(derived, parsed.gameState.totalUnits), which
+  // prevented the HWM from dropping when a top-slot unit died during
+  // the replayed turn. Remove the input-clamp.
   totalUnits:    post
                    ? (() => {
-                     // Binary's totalUnits counter = highest slot index + 1
-                     // (includes dead slots within the range). Compute as
-                     // max(saveIndex)+1 across alive units, falling back to
-                     // input snapshot's counter if v3 didn't grow the set.
                      let maxIdx = -1;
                      for (const u of (post.units || [])) {
                        if (u && u.gx >= 0 && u.saveIndex != null && u.saveIndex > maxIdx) {
                          maxIdx = u.saveIndex;
                        }
                      }
-                     const derived = maxIdx + 1;
-                     const inp = parsed.gameState?.totalUnits ?? 0;
-                     return Math.max(derived, inp);
+                     return maxIdx + 1;
                    })()
                    : gs.totalUnits,
   totalCities:   post ? ((post.cities || []).filter(c => c && c.size > 0).length) : gs.totalCities,
