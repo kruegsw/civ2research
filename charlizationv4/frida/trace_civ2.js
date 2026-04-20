@@ -63,115 +63,129 @@ if (!base) {
 // Wide net, Tier 1: renamed functions we know are meaningful.
 
 const TARGETS = [
-  // ── Civ lifecycle ────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: Main game loop + per-civ turn driver (skeleton of every
+  // turn's processing — hooking these shows WHEN things happen).
+  // ═══════════════════════════════════════════════════════════════
+  // FUN_0048b340 — outer game loop (no args, runs forever, iterates
+  // civs each pass). This is the "while(true) process_all_civs()"
+  // loop. One call happens at game start, one "pass" per turn cycle.
+  { va: 0x0048B340, name: 'main_game_loop',    args: 0 },
+  // Three places that call FUN_00489553 (per-civ dispatch) are the
+  // three sub-phases of the turn cycle. We hook the per-civ dispatch
+  // itself — one hook, fires per-civ-per-turn.
+  { va: 0x00489553, name: 'civ_turn_driver',   args: 1, argNames: ['civSlot'] },
+
+  // Sub-functions called inside civ_turn_driver (in the order they
+  // fire). Labelled anonymously until we decode what each does —
+  // seeing their relative timing + args on a live trace will tell us.
+  { va: 0x004A75A6, name: 'civdrv_alive_check',    args: 1, argNames: ['civSlot'], readRet: true },
+  { va: 0x004D01AE, name: 'civdrv_sub_d01ae',      args: 1, argNames: ['civSlot'] },
+  { va: 0x00488CEF, name: 'civdrv_sub_88cef',      args: 1, argNames: ['civSlot'] },
+  { va: 0x00487A41, name: 'civdrv_sub_87a41',      args: 1, argNames: ['civSlot'] },
+  { va: 0x0053184D, name: 'civdrv_sub_53184d',     args: 1, argNames: ['civSlot'] },
+  { va: 0x00489292, name: 'civdrv_sub_89292',      args: 2, argNames: ['civSlot','savedTreasury'] },
+  { va: 0x004D0339, name: 'civdrv_tech_delta_check', args: 1, argNames: ['civSlot'], readRet: true },
+  { va: 0x0059772C, name: 'civdrv_tech_tally',     args: 2, argNames: ['civSlot','isHuman'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: Civ lifecycle
+  // ═══════════════════════════════════════════════════════════════
   { va: 0x004A7CE9, name: 'new_civ',           args: 1, argNames: ['civSlot'] },
   { va: 0x004AA378, name: 'kill_civ',          args: 2, argNames: ['civSlot', 'by'] },
 
-  // ── City lifecycle ───────────────────────────────────────────────
-  // create_city fires for BOTH Settler-founded and hut-advanced-tribe
-  // cases. We want to catch it to solve the "Nineveh mystery" —
-  // hut → settler → city all inside one AI turn tick.
-  { va: 0x0043F8B0, name: 'create_city',       args: 3, argNames: ['x', 'y', 'owner'], readRet: true },
-  { va: 0x004413D1, name: 'delete_city',       args: 2, argNames: ['cityIdx', 'reason'] },
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: City lifecycle
+  // ═══════════════════════════════════════════════════════════════
+  // create_city return value is the new cityIdx — confirmed in live trace.
+  { va: 0x0043F8B0, name: 'create_city',       args: 3, argNames: ['x','y','owner'], readRet: true },
+  { va: 0x004413D1, name: 'delete_city',       args: 2, argNames: ['cityIdx','reason'] },
 
-  // ── Per-civ per-turn tick ────────────────────────────────────────
-  // This is FUN_00560084 — runs at the start of each civ's turn.
-  // Clears stateFlags 0x48, rolls senate-override bit 0x04, writes
-  // a random byte to civ+0xB6, calls fun_gov_assign under gates.
-  { va: 0x00560084, name: 'fun_per_civ_tick',  args: 1, argNames: ['civSlot'] },
-
-  // ── Government assignment (sets stateFlags bit 0x08) ─────────────
-  { va: 0x0055C69D, name: 'fun_gov_assign',    args: 2, argNames: ['civSlot', 'newGov'] },
-  // Generic state setter used by FUN_00560084 and elsewhere.
-  { va: 0x00556230, name: 'fun_civ_state_setter', args: 2, argNames: ['civSlot','value'] },
-
-  // ── Research ─────────────────────────────────────────────────────
-  { va: 0x004C2788, name: 'fun_research_cost', args: 1, argNames: ['civSlot'], readRet: true },
-  // FUN_0049a48e is binary's research-beaker-accumulation path
-  // (matches v3's end-turn research-progress add).
-  { va: 0x0049A48E, name: 'fun_research_accum',args: 1, argNames: ['civSlot'] },
-  // FUN_004c195e — scenario tech cycling rule
-  { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
-  // FUN_00453e51 — city-ownership check by tech id (gate in per-civ tick)
-  { va: 0x00453E51, name: 'fun_city_owner_by_tech', args: 2, argNames: ['civSlot','techId'], readRet: true },
-
-  // ── Huts — target VA unknown. The earlier guess 0x0040BC80 turned
-  // out to be a rendering thunk (FUN_005a5f34 under it handles window
-  // invalidation, not hut logic). Leaving disabled until we locate
-  // the actual hut-result function. Search hint: look for a function
-  // called from the unit-move path that dispatches gold/tech/unit/
-  // city based on a rand() % N roll.
-  //
-  // { va: 0x00??????, name: 'fun_hut_result', args: 3, argNames: ['x','y','civ'], readRet: true },
-
-  // Logging the rendering thunk is still useful as a "something
-  // refreshed the screen" marker — keep it but rename so the label
-  // matches reality.
-  { va: 0x0040BC80, name: 'thunk_0040bc80_render', args: 1, argNames: ['mode'], readRet: true },
-
-  // ── City yield + production ──────────────────────────────────────
-  { va: 0x004EBBDE, name: 'fun_city_food_tick',args: 1, argNames: ['cityIdx'], readRet: true },
-  { va: 0x004EC3FE, name: 'fun_city_prod_tick',args: 1, argNames: ['cityIdx'] },
-  { va: 0x004EA8E4, name: 'fun_city_happiness',args: 1, argNames: ['cityIdx'], readRet: true },
-  // FUN_004e7eb1 — food computation helper
-  { va: 0x004E7EB1, name: 'fun_city_food_helper', args: 2, argNames: ['cityIdx','unitCount'] },
-  // FUN_004f0221 — pay building upkeep (from v3's end-turn port notes)
-  { va: 0x004F0221, name: 'fun_building_upkeep', args: 1, argNames: ['cityIdx'] },
-  // FUN_004ec1c6 — assign caravan commodity
-  { va: 0x004EC1C6, name: 'fun_assign_commodity', args: 2, argNames: ['cityIdx','unitType'] },
-  // FUN_004f0a9c — city turn sync (adoption, worker assign)
-  { va: 0x004F0A9C, name: 'fun_city_turn_sync', args: 1, argNames: ['cityIdx'] },
-
-  // ── Units ────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: Units
+  // ═══════════════════════════════════════════════════════════════
+  // FUN_005B3D06 = new_unit. Takes (type, owner, x, y), returns new
+  // unit's slot index. This is what spawns every starting Settler,
+  // every AI-produced unit, every hut-mercenary, and every barbarian.
+  { va: 0x005B3D06, name: 'new_unit',          args: 4, argNames: ['type','owner','x','y'], readRet: true },
   // FUN_0058c295 — unit disband (50% shield refund)
   { va: 0x0058C295, name: 'fun_unit_disband',  args: 1, argNames: ['unitIdx'] },
   // FUN_00580341 — unit kill (barb-ransom logic path)
   { va: 0x00580341, name: 'fun_unit_kill',     args: 2, argNames: ['unitIdx','killerIdx'] },
 
-  // ── Diplomacy / exchange ─────────────────────────────────────────
-  { va: 0x0045950B, name: 'handle_exchange_gift', args: 3, argNames: ['fromCiv','toCiv','item'] },
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: Per-civ turn tick (FUN_00560084 — the function v3 has
+  // been trying to faithfully reproduce)
+  // ═══════════════════════════════════════════════════════════════
+  { va: 0x00560084, name: 'fun_per_civ_tick',  args: 1, argNames: ['civSlot'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 1: RNG — critical for task #49
+  // ═══════════════════════════════════════════════════════════════
+  // _rand() takes no args, returns int 0..0x7FFF. MSVC LCG with state
+  // at DAT_00639E50. Every hooked call tells us (a) call count and
+  // (b) which higher-level function made the call (via backtrace).
+  // WARNING: this is hot. If trace becomes too noisy, comment out.
+  // backtrace: true adds up to 4 caller return addresses to the
+  // event — answers "which binary function made this roll?" (the
+  // key question for task #49).
+  { va: 0x005F2280, name: 'crt_rand',          args: 0, readRet: true, backtrace: true },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 2: Government + state
+  // ═══════════════════════════════════════════════════════════════
+  { va: 0x0055C69D, name: 'fun_gov_assign',    args: 2, argNames: ['civSlot','newGov'] },
+  { va: 0x00556230, name: 'fun_civ_state_setter', args: 2, argNames: ['civSlot','value'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 2: Research
+  // ═══════════════════════════════════════════════════════════════
+  { va: 0x004C2788, name: 'fun_research_cost',     args: 1, argNames: ['civSlot'], readRet: true },
+  { va: 0x0049A48E, name: 'fun_research_accum',    args: 1, argNames: ['civSlot'] },
+  { va: 0x004C195E, name: 'fun_tech_cycle_rule',   args: 2, argNames: ['civSlot','techId'], readRet: true },
+  { va: 0x00453E51, name: 'fun_city_owner_by_tech',args: 2, argNames: ['civSlot','techId'], readRet: true },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 2: City per-turn processing
+  // ═══════════════════════════════════════════════════════════════
+  { va: 0x004EBBDE, name: 'fun_city_food_tick',  args: 1, argNames: ['cityIdx'], readRet: true },
+  { va: 0x004EC3FE, name: 'fun_city_prod_tick',  args: 1, argNames: ['cityIdx'] },
+  { va: 0x004EA8E4, name: 'fun_city_happiness',  args: 1, argNames: ['cityIdx'], readRet: true },
+  { va: 0x004E7EB1, name: 'fun_city_food_helper',args: 2, argNames: ['cityIdx','unitCount'] },
+  { va: 0x004F0221, name: 'fun_building_upkeep', args: 1, argNames: ['cityIdx'] },
+  { va: 0x004EC1C6, name: 'fun_assign_commodity',args: 2, argNames: ['cityIdx','unitType'] },
+  { va: 0x004F0A9C, name: 'fun_city_turn_sync',  args: 1, argNames: ['cityIdx'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 3: Diplomacy / UI / persistence
+  // ═══════════════════════════════════════════════════════════════
+  { va: 0x0045950B, name: 'handle_exchange_gift',   args: 3, argNames: ['fromCiv','toCiv','item'] },
   { va: 0x004C59F0, name: 'handle_incident_terror', args: 2, argNames: ['civSlot','targetCiv'] },
 
-  // ── Map interaction (player clicks, keystrokes) ──────────────────
+  // Player input (useful for aligning human actions with AI ticks)
   { va: 0x00410F77, name: 'map_window_click',  args: 3 },
   { va: 0x00411705, name: 'map_double_click',  args: 3 },
   { va: 0x00411F91, name: 'map_ascii',         args: 1 },
   { va: 0x004125C6, name: 'map_key',           args: 1 },
 
-  // ── City UI buttons (human actions) ──────────────────────────────
   { va: 0x00509B48, name: 'city_button_buy',    args: 0 },
   { va: 0x0050A473, name: 'city_button_change', args: 0 },
   { va: 0x0050B74E, name: 'city_button_rename', args: 0 },
   { va: 0x0050BACD, name: 'city_button_view',   args: 0 },
 
-  // ── Save / Load ──────────────────────────────────────────────────
   { va: 0x0047758C, name: 'save_game',         args: 1 },
   { va: 0x00473660, name: 'load_game_file',    args: 1 },
   { va: 0x004B2010, name: 'parse_save_block',  args: 2 },
   { va: 0x00477D8C, name: 'load_verify_units', args: 0 },
 
-  // ── Tile init (map gen) ──────────────────────────────────────────
   { va: 0x004944BB, name: 'init_tile',         args: 3, argNames: ['gx','gy','terrain'] },
 
-  // ── Setters for civ-wide globals — write-path instrumentation ────
-  // These wrap common writes. We log them to spot state changes that
-  // don't have a dedicated named function.
-  // FUN_005582AD is close to fog-of-war flag setter from memory map.
+  // Known non-hut-but-still-logged render thunk (kept for timing info)
+  { va: 0x0040BC80, name: 'thunk_0040bc80_render', args: 1, argNames: ['mode'], readRet: true },
 ];
 
-// ── CRT functions (call-count, args) ─────────────────────────────────
-// rand() is critical for task #49 (RNG call-order audit). Civ2 uses
-// MSVC 6 CRT's _rand, whose state is at DAT_00639e50. Each call
-// updates state and returns (state>>16)&0x7FFF. By hooking rand, we
-// record the exact order and call count between snapshots.
-//
-// NOTE: the 'rand' symbol doesn't always survive stripping; the
-// decompiled source calls it via `_rand()` thunks. Ghidra typically
-// identifies it at a specific VA — check your civ2.exe for the actual
-// CRT-linked rand implementation (may be _rand or FUN_xxx).
-const CRT = [
-  // { va: 0x005F0000, name: 'rand', args: 0, readRet: true },  // uncomment after verifying VA
-];
+// (CRT functions now rolled into TARGETS above — _rand @ 0x005F2280.)
+const CRT = [];
 
 // ── Attach hooks ─────────────────────────────────────────────────────
 
@@ -213,6 +227,15 @@ function attachHook(entry) {
               msg.named[entry.argNames[i]] = argArr[i];
             }
           }
+        }
+        // For hot functions we want to know WHO called them.
+        // `backtrace: true` in entry opts in. Limit to 4 frames —
+        // each frame is just the return address, rendered as hex.
+        if (entry.backtrace) {
+          try {
+            const bt = Thread.backtrace(this.context, Backtracer.FUZZY).slice(0, 4);
+            msg.stack = bt.map(p => p.toString());
+          } catch (_) { /* swallow */ }
         }
         // Save state for onLeave
         this._traceEntry = entry;
