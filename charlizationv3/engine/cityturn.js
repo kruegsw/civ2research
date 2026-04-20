@@ -1560,14 +1560,21 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   }
 
   // ── Step 2: Compute happiness AFTER food (city size changes are reflected) ──
+  // Binary ref: block_004F0000.c:299 calls FUN_004eb4ed(1) which computes
+  // happy/unhappy into globals but does NOT set city.flags & 1. The disorder
+  // bit is ONLY set at step 5 (handle_city_disorder_004ef578 @ block_004F0000.c:386),
+  // AFTER production has run. Production (line 315) therefore gates on LAST
+  // turn's disorder state, not this turn's post-growth state.
+  //
+  // Accordingly: update happy/unhappy/WLTKD for display, but leave
+  // civilDisorder untouched so processCityProduction below sees the pre-turn
+  // value. hap2 at Step 4 (after production) will write the authoritative
+  // new civilDisorder for next turn.
   if (!cityDestroyed) {
     const cityForHap = state.cities[cityIndex];
     const hap = calcHappiness(cityForHap, cityIndex, state, mapBase);
-    // Store happy/unhappy counts on city so client can display them
-    // without needing its own (potentially divergent) happiness calc
     state.cities[cityIndex] = {
       ...state.cities[cityIndex],
-      civilDisorder: hap.civilDisorder,
       weLoveKingDay: hap.weLoveKingDay,
       happyCitizens: hap.happy,
       unhappyCitizens: hap.unhappy,
