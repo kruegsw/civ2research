@@ -323,8 +323,7 @@ if (turns > 0) {
   function eventToActions(ev, state) {
     switch (ev.event) {
       case 'CITY_FOUNDED': {
-        // Need to find the unit at (ev.x, ev.y) owned by ev.owner that's
-        // a Settler/Engineer. That's the one that founded.
+        // Normal case: a Settler/Engineer at the tile founds the city.
         const units = state.units || [];
         const owner = ev.owner ?? ev.civ;
         const uIdx = units.findIndex(u =>
@@ -332,8 +331,16 @@ if (turns > 0) {
           && (u.type === 0 || u.type === 1)
           && Math.floor(u.x / 2) === Math.floor(ev.x / 2)
           && u.y === ev.y);
-        if (uIdx < 0) return [];
-        return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
+        if (uIdx >= 0) {
+          return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
+        }
+        // Advanced tribe (hut-spawned city): no Settler involved. Civ2
+        // transforms the hut directly into a size-1 city. v3's BUILD_CITY
+        // reducer requires a unitIndex, so we emit a __CITY_PLACE__
+        // synthetic that creates the city record directly.
+        return [{ type: '__CITY_PLACE__',
+                  cityIdx: ev.cityIdx, x: ev.x, y: ev.y,
+                  owner, name: ev.name }];
       }
       case 'RESEARCH_PICKED': {
         // techId=255 (0xFF) = "clear research target". The AI emits this
@@ -988,6 +995,30 @@ if (turns > 0) {
       }
       const actions = eventToActions(ev, gameState);
       for (const action of actions) {
+        if (action.type === '__CITY_PLACE__') {
+          // Advanced-tribe hut or other non-Settler city founding.
+          // Create a new city record at the exact slot the sniffer saw.
+          const newCity = {
+            name: action.name || '',
+            owner: action.owner,
+            originalOwner: action.owner,
+            size: 1,
+            gx: Math.floor(action.x / 2), gy: action.y,
+            cx: action.x, cy: action.y,
+            x: action.x, y: action.y,
+            foodInBox: 0, shieldsInBox: 0,
+            buildings: new Set(),
+            workedTiles: [],
+            specialists: [],
+            turnAge: 0,
+            itemInProduction: { type: 'unit', id: 2 },  // default Warriors
+          };
+          gameState = {
+            ...gameState,
+            cities: [...(gameState.cities || []), newCity],
+          };
+          continue;
+        }
         try {
           const evCiv = ev.civ ?? ev.owner ?? 0;
           const savedActive = gameState.turn?.activeCiv;
