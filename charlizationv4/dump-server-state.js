@@ -336,7 +336,12 @@ if (turns > 0) {
         return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
       }
       case 'RESEARCH_PICKED': {
-        if (ev.techId == null || ev.techId === 0xFF) return [];
+        // techId=255 (0xFF) = "clear research target". The AI emits this
+        // when abandoning the current research (e.g. tech completes via
+        // hut/gift, or AI re-evaluates priorities). v3 must mirror the
+        // clear — otherwise its techBeingResearched stays stale and
+        // research progress accumulates on a phantom target.
+        if (ev.techId == null) return [];
         return [{ type: 'SET_RESEARCH', advanceId: ev.techId }];
       }
       case 'RATE_CHANGED': {

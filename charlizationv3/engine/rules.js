@@ -368,6 +368,9 @@ export function validateAction(gameState, mapBase, action, civSlot) {
     case SET_RESEARCH: {
       const { advanceId } = action;
       if (advanceId == null) return 'Missing advanceId';
+      // 0xFF (255) is the "clear target" sentinel — AI emits this when
+      // abandoning current research. Accept it without prerequisite checks.
+      if (advanceId === 0xFF) return null;
       if (!Number.isInteger(advanceId) || advanceId < 0 || advanceId >= ADVANCE_PREREQS.length) {
         return 'Invalid advance ID';
       }
