@@ -62,56 +62,88 @@ if (!base) {
 //
 // Wide net, Tier 1: renamed functions we know are meaningful.
 
+// ═══════════════════════════════════════════════════════════════════
+// OPEN QUESTION (unresolved as of 2026-04-20):
+//   Human civ gets 2 starting Settlers on Deity. First one spawns
+//   INSIDE new_civ(5). Second one spawns AFTER all new_civ(0-7)
+//   complete AND after fun_tech_cycle_rule() fires for AI civs 1,4.
+//   The function that calls new_unit a second time for the human
+//   hasn't been identified yet. Likely an "apply difficulty bonuses"
+//   step in the init path. Add a hook once found.
+// ═══════════════════════════════════════════════════════════════════
+// OBSERVED INIT SEQUENCE (from game_20260420_094910 first 7ms):
+//
+//   new_civ(0)                       ← barbarians
+//   new_civ(1)
+//   new_unit(type=0, owner=1, x,y)   ← AI 1 starting Settler
+//   new_civ(2) new_civ(3)            ← dormant civs (no unit spawn)
+//   new_civ(4)
+//   new_unit(type=0, owner=4, x,y)   ← AI 2 starting Settler
+//   new_civ(5)
+//   new_unit(type=0, owner=5, x,y)   ← HUMAN starting Settler #1
+//   new_civ(6) new_civ(7)            ← dormant civs
+//   new_unit(type=0, owner=5, x,y)   ← HUMAN Settler #2 (Deity bonus)
+//
+// Then ~940ms later:
+//   main_game_loop                   ← turn 1 starts
+//   civ_turn_driver(0) for alive civs only (0, 1, 4, 5), strict order
+//   Each civ_turn_driver invokes fun_per_civ_tick internally
+//
+// Sub-function sizes (bigger = more logic = higher-value to decode):
+//   FUN_004d01ae    90 bytes   → dispatch/flag update
+//   FUN_00488cef  1438 bytes   → pre-tick state update (treasury etc)
+//   FUN_00487a41  3830 bytes   → mid-tick (candidate: AI unit-cycle
+//                                 init, "active unit" selection)
+//   FUN_00560084   part of v3's port — stateFlags clear, senate toggle
+//   FUN_0053184d 14665 bytes   → BIG — heavy FUN_005B* unit-subsystem
+//                                 calls = AI UNIT DECISIONS per civ
+//   FUN_00489292   705 bytes   → post-tick (treasury delta logging)
+//
+// ═══════════════════════════════════════════════════════════════════
+
 const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
-  // TIER 1: Main game loop + per-civ turn driver (skeleton of every
-  // turn's processing — hooking these shows WHEN things happen).
+  // TIER 1: Turn skeleton — WHEN things happen
   // ═══════════════════════════════════════════════════════════════
-  // FUN_0048b340 — outer game loop (no args, runs forever, iterates
-  // civs each pass). This is the "while(true) process_all_civs()"
-  // loop. One call happens at game start, one "pass" per turn cycle.
-  { va: 0x0048B340, name: 'main_game_loop',    args: 0 },
-  // Three places that call FUN_00489553 (per-civ dispatch) are the
-  // three sub-phases of the turn cycle. We hook the per-civ dispatch
-  // itself — one hook, fires per-civ-per-turn.
-  { va: 0x00489553, name: 'civ_turn_driver',   args: 1, argNames: ['civSlot'] },
+  { va: 0x0048B340, name: 'main_game_loop',      args: 0 },
+  { va: 0x00489553, name: 'civ_turn_driver',     args: 1, argNames: ['civSlot'] },
 
-  // Sub-functions called inside civ_turn_driver (in the order they
-  // fire). Labelled anonymously until we decode what each does —
-  // seeing their relative timing + args on a live trace will tell us.
-  { va: 0x004A75A6, name: 'civdrv_alive_check',    args: 1, argNames: ['civSlot'], readRet: true },
-  { va: 0x004D01AE, name: 'civdrv_sub_d01ae',      args: 1, argNames: ['civSlot'] },
-  { va: 0x00488CEF, name: 'civdrv_sub_88cef',      args: 1, argNames: ['civSlot'] },
-  { va: 0x00487A41, name: 'civdrv_sub_87a41',      args: 1, argNames: ['civSlot'] },
-  { va: 0x0053184D, name: 'civdrv_sub_53184d',     args: 1, argNames: ['civSlot'] },
-  { va: 0x00489292, name: 'civdrv_sub_89292',      args: 2, argNames: ['civSlot','savedTreasury'] },
+  // Sub-functions called inside civ_turn_driver IN ORDER. Labelled
+  // by likely purpose based on size + callees. Confirmed to fire
+  // once per civ_turn_driver call (= 4× on a 4-civ turn).
+  { va: 0x004A75A6, name: 'civdrv_alive_check',  args: 1, argNames: ['civSlot'], readRet: true },
+  { va: 0x004D01AE, name: 'civdrv_step1_dispatch',args: 1, argNames: ['civSlot'] },
+  { va: 0x00488CEF, name: 'civdrv_step2_economy', args: 1, argNames: ['civSlot'] },
+  { va: 0x00487A41, name: 'civdrv_step3_ai_units',args: 1, argNames: ['civSlot'] },
+  { va: 0x0053184D, name: 'civdrv_step5_ai_decide',args: 1, argNames: ['civSlot'] },
+  { va: 0x00489292, name: 'civdrv_step6_finalize',args: 2, argNames: ['civSlot','savedTreasury'] },
   { va: 0x004D0339, name: 'civdrv_tech_delta_check', args: 1, argNames: ['civSlot'], readRet: true },
-  { va: 0x0059772C, name: 'civdrv_tech_tally',     args: 2, argNames: ['civSlot','isHuman'] },
+  { va: 0x0059772C, name: 'civdrv_tech_tally',   args: 2, argNames: ['civSlot','isHuman'] },
 
   // ═══════════════════════════════════════════════════════════════
-  // TIER 1: Civ lifecycle
+  // TIER 1: Civ lifecycle — confirmed firing in strict slot order
+  // during init. 8 calls total (civ 0-7). civs 2/3/6/7 "dormant" in
+  // observed game — no starting unit, no civ_turn_driver follows.
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x004A7CE9, name: 'new_civ',           args: 1, argNames: ['civSlot'] },
-  { va: 0x004AA378, name: 'kill_civ',          args: 2, argNames: ['civSlot', 'by'] },
+  { va: 0x004A7CE9, name: 'new_civ',   args: 1, argNames: ['civSlot'] },
+  { va: 0x004AA378, name: 'kill_civ',  args: 2, argNames: ['civSlot','by'] },
 
   // ═══════════════════════════════════════════════════════════════
-  // TIER 1: City lifecycle
+  // TIER 1: City lifecycle (create_city retval = cityIdx, confirmed)
   // ═══════════════════════════════════════════════════════════════
-  // create_city return value is the new cityIdx — confirmed in live trace.
-  { va: 0x0043F8B0, name: 'create_city',       args: 3, argNames: ['x','y','owner'], readRet: true },
-  { va: 0x004413D1, name: 'delete_city',       args: 2, argNames: ['cityIdx','reason'] },
+  { va: 0x0043F8B0, name: 'create_city', args: 3, argNames: ['x','y','owner'], readRet: true },
+  { va: 0x004413D1, name: 'delete_city', args: 2, argNames: ['cityIdx','reason'] },
 
   // ═══════════════════════════════════════════════════════════════
-  // TIER 1: Units
+  // TIER 1: Units — every creation goes through new_unit regardless
+  // of source (init placement, AI production, hut mercenary, barb
+  // spawn, upgrade). retval = new unit's slot index.
+  // Observed: civ 5 (human) gets 2 new_unit calls with identical
+  // coords on Deity — confirms the starting-Settler bonus.
   // ═══════════════════════════════════════════════════════════════
-  // FUN_005B3D06 = new_unit. Takes (type, owner, x, y), returns new
-  // unit's slot index. This is what spawns every starting Settler,
-  // every AI-produced unit, every hut-mercenary, and every barbarian.
-  { va: 0x005B3D06, name: 'new_unit',          args: 4, argNames: ['type','owner','x','y'], readRet: true },
-  // FUN_0058c295 — unit disband (50% shield refund)
-  { va: 0x0058C295, name: 'fun_unit_disband',  args: 1, argNames: ['unitIdx'] },
-  // FUN_00580341 — unit kill (barb-ransom logic path)
-  { va: 0x00580341, name: 'fun_unit_kill',     args: 2, argNames: ['unitIdx','killerIdx'] },
+  { va: 0x005B3D06, name: 'new_unit',    args: 4, argNames: ['type','owner','x','y'], readRet: true },
+  { va: 0x0058C295, name: 'fun_unit_disband', args: 1, argNames: ['unitIdx'] },
+  { va: 0x00580341, name: 'fun_unit_kill',    args: 2, argNames: ['unitIdx','killerIdx'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Per-civ turn tick (FUN_00560084 — the function v3 has
@@ -144,10 +176,13 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: Research
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x004C2788, name: 'fun_research_cost',     args: 1, argNames: ['civSlot'], readRet: true },
-  { va: 0x0049A48E, name: 'fun_research_accum',    args: 1, argNames: ['civSlot'] },
-  { va: 0x004C195E, name: 'fun_tech_cycle_rule',   args: 2, argNames: ['civSlot','techId'], readRet: true },
-  { va: 0x00453E51, name: 'fun_city_owner_by_tech',args: 2, argNames: ['civSlot','techId'], readRet: true },
+  { va: 0x004C2788, name: 'fun_research_cost',   args: 1, argNames: ['civSlot'], readRet: true },
+  { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
+  { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
+  // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
+  // over all tech slots. Dropped readRet (we only need args to see
+  // which (civ, techId) pairs are queried).
+  { va: 0x00453E51, name: 'fun_city_owner_by_tech',args: 2, argNames: ['civSlot','techId'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: City per-turn processing
