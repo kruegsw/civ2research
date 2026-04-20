@@ -1380,22 +1380,23 @@ def emit_action_events(prev, curr, t0, events_path):
             events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'RESEARCH_PICKED', 'civ': i,
                            'techId': c.get('researching')})
-        # Tech discovered: diff the tech bitmask directly to find the
-        # actual tech that flipped ON. Previously this used p['researching']
-        # which is wrong when a hut/gift grants a different tech than the
-        # civ was actively researching — the researching byte resets to
-        # 0xFF, but the gained tech is in the bitmask, not the previous
-        # researching target. Observed 2026-04-19 T57: civ 6 was researching
-        # Pottery (65) when a hut gave Bronze Working (8); old code emitted
-        # techId=65, bitmask showed bit 8 flipped. Fix: iterate bitmask.
-        pt = p.get('techList', bytes(93))
-        ct = c.get('techList', bytes(93))
+        # Tech discovered: diff the tech_list byte array at civ+0x74.
+        # Per findings/game_logic_insights.md: each byte is 0xFF if tech
+        # not discovered, else 0-7 = civ index that provided the tech.
+        # So "tech gained" = byte transitioned from 0xFF to < 8.
+        # Previously the check was `pt[ti] == 0 and ct[ti] != 0` which
+        # never fired (0 means "provided by civ 0"); fixed 2026-04-20.
+        pt = p.get('techList', bytes([0xFF]*93))
+        ct = c.get('techList', bytes([0xFF]*93))
         if pt != ct:
             for ti in range(min(len(pt), len(ct), 93)):
-                if pt[ti] == 0 and ct[ti] != 0:
+                prev_b = pt[ti] if ti < len(pt) else 0xFF
+                curr_b = ct[ti] if ti < len(ct) else 0xFF
+                if prev_b == 0xFF and curr_b < 8:
                     events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                                    'event': 'TECH_DISCOVERED', 'civ': i,
                                    'techId': ti,
+                                   'source': curr_b,
                                    'wasResearching': p.get('researching')})
         # Gold — can be skipped on every tick but useful for tracking.
         if p.get('gold') != c.get('gold'):

@@ -368,21 +368,23 @@ if (turns > 0) {
         const bit04_target = ev.to & 0x04;
         return [{ type: '__SENATE_TOGGLE__', civ: ev.civ, set: !!bit04_target }];
       }
-      case 'TECH_DISCOVERED':
-        // Tech completion is a v3 calculation (beaker accumulation +
-        // calcResearchCost threshold). Previously applied via
-        // __TECH_DISCOVERED__ which forced the discovery regardless
-        // of v3's cost calc, hiding the research-cost-off-by-N bugs
-        // this whole fidelity project is supposed to surface. Now
-        // ignored; when v3 drifts from real Civ2's discoveries, the
-        // diff will show it at civs[N].researchingTech / civTechs and
-        // we fix v3's research.js to match binary FUN_004c2788.
+      case 'TECH_DISCOVERED': {
+        // Tech completion via normal research: v3 handles it in END_TURN
+        // when progress >= calcResearchCost. Skip the event then, so we
+        // don't mask research-calc bugs.
         //
-        // NOTE: this will cascade when real Civ2 gives a FREE tech
-        // (hut, Great Library, Philosophy first-to-discover bonus).
-        // v3 has to implement those effects correctly too — if it
-        // doesn't, the mismatch is genuine and fixable.
-        return [];
+        // Tech completion via EXTERNAL source (hut, gift, trade, Great
+        // Library, Philosophy): v3 has no way to detect this — the
+        // sniffer observed a bitmask bit flip that v3 wouldn't predict.
+        // Use `wasResearching` (new field) to distinguish: if the
+        // discovered techId != wasResearching, it's external and we
+        // must replay. Otherwise skip.
+        if (ev.civ == null || ev.techId == null) return [];
+        const isExternal = ev.wasResearching != null && ev.wasResearching !== ev.techId;
+        if (!isExternal) return [];
+        return [{ type: '__TECH_DISCOVERED__', civ: ev.civ, techId: ev.techId,
+                  reason: 'external' }];
+      }
       case 'UNIT_KILLED': {
         // v3's combat reducer kills units when v3 actions fire BRIBE /
         // attack. But most combat in the observed stream is AI-vs-AI,
