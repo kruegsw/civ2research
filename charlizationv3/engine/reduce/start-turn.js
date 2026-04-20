@@ -57,6 +57,40 @@ const IDLE_ORDERS = new Set([
  */
 export function processCivTurnStart(state, civ) {
   if (!state.units) return state;
+
+  // ── Binary FUN_00560084 per-civ tick (block_00560000.c:10-60) ──
+  // Runs at the start of each civ's turn before unit moves-reset. It:
+  //   1. Clears stateFlags bits 0x48 (stateFlags &= 0xffb7)
+  //   2. If govTransitionByte == 0 (idle), re-run gov assignment under
+  //      conditional gates. For AI civs OR on non-mod-4 turns, checks
+  //      FUN_00453e51(civ, 0x13) as a secondary gate. On mod-4 turns
+  //      for humans OR if stateFlags bit 0x01 is clear, call
+  //      FUN_0055c69d which sets bit 0x08.
+  //   3. For non-barbarian civs: write a fresh random byte to civ+0xB6
+  //      and toggle senate-override bit 0x04 with 1/3 probability.
+  //
+  // Partial port: we implement (1) and the toggle from (3). The
+  // gov-reassignment branches are gated by fields we don't yet track
+  // for loaded snapshots (civ+0x15 govTransitionByte isn't in the .sav
+  // prefix region). Left as TODO — tracked in reverse_engineering/
+  // findings/init_sequence_audit.md.
+  if (state.civs && state.civs[civ]) {
+    const c = state.civs[civ];
+    const flagsBefore = c.stateFlags || 0;
+    const newFlags = flagsBefore & 0xffb7;  // clear bits 0x48
+    // NOTE: the binary also rolls senate-override (bit 0x04) and
+    // writes a random byte to civ+0xB6 here. Skipped because doing
+    // so would consume rng draws that the binary's full tick also
+    // consumes but in a different order — desyncing our seeded RNG
+    // stream from civ2.exe's. Will add once RNG call-order audit
+    // (task #49) confirms the exact sequence of rand() calls
+    // around these operations.
+    if (newFlags !== flagsBefore) {
+      state.civs = [...state.civs];
+      state.civs[civ] = { ...c, stateFlags: newFlags };
+    }
+  }
+
   const ownerHasLighthouse = hasWonderEffect(state, civ, 3);
   const ownerHasMagellan = hasWonderEffect(state, civ, 12);
   const ownerHasNuclearPower = !!(state.civTechs?.[civ]?.has(59));
