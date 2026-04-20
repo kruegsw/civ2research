@@ -408,7 +408,7 @@ if (turns > 0) {
                   owner: ev.owner, order: ev.order,
                   gotoX: ev.gotoX, gotoY: ev.gotoY,
                   moveSpent: ev.moveSpent, statusFlags: ev.statusFlags,
-                  slot: ev.slot }];
+                  slot: ev.slot, homeCity: ev.homeCity }];
       }
       case 'UNIT_MOVED': {
         // UID-based lookup — slot may have been reused.
@@ -1062,10 +1062,14 @@ if (turns > 0) {
         // Unit types 16+ (Diplomat, Spy, Caravan, Freight, Explorer)
         // don't consume from a home city; real Civ2 stores 0xFF (255)
         // in the homeCity byte. Units 0..15 (Settlers/Engineers/
-        // military) need a home city for upkeep.
+        // military) normally need a home city for upkeep — BUT hut-spawned
+        // units have 0xFF even for military types. If the sniffer captured
+        // the homeCity byte, trust it; otherwise fall back to city-lookup.
         const unitType = action.unitType != null ? action.unitType : 0;
         let homeCityIdx = 255;
-        if (unitType < 16 && owner != null && gameState.cities) {
+        if (action.homeCity != null) {
+          homeCityIdx = action.homeCity;
+        } else if (unitType < 16 && owner != null && gameState.cities) {
           const idx = gameState.cities.findIndex(c =>
             c && c.owner === owner && c.gx >= 0);
           if (idx >= 0) homeCityIdx = idx;

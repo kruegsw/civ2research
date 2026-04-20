@@ -343,7 +343,9 @@ def read_unit(h, idx):
     multipurpose_0D = struct.unpack_from('<b', d, 0x0D)[0]
     fuel = d[0x0E]
     order = d[0x0F]
-    goto_turn = d[0x10]
+    # +0x10 = home city index (u8). Byte 0x11 is padding. 0xFF = no home
+    # (units created via hut, or intrinsically homeless types).
+    home_city = d[0x10]
     goto_x, goto_y = struct.unpack_from('<hh', d, 0x12)
     prev_stack = struct.unpack_from('<h', d, 0x16)[0]
     next_stack = struct.unpack_from('<h', d, 0x18)[0]
@@ -361,7 +363,7 @@ def read_unit(h, idx):
                 firstMoved=(status>>6)&1,
                 status=status, visMask=vis_mask,
                 hp=hp, aiRole=ai_role, aiRoleName=AI_ROLES.get(ai_role, f'r{ai_role:02X}'),
-                carrying=carrying, fuel=fuel, gotoTurn=goto_turn,
+                carrying=carrying, fuel=fuel, homeCity=home_city,
                 prevStack=prev_stack, nextStack=next_stack)
 
 # City byte map — for raw diff labeling
@@ -1458,7 +1460,8 @@ def emit_action_events(prev, curr, t0, events_path):
                            'order': c.get('order'),
                            'gotoX': c.get('gotoX'), 'gotoY': c.get('gotoY'),
                            'moveSpent': c.get('moveSpent'),
-                           'statusFlags': c.get('statusFlags')})
+                           'statusFlags': c.get('statusFlags'),
+                           'homeCity': c.get('homeCity')})
             continue
         if p_uid != 0 and c_uid == 0 and p:
             events.append({'time_ms': round(ms, 1), 'turn': turn,
