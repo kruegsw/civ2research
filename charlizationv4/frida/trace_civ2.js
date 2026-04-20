@@ -229,9 +229,11 @@ const TARGETS = [
   { va: 0x0048AA24, name: 'mgl_active_civ_on',  args: 0 },
   { va: 0x0048A416, name: 'mgl_active_civ_off', args: 0 },
 
-  // FUN_0048710a — the per-civ "turn begin" function referenced in
-  // v3's start-turn.js header. Called from civ_turn_driver per civ.
-  { va: 0x0048710A, name: 'per_civ_turn_begin', args: 1, argNames: ['civSlot'] },
+  // FUN_0048710a — observed to fire ONCE per turn cycle with
+  // civSlot=-1 BEFORE the per-civ loop begins. So it's not strictly
+  // "per civ" — it's a pre-civ-loop turn-begin setup. v3 may need
+  // to mirror this as a "before all civs process" hook.
+  { va: 0x0048710A, name: 'pre_civ_loop_tick', args: 1, argNames: ['civSlot'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: AI decision sub-functions (inside civdrv_step5_ai_decide)
@@ -243,14 +245,20 @@ const TARGETS = [
   { va: 0x004BD9F0, name: 'ai_civ_has',          args: 2, argNames: ['civSlot','techOrWonderId'], readRet: true },
   // FUN_0055F5A3 — government evaluator (per earlier RE notes).
   { va: 0x0055F5A3, name: 'ai_gov_evaluator',    args: 1, argNames: ['civSlot'], readRet: true },
-  // FUN_004D007E — AI-internal helper called inside step3_city_loop.
-  { va: 0x004D007E, name: 'ai_city_helper_d007e',args: 1, argNames: ['cityIdx'] },
+  // FUN_004D007E — very hot (~8700 calls/2 turns). Observed args look
+  // like pointers (huge values like 0x679000+), not cityIdx. Rename
+  // to reflect unknown semantics. Disabled arg naming; log raw arg.
+  { va: 0x004D007E, name: 'fun_d007e_hot',       args: 1 },
   // FUN_00531287 / FUN_00531607 — near ai_decide (FUN_0053184d).
   // Likely "evaluate threat" / "evaluate build-order" helpers.
   { va: 0x00531287, name: 'ai_decide_helper_1',  args: 1, argNames: ['civSlot'] },
   { va: 0x00531607, name: 'ai_decide_helper_2',  args: 2 },
-  // FUN_00493602 — AI research/tech helper (nearby research-cost fn).
-  { va: 0x00493602, name: 'ai_research_helper',  args: 1, argNames: ['civSlot'] },
+  // FUN_00493602 — named "ai_research_helper" but OBSERVED firing
+  // during init for ALL 8 civs (including barbarians and dormant
+  // civs) immediately after each new_civ, AND again per-AI-civ
+  // during civdrv_step5_ai_decide. So it's a per-civ init/tick
+  // helper, not specifically "research." Rename.
+  { va: 0x00493602, name: 'per_civ_helper_93602',args: 1, argNames: ['civSlot'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 3: Diplomacy / UI / persistence

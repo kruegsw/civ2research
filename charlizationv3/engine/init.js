@@ -263,13 +263,47 @@ export function initNewGame(mapResult, seatList) {
   const placements = assignInitialSettlerPositions(mapBase, civCount, { closeSpawns: !!mapResult.closeSpawns });
 
   // ── Create starting units at placements ──
+  //
+  // Binary observation (Frida trace game_20260420_102347, Deity): only
+  // 4 new_unit calls total during init:
+  //   - AI civ 1: 1 Settler
+  //   - AI civ 2: 1 Settler
+  //   - HUMAN civ 5: 2 Settlers (Deity bonus, same tile)
+  //   - Barbarians + dormant civs: no starter unit
+  //
+  // Previously v3 gave every civ [Settler, Warriors] unconditionally,
+  // which is WRONG: AI civs get NO Warriors at init. The Warriors
+  // in Civ2 init-screen imagery is actually ONLY for lower difficulties
+  // (King and below give human a Warriors; Deity does not).
+  //
+  // Simplified rule matching observed Deity behavior:
+  //   - AI civs: 1 Settler
+  //   - Human: 1 Settler (lower difficulties may add Warriors — need
+  //     more traces to confirm; TODO hook a lower-difficulty game)
+  //   - Human on Deity: 2 Settlers (the Deity compensation)
+  //
+  // Explorer (type 50) separately granted if civ has Seafaring (tech
+  // 75) — still correct per binary FUN_004a7ce9.
   const units = [];
-  const STARTING_UNITS = [0, 2]; // Settlers (0), Warriors (2)
+
+  // Determine human seat slot (if any)
+  const humanSeatIdx = (seatList || []).findIndex(s => s && !s.ai);
+  const humanCivSlot = humanSeatIdx >= 0 ? humanSeatIdx + 1 : -1;
+  const difficulty = seatList?.[humanSeatIdx]?.difficulty || 'prince';
+  const DIFFICULTY_KEYS = ['chieftain','warlord','prince','king','emperor','deity'];
+  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
 
   for (let i = 0; i < civCount; i++) {
     const civSlot = i + 1;
     const pos = placements[i];
-    for (const unitType of STARTING_UNITS) {
+    const isHuman = civSlot === humanCivSlot;
+
+    // Everyone gets exactly 1 Settler.
+    // On Deity, human gets a 2nd Settler (binary-observed bonus).
+    const starterTypes = [0]; // Settler
+    if (isHuman && diffIdx === 5) starterTypes.push(0); // 2nd Settler for human at Deity
+
+    for (const unitType of starterTypes) {
       units.push({
         type: unitType,
         owner: civSlot,
