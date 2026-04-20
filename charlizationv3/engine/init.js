@@ -514,11 +514,19 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
   // the same bit for both "new-civ gov assigned" and "finished anarchy."
   const stateFlags = 0x08;
 
+  // civ_struct +0x15 (govTransitionByte) per binary FUN_004a7ce9 line
+  // 2650 (writes 1 at new-civ init) and line 3363 (writes 2 when this
+  // civ has a Palace at city idx 54). Used as a gate in
+  // FUN_00560084's per-turn processor. 0 = idle, 1 = new-civ-init,
+  // 2 = capital established.
+  const govTransitionByte = 1;
+
   return {
     name,
     style,
     government,
     stateFlags,
+    govTransitionByte,
     treasury,
     scienceRate,
     taxRate,
