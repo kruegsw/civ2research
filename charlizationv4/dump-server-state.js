@@ -378,13 +378,20 @@ if (turns > 0) {
         // v3 has to implement those effects correctly too — if it
         // doesn't, the mismatch is genuine and fixable.
         return [];
-      case 'UNIT_KILLED':
-        // Unit death is typically a combat result. v3 combat should
-        // kill the unit during its combat resolution. Not wired to
-        // UNIT_MOVED replay yet — diff will show zombies (units that
-        // should be dead still alive in v3 state) until combat is
-        // routed.
-        return [];
+      case 'UNIT_KILLED': {
+        // v3's combat reducer kills units when v3 actions fire BRIBE /
+        // attack. But most combat in the observed stream is AI-vs-AI,
+        // which v3 doesn't simulate at all — no combat actions are
+        // dispatched, so v3 keeps both units alive. Without replay,
+        // 100+ downstream mismatches cascade as units[] drifts out of
+        // slot alignment. Replay the death as a direct state mutation:
+        // this does NOT hide a v3 combat bug, because v3 isn't doing
+        // the combat in the first place. Task #48 (route UNIT_MOVED
+        // through v3 combat when entering enemy tile) is the proper
+        // fix; replay is the bridge until that lands.
+        if (ev.uid == null) return [];
+        return [{ type: '__UNIT_KILL__', uid: ev.uid }];
+      }
       case 'GOV_CHANGED': {
         // AI-driven revolution. Real Civ2 fires two events back-to-back
         // for AI civs: current→Anarchy (from>0, to=0) and Anarchy→new
@@ -973,11 +980,30 @@ if (turns > 0) {
       }
     }
 
-    // CITY_DESTROYED / UNIT_KILLED pre-passes intentionally removed.
-    // These are combat results — v3's combat reducer should produce
-    // them endogenously once UNIT_MOVED-onto-enemy is routed through
-    // it. Until then, expect zombie units / phantom cities in the
-    // diff. That's a v3-combat-infrastructure gap, not a v3 calc bug.
+    // UNIT_KILLED pre-pass: apply observed kills that aren't already
+    // handled by CITY_FOUNDED (founding settler). Without this, v3
+    // keeps dead units alive, their slots don't free up, and the diff
+    // cascades hundreds of slot-offset mismatches into later turns.
+    // The ideal fix is routing UNIT_MOVED through v3 combat (task #48)
+    // so v3's combat reducer kills the unit endogenously — but most
+    // observed kills are AI-vs-AI and v3 never ran that combat in the
+    // first place. Replay is the bridge, not an override of a v3 calc.
+    const killedEvents = postWrapEvents.filter(e =>
+      e.event === 'UNIT_KILLED' && e.uid != null);
+    for (const ev of killedEvents) {
+      const exists = gameState.units.find(u => u
+        && (u.id === ev.uid || u.sequenceId === ev.uid));
+      if (!exists || exists.gx < 0) continue; // already dead
+      gameState = {
+        ...gameState,
+        units: gameState.units.map(u =>
+          u && (u.id === ev.uid || u.sequenceId === ev.uid)
+            ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+            : u),
+      };
+    }
+    // CITY_DESTROYED pre-pass still intentionally omitted — see prior
+    // commits about v3 city-razing handling.
 
     // Pre-pass: funnel UNIT_CREATED events for NEW units (not in
     // preExistingUnitIds) into deferredPostEvents EARLY, so the
