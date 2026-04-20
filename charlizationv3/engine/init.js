@@ -264,26 +264,35 @@ export function initNewGame(mapResult, seatList) {
 
   // ── Create starting units at placements ──
   //
-  // Binary observation (Frida trace game_20260420_102347, Deity): only
-  // 4 new_unit calls total during init:
-  //   - AI civ 1: 1 Settler
-  //   - AI civ 2: 1 Settler
-  //   - HUMAN civ 5: 2 Settlers (Deity bonus, same tile)
-  //   - Barbarians + dormant civs: no starter unit
+  // Binary observations from Frida traces (Deity):
   //
-  // Previously v3 gave every civ [Settler, Warriors] unconditionally,
-  // which is WRONG: AI civs get NO Warriors at init. The Warriors
-  // in Civ2 init-screen imagery is actually ONLY for lower difficulties
-  // (King and below give human a Warriors; Deity does not).
+  //   Session game_20260420_102347 (4 new_unit calls total):
+  //     AI civ 1: 1 Settler
+  //     AI civ 2: 1 Settler
+  //     Human civ 5: 2 Settlers (stacked, same tile)
   //
-  // Simplified rule matching observed Deity behavior:
-  //   - AI civs: 1 Settler
-  //   - Human: 1 Settler (lower difficulties may add Warriors — need
-  //     more traces to confirm; TODO hook a lower-difficulty game)
-  //   - Human on Deity: 2 Settlers (the Deity compensation)
+  //   Session game_20260420_103546 (5 new_unit calls at init):
+  //     AI civ 2: 2 Settlers (stacked, same tile — anomaly!)
+  //     AI civ 3: 1 Settler
+  //     Human civ 5: 2 Settlers (stacked, same tile)
+  //
+  // Consistent across both: Human on Deity gets 2 Settlers, no civ
+  // gets Warriors at init. Barbarians + dormant civs get no units.
+  //
+  // Unexplained: in session 2, AI civ 2 also got a 2nd Settler. The
+  // rule for AI bonus Settlers is not yet understood. Possibilities:
+  //   - RNG-determined per-civ bonus
+  //   - Proximity to human
+  //   - Specific leader-personality (DAT_006554fa) attribute
+  //   - Hut-advanced-tribe firing during placement
+  // Need more traces to identify. For now v3 gives AI civs exactly
+  // 1 Settler and accepts the slight fidelity gap.
+  //
+  // Previously v3 gave every civ [Settler, Warriors] unconditionally
+  // — that's now known-wrong (no Warriors at init on Deity).
   //
   // Explorer (type 50) separately granted if civ has Seafaring (tech
-  // 75) — still correct per binary FUN_004a7ce9.
+  // 75) — correct per binary FUN_004a7ce9.
   const units = [];
 
   // Determine human seat slot (if any)
