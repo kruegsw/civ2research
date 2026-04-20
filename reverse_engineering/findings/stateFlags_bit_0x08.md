@@ -49,8 +49,8 @@ clears mask `0xff96` across civs 1..7 (includes bit 0x08).
 
 ## Open questions
 
-- What is the byte at civ_struct +0x15? The branch gate condition. Not in
-  the byte_verification_plan yet.
+- What is the byte at civ_struct +0x15? The branch gate condition.
+  **RESOLVED (2026-04-19): it's `government_type`** — see below.
 - What is `FUN_00453e51(civ, 0x13)`? The second gate.
 - Why does bit 0x08 get set for civ 7 on turn 1 of a fresh game but NOT
   for civ 2 or civ 5 (also AI civs founding their first city)?
@@ -59,16 +59,30 @@ Open-question resolution is the last 10% to port this bit's behavior
 fully. The first 90% is: implement `FUN_00560084`'s per-turn tick in v3
 as part of `processCivTurnStart` / `END_TURN`.
 
-## civ_struct +0x15 byte resolved
+## civ_struct +0x15 byte resolved (CORRECTED 2026-04-19)
 
-Semantic: **Government transition state**.
-- `0` = idle / normal (gate in FUN_00560084 opens)
-- `1` = new civ initialized (set at `new_civ` / FUN_004a7ce9 line 2650)
-- `2` = capital established (set at FUN_004a7ce9 line 3363 after
-  `FUN_004bd9f0(civ, 0x36) != 0` — civ has Palace at city idx 54)
+**This byte is `government_type`**, the same field documented in
+`Data_Structures.md` line 60:
+- `0` = Anarchy, `1` = Despotism, `2` = Monarchy, `3` = Communism,
+- `4` = Fundamentalism, `5` = Republic, `6` = Democracy
 
-Also written raw via `FUN_00556230` (block_00550000.c:4913) as a
-generic state setter.
+**Not** a separate "govTransitionByte" as an earlier version of this
+doc claimed. Confirmed by 20+ read sites across blocks 0x40-0x60 that
+index into the government name table `DAT_0064b9a0` (stride 4) and
+use comparisons like `< 2` (primitive), `== 2` (Monarchy), `< 5`
+(non-Republic-or-Democracy), and `- 1` as a zero-indexed gov effect
+lookup.
+
+Write sites:
+- `new_civ` FUN_004a7ce9:2650 → 1 (Despotism, default starting gov)
+- `new_civ` FUN_004a7ce9:3363 → 2 (Monarchy — scenario path only,
+  gated by `FUN_004bd9f0(civ, 0x36) != 0` which checks tech/wonder
+  id 0x36). Irrelevant for random-map starts.
+- `FUN_00556230` (block_00550000.c:4913) — generic setter, used by
+  revolution/gov-change code.
+
+So the FUN_00560084 gate `if (govByte == 0)` means "if in Anarchy
+(i.e. mid-revolution), roll for revolution-end this turn."
 
 ## FUN_00453e51(civ, 0x13) resolved
 

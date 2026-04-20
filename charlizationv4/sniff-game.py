@@ -254,6 +254,30 @@ def read_globals(h):
             g[k] = ri32(h, a)
         else:
             g[k] = ru8(h, a)
+    # Per-civ prefix bytes — the portion of civ_struct (+0x00..+0x9F)
+    # that lives in memory but NOT in the save. Parser can't see these
+    # fields because sav-from-mem skips the prefix. Capturing the
+    # ones we care about here as named dict entries lets downstream
+    # diff tools reason about them without a second memory read.
+    #   +0x00..+0x01: stateFlags u16 (sniffer also reads via 'civs'
+    #                 region so value is duplicated, but having it by
+    #                 name makes per-civ diff events easier)
+    #   +0x15: government_type (0=Anarchy, 1=Despotism, 2=Monarchy, ...)
+    #          — gate for FUN_00560084's per-turn revolution-end roll.
+    CIV_BASE = 0x0064c6a0
+    CIV_STR_STRIDE = 0x594
+    civ_prefix = []
+    for civ_idx in range(8):
+        base = CIV_BASE + civ_idx * CIV_STR_STRIDE
+        prefix = read_mem(h, base, 0x16)  # 22 bytes covers 0x00..0x15
+        if prefix and len(prefix) == 0x16:
+            sf = struct.unpack_from('<H', prefix, 0)[0]
+            gov = prefix[0x15]
+            civ_prefix.append({'stateFlags': sf, 'government': gov})
+        else:
+            civ_prefix.append({})
+    g['civPrefixBytes'] = civ_prefix
+
     # Game-toggle bytes (save offset 0x0C-0x14 → mem 0x00655AE8-AF0). The
     # parser decodes 60+ named bits here: bloodlust, cheatMenu/Penalty,
     # barbariansRaging, scenarioFile, etc. Read the whole word so a
@@ -1302,6 +1326,8 @@ def emit_action_events(prev, curr, t0, events_path):
                            'from': pv, 'to': cv})
 
     # Per-civ: gold, government, rates, research target, techs discovered
+    # Note: GOV_CHANGED below (line ~1347) already covers civ_struct +0x15
+    # transitions — no separate 'civPrefixBytes' diff needed.
     for i in range(8):
         p = prev['civs'][i] if i < len(prev.get('civs', [])) else None
         c = curr['civs'][i] if i < len(curr.get('civs', [])) else None
@@ -1311,10 +1337,35 @@ def emit_action_events(prev, curr, t0, events_path):
                            'event': 'GOV_CHANGED', 'civ': i,
                            'from': p.get('gov'), 'to': c.get('gov')})
         if p.get('stateFlags') != c.get('stateFlags'):
+            pf = p.get('stateFlags') or 0
+            cf = c.get('stateFlags') or 0
+            diff_mask = pf ^ cf
+            # Name-decode for debugging: which named bits flipped, and
+            # which unnamed bits are currently set. Matches parser.js:280
+            # and defs.js:CIV_STATE_FLAGS. Bit 0x200 is known-unknown.
+            _FLAG_NAMES = {
+                0x0001: 'skipNextOedoYear',     # per-civ "skip Oedo"
+                0x0002: 'atWar',
+                0x0004: 'senateOverride',       # 1/3 toggle per FUN_00560084
+                0x0008: 'recoveredFromRevolution',  # new gov assigned
+                0x0010: 'bit4_unk',
+                0x0020: 'freeAdvancePending',
+                0x0040: 'bit6_unk',
+                0x0080: 'aiExpansionMode',
+                0x0100: 'techMilestone',
+                0x0200: 'bit9_unk_set_at_init',  # init sets for some civs
+                0x0400: 'bit10_unk',
+                0x0800: 'bit11_unk',
+            }
+            flipped = []
+            for bit, name in _FLAG_NAMES.items():
+                if diff_mask & bit:
+                    went = 'SET' if (cf & bit) else 'CLEAR'
+                    flipped.append(f'{name}:{went}')
             events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'FLAGS_CHANGED', 'civ': i,
-                           'from': p.get('stateFlags'),
-                           'to': c.get('stateFlags')})
+                           'from': pf, 'to': cf,
+                           'flipped': flipped})
         # Rate changes: sci + tax + lux as a set. Only emit if any changed.
         if (p.get('sciRate') != c.get('sciRate')
                 or p.get('taxRate') != c.get('taxRate')

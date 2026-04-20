@@ -514,19 +514,18 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
   // the same bit for both "new-civ gov assigned" and "finished anarchy."
   const stateFlags = 0x08;
 
-  // civ_struct +0x15 (govTransitionByte) per binary FUN_004a7ce9 line
-  // 2650 (writes 1 at new-civ init) and line 3363 (writes 2 when this
-  // civ has a Palace at city idx 54). Used as a gate in
-  // FUN_00560084's per-turn processor. 0 = idle, 1 = new-civ-init,
-  // 2 = capital established.
-  const govTransitionByte = 1;
+  // civ_struct +0x15 = government_type (Anarchy=0, Despotism=1, Monarchy=2,
+  // Communism=3, Fundamentalism=4, Republic=5, Democracy=6). Binary
+  // FUN_004a7ce9:2650 writes 1 (Despotism) at new-civ init. Line 3363
+  // writes 2 (Monarchy) when the civ has the tech at id 0x36 (scenario
+  // path only — irrelevant for normal starts). Already captured as
+  // `government: 'despotism'` above, so no separate field needed.
 
   return {
     name,
     style,
     government,
     stateFlags,
-    govTransitionByte,
     treasury,
     scienceRate,
     taxRate,

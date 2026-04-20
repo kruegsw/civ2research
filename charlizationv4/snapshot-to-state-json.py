@@ -80,6 +80,11 @@ CIV_FIELDS = {
     # versions of this file and compare-snapshots.js had them swapped.
     'scienceRate':      (0xB3, '<B'),
     'taxRate':          (0xB4, '<B'),
+    # civ_struct +0x15 — government_type (NOT a separate "govTransition"
+    # byte as stateFlags_bit_0x08.md speculated). 0=Anarchy, 1=Despotism,
+    # 2=Monarchy, 3=Communism, 4=Fundamentalism, 5=Republic, 6=Democracy.
+    # FUN_00560084's per-turn gate `if (govByte == 0)` = "if in anarchy,
+    # roll for revolution end."
     'government':       (0xB5, '<B'),
     # reputation is at data-block offset 0x1E (CONFIRMED in
     # byte_verification_plan.md), which maps to memory +0xA0 + 0x1E = 0xBE.

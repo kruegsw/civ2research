@@ -23,7 +23,7 @@
 | Field/Step | Binary | v3 | Status |
 |---|---|---|---|
 | stateFlags (civ+0x00) | 0x08 (via FUN_0055c69d) | 0x08 (createNewCiv) | MATCH |
-| govTransitionByte (civ+0x15) | 1 at init, 2 on Palace | (missing → now 1) | FIXED |
+| government_type (civ+0x15) | 1=Despotism at init | government='despotism' | MATCH |
 | Sci/tax/lux rates | 4/4/1 (0x04/0x04/0x01) | 4/4/1 | MATCH |
 | Treasury at init | 0 | 0 | MATCH |
 | Chieftain +50 gold | FUN_004a9785 | initNewGame | MATCH |
@@ -53,21 +53,21 @@ createNewCiv and REVOLUTION reducer.
 
 ### 2. FUN_00560084 per-turn processor not ported
 
-Sets bit 0x08 under complex conditions involving govTransitionByte,
+Sets bit 0x08 under complex conditions involving government==Anarchy,
 turn-mod-4, FUN_00453e51, and AI/human branching. Also rolls senate-
 override toggle. Responsible for the civ-7-specific bit 0x08 flip on
 turn 1 of a fresh game.
 
-Fix: port FUN_00560084 as a per-civ per-turn step.
+Fix: port FUN_00560084 as a per-civ per-turn step. Partial port already
+in `engine/reduce/start-turn.js` — only the `stateFlags &= 0xffb7`
+clear is implemented. Gov-reassignment and senate-override require
+RNG-order audit (task #49) first.
 
-### 3. civ+0x15 govTransitionByte not saved
+### 3. civ+0x15 government_type read-back from snapshot
 
-The byte at civ+0x15 is in the "prefix" region of civ_struct that
-`sav-from-mem.js` doesn't copy to the synthesized .sav (only the
-0xA0..end portion gets saved). The parser therefore can't restore it
-from a snapshot.
-
-Options:
-- Extend sav-from-mem to include the prefix
-- Or: keep it in v3 state as a computed/tracked field, not round-
-  tripped through save
+The byte at civ+0x15 (government_type) is in the "prefix" region of
+civ_struct that `sav-from-mem.js` doesn't copy to the synthesized .sav.
+The parser sees government as the first non-prefix byte at save offset
+0x15 (memory +0xB5), which is the SAME logical byte because the save
+format elides the 0xA0 header. The sniffer `civs` region DOES read the
+prefix from memory, so `government` is available for diffing.

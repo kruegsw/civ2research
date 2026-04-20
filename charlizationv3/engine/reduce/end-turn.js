@@ -443,6 +443,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       if (updCiv.anarchyTurns <= 0) {
         const newGovt = updCiv.pendingGovernment || 'despotism';
         updCiv.government = newGovt;
+        // Binary FUN_0055c69d(civ, newGovt): sets stateFlags bit 0x08
+        // when new_gov != 0 (any non-Anarchy assignment). Mirrors the
+        // "new government committed" sentinel the binary uses.
+        updCiv.stateFlags = (updCiv.stateFlags || 0) | 0x08;
         delete updCiv.pendingGovernment;
         delete updCiv.anarchyTurns;
         if (!state.turnEvents) state.turnEvents = [];

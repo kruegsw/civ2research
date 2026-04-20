@@ -420,19 +420,18 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const civ = { ...state.civs[civSlot] };
       const oldGovt = civ.government;
       if (hasWonderEffect(state, civSlot, 19)) {
-        // Statue of Liberty: instant government switch, no anarchy
+        // Statue of Liberty: instant government switch, no anarchy.
+        // Binary FUN_0055c69d sets stateFlags bit 0x08 when new_gov != 0
+        // (i.e. leaving Anarchy for any real government). Mirror that.
         civ.government = government;
-        // (#120) Auto-clamp rates on government change
+        civ.stateFlags = (civ.stateFlags || 0) | 0x08;
         _autoClampRates(civ, government);
         state.civs[civSlot] = civ;
-        // Apply government change side effects (Fanatics production switch, embassy clearing)
         applyGovernmentChangeEffects(state, civSlot, oldGovt, government);
       } else {
         civ.government = 'anarchy';
-        // Binary: 1-4 random turns of anarchy (matches Civ2 MGE behavior)
         civ.anarchyTurns = 1 + state.rng.nextInt(4);
         civ.pendingGovernment = government;
-        // (#120) Auto-clamp rates for anarchy too
         _autoClampRates(civ, 'anarchy');
         state.civs[civSlot] = civ;
         if (!state.turnEvents) state.turnEvents = [];
