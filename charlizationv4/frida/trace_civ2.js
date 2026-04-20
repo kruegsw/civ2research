@@ -130,9 +130,15 @@ const TARGETS = [
   // observed game — no starting unit, no civ_turn_driver follows.
   // ═══════════════════════════════════════════════════════════════
   { va: 0x004A7CE9, name: 'new_civ',   args: 1, argNames: ['civSlot'],
-    backtrace: true, readCivAtSlot: true },
+    backtrace: true, readCivAtSlot: true, readGlobals: true },
   { va: 0x004AA378, name: 'kill_civ',  args: 2, argNames: ['civSlot','by'],
     backtrace: true, readCivAtSlot: true },
+  // Deity bonus-Settler logic: runs AFTER all 8 new_civ calls; creates
+  // 2nd Settlers per conditions A/B/C (see block_004A0000.c:2568-2589).
+  // Reading globals at entry captures bonusMask/bonusFlag which drive
+  // which civs get a bonus.
+  { va: 0x004A7754, name: 'balance_bonus_fn', args: 0, argNames: [],
+    backtrace: true, readGlobals: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: City lifecycle (create_city retval = cityIdx, confirmed)
@@ -320,6 +326,13 @@ const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
 const LEADER_PERSONALITY_STRIDE = 0x30;
 const DIFFICULTY_BYTE   = 0x00655B04;  // 0=Chieftain, 5=Deity
 const HUMAN_PLAYERS_MASK = 0x00655B0B;
+// Globals used by FUN_004a7754 (Deity bonus Settler logic) — see block_004A0000.c line 2568-2589
+const DAT_00655B08 = 0x00655B08;  // difficulty-byte per decompiled src (may alias DIFFICULTY_BYTE)
+const DAT_00655B0B = 0x00655B0B;  // bitmask: civ bit set + Deity → +1 Settler
+const DAT_00655B02 = 0x00655B02;  // flag: if non-zero + Deity → +1 Settler for ALL civs
+const DAT_00655B0A = 0x00655B0A;  // active-civs bitmask (updated as new_civ succeeds/fails)
+const DAT_00655AE8 = 0x00655AE8;  // game state flags
+const DAT_00655AF8 = 0x00655AF8;  // tech counter (0 at init, gates starting tech)
 
 // Symbolize a return address to "Ghidra function name (rel offset)".
 // Civ2 image base is 0x00400000. RVA = va - 0x00400000.
@@ -344,15 +357,15 @@ function readCivSnapshot(base, civSlot) {
   try {
     const civBase = base.add(CIV_STRUCT_BASE - 0x00400000 + civSlot * CIV_STRUCT_STRIDE);
     return {
-      stateFlags:  Memory.readU16(civBase.add(0x00)),
-      treasury:    Memory.readS32(civBase.add(0x02)),
-      styleLeader: Memory.readS16(civBase.add(0x06)),
-      acqTechCount:Memory.readU8 (civBase.add(0x10)),
-      futTechCount:Memory.readU8 (civBase.add(0x11)),
-      government:  Memory.readU8 (civBase.add(0x15)),
-      sci:         Memory.readU8 (civBase.add(0x13)),
-      tax:         Memory.readU8 (civBase.add(0x14)),
-      reputation:  Memory.readU8 (civBase.add(0x1E)),
+      stateFlags:  civBase.add(0x00).readU16(),
+      treasury:    civBase.add(0x02).readS32(),
+      styleLeader: civBase.add(0x06).readS16(),
+      acqTechCount:civBase.add(0x10).readU8(),
+      futTechCount:civBase.add(0x11).readU8(),
+      government:  civBase.add(0x15).readU8(),
+      sci:         civBase.add(0x13).readU8(),
+      tax:         civBase.add(0x14).readU8(),
+      reputation:  civBase.add(0x1E).readU8(),
     };
   } catch (e) {
     return { err: String(e) };
@@ -364,7 +377,7 @@ function readLeaderPersonality(base, civSlot) {
   if (civSlot < 0 || civSlot > 7) return null;
   try {
     const lpBase = base.add(LEADER_PERSONALITY_BASE - 0x00400000 + civSlot * LEADER_PERSONALITY_STRIDE);
-    const bytes = Memory.readByteArray(lpBase, LEADER_PERSONALITY_STRIDE);
+    const bytes = lpBase.readByteArray(LEADER_PERSONALITY_STRIDE);
     return Array.from(new Uint8Array(bytes));
   } catch (e) {
     return { err: String(e) };
@@ -374,8 +387,15 @@ function readLeaderPersonality(base, civSlot) {
 function readGlobals(base) {
   try {
     return {
-      difficulty:   Memory.readU8(base.add(DIFFICULTY_BYTE - 0x00400000)),
-      humanPlayers: Memory.readU8(base.add(HUMAN_PLAYERS_MASK - 0x00400000)),
+      difficulty:   base.add(DIFFICULTY_BYTE - 0x00400000).readU8(),
+      humanPlayers: base.add(HUMAN_PLAYERS_MASK - 0x00400000).readU8(),
+      // Bonus-Settler logic globals (see block_004A0000.c FUN_004a7754):
+      diff_b08:     base.add(DAT_00655B08 - 0x00400000).readU8(),
+      bonusMask:    base.add(DAT_00655B0B - 0x00400000).readU8(),
+      bonusFlag:    base.add(DAT_00655B02 - 0x00400000).readU8(),
+      activeMask:   base.add(DAT_00655B0A - 0x00400000).readU8(),
+      gameFlags16:  base.add(DAT_00655AE8 - 0x00400000).readU16(),
+      techCounter:  base.add(DAT_00655AF8 - 0x00400000).readU16(),
     };
   } catch (e) { return { err: String(e) }; }
 }
@@ -428,6 +448,11 @@ function attachHook(entry) {
         }
         if (entry.readCivAtSlot && msg.named && msg.named.civSlot != null) {
           msg.civSnapshot = readCivSnapshot(base, msg.named.civSlot);
+          msg.globals = readGlobals(base);
+        }
+        // Standalone globals read (for hooks like balance_bonus_fn that
+        // take no args but still want state snapshot).
+        if (entry.readGlobals && !msg.globals) {
           msg.globals = readGlobals(base);
         }
         // Save state for onLeave

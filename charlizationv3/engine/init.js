@@ -264,35 +264,40 @@ export function initNewGame(mapResult, seatList) {
 
   // ── Create starting units at placements ──
   //
-  // Binary observations from Frida traces (Deity):
+  // Binary source: block_004A0000.c FUN_004a7754 @ 0x004A7754 is the
+  // post-new_civ "balance" pass. It runs AFTER all 8 new_civ calls
+  // (via FUN_004aa9c0 line 3599). For each civ 1..7 with a valid
+  // starting position (aiStack_7c[i] != -1), a 2nd Settler is granted
+  // if ANY of the three conditions hold:
   //
-  //   Session game_20260420_102347 (4 new_unit calls total):
-  //     AI civ 1: 1 Settler
-  //     AI civ 2: 1 Settler
-  //     Human civ 5: 2 Settlers (stacked, same tile)
+  //   A) Terrain deficit:  local_38 - aiStack_28[civ] > 3
+  //        → max-scoring civ's score minus this civ's score > 3
+  //   B) Forced-bonus bit: (DAT_00655b0b >> civ) & 1 != 0
+  //                        AND DAT_00655b08 == 0x05 (Deity)
+  //        → human civs (bit set in DAT_00655b0b mask) get bonus on Deity
+  //   C) Global bonus:     DAT_00655b02 != 0
+  //                        AND DAT_00655b08 == 0x05 (Deity)
+  //        → if set, ALL non-barb civs get a 2nd Settler at Deity
   //
-  //   Session game_20260420_103546 (5 new_unit calls at init):
-  //     AI civ 2: 2 Settlers (stacked, same tile — anomaly!)
-  //     AI civ 3: 1 Settler
-  //     Human civ 5: 2 Settlers (stacked, same tile)
+  // score aiStack_28[civ] = isolation bonus (neighbor distance)
+  //                       + food-tile count in adjacent 0x15 squares
+  //                       + continent-size quantile
   //
-  // Consistent across both: Human on Deity gets 2 Settlers, no civ
-  // gets Warriors at init. Barbarians + dormant civs get no units.
+  // Frida trace game_20260420_104755 (4 new_unit calls at init):
+  //   civ 0: barbarian, no Settler (expected)
+  //   civ 1: 1 Settler at (9,37) — stack new_civ+0x1555
+  //   civ 4: 1 Settler at (36,20) — stack new_civ+0x1555
+  //   civ 5: 1 Settler at (10,8)  — stack new_civ+0x1555  ← primary (human)
+  //   civ 5: 1 Settler at (10,8)  — stack FUN_004a7754+0x502 ← bonus (Deity)
+  //   civs 2,3,6,7: placement failed (likely near-pole or edge → local_158=1)
   //
-  // Unexplained: in session 2, AI civ 2 also got a 2nd Settler. The
-  // rule for AI bonus Settlers is not yet understood. Possibilities:
-  //   - RNG-determined per-civ bonus
-  //   - Proximity to human
-  //   - Specific leader-personality (DAT_006554fa) attribute
-  //   - Hut-advanced-tribe firing during placement
-  // Need more traces to identify. For now v3 gives AI civs exactly
-  // 1 Settler and accepts the slight fidelity gap.
+  // Condition B fired for civ 5 (human). v3 currently models condition B
+  // only — terrain-deficit (A) and global-bonus (C) are not yet replicated
+  // because v3 doesn't run the placement-scoring pass.
   //
-  // Previously v3 gave every civ [Settler, Warriors] unconditionally
-  // — that's now known-wrong (no Warriors at init on Deity).
-  //
-  // Explorer (type 50) separately granted if civ has Seafaring (tech
-  // 75) — correct per binary FUN_004a7ce9.
+  // No civ gets Warriors at init. Explorer (type 50) is separately
+  // granted to civs with Seafaring tech (75) — handled later in
+  // FUN_004a7ce9 via a separate code path.
   const units = [];
 
   // Determine human seat slot (if any)
