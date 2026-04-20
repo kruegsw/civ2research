@@ -186,7 +186,7 @@ const TARGETS = [
   //
   // To re-enable for a narrower phase, set backtrace:true but only
   // run during steady-state gameplay (not mapgen/init).
-  { va: 0x005F2280, name: 'crt_rand',          args: 0, readRet: true },
+  { va: 0x005F2280, name: 'crt_rand',          args: 0, readRet: true, hot: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: Government + state
@@ -203,7 +203,7 @@ const TARGETS = [
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
   // over all tech slots. Dropped readRet (we only need args to see
   // which (civ, techId) pairs are queried).
-  { va: 0x00453E51, name: 'fun_city_owner_by_tech',args: 2, argNames: ['civSlot','techId'] },
+  { va: 0x00453E51, name: 'fun_city_owner_by_tech',args: 2, argNames: ['civSlot','techId'], hot: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: City per-turn processing
@@ -259,13 +259,13 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   // FUN_004BD9F0 — "civ has tech/wonder id X" check. Heavy usage
   // throughout AI decisions. Hot (expect many calls per AI tick).
-  { va: 0x004BD9F0, name: 'ai_civ_has',          args: 2, argNames: ['civSlot','techOrWonderId'], readRet: true },
+  { va: 0x004BD9F0, name: 'ai_civ_has',          args: 2, argNames: ['civSlot','techOrWonderId'], readRet: true, hot: true },
   // FUN_0055F5A3 — government evaluator (per earlier RE notes).
   { va: 0x0055F5A3, name: 'ai_gov_evaluator',    args: 1, argNames: ['civSlot'], readRet: true },
   // FUN_004D007E — very hot (~8700 calls/2 turns). Observed args look
   // like pointers (huge values like 0x679000+), not cityIdx. Rename
   // to reflect unknown semantics. Disabled arg naming; log raw arg.
-  { va: 0x004D007E, name: 'fun_d007e_hot',       args: 1 },
+  { va: 0x004D007E, name: 'fun_d007e_hot',       args: 1, hot: true },
   // FUN_00531287 / FUN_00531607 — near ai_decide (FUN_0053184d).
   // Likely "evaluate threat" / "evaluate build-order" helpers.
   { va: 0x00531287, name: 'ai_decide_helper_1',  args: 1, argNames: ['civSlot'] },
@@ -479,21 +479,30 @@ function attachHook(entry) {
   }
 }
 
+// Hooks flagged `hot: true` fire thousands of times per turn and the
+// Frida interceptor overhead causes Civ2 to hang its Windows message
+// loop → OS kills the process. Disabled by default. Set
+// ENABLE_HOT_HOOKS=1 in the frida_host shell env to re-enable for
+// narrow, RNG-sequence-style investigations.
+const enableHot = (function() {
+  try { return typeof ENABLE_HOT_HOOKS !== 'undefined' && !!ENABLE_HOT_HOOKS; }
+  catch (_) { return false; }
+})();
+
 let attachedCount = 0;
+let skippedHot = 0;
 let failedHooks = [];
 if (base) {
-  for (const t of TARGETS) {
-    if (attachHook(t)) attachedCount++;
-    else failedHooks.push(t.name);
-  }
-  for (const t of CRT) {
+  const all = TARGETS.concat(CRT);
+  for (const t of all) {
+    if (t.hot && !enableHot) { skippedHot++; continue; }
     if (attachHook(t)) attachedCount++;
     else failedHooks.push(t.name);
   }
 }
 
 send({ kind: 'ready', hooked: attachedCount, total: TARGETS.length + CRT.length,
-       failed: failedHooks });
+       skipped_hot: skippedHot, enableHot, failed: failedHooks });
 
 // ── Memory watchpoints (phase 2, optional) ───────────────────────────
 // Frida supports MemoryAccessMonitor for watching writes to specific

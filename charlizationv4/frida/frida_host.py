@@ -98,6 +98,11 @@ def main():
                     help='Process name to attach to (default: civ2.exe)')
     ap.add_argument('--agent', type=str, default=str(Path(__file__).parent / 'trace_civ2.js'),
                     help='Path to the Frida JS agent')
+    ap.add_argument('--hot', action='store_true',
+                    help='Enable high-frequency hooks (crt_rand, ai_civ_has, '
+                         'fun_d007e_hot, fun_city_owner_by_tech). Disabled by '
+                         'default since they fire thousands of times per turn '
+                         "and can hang Civ2's message loop → OS crash.")
     args = ap.parse_args()
 
     # Resolve session dir
@@ -154,6 +159,8 @@ def main():
 
     with open(args.agent, 'r', encoding='utf-8') as f:
         agent_src = f.read()
+    # Prepend the hot-hook toggle so the agent's attach loop can see it.
+    agent_src = f"const ENABLE_HOT_HOOKS = {str(bool(args.hot)).lower()};\n" + agent_src
 
     def emit(record):
         with trace_fh_lock:
