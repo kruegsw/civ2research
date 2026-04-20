@@ -92,11 +92,15 @@ if (!base) {
 // Sub-function sizes (bigger = more logic = higher-value to decode):
 //   FUN_004d01ae    90 bytes   → dispatch/flag update
 //   FUN_00488cef  1438 bytes   → pre-tick state update (treasury etc)
-//   FUN_00487a41  3830 bytes   → mid-tick (candidate: AI unit-cycle
-//                                 init, "active unit" selection)
+//   FUN_00487a41  3830 bytes   → CITY LOOP — iterates DAT_00655b18
+//                                 cities, calls fun_city_turn_sync
+//                                 per city of the current civ
 //   FUN_00560084   part of v3's port — stateFlags clear, senate toggle
-//   FUN_0053184d 14665 bytes   → BIG — heavy FUN_005B* unit-subsystem
-//                                 calls = AI UNIT DECISIONS per civ
+//   FUN_0053184d 14665 bytes   → BIG — gated on AI-only + tech check,
+//                                 iterates cities looking at enemy
+//                                 threats, iterates units via
+//                                 FUN_005B2E69/FUN_005B2C82. This is
+//                                 AI UNIT DECISIONS per civ.
 //   FUN_00489292   705 bytes   → post-tick (treasury delta logging)
 //
 // ═══════════════════════════════════════════════════════════════════
@@ -114,7 +118,7 @@ const TARGETS = [
   { va: 0x004A75A6, name: 'civdrv_alive_check',  args: 1, argNames: ['civSlot'], readRet: true },
   { va: 0x004D01AE, name: 'civdrv_step1_dispatch',args: 1, argNames: ['civSlot'] },
   { va: 0x00488CEF, name: 'civdrv_step2_economy', args: 1, argNames: ['civSlot'] },
-  { va: 0x00487A41, name: 'civdrv_step3_ai_units',args: 1, argNames: ['civSlot'] },
+  { va: 0x00487A41, name: 'civdrv_step3_city_loop',args: 1, argNames: ['civSlot'] },
   { va: 0x0053184D, name: 'civdrv_step5_ai_decide',args: 1, argNames: ['civSlot'] },
   { va: 0x00489292, name: 'civdrv_step6_finalize',args: 2, argNames: ['civSlot','savedTreasury'] },
   { va: 0x004D0339, name: 'civdrv_tech_delta_check', args: 1, argNames: ['civSlot'], readRet: true },
@@ -194,6 +198,59 @@ const TARGETS = [
   { va: 0x004F0221, name: 'fun_building_upkeep', args: 1, argNames: ['cityIdx'] },
   { va: 0x004EC1C6, name: 'fun_assign_commodity',args: 2, argNames: ['cityIdx','unitType'] },
   { va: 0x004F0A9C, name: 'fun_city_turn_sync',  args: 1, argNames: ['cityIdx'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 2: Main game loop internal phases
+  // FUN_0048B340 has setup → infinite while loop with these calls.
+  // Hooking them exposes turn structure and per-turn global steps.
+  // ═══════════════════════════════════════════════════════════════
+  // Outer setup (fires once at main loop entry):
+  { va: 0x0059DB08, name: 'mgl_setup_59db08',   args: 1, argNames: ['mode'] },
+  { va: 0x0042A768, name: 'mgl_pause_or_yield', args: 0 },
+  { va: 0x004E4CEB, name: 'mgl_init_finalize',  args: 0 },
+
+  // Per-iteration (fires every pass through the while loop — each
+  // "turn" cycle):
+  { va: 0x0048A92D, name: 'mgl_iter_top',       args: 0 },
+  { va: 0x00487371, name: 'mgl_iter_check1',    args: 1, argNames: ['flag'] },
+  { va: 0x0048AEDC, name: 'mgl_iter_check2',    args: 0, readRet: true },
+  { va: 0x005AE006, name: 'mgl_human_mask',     args: 1, argNames: ['humanMask'], readRet: true },
+  { va: 0x0048B165, name: 'mgl_input_check',    args: 0, readRet: true },
+
+  // Four per-turn GLOBAL processing steps (called with turn number
+  // DAT_00655af8). Likely global warming, plague, pollution, or other
+  // world-wide per-turn effects.
+  { va: 0x004FBA0C, name: 'mgl_turn_global_1',  args: 1, argNames: ['turn'] },
+  { va: 0x004FBA9C, name: 'mgl_turn_global_2',  args: 1, argNames: ['turn'] },
+  { va: 0x004FBB2F, name: 'mgl_turn_global_3',  args: 1, argNames: ['turn'] },
+  { va: 0x004FBBDD, name: 'mgl_turn_global_4',  args: 0 },
+
+  // Per-civ active-civ state
+  { va: 0x0048AA24, name: 'mgl_active_civ_on',  args: 0 },
+  { va: 0x0048A416, name: 'mgl_active_civ_off', args: 0 },
+
+  // FUN_0048710a — the per-civ "turn begin" function referenced in
+  // v3's start-turn.js header. Called from civ_turn_driver per civ.
+  { va: 0x0048710A, name: 'per_civ_turn_begin', args: 1, argNames: ['civSlot'] },
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIER 2: AI decision sub-functions (inside civdrv_step5_ai_decide)
+  // These fire ONLY for AI civs (not human). Decoding them will tell
+  // us how Civ2's AI decides things.
+  // ═══════════════════════════════════════════════════════════════
+  // FUN_004BD9F0 — "civ has tech/wonder id X" check. Heavy usage
+  // throughout AI decisions. Hot (expect many calls per AI tick).
+  { va: 0x004BD9F0, name: 'ai_civ_has',          args: 2, argNames: ['civSlot','techOrWonderId'], readRet: true },
+  // FUN_0055F5A3 — government evaluator (per earlier RE notes).
+  { va: 0x0055F5A3, name: 'ai_gov_evaluator',    args: 1, argNames: ['civSlot'], readRet: true },
+  // FUN_004D007E — AI-internal helper called inside step3_city_loop.
+  { va: 0x004D007E, name: 'ai_city_helper_d007e',args: 1, argNames: ['cityIdx'] },
+  // FUN_00531287 / FUN_00531607 — near ai_decide (FUN_0053184d).
+  // Likely "evaluate threat" / "evaluate build-order" helpers.
+  { va: 0x00531287, name: 'ai_decide_helper_1',  args: 1, argNames: ['civSlot'] },
+  { va: 0x00531607, name: 'ai_decide_helper_2',  args: 2 },
+  // FUN_00493602 — AI research/tech helper (nearby research-cost fn).
+  { va: 0x00493602, name: 'ai_research_helper',  args: 1, argNames: ['civSlot'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 3: Diplomacy / UI / persistence
