@@ -39,6 +39,92 @@ CATEGORY_SEVERITY = {
     'other':       9,
 }
 
+# Known-gap tags. Each function takes a mismatch dict and returns
+# a short tag string if it matches a known-cause pattern, else None.
+# The tag lets the summary separate "novel mismatches worth fixing"
+# from "expected gaps tied to a tracked task".
+def classify_gap(m):
+    label = m.get('label', '')
+    a, b = m.get('a'), m.get('b')
+
+    # activeUnit: v3 selection heuristic differs from Civ2's AI unit-
+    # cycle pointer. Not a data bug — cosmetic.
+    if label == 'activeUnit':
+        return 'active-unit-heuristic'
+
+    # civs[N].flags — known-gap bits the harness can't close without
+    # task #48/#49 or full AI port:
+    #   0x01 popup-pending, 0x08 new-gov transient,
+    #   0x80 aiExpansionMode, 0x100 techMilestone, 0x200 init-set-unknown.
+    # Bit 0x04 senate-override is already replayed.
+    if label.startswith('civs[') and label.endswith('.flags'):
+        try:
+            xor = (int(a) ^ int(b))
+            ai_only_bits = 0x01 | 0x08 | 0x80 | 0x100 | 0x200
+            if xor and (xor & ~ai_only_bits) == 0:
+                return 'ai-state-flags'
+        except (TypeError, ValueError):
+            pass
+
+    # civs[N].treasury: hut gold (+25/50/75/100) vs per-turn income
+    # rounding (1-6 delta). Both are "v3 can't predict the exact
+    # gold that changes hands mid-AI-turn" — tag accordingly.
+    if label.startswith('civs[') and label.endswith('.treasury'):
+        try:
+            d = abs(int(a) - int(b))
+            if d in (25, 50, 75, 100):
+                return 'hut-gold'
+            if d <= 6:
+                return 'treasury-rounding'
+        except (TypeError, ValueError):
+            pass
+
+    # units[N].damageTaken: unsimulated AI-vs-AI combat damage.
+    if label.startswith('units[') and label.endswith('.damageTaken'):
+        return 'ai-combat-damage'
+
+    # units[N].visibility (per-unit seen-by bitmask): v3 doesn't track.
+    if label.startswith('units[') and label.endswith('.visibility'):
+        return 'per-unit-fow'
+
+    # units[N].gotoX/gotoY: AI movement destinations v3 can't predict.
+    if label.startswith('units[') and (label.endswith('.gotoX') or label.endswith('.gotoY')):
+        return 'ai-goto-target'
+
+    # units[N].moveSpent: AI-phase vs snapshot-timing.
+    if label.startswith('units[') and label.endswith('.moveSpent'):
+        return 'ai-movespent-timing'
+
+    # units[N].homeCity: hut-spawned units have homeCity=0xFF even for
+    # types <16. Old events.jsonl lacked homeCity capture.
+    if label.startswith('units[') and label.endswith('.homeCity'):
+        return 'unit-homecity'
+
+    # visibilityCounts[civN]: FOW update ordering differs; off by 1-5.
+    if label.startswith('visibilityCounts'):
+        return 'fow-count'
+
+    # cities[N].{shieldStored,foodStored,tradeTotal} with tiny delta:
+    # mid-turn cached yield captured before AI's re-work of tiles.
+    if label.startswith('cities[') and any(label.endswith('.' + f)
+        for f in ('shieldStored', 'foodStored', 'tradeTotal')):
+        try:
+            if abs(int(a) - int(b)) <= 5:
+                return 'mid-turn-yield-cache'
+        except (TypeError, ValueError):
+            pass
+
+    # civs[N].researchProgress by 1-3: research beaker accumulation
+    # off by small amount, probably rounding.
+    if label.startswith('civs[') and label.endswith('.researchProgress'):
+        try:
+            if abs(int(a) - int(b)) <= 5:
+                return 'research-rounding'
+        except (TypeError, ValueError):
+            pass
+
+    return None  # novel — no known-gap tag
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: state-diff.py <a.json> <b.json>", file=sys.stderr)
@@ -176,25 +262,45 @@ def main():
           f"({len(mismatches)} mismatches)")
     print("=" * 60)
 
-    # Per-category breakdown, ordered by severity
-    by_cat = {}
+    # Classify each mismatch by known-gap tag.
+    novel = []
+    by_tag = {}
     for m in mismatches:
+        tag = classify_gap(m)
+        m['tag'] = tag
+        if tag is None:
+            novel.append(m)
+        else:
+            by_tag.setdefault(tag, []).append(m)
+
+    # Known-gap summary: groups mismatches tied to a tracked task so
+    # they don't drown out novel bugs.
+    if by_tag:
+        print("\nKnown gaps (tracked issues — not novel bugs):")
+        for tag in sorted(by_tag.keys(), key=lambda t: -len(by_tag[t])):
+            ms = by_tag[tag]
+            print(f"  [{tag:25s}] {len(ms):4d} mismatch{'es' if len(ms)!=1 else ''}")
+
+    # Per-category breakdown of NOVEL mismatches only
+    by_cat = {}
+    for m in novel:
         by_cat.setdefault(m['category'], []).append(m)
     cats_sorted = sorted(by_cat.keys(), key=lambda c: CATEGORY_SEVERITY.get(c, 99))
 
     if by_cat:
-        print("\nMismatches by category (most important first):")
+        print("\nNovel mismatches (no known-gap tag — candidates for v3 fix):")
         for cat in cats_sorted:
             ms = by_cat[cat]
             print(f"  [{cat:11s}] {len(ms):4d} mismatch{'es' if len(ms)!=1 else ''}")
-            # Show up to 3 example labels per category
-            for m in ms[:3]:
+            for m in ms[:5]:
                 if m['a'] is None and m['b'] is None:
                     print(f"                    {m['label']}")
                 else:
                     print(f"                    {m['label']}: {m['a']!r} vs {m['b']!r}")
-            if len(ms) > 3:
-                print(f"                    ... and {len(ms) - 3} more")
+            if len(ms) > 5:
+                print(f"                    ... and {len(ms) - 5} more")
+    elif by_tag:
+        print("\nNo novel mismatches — all gaps are known.")
 
     sys.exit(0 if not mismatches else 1)
 
