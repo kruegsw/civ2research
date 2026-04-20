@@ -95,9 +95,19 @@ const TARGETS = [
   // FUN_00453e51 — city-ownership check by tech id (gate in per-civ tick)
   { va: 0x00453E51, name: 'fun_city_owner_by_tech', args: 2, argNames: ['civSlot','techId'], readRet: true },
 
-  // ── Huts (advanced tribe, gold, unit, tech, barbarians) ──────────
-  // Need to verify this VA — let me log if it fires to confirm.
-  { va: 0x0040BC80, name: 'fun_hut_trigger',   args: 1, argNames: ['flag'], readRet: true },
+  // ── Huts — target VA unknown. The earlier guess 0x0040BC80 turned
+  // out to be a rendering thunk (FUN_005a5f34 under it handles window
+  // invalidation, not hut logic). Leaving disabled until we locate
+  // the actual hut-result function. Search hint: look for a function
+  // called from the unit-move path that dispatches gold/tech/unit/
+  // city based on a rand() % N roll.
+  //
+  // { va: 0x00??????, name: 'fun_hut_result', args: 3, argNames: ['x','y','civ'], readRet: true },
+
+  // Logging the rendering thunk is still useful as a "something
+  // refreshed the screen" marker — keep it but rename so the label
+  // matches reality.
+  { va: 0x0040BC80, name: 'thunk_0040bc80_render', args: 1, argNames: ['mode'], readRet: true },
 
   // ── City yield + production ──────────────────────────────────────
   { va: 0x004EBBDE, name: 'fun_city_food_tick',args: 1, argNames: ['cityIdx'], readRet: true },
