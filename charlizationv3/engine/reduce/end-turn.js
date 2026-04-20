@@ -1010,6 +1010,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
     if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
       const cost = calcResearchCost(state, activeCiv);
+      if (process.env.DEBUG_RESEARCH) {
+        console.error(`[tech-debug] civ ${activeCiv} tech=${techId} prog=${civ.researchProgress} cost=${cost} sciAdd=${civSciTotal} techCount=${state.civTechs?.[activeCiv]?.size}`);
+      }
       if ((civ.researchProgress || 0) >= cost) {
         grantAdvance(state, activeCiv, techId);
         civ.researchProgress = Math.max(0, civ.researchProgress - cost);
