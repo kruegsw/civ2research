@@ -51,25 +51,43 @@ def newest_session():
     return games[-1] if games else None
 
 
-def tail_events_jsonl(session_dir, stop_event, on_line):
+def tail_events_jsonl(session_dir_ref, stop_event, on_line, on_session_change):
     """Tail events.jsonl in the active session, invoking on_line for each
-    new line (byte-for-byte). Starts at current end-of-file so only new
-    events are forwarded — the file already exists when we start."""
-    events_path = session_dir / 'events.jsonl'
-    # Wait for file to exist
-    while not events_path.exists() and not stop_event.is_set():
-        time.sleep(0.2)
-    if stop_event.is_set():
-        return
-    # Start at current end
-    with open(events_path, 'r', encoding='utf-8') as f:
-        f.seek(0, os.SEEK_END)
-        while not stop_event.is_set():
-            line = f.readline()
-            if not line:
-                time.sleep(0.05)
+    new line. session_dir_ref is a mutable dict with key 'dir' so we can
+    follow session rotation live: when a newer session appears, we close
+    the current tail and move to the new one. on_session_change notifies
+    the caller so it can swap the civ2_trace.log destination."""
+    def current_dir():
+        return session_dir_ref['dir']
+
+    fh = None
+    prev_dir = current_dir()
+    while not stop_event.is_set():
+        # Check for a newer session
+        newest = newest_session()
+        if newest and newest != prev_dir:
+            if fh is not None:
+                fh.close()
+                fh = None
+            session_dir_ref['dir'] = newest
+            prev_dir = newest
+            on_session_change(newest)
+
+        if fh is None:
+            events_path = prev_dir / 'events.jsonl'
+            if not events_path.exists():
+                time.sleep(0.5)
                 continue
-            on_line(line.rstrip('\n'))
+            fh = open(events_path, 'r', encoding='utf-8')
+            fh.seek(0, os.SEEK_END)
+
+        line = fh.readline()
+        if not line:
+            time.sleep(0.1)
+            continue
+        on_line(line.rstrip('\n'))
+    if fh is not None:
+        fh.close()
 
 
 def main():
@@ -92,9 +110,20 @@ def main():
             sys.exit(1)
     print(f"[host] Session: {session_dir}")
 
-    trace_path = session_dir / 'civ2_trace.log'
-    trace_fh = open(trace_path, 'a', encoding='utf-8', buffering=1)  # line-buffered
-    print(f"[host] Writing to: {trace_path}")
+    # Mutable ref so the tail thread can report session rotations back
+    session_ref = {'dir': session_dir}
+    trace_fh_ref = {'fh': None}  # reopened on session change
+    trace_fh_lock = threading.Lock()
+
+    def open_trace(dir_):
+        path = dir_ / 'civ2_trace.log'
+        with trace_fh_lock:
+            if trace_fh_ref['fh'] is not None:
+                trace_fh_ref['fh'].close()
+            trace_fh_ref['fh'] = open(path, 'a', encoding='utf-8', buffering=1)
+            print(f"[host] Writing to: {path}")
+
+    open_trace(session_dir)
 
     # Time base: record wall-clock (ms) and monotonic (s) at startup so
     # we can translate Frida's Date.now() into sniffer-equivalent ms.
@@ -106,7 +135,7 @@ def main():
     # BUT the sniffer's t0 isn't known to us. So instead we emit Frida
     # events with a `wall_ms` field unchanged, and include a header line
     # with our t0_wall_ms so downstream tools can align.
-    trace_fh.write(json.dumps({
+    trace_fh_ref['fh'].write(json.dumps({
         'kind': 'host_start',
         'session': str(session_dir),
         'frida_t0_wall_ms': t0_wall_ms,
@@ -126,20 +155,30 @@ def main():
     with open(args.agent, 'r', encoding='utf-8') as f:
         agent_src = f.read()
 
-    # Serialization: both threads append to trace_fh. Use a lock.
-    lock = threading.Lock()
-
     def emit(record):
-        with lock:
-            trace_fh.write(json.dumps(record) + '\n')
+        with trace_fh_lock:
+            fh = trace_fh_ref['fh']
+            if fh is not None:
+                fh.write(json.dumps(record) + '\n')
+
+    # Count Frida events so we can tell if the agent is working
+    frida_counts = {'startup': 0, 'ready': 0, 'call': 0, 'return': 0, 'hook_failed': 0, 'other': 0}
 
     def on_message(message, data):
         if message['type'] == 'send':
             payload = message['payload']
             payload['source'] = 'frida'
             emit(payload)
+            kind = payload.get('kind', 'other')
+            frida_counts[kind if kind in frida_counts else 'other'] = \
+                frida_counts.get(kind if kind in frida_counts else 'other', 0) + 1
+            # Print diagnostic lines for setup events and failures
+            if kind in ('startup', 'ready', 'hook_failed', 'error'):
+                print(f"[frida] {kind}: {payload}", file=sys.stderr)
         elif message['type'] == 'error':
             print(f"[frida-error] {message.get('description','(no desc)')}", file=sys.stderr)
+            if message.get('stack'):
+                print(message['stack'], file=sys.stderr)
         else:
             print(f"[frida-msg] {message}", file=sys.stderr)
 
@@ -160,22 +199,42 @@ def main():
             # Pass through raw
             emit({'source': 'sniffer', 'raw': line})
 
+    def on_session_change(new_dir):
+        print(f"[host] Session rotated → {new_dir}")
+        open_trace(new_dir)
+        emit({'kind': 'host_rotate', 'session': str(new_dir),
+              'frida_t0_wall_ms': time.time() * 1000.0,
+              'frida_t0_mono_s': time.perf_counter()})
+
     tail_t = threading.Thread(target=tail_events_jsonl,
-                              args=(session_dir, stop_event, on_sniffer_line),
+                              args=(session_ref, stop_event, on_sniffer_line, on_session_change),
                               daemon=True)
     tail_t.start()
 
     print("[host] Running. Ctrl-C to stop.")
     try:
+        last_print = time.time()
         while True:
             time.sleep(1)
+            # Every 10s, print Frida event counts so user can tell if hooks fire
+            if time.time() - last_print > 10:
+                total = sum(frida_counts.values())
+                if total == 0:
+                    print("[host] WARNING: 0 Frida messages received. Agent may not have attached.", file=sys.stderr)
+                else:
+                    print(f"[host] Frida events: {dict(frida_counts)}", file=sys.stderr)
+                last_print = time.time()
     except KeyboardInterrupt:
         pass
     finally:
         stop_event.set()
-        script.unload()
-        session.detach()
-        trace_fh.close()
+        try: script.unload()
+        except Exception: pass
+        try: session.detach()
+        except Exception: pass
+        with trace_fh_lock:
+            if trace_fh_ref['fh'] is not None:
+                trace_fh_ref['fh'].close()
         print("[host] Stopped.")
 
 
