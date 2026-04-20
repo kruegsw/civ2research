@@ -1380,14 +1380,23 @@ def emit_action_events(prev, curr, t0, events_path):
             events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
                            'event': 'RESEARCH_PICKED', 'civ': i,
                            'techId': c.get('researching')})
-        # Tech discovered: numTechs went up — identify which.
-        if p.get('numTechs', 0) < c.get('numTechs', 0):
-            # The just-discovered tech is what they WERE researching.
-            discovered = p.get('researching')
-            if discovered is not None and 0 <= discovered < 93:
-                events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
-                               'event': 'TECH_DISCOVERED', 'civ': i,
-                               'techId': discovered})
+        # Tech discovered: diff the tech bitmask directly to find the
+        # actual tech that flipped ON. Previously this used p['researching']
+        # which is wrong when a hut/gift grants a different tech than the
+        # civ was actively researching — the researching byte resets to
+        # 0xFF, but the gained tech is in the bitmask, not the previous
+        # researching target. Observed 2026-04-19 T57: civ 6 was researching
+        # Pottery (65) when a hut gave Bronze Working (8); old code emitted
+        # techId=65, bitmask showed bit 8 flipped. Fix: iterate bitmask.
+        pt = p.get('techList', bytes(93))
+        ct = c.get('techList', bytes(93))
+        if pt != ct:
+            for ti in range(min(len(pt), len(ct), 93)):
+                if pt[ti] == 0 and ct[ti] != 0:
+                    events.append({'time_ms': round(ms, 1), 'turn': civ_turn,
+                                   'event': 'TECH_DISCOVERED', 'civ': i,
+                                   'techId': ti,
+                                   'wasResearching': p.get('researching')})
         # Gold — can be skipped on every tick but useful for tracking.
         if p.get('gold') != c.get('gold'):
             events.append({'time_ms': round(ms, 1), 'turn': civ_turn,

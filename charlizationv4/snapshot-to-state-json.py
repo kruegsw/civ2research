@@ -138,12 +138,23 @@ CITY_FIELDS = {
     'size':         (0x09, '<B'),
     'foodStored':   (0x1A, '<H'),
     'shieldStored': (0x1C, '<H'),
+    # +0x1E tradeRev u16 — net base trade (after waste/corruption).
     'tradeTotal':   (0x1E, '<H'),
     # +0x39: production target byte. Low 7 bits = item id; bit 0x80 set
-    # = building/wonder, clear = unit. See parser.js cityProducingBuilding
-    # and cityProducingUnit. Needed by state-diff to spot v3/Civ2 divergence
-    # when v3 has the wrong build target and shields accumulate wrongly.
+    # = building/wonder. Needed to spot v3/Civ2 divergence when v3 has the
+    # wrong build target and shields accumulate wrongly.
     'production':   (0x39, '<B'),
+    # Per-turn YIELDS (computed by Civ2 each city tick, cached in memory).
+    # These let us diff v3's calcCityTrade/Production against binary's
+    # cached results without running the binary.
+    'totalTradeRaw':   (0x4E, '<h'),  # gross trade from worked tiles (pre-rate split)
+    'foodProduction':  (0x50, '<b'),  # net food surplus (signed — may be negative)
+    'shieldProduction':(0x51, '<B'),  # gross shield production (before support deduction)
+    # Per-rate outputs (science / tax / luxury) computed as totalTrade * rate / 10
+    # then adjusted for Colossus/Marco Polo/etc. If v3's trade is right but
+    # science is wrong, the rate split is the bug — otherwise it's the trade calc.
+    'scienceOutput':   (0x4A, '<h'),
+    'taxOutput':       (0x4C, '<h'),
 }
 
 
