@@ -21,12 +21,37 @@
 //     are at args[0], args[1], ... via NativeCallback pointer math.
 // ═══════════════════════════════════════════════════════════════════
 
+// Defensive startup — wrap every call so a TypeError surfaces with
+// enough context to diagnose. Frida's error messages otherwise collapse
+// to "TypeError: not a function" with no location info.
+
+function safe(name, fn) {
+  try { return fn(); }
+  catch (e) {
+    send({ kind: 'error', where: name, msg: String(e),
+           stack: (e && e.stack) ? e.stack.toString() : null });
+    return null;
+  }
+}
+
 const MODULE_NAME = 'civ2.exe';
-const base = Module.findBaseAddress(MODULE_NAME);
+
+// Module enumeration is more forgiving than findBaseAddress on some
+// Frida versions — try both.
+let base = safe('Module.findBaseAddress', () => Module.findBaseAddress(MODULE_NAME));
+if (!base) {
+  const mods = safe('Process.enumerateModules', () => Process.enumerateModules()) || [];
+  const mod = mods.find(m => (m.name || '').toLowerCase() === MODULE_NAME.toLowerCase());
+  if (mod) base = mod.base;
+  send({ kind: 'debug', msg: 'module enumerate fallback',
+         modules: mods.slice(0, 5).map(m => ({ name: m.name, base: m.base.toString() })) });
+}
+
 if (!base) {
   send({ kind: 'error', msg: 'civ2.exe module not found — is Civ2 running?' });
 } else {
-  send({ kind: 'startup', base: base.toString(), pid: Process.id });
+  const pidVal = safe('Process.id', () => Process.id);
+  send({ kind: 'startup', base: base.toString(), pid: pidVal });
 }
 
 // ── Address → function metadata ─────────────────────────────────────
@@ -140,7 +165,22 @@ const CRT = [
 
 // ── Attach hooks ─────────────────────────────────────────────────────
 
+// Frida's NativePointer has `.toInt32()`, but only when the pointer
+// fits in i32. For pointers >0x80000000 (rare in civ2 user-space),
+// `.toUInt32()` is safer. Also guard against args[i] being undefined.
+function readArg(p) {
+  if (!p) return null;
+  try {
+    // Works for small values and pointer addresses in civ2's 32-bit space
+    return p.toInt32();
+  } catch (_) {
+    try { return p.toString(); }
+    catch (__) { return null; }
+  }
+}
+
 function attachHook(entry) {
+  if (!base) return false;
   const addr = base.add(entry.va - 0x00400000);  // civ2.exe image base is 0x00400000
   try {
     Interceptor.attach(addr, {
@@ -151,13 +191,10 @@ function attachHook(entry) {
           va: '0x' + entry.va.toString(16),
           time_ms: Date.now(),
         };
-        // Read stack args. For 32-bit cdecl/stdcall, args are at
-        // [esp+4], [esp+8], ... — Frida exposes them via `args[N]`.
         if (entry.args > 0) {
           const argArr = [];
           for (let i = 0; i < entry.args; i++) {
-            try { argArr.push(args[i].toInt32()); }
-            catch (_) { argArr.push(null); }
+            argArr.push(readArg(args[i]));
           }
           msg.args = argArr;
           if (entry.argNames) {
@@ -177,7 +214,7 @@ function attachHook(entry) {
         send({
           kind: 'return',
           fn: this._traceEntry.name,
-          retval: retval.toInt32(),
+          retval: readArg(retval),
           dur_ms: Date.now() - this._enter_ms,
           time_ms: Date.now(),
         });
@@ -185,20 +222,27 @@ function attachHook(entry) {
     });
     return true;
   } catch (e) {
-    send({ kind: 'hook_failed', fn: entry.name, va: '0x' + entry.va.toString(16), err: String(e) });
+    send({ kind: 'hook_failed', fn: entry.name, va: '0x' + entry.va.toString(16),
+           err: String(e), stack: (e && e.stack) ? e.stack.toString() : null });
     return false;
   }
 }
 
 let attachedCount = 0;
-for (const t of TARGETS) {
-  if (attachHook(t)) attachedCount++;
-}
-for (const t of CRT) {
-  if (attachHook(t)) attachedCount++;
+let failedHooks = [];
+if (base) {
+  for (const t of TARGETS) {
+    if (attachHook(t)) attachedCount++;
+    else failedHooks.push(t.name);
+  }
+  for (const t of CRT) {
+    if (attachHook(t)) attachedCount++;
+    else failedHooks.push(t.name);
+  }
 }
 
-send({ kind: 'ready', hooked: attachedCount, total: TARGETS.length + CRT.length });
+send({ kind: 'ready', hooked: attachedCount, total: TARGETS.length + CRT.length,
+       failed: failedHooks });
 
 // ── Memory watchpoints (phase 2, optional) ───────────────────────────
 // Frida supports MemoryAccessMonitor for watching writes to specific
