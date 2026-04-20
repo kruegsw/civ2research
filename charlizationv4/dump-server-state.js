@@ -346,13 +346,23 @@ if (turns > 0) {
                   scienceRate: Math.round((ev.sci ?? 0) / 10),
                   taxRate: Math.round((ev.tax ?? 0) / 10) }];
       }
-      case 'FLAGS_CHANGED':
-        // stateFlags changes (atWar, senateOverride, freeAdvancePending,
-        // etc.) are v3's responsibility to compute. Previously applied
-        // via __RAW_FLAGS__ synthetic — that hid v3 bugs where v3
-        // didn't set flags real Civ2 did. Now ignored here; the diff
-        // tool will surface mismatches for manual v3-reducer fixing.
-        return [];
+      case 'FLAGS_CHANGED': {
+        // Most stateFlags bits are v3's responsibility (atWar set at
+        // combat, freeAdvancePending set by Darwin's Voyage, etc.). We
+        // surface those diffs for manual v3-reducer fixing.
+        //
+        // Exception: bit 0x04 (senateOverride). FUN_00560084 toggles
+        // it with 1/3 probability each turn via a standalone rand()
+        // draw. Until task #49 (RNG call-order audit) lets us
+        // replicate the exact draw sequence, v3 can't match this bit.
+        // Apply the observed new-bit-0x04 state specifically; leave
+        // other bits alone.
+        if (ev.civ == null || ev.from == null || ev.to == null) return [];
+        const bit04_changed = (ev.from ^ ev.to) & 0x04;
+        if (!bit04_changed) return [];
+        const bit04_target = ev.to & 0x04;
+        return [{ type: '__SENATE_TOGGLE__', civ: ev.civ, set: !!bit04_target }];
+      }
       case 'TECH_DISCOVERED':
         // Tech completion is a v3 calculation (beaker accumulation +
         // calcResearchCost threshold). Previously applied via
@@ -567,6 +577,20 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
+            if (action.type === '__SENATE_TOGGLE__') {
+              // Replay FUN_00560084's rand()%3 senate-override toggle
+              // until v3 RNG call-order matches the binary.
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) => {
+                  if (i !== action.civ) return c;
+                  const sf = c.stateFlags || 0;
+                  return { ...c,
+                    stateFlags: action.set ? (sf | 0x04) : (sf & ~0x04) };
+                }),
               };
               continue;
             }
@@ -1268,6 +1292,18 @@ if (turns > 0) {
                 u && (u.id === action.uid || u.sequenceId === action.uid)
                   ? { ...u, hpLost: action.to, damageTaken: action.to }
                   : u),
+            };
+            continue;
+          }
+          if (action.type === '__SENATE_TOGGLE__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) => {
+                if (i !== action.civ) return c;
+                const sf = c.stateFlags || 0;
+                return { ...c,
+                  stateFlags: action.set ? (sf | 0x04) : (sf & ~0x04) };
+              }),
             };
             continue;
           }
