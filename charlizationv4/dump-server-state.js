@@ -1122,6 +1122,12 @@ if (turns > 0) {
           ...gameState,
           units: [...gameState.units, newUnit],
           totalUnits: (gameState.totalUnits ?? gameState.units.length) + 1,
+          // Keep state.nextUnitId ahead of any UID we've assigned — the
+          // binary increments its counter DAT_00627fd8 on every unit
+          // creation regardless of source. v3's production path does this
+          // inside cityturn.js, but replay-created units bypassed it and
+          // left the counter stale.
+          nextUnitId: Math.max(gameState.nextUnitId ?? 0, action.uid + 1),
         };
         prepassHandledUids.add(ev.uid);
       }
