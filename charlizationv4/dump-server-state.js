@@ -375,6 +375,19 @@ if (turns > 0) {
         // should be dead still alive in v3 state) until combat is
         // routed.
         return [];
+      case 'GOV_CHANGED': {
+        // AI-driven revolution. Real Civ2 fires two events back-to-back
+        // for AI civs: current→Anarchy (from>0, to=0) and Anarchy→new
+        // (from=0, to>0). Replay them directly as state assignments;
+        // v3's own REVOLUTION action would queue anarchy-turns and
+        // pending-gov in a way that doesn't match Civ2's instant-
+        // transition behavior for AI civs. This is NOT an override of
+        // v3's computation — it's replay of the AI's decision, same
+        // category as RESEARCH_PICKED / CITY_FOUNDED.
+        if (ev.civ == null || ev.to == null) return [];
+        return [{ type: '__SET_GOVERNMENT__', civ: ev.civ,
+                  from: ev.from, to: ev.to }];
+      }
       case 'CITY_DESTROYED':
         // City razing is typically the result of a successful attack
         // on a size-1 city. Same as UNIT_KILLED: v3 combat path would
@@ -554,6 +567,27 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
+            if (action.type === '__SET_GOVERNMENT__') {
+              // Direct government assignment from GOV_CHANGED replay.
+              // Binary FUN_0055c69d sets stateFlags bit 0x08 here, but
+              // FUN_00560084 clears it on the next per-civ tick — every
+              // observed snapshot has bit 0x08 already cleared, so we
+              // don't re-set it (would false-positive the diff).
+              const GOV_STRINGS = ['anarchy', 'despotism', 'monarchy',
+                'communism', 'fundamentalism', 'republic', 'democracy'];
+              const newGovStr = GOV_STRINGS[action.to] ?? 'anarchy';
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) => {
+                  if (i !== action.civ) return c;
+                  const upd = { ...c, government: newGovStr };
+                  delete upd.anarchyTurns;
+                  delete upd.pendingGovernment;
+                  return upd;
+                }),
               };
               continue;
             }
@@ -1224,6 +1258,24 @@ if (turns > 0) {
                 u && (u.id === action.uid || u.sequenceId === action.uid)
                   ? { ...u, hpLost: action.to, damageTaken: action.to }
                   : u),
+            };
+            continue;
+          }
+          if (action.type === '__SET_GOVERNMENT__') {
+            // Same as in-loop handler: skip bit 0x08 (transient,
+            // always cleared by FUN_00560084 before snapshot capture).
+            const GOV_STRINGS = ['anarchy', 'despotism', 'monarchy',
+              'communism', 'fundamentalism', 'republic', 'democracy'];
+            const newGovStr = GOV_STRINGS[action.to] ?? 'anarchy';
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) => {
+                if (i !== action.civ) return c;
+                const upd = { ...c, government: newGovStr };
+                delete upd.anarchyTurns;
+                delete upd.pendingGovernment;
+                return upd;
+              }),
             };
             continue;
           }

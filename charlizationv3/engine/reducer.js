@@ -421,10 +421,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const oldGovt = civ.government;
       if (hasWonderEffect(state, civSlot, 19)) {
         // Statue of Liberty: instant government switch, no anarchy.
-        // Binary FUN_0055c69d sets stateFlags bit 0x08 when new_gov != 0
-        // (i.e. leaving Anarchy for any real government). Mirror that.
+        // Note: the binary FUN_0055c69d sets stateFlags bit 0x08 here
+        // (new-gov sentinel for the popup), but FUN_00560084 clears it
+        // on the next per-civ start-of-turn tick. Every observed snapshot
+        // in sniffer data has bit 0x08 already cleared by then, so we
+        // skip setting it to avoid false-positive diff mismatches.
         civ.government = government;
-        civ.stateFlags = (civ.stateFlags || 0) | 0x08;
         _autoClampRates(civ, government);
         state.civs[civSlot] = civ;
         applyGovernmentChangeEffects(state, civSlot, oldGovt, government);
