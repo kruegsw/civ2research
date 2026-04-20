@@ -852,8 +852,11 @@ def diff_states(prev, curr, t0, handle=None):
         lines.append('═' * 60)
 
     # Active unit change (AI processing)
-    if prev.get('activeUnit') != curr.get('activeUnit') and curr.get('activeUnit',0) >= 0:
-        au = curr['activeUnit']
+    # dict.get() returns None if the key exists with value None — use a
+    # coalescing expression so we don't compare None >= 0.
+    _cau = curr.get('activeUnit')
+    if prev.get('activeUnit') != _cau and _cau is not None and _cau >= 0:
+        au = _cau
         u = next((u for u in curr['units'] if u['idx'] == au), None)
         if u:
             lines.append(f"[{ms:10.1f}ms]  >> Processing: {u['name']} #{au} ({cn(u['owner'])}) at ({u['x']},{u['y']})")

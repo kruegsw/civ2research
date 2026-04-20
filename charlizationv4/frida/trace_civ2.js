@@ -125,11 +125,15 @@ const TARGETS = [
   // _rand() takes no args, returns int 0..0x7FFF. MSVC LCG with state
   // at DAT_00639E50. Every hooked call tells us (a) call count and
   // (b) which higher-level function made the call (via backtrace).
-  // WARNING: this is hot. If trace becomes too noisy, comment out.
-  // backtrace: true adds up to 4 caller return addresses to the
-  // event — answers "which binary function made this roll?" (the
-  // key question for task #49).
-  { va: 0x005F2280, name: 'crt_rand',          args: 0, readRet: true, backtrace: true },
+  // WARNING: this is hot. Civ2 CRASHED during init with backtrace
+  // enabled — mapgen calls rand thousands of times per second and
+  // Backtracer.FUZZY appears to dereference unstable stack memory
+  // during some of those windows. Disabled backtrace; keep the
+  // counting hook.
+  //
+  // To re-enable for a narrower phase, set backtrace:true but only
+  // run during steady-state gameplay (not mapgen/init).
+  { va: 0x005F2280, name: 'crt_rand',          args: 0, readRet: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: Government + state
