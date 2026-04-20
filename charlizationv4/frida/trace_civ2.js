@@ -129,14 +129,18 @@ const TARGETS = [
   // during init. 8 calls total (civ 0-7). civs 2/3/6/7 "dormant" in
   // observed game — no starting unit, no civ_turn_driver follows.
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x004A7CE9, name: 'new_civ',   args: 1, argNames: ['civSlot'] },
-  { va: 0x004AA378, name: 'kill_civ',  args: 2, argNames: ['civSlot','by'] },
+  { va: 0x004A7CE9, name: 'new_civ',   args: 1, argNames: ['civSlot'],
+    backtrace: true, readCivAtSlot: true },
+  { va: 0x004AA378, name: 'kill_civ',  args: 2, argNames: ['civSlot','by'],
+    backtrace: true, readCivAtSlot: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: City lifecycle (create_city retval = cityIdx, confirmed)
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x0043F8B0, name: 'create_city', args: 3, argNames: ['x','y','owner'], readRet: true },
-  { va: 0x004413D1, name: 'delete_city', args: 2, argNames: ['cityIdx','reason'] },
+  { va: 0x0043F8B0, name: 'create_city', args: 3, argNames: ['x','y','owner'],
+    readRet: true, backtrace: true },
+  { va: 0x004413D1, name: 'delete_city', args: 2, argNames: ['cityIdx','reason'],
+    backtrace: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Units — every creation goes through new_unit regardless
@@ -145,7 +149,14 @@ const TARGETS = [
   // Observed: civ 5 (human) gets 2 new_unit calls with identical
   // coords on Deity — confirms the starting-Settler bonus.
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x005B3D06, name: 'new_unit',    args: 4, argNames: ['type','owner','x','y'], readRet: true },
+  // new_unit fires ~5×/game at init + once per production. Low frequency,
+  // so enable backtrace to identify WHICH caller made each call. This
+  // lets us resolve questions like "why does civ 2 get 2 Settlers on
+  // Deity?" by looking at the call-chain in Ghidra.
+  // Also add readCivSnapshot so we can see civ state at spawn moment
+  // (leader personality, difficulty gates, etc).
+  { va: 0x005B3D06, name: 'new_unit',    args: 4, argNames: ['type','owner','x','y'],
+    readRet: true, backtrace: true, readCivAtOwner: true },
   { va: 0x0058C295, name: 'fun_unit_disband', args: 1, argNames: ['unitIdx'] },
   { va: 0x00580341, name: 'fun_unit_kill',    args: 2, argNames: ['unitIdx','killerIdx'] },
 
@@ -291,21 +302,85 @@ const TARGETS = [
 // (CRT functions now rolled into TARGETS above — _rand @ 0x005F2280.)
 const CRT = [];
 
-// ── Attach hooks ─────────────────────────────────────────────────────
+// ── Memory / arg helpers ─────────────────────────────────────────────
 
-// Frida's NativePointer has `.toInt32()`, but only when the pointer
-// fits in i32. For pointers >0x80000000 (rare in civ2 user-space),
-// `.toUInt32()` is safer. Also guard against args[i] being undefined.
 function readArg(p) {
   if (!p) return null;
-  try {
-    // Works for small values and pointer addresses in civ2's 32-bit space
-    return p.toInt32();
-  } catch (_) {
+  try { return p.toInt32(); }
+  catch (_) {
     try { return p.toString(); }
     catch (__) { return null; }
   }
 }
+
+// ── Known memory-layout constants (from reverse_engineering/findings) ──
+const CIV_STRUCT_BASE   = 0x0064C6A0;  // civ 0 data start (0xA0 past the header)
+const CIV_STRUCT_STRIDE = 0x594;
+const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
+const LEADER_PERSONALITY_STRIDE = 0x30;
+const DIFFICULTY_BYTE   = 0x00655B04;  // 0=Chieftain, 5=Deity
+const HUMAN_PLAYERS_MASK = 0x00655B0B;
+
+// Symbolize a return address to "Ghidra function name (rel offset)".
+// Civ2 image base is 0x00400000. RVA = va - 0x00400000.
+// Without a full symbol table in Frida, all we can do is return the
+// RVA in hex — downstream analysis cross-references it with Ghidra's
+// FUN_xxx list.
+function symbolize(p) {
+  if (!p) return null;
+  const va = p.toInt32() >>> 0;  // unsigned
+  const rva = va - 0x00400000;
+  if (rva < 0 || rva > 0x00300000) return '0x' + va.toString(16);
+  return '0x' + va.toString(16);  // Frida-side we emit the VA; host-side
+                                   // we resolve to Ghidra names.
+}
+
+// Read civ_struct snapshot for a given slot.
+// Exposes just the fields that are most informative for init-rule
+// questions (difficulty, treasury, tech counts, government, position,
+// personality). All within the stride 0x594 block.
+function readCivSnapshot(base, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return null;
+  try {
+    const civBase = base.add(CIV_STRUCT_BASE - 0x00400000 + civSlot * CIV_STRUCT_STRIDE);
+    return {
+      stateFlags:  Memory.readU16(civBase.add(0x00)),
+      treasury:    Memory.readS32(civBase.add(0x02)),
+      styleLeader: Memory.readS16(civBase.add(0x06)),
+      acqTechCount:Memory.readU8 (civBase.add(0x10)),
+      futTechCount:Memory.readU8 (civBase.add(0x11)),
+      government:  Memory.readU8 (civBase.add(0x15)),
+      sci:         Memory.readU8 (civBase.add(0x13)),
+      tax:         Memory.readU8 (civBase.add(0x14)),
+      reputation:  Memory.readU8 (civBase.add(0x1E)),
+    };
+  } catch (e) {
+    return { err: String(e) };
+  }
+}
+
+// Read leader personality byte row (0x30 bytes) for a civ.
+function readLeaderPersonality(base, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return null;
+  try {
+    const lpBase = base.add(LEADER_PERSONALITY_BASE - 0x00400000 + civSlot * LEADER_PERSONALITY_STRIDE);
+    const bytes = Memory.readByteArray(lpBase, LEADER_PERSONALITY_STRIDE);
+    return Array.from(new Uint8Array(bytes));
+  } catch (e) {
+    return { err: String(e) };
+  }
+}
+
+function readGlobals(base) {
+  try {
+    return {
+      difficulty:   Memory.readU8(base.add(DIFFICULTY_BYTE - 0x00400000)),
+      humanPlayers: Memory.readU8(base.add(HUMAN_PLAYERS_MASK - 0x00400000)),
+    };
+  } catch (e) { return { err: String(e) }; }
+}
+
+// ── Attach hooks ─────────────────────────────────────────────────────
 
 function attachHook(entry) {
   if (!base) return false;
@@ -332,14 +407,28 @@ function attachHook(entry) {
             }
           }
         }
-        // For hot functions we want to know WHO called them.
-        // `backtrace: true` in entry opts in. Limit to 4 frames —
-        // each frame is just the return address, rendered as hex.
+        // WHO called us? (symbolized as VA — host resolves to Ghidra name)
         if (entry.backtrace) {
           try {
-            const bt = Thread.backtrace(this.context, Backtracer.FUZZY).slice(0, 4);
-            msg.stack = bt.map(p => p.toString());
-          } catch (_) { /* swallow */ }
+            const bt = Thread.backtrace(this.context, Backtracer.ACCURATE).slice(0, 6);
+            msg.stack = bt.map(p => symbolize(p));
+          } catch (_) {
+            try {
+              const bt = Thread.backtrace(this.context, Backtracer.FUZZY).slice(0, 6);
+              msg.stack = bt.map(p => symbolize(p));
+              msg.stack_fuzzy = true;
+            } catch (__) { /* swallow */ }
+          }
+        }
+        // Snapshot state that explains WHY this fired.
+        if (entry.readCivAtOwner && msg.named && msg.named.owner != null) {
+          msg.civSnapshot = readCivSnapshot(base, msg.named.owner);
+          msg.leaderPersonality = readLeaderPersonality(base, msg.named.owner);
+          msg.globals = readGlobals(base);
+        }
+        if (entry.readCivAtSlot && msg.named && msg.named.civSlot != null) {
+          msg.civSnapshot = readCivSnapshot(base, msg.named.civSlot);
+          msg.globals = readGlobals(base);
         }
         // Save state for onLeave
         this._traceEntry = entry;
