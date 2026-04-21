@@ -14,6 +14,7 @@ import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../s
 import { processCityTurn } from '../cityturn.js';
 import { assignInitialWorkers } from './helpers.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
+import { processPerCivTick } from '../per-civ-tick.js';
 import { dispatchEvents, pollReceivedTechTriggers, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
 import { completeWorkerOrder, getWorkerTurnsNeeded, countCooperatingWorkers, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
 import { processBarbarianAI, processBarbCampProduction, spawnBarbarians } from './barbarians.js';
@@ -619,6 +620,22 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         }
         state.units[ui] = { ...u, movesRemain: newHpLost, orders: newOrders };
       }
+    }
+  }
+
+  // ── Binary FUN_00560084: per-civ turn-driver tick (after heal, before cities) ──
+  // Port: engine/per-civ-tick.js. Handles anarchy-end, per-civ rand-rolls
+  // (aiRandomSeed + senateOverride toggle), patience cooldown, and per-(civ,
+  // otherCiv) diplomatic flag housekeeping (RECENT_CONTACT / WAR_TRACKING
+  // clear every turn; periodic 16/32-turn cleanups). Matches binary
+  // FUN_00489553 call order (block_00480000.c:2488): between heal and city
+  // processing. The partial processCivTurnStart equivalent in start-turn.js
+  // remains a no-op for stateFlags (we now drive it here instead).
+  {
+    const tickEvents = processPerCivTick(activeCiv, state, mapBase);
+    if (tickEvents && tickEvents.length > 0) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push(...tickEvents);
     }
   }
 
