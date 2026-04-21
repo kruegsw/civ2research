@@ -104,17 +104,24 @@ export function calcResearchCost(gameState, civSlot) {
   let baseCost = isHumanCiv ? (clampedDiff * 2 + 6) : (14 - clampedDiff);
 
   // ── Leading-civ tech cost adjustment (FUN_004c2788, line 971) ──
-  // Compare this civ's tech count to the leading civ's tech count.
+  // Compare this civ's tech count to the LEADER civ's tech count.
   // Behind: cost -= 1 (catch-up bonus); Ahead: cost += (ahead / 3) (penalty).
+  //
+  // Binary uses DAT_00655c20 (a specific leader slot, not max-across-civs).
+  // Frida probe (session game_20260420_213030) showed leaderSlot=0 (barbarian,
+  // which has 0 techs). That matches how the binary initializes DAT_00655c20
+  // (block_00480000.c:1082) — defaults to 0 and stays 0 unless a human
+  // civ's rank matches the DAT_00655c2a rank array, which often fails early
+  // in the game. Using leader=civ0.techCount (= 0) fits all 9 Frida-observed
+  // cost cases.
+  //
+  // If state.leaderSlot is explicitly set by the harness (from a Frida
+  // probe), use that civ's tech count. Otherwise default to civ 0's count.
   const turnNum = gameState.turn?.number || 0;
   {
-    // Find leading civ's tech count (max tech count across all alive civs)
-    let leaderTechCount = 0;
-    for (let c = 1; c < 8; c++) {
-      if (!(gameState.civsAlive & (1 << c))) continue;
-      const tc = gameState.civTechCounts?.[c] || (gameState.civTechs?.[c]?.size || 0);
-      if (tc > leaderTechCount) leaderTechCount = tc;
-    }
+    const leaderSlot = gameState.leaderSlot ?? 0;
+    const leaderTechCount = gameState.civTechCounts?.[leaderSlot]
+      ?? (gameState.civTechs?.[leaderSlot]?.size || 0);
 
     if (totalTechs < leaderTechCount) {
       // Behind the leader: catch-up bonus

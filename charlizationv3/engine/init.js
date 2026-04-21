@@ -157,6 +157,12 @@ export function initFromSav(parsed, seatList) {
     wonders: parsed.gameState?.wonders || initWonders(),
     difficulty: parsed.gameState?.difficulty || 'chieftain',
     barbarianActivity: parsed.gameState?.barbarianActivity || 'villages',
+    // Hoist Bloodlust (and other scenario flags) from parser output to
+    // top-level state so research.js / production.js can test without
+    // reaching into parsed.gameState.gameToggles. DAT_00655af0 bit 0x08
+    // (Frida-observed). Bloodlust scales tech cost × 4/5 per FUN_004c2788:1017.
+    bloodlust: !!parsed.gameState?.gameToggles?.bloodlust,
+    gameToggles: parsed.gameState?.gameToggles,
     // Q.4: Scenario-specific state
     isScenario,
     scenarioRules,
