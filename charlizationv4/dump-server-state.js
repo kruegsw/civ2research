@@ -526,6 +526,28 @@ if (turns > 0) {
         // track this yet (no per-unit fog tracking). Diff will surface
         // visibility byte mismatches until v3 implements it.
         return [];
+      case 'GOLD_CHANGED': {
+        // Most gold events are normal per-turn tax income that v3
+        // derives itself from trade × taxRate. Don't replay those —
+        // v3's calc should match and double-apply would break it.
+        //
+        // BUT: gold deltas of 25/50/75/100 are hut gold (Civ2 goody
+        // hut bag values). Those come from unit movement, not the
+        // economic system, and v3's UNIT_MOVED replay (__UNIT_TELEPORT__)
+        // doesn't resolve huts. Replay these as a direct treasury
+        // adjustment so the human civ's T1 +25 (the most common case)
+        // doesn't cascade into +25 gold drift across the rest of the game.
+        if (ev.civ == null || ev.from == null || ev.to == null) return [];
+        const delta = ev.to - ev.from;
+        if (delta === 25 || delta === 50 || delta === 75 || delta === 100) {
+          // Use SET (absolute value) rather than ADD (delta) so idempotent —
+          // harness replay may fire the event at multiple phases (pre-turn,
+          // post-wrap) and we don't want to double-apply.
+          return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
+                    reason: 'hut-gold' }];
+        }
+        return [];
+      }
       case 'CITY_YIELD':
         // Diagnostic only — NOT applied to state. The diff tooling
         // surfaces these so we can attribute per-city shield/food/trade
@@ -657,6 +679,9 @@ if (turns > 0) {
               };
               continue;
             }
+            // __TREASURY_ADJUST__ is handled only in the post-wrap phase
+            // (not here) — it fires once per event, and the post-wrap
+            // location sees the event exactly once per turn routing.
             if (action.type === '__UNIT_DAMAGE__') {
               gameState = {
                 ...gameState,
@@ -1418,6 +1443,14 @@ if (turns > 0) {
                 delete upd.pendingGovernment;
                 return upd;
               }),
+            };
+            continue;
+          }
+          if (action.type === '__TREASURY_SET__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) =>
+                i !== action.civ ? c : { ...c, treasury: action.value }),
             };
             continue;
           }
