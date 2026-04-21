@@ -126,6 +126,18 @@ if (magic === 'CIVILIZE') {
     globalThis.__SNAPSHOT_RAND_SEED = info.randSeed;
     process.stderr.write(`[snap] MSVC rand seed: 0x${info.randSeed.toString(16).padStart(8, '0')}\n`);
   }
+  // scenarioFlags is byte 0 of globals region. Parser's current bit check
+  // on the SAV doesn't detect Bloodlust correctly for CIV2SNAP-synthesized
+  // saves, so expose the snapshot-read value for init.js to pick up.
+  if (info.scenarioFlags != null && info.scenarioFlags !== 0) {
+    globalThis.__SNAPSHOT_SCENARIO_FLAGS = info.scenarioFlags;
+    const flags = info.scenarioFlags;
+    const names = [];
+    if (flags & 0x04) names.push('Raging');
+    if (flags & 0x08) names.push('Bloodlust');
+    if (flags & 0x80) names.push('Scenario');
+    process.stderr.write(`[snap] scenarioFlags=0x${flags.toString(16)} (${names.join(', ') || 'unknown bits'})\n`);
+  }
   savBuf = buildSav();
   sourceKind = 'snapshot';
   process.stderr.write(`[snap] Synthesized .sav (${savBuf.length} bytes) from snapshot _MEM state\n`);

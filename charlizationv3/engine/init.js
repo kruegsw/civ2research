@@ -161,7 +161,13 @@ export function initFromSav(parsed, seatList) {
     // top-level state so research.js / production.js can test without
     // reaching into parsed.gameState.gameToggles. DAT_00655af0 bit 0x08
     // (Frida-observed). Bloodlust scales tech cost × 4/5 per FUN_004c2788:1017.
-    bloodlust: !!parsed.gameState?.gameToggles?.bloodlust,
+    // Parser's savBuf bit check doesn't reliably detect Bloodlust for
+    // CIV2SNAP-synthesized saves. dump-server-state.js reads the real
+    // flag from the snapshot's globals region (memory 0x655AF0 bit 0x08)
+    // and exposes it via globalThis.__SNAPSHOT_SCENARIO_FLAGS. Use that
+    // if available, else fall back to parser's bit.
+    bloodlust: !!(globalThis.__SNAPSHOT_SCENARIO_FLAGS & 0x08)
+      || !!parsed.gameState?.gameToggles?.bloodlust,
     gameToggles: parsed.gameState?.gameToggles,
     // Q.4: Scenario-specific state
     isScenario,

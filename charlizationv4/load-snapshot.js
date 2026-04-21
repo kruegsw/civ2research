@@ -147,10 +147,22 @@ export function loadSnapshotIntoMem(path) {
     }
   }
 
+  // scenarioFlags — byte 0 of the globals region (memory 0x00655AF0).
+  // Bit 0x04 = Raging Hordes, 0x08 = Bloodlust, 0x80 = Scenario mode.
+  // Parser's current bit check on savBuf[0x0C] & 0x80 doesn't match the
+  // synthesized-SAV layout, so read directly from snapshot and hand it
+  // to the harness via the return value (and optionally a global).
+  let scenarioFlags = 0;
+  if (regions.has('globals')) {
+    const { bytes } = regions.get('globals');
+    if (bytes.length >= 1) scenarioFlags = bytes[0];
+  }
+
   return {
     regionCount: regions.size,
     tileBytes: regions.get('tiles')?.size ?? 0,
     snapTimeMs,
     randSeed,
+    scenarioFlags,
   };
 }
