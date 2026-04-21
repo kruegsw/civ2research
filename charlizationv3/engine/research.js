@@ -153,10 +153,15 @@ export function calcResearchCost(gameState, civSlot) {
   // Binary: DAT_00655b1a = total number of defined techs (entries with exists!=0).
   // If numDefinedTechs > 67, scale cost down: cost = cost * 67 / numDefinedTechs.
   // With default RULES.TXT this is ~90 techs, so cost is always scaled by 67/90.
+  //
+  // Live Frida probe (game_20260420_202141) shows binary behaves as if
+  // N≈111 for that session's configuration. But applying N=111 retroactively
+  // regresses fidelity on older session game_20260419_112207 (extra AI
+  // units produced, early tech completions) — suggesting N is game-config
+  // or RULES-dependent. See v3_research_cost_delta.md for data; to pin
+  // this, probe DAT_00655b1a at session start via Frida and make N
+  // session-configurable. For now, stick with derived 90.
   {
-    // Count defined techs: binary iterates 100 tech slots, counts those with exists!=0.
-    // ADVANCE_PREREQS covers indices 0-88 (89 entries); index 89 = Future Tech is also
-    // defined in RULES.TXT but omitted from ADVANCE_PREREQS. Add 1 to include it.
     const numDefinedTechs = ADVANCE_PREREQS.length + 1; // +1 for Future Tech (index 89)
     if (numDefinedTechs > 67) {
       baseCost = Math.floor(baseCost * 67 / numDefinedTechs);

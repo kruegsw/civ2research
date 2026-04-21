@@ -27,11 +27,16 @@ if (!base) {
 // Key globals (as documented in fact_difficulty_byte_address.md):
 //   0x00655B08 = diff_b08 — actual difficulty byte (5=Deity)
 //   0x00655B0B = bonusMask — human civ bit mask
+//   0x00655B1A = DAT_00655b1a — numDefinedTechs (drives the *67/N cost
+//                scaling step in FUN_004c2788). Empirically 111 in one
+//                session, 90 expected by v3 — session-dependent. Knowing
+//                the session-specific value is the key to closing #54.
 // Civ struct @ 0x0064C6A0 + civSlot * 0x594:
 //   +0x10 = acqTechCount (drives cost multiplier)
 //   +0x11 = futTechCount
 const DAT_00655B08 = 0x00655B08;
 const DAT_00655B0B = 0x00655B0B;
+const DAT_00655B1A = 0x00655B1A;
 const CIV_BASE     = 0x0064C6A0;
 const CIV_STRIDE   = 0x594;
 
@@ -40,6 +45,9 @@ function readGlobals() {
     return {
       diff:      base.add(DAT_00655B08 - 0x00400000).readU8(),
       bonusMask: base.add(DAT_00655B0B - 0x00400000).readU8(),
+      // DAT_00655b1a could be u8 or u16 — read both and let host decide.
+      numDefinedTechs_u8:  base.add(DAT_00655B1A - 0x00400000).readU8(),
+      numDefinedTechs_u16: base.add(DAT_00655B1A - 0x00400000).readU16(),
     };
   } catch (e) { return null; }
 }
