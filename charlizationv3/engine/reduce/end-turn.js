@@ -1014,6 +1014,15 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         console.error(`[tech-debug] civ ${activeCiv} tech=${techId} prog=${civ.researchProgress} cost=${cost} sciAdd=${civSciTotal} techCount=${state.civTechs?.[activeCiv]?.size}`);
       }
       if ((civ.researchProgress || 0) >= cost) {
+        // handleTechDiscovery may mutate state.civs[activeCiv].treasury
+        // (e.g., barracks refund on Gunpowder/Automobile at research.js:329).
+        // Capture pre-value so we can apply JUST the delta to the local
+        // civ clone — preserving the civTaxTotal already added at line 939.
+        // Prior code did `civ.treasury = state.civs[activeCiv].treasury`
+        // which clobbered the tax income whenever a tech was discovered
+        // that turn — per treasury_rounding_diagnosis.md, 7 of 16 gold
+        // mismatches on game_20260420_221438.
+        const preTreasury = state.civs[activeCiv]?.treasury ?? 0;
         grantAdvance(state, activeCiv, techId);
         civ.researchProgress = Math.max(0, civ.researchProgress - cost);
         // Reset techBeingResearched to 0xFF. Empirically the sniffer-
@@ -1029,7 +1038,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
           if (!state.turnEvents) state.turnEvents = [];
           state.turnEvents.push(...techEvents);
         }
-        civ.treasury = state.civs[activeCiv]?.treasury ?? civ.treasury;
+        // Apply ONLY the delta that handleTechDiscovery introduced
+        // (barracks refund, etc.) to the local civ clone — preserves
+        // the civTaxTotal from line 939. See preTreasury capture above.
+        const postTreasury = state.civs[activeCiv]?.treasury ?? preTreasury;
+        civ.treasury = (civ.treasury || 0) + (postTreasury - preTreasury);
         if (state.scenarioEvents && state.scenarioEvents.length > 0) {
           dispatchEvents(state, mapBase, EVENT_RECEIVED_TECH, { civSlot: activeCiv, techId });
         }
