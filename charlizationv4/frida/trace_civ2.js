@@ -131,8 +131,10 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   { va: 0x004A7CE9, name: 'new_civ',   args: 1, argNames: ['civSlot'],
     backtrace: true, readCivAtSlot: true, readGlobals: true },
+  // kill_civ fires during teardown like delete_city. Dropping backtrace
+  // to avoid unstable-stack dereferences during game-over / civ-wipe.
   { va: 0x004AA378, name: 'kill_civ',  args: 2, argNames: ['civSlot','by'],
-    backtrace: true, readCivAtSlot: true },
+    readCivAtSlot: true },
   // Deity bonus-Settler logic: runs AFTER all 8 new_civ calls; creates
   // 2nd Settlers per conditions A/B/C (see block_004A0000.c:2568-2589).
   // Reading globals at entry captures bonusMask/bonusFlag which drive
@@ -145,8 +147,12 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   { va: 0x0043F8B0, name: 'create_city', args: 3, argNames: ['x','y','owner'],
     readRet: true, backtrace: true },
-  { va: 0x004413D1, name: 'delete_city', args: 2, argNames: ['cityIdx','reason'],
-    backtrace: true },
+  // delete_city fires DURING TEARDOWN (game over, all cities wiped) with
+  // the stack in a non-standard state. Backtracer.ACCURATE can deref
+  // invalid frames → Civ2 crash. Drop backtrace; delete_city's caller
+  // is almost always the city-destruction handler in block_00440000
+  // anyway, so the backtrace rarely added info.
+  { va: 0x004413D1, name: 'delete_city', args: 2, argNames: ['cityIdx','reason'] },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Units — every creation goes through new_unit regardless
