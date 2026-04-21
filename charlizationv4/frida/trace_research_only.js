@@ -37,6 +37,10 @@ if (!base) {
 const DAT_00655B08 = 0x00655B08;
 const DAT_00655B0B = 0x00655B0B;
 const DAT_00655B1A = 0x00655B1A;
+const DAT_00655C20 = 0x00655C20;   // tech-cost leader slot (used in FUN_004c2788:972)
+const DAT_0064BCD3 = 0x0064BCD3;   // cosmic[11] = tech paradigm (FUN_004c2788:997)
+const DAT_00655AF0 = 0x00655AF0;   // scenario flags (bit 0x04=Raging, 0x08=Bloodlust, 0x80=Scenario)
+const DAT_00655AF8 = 0x00655AF8;   // tech counter (turn-related)
 const CIV_BASE     = 0x0064C6A0;
 const CIV_STRIDE   = 0x594;
 
@@ -48,8 +52,12 @@ function readGlobals() {
       // DAT_00655b1a could be u8 or u16 — read both and let host decide.
       numDefinedTechs_u8:  base.add(DAT_00655B1A - 0x00400000).readU8(),
       numDefinedTechs_u16: base.add(DAT_00655B1A - 0x00400000).readU16(),
+      leaderSlot:          base.add(DAT_00655C20 - 0x00400000).readU8(),
+      techParadigm:        base.add(DAT_0064BCD3 - 0x00400000).readU8(),
+      scenarioFlags:       base.add(DAT_00655AF0 - 0x00400000).readU32(),
+      techCounter:         base.add(DAT_00655AF8 - 0x00400000).readU16(),
     };
-  } catch (e) { return null; }
+  } catch (e) { return { err: String(e) }; }
 }
 
 function readCivTechs(civSlot) {
