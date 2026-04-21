@@ -162,7 +162,10 @@ export function calcResearchCost(gameState, civSlot) {
   // this, probe DAT_00655b1a at session start via Frida and make N
   // session-configurable. For now, stick with derived 90.
   {
-    const numDefinedTechs = ADVANCE_PREREQS.length + 1; // +1 for Future Tech (index 89)
+    // Frida-probed DAT_00655b1a = 89 (stable across game_20260420_202141
+    // and _210339 with default RULES.TXT at Deity). Use the observed
+    // value. Small delta from v3's previous assumption (90) but exact.
+    const numDefinedTechs = 89;
     if (numDefinedTechs > 67) {
       baseCost = Math.floor(baseCost * 67 / numDefinedTechs);
     }
