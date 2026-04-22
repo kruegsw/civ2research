@@ -360,7 +360,24 @@ export function calcUnitShieldSupport(city, cityIndex, units, gameState) {
 }
 
 /**
- * Shield waste from distance to capital (FUN_004e9c14).
+ * Shield waste from distance to capital.
+ *
+ * Binary ref: FUN_004e9c14 @ 0x004E9C14 (block_004E0000.c:3685+). The
+ * formula is the distance-to-capital waste from FUN_004e989a scaled by
+ * an additional government-based divisor applied at the callsite.
+ *
+ * Formula (monarchy city, distance=15, avail=3, no courthouse/palace):
+ *   step 1: waste = (distance * avail * 3) / (govtFactor * 20)   = 1
+ *   step 2: clamp waste to [0, avail]                            = 1
+ *   step 3: if palace or courthouse, waste >>= 1                 = 1 (n/a)
+ *   step 4: waste = waste / ((govtByte >> 1) + 1)                = 0 (mon)
+ *   step 5: min(waste, available - 1)                            = 0
+ *   step 6: if waste < 1: waste = 0                              = 0
+ *
+ * The step-4 divisor is a major factor that was missing. For monarchy
+ * (govt=2) waste is halved; for communism (3) halved; for fundamentalism
+ * (4) and republic (5) it's cut to a third; democracy (6) a quarter.
+ * Fundamentalism/democracy/barbarian are further zeroed in FUN_004ea8e4.
  */
 export function calcShieldWaste(city, grossShields, support, gameState, mapBase) {
   const govt = getGovernment(city, gameState);
@@ -396,10 +413,30 @@ export function calcShieldWaste(city, grossShields, support, gameState, mapBase)
   // Binary FUN_004e989a:3647-3648: Courthouse OR Palace halves waste
   if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) waste >>= 1;
 
-  // Cap: ensure at least 1 shield after support + waste
-  const cap = grossShields - support - 1;
+  // Binary block_004E0000.c:3783-3784 — callsite applies an additional
+  // government-based divisor AFTER FUN_004e989a returns. This step was
+  // missing from v3 and is responsible for the bulk of mid-turn-yield-
+  // cache shieldStored mismatches against binary.
+  //   iVar2 = (((3 - DAT_006a6574) * iVar2) / 3) /
+  //           (((govt_byte) >> 1) + 1);
+  // DAT_006a6574 is a trade-route bonus flag; for cities without active
+  // trade routes it's 0, so (3-0)*x/3 simplifies to x. The govt divisor
+  // is ((govt >> 1) + 1): anarchy/despotism=1, monarchy/communism=2,
+  // fundamentalism/republic=3, democracy=4.
+  const govtIdx = GOVT_INDEX[effGovt] ?? GOVT_INDEX[govt] ?? 0;
+  const govtDivisor = (govtIdx >> 1) + 1;
+  waste = Math.trunc(waste / govtDivisor);
+
+  // Binary block_004E0000.c:3785-3787 — ensure at least 1 shield output.
+  //   DAT_006a656c = available - 1
+  //   if (waste <= DAT_006a656c) DAT_006a656c = waste
+  // i.e. waste = min(waste, available - 1)
+  const cap = available - 1;
   if (waste > cap) waste = cap;
-  if (waste < 0) waste = 0;
+
+  // Binary block_004E0000.c:3789-3790 — floor at 1 → 0
+  if (waste < 1) waste = 0;
+
   return waste;
 }
 
