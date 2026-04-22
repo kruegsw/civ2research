@@ -506,12 +506,11 @@ if (turns > 0) {
         return [];
       }
       case 'UNIT_DAMAGE':
-        // Combat result. v3 combat.js computes damage per round; we
-        // should be routing UNIT_MOVED-onto-enemy through v3's combat
-        // reducer so this is produced endogenously. Not done yet —
-        // diff will surface damageTaken mismatches until combat is
-        // wired up.
-        return [];
+        // Replay combat damage directly as an absolute SET on the
+        // unit's damageTaken / hpLost. Avoids needing RNG-aligned
+        // combat in v3 (see port_plan_48_combat_routing.md condition #1).
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_DAMAGE__', uid: ev.uid, to: ev.to }];
       case 'UNIT_STATUS_CHANGED': {
         // Unit statusFlags changed without position change (veteran
         // promotion from combat, flag transitions). v3 can't detect
@@ -690,7 +689,8 @@ if (turns > 0) {
                 ...gameState,
                 units: gameState.units.map(u =>
                   u && (u.id === action.uid || u.sequenceId === action.uid)
-                    ? { ...u, hpLost: action.to, damageTaken: action.to }
+                    ? { ...u, hpLost: action.to, damageTaken: action.to,
+                        movesRemain: action.to }
                     : u),
               };
               continue;
@@ -1414,7 +1414,8 @@ if (turns > 0) {
               ...gameState,
               units: gameState.units.map(u =>
                 u && (u.id === action.uid || u.sequenceId === action.uid)
-                  ? { ...u, hpLost: action.to, damageTaken: action.to }
+                  ? { ...u, hpLost: action.to, damageTaken: action.to,
+                      movesRemain: action.to }
                   : u),
             };
             continue;
