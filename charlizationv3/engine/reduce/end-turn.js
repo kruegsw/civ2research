@@ -639,6 +639,28 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
+  // ── Binary FUN_0053184d:808-814 — recalc AT_WAR stateFlags bit ──
+  // Clear bit 0x02, then re-set if activeCiv has a 'war' treaty with any
+  // other civ. state.treaties uses canonical key `${min}-${max}`.
+  {
+    const civHere = state.civs?.[activeCiv];
+    if (civHere && state.treaties) {
+      let nf = (civHere.stateFlags || 0) & ~0x0002;
+      for (let other = 1; other < 8; other++) {
+        if (other === activeCiv) continue;
+        const key = activeCiv < other ? `${activeCiv}-${other}` : `${other}-${activeCiv}`;
+        if (state.treaties[key] === 'war') {
+          nf |= 0x0002;
+          break;
+        }
+      }
+      if (nf !== (civHere.stateFlags || 0)) {
+        state.civs = state.civs !== prev.civs ? state.civs : [...state.civs];
+        state.civs[activeCiv] = { ...state.civs[activeCiv], stateFlags: nf };
+      }
+    }
+  }
+
   // ── Process city resistance for the active civ ──
   state.cities = [...prev.cities];
   for (let ci = 0; ci < state.cities.length; ci++) {
