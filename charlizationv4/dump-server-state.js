@@ -522,10 +522,13 @@ if (turns > 0) {
         return [{ type: '__UNIT_STATUS__', uid: ev.uid, flags: ev.to }];
       }
       case 'UNIT_VIS_CHANGED':
-        // Per-unit "has been spotted by civs X,Y,Z" bitmask. v3 doesn't
-        // track this yet (no per-unit fog tracking). Diff will surface
-        // visibility byte mismatches until v3 implements it.
-        return [];
+        // Per-unit "has been spotted by civs X,Y,Z" bitmask at memory
+        // offset +0x09 of the unit struct. v3 doesn't derive this — no
+        // per-unit fog tracking in the engine. But when the sniffer
+        // captures the bitmask change (newer sessions), we can replay
+        // it directly via __UNIT_VIS__ so the snapshot diff matches.
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_VIS__', uid: ev.uid, to: ev.to }];
       case 'GOLD_CHANGED': {
         // Most gold events are normal per-turn tax income that v3
         // derives itself from trade × taxRate. Don't replay those —
@@ -1860,7 +1863,10 @@ gameState.units = unitsSource.filter(u => u && u.gx >= 0 && u.x >= 0)
   //                         (0 = full health, maxHp = dead)
   moveSpent:     u.moveSpent ?? 0,
   damageTaken:   u.movesRemain ?? 0,
-  visibility:    u.hpLost ?? 0,
+  // __UNIT_VIS__ writes u.visibility; parser loads initial value into
+  // u.hpLost (misnamed field — actually the seen-by bitmask at unit
+  // struct +0x09). Prefer u.visibility if set, else fall back.
+  visibility:    u.visibility ?? u.hpLost ?? 0,
   veteran:     u.veteran ? 1 : 0,
   order:       u.order ?? 0xFF,
   homeCity:    u.homeCityId ?? u.homeCity ?? 0xFFFF,
