@@ -275,6 +275,19 @@ if (turns > 0) {
   //    Imprecise; a single universal cutoff mismatches both ways.
   const LATE_EVENT_WINDOW_MS = 200;
   const replayEventsByTurnCiv = new Map();
+  // CITY_YIELD events bucketed by raw ev.turn (not shifted routedTurn).
+  // Late-event shift breaks yield routing because yields fire mid-turn
+  // at unpredictable times relative to the snapshot — sometimes before,
+  // sometimes hundreds of ms after. The raw turn tag is a more reliable
+  // key since it reflects what turn the binary was in when it computed
+  // the yield.
+  const cityYieldsByRawTurn = new Map();
+  // Snapshot timestamps keyed by turn (ms into session). Populated
+  // below from SNAPSHOT_DUMPED events. Used by the CITY_YIELD pass to
+  // decide whether to use "From" fields (event fired after snapshot,
+  // so current values describe later state) or current values (event
+  // fired before snapshot, current values match).
+  const snapshotTimeByTurn = new Map();
   if (replayPath && existsSync(replayPath)) {
     try {
       const raw = readFileSync(replayPath, 'utf8');
@@ -291,6 +304,7 @@ if (turns > 0) {
           }
           if (ev.event === 'SNAPSHOT_DUMPED' && ev.turn != null && ev.time_ms != null) {
             snapshotTime.set(ev.turn, ev.time_ms);
+            snapshotTimeByTurn.set(ev.turn, ev.time_ms);
           }
         } catch (_) { /* skip malformed line */ }
       }
@@ -327,6 +341,10 @@ if (turns > 0) {
         const key = `${routedTurn}:${c}`;
         if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
         replayEventsByTurnCiv.get(key).push(ev);
+        if (ev.event === 'CITY_YIELD') {
+          if (!cityYieldsByRawTurn.has(ev.turn)) cityYieldsByRawTurn.set(ev.turn, []);
+          cityYieldsByRawTurn.get(ev.turn).push(ev);
+        }
       }
       process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
     } catch (e) {
@@ -1730,46 +1748,47 @@ if (turns > 0) {
   // civs whose END_TURN was skipped (activeCiv order quirks) still
   // get applied.
   if (replayYields) {
-    // CITY_YIELD events tagged turn=N capture the state AT
-    // TURN_ADVANCED to turn N, which is the content of turn_000N.bin.
-    // For a simulation going from turn M to M+1 (end goal: match
-    // turn_000(M+1).bin), we want CITY_YIELD events tagged M+1.
+    // CITY_YIELD events tagged turn=N capture the post-turn yield state
+    // that ends up in turn_000N.bin. For a simulation going from turn M
+    // to M+1, we want events tagged M+1 regardless of when within the
+    // turn they fired (the late-event-shift used for per-civ bucketing
+    // breaks here since yields fire at unpredictable mid-turn times).
     const targetTurn = (gameState.turn?.number ?? 0);
     let setCount = 0;
-    for (const [key, batch] of replayEventsByTurnCiv) {
-      const [evTurn] = key.split(':').map(Number);
-      if (evTurn !== targetTurn) continue;
-      for (const ev of batch) {
-        if (ev.event !== 'CITY_YIELD') continue;
-        if (ev.cityIdx == null) continue;
-        const ci = ev.cityIdx;
-        gameState = {
-          ...gameState,
-          cities: gameState.cities.map((c, i) => {
-            if (i !== ci || !c) return c;
-            const upd = { ...c };
-            if (ev.size != null) upd.size = ev.size;
-            // Write BOTH v3-engine field names (foodInBox/shieldsInBox/
-            // netBaseTrade) and parser-format names (foodStored/
-            // shieldStored/tradeTotal) — the serializer at end of file
-            // prefers v3-engine names when present (post-END_TURN state).
-            if (ev.foodBox != null) {
-              upd.foodInBox = ev.foodBox;
-              upd.foodStored = ev.foodBox;
-            }
-            if (ev.shieldBox != null) {
-              upd.shieldsInBox = ev.shieldBox;
-              upd.shieldStored = ev.shieldBox;
-            }
-            if (ev.tradeNet != null) {
-              upd.netBaseTrade = ev.tradeNet;
-              upd.tradeTotal = ev.tradeNet;
-            }
-            return upd;
-          }),
-        };
-        setCount++;
-      }
+    // The event's "From" fields hold the yield values BEFORE the
+    // binary's current turn-N processing applied. The non-From fields
+    // are the values AT event-fire-time. Which matches the snapshot
+    // at turn_000(targetTurn).bin depends on when the event fired
+    // relative to that snapshot:
+    //   event_time < snapshot_time → snapshot captures event's effects
+    //                                 or later → use CURRENT values.
+    //   event_time > snapshot_time → event fired AFTER snapshot →
+    //                                 snapshot shows pre-event state →
+    //                                 use FROM values.
+    const snapT = snapshotTimeByTurn.get(targetTurn);
+    const yieldBatch = cityYieldsByRawTurn.get(targetTurn) || [];
+    for (const ev of yieldBatch) {
+      if (ev.cityIdx == null) continue;
+      const ci = ev.cityIdx;
+      const useFrom = (snapT != null && ev.time_ms != null
+                      && ev.time_ms > snapT);
+      const pickSize = useFrom && ev.sizeFrom != null ? ev.sizeFrom : ev.size;
+      const pickFood = useFrom && ev.foodBoxFrom != null ? ev.foodBoxFrom : ev.foodBox;
+      const pickShield = useFrom && ev.shieldBoxFrom != null ? ev.shieldBoxFrom : ev.shieldBox;
+      const pickTrade = useFrom && ev.tradeNetFrom != null ? ev.tradeNetFrom : ev.tradeNet;
+      gameState = {
+        ...gameState,
+        cities: gameState.cities.map((c, i) => {
+          if (i !== ci || !c) return c;
+          const upd = { ...c };
+          if (pickSize != null) upd.size = pickSize;
+          if (pickFood != null) { upd.foodInBox = pickFood; upd.foodStored = pickFood; }
+          if (pickShield != null) { upd.shieldsInBox = pickShield; upd.shieldStored = pickShield; }
+          if (pickTrade != null) { upd.netBaseTrade = pickTrade; upd.tradeTotal = pickTrade; }
+          return upd;
+        }),
+      };
+      setCount++;
     }
     if (setCount > 0) {
       process.stderr.write(`[replay] CITY_YIELD pass: applied ${setCount} yield SETs for turn ${targetTurn}\n`);
