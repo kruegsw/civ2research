@@ -1539,6 +1539,21 @@ def emit_action_events(prev, curr, t0, events_path):
                            'event': 'UNIT_VIS_CHANGED', 'slot': slot, 'uid': c_uid,
                            'owner': c.get('owner'),
                            'from': p.get('visMask'), 'to': c.get('visMask')})
+        # moveSpent change (+0x08) without position change. The binary
+        # resets moveSpent to 0 at start of each civ's turn cycle and
+        # increments it as units move. UNIT_MOVED already carries
+        # moveSpent for movement-coupled changes; this catches pure
+        # resets (e.g. binary's end-of-civ-turn cleanup). Replay lets
+        # the harness drop the before/after-human heuristic in favor
+        # of ground truth. Tracks ~37 mismatches/session under the
+        # existing `ai-movespent-timing` tag.
+        if (p.get('x'), p.get('y')) == (c.get('x'), c.get('y')) \
+                and p.get('moveSpent') != c.get('moveSpent'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_MOVESPENT_CHANGED',
+                           'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'from': p.get('moveSpent'), 'to': c.get('moveSpent')})
 
     if events:
         try:

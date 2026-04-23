@@ -535,6 +535,14 @@ if (turns > 0) {
         // it directly via __UNIT_VIS__ so the snapshot diff matches.
         if (ev.uid == null || ev.to == null) return [];
         return [{ type: '__UNIT_VIS__', uid: ev.uid, to: ev.to }];
+      case 'UNIT_MOVESPENT_CHANGED':
+        // Pure moveSpent transition (no position change). Sniffer-side
+        // ground truth replaces the before/after-human heuristic that
+        // __UNIT_TELEPORT__ uses. Closes ~37 mismatches/session in the
+        // ai-movespent-timing bucket on sessions captured with this
+        // event type (pre-2026-04-22 sessions don't emit it).
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_MOVESPENT__', uid: ev.uid, to: ev.to }];
       case 'GOLD_CHANGED': {
         // Most gold events are normal per-turn tax income that v3
         // derives itself from trade × taxRate. Don't replay those —
@@ -709,6 +717,16 @@ if (turns > 0) {
                 units: gameState.units.map(u =>
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, visibility: action.to }
+                    : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_MOVESPENT__') {
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, moveSpent: action.to, movesSpent: action.to }
                     : u),
               };
               continue;
@@ -1480,6 +1498,16 @@ if (turns > 0) {
               units: gameState.units.map(u =>
                 u && (u.id === action.uid || u.sequenceId === action.uid)
                   ? { ...u, visibility: action.to }
+                  : u),
+            };
+            continue;
+          }
+          if (action.type === '__UNIT_MOVESPENT__') {
+            gameState = {
+              ...gameState,
+              units: gameState.units.map(u =>
+                u && (u.id === action.uid || u.sequenceId === action.uid)
+                  ? { ...u, moveSpent: action.to, movesSpent: action.to }
                   : u),
             };
             continue;
