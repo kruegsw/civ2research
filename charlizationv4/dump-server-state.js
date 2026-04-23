@@ -234,8 +234,16 @@ if (turns > 0) {
   // diff. Only applies when _MEM has been populated (snapshot input).
   if (sourceKind === 'snapshot' && memLoaded) {
     try {
-      const { u32 } = await import('./mem.js');
-      const nextId = u32(0x00627fd8, 0);  // DAT_00627fd8 = next_unit_sequence_id
+      // DAT_00627fd8 = next_unit_sequence_id. mem.js's u32(addr, off)
+      // uses addr as an index into _MEM directly — and _MEM is a
+      // REBASED view (2MB buffer starting at MEM_BASE=0x61c068), so
+      // passing the absolute address reads out of bounds and returns 0.
+      // Read G._MEM at the rebased offset directly.
+      const { G } = await import('./globals.js');
+      const MEM_BASE = 0x61c068;
+      const memOff = 0x00627fd8 - MEM_BASE;
+      const nextId = (G._MEM[memOff] | (G._MEM[memOff+1] << 8)
+                     | (G._MEM[memOff+2] << 16) | (G._MEM[memOff+3] << 24)) >>> 0;
       if (nextId && nextId > 0) {
         gameState.nextUnitId = nextId;
         process.stderr.write(`[snapshot] next_unit_sequence_id = ${nextId}\n`);
