@@ -1453,7 +1453,23 @@ def emit_action_events(prev, curr, t0, events_path):
                                'sciOut': c.get('scienceOutput'),
                                'taxOut': c.get('taxOutput'),
                                'disorder': c.get('disorder'),
-                               'wltk': c.get('wltk')})
+                               'wltk': c.get('wltk'),
+                               'prodItem': c.get('prodItem')})
+            # Production-item change (+0x39 byte). Fires when the AI or
+            # user changes what a city is building. Needed for harness
+            # replay to match binary's production decisions — otherwise
+            # v3's AI picks its own item (usually cheaper/different),
+            # completes it on a different turn, and cascades phantom
+            # units + slot-shift diffs. Byte encoding: negative values
+            # are improvements (building/wonder index), non-negative are
+            # unit types.
+            if p.get('prodItem') != c.get('prodItem'):
+                events.append({'time_ms': round(ms, 1), 'turn': turn,
+                               'event': 'CITY_PRODUCTION_CHANGED',
+                               'cityIdx': idx,
+                               'owner': c.get('owner'),
+                               'from': p.get('prodItem'),
+                               'to': c.get('prodItem')})
 
     # Units: created (uid went 0→N), killed (N→0), moved (x/y changed),
     # order changed. Iterate by slot index.

@@ -569,6 +569,26 @@ if (turns > 0) {
         // event type (pre-2026-04-22 sessions don't emit it).
         if (ev.uid == null || ev.to == null) return [];
         return [{ type: '__UNIT_MOVESPENT__', uid: ev.uid, to: ev.to }];
+      case 'CITY_PRODUCTION_CHANGED': {
+        // Replay binary's AI production-item choice. v3's AI picks its
+        // own item (often cheaper), completes on a different turn, and
+        // cascades into phantom units / slot-shift diffs. Overriding
+        // the item directly skips v3's AI decision. Byte encoding
+        // matches parser.js:785: raw <= 0x3F is unit type, otherwise
+        // building/wonder with id = 256 - raw. Negative signed values
+        // (from sniffer's '<b') are equivalent: unsigned = raw + 256.
+        if (ev.cityIdx == null || ev.to == null) return [];
+        const raw = ev.to < 0 ? (ev.to + 256) : ev.to;
+        let item;
+        if (raw <= 0x3F) {
+          item = { type: 'unit', id: raw };
+        } else {
+          const bid = 256 - raw;
+          item = { type: bid >= 39 ? 'wonder' : 'building', id: bid };
+        }
+        return [{ type: '__CITY_PROD_SET__', cityIdx: ev.cityIdx, item,
+                  prodRaw: raw }];
+      }
       case 'GOLD_CHANGED': {
         // Most gold events are normal per-turn tax income that v3
         // derives itself from trade × taxRate. Don't replay those —
@@ -754,6 +774,16 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, moveSpent: action.to, movesSpent: action.to }
                     : u),
+              };
+              continue;
+            }
+            if (action.type === '__CITY_PROD_SET__') {
+              gameState = {
+                ...gameState,
+                cities: gameState.cities.map((c, i) =>
+                  i === action.cityIdx && c
+                    ? { ...c, itemInProduction: action.item, prodRaw: action.prodRaw }
+                    : c),
               };
               continue;
             }
@@ -1535,6 +1565,16 @@ if (turns > 0) {
                 u && (u.id === action.uid || u.sequenceId === action.uid)
                   ? { ...u, moveSpent: action.to, movesSpent: action.to }
                   : u),
+            };
+            continue;
+          }
+          if (action.type === '__CITY_PROD_SET__') {
+            gameState = {
+              ...gameState,
+              cities: gameState.cities.map((c, i) =>
+                i === action.cityIdx && c
+                  ? { ...c, itemInProduction: action.item, prodRaw: action.prodRaw }
+                  : c),
             };
             continue;
           }
