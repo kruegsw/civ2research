@@ -81,6 +81,13 @@ function getFlagValue(name) {
 }
 const replayPath = getFlagValue('--replay');
 
+// --replay-yields: when set, CITY_YIELD events are applied as absolute SETs
+// on cities[cityIdx].foodStored/shieldStored/tradeTotal/size. Closes the
+// mid-turn-yield-cache tag (those small ±10 deltas) in exchange for hiding
+// any v3 production.js divergence. Default off — we want those mismatches
+// visible. Turn on for a fidelity ceiling measurement.
+const replayYields = args.includes('--replay-yields');
+
 // The parser post-processes a few raw bytes into friendly names.
 // Map them back to ints so the schema matches what the sniffer reads
 // directly from memory.
@@ -551,13 +558,11 @@ if (turns > 0) {
         return [];
       }
       case 'CITY_YIELD':
-        // Diagnostic only — NOT applied to state. The diff tooling
-        // surfaces these so we can attribute per-city shield/food/trade
-        // mismatches to the specific turn and see the binary's actual
-        // yields alongside v3's predicted yields. Returning [] means
-        // the harness ignores the event while still keeping it in the
-        // event stream for other consumers (e.g. state-diff comparing
-        // predicted vs observed).
+        // Handled by a dedicated pass at end-of-simulation (see search
+        // for "CITY_YIELD dedicated pass"). Returning [] here keeps
+        // per-civ event buckets clean of yield SETs; the dedicated pass
+        // scans ALL buckets so events for civs with no END_TURN in the
+        // activeCiv order still get applied. Diagnostic-only otherwise.
         return [];
       default:
         return [];  // TECH_DISCOVERED, TURN_ADVANCED, GOLD_CHANGED (v3 predicts), etc.
@@ -627,6 +632,9 @@ if (turns > 0) {
         // event's x/y, NOT the city tile — AI moves the new unit
         // post-production in the same turn).
         'UNIT_CREATED']);
+      // CITY_YIELD is NOT routed via this per-civ bucket — events for
+      // civs whose END_TURN is skipped (activeCiv order quirks) would
+      // be dropped. Handled in a dedicated final pass below.
       const preEvents = replayEvents.filter(e => !POST_END_TYPES.has(e.event));
       const postEvents = replayEvents.filter(e => POST_END_TYPES.has(e.event));
       if (preEvents.length > 0) {
@@ -994,7 +1002,15 @@ if (turns > 0) {
   const postWrapEvents = [];
   for (const [key, batch] of replayEventsByTurnCiv) {
     const [evTurn] = key.split(':').map(Number);
-    if (evTurn === postWrapTurn) postWrapEvents.push(...batch);
+    if (evTurn === postWrapTurn) {
+      // CITY_YIELD tagged turn=N captures state AFTER turn-N processing
+      // ends. That's the content of turn_000(N+1).bin. When the sim has
+      // advanced to postWrapTurn=N+1, events keyed N+1 describe the
+      // NEXT turn's yields — not what we're predicting. Skip them here;
+      // the in-loop applier already consumed the correct events
+      // (keyed postWrapTurn-1).
+      postWrapEvents.push(...batch.filter(e => e.event !== 'CITY_YIELD'));
+    }
   }
   if (postWrapEvents.length > 0) {
     process.stderr.write(`[replay] post-wrap: ${postWrapEvents.length} events at turn ${postWrapTurn}\n`);
@@ -1675,6 +1691,63 @@ if (turns > 0) {
     };
     applyBatch(deferredPostEvents);
   }
+
+  // CITY_YIELD dedicated pass — runs AFTER all other event handling.
+  // Applies all CITY_YIELD events tagged with the simulation's STARTING
+  // turn as absolute SETs. These events capture the binary's post-turn
+  // foodBox/shieldBox/tradeNet for each city, which is exactly the
+  // snapshot we're comparing against. Deliberately last so v3's
+  // production calc + any cascading events are overwritten. Skipped
+  // unless --replay-yields. Scans ALL civs' buckets so events for
+  // civs whose END_TURN was skipped (activeCiv order quirks) still
+  // get applied.
+  if (replayYields) {
+    // CITY_YIELD events tagged turn=N capture the state AT
+    // TURN_ADVANCED to turn N, which is the content of turn_000N.bin.
+    // For a simulation going from turn M to M+1 (end goal: match
+    // turn_000(M+1).bin), we want CITY_YIELD events tagged M+1.
+    const targetTurn = (gameState.turn?.number ?? 0);
+    let setCount = 0;
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      const [evTurn] = key.split(':').map(Number);
+      if (evTurn !== targetTurn) continue;
+      for (const ev of batch) {
+        if (ev.event !== 'CITY_YIELD') continue;
+        if (ev.cityIdx == null) continue;
+        const ci = ev.cityIdx;
+        gameState = {
+          ...gameState,
+          cities: gameState.cities.map((c, i) => {
+            if (i !== ci || !c) return c;
+            const upd = { ...c };
+            if (ev.size != null) upd.size = ev.size;
+            // Write BOTH v3-engine field names (foodInBox/shieldsInBox/
+            // netBaseTrade) and parser-format names (foodStored/
+            // shieldStored/tradeTotal) — the serializer at end of file
+            // prefers v3-engine names when present (post-END_TURN state).
+            if (ev.foodBox != null) {
+              upd.foodInBox = ev.foodBox;
+              upd.foodStored = ev.foodBox;
+            }
+            if (ev.shieldBox != null) {
+              upd.shieldsInBox = ev.shieldBox;
+              upd.shieldStored = ev.shieldBox;
+            }
+            if (ev.tradeNet != null) {
+              upd.netBaseTrade = ev.tradeNet;
+              upd.tradeTotal = ev.tradeNet;
+            }
+            return upd;
+          }),
+        };
+        setCount++;
+      }
+    }
+    if (setCount > 0) {
+      process.stderr.write(`[replay] CITY_YIELD pass: applied ${setCount} yield SETs for turn ${targetTurn}\n`);
+    }
+  }
+
   post = gameState;
 
   // Phantom-unit cleanup and nextUnitId ceiling both removed. They
