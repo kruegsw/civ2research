@@ -1474,6 +1474,17 @@ if (turns > 0) {
       if (ev.event === 'UNIT_CREATED' && prepassHandledUids.has(ev.uid)) {
         continue;
       }
+      // Skip UNIT_MOVESPENT_CHANGED if a later UNIT_MOVED for the same
+      // uid is in the post-wrap batch — the MOVED inline handler above
+      // sets moveSpent to the event-time value (authoritative when
+      // position changed). Deferred MOVESPENT would fire AFTER the
+      // inline MOVED and overwrite with a stale earlier value.
+      if (ev.event === 'UNIT_MOVESPENT_CHANGED' && ev.uid != null) {
+        const laterMoved = postWrapEvents.some(e =>
+          e.event === 'UNIT_MOVED' && e.uid === ev.uid
+          && (e.time_ms ?? 0) > (ev.time_ms ?? 0));
+        if (laterMoved) continue;
+      }
       if (ev.event !== 'UNIT_MOVED' && ev.event !== 'UNIT_ORDER'
           && ev.event !== 'TURN_ADVANCED') {
         deferredPostEvents.push(ev);
