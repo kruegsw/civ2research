@@ -66,6 +66,8 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
       acqTechCounts: ev.acqTechCounts ?? null,
       knowsTechByte: ev.knowsTechByte ?? null,
       knowsTechBytes: ev.knowsTechBytes ?? null,
+      leaderPersByte: ev.leaderPersByte ?? null,
+      styleLeader: ev.styleLeader ?? null,
     };
   } else if (ev.kind === 'return' && pending) {
     calls.push({ ...pending, retval: ev.retval });
@@ -161,6 +163,7 @@ for (const c of deduped) {
   // binary memory to sidestep v3 snapshot drift. Validator-only hint.
   if (c.knowsTechByte != null) state.knowsTechByte = c.knowsTechByte;
   if (c.knowsTechBytes) state.knowsTechBytes = c.knowsTechBytes;
+  if (c.leaderPersByte != null) state.leaderPersByte = c.leaderPersByte;
   if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
     // Binary computes tech values BEFORE distributing starting techs,
     // so DAT_00655b82 is all-zero at game start. Clear every civ's

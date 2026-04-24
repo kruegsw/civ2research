@@ -425,10 +425,17 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   const dbg = !!process.env.DEBUG_TECH_VAL;
   const dbgBreakdown = dbg ? {} : null;
 
-  // ── Leader personality (expansionism value) ──
-  // FUN_004bdb2c line 6071: local_38 = leaderPersonality[rulesCivNumber * 0x30]
+  // ── Leader personality (civilize score) ──
+  // FUN_004bdb2c line 6071: local_38 = DAT_006554FA[styleLeader * 0x30]
+  // Civ 2 may change styleLeader mid-game when destroyed+respawned
+  // (e.g., Japanese civ 2 at turn 44 → Zulus civ 2 at turn 49 in
+  // session 115815). v3's snapshot captures the OLD civ's
+  // rulesCivNumber and doesn't see the change. When Frida captures
+  // the actual leaderPers byte per-call, use it directly.
   const rulesCivNum = civ.rulesCivNumber ?? 0;
-  let leaderPers = getLeaderPersonality(rulesCivNum);
+  let leaderPers = (typeof gameState.leaderPersByte === 'number')
+    ? gameState.leaderPersByte
+    : getLeaderPersonality(rulesCivNum);
   if (dbg) dbgBreakdown.leaderPers_initial = leaderPers;
 
   // ── Hostility-based personality damping ──
