@@ -493,21 +493,54 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   // apply the naval bonus. The decompiled code checks per-continent arrays,
   // which we don't have. We apply a simplified heuristic.
   if (navalScore > 0) {
-    // Binary FUN_004bdb2c lines 6115-6145 — continent-based naval bonus:
-    //   if civ has a continent with NO other civ presence → +navalScore
-    //   else if non-human OR scenario flag 4 set → +1
-    //   else → 0
-    // Without per-continent presence data we can't detect the
-    // "isolated continent" case. Empirically, turn-1 captures show the
-    // +1 path is by far the most common (~80% of cases), while the
-    // previous "!hasMapMaking → +navalScore" approximation overshot by
-    // 1-2 on most picks. Conservatively apply the +1 path until
-    // continent-presence is captured via Frida.
-    // TODO: once gameState.continentPresence is populated, replicate
-    // the per-continent bVar2 scan here.
-    const isHuman = isHumanCiv(gameState, civSlot);
+    // Binary FUN_004bdb2c:6115-6145 — per-continent presence scan.
+    // For each continent (1..0x3F) where this civ has presence
+    // (civ_base+0x292[c] != 0):
+    //   - If ANY other civ also has presence on that continent → bVar2 = true
+    //   - If no other civ has presence → local_34 = 1 (isolated continent)
+    //
+    // After the loop:
+    //   if local_34 == 1 (isolated continent found): score += navalScore
+    //   else if (!bVar2 || scenarioFlag4): score += 1
+    //   else: +0
+    //
+    // Critical: the `!bVar2` branch fires regardless of human/AI — it
+    // fires whenever the civ has no continent presence at all (bVar2
+    // never set true because outer loop body never executes). Earlier
+    // v3 gated this on `!isHuman`, which is wrong and caused systematic
+    // -1 for human civs at game start (verified via session 105727).
+    //
+    // Also replicates the inner-loop "territory" check
+    // (DAT_0064c832[...]) which adds territory claims, not just city
+    // presence, via gameState.civTerritory.
+    // The "isolated continent → +navalScore" branch is effectively
+    // dead code in the binary. The inner continent-scan check at
+    // line 6123 reads `param_1`'s OWN presence/territory (not
+    // local_14's), which is already guaranteed true by the outer
+    // loop's gate at line 6119. So as long as ANY other civ slot
+    // exists (barbarians=slot 0 always exist), bVar3 is set true on
+    // iteration local_14=0, and local_34 stays 0.
+    //
+    // After simplification:
+    //   bVar2 = true IFF this civ is human AND has presence on any
+    //                    continent (set via the `param_1 is human` gate
+    //                    at line 6126).
+    //   score += 1 IFF (!bVar2 || scenario flag 4).
+    //
+    // So:
+    //   AI civs (bVar2 stays false): +1 always
+    //   Humans with presence: bVar2=true → +0 (unless scenario4)
+    //   Humans with no presence: bVar2=false → +1
+    const iAmHuman = isHumanCiv(gameState, civSlot);
+    const cp = gameState.civContinents;
+    let bVar2 = false;
+    if (iAmHuman && cp && cp[civSlot]) {
+      for (let c = 1; c < 0x3F; c++) {
+        if (cp[civSlot][c]) { bVar2 = true; break; }
+      }
+    }
     const scenarioBit4 = ((gameState.scenarioFlags ?? 0) & 0x04) !== 0;
-    if (!isHuman || scenarioBit4) score += 1;
+    if (!bVar2 || scenarioBit4) score += 1;
   }
   if (dbg) dbgBreakdown.after_naval = score;
 

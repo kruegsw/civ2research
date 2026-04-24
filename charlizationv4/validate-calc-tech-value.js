@@ -56,6 +56,12 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
       strategicGoal: ev.tvGlobals?.strategicGoal,
       scenarioFlags: ev.tvGlobals?.scenarioFlags,
       aliveMask: ev.tvGlobals?.aliveMask,
+      // Decode continents: array of 8 hex strings → array of 8 Uint8Arrays
+      continents: ev.continents ? ev.continents.map(hex => {
+        const out = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i*2, i*2+2), 16);
+        return out;
+      }) : null,
     };
   } else if (ev.kind === 'return' && pending) {
     calls.push({ ...pending, retval: ev.retval });
@@ -138,6 +144,8 @@ for (const c of deduped) {
   // `aliveMask` in the trace is misnamed — the Frida agent reads
   // DAT_00655BCE (the tech-adoption mask), not an alive mask.
   if (c.aliveMask != null) state.techAdoptionMask = c.aliveMask;
+  // Per-civ continent-presence bitmap captured from binary memory.
+  if (c.continents) state.civContinents = c.continents;
   if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
     // Binary computes tech values BEFORE distributing starting techs,
     // so DAT_00655b82 is all-zero at game start. Clear every civ's
