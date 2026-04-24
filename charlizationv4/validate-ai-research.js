@@ -77,43 +77,79 @@ if (calls.length === 0) {
   process.exit(1);
 }
 
-// ── Load the initial snapshot as v3 state (one-time setup) ──────────
-// For init-time picks at turn 0-1, turn_0000.bin is the right input.
-// For later picks (tech completions), we'd need to load the
-// closest snapshot — future refinement.
-const initSnap = join(sessionDir, 'turn_0000_80x50_deity.bin');
-if (!existsSync(initSnap)) {
-  console.error(`No turn_0000.bin in ${sessionDir}`);
-  process.exit(1);
-}
-
-loadSnapshotIntoMem(initSnap);
-const savBuf = buildSav();
-const parsed = Civ2Parser.parse(savBuf, initSnap);
-const savHumanPlayers = parsed.gameState?.humanPlayers ?? 0;
-const savCivsAlive = parsed.gameState?.civsAlive ?? 0;
-const aliveCivs = [];
-for (let i = 1; i < 8; i++) if (savCivsAlive & (1 << i)) aliveCivs.push(i);
-const seatList = [];
-for (let i = 0; i < 7; i++) {
-  const civSlot = i < aliveCivs.length ? aliveCivs[i] : (i + 1);
-  const isHuman = !!((1 << civSlot) & savHumanPlayers);
-  seatList.push({ seatIndex: i, name: `Civ${civSlot}`, ai: !isHuman });
-}
-const initResult = initFromSav(parsed, seatList);
-const baseState = initResult.gameState;
-const mapBase = initResult.mapBase;
-
-// Import after state is ready
+// ── Per-turn state loader ───────────────────────────────────────────
+// A pick tagged turn=N needs v3 state built from turn_000N.bin.
+// For turn=0 (init-time picks fire before the first TURN_ADVANCED),
+// fall back to turn_0000.bin.
 const econai = await import('../charlizationv3/engine/ai/econai.js');
+const stateCache = new Map();
+
+function loadStateForTurn(turn) {
+  if (stateCache.has(turn)) return stateCache.get(turn);
+  // Walk down from requested turn to 0, picking the first existing snapshot.
+  let t = turn;
+  let snapPath;
+  while (t >= 0) {
+    const p = join(sessionDir, `turn_${String(t).padStart(4, '0')}_80x50_deity.bin`);
+    if (existsSync(p)) { snapPath = p; break; }
+    t--;
+  }
+  if (!snapPath) {
+    console.error(`  No snapshot found for turn <= ${turn}`);
+    return null;
+  }
+  loadSnapshotIntoMem(snapPath);
+  const savBuf = buildSav();
+  const parsed = Civ2Parser.parse(savBuf, snapPath);
+  const savHumanPlayers = parsed.gameState?.humanPlayers ?? 0;
+  const savCivsAlive = parsed.gameState?.civsAlive ?? 0;
+  const aliveCivs = [];
+  for (let i = 1; i < 8; i++) if (savCivsAlive & (1 << i)) aliveCivs.push(i);
+  const seatList = [];
+  for (let i = 0; i < 7; i++) {
+    const civSlot = i < aliveCivs.length ? aliveCivs[i] : (i + 1);
+    const isHuman = !!((1 << civSlot) & savHumanPlayers);
+    seatList.push({ seatIndex: i, name: `Civ${civSlot}`, ai: !isHuman });
+  }
+  const initResult = initFromSav(parsed, seatList);
+  const bundle = {
+    baseState: initResult.gameState,
+    mapBase: initResult.mapBase,
+    loadedFromTurn: t,
+  };
+  stateCache.set(turn, bundle);
+  return bundle;
+}
 
 // ── Validate each captured call ─────────────────────────────────────
 let matched = 0, mismatched = 0;
 const mismatches = [];
 
 for (const c of calls) {
+  const bundle = loadStateForTurn(c.turn);
+  if (!bundle) continue;
   // Clone state (shallow) so each validation is independent
-  const state = { ...baseState, rng: new SeededRNG(c.rand_enter) };
+  const state = { ...bundle.baseState, rng: new SeededRNG(c.rand_enter) };
+  // Init-time picks (FUN_004c09b0 called from new_civ) fire BEFORE the
+  // starting tech is granted. The snapshot captures post-init state
+  // which has the starting tech. For init-time validation, clear the
+  // civ's tech bitmask so v3's pickResearchGoal sees the same state
+  // the binary saw when it made the pick.
+  if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
+    state.civTechs = state.civTechs ? state.civTechs.slice() : [];
+    state.civTechs[c.civSlot] = new Set();
+    if (state.civs?.[c.civSlot]) {
+      state.civs = state.civs.slice();
+      state.civs[c.civSlot] = { ...state.civs[c.civSlot], acquiredTechCount: 0 };
+    }
+  }
+  const mapBase = bundle.mapBase;
+  if (process.env.DEBUG_STATE) {
+    const techs = state.civTechs?.[c.civSlot];
+    const techList = techs ? [...techs].sort((a,b)=>a-b) : [];
+    const civD = state.civs?.[c.civSlot];
+    console.log(`  [state] turn=${c.turn} civ=${c.civSlot} techs=[${techList.join(',')}] count=${civD?.acquiredTechCount} humanPlayers=0x${(state.humanPlayers||0).toString(16)}`);
+  }
   let v3Pick;
   try {
     v3Pick = econai.pickResearchGoal

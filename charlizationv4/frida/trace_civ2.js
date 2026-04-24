@@ -210,6 +210,14 @@ const TARGETS = [
   // run port, expect identical pick AND ending holdrand = rand_exit).
   { va: 0x004C09B0, name: 'ai_research_pick', args: 1, argNames: ['civSlot'],
     readRet: true, captureRand: true },
+  // FUN_004bdb2c — calcTechValue, called ~7× per ai_research_pick at
+  // game start (once per can-research candidate) and then periodically
+  // after tech completions. ~20-50 calls per captured session, low
+  // overhead. captureRand isn't needed (the function doesn't use rand),
+  // but readRet gives us the authoritative techValue per (civ, tech)
+  // that the v3 port must reproduce. Args: civSlot, techId.
+  { va: 0x004BDB2C, name: 'ai_calc_tech_value', args: 2,
+    argNames: ['civSlot', 'techId'], readRet: true },
   { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
   { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating

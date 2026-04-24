@@ -196,18 +196,24 @@ function largestCitySize(gameState, civSlot) {
  * for our purposes, seat assignment determines this.
  */
 function isHumanCiv(gameState, civSlot) {
-  // In multiplayer, all seated civs are human. For AI evaluation,
-  // we treat the evaluated civ as AI (non-human) by convention.
-  // The decompiled code checks `(1 << civSlot) & DAT_00655b0b` where
-  // DAT_00655b0b is the "human players" bitmask.
-  // In our game state, we approximate: if a civ has a seat, it's human.
+  // Authoritative check matches the binary at FUN_004c09b0:126:
+  //   (1 << civSlot) & DAT_00655b0b
+  // DAT_00655b0b = humanPlayers bitmask (bit N = civ N human).
+  // init.js populates gameState.humanPlayers from the save's header.
+  // Prior implementation used seatCivMap which marks all SEATED civs
+  // as human (correct for multiplayer, wrong for pickResearchGoal
+  // where the question is "is this specific civ a human player").
+  if (gameState.humanPlayers != null) {
+    return !!((1 << civSlot) & gameState.humanPlayers);
+  }
+  // Fallback only when humanPlayers isn't populated (shouldn't happen
+  // in practice; initFromSav always sets it).
   if (gameState.seatCivMap) {
     for (const seat of Object.values(gameState.seatCivMap)) {
       if (seat === civSlot) return true;
     }
     return false;
   }
-  // Fallback: civ slot 1 is typically human in single-player
   return civSlot === 1;
 }
 
@@ -691,16 +697,24 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
                                                   // per trace_civ2.js comment it
                                                   // aliases the difficulty byte
 
+  const debug = !!process.env.DEBUG_RESEARCH_PICK;
+  const dbgLog = [];
+  if (debug) {
+    process.stderr.write(`[DEBUG_RESEARCH_PICK] civ=${civSlot} human=${human} aiSeed=${aiSeed} dat655b08=${dat655b08} availCount=${available.length} avail=[${available.join(',')}]\n`);
+  }
+
   for (const techId of available) {
     candidateCount++;
 
     // Binary's outer filter (human-only throttle):
     if (human && candidateCount > 1 && dat655b08 !== 0
         && (((techId - aiSeed) % 3) === 0)) {
+      if (debug) dbgLog.push(`  skip techId=${techId} (%3 human throttle)`);
       continue;
     }
 
     const techVal = calcTechValue(civSlot, techId, gameState, mapBase);
+    const rngStateBefore = gameState.rng?.state;
     let selectionScore;
 
     if (!human) {
@@ -718,11 +732,21 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
       selectionScore = (gameState.rng ? gameState.rng.nextInt(3) : Math.floor(Math.random() * 3)) + techVal - 1;
     }
 
+    if (debug) {
+      const rngStateAfter = gameState.rng?.state;
+      dbgLog.push(`  tech=${techId} techVal=${techVal} rng_before=0x${(rngStateBefore>>>0).toString(16)} rng_after=0x${(rngStateAfter>>>0).toString(16)} score=${selectionScore}${selectionScore > bestScore ? ' *BEST*' : ''}`);
+    }
+
     // Lines 146-149: keep the highest scoring tech
     if (selectionScore > bestScore) {
       bestScore = selectionScore;
       bestTech = techId;
     }
+  }
+
+  if (debug) {
+    for (const l of dbgLog) process.stderr.write(l + '\n');
+    process.stderr.write(`[DEBUG_RESEARCH_PICK] civ=${civSlot} bestTech=${bestTech} bestScore=${bestScore}\n`);
   }
 
   return bestTech;
