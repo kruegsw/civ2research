@@ -1311,6 +1311,17 @@ def emit_action_events(prev, curr, t0, events_path):
             'currentYear': curr.get('currentYear'),
         })
 
+    # activeUnit pointer (memory 0x00655afe i16 — DAT_00655afe). Binary
+    # rotates this through the AI's unit-cycle pick. v3 has no equivalent
+    # logic, so without capturing the observed transitions it defaults
+    # to 0/-1. Replay closes the active-unit-heuristic tag.
+    if prev.get('activeUnit') != curr.get('activeUnit'):
+        events.append({'time_ms': round(ms, 1), 'turn': turn,
+                       'event': 'ACTIVE_UNIT_CHANGED',
+                       'civ': ac,  # routing key — activeCiv at moment of change
+                       'from': prev.get('activeUnit'),
+                       'to': curr.get('activeUnit')})
+
     # Game-flag bit changes (bloodlust, cheatMenu, cheatPenalty, etc.).
     # The parser decodes 60+ named flags from save 0x0C..0x17; we track
     # the gameplay-relevant subset here. Each flipped bit emits a typed

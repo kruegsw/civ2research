@@ -581,6 +581,11 @@ if (turns > 0) {
         // event type (pre-2026-04-22 sessions don't emit it).
         if (ev.uid == null || ev.to == null) return [];
         return [{ type: '__UNIT_MOVESPENT__', uid: ev.uid, to: ev.to }];
+      case 'ACTIVE_UNIT_CHANGED':
+        // Binary's DAT_00655afe (current unit cycle pointer). v3 has no
+        // equivalent AI heuristic. Replay the observed target directly.
+        if (ev.to == null) return [];
+        return [{ type: '__ACTIVE_UNIT_SET__', to: ev.to }];
       case 'CITY_PRODUCTION_CHANGED': {
         // Replay binary's AI production-item choice. v3's AI picks its
         // own item (often cheaper), completes on a different turn, and
@@ -809,6 +814,10 @@ if (turns > 0) {
                     ? { ...c, itemInProduction: action.item, prodRaw: action.prodRaw }
                     : c),
               };
+              continue;
+            }
+            if (action.type === '__ACTIVE_UNIT_SET__') {
+              gameState = { ...gameState, activeUnit: action.to };
               continue;
             }
             if (action.type === '__UNIT_STATUS__') {
@@ -1623,6 +1632,10 @@ if (turns > 0) {
                   ? { ...c, itemInProduction: action.item, prodRaw: action.prodRaw }
                   : c),
             };
+            continue;
+          }
+          if (action.type === '__ACTIVE_UNIT_SET__') {
+            gameState = { ...gameState, activeUnit: action.to };
             continue;
           }
           if (action.type === '__TECH_DISCOVERED__') {
