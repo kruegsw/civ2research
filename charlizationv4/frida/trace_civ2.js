@@ -203,7 +203,18 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: Research
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x004C2788, name: 'fun_research_cost',   args: 1, argNames: ['civSlot'], readRet: true },
+  // FUN_004c2788 — calcResearchCost (1003 bytes). Pure function: returns
+  // the beaker cost for civ to research its next tech. Inputs are civ's
+  // acqTechCount+futureTechCount, difficulty, leader civ stats, and a
+  // handful of cosmic/scenario globals.
+  { va: 0x004C2788, name: 'fun_research_cost', args: 1, argNames: ['civSlot'],
+    readRet: true, captureResearchCostGlobals: true },
+  // FUN_004bd2a3 — food/city-stability classifier (770 bytes). Returns
+  // 1-6 enum from per-civ city food balance + civ govt/rates. Has one
+  // side effect (calls FUN_004eb4ed per-city when DAT_00655aee bit 2
+  // was set + govt > 4), but port mirrors only the return value.
+  { va: 0x004BD2A3, name: 'fun_food_strategy', args: 1, argNames: ['civSlot'],
+    readRet: true, captureFoodStrategyGlobals: true },
   // FUN_004c09b0 — AI research-target picker. captureRand records
   // holdrand at entry/exit + return value so the v3 port can be
   // validated pick-for-pick (seed v3's SeededRNG with rand_enter,
@@ -490,6 +501,75 @@ function readChooseGovtGlobals(base, civSlot) {
       civAcqTechCount: civBase.add(0x10).readU8(),
       leaderAcqTechCount: leaderBase.add(0x10).readU8(),
       govtPrefs,
+    };
+  } catch (_) { return null; }
+}
+
+// Capture globals FUN_004bd2a3 (food strategy classifier).
+// Reads civ+0x13 (sci), +0x14 (tax), +0x15 (govt), DAT_00655aee (pre-
+// clear), DAT_00655b18 (city count), and per-city bytes:
+//   city+0x0: flags (bit 1 = disorder-ish, bit 2 = flag2)
+//   city+0x4e: food supply
+//   city+0x4f: food demand
+function readFoodStrategyGlobals(base, civSlot) {
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const civBase = base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE);
+    const CITY_BASE = 0x0064F340;  // per memory: city array base
+    const CITY_STRIDE = 0x58;
+    const cityCount = base.add(0x00655B18 - 0x00400000).readU16();
+    // Gather per-civ cities' relevant bytes
+    const cities = [];
+    for (let i = 0; i < cityCount; i++) {
+      const cBase = base.add(CITY_BASE - 0x00400000 + i * CITY_STRIDE);
+      const cityFlags = cBase.readU32();        // city+0x0 (4-byte flags)
+      if (cityFlags === 0) continue;             // city slot empty
+      const owner = cBase.add(0x08).readS8();    // city+0x8 = owner per memory
+      if (owner !== civSlot) continue;
+      cities.push({
+        idx: i,
+        flags: cityFlags,
+        foodSupply: cBase.add(0x4e).readS8(),
+        foodDemand: cBase.add(0x4f).readS8(),
+      });
+    }
+    return {
+      civSci:  civBase.add(0x13).readU8(),
+      civTax:  civBase.add(0x14).readU8(),
+      civGovt: civBase.add(0x15).readU8(),
+      dat655aee: base.add(0x00655AEE - 0x00400000).readU16(),  // pre-clear
+      cities,
+    };
+  } catch (_) { return null; }
+}
+
+// Capture globals FUN_004c2788 (calcResearchCost) reads.
+// Per-civ: acqTechCount (+0x10) + futureTechCount (+0x12) for civSlot
+// AND for the leader civ (DAT_00655c20). Plus ~10 globals.
+function readResearchCostGlobals(base, civSlot) {
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const civBase = base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE);
+    const leaderSlot = base.add(0x00655C20 - 0x00400000).readU8();
+    const leaderBase = base.add(CIV_BASE - 0x00400000 + leaderSlot * STRIDE);
+    return {
+      // Globals used by FUN_004c2788
+      difficulty: base.add(0x00655B08 - 0x00400000).readU8(),
+      humanPlayers: base.add(0x00655B0B - 0x00400000).readU8(),
+      scenarioFlags: base.add(0x00655AF0 - 0x00400000).readU8(),
+      scenarioFlagBcb4: base.add(0x0064BCB4 - 0x00400000).readU8(),
+      scenarioTechParadigm: base.add(0x0064BCB2 - 0x00400000).readU8(),
+      cosmicTechParadigm: base.add(0x0064BCD3 - 0x00400000).readU8(),
+      leaderSlot,
+      techCounter: base.add(0x00655AF8 - 0x00400000).readS32(),  // DAT_00655AF8
+      numDefinedTechs: base.add(0x00655B1A - 0x00400000).readS32(),  // DAT_00655B1A
+      // Per-civ
+      civAcqTechCount: civBase.add(0x10).readU8(),
+      civFutureTechCount: civBase.add(0x12).readU8(),
+      leaderAcqTechCount: leaderBase.add(0x10).readU8(),
+      leaderFutureTechCount: leaderBase.add(0x12).readU8(),
     };
   } catch (_) { return null; }
 }
@@ -798,6 +878,15 @@ function attachHook(entry) {
           msg.govtGlobals = readCanUseGovtGlobals(base);
           msg.knowsTechBytes = readAllKnowsTechBytes(base);
         }
+        // FUN_004c2788 globals: per-civ acqTechCount + futureTechCount
+        // for both civ and leader, plus difficulty/cosmic/scenario bits.
+        if (entry.captureResearchCostGlobals && msg.named && msg.named.civSlot != null) {
+          msg.researchCostGlobals = readResearchCostGlobals(base, msg.named.civSlot);
+        }
+        // FUN_004bd2a3 globals: civ rates + per-city food/flags.
+        if (entry.captureFoodStrategyGlobals && msg.named && msg.named.civSlot != null) {
+          msg.foodStrategyGlobals = readFoodStrategyGlobals(base, msg.named.civSlot);
+        }
         // FUN_0055f5a3 globals: full context for the decision. Also
         // save civSlot for the onLeave handler so it can read the
         // post-call civ+0x15 and report which govt was chosen.
@@ -889,6 +978,8 @@ const SLIM_HOOK_NAMES = new Set([
   'ai_calc_tech_value',
   'can_use_government',
   'choose_government',
+  'fun_research_cost',
+  'fun_food_strategy',
   // Plus bare minimum for session context (turn boundaries):
   'civ_turn_driver',
   'mgl_active_civ_on',

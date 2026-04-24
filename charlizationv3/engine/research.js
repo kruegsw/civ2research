@@ -77,6 +77,100 @@ export function getAvailableResearch(gameState, civSlot) {
  * @param {number} civSlot
  * @returns {number} beakers needed for the next tech
  */
+/**
+ * Byte-exact port of FUN_004c2788. Used when Frida has captured the
+ * binary's globals; v3's existing heuristic calcResearchCost (below)
+ * is the fallback for live play.
+ *
+ * State must contain `researchCostGlobals` matching the Frida capture
+ * shape. Returns the beaker cost identically to FUN_004c2788.
+ */
+export function calcResearchCostExact(gameState, civSlot) {
+  const g = gameState.researchCostGlobals;
+  if (!g) return calcResearchCost(gameState, civSlot);
+
+  // Line 959-963: uVar1 = acqTechCount + futureTechCount; clamp min 1
+  let uVar1 = g.civAcqTechCount + g.civFutureTechCount;
+  if (uVar1 < 2) uVar1 = 1;
+
+  // Line 964: clamp difficulty to [0, 4]. (Deity=5 → 4)
+  let local_14 = Math.max(0, Math.min(4, g.difficulty));
+  // Line 965-970: AI vs human adjustment
+  const civBit = 1 << civSlot;
+  const isHuman = (g.humanPlayers & civBit) !== 0;
+  if (!isHuman) local_14 = 0xe - local_14;  // AI: 14 - diff
+  else local_14 = local_14 * 2 + 6;         // Human: 2*diff + 6
+
+  // Line 971-995: Leader comparison block
+  //   gated on: (scenarioFlags & 0x80) == 0 OR DAT_0064bcb4 == 0
+  if (((g.scenarioFlags & 0x80) === 0) || (g.scenarioFlagBcb4 === 0)) {
+    const leaderCombined = g.leaderAcqTechCount + g.leaderFutureTechCount;
+    if (uVar1 < leaderCombined) {
+      if (g.difficulty !== 0) local_14 -= 1;
+      // Deity special: if much further behind AND turn > 150 (tech counter), -1 more
+      if (g.difficulty === 5 && (uVar1 + 4 < leaderCombined) && (g.techCounter > 150)) {
+        local_14 -= 1;
+      }
+    } else {
+      // Ahead of leader: penalty = (excess / 3)
+      local_14 += Math.trunc((uVar1 - leaderCombined) / 3);
+    }
+    // Line 989-993: late-game adjustment. uVar1 > 19 only.
+    let local_10 = 0;
+    if (uVar1 > 0x13) {
+      // Binary: clamp(uVar1 - (techCounter + (techCounter>>31 & 7)) >> 3, 0, 6)
+      // The `>>31 & 7` is signed-divide-by-8 rounding fix. For non-negative
+      // techCounter it's just (techCounter >> 3) = floor(techCounter/8).
+      const sh = (g.techCounter < 0)
+        ? (g.techCounter + ((g.techCounter >> 31) & 7)) >> 3
+        : g.techCounter >> 3;
+      local_10 = Math.max(0, Math.min(6, uVar1 - sh));
+    }
+    local_14 += local_10;
+  }
+
+  // Line 996-1003: tech paradigm multiplier
+  if ((g.scenarioFlags & 0x80) === 0) {
+    if (g.cosmicTechParadigm !== 10) {
+      local_14 = Math.trunc((g.cosmicTechParadigm * local_14) / 10);
+    }
+  } else if (g.scenarioTechParadigm !== 10) {
+    local_14 = Math.trunc((g.scenarioTechParadigm * local_14) / 10);
+  }
+
+  // Line 1004-1009: baseCost += baseCost * 3/4 (scaled early)
+  let local_1c = (local_14 * 3) >> 2;
+  if (uVar1 < 0x14) {
+    local_1c = Math.trunc((uVar1 * local_1c) / 0x14);
+  }
+  local_14 = local_14 + local_1c;
+
+  // Line 1011-1013: defined-techs scaling
+  if (g.numDefinedTechs > 0x43) {
+    local_14 = Math.trunc((local_14 * 0x43) / g.numDefinedTechs);
+  }
+
+  // Line 1014-1015: scenario flag bit 4 (0x4) → *5/4
+  if ((g.scenarioFlags & 4) !== 0) {
+    const t = local_14 * 5;
+    local_14 = (t + ((t >> 31) & 3)) >> 2;
+  }
+  // Line 1017-1018: scenario flag bit 3 (0x8) → *4/5
+  if ((g.scenarioFlags & 8) !== 0) {
+    local_14 = Math.trunc((local_14 * 4) / 5);
+  }
+
+  // Line 1020-1023: human minimum floor
+  if (isHuman && local_14 < (0xb - uVar1)) {
+    local_14 = 0xb - uVar1;
+  }
+
+  // Line 1024-1027: final cost = local_14 * uVar1 with overflow clamp
+  let local_18 = local_14 * uVar1;
+  if (local_18 < 1 || local_18 > 32000) local_18 = 32000;
+  return local_18;
+}
+
 export function calcResearchCost(gameState, civSlot) {
   // Binary FUN_004c2788 uses tech_counter + futureTechCount (at civ_struct
   // offsets +0xB0 and +0xB1, aka save data_block +16 and +17). This is

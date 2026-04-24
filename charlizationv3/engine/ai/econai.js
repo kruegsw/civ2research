@@ -1151,6 +1151,75 @@ export function balanceRates(gameState, mapBase, civSlot) {
  * @returns {object|null} REVOLUTION action or null
  */
 /**
+ * foodStrategy — byte-exact port of FUN_004bd2a3.
+ *
+ * Returns a 1-6 enum classifying the civ's overall food/stability
+ * state, used by downstream AI strategy (not yet ported). Inputs come
+ * from gameState.foodStrategyGlobals (Frida capture):
+ *   civSci, civTax, civGovt, dat655aee, cities[{flags, foodSupply, foodDemand}]
+ *
+ * Return values (per decompiled block_004B0000.c:5940-5963):
+ *   1: food deficits AND bVar1 (rate-slack OK) AND flag1-deficit-city AND democracy
+ *   2: food deficits AND !bVar1
+ *   3: food deficits AND bVar1 AND (no flag1-deficit OR non-democracy)
+ *   4: no deficits AND !bVar1
+ *   5: no deficits AND bVar1 AND no flag2 cities
+ *   6: no deficits AND bVar1 AND has flag2 city
+ *
+ * bVar1: "civ can afford to shift rates". Computed differently based on
+ *   whether civ is in a government that caps sci+tax at 10 (non-republic/dem)
+ *   vs one that allows more slack.
+ */
+export function foodStrategy(gameState, civSlot) {
+  const g = gameState.foodStrategyGlobals;
+  if (!g) return 0;
+
+  const pre_dat655aee_bit2 = (g.dat655aee & 4) !== 0;
+  let foodDeficitCount = 0;         // local_10
+  let flag1DeficitCount = 0;        // local_c: subset with flag bit 1
+  let foodBalancedCount = 0;        // local_18
+  let flag2Count = 0;               // local_14
+
+  for (const c of g.cities) {
+    // Line 5911: side effect (not reproduced — FUN_004eb4ed call)
+    // Line 5914-5918: food deficit
+    if (c.foodSupply < c.foodDemand) {
+      foodDeficitCount++;
+      if ((c.flags & 1) !== 0) flag1DeficitCount++;
+    } else if (c.foodSupply === c.foodDemand) {
+      foodBalancedCount++;
+    }
+    // Line 5923-5925: flag bit 2
+    if ((c.flags & 2) !== 0) flag2Count++;
+  }
+
+  // bVar1 computation (lines 5928-5939)
+  let bVar1;
+  if (g.civGovt < 5) {
+    bVar1 = true;
+    // Specific "stable" case: no deficits, some balanced, no flag2,
+    // AND sci+tax exactly 10
+    if (foodDeficitCount === 0 && foodBalancedCount !== 0 &&
+        flag2Count === 0 && (g.civSci + g.civTax === 10)) {
+      bVar1 = false;
+    }
+  } else {
+    // Republic/Democracy: bVar1 = (sci+tax < 9) — i.e., rate slack exists
+    bVar1 = (g.civSci + g.civTax) < 9;
+  }
+
+  // Return tree (lines 5940-5963)
+  if (foodDeficitCount === 0) {
+    if (bVar1) return (flag2Count === 0) ? 5 : 6;
+    return 4;
+  } else if (bVar1) {
+    if (flag1DeficitCount === 0 || g.civGovt !== 6) return 3;
+    return 1;
+  }
+  return 2;
+}
+
+/**
  * chooseGovernment — byte-exact port of FUN_0055f5a3.
  *
  * Replays the binary's decision logic using captured Frida state:
