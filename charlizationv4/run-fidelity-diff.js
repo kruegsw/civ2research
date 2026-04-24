@@ -30,6 +30,10 @@ const OUT_DIR = join(__dirname, 'fidelity_gaps');
 function usage() {
   console.error('Usage: node run-fidelity-diff.js <save.sav> <snapshot.bin>');
   console.error('       node run-fidelity-diff.js --self <save.sav>');
+  console.error('Flags:');
+  console.error('  --turns N                    Run N turns in v3 before diff');
+  console.error('  --replay <events.jsonl>      Replay sniffer events through reducer');
+  console.error('  --replay-frida <trace.log>   Inject byte-exact AI decisions from Frida capture');
   process.exit(2);
 }
 
@@ -41,12 +45,28 @@ const turnsFlag = turnsArg
       ? turnsArg.split('=')[1]
       : args[args.indexOf(turnsArg) + 1])]
   : [];
-// Remove --turns and its value from positional args
+const replayFridaArg = args.find(a => a.startsWith('--replay-frida'));
+const replayFridaFlag = replayFridaArg
+  ? ['--replay-frida', (replayFridaArg.includes('=')
+      ? replayFridaArg.split('=')[1]
+      : args[args.indexOf(replayFridaArg) + 1])]
+  : [];
+const replayArg = args.find(a => a.startsWith('--replay') && a !== '--replay-frida' && !a.startsWith('--replay-frida'));
+const replayFlag = replayArg
+  ? ['--replay', (replayArg.includes('=')
+      ? replayArg.split('=')[1]
+      : args[args.indexOf(replayArg) + 1])]
+  : [];
+// Remove flags and their values from positional args
 const positional = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--self') continue;
   if (args[i].startsWith('--turns=')) continue;
   if (args[i] === '--turns') { i++; continue; }
+  if (args[i].startsWith('--replay-frida=')) continue;
+  if (args[i] === '--replay-frida') { i++; continue; }
+  if (args[i].startsWith('--replay=')) continue;
+  if (args[i] === '--replay') { i++; continue; }
   if (args[i].startsWith('--')) continue;
   positional.push(args[i]);
 }
@@ -75,7 +95,8 @@ function run(cmd, argv, opts = {}) {
 
 // ── Side B: v4 server state ──
 console.error(`[1/3] Dumping v4 state from ${savPath}${turnsN > 0 ? ` (N=${turnsN} turns)` : ''} …`);
-const v4Out = run('node', [join(__dirname, 'dump-server-state.js'), savPath, ...turnsFlag]);
+const v4Out = run('node', [join(__dirname, 'dump-server-state.js'), savPath,
+  ...turnsFlag, ...replayFridaFlag, ...replayFlag]);
 writeFileSync(v4Json, v4Out);
 console.error(`      → ${v4Json} (${v4Out.length.toLocaleString()} bytes)`);
 
