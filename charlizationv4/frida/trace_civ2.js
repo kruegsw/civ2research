@@ -717,6 +717,10 @@ function attachHook(entry) {
             // tech → binary's +1 noOneHas bonus fires.
             msg.knowsTechByte = readKnowsTechByte(base, msg.named.techId);
           }
+          // Full 100-byte DAT_00655B82 so the prereq-penalty block
+          // (line 6424-6430) can check each CHILD tech's bitmask
+          // byte-exact, not just the tech being scored.
+          msg.knowsTechBytes = readAllKnowsTechBytes(base);
           if (msg.named && msg.named.civSlot != null) {
             const styleLeader = readStyleLeader(base, msg.named.civSlot);
             msg.styleLeader = styleLeader;
