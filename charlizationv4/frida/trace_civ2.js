@@ -359,7 +359,13 @@ function readHoldrand(base) {
 const DAT_0064B3FB = 0x0064B3FB;  // strategic goal tech (signed byte)
 const DAT_0064C59E = 0x0064C59E;  // current research goal (free tech)
 const DAT_00655AF0 = 0x00655AF0;  // scenario flags (bit 2 = bloodlust)
-const DAT_00655BCE = 0x00655BCE;  // alive civs bitmask
+const DAT_00655BCE = 0x00655BCE;  // tech-adoption mask (NOT alive — misnamed below)
+const DAT_00655B82 = 0x00655B82;  // per-tech "who knows it" bitmask (byte per tech)
+const DAT_0064C4D6 = 0x0064C4D6;  // aqueduct tech id (byte)
+const DAT_0064C546 = 0x0064C546;  // sewer tech id (byte)
+const DAT_0064BCD1 = 0x0064BCD1;  // aqueduct city-size threshold (byte)
+const DAT_0064BCD2 = 0x0064BCD2;  // sewer city-size threshold (byte)
+const DAT_00655B18 = 0x00655B18;  // city count (iterated in aqueduct/sewer block)
 const LEADER_PERS_BASE = 0x006554FA;  // per-leader personality byte (expand),
                                        // indexed by styleLeader * 0x30
 const CIV_CONTINENT_BASE = 0x0064C932;  // per-(civ, continent) byte,
@@ -371,8 +377,27 @@ function readTechValueGlobals(base) {
       strategicGoal: base.add(DAT_0064B3FB - 0x00400000).readS8(),
       freeTechGoal: base.add(DAT_0064C59E - 0x00400000).readS16(),
       scenarioFlags: base.add(DAT_00655AF0 - 0x00400000).readU8(),
+      // `aliveMask` name kept for trace-backward-compat but this is
+      // actually the DAT_00655BCE tech-adoption mask (confirmed via
+      // reads showing 0 at init when all civs are alive).
       aliveMask: base.add(DAT_00655BCE - 0x00400000).readU8(),
+      aqueductTech: base.add(DAT_0064C4D6 - 0x00400000).readS8(),
+      sewerTech: base.add(DAT_0064C546 - 0x00400000).readS8(),
+      aqueductThreshold: base.add(DAT_0064BCD1 - 0x00400000).readU8(),
+      sewerThreshold: base.add(DAT_0064BCD2 - 0x00400000).readU8(),
+      cityCountGlobal: base.add(DAT_00655B18 - 0x00400000).readU8(),
     };
+  } catch (_) { return null; }
+}
+
+// Read the per-tech "who-knows" byte from DAT_00655B82 + techId. If byte
+// == 0, NO civ knows this tech → binary adds the +1 noOneHas bonus at
+// FUN_004bdb2c:6421. v3 currently scans civTechs; capturing the real
+// byte lets us cross-check whether our civTechs state matches binary.
+function readKnowsTechByte(base, techId) {
+  if (techId < 0 || techId >= 100) return null;
+  try {
+    return base.add(DAT_00655B82 - 0x00400000 + techId).readU8();
   } catch (_) { return null; }
 }
 
@@ -605,6 +630,9 @@ function attachHook(entry) {
           // continent-iteration logic exactly.
           if (msg.named && msg.named.techId != null) {
             msg.techBytes = readTechBytes(base, msg.named.techId);
+            // Byte at DAT_00655B82[techId] — if 0, nobody knows this
+            // tech → binary's +1 noOneHas bonus fires.
+            msg.knowsTechByte = readKnowsTechByte(base, msg.named.techId);
           }
           if (msg.named && msg.named.civSlot != null) {
             const styleLeader = readStyleLeader(base, msg.named.civSlot);
