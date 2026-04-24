@@ -217,7 +217,8 @@ const TARGETS = [
   // but readRet gives us the authoritative techValue per (civ, tech)
   // that the v3 port must reproduce. Args: civSlot, techId.
   { va: 0x004BDB2C, name: 'ai_calc_tech_value', args: 2,
-    argNames: ['civSlot', 'techId'], readRet: true },
+    argNames: ['civSlot', 'techId'], readRet: true,
+    captureTechValGlobals: true },
   { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
   { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
@@ -351,6 +352,24 @@ const RAND_HOLDRAND_ADDR = 0x00639E50;
 function readHoldrand(base) {
   try { return base.add(RAND_HOLDRAND_ADDR - 0x00400000).readU32(); }
   catch (_) { return null; }
+}
+
+// Globals read by FUN_004bdb2c (calcTechValue). Capturing these at
+// each call lets the v3 port reproduce its logic exactly.
+const DAT_0064B3FB = 0x0064B3FB;  // strategic goal tech (signed byte)
+const DAT_0064C59E = 0x0064C59E;  // current research goal (free tech)
+const DAT_00655AF0 = 0x00655AF0;  // scenario flags (bit 2 = bloodlust)
+const DAT_00655BCE = 0x00655BCE;  // alive civs bitmask
+
+function readTechValueGlobals(base) {
+  try {
+    return {
+      strategicGoal: base.add(DAT_0064B3FB - 0x00400000).readS8(),
+      freeTechGoal: base.add(DAT_0064C59E - 0x00400000).readS16(),
+      scenarioFlags: base.add(DAT_00655AF0 - 0x00400000).readU8(),
+      aliveMask: base.add(DAT_00655BCE - 0x00400000).readU8(),
+    };
+  } catch (_) { return null; }
 }
 const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
 const LEADER_PERSONALITY_STRIDE = 0x30;
@@ -492,6 +511,12 @@ function attachHook(entry) {
         // identical outputs.
         if (entry.captureRand) {
           msg.rand_enter = readHoldrand(base);
+        }
+        // Read globals FUN_004bdb2c depends on (strategic goal,
+        // free-tech goal, scenario flags, alive mask). Without these
+        // the v3 port can't reproduce binary's scoring.
+        if (entry.captureTechValGlobals) {
+          msg.tvGlobals = readTechValueGlobals(base);
         }
         // Save state for onLeave
         this._traceEntry = entry;

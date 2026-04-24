@@ -246,54 +246,56 @@ function getTechCount(gameState, civSlot) {
  * @returns {number} bonus value (can be negative)
  */
 export function getCivStyleTechBonus(rulesCivNumber, techId) {
+  // Exact port of FUN_004bdb2c's switch at block_004B0000.c:6227-6420.
+  // Prior v3 had "enhanced" bonuses (e.g. Romans +2 Republic, Greeks +2
+  // Democracy, Russians +3 Communism, Babylonians +1 Monarchy) that
+  // don't exist in the binary — removed to restore pick-for-pick
+  // fidelity.
   let bonus = 0;
   switch (rulesCivNumber) {
-    case 0: // (#124) Romans — militaristic: favor early military techs, prefer Republic
-      if (techId === 39 || techId === 8 || techId === 86) bonus += 2; // Iron Working(0x27), Bronze Working(0x08), Warrior Code(0x56)
+    case 0: // Romans: Iron Working(0x27=39), Bronze Working(0x08=8), Warrior Code(0x56=86): +2
+      if (techId === 39 || techId === 8 || techId === 86) bonus += 2;
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
-      if (techId === 71) bonus += 2; // The Republic (0x47) — Romans prefer Republic govt
       break;
-    case 1: // Babylonians — civilized: favor law
+    case 1: // Babylonians
       if (techId === 12) bonus += 1; // Code of Laws (0x0C)
-      if (techId === 54) bonus += 1; // (#124) Monarchy — Babylonians prefer Monarchy
       break;
-    case 2: // Germans — balanced: favor economy and culture
+    case 2: // Germans
       if (techId === 6) bonus += 1;  // Banking (0x06)
       if (techId === 82) bonus += 1; // Theology (0x52)
       if (techId === 60) bonus += 1; // Philosophy (0x3C)
       break;
-    case 3: // Egyptians — builders: favor construction
+    case 3: // Egyptians
       if (techId === 47) bonus += 2; // Masonry (0x2F)
       break;
-    case 4: // Americans — democratic: favor democracy & tech
+    case 4: // Americans
       if (techId === 21) bonus += 2; // Democracy (0x15)
       if (techId === 15) bonus -= 1; // Communism (0x0F)
       if (techId === 73) bonus += 1; // Rocketry (0x49)
       if (techId === 16) bonus += 1; // Computers (0x10)
       if (techId === 42) bonus += 1; // Leadership (0x2A)
       break;
-    case 5: // (#124) Greeks — expansionist scholars: favor learning, prefer Democracy
+    case 5: // Greeks
       if (techId === 64) bonus += 1; // Polytheism (0x40)
       if (techId === 8) bonus += 1;  // Bronze Working (0x08)
       if (techId === 1) bonus += 1;  // Alphabet (0x01)
       if (techId === 46) bonus += 1; // Map Making (0x2E)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       if (techId === 60) bonus += 2; // Philosophy (0x3C)
-      if (techId === 21) bonus += 2; // (#124) Democracy — Greeks prefer Democracy govt
       break;
-    case 6: // Indians — peaceful polytheists
+    case 6: // Indians
       if (techId === 64) bonus += 2; // Polytheism (0x40)
       if (techId === 36) bonus += 1; // Horseback Riding (0x24)
       if (techId === 56) bonus += 1; // Mysticism (0x38)
       if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       break;
-    case 7: // (#124) Russians — communist philosophers, prefer Communism govt
-      if (techId === 15) bonus += 3; // Communism (0x0F) — extra bonus for govt preference
+    case 7: // Russians
+      if (techId === 15) bonus += 2; // Communism (0x0F)
       if (techId === 60) bonus += 1; // Philosophy (0x3C)
       if (techId === 34) bonus += 1; // Guerrilla Warfare (0x22)
       break;
-    case 8: // Zulus — tribal warriors, anti-metalworking
+    case 8: // Zulus
       if (techId === 64) bonus += 2; // Polytheism (0x40)
       if (techId === 36) bonus += 1; // Horseback Riding (0x24)
       if (techId === 56) bonus += 1; // Mysticism (0x38)
@@ -301,41 +303,41 @@ export function getCivStyleTechBonus(rulesCivNumber, techId) {
       if (techId === 8) bonus -= 1;  // Bronze Working (0x08)
       if (techId === 39) bonus -= 1; // Iron Working (0x27)
       break;
-    case 9: // French — militaristic leaders
+    case 9: // French
       if (techId === 42) bonus += 1; // Leadership (0x2A)
       if (techId === 81) bonus += 1; // Tactics (0x51)
       if (techId === 17) bonus += 1; // Conscription (0x11)
       break;
-    case 10: // Aztecs — anti-gunpowder, anti-monotheism
+    case 10: // Aztecs
       if (techId === 35) bonus -= 2; // Gunpowder (0x23)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       break;
-    case 11: // Chinese — favor gunpowder (context naval penalty applied in calcTechValue)
+    case 11: // Chinese (context naval penalty applied by caller using local_34)
       if (techId === 35) bonus += 1; // Gunpowder (0x23)
       break;
-    case 12: // English — favor monotheism (context naval bonus applied in calcTechValue)
+    case 12: // English (context naval bonus applied by caller using local_10)
       if (techId === 55) bonus += 1; // Monotheism (0x37)
       break;
-    // cases 13 (Mongols) and 14 (Celts): no tech-specific bonuses in decompiled code
-    case 15: // Japanese — favor modern military tech
+    // cases 13 (Mongols) and 14 (Celts) have no tech-specific bonuses
+    case 15: // Japanese
       if (techId === 79) bonus += 1; // Steel (0x4F)
       if (techId === 52) bonus += 1; // Miniaturization (0x34)
       break;
-    case 16: // Vikings — favor naval exploration
+    case 16: // Vikings
       if (techId === 46) bonus += 1; // Map Making (0x2E)
       break;
-    case 17: // Spanish — favor monotheism (context naval bonus applied in calcTechValue)
+    case 17: // Spanish (context naval bonus applied by caller using local_10)
       if (techId === 55) bonus += 1; // Monotheism (0x37)
       break;
     case 18: // Persians
-    case 19: // Carthaginians — polytheistic horsemen
+    case 19: // Carthaginians
       if (techId === 64) bonus += 2; // Polytheism (0x40)
       if (techId === 36) bonus += 1; // Horseback Riding (0x24)
       if (techId === 56) bonus += 1; // Mysticism (0x38)
       if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       break;
-    case 20: // Sioux — horse culture
+    case 20: // Sioux
       if (techId === 36) bonus += 2; // Horseback Riding (0x24)
       break;
     default:
@@ -375,7 +377,7 @@ export function getCivStyleTechBonus(rulesCivNumber, techId) {
  * @param {object} mapBase
  * @returns {number} score (minimum 1)
  */
-function calcTechValue(civSlot, techId, gameState, mapBase) {
+export function calcTechValue(civSlot, techId, gameState, mapBase) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return 1;
 
