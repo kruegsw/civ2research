@@ -360,6 +360,10 @@ const DAT_0064B3FB = 0x0064B3FB;  // strategic goal tech (signed byte)
 const DAT_0064C59E = 0x0064C59E;  // current research goal (free tech)
 const DAT_00655AF0 = 0x00655AF0;  // scenario flags (bit 2 = bloodlust)
 const DAT_00655BCE = 0x00655BCE;  // alive civs bitmask
+const LEADER_PERS_BASE = 0x006554FA;  // per-leader personality byte (expand),
+                                       // indexed by styleLeader * 0x30
+const CIV_CONTINENT_BASE = 0x0064C932;  // per-(civ, continent) byte,
+                                         // offset from civ base = +0x2AE
 
 function readTechValueGlobals(base) {
   try {
@@ -369,6 +373,50 @@ function readTechValueGlobals(base) {
       scenarioFlags: base.add(DAT_00655AF0 - 0x00400000).readU8(),
       aliveMask: base.add(DAT_00655BCE - 0x00400000).readU8(),
     };
+  } catch (_) { return null; }
+}
+
+// Read the per-leader expansion byte from DAT_006554FA. This is the
+// authoritative "leaderPers" value used by binary's FUN_004bdb2c line
+// 6071: local_38 = (char)DAT_006554fa[styleLeader * 0x30].
+// v3 uses LEADER_PERSONALITY[rulesCivNumber][0] which may or may not
+// match depending on table origin.
+function readLeaderPersonalityByte(base, styleLeader) {
+  if (styleLeader < 0 || styleLeader > 20) return null;
+  try {
+    return base.add(LEADER_PERS_BASE - 0x00400000 + styleLeader * 0x30).readS8();
+  } catch (_) { return null; }
+}
+
+// Read per-civ continent-presence bitmap. For each of civs 0..7, reads
+// 0x40 bytes at civ_base + 0x2AE (the range binary's continent loop
+// iterates 1..0x3F). Returns array of 8 byte-arrays, each 0x40 long.
+// Used to reproduce the continent-check naval/hostility logic exactly.
+function readContinentPresence(base) {
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const out = [];
+    for (let c = 0; c < 8; c++) {
+      const addr = base.add(CIV_BASE - 0x00400000 + c * STRIDE + 0x292);
+      // Read as hex string to keep payload small (128 chars vs an 80-el array)
+      const bytes = addr.readByteArray(0x40);
+      const u8 = new Uint8Array(bytes);
+      let hex = '';
+      for (let i = 0; i < u8.length; i++) hex += u8[i].toString(16).padStart(2, '0');
+      out.push(hex);
+    }
+    return out;
+  } catch (_) { return null; }
+}
+
+// Read per-civ styleLeader byte (+0x6 in civ struct).
+function readStyleLeader(base, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return null;
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    return base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE + 0x06).readS16();
   } catch (_) { return null; }
 }
 
@@ -551,14 +599,21 @@ function attachHook(entry) {
         // the v3 port can't reproduce binary's scoring.
         if (entry.captureTechValGlobals) {
           msg.tvGlobals = readTechValueGlobals(base);
-          // Per-call tech-row bytes: the binary's actual in-memory
-          // values at offsets +0xA (additive in base formula) and
-          // +0xB (multiplier with leaderPers). Reading the whole
-          // 100-row table once was dropped by Frida's send() — so we
-          // read the single techId row per call. ~20 bytes extra.
+          // Per-call tech-row bytes and leader personality. Also
+          // continent-presence bitmap for all 8 civs (small hex-encoded
+          // payload). Lets the v3 validator reproduce binary's
+          // continent-iteration logic exactly.
           if (msg.named && msg.named.techId != null) {
             msg.techBytes = readTechBytes(base, msg.named.techId);
           }
+          if (msg.named && msg.named.civSlot != null) {
+            const styleLeader = readStyleLeader(base, msg.named.civSlot);
+            msg.styleLeader = styleLeader;
+            if (styleLeader != null) {
+              msg.leaderPersByte = readLeaderPersonalityByte(base, styleLeader);
+            }
+          }
+          msg.continents = readContinentPresence(base);
         }
         // Save state for onLeave
         this._traceEntry = entry;
