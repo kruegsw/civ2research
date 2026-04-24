@@ -408,17 +408,29 @@ if (turns > 0) {
         // combat, freeAdvancePending set by Darwin's Voyage, etc.). We
         // surface those diffs for manual v3-reducer fixing.
         //
-        // Exception: bit 0x04 (senateOverride). FUN_00560084 toggles
-        // it with 1/3 probability each turn via a standalone rand()
-        // draw. Until task #49 (RNG call-order audit) lets us
-        // replicate the exact draw sequence, v3 can't match this bit.
-        // Apply the observed new-bit-0x04 state specifically; leave
-        // other bits alone.
+        // Exceptions replayed here:
+        //   bit 0x04 (senateOverride) — FUN_00560084 toggles it with
+        //     1/3 probability each turn via a standalone rand() draw.
+        //     Until #49 RNG alignment lands, v3 can't match it.
+        //   bit 0x08 (government-assigned sentinel) — binary dynamically
+        //     sets this via FUN_0055c69d and clears via per-civ-tick.
+        //     v3's per-civ-tick clears it unconditionally, but it's
+        //     only cleared on civs the binary actually processed. For
+        //     civs not processed between snapshots, binary leaves
+        //     bit 0x08 set. Replaying the observed state keeps v3 aligned
+        //     without needing the "revert-unprocessed-civs" equivalent.
         if (ev.civ == null || ev.from == null || ev.to == null) return [];
-        const bit04_changed = (ev.from ^ ev.to) & 0x04;
-        if (!bit04_changed) return [];
-        const bit04_target = ev.to & 0x04;
-        return [{ type: '__SENATE_TOGGLE__', civ: ev.civ, set: !!bit04_target }];
+        const mask = 0x04 | 0x08;
+        const changed = (ev.from ^ ev.to) & mask;
+        if (!changed) return [];
+        const actions = [];
+        if (changed & 0x04) {
+          actions.push({ type: '__SENATE_TOGGLE__', civ: ev.civ, set: !!(ev.to & 0x04) });
+        }
+        if (changed & 0x08) {
+          actions.push({ type: '__GOV_SENTINEL__', civ: ev.civ, set: !!(ev.to & 0x08) });
+        }
+        return actions;
       }
       case 'TECH_DISCOVERED': {
         // Tech completion via normal research: v3 handles it in END_TURN
@@ -718,6 +730,18 @@ if (turns > 0) {
                   const sf = c.stateFlags || 0;
                   return { ...c,
                     stateFlags: action.set ? (sf | 0x04) : (sf & ~0x04) };
+                }),
+              };
+              continue;
+            }
+            if (action.type === '__GOV_SENTINEL__') {
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) => {
+                  if (i !== action.civ) return c;
+                  const sf = c.stateFlags || 0;
+                  return { ...c,
+                    stateFlags: action.set ? (sf | 0x08) : (sf & ~0x08) };
                 }),
               };
               continue;
@@ -1529,6 +1553,18 @@ if (turns > 0) {
                 const sf = c.stateFlags || 0;
                 return { ...c,
                   stateFlags: action.set ? (sf | 0x04) : (sf & ~0x04) };
+              }),
+            };
+            continue;
+          }
+          if (action.type === '__GOV_SENTINEL__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) => {
+                if (i !== action.civ) return c;
+                const sf = c.stateFlags || 0;
+                return { ...c,
+                  stateFlags: action.set ? (sf | 0x08) : (sf & ~0x08) };
               }),
             };
             continue;
