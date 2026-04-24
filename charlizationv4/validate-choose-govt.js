@@ -111,17 +111,23 @@ for (const c of calls) {
   try { v3 = chooseGovernment(state, c.civSlot, c.reactiveFlag); }
   catch (e) { mismatches.push({ ...c, v3: 'threw', err: e.message }); continue; }
 
-  // Binary signal: govtChosen === -1 means the gate skipped the body
-  // (no switch). Any other value 0..6 is the new civ+0x15.
-  // v3 returns -1 for the same gate-skipped case, else the chosen idx.
-  if (v3 === c.govtChosen) matched++;
-  else { mismatched++; mismatches.push({ ...c, v3 }); }
+  // Frida's onLeave reports govtChosen=-1 when civ+0x15 didn't change
+  // during the call. That doesn't distinguish "gate skipped body" from
+  // "body ran and picked the same govt as current". Treat both as
+  // equivalent: binary's effective answer is entryGovt. If the govt
+  // changed, govtChosen is the new index.
+  const binaryEff = (c.govtChosen === -1) ? c.govtEntryVal : c.govtChosen;
+  // v3 returns -1 only when gate skips body; otherwise 0..6.
+  // Map v3's -1 to entryGovt for comparison parity.
+  const v3Eff = (v3 === -1) ? c.govtEntryVal : v3;
+  if (v3Eff === binaryEff) matched++;
+  else { mismatched++; mismatches.push({ ...c, v3, v3Eff, binaryEff }); }
 }
 
 console.log(`\n=== chooseGovernment fidelity: ${matched}/${calls.length} matches (${(100*matched/calls.length).toFixed(1)}%) ===`);
 if (mismatches.length) {
   console.log(`\nFirst 20 mismatches:`);
   for (const m of mismatches.slice(0, 20)) {
-    console.log(`  turn=${m.turn} civ=${m.civSlot} reactive=${m.reactiveFlag} binary=${m.govtChosen} v3=${m.v3}`);
+    console.log(`  turn=${m.turn} civ=${m.civSlot} reactive=${m.reactiveFlag} entry=${m.govtEntryVal} binaryEff=${m.binaryEff} v3Eff=${m.v3Eff}`);
   }
 }
