@@ -818,9 +818,34 @@ export function pickResearchGoal(civSlot, gameState, mapBase) {
   let bestTech = -1;
   let candidateCount = 0;
 
-  // The decompiled code iterates 0..99, checking canResearch (FUN_004bfdbe).
-  // We use getAvailableResearch which does the same prereq check.
-  const available = getAvailableResearch(gameState, civSlot);
+  // The decompiled code iterates 0..99, checking canResearch (FUN_004bfdbe):
+  //   canResearch(civ, tech) = !civHasTech(civ, tech)
+  //                         && bothPrereqsKnown(civ, tech)
+  //                         && tech has valid prereq bytes (not -2/-2)
+  //
+  // When knowsTechBytes is captured (pickResearchGoal context), derive
+  // candidates from the bitmask array — byte-exact with binary, even
+  // when v3's civTechs snapshot is stale from mid-turn tech completion.
+  // Otherwise fall back to getAvailableResearch (which scans civTechs).
+  let available;
+  const ktb = gameState.knowsTechBytes;
+  if (ktb) {
+    const myBit = 1 << civSlot;
+    const civHas = (t) => ((ktb[t] ?? 0) & myBit) !== 0;
+    available = [];
+    for (let t = 0; t < 100; t++) {
+      if (civHas(t)) continue;
+      const prereqs = ADVANCE_PREREQS[t];
+      if (!prereqs) continue;
+      const [p1, p2] = prereqs;
+      if (p1 === -2 || p2 === -2) continue;
+      if (p1 >= 0 && !civHas(p1)) continue;
+      if (p2 >= 0 && !civHas(p2)) continue;
+      available.push(t);
+    }
+  } else {
+    available = getAvailableResearch(gameState, civSlot);
+  }
 
   // Decompiled block_004C0000.c:126-128 — outer inclusion condition:
   //   include iff (NOT human) OR (first candidate) OR (DAT_00655b08 == 0)
@@ -838,10 +863,17 @@ export function pickResearchGoal(civSlot, gameState, mapBase) {
   // non-human AND used rulesCivNumber — both wrong. Port now matches
   // FUN_004c09b0 exactly.
   const civData = gameState.civs?.[civSlot];
-  const aiSeed = civData?.acquiredTechCount ?? 0;
-  const dat655b08 = gameState.difficulty ?? 5;  // proxy for DAT_00655b08;
-                                                  // per trace_civ2.js comment it
-                                                  // aliases the difficulty byte
+  // Prefer the Frida-captured civ+0x10 byte when present — the snapshot
+  // in civs[civSlot].acquiredTechCount is stale mid-turn when a tech
+  // just completed (pickResearchGoal runs AFTER the counter bumps).
+  const aiSeed = gameState.civAcqTechCounts?.[civSlot]
+    ?? civData?.acquiredTechCount
+    ?? 0;
+  // `difficulty` is stored as a string ('deity') in v3; only "chieftain"
+  // maps to the binary's DAT_00655b08 == 0 case where the %3 throttle
+  // is disabled entirely.
+  const diffStr = gameState.difficulty ?? 'deity';
+  const dat655b08 = (diffStr === 'chieftain' || diffStr === 0) ? 0 : 1;
 
   const debug = !!process.env.DEBUG_RESEARCH_PICK;
   const dbgLog = [];
