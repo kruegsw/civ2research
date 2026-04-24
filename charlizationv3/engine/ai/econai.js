@@ -379,10 +379,14 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return 1;
 
+  const dbg = !!process.env.DEBUG_TECH_VAL;
+  const dbgBreakdown = dbg ? {} : null;
+
   // ── Leader personality (expansionism value) ──
   // FUN_004bdb2c line 6071: local_38 = leaderPersonality[rulesCivNumber * 0x30]
   const rulesCivNum = civ.rulesCivNumber ?? 0;
   let leaderPers = getLeaderPersonality(rulesCivNum);
+  if (dbg) dbgBreakdown.leaderPers_initial = leaderPers;
 
   // ── Hostility-based personality damping ──
   // Lines 6072-6090: If civ is not human and personality >= 0,
@@ -415,6 +419,12 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
   const aiInterest = (typeof ADVANCE_AI_INTEREST !== 'undefined' && ADVANCE_AI_INTEREST?.[techId]) ?? 0;
   const epoch = (typeof ADVANCE_EPOCH !== 'undefined' && ADVANCE_EPOCH?.[techId]) ?? 0;
   let score = aiInterest * leaderPers + epoch;
+  if (dbg) {
+    dbgBreakdown.aiInterest = aiInterest;
+    dbgBreakdown.epoch = epoch;
+    dbgBreakdown.base = score;
+    dbgBreakdown.leaderPers_final = leaderPers;
+  }
 
   // ── Naval capability scoring ──
   // Lines 6093-6111: Check if techId is a prerequisite for key naval techs.
@@ -451,6 +461,7 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
       score += 1;
     }
   }
+  if (dbg) dbgBreakdown.after_naval = score;
 
   // ── Current research goal bonus ──
   // Line 6147-6151: If techId matches a "free tech" goal, add floor(totalUnits / 4)
@@ -580,7 +591,9 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
   // Uses getCivStyleTechBonus for the base tech-specific bonus,
   // plus context-dependent bonuses (navalScore, continent access)
   // that require gameState/mapBase.
-  score += getCivStyleTechBonus(rulesCivNum, techId);
+  const civStyleBonus = getCivStyleTechBonus(rulesCivNum, techId);
+  score += civStyleBonus;
+  if (dbg) { dbgBreakdown.civStyle = civStyleBonus; dbgBreakdown.after_civStyle = score; }
 
   // Context-dependent civ bonuses that need navalScore/gameState/mapBase
   if (rulesCivNum === 11) { // Chinese
@@ -621,6 +634,7 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
   if (!anyoneHasTech) {
     score += 1;
   }
+  if (dbg) dbgBreakdown.after_noOneHas = score;
 
   // ── Already-known-by-us discount ──
   // Lines 6424-6430: For each tech that has this techId as a direct prerequisite,
@@ -637,8 +651,14 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
 
   // ── Floor at 1 ──
   // Line 6431-6433: if score < 2, score = 1
+  if (dbg) dbgBreakdown.pre_floor = score;
   if (score < 2) {
     score = 1;
+  }
+
+  if (dbg) {
+    dbgBreakdown.final = score;
+    process.stderr.write(`[DEBUG_TECH_VAL] civ=${civSlot} tech=${techId} ${JSON.stringify(dbgBreakdown)}\n`);
   }
 
   return score;
