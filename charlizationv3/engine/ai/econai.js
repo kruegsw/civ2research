@@ -1150,6 +1150,84 @@ export function balanceRates(gameState, mapBase, civSlot) {
  * @param {number} civSlot
  * @returns {object|null} REVOLUTION action or null
  */
+/**
+ * chooseGovernment — byte-exact port of FUN_0055f5a3.
+ *
+ * Replays the binary's decision logic using captured Frida state:
+ *   gameState.chooseGovtGlobals = {
+ *     scenarioFlags, gameFlag0064bc60, leaderCivIdx, attitudeByte,
+ *     civGovt, civAcqTechCount, leaderAcqTechCount, govtPrefs[7]
+ *   }
+ *   gameState.govtGlobals.fundamentalismEnabled (for canUseGovernment)
+ *   gameState.knowsTechBytes
+ *   gameState.rng — SeededRNG seeded at rand_enter when reactive
+ *
+ * Returns the govt index chosen (0..6), or -1 when the gate skips.
+ *
+ * reactiveFlag: 0 = proactive scan up to Democracy; non-zero = reactive
+ *   scan with RNG-gated ceiling (Republic/Fundamentalism).
+ *
+ * Pure function; only consumes one rand() when reactiveFlag != 0.
+ * Does NOT actually switch governments (binary calls FUN_0055c69d for
+ * that; validator compares v3's returned index to captured govtChosen).
+ */
+export function chooseGovernment(gameState, civSlot, reactiveFlag) {
+  const g = gameState.chooseGovtGlobals;
+  if (!g) return -1;
+  // Binary line 5942-5943 gate:
+  //   if ((scenarioFlags & 0x80) == 0 || (gameFlag & 0x10) == 0 || civ.govt == 0)
+  // Runs body iff ANY of three is true. Otherwise return -1 (no change).
+  const scenLocked = (g.scenarioFlags & 0x80) !== 0;
+  const gameLocked = (g.gameFlag0064bc60 & 0x10) !== 0;
+  const civInAnarchy = g.civGovt === 0;
+  if (scenLocked && gameLocked && !civInAnarchy) return -1;
+
+  // Compute local_8 = max govt index to consider
+  let maxGovtIdx = 6;  // Democracy
+  if (reactiveFlag) {
+    maxGovtIdx = 5;  // Republic
+    // Line 5947-5950: 2/3 chance drop to Fundamentalism (4)
+    const r = gameState.rng ? gameState.rng.nextInt(3) : 0;
+    if (r !== 0) maxGovtIdx = 4;
+  }
+
+  // Tech-gap override (lines 5952-5959): if scenario bit 0x1 set and
+  // attitude < 6, WRITE to civ+0x3E0/+0x3DE as down-scores of specific
+  // govts. For fidelity we must mirror these writes into a local copy
+  // of govtPrefs so the scan below uses the modified table.
+  const prefs = g.govtPrefs.slice();
+  if ((g.scenarioFlags & 0x1) !== 0 && g.attitudeByte < 6) {
+    const techGap = (g.leaderAcqTechCount - g.civAcqTechCount) | 0;
+    // civ+0x3E0 = preference for govt 6 (Democracy): index (0x3E0-0x3D4)/2 = 6
+    if (techGap > 6) prefs[6] = -2;
+    // civ+0x3DE = preference for govt 5 (Republic): index (0x3DE-0x3D4)/2 = 5
+    if (techGap > 8) prefs[5] = -1;
+  }
+
+  // Ceiling override (lines 5961-5964): nested-side-effect condition.
+  //   if (prefs[0] > 0) { local_8 = 3; if (civ.govt < 6) local_8 = 1; }
+  // Intent: if anarchy is preferred (first pref > 0), cap heavily —
+  // to 3 (Communism) in general, or 1 (Despotism) when not already in
+  // Democracy. (0x3D4 is the first 2-byte slot = index 0 = anarchy.)
+  if (prefs[0] > 0) {
+    maxGovtIdx = 3;
+    if (g.civGovt < 6) maxGovtIdx = 1;
+  }
+
+  // Main scan: pick highest-preference govt in [1..maxGovtIdx] where
+  // canUseGovernment returns true. Ties: keep earliest.
+  let bestPref = -999;
+  let bestGovt = 1;
+  for (let govt = 1; govt <= maxGovtIdx; govt++) {
+    if (!canUseGovernment(gameState, civSlot, govt)) continue;
+    if (bestPref <= prefs[govt]) {  // <= matches binary's "sVar2 <= pref"
+      bestPref = prefs[govt];
+      bestGovt = govt;
+    }
+  }
+  return bestGovt;
+}
+
 export function considerRevolution(gameState, mapBase, civSlot) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return null;

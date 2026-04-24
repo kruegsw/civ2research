@@ -228,6 +228,16 @@ const TARGETS = [
   { va: 0x0055C277, name: 'can_use_government', args: 2,
     argNames: ['civSlot', 'govtIndex'], readRet: true,
     captureCanUseGovtGlobals: true },
+  // FUN_0055f5a3 — chooseGovernment (558 bytes). Picks new govt after
+  // revolution ends or when AI considers switching. Void return; the
+  // decision is the param_2 passed to switchGovernment (FUN_0055c69d)
+  // just before returning. captureChooseGovtGlobals reads the full
+  // context (pref table, attitude byte, game/scenario flags, leader
+  // civ's tech count, and civ+0x15 at entry+exit to detect what was
+  // chosen).
+  { va: 0x0055F5A3, name: 'choose_government', args: 2,
+    argNames: ['civSlot', 'reactiveFlag'],
+    captureChooseGovtGlobals: true, captureRand: true },
   { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
   { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
@@ -443,6 +453,55 @@ function readCanUseGovtGlobals(base) {
       // Fundamentalism-enabled flag (tech 31 byte+5, aka DAT_00627879).
       fundamentalismEnabled: base.add(0x00627879 - 0x00400000).readU8(),
     };
+  } catch (_) { return null; }
+}
+
+// Capture globals FUN_0055f5a3 (chooseGovernment) reads:
+// - DAT_00655af0: scenario flags (bits 0x80 and 0x1 gate behavior)
+// - DAT_0064bc60: game flags (bit 0x10 gates whether body runs)
+// - DAT_00655b03: "leader civ" index (tech-parity comparator)
+// - DAT_00655c22[civSlot]: attitude byte (gates tech-gap override)
+// - civ+0x15: current govt_type (used as gate + reread at exit)
+// - civ+0x10: acqTechCount (used in tech-gap check)
+// - civ+0x3D4..0x3E2: 14-byte govt preference table (7 govts × i16)
+// - Also for tech-gap override target, leaderCiv's acqTechCount
+function readChooseGovtGlobals(base, civSlot) {
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const DAT_00655AF0 = 0x00655AF0;
+    const DAT_0064BC60 = 0x0064BC60;
+    const DAT_00655B03 = 0x00655B03;
+    const DAT_00655C22 = 0x00655C22;
+    const civBase = base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE);
+    const leaderCiv = base.add(DAT_00655B03 - 0x00400000).readU8();
+    const leaderBase = base.add(CIV_BASE - 0x00400000 + leaderCiv * STRIDE);
+    // 7 signed-int16 preferences (indices 0..6, one per govt)
+    const govtPrefs = new Array(7);
+    for (let g = 0; g < 7; g++) {
+      govtPrefs[g] = civBase.add(0x3D4 + g * 2).readS16();
+    }
+    return {
+      scenarioFlags: base.add(DAT_00655AF0 - 0x00400000).readU8(),
+      gameFlag0064bc60: base.add(DAT_0064BC60 - 0x00400000).readU8(),
+      leaderCivIdx: leaderCiv,
+      attitudeByte: base.add(DAT_00655C22 - 0x00400000 + civSlot).readU8(),
+      civGovt: civBase.add(0x15).readU8(),
+      civAcqTechCount: civBase.add(0x10).readU8(),
+      leaderAcqTechCount: leaderBase.add(0x10).readU8(),
+      govtPrefs,
+    };
+  } catch (_) { return null; }
+}
+
+// Read civ+0x15 (govt_type) for a specific civ. Used at choose_government
+// onLeave to detect what FUN_0055c69d switched to.
+function readCivGovt(base, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return null;
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    return base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE + 0x15).readU8();
   } catch (_) { return null; }
 }
 
@@ -739,6 +798,16 @@ function attachHook(entry) {
           msg.govtGlobals = readCanUseGovtGlobals(base);
           msg.knowsTechBytes = readAllKnowsTechBytes(base);
         }
+        // FUN_0055f5a3 globals: full context for the decision. Also
+        // save civSlot for the onLeave handler so it can read the
+        // post-call civ+0x15 and report which govt was chosen.
+        if (entry.captureChooseGovtGlobals && msg.named && msg.named.civSlot != null) {
+          msg.chooseGovtGlobals = readChooseGovtGlobals(base, msg.named.civSlot);
+          msg.knowsTechBytes = readAllKnowsTechBytes(base);  // for canUseGovt internal check
+          msg.govtGlobals = readCanUseGovtGlobals(base);     // Fundamentalism flag
+          this._civSlotForGovtExit = msg.named.civSlot;
+          this._govtEntryVal = msg.chooseGovtGlobals?.civGovt;
+        }
         // ai_research_pick: capture the full per-tech "who-knows"
         // array plus per-civ scoring globals so the port's internal
         // calcTechValue loop has byte-exact inputs for every
@@ -766,7 +835,8 @@ function attachHook(entry) {
         if (!this._traceEntry) return;
         const needRet = this._traceEntry.readRet;
         const needRand = this._traceEntry.captureRand;
-        if (!needRet && !needRand) return;
+        const needGovtExit = this._traceEntry.captureChooseGovtGlobals;
+        if (!needRet && !needRand && !needGovtExit) return;
         const out = {
           kind: 'return',
           fn: this._traceEntry.name,
@@ -775,6 +845,14 @@ function attachHook(entry) {
         };
         if (needRet) out.retval = readArg(retval);
         if (needRand) out.rand_exit = readHoldrand(base);
+        if (needGovtExit && this._civSlotForGovtExit != null) {
+          const afterGovt = readCivGovt(base, this._civSlotForGovtExit);
+          // Binary signal: if govt changed during the call, that's the
+          // chosen index. If unchanged, the function's gate condition
+          // failed and no switch happened (treat as retval=-1).
+          out.govtChosen = (afterGovt !== this._govtEntryVal) ? afterGovt : -1;
+          out.govtEntryVal = this._govtEntryVal;
+        }
         send(out);
       },
     });
@@ -810,6 +888,7 @@ const SLIM_HOOK_NAMES = new Set([
   'ai_research_pick',
   'ai_calc_tech_value',
   'can_use_government',
+  'choose_government',
   // Plus bare minimum for session context (turn boundaries):
   'civ_turn_driver',
   'mgl_active_civ_on',
