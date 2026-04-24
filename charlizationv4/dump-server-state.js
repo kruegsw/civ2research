@@ -1813,7 +1813,28 @@ if (turns > 0) {
     // turn they fired (the late-event-shift used for per-civ bucketing
     // breaks here since yields fire at unpredictable mid-turn times).
     const targetTurn = (gameState.turn?.number ?? 0);
+    const startTurn = targetTurn - 1;
     let setCount = 0;
+    // For "revert-unprocessed-cities" logic: a city is processed between
+    // snap_{N-1} and snap_N iff there's a CITY_YIELD event for it whose
+    // fire time falls in that window. v3's END_TURN processes ALL civs,
+    // but the binary snapshot at TURN_ADVANCED captures partial state —
+    // some civs (often civs AFTER the human in cycle order) haven't yet
+    // processed. Their cities' stored yields are unchanged. Without the
+    // revert, v3 over-processes them, computing new shields and sometimes
+    // firing production (phantom units).
+    const windowStart = snapshotTimeByTurn.get(startTurn);
+    const windowEnd = snapshotTimeByTurn.get(targetTurn);
+    const processedCities = new Set();
+    if (windowStart != null && windowEnd != null) {
+      for (const [rawTurn, batch] of cityYieldsByRawTurn) {
+        for (const ev of batch) {
+          if (ev.time_ms != null && ev.time_ms > windowStart && ev.time_ms <= windowEnd) {
+            if (ev.cityIdx != null) processedCities.add(ev.cityIdx);
+          }
+        }
+      }
+    }
     // The event's "From" fields hold the yield values BEFORE the
     // binary's current turn-N processing applied. The non-From fields
     // are the values AT event-fire-time. Which matches the snapshot
@@ -1851,6 +1872,85 @@ if (turns > 0) {
     }
     if (setCount > 0) {
       process.stderr.write(`[replay] CITY_YIELD pass: applied ${setCount} yield SETs for turn ${targetTurn}\n`);
+    }
+    // Revert-unprocessed-cities pass: for any city alive in the input
+    // snapshot that wasn't processed between snap_{N-1} and snap_N,
+    // restore its stored yields to the input values. Preserves v3's
+    // post-processing tile-assignment / happiness / trade-total updates
+    // only for cities the binary actually advanced.
+    const inputCities = parsed.gameState?.cities || initResult.gameState?.cities || [];
+    let revertCount = 0;
+    if (windowStart != null && windowEnd != null) {
+      gameState = {
+        ...gameState,
+        cities: gameState.cities.map((c, i) => {
+          if (!c) return c;
+          if (processedCities.has(i)) return c;
+          // Find the input snapshot's city at same index.
+          const inp = inputCities[i];
+          if (!inp || (inp.size || 0) === 0) return c;
+          // Revert just the stored-yield fields. Keep position, name,
+          // owner, and downstream fields that v3 may have legitimately
+          // updated (e.g., tile work assignments).
+          const upd = { ...c };
+          const inShield = inp.shieldsInBox ?? inp.shieldStored ?? 0;
+          const inFood = inp.foodInBox ?? inp.foodStored ?? 0;
+          const inTrade = inp.netBaseTrade ?? inp.tradeTotal ?? 0;
+          const inSize = inp.size ?? c.size ?? 0;
+          if ((c.shieldsInBox ?? c.shieldStored) !== inShield
+              || (c.foodInBox ?? c.foodStored) !== inFood
+              || (c.netBaseTrade ?? c.tradeTotal) !== inTrade
+              || (c.size ?? 0) !== inSize) {
+            upd.shieldsInBox = inShield;
+            upd.shieldStored = inShield;
+            upd.foodInBox = inFood;
+            upd.foodStored = inFood;
+            upd.netBaseTrade = inTrade;
+            upd.tradeTotal = inTrade;
+            upd.size = inSize;
+            revertCount++;
+          }
+          return upd;
+        }),
+      };
+    }
+    if (revertCount > 0) {
+      process.stderr.write(`[replay] Reverted ${revertCount} unprocessed cities to input state\n`);
+    }
+
+    // Remove units v3 produced this turn for cities that weren't actually
+    // processed by the binary yet (home city not in processedCities, AND
+    // unit's uid is >= nextUnitId seed — meaning it's a new v3-production).
+    // Binary hasn't fired these productions yet at snapshot time, so the
+    // snapshot's unit array doesn't include them.
+    if (windowStart != null && windowEnd != null) {
+      const seedUid = initResult.gameState?.nextUnitId
+        ?? Math.max(0, ...(initResult.gameState?.units || [])
+          .map(u => u ? (u.sequenceId ?? u.id ?? 0) : 0)) + 1;
+      const beforeLen = gameState.units.length;
+      gameState = {
+        ...gameState,
+        units: gameState.units.filter(u => {
+          if (!u) return true;
+          const uid = u.sequenceId ?? u.id ?? 0;
+          if (uid < seedUid) return true;  // pre-existing unit
+          const home = u.homeCityId ?? u.homeCity;
+          if (home == null || home === 0xFF) return true;
+          if (processedCities.has(home)) return true;
+          // v3-created unit for an unprocessed city → phantom, remove
+          return false;
+        }),
+      };
+      const removed = beforeLen - gameState.units.length;
+      if (removed > 0) {
+        process.stderr.write(`[replay] Removed ${removed} phantom units from unprocessed cities\n`);
+        // Roll back nextUnitId by the removed count so it matches what
+        // the binary would have next — preventing top-level drift.
+        if (gameState.nextUnitId != null) {
+          gameState = { ...gameState,
+            nextUnitId: gameState.nextUnitId - removed };
+        }
+      }
     }
   }
 
