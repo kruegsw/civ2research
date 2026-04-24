@@ -100,6 +100,73 @@ if (skipReplayTypes.size > 0) {
   process.stderr.write(`[replay] Skipping event types: ${[...skipReplayTypes].join(',')}\n`);
 }
 
+// --replay-frida <civ2_trace.log>: inject byte-exact AI decisions from
+// Frida captures. For each (turn, civSlot) where a binary AI function
+// was captured, use its retval/globals instead of v3's heuristic. This
+// is Option A of the AI-port pipeline: v3 mechanics run with binary's
+// authoritative decisions.
+//
+// Functions consumed:
+//   fun_research_cost    → overrides calcResearchCostExact globals
+//   ai_research_pick     → forces civ.techBeingResearched post-completion
+//   choose_government    → forces civ.government (if it changed)
+//
+// Builds a Map<`${turn}:${civSlot}`, {fridaGlobals...}>.
+const replayFridaPath = getFlagValue('--replay-frida');
+const fridaByTurnCiv = new Map();
+if (replayFridaPath && existsSync(replayFridaPath)) {
+  process.stderr.write(`[replay-frida] Parsing ${replayFridaPath}…\n`);
+  let fridaTurn = 0;
+  let fridaPendingByFn = new Map();  // fn name → call payload
+  let nCost = 0, nPick = 0, nGovt = 0;
+  const lines = readFileSync(replayFridaPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    if (!line) continue;
+    let ev;
+    try { ev = JSON.parse(line); } catch { continue; }
+    if (ev.source === 'sniffer' && ev.event === 'TURN_ADVANCED' && ev.turn != null) {
+      fridaTurn = ev.turn;
+      continue;
+    }
+    if (ev.source !== 'frida') continue;
+    const civSlot = ev.named?.civSlot ?? ev.args?.[0];
+    if (civSlot == null) continue;
+    const key = `${fridaTurn}:${civSlot}`;
+    let slot = fridaByTurnCiv.get(key);
+    if (!slot) { slot = {}; fridaByTurnCiv.set(key, slot); }
+
+    if (ev.kind === 'call') {
+      fridaPendingByFn.set(ev.fn + ':' + civSlot, { ...ev, _key: key });
+    } else if (ev.kind === 'return') {
+      const callKey = ev.fn + ':' + civSlot;
+      const call = fridaPendingByFn.get(callKey);
+      if (!call) continue;
+      fridaPendingByFn.delete(callKey);
+      if (ev.fn === 'fun_research_cost' && call.researchCostGlobals) {
+        // Keep the FIRST capture for this (turn, civ) — binary may
+        // recompute multiple times per turn, but the first is what
+        // drives the tech completion check.
+        if (!slot.researchCost) {
+          slot.researchCost = { globals: call.researchCostGlobals, retval: ev.retval };
+          nCost++;
+        }
+      } else if (ev.fn === 'ai_research_pick') {
+        // retval = chosen tech. Override post-end-turn tech target.
+        if (!slot.researchPick) {
+          slot.researchPick = ev.retval;
+          nPick++;
+        }
+      } else if (ev.fn === 'choose_government' && ev.govtChosen != null && ev.govtChosen !== -1) {
+        // govtChosen = new govt index. Override civ.government when
+        // binary actually switched.
+        slot.govtChosen = ev.govtChosen;
+        nGovt++;
+      }
+    }
+  }
+  process.stderr.write(`[replay-frida] Loaded ${fridaByTurnCiv.size} (turn,civ) keys: ${nCost} costs, ${nPick} picks, ${nGovt} govt switches\n`);
+}
+
 // The parser post-processes a few raw bytes into friendly names.
 // Map them back to ints so the schema matches what the sniffer reads
 // directly from memory.
@@ -1020,6 +1087,17 @@ if (turns > 0) {
       };
       applyReplayBatch(preEvents);
 
+      // ── Frida capture injection (pre-END_TURN) ──
+      // When --replay-frida is active, slot the binary's authoritative
+      // researchCostGlobals into state BEFORE end-turn runs. v3's
+      // calcResearchCostExact will read state.researchCostGlobals
+      // (set transiently per-civ) instead of deriving from v3 state —
+      // giving byte-exact tech completion timing.
+      const fridaSlot = fridaByTurnCiv.get(`${currentTurn}:${civ}`);
+      if (fridaSlot?.researchCost) {
+        gameState = { ...gameState, researchCostGlobals: fridaSlot.researchCost.globals };
+      }
+
       // Zero out movesLeft for this civ's units so END_TURN validation passes
       gameState = {
         ...gameState,
@@ -1070,6 +1148,45 @@ if (turns > 0) {
       if (postEvents.length > 0) {
         process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
         deferredPostEvents.push(...postEvents);
+      }
+
+      // ── Frida capture injection (post-END_TURN) ──
+      // If the binary's ai_research_pick captured a specific tech for
+      // this (turn, civ), override civ.techBeingResearched after
+      // end-turn. v3's end-turn resets to 0xFF when a tech completes
+      // AND doesn't pick a new one (runAiTurn disabled). This injects
+      // the binary's actual pick so next turn's research accumulates
+      // on the right target.
+      //
+      // Also override civ.government when choose_government switched.
+      if (fridaSlot) {
+        if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0) {
+          const targetCiv = gameState.civs?.[civ];
+          if (targetCiv) {
+            const newCivs = gameState.civs.slice();
+            newCivs[civ] = { ...targetCiv, techBeingResearched: fridaSlot.researchPick };
+            gameState = { ...gameState, civs: newCivs };
+          }
+        }
+        if (fridaSlot.govtChosen != null && fridaSlot.govtChosen >= 0) {
+          const targetCiv = gameState.civs?.[civ];
+          if (targetCiv) {
+            const GOVT_KEYS = ['anarchy', 'despotism', 'monarchy', 'communism',
+              'fundamentalism', 'republic', 'democracy'];
+            const newGovt = GOVT_KEYS[fridaSlot.govtChosen] ?? targetCiv.government;
+            if (newGovt !== targetCiv.government) {
+              const newCivs = gameState.civs.slice();
+              newCivs[civ] = { ...targetCiv, government: newGovt };
+              gameState = { ...gameState, civs: newCivs };
+            }
+          }
+        }
+        // Clear the transient researchCostGlobals so the next civ's
+        // end-turn doesn't accidentally inherit it.
+        if (gameState.researchCostGlobals) {
+          const { researchCostGlobals: _, ...rest } = gameState;
+          gameState = rest;
+        }
       }
       // Stop at cycle boundary. v3's END_TURN has a quirk where the
       // trade/treasury/production processing uses activeCiv=next (the
