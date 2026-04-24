@@ -6,26 +6,24 @@
 // Reads a session's civ2_trace.log for ai_research_pick call/return
 // event pairs (added via captureRand in trace_civ2.js). For each
 // pair:
-//   1. Load the corresponding turn's snapshot as v3 state.
+//   1. Load the session's turn_0000.bin as v3 state.
 //   2. Seed v3's SeededRNG with the binary's holdrand at entry.
 //   3. Call v3's pickResearchGoal with that state.
 //   4. Compare v3's pick to binary's retval.
-//   5. Report match/mismatch + RNG exit-state delta.
 //
-// Match percentage = the actual AI-port fidelity. Anything less than
-// 100% is a logic divergence between v3's port and FUN_004c09b0.
+// Match percentage = actual AI-port fidelity. Anything less than 100%
+// is a logic divergence between v3's port and FUN_004c09b0.
 //
 // Usage: node validate-ai-research.js <session_dir>
 // ═══════════════════════════════════════════════════════════════════
 
-import { readFileSync, existsSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { loadSnapshotIntoMem } from './load-snapshot.js';
-import { parseSnapshot } from './load-snapshot.js';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { Civ2Parser } from '../charlizationv3/engine/parser.js';
 import { initFromSav } from '../charlizationv3/engine/init.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { SeededRNG } from '../charlizationv3/engine/rng.js';
+import { loadSnapshotIntoMem } from './load-snapshot.js';
+import { buildSav } from './sav-from-mem.js';
 
 const sessionDir = process.argv[2];
 if (!sessionDir) {
@@ -37,82 +35,108 @@ if (!existsSync(sessionDir)) {
   process.exit(1);
 }
 
-// ── Parse civ2_trace.log for ai_research_pick call/return pairs ─────
+// ── Parse civ2_trace.log ─────────────────────────────────────────
 const tracePath = join(sessionDir, 'civ2_trace.log');
 if (!existsSync(tracePath)) {
-  console.error(`No civ2_trace.log in ${sessionDir} — needs a session captured with Frida running.`);
+  console.error(`No civ2_trace.log in ${sessionDir}`);
   process.exit(1);
 }
 
-const traceLines = readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean);
 const calls = [];
 let pendingCall = null;
 let currentTurn = 0;
 
-for (const line of traceLines) {
+for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean)) {
   let ev;
   try { ev = JSON.parse(line); } catch { continue; }
-
-  // Track turn changes via sniffer's TURN_ADVANCED events merged in.
   if (ev.source === 'sniffer' && ev.event === 'TURN_ADVANCED' && ev.turn != null) {
     currentTurn = ev.turn;
     continue;
   }
-
   if (ev.source !== 'frida') continue;
-
   if (ev.kind === 'call' && ev.fn === 'ai_research_pick') {
     pendingCall = {
       turn: currentTurn,
       civSlot: ev.named?.civSlot ?? ev.args?.[0],
-      rand_enter: ev.rand_enter,
+      rand_enter: ev.rand_enter >>> 0,
       time_ms: ev.time_ms,
     };
   } else if (ev.kind === 'return' && ev.fn === 'ai_research_pick' && pendingCall) {
     calls.push({
       ...pendingCall,
-      rand_exit: ev.rand_exit,
+      rand_exit: ev.rand_exit >>> 0,
       retval: ev.retval,
     });
     pendingCall = null;
   }
 }
 
-console.log(`Loaded ${calls.length} ai_research_pick call/return pairs from ${tracePath}`);
+console.log(`Loaded ${calls.length} ai_research_pick call/return pairs`);
 if (calls.length === 0) {
   console.error('No matching events. Is the Frida agent running with captureRand on FUN_004c09b0?');
   process.exit(1);
 }
 
-// ── For each call, load turn snapshot and run v3's pickResearchGoal ──
-const { SeededRNG } = await import('../charlizationv3/engine/rng.js');
+// ── Load the initial snapshot as v3 state (one-time setup) ──────────
+// For init-time picks at turn 0-1, turn_0000.bin is the right input.
+// For later picks (tech completions), we'd need to load the
+// closest snapshot — future refinement.
+const initSnap = join(sessionDir, 'turn_0000_80x50_deity.bin');
+if (!existsSync(initSnap)) {
+  console.error(`No turn_0000.bin in ${sessionDir}`);
+  process.exit(1);
+}
+
+loadSnapshotIntoMem(initSnap);
+const savBuf = buildSav();
+const parsed = Civ2Parser.parse(savBuf, initSnap);
+const savHumanPlayers = parsed.gameState?.humanPlayers ?? 0;
+const savCivsAlive = parsed.gameState?.civsAlive ?? 0;
+const aliveCivs = [];
+for (let i = 1; i < 8; i++) if (savCivsAlive & (1 << i)) aliveCivs.push(i);
+const seatList = [];
+for (let i = 0; i < 7; i++) {
+  const civSlot = i < aliveCivs.length ? aliveCivs[i] : (i + 1);
+  const isHuman = !!((1 << civSlot) & savHumanPlayers);
+  seatList.push({ seatIndex: i, name: `Civ${civSlot}`, ai: !isHuman });
+}
+const initResult = initFromSav(parsed, seatList);
+const baseState = initResult.gameState;
+const mapBase = initResult.mapBase;
+
+// Import after state is ready
 const econai = await import('../charlizationv3/engine/ai/econai.js');
 
-// Group by turn so we load each snapshot once.
-const byTurn = new Map();
-for (const c of calls) {
-  if (!byTurn.has(c.turn)) byTurn.set(c.turn, []);
-  byTurn.get(c.turn).push(c);
-}
-
-let matched = 0, mismatched = 0, randMatched = 0, randMismatched = 0;
+// ── Validate each captured call ─────────────────────────────────────
+let matched = 0, mismatched = 0;
 const mismatches = [];
 
-for (const [turn, turnCalls] of [...byTurn.entries()].sort((a, b) => a[0] - b[0])) {
-  const snapPath = join(sessionDir, `turn_${String(turn).padStart(4, '0')}_80x50_deity.bin`);
-  if (!existsSync(snapPath)) {
-    console.error(`  [skip] turn ${turn}: no snapshot ${snapPath}`);
+for (const c of calls) {
+  // Clone state (shallow) so each validation is independent
+  const state = { ...baseState, rng: new SeededRNG(c.rand_enter) };
+  let v3Pick;
+  try {
+    v3Pick = econai.pickResearchGoal
+      ? econai.pickResearchGoal(c.civSlot, state, mapBase)
+      : econai.chooseResearch(state, mapBase, c.civSlot)?.advanceId;
+  } catch (e) {
+    console.error(`  turn=${c.turn} civ=${c.civSlot}: threw ${e.message}`);
+    mismatches.push({ ...c, v3Pick: 'threw', err: e.message });
     continue;
   }
-  // Load into v3 state via the harness init path.
-  loadSnapshotIntoMem(snapPath);
-  // TODO: proper state init. For the stub, skip the full sim and
-  // call pickResearchGoal against a synthesized state. This requires
-  // a proper init adapter — deferred until session data is available.
-  for (const c of turnCalls) {
-    // Placeholder: require full integration
-    console.log(`  turn=${turn} civ=${c.civSlot} rand_enter=${c.rand_enter?.toString(16)} binary_pick=${c.retval} rand_exit=${c.rand_exit?.toString(16)}`);
+
+  if (v3Pick === c.retval) {
+    matched++;
+  } else {
+    mismatched++;
+    mismatches.push({ ...c, v3Pick });
   }
 }
 
-console.log(`\nNOTE: Validator is a scaffold. It reads the trace correctly but doesn't yet invoke v3's pickResearchGoal — needs state init adapter. Build that after the first Frida+captureRand session provides real data.`);
+console.log(`\n=== Port fidelity: ${matched}/${calls.length} matches ===`);
+if (mismatched > 0) {
+  console.log(`\nMismatches:`);
+  for (const m of mismatches) {
+    console.log(`  turn=${m.turn} civ=${m.civSlot} rand_enter=0x${(m.rand_enter>>>0).toString(16)} binary=${m.retval} v3=${m.v3Pick}`);
+  }
+}

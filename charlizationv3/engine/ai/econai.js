@@ -670,23 +670,34 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
   // We use getAvailableResearch which does the same prereq check.
   const available = getAvailableResearch(gameState, civSlot);
 
-  // Decompiled lines 122-128: additional filter for human civs.
-  // If human AND this is not the first candidate AND DAT_00655b08 != 0
-  // AND (techId - techCount) % 3 == 0 → skip (throttle for human display).
-  // We skip this filter as it's a UI concern for the original game's advisor.
-
-  // (#43) AI tech cycling: force AI to only pick every 3rd available tech
-  // Binary: (techIndex - civRulesId) % 3 != 0 → skip
-  // This prevents AI civs from all researching the same techs simultaneously
-  const rulesCivId = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+  // Decompiled block_004C0000.c:126-128 — outer inclusion condition:
+  //   include iff (NOT human) OR (first candidate) OR (DAT_00655b08 == 0)
+  //                OR ((techId - civ[+0x10]) % 3 != 0)
+  // Simplified to "exclude iff human AND not-first AND DAT_00655b08 != 0
+  //                AND (techId - aiSeed) % 3 == 0".
+  // This is a HUMAN-only display throttle, not an AI filter.
+  //
+  // aiSeed comes from civ struct +0x10 (parser.js labels it
+  // `acquiredTechCount`; per Data_Structures.md it's "rank / power_rating").
+  // The byte increments as civs build wonders/techs, so the tech cycle
+  // rotates over time.
+  //
+  // Prior v3 bug (fixed in AI port slice 1): applied the filter to
+  // non-human AND used rulesCivNumber — both wrong. Port now matches
+  // FUN_004c09b0 exactly.
+  const civData = gameState.civs?.[civSlot];
+  const aiSeed = civData?.acquiredTechCount ?? 0;
+  const dat655b08 = gameState.difficulty ?? 5;  // proxy for DAT_00655b08;
+                                                  // per trace_civ2.js comment it
+                                                  // aliases the difficulty byte
 
   for (const techId of available) {
     candidateCount++;
 
-    // (#43) AI tech cycling filter — binary: skip techs where (techId - civId) % 3 == 0
-    // This ensures each AI civ researches a different subset of techs
-    if (!human && candidateCount > 1) {
-      if ((techId - rulesCivId) % 3 === 0) continue;
+    // Binary's outer filter (human-only throttle):
+    if (human && candidateCount > 1 && dat655b08 !== 0
+        && (((techId - aiSeed) % 3) === 0)) {
+      continue;
     }
 
     const techVal = calcTechValue(civSlot, techId, gameState, mapBase);
