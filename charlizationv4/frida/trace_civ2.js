@@ -204,6 +204,12 @@ const TARGETS = [
   // TIER 2: Research
   // ═══════════════════════════════════════════════════════════════
   { va: 0x004C2788, name: 'fun_research_cost',   args: 1, argNames: ['civSlot'], readRet: true },
+  // FUN_004c09b0 — AI research-target picker. captureRand records
+  // holdrand at entry/exit + return value so the v3 port can be
+  // validated pick-for-pick (seed v3's SeededRNG with rand_enter,
+  // run port, expect identical pick AND ending holdrand = rand_exit).
+  { va: 0x004C09B0, name: 'ai_research_pick', args: 1, argNames: ['civSlot'],
+    readRet: true, captureRand: true },
   { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
   { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
@@ -328,6 +334,16 @@ function readArg(p) {
 // ── Known memory-layout constants (from reverse_engineering/findings) ──
 const CIV_STRUCT_BASE   = 0x0064C6A0;  // civ 0 data start (0xA0 past the header)
 const CIV_STRUCT_STRIDE = 0x594;
+// MSVC CRT rand() state (holdrand). Read at AI-function entry/exit to
+// capture the RNG state consumed by that function — the AI-port
+// validator seeds v3's SeededRNG with entry state to reproduce the
+// binary's rand() sequence for that function.
+const RAND_HOLDRAND_ADDR = 0x00639E50;
+
+function readHoldrand(base) {
+  try { return base.add(RAND_HOLDRAND_ADDR - 0x00400000).readU32(); }
+  catch (_) { return null; }
+}
 const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
 const LEADER_PERSONALITY_STRIDE = 0x30;
 const DIFFICULTY_BYTE   = 0x00655B04;  // 0=Chieftain, 5=Deity
@@ -461,20 +477,33 @@ function attachHook(entry) {
         if (entry.readGlobals && !msg.globals) {
           msg.globals = readGlobals(base);
         }
+        // Capture MSVC rand state at entry for AI-port validation.
+        // Lets the v3 port seed its SeededRNG with the same holdrand
+        // value the binary had at function entry — so v3's ported
+        // logic consumes rand() calls in lock-step and produces
+        // identical outputs.
+        if (entry.captureRand) {
+          msg.rand_enter = readHoldrand(base);
+        }
         // Save state for onLeave
         this._traceEntry = entry;
         this._enter_ms = msg.time_ms;
         send(msg);
       },
       onLeave(retval) {
-        if (!this._traceEntry || !this._traceEntry.readRet) return;
-        send({
+        if (!this._traceEntry) return;
+        const needRet = this._traceEntry.readRet;
+        const needRand = this._traceEntry.captureRand;
+        if (!needRet && !needRand) return;
+        const out = {
           kind: 'return',
           fn: this._traceEntry.name,
-          retval: readArg(retval),
           dur_ms: Date.now() - this._enter_ms,
           time_ms: Date.now(),
-        });
+        };
+        if (needRet) out.retval = readArg(retval);
+        if (needRand) out.rand_exit = readHoldrand(base);
+        send(out);
       },
     });
     return true;
