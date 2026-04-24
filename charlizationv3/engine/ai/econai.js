@@ -120,13 +120,25 @@ function getWonderCityIndex(gameState, wonderIdx) {
 
 /**
  * Check if a civ can use a given government index.
- * Port of FUN_0055c277: checks tech prereq OR Statue of Liberty ownership.
+ *
+ * Port of FUN_0055c277 — returns true iff:
+ *   - govt is anarchy(0) or despotism(1) — always allowed; OR
+ *   - civ owns Statue of Liberty (grants all govts); OR
+ *   - civ knows the govt's prereq tech
+ * AND, for Fundamentalism only, the "Fundamentalism enabled" flag at
+ * DAT_00627879 (tech 31 byte+5 in the tech table) must be non-zero.
+ * This flag is set at game init for scenarios/rules that include
+ * Fundamentalism; in vanilla MGE it's always on, but scenarios can
+ * disable it. Captured per-call via Frida as gameState.govtGlobals.
  */
-function canUseGovernment(gameState, civSlot, govtIndex) {
+export function canUseGovernment(gameState, civSlot, govtIndex) {
   // Government index 0 (anarchy) and 1 (despotism) are always available
   if (govtIndex <= 1) return true;
-  // Statue of Liberty grants all governments
-  const hasStatue = civOwnsWonder(gameState, civSlot, STATUE_OF_LIBERTY);
+  // Fundamentalism-disabled scenario flag — hard-blocks case 4
+  // regardless of tech/statue.
+  if (govtIndex === 4 && gameState.govtGlobals?.fundamentalismEnabled === 0) {
+    return false;
+  }
   // Check tech prereq for this government
   const techPrereqs = {
     2: 54,  // Monarchy → Monarchy tech
@@ -137,8 +149,15 @@ function canUseGovernment(gameState, civSlot, govtIndex) {
   };
   const reqTech = techPrereqs[govtIndex];
   if (reqTech == null) return false;
-  if (civHasTech(gameState, civSlot, reqTech) || hasStatue) return true;
-  return false;
+  // Prefer captured knowsTechBytes (byte-exact with binary) over v3
+  // civTechs state which can drift mid-turn.
+  const ktb = gameState.knowsTechBytes;
+  const knowsTech = ktb
+    ? ((ktb[reqTech] ?? 0) & (1 << civSlot)) !== 0
+    : civHasTech(gameState, civSlot, reqTech);
+  if (knowsTech) return true;
+  // Statue of Liberty grants all governments
+  return civOwnsWonder(gameState, civSlot, STATUE_OF_LIBERTY);
 }
 
 /**

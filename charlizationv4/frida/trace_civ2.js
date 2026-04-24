@@ -219,6 +219,15 @@ const TARGETS = [
   { va: 0x004BDB2C, name: 'ai_calc_tech_value', args: 2,
     argNames: ['civSlot', 'techId'], readRet: true,
     captureTechValGlobals: true },
+  // FUN_0055c277 — canUseGovernment (323 bytes). Pure check: does civ
+  // satisfy prereq tech (or Statue of Liberty) for govt index 2-6?
+  // Cases 0-1 (anarchy/despotism) always return 1. Case 4
+  // (Fundamentalism) additionally requires DAT_00627879 != 0 (tech 31
+  // byte +5 in tech table — the "enabled" flag). Pure function; no
+  // rand consumption.
+  { va: 0x0055C277, name: 'can_use_government', args: 2,
+    argNames: ['civSlot', 'govtIndex'], readRet: true,
+    captureCanUseGovtGlobals: true },
   { va: 0x0049A48E, name: 'fun_research_accum',  args: 1, argNames: ['civSlot'] },
   { va: 0x004C195E, name: 'fun_tech_cycle_rule', args: 2, argNames: ['civSlot','techId'], readRet: true },
   // HOT: fires ~170×/turn per civ inside fun_per_civ_tick iterating
@@ -412,6 +421,28 @@ function readAllKnowsTechBytes(base) {
       out[t] = base.add(DAT_00655B82 - 0x00400000 + t).readU8();
     }
     return out;
+  } catch (_) { return null; }
+}
+
+// Capture globals FUN_0055c277 (canUseGovernment) depends on:
+// - DAT_00627879: tech 31 (Fundamentalism) byte+5 — "enabled" flag.
+//   When 0, Fundamentalism is disabled regardless of tech ownership.
+// - Statue of Liberty wonder ownership for this civ: FUN_00453e51
+//   returns non-zero iff civ owns Statue. We can't call Frida's hooked
+//   function, but we can approximate by reading the wonder-owner
+//   table directly. Statue of Liberty = wonder 19 (0x13). Wonder owner
+//   table at DAT_0064f33c (per memory), stride 0x88 per wonder? Not
+//   confirmed — capture the per-tech bitmask byte for relevant govt
+//   prereqs instead, and let the validator derive ownership from v3.
+// Simpler: capture the FULL knows-tech bitmask array (already done
+// by readAllKnowsTechBytes) and civ's ownership check happens via
+// existing wonder tracking in state.
+function readCanUseGovtGlobals(base) {
+  try {
+    return {
+      // Fundamentalism-enabled flag (tech 31 byte+5, aka DAT_00627879).
+      fundamentalismEnabled: base.add(0x00627879 - 0x00400000).readU8(),
+    };
   } catch (_) { return null; }
 }
 
@@ -698,6 +729,12 @@ function attachHook(entry) {
           msg.continents = readContinentPresence(base);
           msg.acqTechCounts = readAllTechCounts(base);
         }
+        // FUN_0055c277 globals: Fundamentalism-enabled flag + per-civ
+        // known-tech bitmask (for the 5 govt prereq techs).
+        if (entry.captureCanUseGovtGlobals) {
+          msg.govtGlobals = readCanUseGovtGlobals(base);
+          msg.knowsTechBytes = readAllKnowsTechBytes(base);
+        }
         // ai_research_pick: capture the full per-tech "who-knows"
         // array plus per-civ scoring globals so the port's internal
         // calcTechValue loop has byte-exact inputs for every
@@ -768,6 +805,7 @@ const slimHooks = (function() {
 const SLIM_HOOK_NAMES = new Set([
   'ai_research_pick',
   'ai_calc_tech_value',
+  'can_use_government',
   // Plus bare minimum for session context (turn boundaries):
   'civ_turn_driver',
   'mgl_active_civ_on',
