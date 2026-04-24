@@ -155,14 +155,21 @@ function getGovtIndex(gameState, civSlot) {
 }
 
 /**
- * Get leader personality value (expansionism) for a civ.
- * This is LEADER_PERSONALITY[rulesCivNumber][0].
+ * Get leader personality value used by calcTechValue.
+ *
+ * Binary reads `DAT_006554FA[styleLeader * 0x30]` — byte 0 of each
+ * leader's 0x30 stride struct. Cross-verified via Frida captures
+ * (2026-04-24, session game_20260424_104607): this byte is the
+ * **civilize** score from RULES.TXT @LEADERS column 3, NOT expand.
+ * v3's LEADER_PERSONALITY stores [expand, attack, civilize], so we
+ * read index 2. Prior v3 used index 0 (expand) which produced
+ * systematically wrong base = modifier * (wrong sign/magnitude) + aiValue.
  */
 function getLeaderPersonality(rulesCivNumber) {
-  if (typeof LEADER_PERSONALITY === 'undefined' || !LEADER_PERSONALITY) return 1;
+  if (typeof LEADER_PERSONALITY === 'undefined' || !LEADER_PERSONALITY) return 0;
   const entry = LEADER_PERSONALITY[rulesCivNumber];
-  if (!entry) return 1;
-  return entry[0] ?? 1;
+  if (!entry) return 0;
+  return entry[2] ?? 0;
 }
 
 /**

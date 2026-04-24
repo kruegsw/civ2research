@@ -139,11 +139,12 @@ for (const c of deduped) {
   // DAT_00655BCE (the tech-adoption mask), not an alive mask.
   if (c.aliveMask != null) state.techAdoptionMask = c.aliveMask;
   if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
-    state.civTechs = state.civTechs ? state.civTechs.slice() : [];
-    state.civTechs[c.civSlot] = new Set();
-    if (state.civs?.[c.civSlot]) {
-      state.civs = state.civs.slice();
-      state.civs[c.civSlot] = { ...state.civs[c.civSlot], acquiredTechCount: 0 };
+    // Binary computes tech values BEFORE distributing starting techs,
+    // so DAT_00655b82 is all-zero at game start. Clear every civ's
+    // techs so the noOneHas bonus (+1 when bitmask is 0) matches.
+    state.civTechs = (state.civTechs ?? []).map(() => new Set());
+    if (state.civs) {
+      state.civs = state.civs.map(c => c ? { ...c, acquiredTechCount: 0 } : c);
     }
   }
   let v3Val;
