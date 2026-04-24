@@ -557,20 +557,41 @@ const enableHot = (function() {
   catch (_) { return false; }
 })();
 
+// SLIM_HOOKS mode: only attach the AI-port-validation hooks
+// (ai_research_pick, ai_calc_tech_value). All other hooks — even
+// non-hot ones — are skipped to minimize Frida's impact on Civ2's
+// message pump, reducing crash risk. Set SLIM_HOOKS=1 when only
+// running AI-port validation sessions.
+const slimHooks = (function() {
+  try { return typeof SLIM_HOOKS !== 'undefined' && !!SLIM_HOOKS; }
+  catch (_) { return false; }
+})();
+
+const SLIM_HOOK_NAMES = new Set([
+  'ai_research_pick',
+  'ai_calc_tech_value',
+  // Plus bare minimum for session context (turn boundaries):
+  'civ_turn_driver',
+  'mgl_active_civ_on',
+]);
+
 let attachedCount = 0;
 let skippedHot = 0;
+let skippedSlim = 0;
 let failedHooks = [];
 if (base) {
   const all = TARGETS.concat(CRT);
   for (const t of all) {
     if (t.hot && !enableHot) { skippedHot++; continue; }
+    if (slimHooks && !SLIM_HOOK_NAMES.has(t.name)) { skippedSlim++; continue; }
     if (attachHook(t)) attachedCount++;
     else failedHooks.push(t.name);
   }
 }
 
 send({ kind: 'ready', hooked: attachedCount, total: TARGETS.length + CRT.length,
-       skipped_hot: skippedHot, enableHot, failed: failedHooks });
+       skipped_hot: skippedHot, skipped_slim: skippedSlim,
+       enableHot, slimHooks, failed: failedHooks });
 
 // ── Memory watchpoints (phase 2, optional) ───────────────────────────
 // Frida supports MemoryAccessMonitor for watching writes to specific
