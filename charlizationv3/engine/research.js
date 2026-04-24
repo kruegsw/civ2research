@@ -85,8 +85,80 @@ export function getAvailableResearch(gameState, civSlot) {
  * State must contain `researchCostGlobals` matching the Frida capture
  * shape. Returns the beaker cost identically to FUN_004c2788.
  */
+/**
+ * Compute the globals that FUN_004c2788 reads from memory, using v3
+ * game state when no Frida capture is available. Keeps byte-exact
+ * math in calcResearchCostExact; only the inputs are derived.
+ *
+ * Approximations (vs binary runtime):
+ *  - leaderSlot: binary sorts civs by a power score involving buildings
+ *    and unit types; v3 uses a max-acqTechCount proxy. Matches for
+ *    games where the tech leader is also the power leader (common).
+ *  - numDefinedTechs: binary counts tech-table entries with bA != -2;
+ *    v3 approximates from ADVANCE_PREREQS (same source semantically).
+ *  - scenarioFlagBcb4, scenarioTechParadigm: set to 0, 10 (no-op) when
+ *    unknown — matches vanilla RULES.TXT defaults.
+ */
+function deriveResearchCostGlobals(gameState, civSlot) {
+  const civ = gameState.civs?.[civSlot] ?? {};
+  // Leader slot: civ with max (acqTechCount + futureTechCount) among
+  // civs 1..7 that are alive. Ties go to lowest slot index (stable).
+  let leaderSlot = 0;
+  let leaderCombined = -1;
+  const civs = gameState.civs || [];
+  const alive = gameState.civsAlive ?? 0xFF;
+  for (let i = 1; i < 8; i++) {
+    if (!(alive & (1 << i))) continue;
+    const c = civs[i];
+    if (!c) continue;
+    const combined = (c.acquiredTechCount ?? 0) + (c.futureTechCount ?? 0);
+    if (combined > leaderCombined) {
+      leaderCombined = combined;
+      leaderSlot = i;
+    }
+  }
+  const leader = civs[leaderSlot] ?? {};
+  // Count tech entries with bA != -2 (unresearchable marker).
+  let numDefinedTechs = 0;
+  for (const p of ADVANCE_PREREQS) {
+    if (!p) continue;
+    if (p[0] !== -2 && p[1] !== -2) numDefinedTechs++;
+  }
+  // Map v3 state to the capture shape.
+  const difficulty = Math.max(0, Math.min(5,
+    DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain')));
+  // scenarioFlags: bit 0x4 (raging hordes / bloodlust scaling) applied
+  // for huge maps (>5999 tiles) per block_00410000.c:6530-6532.
+  // bit 0x8 applied for small maps (<3000 tiles) OR vanilla MGE maps
+  // (Frida captured value is 8 for 80x50 games consistently).
+  // When state doesn't carry a value, default to the captured MGE value.
+  let scenarioFlags;
+  if (typeof gameState.scenarioFlags === 'number') {
+    scenarioFlags = gameState.scenarioFlags;
+  } else {
+    scenarioFlags = 0x8;  // default matches vanilla MGE Frida capture
+    if (gameState.barbarianActivity === 'raging') scenarioFlags |= 0x4;
+    if (gameState.bloodlust || gameState.gameToggles?.bloodlust) scenarioFlags |= 0x8;
+  }
+  return {
+    difficulty,
+    humanPlayers: gameState.humanPlayers ?? 0,
+    scenarioFlags,
+    scenarioFlagBcb4: 0,
+    scenarioTechParadigm: 10,
+    cosmicTechParadigm: (typeof COSMIC_TECH_MULTIPLIER === 'number') ? COSMIC_TECH_MULTIPLIER : 10,
+    leaderSlot,
+    techCounter: gameState.turn?.number ?? gameState.turnsPassed ?? 0,
+    numDefinedTechs,
+    civAcqTechCount: civ.acquiredTechCount ?? 0,
+    civFutureTechCount: civ.futureTechCount ?? 0,
+    leaderAcqTechCount: leader.acquiredTechCount ?? 0,
+    leaderFutureTechCount: leader.futureTechCount ?? 0,
+  };
+}
+
 export function calcResearchCostExact(gameState, civSlot) {
-  const g = gameState.researchCostGlobals;
+  const g = gameState.researchCostGlobals ?? deriveResearchCostGlobals(gameState, civSlot);
   if (!g) return calcResearchCost(gameState, civSlot);
 
   // Line 959-963: uVar1 = acqTechCount + futureTechCount; clamp min 1

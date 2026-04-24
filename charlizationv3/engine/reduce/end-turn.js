@@ -9,7 +9,7 @@ import { updateVisibility } from '../visibility.js';
 import { ORDER_BYTES } from '../order-bytes.js';
 import { calcCityTrade, calcShieldProduction, calcGrossFood, calcGrossTrade, calcTradeCorruption, calcTradeDistribution } from '../production.js';
 import { cityHasBuilding, hasWonderEffect, markCitySeenByCiv } from '../utils.js';
-import { calcResearchCost, calcTechParadigmCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
+import { calcResearchCost, calcResearchCostExact, calcTechParadigmCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
 import { assignInitialWorkers } from './helpers.js';
@@ -1048,7 +1048,12 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
     }
     if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
-      const cost = calcResearchCost(state, activeCiv);
+      // calcResearchCostExact replicates FUN_004c2788 byte-exactly when
+      // Frida globals are present, and derives the same globals from v3
+      // state otherwise. Validated 1409/1409 vs binary on session
+      // game_20260424_142140. Closes the `ai-research-completion` and
+      // `research-rounding` fidelity gaps.
+      const cost = calcResearchCostExact(state, activeCiv);
       if (process.env.DEBUG_RESEARCH) {
         console.error(`[tech-debug] civ ${activeCiv} tech=${techId} prog=${civ.researchProgress} cost=${cost} sciAdd=${civSciTotal} techCount=${state.civTechs?.[activeCiv]?.size}`);
       }
