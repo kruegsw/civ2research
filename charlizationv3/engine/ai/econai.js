@@ -413,38 +413,46 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   if (dbg) dbgBreakdown.leaderPers_initial = leaderPers;
 
   // ── Hostility-based personality damping ──
-  // Binary FUN_004bdb2c:6072-6090 — decrement leaderPers once per
-  // continent where both the AI civ AND a human civ with more techs
-  // have cities, and the diplomatic byte at +0xC1+i*4 has bit 0x20 set.
+  // Binary FUN_004bdb2c:6072-6090 — byte-exact replay using data
+  // captured via Frida (session game_20260424_111649):
   //
-  // The CONTINENT check is the critical gate at game start: both civs
-  // must have at least one city. With civs at init having no cities,
-  // the continent loop never enters, leaderPers stays intact.
+  //   if (!isHuman(civ) && leaderPers >= 0):
+  //     for each other civ i in 1..7:
+  //       if (isHuman(i) &&                         // line 6074
+  //           diploBytes[civ][i] & 0x20 &&          // line 6075
+  //           acqTechCount[civ] < acqTechCount[i]): // line 6076
+  //         for each continent c in 1..0x3F:
+  //           if (civ has presence on c AND i has presence on c):
+  //             if (leaderPers >= 0) leaderPers-- ;  // line 6081
+  //             if (civ+0x1E[i] > 6) leaderPers = -1; // line 6083 (attitude > 6)
   //
-  // Prior v3 simplified to just war+tech-deficit, skipping the
-  // continent check — which caused spurious decrements at init when
-  // no cities exist. Observed: Celts leaderPers 1→0 on first tech
-  // pick because the simplified check matched "at war with civ 5" but
-  // binary required city-on-shared-continent.
-  //
-  // Mitigation: gate on "both civs have at least one city" so init-time
-  // picks don't decrement. Still an approximation — real binary goes
-  // per-continent.
+  // Prior v3 used treaties 'war' status instead of byte 0x20 gate,
+  // and counted once per civ pair instead of once per shared
+  // continent. Frida confirms diploBytes[i] & 0x20 fires even outside
+  // formal war (it's set whenever civ has active hostility signaling).
   if (!isHumanCiv(gameState, civSlot) && leaderPers >= 0) {
-    const myCityCount = countCities(gameState, civSlot);
-    if (myCityCount > 0) {
-      for (let i = 1; i < 8; i++) {
-        if (i === civSlot) continue;
-        const otherCiv = gameState.civs?.[i];
-        if (!otherCiv || otherCiv.alive === false) continue;
-        if (!isHumanCiv(gameState, i)) continue;
-        if (countCities(gameState, i) === 0) continue;
-        const treaty = getTreaty(gameState, civSlot, i);
-        if (treaty !== 'war') continue;
-        const myTechs = getTechCount(gameState, civSlot);
-        const theirTechs = getTechCount(gameState, i);
-        if (theirTechs <= myTechs) continue;
-        if (leaderPers >= 0) leaderPers--;
+    const diplo = gameState.civDiploBytes;
+    const counts = gameState.civAcqTechCounts;
+    const cp = gameState.civContinents;
+    const myCount = counts?.[civSlot] ?? getTechCount(gameState, civSlot);
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!isHumanCiv(gameState, i)) continue;
+      if (diplo && !(diplo[i] & 0x20)) continue;
+      const theirCount = counts?.[i] ?? getTechCount(gameState, i);
+      if (myCount >= theirCount) continue;
+      if (cp && cp[civSlot] && cp[i]) {
+        // Line 6083 reads civ_i's reputation byte (civ+0x1E). Binary
+        // slams leaderPers to -1 when that civ's reputation > 6 on any
+        // shared continent — simulating "I'm cowed by this intimidating
+        // human".
+        const theirRep = gameState.civs?.[i]?.reputation ?? 0;
+        for (let c = 1; c < 0x3F; c++) {
+          if (cp[civSlot][c] && cp[i][c]) {
+            if (leaderPers >= 0) leaderPers--;
+            if (theirRep > 6) leaderPers = -1;
+          }
+        }
       }
     }
   }
@@ -721,21 +729,26 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   }
 
   // ── No-one-has-this-tech bonus ──
-  // Line 6421-6423: If no alive civ has this tech (using DAT_00655b82 lookup),
-  // score += 1. DAT_00655b82[techId] tracks which civs know this tech.
-  // Approximation: check if any other alive civ has this tech.
-  let anyoneHasTech = false;
-  for (let i = 1; i < 8; i++) {
-    if (i === civSlot) continue;
-    if (gameState.civs?.[i]?.alive === false) continue;
-    if (civHasTech(gameState, i, techId)) {
-      anyoneHasTech = true;
-      break;
+  // Line 6421-6423: If DAT_00655b82[techId] == 0 (no civ knows it) → +1.
+  // Prefer the captured binary byte when present (validator passes
+  // gameState.knowsTechByte for the current techId). Fallback to
+  // scanning gameState.civTechs — matches when snapshot state is
+  // current, but drifts when techs change mid-turn.
+  let anyoneHasTech;
+  if (typeof gameState.knowsTechByte === 'number') {
+    anyoneHasTech = gameState.knowsTechByte !== 0;
+  } else {
+    anyoneHasTech = false;
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (gameState.civs?.[i]?.alive === false) continue;
+      if (civHasTech(gameState, i, techId)) {
+        anyoneHasTech = true;
+        break;
+      }
     }
   }
-  if (!anyoneHasTech) {
-    score += 1;
-  }
+  if (!anyoneHasTech) score += 1;
   if (dbg) dbgBreakdown.after_noOneHas = score;
 
   // ── Already-known-by-us discount ──

@@ -62,6 +62,9 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
         for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i*2, i*2+2), 16);
         return out;
       }) : null,
+      diploBytes: ev.diploBytes ?? null,
+      acqTechCounts: ev.acqTechCounts ?? null,
+      knowsTechByte: ev.knowsTechByte ?? null,
     };
   } else if (ev.kind === 'return' && pending) {
     calls.push({ ...pending, retval: ev.retval });
@@ -146,6 +149,16 @@ for (const c of deduped) {
   if (c.aliveMask != null) state.techAdoptionMask = c.aliveMask;
   // Per-civ continent-presence bitmap captured from binary memory.
   if (c.continents) state.civContinents = c.continents;
+  // Diplomatic bytes (civ+0xC1+i*4) — hostility-damping gate.
+  if (c.diploBytes) {
+    const arr = new Array(8).fill(0);
+    for (const k of Object.keys(c.diploBytes)) arr[+k] = c.diploBytes[k];
+    state.civDiploBytes = arr;
+  }
+  if (c.acqTechCounts) state.civAcqTechCounts = c.acqTechCounts;
+  // Source-of-truth "does any civ know this tech" — captured from
+  // binary memory to sidestep v3 snapshot drift. Validator-only hint.
+  if (c.knowsTechByte != null) state.knowsTechByte = c.knowsTechByte;
   if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
     // Binary computes tech values BEFORE distributing starting techs,
     // so DAT_00655b82 is all-zero at game start. Clear every civ's

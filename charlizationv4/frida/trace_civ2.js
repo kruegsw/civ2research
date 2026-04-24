@@ -401,12 +401,14 @@ function readKnowsTechByte(base, techId) {
   } catch (_) { return null; }
 }
 
-// Read diplomatic bytes at civ_base + 0xC1 + i*4 for i=1..7. This is
-// the byte FUN_004bdb2c:6075 checks with `& 0x20` to gate the
-// hostility-damping of leaderPers (line 6072-6088). v3's current
-// proxy (treaties map `war`) over-fires — having the actual byte
-// values for every ai_calc_tech_value call lets the port replay the
-// exact damping decisions.
+// Read treaty-byte-1 for each (civ, other) pair at civ+0x21+i*4.
+// This is DAT_0064c6c1 in the decompile (0x0064c6c1 - civ_base(0x0064c6a0)
+// = 0x21, NOT 0xC1). The `& 0x20` bit at this offset is the "war"
+// treaty flag — FUN_004bdb2c:6075 tests it to gate hostility-damping
+// of leaderPers. Byte layout of each 4-byte treaty slot:
+//   +0: contact/ceaseFire/peace/alliance/vendetta/hatred/embassy
+//   +1: nukeTalk/attacked/**war(0x20)**/recentPeace
+//   +2: cityCapture
 function readDiploBytes(base, civSlot) {
   if (civSlot < 0 || civSlot > 7) return null;
   try {
@@ -415,7 +417,7 @@ function readDiploBytes(base, civSlot) {
     const civBase = base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE);
     const out = {};
     for (let i = 1; i < 8; i++) {
-      out[i] = civBase.add(0xC1 + i * 4).readU8();
+      out[i] = civBase.add(0x21 + i * 4).readU8();
     }
     return out;
   } catch (_) { return null; }
