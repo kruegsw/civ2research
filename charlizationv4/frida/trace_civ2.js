@@ -373,29 +373,22 @@ function readTechValueGlobals(base) {
 }
 
 // Read per-tech bytes from the tech table at DAT_00627684, stride 0x10.
-// Called ONCE at first ai_calc_tech_value call to cache the table —
-// binary's tech data is static during play so re-reading is wasted.
-let _techTableCache = null;
-function readTechTable(base) {
-  if (_techTableCache) return _techTableCache;
+// The full 100-entry table is too large for Frida's send() to carry
+// reliably as a nested object, so we read the SPECIFIC techId's row on
+// each call — small payload, perfect correlation with the call.
+function readTechBytes(base, techId) {
+  if (techId < 0 || techId >= 100) return null;
   try {
-    const addr = base.add(0x00627684 - 0x00400000);
-    const out = [];
-    for (let t = 0; t < 100; t++) {
-      const row = addr.add(t * 0x10);
-      out.push({
-        // +0x0-3: name pointer (skip)
-        costBase: row.add(0x08).readS8(),
-        byteA: row.add(0x0A).readS8(),   // used as additive in base formula
-        byteB: row.add(0x0B).readS8(),   // multiplier with leaderPers
-        byteC: row.add(0x0C).readS8(),
-        byteD: row.add(0x0D).readS8(),
-        prereq1: row.add(0x0E).readS8(),
-        prereq2: row.add(0x0F).readS8(),
-      });
-    }
-    _techTableCache = out;
-    return out;
+    const row = base.add(0x00627684 - 0x00400000).add(techId * 0x10);
+    return {
+      costBase: row.add(0x08).readS8(),
+      byteA: row.add(0x0A).readS8(),   // used as additive in base formula
+      byteB: row.add(0x0B).readS8(),   // multiplier with leaderPers
+      byteC: row.add(0x0C).readS8(),
+      byteD: row.add(0x0D).readS8(),
+      prereq1: row.add(0x0E).readS8(),
+      prereq2: row.add(0x0F).readS8(),
+    };
   } catch (_) { return null; }
 }
 const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
@@ -544,11 +537,13 @@ function attachHook(entry) {
         // the v3 port can't reproduce binary's scoring.
         if (entry.captureTechValGlobals) {
           msg.tvGlobals = readTechValueGlobals(base);
-          // Dump the 100-entry tech table on the FIRST such call so
-          // the validator has the binary's exact per-tech bytes.
-          // Static data, cached after first read.
-          if (!_techTableCache) {
-            msg.techTable = readTechTable(base);
+          // Per-call tech-row bytes: the binary's actual in-memory
+          // values at offsets +0xA (additive in base formula) and
+          // +0xB (multiplier with leaderPers). Reading the whole
+          // 100-row table once was dropped by Frida's send() — so we
+          // read the single techId row per call. ~20 bytes extra.
+          if (msg.named && msg.named.techId != null) {
+            msg.techBytes = readTechBytes(base, msg.named.techId);
           }
         }
         // Save state for onLeave
