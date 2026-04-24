@@ -379,15 +379,29 @@ function readTechValueGlobals(base) {
 function readTechBytes(base, techId) {
   if (techId < 0 || techId >= 100) return null;
   try {
+    // Tech table entry layout (stride 0x10) per Ghidra decompilation:
+    //   +0x0..3: name pointer (string addr)
+    //   +0x4..5: ? (maybe i16 or reserved)
+    //   +0x6: byte_A — additive in base formula (DAT_0062768a)
+    //   +0x7: byte_B — multiplier with leaderPers (DAT_0062768b)
+    //   +0x8..9: ? (maybe costBase / icon index)
+    //   +0xA: prereq1 (DAT_0062768e per ADVANCE_PREREQS[tech][0])
+    //   +0xB: prereq2 (DAT_0062768f per ADVANCE_PREREQS[tech][1])
+    //   +0xC..F: ? (possibly category / enabled byte DAT_00627689)
+    // Previous offsets 0xA/0xB were MISREAD — they're prereqs, not
+    // base-formula inputs.
     const row = base.add(0x00627684 - 0x00400000).add(techId * 0x10);
     return {
-      costBase: row.add(0x08).readS8(),
-      byteA: row.add(0x0A).readS8(),   // used as additive in base formula
-      byteB: row.add(0x0B).readS8(),   // multiplier with leaderPers
-      byteC: row.add(0x0C).readS8(),
-      byteD: row.add(0x0D).readS8(),
-      prereq1: row.add(0x0E).readS8(),
-      prereq2: row.add(0x0F).readS8(),
+      b6: row.add(0x06).readS8(),   // byte_A (additive)
+      b7: row.add(0x07).readS8(),   // byte_B (multiplier with leaderPers)
+      b8: row.add(0x08).readS8(),
+      b9: row.add(0x09).readS8(),
+      bA: row.add(0x0A).readS8(),   // prereq1 (verify)
+      bB: row.add(0x0B).readS8(),   // prereq2 (verify)
+      bC: row.add(0x0C).readS8(),
+      bD: row.add(0x0D).readS8(),
+      bE: row.add(0x0E).readS8(),
+      bF: row.add(0x0F).readS8(),
     };
   } catch (_) { return null; }
 }
