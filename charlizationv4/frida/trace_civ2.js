@@ -209,7 +209,7 @@ const TARGETS = [
   // validated pick-for-pick (seed v3's SeededRNG with rand_enter,
   // run port, expect identical pick AND ending holdrand = rand_exit).
   { va: 0x004C09B0, name: 'ai_research_pick', args: 1, argNames: ['civSlot'],
-    readRet: true, captureRand: true },
+    readRet: true, captureRand: true, captureResearchPickGlobals: true },
   // FUN_004bdb2c — calcTechValue, called ~7× per ai_research_pick at
   // game start (once per can-research candidate) and then periodically
   // after tech completions. ~20-50 calls per captured session, low
@@ -398,6 +398,20 @@ function readKnowsTechByte(base, techId) {
   if (techId < 0 || techId >= 100) return null;
   try {
     return base.add(DAT_00655B82 - 0x00400000 + techId).readU8();
+  } catch (_) { return null; }
+}
+
+// Read all 100 bytes of DAT_00655B82 — the global "civs-who-know-tech"
+// bitmask array. Needed at ai_research_pick entry so the v3 port can
+// answer per-tech noOneHas and prereq-penalty queries byte-exact for
+// every candidate inside the internal calcTechValue loop.
+function readAllKnowsTechBytes(base) {
+  try {
+    const out = new Array(100);
+    for (let t = 0; t < 100; t++) {
+      out[t] = base.add(DAT_00655B82 - 0x00400000 + t).readU8();
+    }
+    return out;
   } catch (_) { return null; }
 }
 
@@ -683,6 +697,24 @@ function attachHook(entry) {
           }
           msg.continents = readContinentPresence(base);
           msg.acqTechCounts = readAllTechCounts(base);
+        }
+        // ai_research_pick: capture the full per-tech "who-knows"
+        // array plus per-civ scoring globals so the port's internal
+        // calcTechValue loop has byte-exact inputs for every
+        // candidate tech (not just the one being scored).
+        if (entry.captureResearchPickGlobals) {
+          msg.tvGlobals = readTechValueGlobals(base);
+          msg.knowsTechBytes = readAllKnowsTechBytes(base);
+          msg.continents = readContinentPresence(base);
+          msg.acqTechCounts = readAllTechCounts(base);
+          if (msg.named && msg.named.civSlot != null) {
+            const styleLeader = readStyleLeader(base, msg.named.civSlot);
+            msg.styleLeader = styleLeader;
+            if (styleLeader != null) {
+              msg.leaderPersByte = readLeaderPersonalityByte(base, styleLeader);
+            }
+            msg.diploBytes = readDiploBytes(base, msg.named.civSlot);
+          }
         }
         // Save state for onLeave
         this._traceEntry = entry;

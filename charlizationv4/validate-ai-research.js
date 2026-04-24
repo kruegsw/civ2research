@@ -60,6 +60,17 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
       civSlot: ev.named?.civSlot ?? ev.args?.[0],
       rand_enter: ev.rand_enter >>> 0,
       time_ms: ev.time_ms,
+      // Byte-exact globals captured at binary entry so the v3 internal
+      // calcTechValue loop can score every candidate identically.
+      knowsTechBytes: ev.knowsTechBytes ?? null,
+      tvGlobals: ev.tvGlobals ?? null,
+      continents: ev.continents ? ev.continents.map(hex => {
+        const out = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i*2, i*2+2), 16);
+        return out;
+      }) : null,
+      diploBytes: ev.diploBytes ?? null,
+      acqTechCounts: ev.acqTechCounts ?? null,
     };
   } else if (ev.kind === 'return' && ev.fn === 'ai_research_pick' && pendingCall) {
     calls.push({
@@ -130,6 +141,21 @@ for (const c of calls) {
   if (!bundle) continue;
   // Clone state (shallow) so each validation is independent
   const state = { ...bundle.baseState, rng: new SeededRNG(c.rand_enter) };
+  // Wire byte-exact globals captured at binary entry.
+  if (c.knowsTechBytes) state.knowsTechBytes = c.knowsTechBytes;
+  if (c.tvGlobals) {
+    if (c.tvGlobals.freeTechGoal != null) state.freeTechGoal = c.tvGlobals.freeTechGoal;
+    if (c.tvGlobals.strategicGoal != null) state.aiStrategicGoal = c.tvGlobals.strategicGoal;
+    if (c.tvGlobals.scenarioFlags != null) state.scenarioFlags = c.tvGlobals.scenarioFlags;
+    if (c.tvGlobals.aliveMask != null) state.techAdoptionMask = c.tvGlobals.aliveMask;
+  }
+  if (c.continents) state.civContinents = c.continents;
+  if (c.diploBytes) {
+    const arr = new Array(8).fill(0);
+    for (const k of Object.keys(c.diploBytes)) arr[+k] = c.diploBytes[k];
+    state.civDiploBytes = arr;
+  }
+  if (c.acqTechCounts) state.civAcqTechCounts = c.acqTechCounts;
   // Init-time picks (FUN_004c09b0 called from new_civ) fire BEFORE the
   // starting tech is granted. The snapshot captures post-init state
   // which has the starting tech. For init-time validation, clear the

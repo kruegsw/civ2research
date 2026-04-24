@@ -735,7 +735,13 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   // scanning gameState.civTechs — matches when snapshot state is
   // current, but drifts when techs change mid-turn.
   let anyoneHasTech;
-  if (typeof gameState.knowsTechByte === 'number') {
+  if (gameState.knowsTechBytes && typeof gameState.knowsTechBytes[techId] === 'number') {
+    // Per-tech lookup array (from ai_research_pick Frida capture).
+    // Used when the internal calcTechValue loop iterates candidate
+    // techs under a single pickResearchGoal call.
+    anyoneHasTech = gameState.knowsTechBytes[techId] !== 0;
+  } else if (typeof gameState.knowsTechByte === 'number') {
+    // Single-call capture from ai_calc_tech_value.
     anyoneHasTech = gameState.knowsTechByte !== 0;
   } else {
     anyoneHasTech = false;
@@ -752,16 +758,21 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   if (dbg) dbgBreakdown.after_noOneHas = score;
 
   // ── Already-known-by-us discount ──
-  // Lines 6424-6430: For each tech that has this techId as a direct prerequisite,
-  // if we already know that child tech → score -= 1.
-  // This penalizes researching techs whose children we already have.
+  // Lines 6424-6430: for each tech t where techId is a direct prereq
+  // AND civSlot knows t → score -= 1. Binary's "does civ know tech"
+  // check is `(DAT_00655B82[t] >> civSlot) & 1`, so when the per-tech
+  // bitmask array is captured, use it directly to avoid v3.civTechs
+  // drift. Falls back to civHasTech otherwise.
+  const bitmaskArr = gameState.knowsTechBytes;
+  const civBit = 1 << civSlot;
   for (let t = 0; t < NUM_ADVANCES; t++) {
     const prereqs = ADVANCE_PREREQS[t];
     if (!prereqs) continue;
-    if ((prereqs[0] === techId || prereqs[1] === techId) &&
-        civHasTech(gameState, civSlot, t)) {
-      score -= 1;
-    }
+    if (prereqs[0] !== techId && prereqs[1] !== techId) continue;
+    const hasT = bitmaskArr
+      ? ((bitmaskArr[t] ?? 0) & civBit) !== 0
+      : civHasTech(gameState, civSlot, t);
+    if (hasT) score -= 1;
   }
 
   // ── Floor at 1 ──
@@ -801,7 +812,7 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
  * @param {object} mapBase
  * @returns {number} tech ID or -1 if nothing available
  */
-function pickResearchGoal(civSlot, gameState, mapBase) {
+export function pickResearchGoal(civSlot, gameState, mapBase) {
   const human = isHumanCiv(gameState, civSlot);
   let bestScore = -1;
   let bestTech = -1;
