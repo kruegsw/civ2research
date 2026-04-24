@@ -401,6 +401,42 @@ function readKnowsTechByte(base, techId) {
   } catch (_) { return null; }
 }
 
+// Read diplomatic bytes at civ_base + 0xC1 + i*4 for i=1..7. This is
+// the byte FUN_004bdb2c:6075 checks with `& 0x20` to gate the
+// hostility-damping of leaderPers (line 6072-6088). v3's current
+// proxy (treaties map `war`) over-fires — having the actual byte
+// values for every ai_calc_tech_value call lets the port replay the
+// exact damping decisions.
+function readDiploBytes(base, civSlot) {
+  if (civSlot < 0 || civSlot > 7) return null;
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const civBase = base.add(CIV_BASE - 0x00400000 + civSlot * STRIDE);
+    const out = {};
+    for (let i = 1; i < 8; i++) {
+      out[i] = civBase.add(0xC1 + i * 4).readU8();
+    }
+    return out;
+  } catch (_) { return null; }
+}
+
+// Read per-civ acquired-tech-count (civ_base + 0x10). Binary's
+// hostility-damping (line 6076) compares param_1's acqTechCount to
+// local_14's — decrements leaderPers only when param_1 has FEWER
+// techs. Capturing per-call lets the port replay this gate.
+function readAllTechCounts(base) {
+  try {
+    const CIV_BASE = 0x0064C6A0;
+    const STRIDE = 0x594;
+    const out = [];
+    for (let c = 0; c < 8; c++) {
+      out.push(base.add(CIV_BASE - 0x00400000 + c * STRIDE + 0x10).readU8());
+    }
+    return out;
+  } catch (_) { return null; }
+}
+
 // Read the per-leader expansion byte from DAT_006554FA. This is the
 // authoritative "leaderPers" value used by binary's FUN_004bdb2c line
 // 6071: local_38 = (char)DAT_006554fa[styleLeader * 0x30].
@@ -640,8 +676,11 @@ function attachHook(entry) {
             if (styleLeader != null) {
               msg.leaderPersByte = readLeaderPersonalityByte(base, styleLeader);
             }
+            // Diplomatic bytes controlling hostility-damping at 6072-6088.
+            msg.diploBytes = readDiploBytes(base, msg.named.civSlot);
           }
           msg.continents = readContinentPresence(base);
+          msg.acqTechCounts = readAllTechCounts(base);
         }
         // Save state for onLeave
         this._traceEntry = entry;
