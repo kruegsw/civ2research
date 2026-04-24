@@ -1144,7 +1144,10 @@ export const UNIT_ROLE = [
 ];
 
 // Advance epoch/era (0=ancient, 1=renaissance, 2=industrial, 3=modern)
-// From RULES.TXT @CIVILIZE epoch field
+// From RULES.TXT @CIVILIZE col 5 (epoch).
+// NOTE: this array is used in non-AI contexts (e.g., UI, display).
+// The AI base-score formula in calcTechValue does NOT use this —
+// it uses ADVANCE_AI_VALUE / ADVANCE_MODIFIER below.
 export const ADVANCE_EPOCH = [
   3, 0, 3, 1, 2, 3, 1, 0, 0, 0,  // 0-9
   1, 1, 0, 3, 2, 2, 3, 2, 0, 2,  // 10-19
@@ -1157,25 +1160,47 @@ export const ADVANCE_EPOCH = [
   3, 2, 1, 1, 0, 1, 0, 0, 0,     // 80-88
 ];
 
-// Base AI interest value per tech (from RULES.TXT AI_interest field, DAT_0062768b)
-// NOTE: Prior investigation (2026-04-24) attempted to replace this with
-// RULES.TXT @CIVILIZE col 1 values (4-8 range) but that REGRESSED the
-// validator (13% → 3.7%) because multiplication with negative leaderPers
-// (Babylonians etc.) produced very negative bases. The binary's actual
-// byte at +0xB in its in-memory tech table is NOT RULES.TXT col 1 —
-// need a Frida tech-table dump to get the true per-tech bytes.
-// Hook is in trace_civ2.js (readTechTable); awaits session capture.
-export const ADVANCE_AI_INTEREST = [
-  0, 0, 0, 1, 0, 0, 1, 0, 0, 0,  // 0-9
-  0, 0, 0, 0, 0, 1, 0, 0, 0, 0,  // 10-19
-  0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  // 20-29
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 30-39
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 40-49
-  0, 0, 0, 0, 1, 1, 0, 0, 0, 0,  // 50-59
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 60-69
-  0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  // 70-79
-  0, 0, 0, 0, 0, 0, 0, 0, 0,     // 80-88
+// Per-tech bytes used by binary's calcTechValue (FUN_004bdb2c:6091).
+// Binary formula:
+//   base_score = MODIFIER[tech] * leaderPers + AI_VALUE[tech]
+// These come from RULES.TXT @CIVILIZE cols 1 (AI_value) and 2 (modifier).
+// Verified 2026-04-24 via Frida techBytes capture at offsets +0x6/+0x7:
+// all 13 captured techs match RULES.TXT exactly.
+//
+// Prior v3 had ADVANCE_AI_INTEREST with mostly 0/1 sparse values
+// (not derived from RULES.TXT) and used ADVANCE_EPOCH as the additive.
+// Both were wrong.
+//
+// The legacy ADVANCE_AI_INTEREST name is kept as an alias for MODIFIER
+// to avoid breaking non-port callers; the new names above are the
+// authoritative ones for calcTechValue.
+export const ADVANCE_AI_VALUE = [  // RULES col 1 — additive (binary +0x6)
+  4, 5, 3, 4, 4, 6, 4, 4, 6, 5,  // 0-9
+  5, 4, 4, 5, 5, 5, 4, 7, 4, 4,  // 10-19
+  4, 5, 4, 4, 4, 4, 3, 2, 5, 4,  // 20-29
+  4, 3, 3, 3, 4, 8, 4, 6, 6, 5,  // 30-39
+  4, 4, 5, 5, 4, 4, 6, 4, 5, 4,  // 40-49
+  4, 6, 4, 8, 5, 5, 4, 6, 6, 3,  // 50-59
+  6, 4, 4, 4, 4, 4, 5, 6, 2, 4,  // 60-69
+  3, 5, 5, 6, 4, 4, 4, 3, 4, 4,  // 70-79
+  4, 6, 3, 4, 4, 5, 4, 4, 4,     // 80-88
 ];
+export const ADVANCE_MODIFIER = [  // RULES col 2 — multiplier (binary +0x7)
+  -2,  1, -2,  1, -1, -1,  1,  0, -1,  0,  // 0-9
+  -1, -2,  1, -1, -1,  0,  1, -1,  0,  0,  // 10-19
+   1,  1,  1,  0,  1,  0,  1, -1,  0, -1,  // 20-29
+  -1, -2,  0,  2,  1, -2, -1,  0,  0, -1,  // 30-39
+  -1,  0, -1,  2, -2, -1, -1,  1,  0, -1,  // 40-49
+   0, -2,  1, -1,  1,  1,  0, -1, -2,  0,  // 50-59
+   1, -1,  1,  0,  0,  1, -1,  0,  1,  0,  // 60-69
+   1,  1, -2, -2,  2,  1,  1, -2, -1, -1,  // 70-79
+   1, -1,  2,  0,  2,  1, -1, -1,  2,     // 80-88
+];
+// Legacy alias retained for any caller still using the old name.
+// Points at MODIFIER because that's the byte that multiplies leaderPers
+// in the binary's formula — which is what "ai interest" semantically
+// should have been.
+export const ADVANCE_AI_INTEREST = ADVANCE_MODIFIER;
 
 // Leader personality traits [expansionism, militarism, tolerance] per leader
 // Indexed by rulesCivNumber 0-20. Range: -1 to 1 each.

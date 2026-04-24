@@ -17,6 +17,7 @@ import { validateAction } from '../rules.js';
 import { calcCityTrade } from '../production.js';
 import {
   ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
+  ADVANCE_AI_VALUE, ADVANCE_MODIFIER,
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
   IMPROVE_PREREQS, IMPROVE_NAMES,
   WONDER_PREREQS, WONDER_OBSOLETE,
@@ -391,39 +392,57 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   if (dbg) dbgBreakdown.leaderPers_initial = leaderPers;
 
   // ── Hostility-based personality damping ──
-  // Lines 6072-6090: If civ is not human and personality >= 0,
-  // check all other civs that are human, have hatred treaty flag (0x20),
-  // and have fewer techs. For each shared continent, reduce personality.
-  // If the human civ has government index > 6, set personality to -1.
+  // Binary FUN_004bdb2c:6072-6090 — decrement leaderPers once per
+  // continent where both the AI civ AND a human civ with more techs
+  // have cities, and the diplomatic byte at +0xC1+i*4 has bit 0x20 set.
   //
-  // Approximation: we check for war status and tech deficit vs other civs.
-  // If at war with a more advanced civ, dampen personality.
+  // The CONTINENT check is the critical gate at game start: both civs
+  // must have at least one city. With civs at init having no cities,
+  // the continent loop never enters, leaderPers stays intact.
+  //
+  // Prior v3 simplified to just war+tech-deficit, skipping the
+  // continent check — which caused spurious decrements at init when
+  // no cities exist. Observed: Celts leaderPers 1→0 on first tech
+  // pick because the simplified check matched "at war with civ 5" but
+  // binary required city-on-shared-continent.
+  //
+  // Mitigation: gate on "both civs have at least one city" so init-time
+  // picks don't decrement. Still an approximation — real binary goes
+  // per-continent.
   if (!isHumanCiv(gameState, civSlot) && leaderPers >= 0) {
-    for (let i = 1; i < 8; i++) {
-      if (i === civSlot) continue;
-      const otherCiv = gameState.civs?.[i];
-      if (!otherCiv || otherCiv.alive === false) continue;
-      if (!isHumanCiv(gameState, i)) continue;
-      // Check hatred flag (treaty includes hostility)
-      const treaty = getTreaty(gameState, civSlot, i);
-      if (treaty !== 'war') continue;
-      // Check tech deficit
-      const myTechs = getTechCount(gameState, civSlot);
-      const theirTechs = getTechCount(gameState, i);
-      if (theirTechs <= myTechs) continue;
-      // Dampen personality (decompiled: checks shared continents)
-      if (leaderPers >= 0) leaderPers--;
+    const myCityCount = countCities(gameState, civSlot);
+    if (myCityCount > 0) {
+      for (let i = 1; i < 8; i++) {
+        if (i === civSlot) continue;
+        const otherCiv = gameState.civs?.[i];
+        if (!otherCiv || otherCiv.alive === false) continue;
+        if (!isHumanCiv(gameState, i)) continue;
+        if (countCities(gameState, i) === 0) continue;
+        const treaty = getTreaty(gameState, civSlot, i);
+        if (treaty !== 'war') continue;
+        const myTechs = getTechCount(gameState, civSlot);
+        const theirTechs = getTechCount(gameState, i);
+        if (theirTechs <= myTechs) continue;
+        if (leaderPers >= 0) leaderPers--;
+      }
     }
   }
 
   // ── Base score ──
-  // Line 6091-6092: AI_INTEREST * personality + EPOCH
-  const aiInterest = (typeof ADVANCE_AI_INTEREST !== 'undefined' && ADVANCE_AI_INTEREST?.[techId]) ?? 0;
-  const epoch = (typeof ADVANCE_EPOCH !== 'undefined' && ADVANCE_EPOCH?.[techId]) ?? 0;
-  let score = aiInterest * leaderPers + epoch;
+  // Binary FUN_004bdb2c:6091:
+  //   base = DAT_0062768b[tech*0x10] * leaderPers + DAT_0062768a[tech*0x10]
+  // where +0x7 byte = modifier (col 2), +0x6 byte = AI_value (col 1).
+  // Verified via Frida techBytes capture 2026-04-24: binary's in-memory
+  // values equal RULES.TXT @CIVILIZE cols 2 and 1 respectively. Prior
+  // v3 used ADVANCE_AI_INTEREST (sparse 0s/1s, wrong) multiplied with
+  // leaderPers, and ADVANCE_EPOCH (0-3 era values) as additive —
+  // both wrong. Now uses the authoritative tables.
+  const modifier = ADVANCE_MODIFIER?.[techId] ?? 0;
+  const aiValue = ADVANCE_AI_VALUE?.[techId] ?? 0;
+  let score = modifier * leaderPers + aiValue;
   if (dbg) {
-    dbgBreakdown.aiInterest = aiInterest;
-    dbgBreakdown.epoch = epoch;
+    dbgBreakdown.modifier = modifier;
+    dbgBreakdown.aiValue = aiValue;
     dbgBreakdown.base = score;
     dbgBreakdown.leaderPers_final = leaderPers;
   }
@@ -453,14 +472,33 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   // apply the naval bonus. The decompiled code checks per-continent arrays,
   // which we don't have. We apply a simplified heuristic.
   if (navalScore > 0) {
-    // Simplified continent check: if civ doesn't have Map Making, naval is important
-    const hasMapMaking = civHasTech(gameState, civSlot, 46);
-    if (!hasMapMaking) {
-      // No basic naval tech → full naval bonus
-      score += navalScore;
+    // Binary FUN_004bdb2c lines 6115-6145 — continent-based naval bonus:
+    //   if civ has a continent with NO other civ presence → +navalScore
+    //   else if non-human OR scenario flag 4 set → +1
+    //   else → 0
+    // v3 tracks "has coastal city" as a proxy for "has continent". At
+    // game start with no cities, the outer continent loop in the binary
+    // doesn't enter, local_34 stays 0, and bVar2 stays false → the
+    // "else if non-human → +1" branch fires. Mirror that.
+    // Prior v3 added full navalScore (2-3) for civs without Map Making,
+    // over-counting by 1-2 points vs the binary's +1.
+    const isHuman = isHumanCiv(gameState, civSlot);
+    const hasCoastalCity = gameState.cities?.some(c =>
+      c && c.owner === civSlot && c.gx >= 0) ?? false;
+    const scenarioBit4 = ((gameState.scenarioFlags ?? 0) & 0x04) !== 0;
+    if (!hasCoastalCity) {
+      // No cities → continent loop never enters, local_34=0 path:
+      if (!isHuman || scenarioBit4) score += 1;
     } else {
-      // Already has basic naval → smaller bonus
-      score += 1;
+      // Has cities — approximate "isolated continent" via "no Map Making
+      // AND has cities" heuristic. Real binary checks per-continent
+      // other-civ presence. Needs per-continent map data we don't have.
+      const hasMapMaking = civHasTech(gameState, civSlot, 46);
+      if (!hasMapMaking) {
+        score += navalScore;  // isolated-continent approximation
+      } else {
+        if (!isHuman || scenarioBit4) score += 1;
+      }
     }
   }
   if (dbg) dbgBreakdown.after_naval = score;
@@ -474,23 +512,16 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   // Line 6152: if civ is NOT human
   if (!isHumanCiv(gameState, civSlot)) {
     // ── Fusion Power / advanced tech bonus ──
-    // Lines 6153-6163: If any human civ is alive, check:
-    //   - isPrereqOf(0x20=32=FusionPower, techId) → +2
-    //   - Space ship parts (buildings 35-37): if their prereq tech matches techId → +3 each
-    // NOTE: Binary actually gates this on (DAT_00655b0b & DAT_00655bce)
-    // which Frida 2026-04-24 showed is 0 at init. But removing the
-    // bonus regressed validator to 0% (exposing that the PRIMARY gap
-    // is elsewhere — likely in the base formula's tech-table bytes).
-    // Keep approximation until tech-table Frida dump clarifies.
-    let anyHumanAlive = false;
-    for (let i = 1; i < 8; i++) {
-      if (i === civSlot) continue;
-      if (isHumanCiv(gameState, i) && gameState.civs?.[i]?.alive !== false) {
-        anyHumanAlive = true;
-        break;
-      }
-    }
-    if (anyHumanAlive) {
+    // Binary FUN_004bdb2c:6153 gates this on:
+    //   (DAT_00655b0b & DAT_00655bce) != 0
+    // = (humanPlayers & techAdoptionMask) != 0.
+    // DAT_00655bce is a per-tech adoption mask that's 0 at game init
+    // (confirmed via Frida 2026-04-24, all 465 captures showed 0).
+    // The block only fires mid/late-game when humans advance.
+    // gameState.techAdoptionMask passes the captured value through.
+    const adoptionMask = gameState.techAdoptionMask ?? 0;
+    const humanPlayersMask = gameState.humanPlayers ?? 0;
+    if ((humanPlayersMask & adoptionMask) !== 0) {
       if (isPrereqOf(32, techId)) {  // Fusion Power
         score += 2;
       }
