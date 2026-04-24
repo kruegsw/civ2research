@@ -88,6 +88,18 @@ const replayPath = getFlagValue('--replay');
 // visible. Turn on for a fidelity ceiling measurement.
 const replayYields = args.includes('--replay-yields');
 
+// --skip-replay <EVENT_TYPE[,EVENT_TYPE...]>: drop these events from
+// replay so v3 must originate the decision itself. Used to validate
+// a ported AI slice — if v3's emitted events match the observed ones
+// without replay, the port is correct.
+const skipReplayArg = getFlagValue('--skip-replay');
+const skipReplayTypes = skipReplayArg
+  ? new Set(skipReplayArg.split(',').map(s => s.trim()).filter(Boolean))
+  : new Set();
+if (skipReplayTypes.size > 0) {
+  process.stderr.write(`[replay] Skipping event types: ${[...skipReplayTypes].join(',')}\n`);
+}
+
 // The parser post-processes a few raw bytes into friendly names.
 // Map them back to ints so the schema matches what the sniffer reads
 // directly from memory.
@@ -366,6 +378,10 @@ if (turns > 0) {
   // during-reducer events like TECH_DISCOVERED which is a by-product
   // of research progress, not a decision).
   function eventToActions(ev, state) {
+    // --skip-replay: validation mode for AI ports. Drops this event
+    // type from replay so v3 must originate the same decision from
+    // its own AI.
+    if (skipReplayTypes.has(ev.event)) return [];
     switch (ev.event) {
       case 'CITY_FOUNDED': {
         // Normal case: a Settler/Engineer at the tile founds the city.
