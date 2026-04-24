@@ -52,6 +52,10 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
       turn: currentTurn,
       civSlot: ev.named?.civSlot ?? ev.args?.[0],
       techId: ev.named?.techId ?? ev.args?.[1],
+      freeTechGoal: ev.tvGlobals?.freeTechGoal,
+      strategicGoal: ev.tvGlobals?.strategicGoal,
+      scenarioFlags: ev.tvGlobals?.scenarioFlags,
+      aliveMask: ev.tvGlobals?.aliveMask,
     };
   } else if (ev.kind === 'return' && pending) {
     calls.push({ ...pending, retval: ev.retval });
@@ -124,6 +128,16 @@ for (const c of deduped) {
   // Clear techs so calcTechValue sees the pre-grant state (matches
   // binary's timing).
   const state = { ...bundle.baseState };
+  // Pass captured binary globals through so calcTechValue can use the
+  // exact values the binary had at the call site.
+  if (c.freeTechGoal != null) state.freeTechGoal = c.freeTechGoal;
+  // v3 reads `aiStrategicGoal`; binary's DAT_0064b3fb name-maps to
+  // strategicGoal in the Frida agent.
+  if (c.strategicGoal != null) state.aiStrategicGoal = c.strategicGoal;
+  if (c.scenarioFlags != null) state.scenarioFlags = c.scenarioFlags;
+  // `aliveMask` in the trace is misnamed — the Frida agent reads
+  // DAT_00655BCE (the tech-adoption mask), not an alive mask.
+  if (c.aliveMask != null) state.techAdoptionMask = c.aliveMask;
   if (c.turn === 0 && process.env.TREAT_INIT_PICK) {
     state.civTechs = state.civTechs ? state.civTechs.slice() : [];
     state.civTechs[c.civSlot] = new Set();

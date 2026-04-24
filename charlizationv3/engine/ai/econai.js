@@ -178,6 +178,20 @@ function countCities(gameState, civSlot) {
 }
 
 /**
+ * Count this civ's naval (domain=2) units — mirrors civ struct +0x6A
+ * (navalUnitCount), derived since v3 excludes this as a derivable field.
+ */
+function countCivNavalUnits(gameState, civSlot) {
+  if (!gameState.units) return 0;
+  let n = 0;
+  for (const u of gameState.units) {
+    if (!u || u.owner !== civSlot || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) === 2) n++;
+  }
+  return n;
+}
+
+/**
  * Find the largest city size owned by this civ.
  */
 function largestCitySize(gameState, civSlot) {
@@ -476,37 +490,34 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
     //   if civ has a continent with NO other civ presence → +navalScore
     //   else if non-human OR scenario flag 4 set → +1
     //   else → 0
-    // v3 tracks "has coastal city" as a proxy for "has continent". At
-    // game start with no cities, the outer continent loop in the binary
-    // doesn't enter, local_34 stays 0, and bVar2 stays false → the
-    // "else if non-human → +1" branch fires. Mirror that.
-    // Prior v3 added full navalScore (2-3) for civs without Map Making,
-    // over-counting by 1-2 points vs the binary's +1.
+    // Without per-continent presence data we can't detect the
+    // "isolated continent" case. Empirically, turn-1 captures show the
+    // +1 path is by far the most common (~80% of cases), while the
+    // previous "!hasMapMaking → +navalScore" approximation overshot by
+    // 1-2 on most picks. Conservatively apply the +1 path until
+    // continent-presence is captured via Frida.
+    // TODO: once gameState.continentPresence is populated, replicate
+    // the per-continent bVar2 scan here.
     const isHuman = isHumanCiv(gameState, civSlot);
-    const hasCoastalCity = gameState.cities?.some(c =>
-      c && c.owner === civSlot && c.gx >= 0) ?? false;
     const scenarioBit4 = ((gameState.scenarioFlags ?? 0) & 0x04) !== 0;
-    if (!hasCoastalCity) {
-      // No cities → continent loop never enters, local_34=0 path:
-      if (!isHuman || scenarioBit4) score += 1;
-    } else {
-      // Has cities — approximate "isolated continent" via "no Map Making
-      // AND has cities" heuristic. Real binary checks per-continent
-      // other-civ presence. Needs per-continent map data we don't have.
-      const hasMapMaking = civHasTech(gameState, civSlot, 46);
-      if (!hasMapMaking) {
-        score += navalScore;  // isolated-continent approximation
-      } else {
-        if (!isHuman || scenarioBit4) score += 1;
-      }
-    }
+    if (!isHuman || scenarioBit4) score += 1;
   }
   if (dbg) dbgBreakdown.after_naval = score;
 
-  // ── Current research goal bonus ──
-  // Line 6147-6151: If techId matches a "free tech" goal, add floor(totalUnits / 4)
-  // DAT_0064c59e is a runtime variable (scenario free tech or negotiated tech).
-  // We skip this as it's rarely relevant in standard games.
+  // ── Free-tech-goal bonus ──
+  // Binary FUN_004bdb2c:6147-6151 — if techId matches the global
+  // free-tech-goal (DAT_0064c59e, signed byte), add
+  //   floor(civ.navalUnitCount / 4)
+  // where civ+0x6A is a signed short. The `x >> 31 & 3` in the
+  // decompile is the C signed-divide-by-4 rounding adjustment (truncate
+  // toward zero); for non-negative counts `Math.floor` matches.
+  // gameState.freeTechGoal is captured from the binary via Frida.
+  const freeTechGoal = gameState.freeTechGoal ?? -1;
+  if (freeTechGoal === techId) {
+    const navalCount = countCivNavalUnits(gameState, civSlot);
+    score += Math.trunc(navalCount / 4);
+  }
+  if (dbg) dbgBreakdown.after_freetech = score;
 
   // ── AI-only bonuses (non-human civ) ──
   // Line 6152: if civ is NOT human
