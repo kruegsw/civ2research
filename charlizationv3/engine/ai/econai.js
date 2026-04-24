@@ -477,6 +477,11 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
     // Lines 6153-6163: If any human civ is alive, check:
     //   - isPrereqOf(0x20=32=FusionPower, techId) → +2
     //   - Space ship parts (buildings 35-37): if their prereq tech matches techId → +3 each
+    // NOTE: Binary actually gates this on (DAT_00655b0b & DAT_00655bce)
+    // which Frida 2026-04-24 showed is 0 at init. But removing the
+    // bonus regressed validator to 0% (exposing that the PRIMARY gap
+    // is elsewhere — likely in the base formula's tech-table bytes).
+    // Keep approximation until tech-table Frida dump clarifies.
     let anyHumanAlive = false;
     for (let i = 1; i < 8; i++) {
       if (i === civSlot) continue;
@@ -497,17 +502,30 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
     }
 
     // ── Strategic goal tech bonus ──
-    // Lines 6164-6170: DAT_0064b3fb is a strategic tech goal.
-    // If it's valid (>= 0), a human civ owns it, and techId is its prereq → +2.
-    // If techId IS that goal → +5.
-    // We approximate: if any human civ has Space Flight, that's the goal tech.
-    // For simplicity, use Space Flight (76) as the AI strategic goal.
-    const strategicGoal = 76; // Space Flight
+    // Binary FUN_004bdb2c lines 6164-6170 reads DAT_0064b3fb (signed
+    // byte) as the AI's current strategic tech goal. If set (>= 0),
+    // some human civ already knows the goal tech, and the candidate
+    // (techId) is a prereq of the goal → +2. If candidate IS the goal
+    // → total +5.
+    //
+    // Binary's DAT_0064b3fb default at game start = 0 (Advanced Flight)
+    // per Frida capture 2026-04-24. v3 now reads from
+    // gameState.aiStrategicGoal (pass-through from runtime memory)
+    // with a fallback to 0 to match the binary default.
+    //
+    // Prior v3 hardcoded 76 (Space Flight) which is never set this way
+    // in vanilla Civ2 — resulted in the AI-only advanced bonus being
+    // effectively skipped, under-scoring techs by 2 points each.
+    const strategicGoal = gameState.aiStrategicGoal ?? 0;
     if (strategicGoal >= 0) {
-      // Check if any human civ has this tech (representing competitive pressure)
+      // Binary: `(DAT_00655b0b & DAT_00655b82[goal]) != 0` — "any
+      // human civ knows the goal tech". humanPlayers bitmask AND
+      // "civs-who-know-tech" bitmask. At game start no-one knows
+      // Advanced Flight so this is false and no bonus applies.
+      // Later in the game when humans research advanced techs the
+      // bonus starts firing.
       let humanHasGoal = false;
       for (let i = 1; i < 8; i++) {
-        if (i === civSlot && !isHumanCiv(gameState, i)) continue;
         if (isHumanCiv(gameState, i) && civHasTech(gameState, i, strategicGoal)) {
           humanHasGoal = true;
           break;

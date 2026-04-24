@@ -371,6 +371,33 @@ function readTechValueGlobals(base) {
     };
   } catch (_) { return null; }
 }
+
+// Read per-tech bytes from the tech table at DAT_00627684, stride 0x10.
+// Called ONCE at first ai_calc_tech_value call to cache the table —
+// binary's tech data is static during play so re-reading is wasted.
+let _techTableCache = null;
+function readTechTable(base) {
+  if (_techTableCache) return _techTableCache;
+  try {
+    const addr = base.add(0x00627684 - 0x00400000);
+    const out = [];
+    for (let t = 0; t < 100; t++) {
+      const row = addr.add(t * 0x10);
+      out.push({
+        // +0x0-3: name pointer (skip)
+        costBase: row.add(0x08).readS8(),
+        byteA: row.add(0x0A).readS8(),   // used as additive in base formula
+        byteB: row.add(0x0B).readS8(),   // multiplier with leaderPers
+        byteC: row.add(0x0C).readS8(),
+        byteD: row.add(0x0D).readS8(),
+        prereq1: row.add(0x0E).readS8(),
+        prereq2: row.add(0x0F).readS8(),
+      });
+    }
+    _techTableCache = out;
+    return out;
+  } catch (_) { return null; }
+}
 const LEADER_PERSONALITY_BASE   = 0x006554FA;  // stride 0x30 per civ
 const LEADER_PERSONALITY_STRIDE = 0x30;
 const DIFFICULTY_BYTE   = 0x00655B04;  // 0=Chieftain, 5=Deity
@@ -517,6 +544,12 @@ function attachHook(entry) {
         // the v3 port can't reproduce binary's scoring.
         if (entry.captureTechValGlobals) {
           msg.tvGlobals = readTechValueGlobals(base);
+          // Dump the 100-entry tech table on the FIRST such call so
+          // the validator has the binary's exact per-tech bytes.
+          // Static data, cached after first read.
+          if (!_techTableCache) {
+            msg.techTable = readTechTable(base);
+          }
         }
         // Save state for onLeave
         this._traceEntry = entry;

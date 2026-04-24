@@ -1158,6 +1158,13 @@ export const ADVANCE_EPOCH = [
 ];
 
 // Base AI interest value per tech (from RULES.TXT AI_interest field, DAT_0062768b)
+// NOTE: Prior investigation (2026-04-24) attempted to replace this with
+// RULES.TXT @CIVILIZE col 1 values (4-8 range) but that REGRESSED the
+// validator (13% → 3.7%) because multiplication with negative leaderPers
+// (Babylonians etc.) produced very negative bases. The binary's actual
+// byte at +0xB in its in-memory tech table is NOT RULES.TXT col 1 —
+// need a Frida tech-table dump to get the true per-tech bytes.
+// Hook is in trace_civ2.js (readTechTable); awaits session capture.
 export const ADVANCE_AI_INTEREST = [
   0, 0, 0, 1, 0, 0, 1, 0, 0, 0,  // 0-9
   0, 0, 0, 0, 0, 1, 0, 0, 0, 0,  // 10-19
