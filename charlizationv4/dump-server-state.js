@@ -2586,6 +2586,49 @@ if (turns > 0) {
     }
   }
 
+  // Final order-byte sweep. UNIT_ORDER events fire per-civ but the
+  // matching unit may not exist in v3 yet (UNIT_CREATED deferred).
+  // After postWrap creates the unit, no later UNIT_ORDER fires —
+  // unit's order stays at default 0xFF (none) when binary has it
+  // fortified or work-in-progress. Apply latest UNIT_ORDER per uid.
+  {
+    const finalTurn = gameState.turn?.number ?? 0;
+    const lastOrderByUid = new Map();
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      const [bucketTurn] = key.split(':').map(Number);
+      if (bucketTurn > finalTurn) continue;
+      for (const ev of batch) {
+        if (ev.event !== 'UNIT_ORDER' || ev.uid == null) continue;
+        const prior = lastOrderByUid.get(ev.uid);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          lastOrderByUid.set(ev.uid, ev);
+        }
+      }
+    }
+    let applied = 0;
+    const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
+      2: 'fortified', 3: 'sleep', 4: 'buildFortress',
+      5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
+      8: 'transform', 9: 'cleanPollution', 10: 'buildAirbase',
+      11: 'railroad', 27: 'goto_ai' };
+    gameState = {
+      ...gameState,
+      units: gameState.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid == null) return u;
+        const ev = lastOrderByUid.get(uid);
+        if (!ev || ev.order == null) return u;
+        if (u.order === ev.order) return u;
+        applied++;
+        return { ...u, order: ev.order, orders: B2O[ev.order] ?? 'none' };
+      }),
+    };
+    if (applied > 0) {
+      process.stderr.write(`[replay] Final order sweep: ${applied} units re-ordered via last UNIT_ORDER\n`);
+    }
+  }
+
   // Final phantom-kill sweep. Some UNIT_KILLED events fire per-civ at
   // a turn where the target uid hasn't been created in v3 yet (the
   // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
