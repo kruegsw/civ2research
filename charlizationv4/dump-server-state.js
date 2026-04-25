@@ -743,24 +743,14 @@ if (turns > 0) {
         //   4 = fortress; 5 = road; 6 = irrigation; 7 = mine;
         //   8 = transform (Engineer only); 9 = pollution; 10 = airbase;
         //   11 = goto; 27 = goto_ai (AI multi-turn waypoint).
-        const WORKER_MAP = { 4: 'fortress', 5: 'road', 6: 'irrigation',
-                             7: 'mine', 9: 'pollution', 10: 'airbase',
-                             11: 'railroad' };
-        const UNIT_MAP = { 1: 'fortify', 2: 'fortify', 3: 'sleep',
-                           27: 'goto_ai' };
-        const orderByte = ev.order;
-        if (orderByte === 0 || orderByte === 0xFF) {
-          return [{ type: 'UNIT_ORDER', unitIndex: uIdx, order: 'wake' }];
-        }
-        if (WORKER_MAP[orderByte]) {
-          return [{ type: 'WORKER_ORDER', unitIndex: uIdx,
-                    order: WORKER_MAP[orderByte] }];
-        }
-        if (UNIT_MAP[orderByte]) {
-          return [{ type: 'UNIT_ORDER', unitIndex: uIdx,
-                    order: UNIT_MAP[orderByte] }];
-        }
-        return [];
+        // Direct byte SET. v3's WORKER_ORDER reducer rejects orders
+        // when the unit isn't on a tile it can work (e.g. irrigation
+        // on a tile already irrigated). The sniffer captures the
+        // ground-truth byte from binary; replay it directly so v3's
+        // order field matches regardless of v3's reducer's terrain
+        // eligibility logic. Closes the ai-order-byte tag bucket.
+        return [{ type: '__UNIT_ORDER_BYTE__', uid: ev.uid,
+                  order: ev.order }];
       }
       case 'UNIT_DAMAGE':
         // Replay combat damage directly as an absolute SET on the
@@ -1007,6 +997,22 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, hpLost: action.to, damageTaken: action.to,
                         movesRemain: action.to }
+                    : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_ORDER_BYTE__') {
+              const B2O = { 0xFF: 'none', 0: 'none', 1: 'fortifying',
+                2: 'fortified', 3: 'sleep', 4: 'buildFortress',
+                5: 'buildRoad', 6: 'buildIrrigation', 7: 'buildMine',
+                8: 'transform', 9: 'cleanPollution', 10: 'buildAirbase',
+                11: 'railroad', 27: 'goto_ai' };
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, order: action.order,
+                        orders: B2O[action.order] ?? 'none' }
                     : u),
               };
               continue;
