@@ -2531,6 +2531,61 @@ if (turns > 0) {
     }
   }
 
+  // Final position sweep. UNIT_MOVED events fire per-civ during the
+  // turn loop, but UNIT_CREATED is in POST_END_TYPES so the unit may
+  // not exist in v3 yet when MOVED fires — the move silently no-ops.
+  // The unit then materializes at postWrap with its CREATION position,
+  // not its final position. Walk all UNIT_MOVED events for each uid,
+  // pick the latest, and apply it. Only updates units still alive in
+  // v3 (skips units killed by the phantom-kill sweep above).
+  {
+    const finalTurn = gameState.turn?.number ?? 0;
+    const lastMoveByUid = new Map();
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      // Filter by ROUTED turn (the bucket key). Events with raw
+      // ev.turn=N but firing after that turn's snapshot get routed to
+      // bucket N+1; the snapshot we're matching belongs to turn
+      // finalTurn, so consider only buckets with key ≤ finalTurn.
+      // Earlier code filtered by ev.turn — bug: applied turn-N events
+      // whose effects happened AFTER snap_N (those go in bucket N+1).
+      const [bucketTurn] = key.split(':').map(Number);
+      if (bucketTurn > finalTurn) continue;
+      for (const ev of batch) {
+        if (ev.event !== 'UNIT_MOVED' || ev.uid == null || !ev.to) continue;
+        if (ev.to[0] < 0 || ev.to[1] < 0) continue;  // skip transit
+        const prior = lastMoveByUid.get(ev.uid);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          lastMoveByUid.set(ev.uid, ev);
+        }
+      }
+    }
+    let applied = 0;
+    gameState = {
+      ...gameState,
+      units: gameState.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid == null) return u;
+        const ev = lastMoveByUid.get(uid);
+        if (!ev) return u;
+        const tx = ev.to[0], ty = ev.to[1];
+        if (u.x === tx && u.y === ty) return u;
+        applied++;
+        // Only repatch position. moveSpent/statusFlags/goto fields
+        // were applied by the per-civ batch's __UNIT_TELEPORT__ /
+        // __UNIT_GOTO__ / __UNIT_MOVESPENT__ handlers as events
+        // arrived. Touching them here would regress those — observed
+        // -3 fields/turn-pair on N=2 ranges. Position-only is the
+        // narrow fix for the per-civ-can't-find-unit case.
+        return { ...u, x: tx, y: ty, cx: tx, cy: ty,
+                 gx: Math.floor(tx / 2), gy: ty };
+      }),
+    };
+    if (applied > 0) {
+      process.stderr.write(`[replay] Final position sweep: ${applied} units repositioned via last UNIT_MOVED\n`);
+    }
+  }
+
   // Final phantom-kill sweep. Some UNIT_KILLED events fire per-civ at
   // a turn where the target uid hasn't been created in v3 yet (the
   // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
@@ -2543,8 +2598,14 @@ if (turns > 0) {
   // current postWrap turn are applied — events at exactly postWrapTurn
   // were handled by the dedicated UNIT_KILLED pre-pass earlier.
   {
+    const finalTurn = gameState.turn?.number ?? 0;
     const killByUid = new Map();
-    for (const [, batch] of replayEventsByTurnCiv) {
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      // Filter by routed bucket turn (same reason as position sweep):
+      // events that happened AFTER the snapshot we're matching belong
+      // in turn N+1's bucket and shouldn't kill units in this snapshot.
+      const [bucketTurn] = key.split(':').map(Number);
+      if (bucketTurn >= finalTurn) continue;
       for (const ev of batch) {
         if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
         const prior = killByUid.get(ev.uid);
@@ -2554,7 +2615,6 @@ if (turns > 0) {
       }
     }
     let killed = 0;
-    const finalTurn = gameState.turn?.number ?? 0;
     gameState = {
       ...gameState,
       units: gameState.units.map(u => {
@@ -2563,7 +2623,6 @@ if (turns > 0) {
         if (uid == null) return u;
         const killEv = killByUid.get(uid);
         if (!killEv) return u;
-        if ((killEv.turn ?? 0) >= finalTurn) return u;
         killed++;
         return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
       }),
