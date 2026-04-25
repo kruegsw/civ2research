@@ -44,6 +44,13 @@ for (const line of readFileSync(tracePath, 'utf8').split(/\r?\n/).filter(Boolean
       researchCostGlobals: ev.researchCostGlobals,
     };
   } else if (ev.kind === 'return' && pending) {
+    // Defensive: sanitize old-trace techCounter that was captured as
+    // S32 instead of S16 (now fixed in trace_civ2.js).
+    const g = pending.researchCostGlobals;
+    if (g && g.techCounter != null && (g.techCounter < -32768 || g.techCounter > 32767)) {
+      const lo = g.techCounter & 0xFFFF;
+      g.techCounter = lo > 32767 ? lo - 65536 : lo;
+    }
     calls.push({ ...pending, retval: ev.retval });
     pending = null;
   }

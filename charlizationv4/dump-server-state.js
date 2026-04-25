@@ -163,20 +163,19 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
       continue;
     }
 
-    // City-production picker is keyed by cityIdx, not civSlot. Route
-    // it to the city-keyed map and skip the civ-keyed bookkeeping.
+    // City-production picker keyed by cityIdx, not civSlot. Same
+    // call/return pattern as the civ-keyed functions: return events
+    // omit cityIdx so we must read it from the matching call.
     if (ev.fn === 'ai_city_production_pick') {
-      const cityIdx = ev.named?.cityIdx ?? ev.args?.[0];
-      if (cityIdx == null) continue;
-      const cityKey = `${fridaTurn}:${cityIdx}`;
       if (ev.kind === 'call') {
-        fridaPendingByFn.set('ai_city_production_pick:' + cityIdx, { ...ev, _cityKey: cityKey });
+        fridaPendingByFn.set('ai_city_production_pick', ev);
       } else if (ev.kind === 'return') {
-        const call = fridaPendingByFn.get('ai_city_production_pick:' + cityIdx);
+        const call = fridaPendingByFn.get('ai_city_production_pick');
         if (!call) continue;
-        fridaPendingByFn.delete('ai_city_production_pick:' + cityIdx);
-        // Keep the FIRST capture for this (turn, city) — binary may
-        // call multiple times per turn but the first sets production.
+        fridaPendingByFn.delete('ai_city_production_pick');
+        const cityIdx = call.named?.cityIdx ?? call.args?.[0];
+        if (cityIdx == null) continue;
+        const cityKey = `${fridaTurn}:${cityIdx}`;
         if (!fridaProductionByTurnCity.has(cityKey)) {
           fridaProductionByTurnCity.set(cityKey, {
             production: ev.retval,
@@ -188,20 +187,32 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
       continue;
     }
 
-    const civSlot = ev.named?.civSlot ?? ev.args?.[0];
+    // Pair call/return per-fn (single-pending). Return events from the
+    // Frida agent omit civSlot, so we must read it from the matching
+    // call. This mirrors the validator pattern.
+    if (ev.kind === 'call') {
+      fridaPendingByFn.set(ev.fn, ev);
+      continue;
+    }
+    if (ev.kind !== 'return') continue;
+    const call = fridaPendingByFn.get(ev.fn);
+    if (!call) continue;
+    fridaPendingByFn.delete(ev.fn);
+    const civSlot = call.named?.civSlot ?? call.args?.[0];
     if (civSlot == null) continue;
     const key = `${fridaTurn}:${civSlot}`;
     let slot = fridaByTurnCiv.get(key);
     if (!slot) { slot = {}; fridaByTurnCiv.set(key, slot); }
-
-    if (ev.kind === 'call') {
-      fridaPendingByFn.set(ev.fn + ':' + civSlot, { ...ev, _key: key });
-    } else if (ev.kind === 'return') {
-      const callKey = ev.fn + ':' + civSlot;
-      const call = fridaPendingByFn.get(callKey);
-      if (!call) continue;
-      fridaPendingByFn.delete(callKey);
+    {
       if (ev.fn === 'fun_research_cost' && call.researchCostGlobals) {
+        // Defensive: pre-2026-04-25 traces captured techCounter as
+        // readS32 instead of readS16, picking up garbage from adjacent
+        // memory. Sanitize by masking to 16 bits with sign extension.
+        const tc = call.researchCostGlobals.techCounter;
+        if (tc != null && (tc < -32768 || tc > 32767)) {
+          const lo = tc & 0xFFFF;
+          call.researchCostGlobals.techCounter = lo > 32767 ? lo - 65536 : lo;
+        }
         // Keep the FIRST capture for this (turn, civ) — binary may
         // recompute multiple times per turn, but the first is what
         // drives the tech completion check.

@@ -589,7 +589,12 @@ function readResearchCostGlobals(base, civSlot) {
       scenarioTechParadigm: base.add(0x0064BCB2 - 0x00400000).readU8(),
       cosmicTechParadigm: base.add(0x0064BCD3 - 0x00400000).readU8(),
       leaderSlot,
-      techCounter: base.add(0x00655AF8 - 0x00400000).readS32(),  // DAT_00655AF8
+      // DAT_00655AF8 is a 16-bit turn counter (incremented per cycle in
+      // FUN_00487371:1816). Reading as S32 picks up adjacent bytes
+      // (DAT_00655AFA = year-related field) and produces garbage.
+      // Cast to int in the binary code at FUN_004c2788 sign-extends
+      // from short, so readS16 here matches.
+      techCounter: base.add(0x00655AF8 - 0x00400000).readS16(),
       numDefinedTechs: base.add(0x00655B1A - 0x00400000).readS32(),  // DAT_00655B1A
       // Per-civ
       civAcqTechCount: civBase.add(0x10).readU8(),
