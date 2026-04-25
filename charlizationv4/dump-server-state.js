@@ -129,6 +129,9 @@ function placeCityAtSlot(state, targetIdx) {
   const cities = state.cities || [];
   if (cities.length === 0) return state;
   const newCity = cities[cities.length - 1];
+  if (process.env.DEBUG_CITY_FOUNDED) {
+    process.stderr.write(`[placeCityAtSlot] target=${targetIdx} newCity=${newCity.name} prelen=${cities.length}\n`);
+  }
   const trimmed = cities.slice(0, -1);
   const next = trimmed.slice();
   while (next.length < targetIdx) {
@@ -667,9 +670,16 @@ if (turns > 0) {
         const foundingUid = foundingUidByEvent.get(foundingKey);
         let uIdx = -1;
         if (foundingUid != null) {
+          // v3's nextUnitId assignment can diverge from binary's, so the
+          // captured uid may be assigned to a DIFFERENT unit in v3.
+          // Require the matched v3 unit to have correct owner AND type
+          // (Settler/Engineer) — otherwise the BUILD_CITY validator
+          // ("Not your unit" / "Only settlers") rejects silently.
           uIdx = units.findIndex(u => u
             && (u.id === foundingUid || u.sequenceId === foundingUid)
-            && u.gx >= 0);
+            && u.gx >= 0
+            && u.owner === owner
+            && (u.type === 0 || u.type === 1));
         }
         if (uIdx < 0) {
           uIdx = units.findIndex(u =>
@@ -1402,10 +1412,16 @@ if (turns > 0) {
               continue;
             }
             try {
+              const preLen = (gameState.cities || []).length;
               const next = applyAction(gameState, mapBase, action, civ);
               if (next && next !== gameState) gameState = next;
               // BUILD_CITY appends to cities[]; reorder to binary's slot.
               if (action.type === 'BUILD_CITY' && action.cityIdx != null) {
+                const postLen = (gameState.cities || []).length;
+                if (process.env.DEBUG_CITY_FOUNDED && postLen === preLen) {
+                  const u = gameState.units[action.unitIndex];
+                  process.stderr.write(`[BUILD_CITY no-append] action.cityIdx=${action.cityIdx} unitIndex=${action.unitIndex} name=${action.name} unit=${u ? `uid=${u.id} owner=${u.owner} type=${u.type} gx=${u.gx} gy=${u.gy}` : 'null'} civ=${civ}\n`);
+                }
                 gameState = placeCityAtSlot(gameState, action.cityIdx);
               }
             } catch (e) {
