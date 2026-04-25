@@ -1509,6 +1509,29 @@ def emit_action_events(prev, curr, t0, events_path):
                            'uid': p_uid, 'x': p.get('x'), 'y': p.get('y'),
                            'type': p.get('type'), 'owner': p.get('owner')})
             continue
+        # Slot REUSE: prev had a different uid than curr (binary killed
+        # the old occupant and created a new one, both within one poll
+        # interval). Fire BOTH UNIT_KILLED for prev AND UNIT_CREATED
+        # for curr so the harness can replay the slot transition. Without
+        # this, the diff path below would emit a UNIT_MOVED event with
+        # from=prev_pos to=curr_pos for a uid that DIDN'T move — caused
+        # ~1 missed unit per session-turn-pair where production reuses
+        # a freed slot.
+        if p_uid != 0 and c_uid != 0 and p_uid != c_uid and p and c:
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_KILLED', 'slot': slot,
+                           'uid': p_uid, 'x': p.get('x'), 'y': p.get('y'),
+                           'type': p.get('type'), 'owner': p.get('owner')})
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_CREATED', 'slot': slot,
+                           'uid': c_uid, 'x': c.get('x'), 'y': c.get('y'),
+                           'type': c.get('type'), 'owner': c.get('owner'),
+                           'order': c.get('order'),
+                           'gotoX': c.get('gotoX'), 'gotoY': c.get('gotoY'),
+                           'moveSpent': c.get('moveSpent'),
+                           'statusFlags': c.get('statusFlags'),
+                           'homeCity': c.get('homeCity')})
+            continue
         if not p or not c: continue
         # Movement
         if (p.get('x'), p.get('y')) != (c.get('x'), c.get('y')):

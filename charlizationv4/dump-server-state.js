@@ -572,6 +572,68 @@ if (turns > 0) {
         const key = `${ev.turn}:${ev.x}:${ev.y}:${ev.owner}`;
         foundingUidByEvent.set(key, ev.uid);
       }
+      // Retroactively synthesize UNIT_CREATED events for "orphan" uids:
+      // ones that have UNIT_MOVED/UNIT_ORDER/UNIT_KILLED but no
+      // UNIT_CREATED. Cause: sniffer's slot-reuse blind spot — when one
+      // poll tick has slot N=uid X and the next has slot N=uid Y (binary
+      // killed X and created Y in same interval), the diff loop emits
+      // UNIT_MOVED with from=X.pos to=Y.pos instead of KILL+CREATE.
+      // Sniffer fixed in this commit; this synthesis bridges existing
+      // captures that have the bug.
+      const seenCreated = new Set();
+      const seenOther = new Map();  // uid -> first non-CREATED event
+      for (const ev of allEvents) {
+        if (ev.uid == null) continue;
+        if (ev.event === 'UNIT_CREATED') seenCreated.add(ev.uid);
+        else if (['UNIT_MOVED', 'UNIT_ORDER', 'UNIT_KILLED',
+                  'UNIT_GOTO_CHANGED', 'UNIT_DAMAGE',
+                  'UNIT_STATUS_CHANGED', 'UNIT_VIS_CHANGED',
+                  'UNIT_MOVESPENT_CHANGED'].includes(ev.event)) {
+          if (!seenOther.has(ev.uid)) seenOther.set(ev.uid, ev);
+        }
+      }
+      let synthesized = 0;
+      for (const [uid, firstEv] of seenOther) {
+        if (seenCreated.has(uid)) continue;
+        // Synthesize a UNIT_CREATED at the position where the first
+        // non-create event saw this uid. For UNIT_MOVED, use `to`
+        // (the unit's actual position after the move is reported).
+        let x, y, owner, type, slot;
+        if (firstEv.event === 'UNIT_MOVED') {
+          x = firstEv.to?.[0]; y = firstEv.to?.[1];
+          owner = firstEv.owner; type = firstEv.type; slot = firstEv.slot;
+        } else {
+          x = firstEv.x; y = firstEv.y;
+          owner = firstEv.owner; type = firstEv.type; slot = firstEv.slot;
+        }
+        if (x == null || y == null || owner == null) continue;
+        const synth = {
+          time_ms: (firstEv.time_ms ?? 0) - 0.001,  // fire just before
+          turn: firstEv.turn ?? 0,
+          event: 'UNIT_CREATED',
+          slot, uid,
+          x, y, type: type ?? 0, owner,
+          order: 255, gotoX: -1, gotoY: -1,
+          moveSpent: 0, statusFlags: 0, homeCity: 255,
+          synthesized: true,
+        };
+        // Route into the same bucket as firstEv would have used.
+        const c = synth.owner;
+        let routedTurn = synth.turn;
+        if (hasPreciseRouting) {
+          const snapT = snapshotTime.get(synth.turn);
+          if (snapT != null && synth.time_ms != null && synth.time_ms > snapT) {
+            routedTurn = synth.turn + 1;
+          }
+        }
+        const key = `${routedTurn}:${c}`;
+        if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
+        replayEventsByTurnCiv.get(key).push(synth);
+        synthesized++;
+      }
+      if (synthesized > 0) {
+        process.stderr.write(`[replay] Synthesized ${synthesized} UNIT_CREATED events for orphan uids (sniffer slot-reuse bug)\n`);
+      }
       process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
     } catch (e) {
       process.stderr.write(`[replay] Failed to read ${replayPath}: ${e.message}\n`);
