@@ -762,6 +762,15 @@ if (turns > 0) {
         // combat in v3 (see port_plan_48_combat_routing.md condition #1).
         if (ev.uid == null || ev.to == null) return [];
         return [{ type: '__UNIT_DAMAGE__', uid: ev.uid, to: ev.to }];
+      case 'UNIT_GOTO_CHANGED':
+        // Binary clears gotoX/gotoY when AI arrives at target or
+        // re-targets without moving. v3 doesn't emit equivalent
+        // updates so its goto fields stay stale. Replay the new
+        // values directly as an absolute SET. Closes the
+        // ai-goto-target tag (~19 mismatches/session).
+        if (ev.uid == null) return [];
+        return [{ type: '__UNIT_GOTO__', uid: ev.uid,
+                  toX: ev.toX, toY: ev.toY }];
       case 'UNIT_STATUS_CHANGED': {
         // Unit statusFlags changed without position change (veteran
         // promotion from combat, flag transitions). v3 can't detect
@@ -988,6 +997,17 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, hpLost: action.to, damageTaken: action.to,
                         movesRemain: action.to }
+                    : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_GOTO__') {
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, gotoX: action.toX, gotoY: action.toY,
+                        goToX: action.toX, goToY: action.toY }
                     : u),
               };
               continue;

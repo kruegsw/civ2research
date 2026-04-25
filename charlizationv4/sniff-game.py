@@ -1566,6 +1566,21 @@ def emit_action_events(prev, curr, t0, events_path):
                            'event': 'UNIT_VIS_CHANGED', 'slot': slot, 'uid': c_uid,
                            'owner': c.get('owner'),
                            'from': p.get('visMask'), 'to': c.get('visMask')})
+        # gotoX/gotoY change without a movement event in this tick.
+        # The binary clears goto target after arrival (sets to -1) or
+        # the AI re-targets without moving. Without this event, v3's
+        # goto fields stay stale — produces the `ai-goto-target` tag
+        # bucket (19 mismatches/session). Skip ticks where (x,y) also
+        # changed: UNIT_MOVED already carries the new gotoX/gotoY.
+        if (p.get('x'), p.get('y')) == (c.get('x'), c.get('y')) \
+                and (p.get('gotoX') != c.get('gotoX')
+                     or p.get('gotoY') != c.get('gotoY')):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_GOTO_CHANGED',
+                           'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'fromX': p.get('gotoX'), 'fromY': p.get('gotoY'),
+                           'toX': c.get('gotoX'), 'toY': c.get('gotoY')})
         # moveSpent change (+0x08) without position change. The binary
         # resets moveSpent to 0 at start of each civ's turn cycle and
         # increments it as units move. UNIT_MOVED already carries
