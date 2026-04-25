@@ -2725,6 +2725,56 @@ if (turns > 0) {
     }
   }
 
+  // Final UNIT_GOTO_CHANGED sweep. Goto target gets cleared by the
+  // binary when arrival or re-target happens; the per-tick event
+  // captures these but per-civ replay misses them when uid doesn't
+  // exist yet. Apply the latest goto state per uid.
+  {
+    const finalTurn = gameState.turn?.number ?? 0;
+    const lastGotoByUid = new Map();
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      const [bucketTurn] = key.split(':').map(Number);
+      if (bucketTurn > finalTurn) continue;
+      for (const ev of batch) {
+        if (ev.event !== 'UNIT_GOTO_CHANGED' || ev.uid == null) continue;
+        const prior = lastGotoByUid.get(ev.uid);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          lastGotoByUid.set(ev.uid, ev);
+        }
+      }
+      // UNIT_MOVED also carries the final gotoX/gotoY for the move.
+      // If a unit's last UNIT_MOVED is later than its last UNIT_GOTO_CHANGED,
+      // use the move's goto value (the binary sets it during the move).
+      for (const ev of batch) {
+        if (ev.event !== 'UNIT_MOVED' || ev.uid == null) continue;
+        if (ev.gotoX == null || ev.gotoY == null) continue;
+        const prior = lastGotoByUid.get(ev.uid);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          lastGotoByUid.set(ev.uid, { ...ev, toX: ev.gotoX, toY: ev.gotoY });
+        }
+      }
+    }
+    let applied = 0;
+    gameState = {
+      ...gameState,
+      units: gameState.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid == null) return u;
+        const ev = lastGotoByUid.get(uid);
+        if (!ev) return u;
+        const tx = ev.toX, ty = ev.toY;
+        if (tx == null || ty == null) return u;
+        if (u.gotoX === tx && u.gotoY === ty) return u;
+        applied++;
+        return { ...u, gotoX: tx, gotoY: ty, goToX: tx, goToY: ty };
+      }),
+    };
+    if (applied > 0) {
+      process.stderr.write(`[replay] Final goto sweep: ${applied} units\n`);
+    }
+  }
+
   // Final UNIT_DAMAGE / UNIT_STATUS_CHANGED / UNIT_MOVESPENT_CHANGED
   // sweep — same chicken-and-egg as position/order sweeps.
   {
