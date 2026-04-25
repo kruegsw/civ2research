@@ -492,6 +492,13 @@ if (turns > 0) {
   // key since it reflects what turn the binary was in when it computed
   // the yield.
   const cityYieldsByRawTurn = new Map();
+  // Map of `${turn}:${x}:${y}:${owner}` -> founding settler uid.
+  // When multiple settlers occupy the founding tile, BUILD_CITY's
+  // findIndex returns the FIRST match — which may not be the unit
+  // binary actually consumed. The UNIT_KILLED event for the same
+  // (turn, x, y, owner, type=0|1) tells us which uid actually died,
+  // i.e. which settler founded.
+  const foundingUidByEvent = new Map();
   // Snapshot timestamps keyed by turn (ms into session). Populated
   // below from SNAPSHOT_DUMPED events. Used by the CITY_YIELD pass to
   // decide whether to use "From" fields (event fired after snapshot,
@@ -556,6 +563,15 @@ if (turns > 0) {
           cityYieldsByRawTurn.get(ev.turn).push(ev);
         }
       }
+      // Build foundingUidByEvent map: scan UNIT_KILLED events for
+      // settlers (type 0/1) and pair with same-(turn, x, y, owner)
+      // CITY_FOUNDED. The killed settler is the founding one.
+      for (const ev of allEvents) {
+        if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
+        if (ev.type !== 0 && ev.type !== 1) continue;
+        const key = `${ev.turn}:${ev.x}:${ev.y}:${ev.owner}`;
+        foundingUidByEvent.set(key, ev.uid);
+      }
       process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
     } catch (e) {
       process.stderr.write(`[replay] Failed to read ${replayPath}: ${e.message}\n`);
@@ -579,11 +595,27 @@ if (turns > 0) {
         const owner = ev.owner ?? ev.civ;
         // v3 stores u.x = iso doubled-X (matches ev.x); u.gx = u.x >> 1 (game half-coord).
         // ev.x in CITY_FOUNDED is the iso coord, so compare u.x not u.gx.
-        const uIdx = units.findIndex(u =>
-          u && u.owner === owner && u.gx >= 0
-          && (u.type === 0 || u.type === 1)
-          && u.x === ev.x
-          && u.y === ev.y);
+        // First try uid-specific lookup: a UNIT_KILLED event at same
+        // (turn, x, y, owner) names which settler actually founded
+        // (binary kills the founder). When multiple settlers occupy
+        // the founding tile (Deity bonus settler stacking), naive
+        // findIndex returns the WRONG one — the still-alive settler
+        // gets killed by v3 while the actual founder wanders off.
+        const foundingKey = `${ev.turn}:${ev.x}:${ev.y}:${owner}`;
+        const foundingUid = foundingUidByEvent.get(foundingKey);
+        let uIdx = -1;
+        if (foundingUid != null) {
+          uIdx = units.findIndex(u => u
+            && (u.id === foundingUid || u.sequenceId === foundingUid)
+            && u.gx >= 0);
+        }
+        if (uIdx < 0) {
+          uIdx = units.findIndex(u =>
+            u && u.owner === owner && u.gx >= 0
+            && (u.type === 0 || u.type === 1)
+            && u.x === ev.x
+            && u.y === ev.y);
+        }
         if (process.env.DEBUG_CITY_FOUNDED) {
           process.stderr.write(`[city-found] turn=${ev.turn} owner=${owner} ev.x=${ev.x},${ev.y} matchedUnit=${uIdx} ${ev.name}\n`);
         }
@@ -899,7 +931,25 @@ if (turns > 0) {
     // processing actually does (production, tech, yields, etc.).
     for (let step = 0; step < 8; step++) {
       const civ = (gameState.turn?.activeCiv ?? gameState.activeCiv ?? 1);
-      if (!(gameState.civsAlive & (1 << civ))) { break; }
+      if (!(gameState.civsAlive & (1 << civ))) {
+        // Dead civ in rotation. Skip — but advance activeCiv to next
+        // alive civ so we don't infinite-loop. Earlier code did break
+        // here, terminating the rotation at the FIRST dead civ. With
+        // dead civ in middle of rotation (e.g. civ 6 dead, others alive),
+        // this skipped processing of subsequent live civs entirely —
+        // their END_TURN never ran, their CITY_FOUNDED events never
+        // applied, settlers/units never updated.
+        let next = civ;
+        for (let i = 0; i < 8; i++) {
+          next = (next + 1) % 8;
+          if (next === 0) next = 1;
+          if (gameState.civsAlive & (1 << next)) break;
+        }
+        if (next === civ) break;  // no other alive civs
+        gameState = { ...gameState,
+          turn: { ...gameState.turn, activeCiv: next } };
+        continue;
+      }
 
       // NOTE: v3 runAiTurn disabled here intentionally. Enabling it makes
       // prediction worse because v3's AI heuristics pick different research

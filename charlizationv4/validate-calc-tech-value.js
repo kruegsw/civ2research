@@ -15,7 +15,7 @@
 // Usage: node validate-calc-tech-value.js <session_dir>
 // ═══════════════════════════════════════════════════════════════════
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { Civ2Parser } from '../charlizationv3/engine/parser.js';
 import { initFromSav } from '../charlizationv3/engine/init.js';
@@ -101,11 +101,14 @@ if (!calcTechValue) {
 const stateCache = new Map();
 function loadStateForTurn(turn) {
   if (stateCache.has(turn)) return stateCache.get(turn);
+  const files = readdirSync(sessionDir).filter(f =>
+    /^turn_\d{4}_\d+x\d+_[a-z]+\.bin$/.test(f));
   let t = turn;
   let snapPath;
   while (t >= 0) {
-    const p = join(sessionDir, `turn_${String(t).padStart(4, '0')}_80x50_deity.bin`);
-    if (existsSync(p)) { snapPath = p; break; }
+    const prefix = `turn_${String(t).padStart(4, '0')}_`;
+    const m = files.find(f => f.startsWith(prefix));
+    if (m) { snapPath = join(sessionDir, m); break; }
     t--;
   }
   if (!snapPath) return null;
