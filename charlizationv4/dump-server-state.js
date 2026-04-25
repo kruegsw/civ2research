@@ -1271,6 +1271,9 @@ if (turns > 0) {
         // for (turn, civ) — otherwise leave units alone (no risk
         // of accidentally deleting humans whose binary doesn't AI).
         const roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
+        if (process.env.DEBUG_PHANTOM) {
+          process.stderr.write(`[phantom] turn=${currentTurn} civ=${civ} roster=${roster ? roster.size : 'NONE'}\n`);
+        }
         if (roster) {
           for (let ui = 0; ui < newUnits.length; ui++) {
             const u = newUnits[ui];
