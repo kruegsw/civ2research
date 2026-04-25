@@ -2629,6 +2629,57 @@ if (turns > 0) {
     }
   }
 
+  // Final UNIT_DAMAGE / UNIT_STATUS_CHANGED / UNIT_MOVESPENT_CHANGED
+  // sweep — same chicken-and-egg as position/order sweeps.
+  {
+    const finalTurn = gameState.turn?.number ?? 0;
+    const lastDmgByUid = new Map();
+    const lastStatusByUid = new Map();
+    for (const [key, batch] of replayEventsByTurnCiv) {
+      const [bucketTurn] = key.split(':').map(Number);
+      if (bucketTurn > finalTurn) continue;
+      for (const ev of batch) {
+        if (ev.uid == null) continue;
+        // Skip moveSpent — it resets to 0 between civ turns, so the
+        // "last value" across all events isn't meaningful as a final
+        // state. Per-civ replay handles those that match.
+        if (ev.event === 'UNIT_DAMAGE' && ev.to != null) {
+          const p = lastDmgByUid.get(ev.uid);
+          if (!p || (ev.time_ms ?? 0) > (p.time_ms ?? 0)) lastDmgByUid.set(ev.uid, ev);
+        } else if (ev.event === 'UNIT_STATUS_CHANGED' && ev.to != null) {
+          const p = lastStatusByUid.get(ev.uid);
+          if (!p || (ev.time_ms ?? 0) > (p.time_ms ?? 0)) lastStatusByUid.set(ev.uid, ev);
+        }
+      }
+    }
+    let dmg = 0, status = 0;
+    gameState = {
+      ...gameState,
+      units: gameState.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid == null) return u;
+        let patched = u;
+        const dEv = lastDmgByUid.get(uid);
+        if (dEv && (u.movesRemain ?? 0) !== dEv.to) {
+          patched = { ...patched, movesRemain: dEv.to,
+                      damageTaken: dEv.to, hpLost: dEv.to };
+          dmg++;
+        }
+        const sEv = lastStatusByUid.get(uid);
+        if (sEv && u.statusFlags !== sEv.to) {
+          patched = { ...patched, statusFlags: sEv.to,
+                      veteran: (sEv.to & 0x2000) ? 1 : 0 };
+          status++;
+        }
+        return patched;
+      }),
+    };
+    if (dmg + status > 0) {
+      process.stderr.write(`[replay] Final unit-field sweep: damage=${dmg} status=${status}\n`);
+    }
+  }
+
   // Final phantom-kill sweep. Some UNIT_KILLED events fire per-civ at
   // a turn where the target uid hasn't been created in v3 yet (the
   // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
