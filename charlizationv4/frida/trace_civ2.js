@@ -110,7 +110,13 @@ const TARGETS = [
   // TIER 1: Turn skeleton — WHEN things happen
   // ═══════════════════════════════════════════════════════════════
   { va: 0x0048B340, name: 'main_game_loop',      args: 0 },
-  { va: 0x00489553, name: 'civ_turn_driver',     args: 1, argNames: ['civSlot'] },
+  // civ_turn_driver fires once per civ per turn. captureUnitRoster
+  // dumps the full slot list of alive units owned by civSlot at the
+  // END of this civ's turn (after AI moves complete). --replay-frida
+  // uses this to delete v3-only "phantom" units that binary doesn't
+  // have (preventing the N≥13 structural drift).
+  { va: 0x00489553, name: 'civ_turn_driver', args: 1, argNames: ['civSlot'],
+    captureUnitRoster: true },
 
   // Sub-functions called inside civ_turn_driver IN ORDER. Labelled
   // by likely purpose based on size + callees. Confirmed to fire
@@ -594,6 +600,30 @@ function readResearchCostGlobals(base, civSlot) {
   } catch (_) { return null; }
 }
 
+// Read all alive unit slots owned by civSlot. Used by civ_turn_driver
+// onLeave to provide an authoritative roster for slot-level cleanup
+// in --replay-frida (deletes v3-only phantoms).
+// Unit array bound: DAT_00655B16 holds count, DAT_006560F0 base, 0x20
+// stride. alive = nonzero i32 at +0x1A.
+function readCivUnitRoster(base, civSlot) {
+  try {
+    const UNIT_BASE = 0x006560F0;
+    const UNIT_STRIDE = 0x20;
+    const DAT_00655B16 = 0x00655B16;
+    const count = base.add(DAT_00655B16 - 0x00400000).readU16();
+    const slots = [];
+    for (let i = 0; i < count; i++) {
+      const u = base.add(UNIT_BASE - 0x00400000 + i * UNIT_STRIDE);
+      const alive = u.add(0x1A).readS32();
+      if (alive === 0) continue;
+      const owner = u.add(0x07).readS8();
+      if (owner !== civSlot) continue;
+      slots.push(i);
+    }
+    return slots;
+  } catch (_) { return null; }
+}
+
 // Capture FUN_00538a29 (ai unit action) context. The active unit
 // index is at DAT_00655afe (read at entry). At exit, read the unit's
 // state from memory: position, orders, moveSpent, hp, statusFlags.
@@ -968,6 +998,11 @@ function attachHook(entry) {
           this._unitActionIdx = readActiveUnitIdx(base);
           msg.activeUnitIdx = this._unitActionIdx;
         }
+        // civ_turn_driver entry: stash civSlot for the onLeave handler
+        // (we need it after the binary call to read its unit roster).
+        if (entry.captureUnitRoster && msg.named?.civSlot != null) {
+          this._unitRosterCiv = msg.named.civSlot;
+        }
         // FUN_004bd2a3 globals: civ rates + per-city food/flags.
         if (entry.captureFoodStrategyGlobals && msg.named && msg.named.civSlot != null) {
           msg.foodStrategyGlobals = readFoodStrategyGlobals(base, msg.named.civSlot);
@@ -1010,7 +1045,9 @@ function attachHook(entry) {
         const needRet = this._traceEntry.readRet;
         const needRand = this._traceEntry.captureRand;
         const needGovtExit = this._traceEntry.captureChooseGovtGlobals;
-        if (!needRet && !needRand && !needGovtExit) return;
+        const needRoster = this._traceEntry.captureUnitRoster;
+        const needUnitAction = this._traceEntry.captureUnitActionGlobals;
+        if (!needRet && !needRand && !needGovtExit && !needRoster && !needUnitAction) return;
         const out = {
           kind: 'return',
           fn: this._traceEntry.name,
@@ -1032,6 +1069,14 @@ function attachHook(entry) {
         if (this._traceEntry.captureUnitActionGlobals && this._unitActionIdx != null) {
           out.unitIdx = this._unitActionIdx;
           out.unitState = readUnitState(base, this._unitActionIdx);
+        }
+        // civ_turn_driver exit: capture authoritative roster of slots
+        // owned by this civ. --replay-frida uses this set to delete
+        // v3-only phantoms (slots v3 owns that binary doesn't).
+        if (this._traceEntry.captureUnitRoster && this._traceEntry.argNames?.[0] === 'civSlot') {
+          // The civSlot was passed as arg0 — store it from onEnter
+          out.civSlot = this._unitRosterCiv;
+          out.unitRoster = readCivUnitRoster(base, this._unitRosterCiv);
         }
         send(out);
       },

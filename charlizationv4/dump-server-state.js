@@ -123,11 +123,15 @@ const fridaProductionByTurnCity = new Map();
 // FUN_00538a29 multiple times during pathfinding); LAST capture wins
 // since that's the unit's final state.
 const fridaUnitStateByTurnUnit = new Map();
+// Slice 7b: full per-civ unit roster captured at civ_turn_driver exit.
+// Map<`${turn}:${civSlot}`, Set<slotIdx>>. Authoritative — used to
+// delete v3 "phantom" units (slots v3 owns but binary doesn't).
+const fridaUnitRosterByTurnCiv = new Map();
 if (replayFridaPath && existsSync(replayFridaPath)) {
   process.stderr.write(`[replay-frida] Parsing ${replayFridaPath}…\n`);
   let fridaTurn = 0;
   let fridaPendingByFn = new Map();  // fn name → call payload
-  let nCost = 0, nPick = 0, nGovt = 0, nProd = 0, nUnit = 0;
+  let nCost = 0, nPick = 0, nGovt = 0, nProd = 0, nUnit = 0, nRoster = 0;
   const lines = readFileSync(replayFridaPath, 'utf8').split(/\r?\n/);
   for (const line of lines) {
     if (!line) continue;
@@ -138,6 +142,14 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
       continue;
     }
     if (ev.source !== 'frida') continue;
+
+    // Slice 7b: civ_turn_driver onLeave carries unitRoster + civSlot.
+    // Stash by (turn, civSlot) for slot-cleanup at injection time.
+    if (ev.fn === 'civ_turn_driver' && ev.kind === 'return' && ev.unitRoster && ev.civSlot != null) {
+      fridaUnitRosterByTurnCiv.set(`${fridaTurn}:${ev.civSlot}`, new Set(ev.unitRoster));
+      nRoster = (nRoster ?? 0) + 1;
+      continue;
+    }
 
     // Slice 7: ai_unit_action keyed by unitIdx. Captured at exit
     // (entry payload has activeUnitIdx; return payload has unitState).
@@ -214,6 +226,7 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
   process.stderr.write(`[replay-frida] Loaded ${fridaByTurnCiv.size} (turn,civ) keys: ${nCost} costs, ${nPick} picks, ${nGovt} govt switches\n`);
   process.stderr.write(`[replay-frida] Loaded ${fridaProductionByTurnCity.size} (turn,city) production picks\n`);
   process.stderr.write(`[replay-frida] Loaded ${fridaUnitStateByTurnUnit.size} (turn,unit) unit-action states\n`);
+  process.stderr.write(`[replay-frida] Loaded ${fridaUnitRosterByTurnCiv.size} (turn,civ) unit rosters\n`);
 }
 
 // The parser post-processes a few raw bytes into friendly names.
@@ -1200,19 +1213,32 @@ if (turns > 0) {
       }
 
       // ── Frida unit-action injection (post-END_TURN) ──
-      // For each of this civ's alive units, if Frida captured an
-      // ai_unit_action call for (currentTurn, unitIdx), apply the
-      // captured final state to v3 (position, orders, moveSpent, hp,
-      // gotoX/Y, statusFlags). Last-write-wins per unit per turn.
+      //
+      // For each unit slot v3 has owned by `civ`, look up the matching
+      // captured state and apply position/orders/moveSpent/etc.
+      // Conservative: do NOT delete v3 units missing from captures (the
+      // binary may not call ai_unit_action for every unit every turn,
+      // e.g. fortified or sentried units that don't move). Do NOT
+      // create v3 units from captures alone (slot may collide with a
+      // v3 unit owned by another civ; production paths handle creation
+      // via slice 6).
+      //
+      // Slot-aligned correctness only works to the extent that v3 and
+      // binary keep the same slot indices. Once they diverge, the
+      // matching becomes noise — but staying conservative avoids the
+      // catastrophic failure mode (deleting human-civ units that have
+      // no captures since binary doesn't AI-process humans).
       if (fridaUnitStateByTurnUnit.size > 0 && gameState.units) {
         const newUnits = gameState.units.slice();
-        let unitInjections = 0;
+        let writes = 0, phantoms = 0;
+
+        // Step 1: per-slot state update from ai_unit_action captures.
         for (let ui = 0; ui < newUnits.length; ui++) {
           const u = newUnits[ui];
           if (!u || u.owner !== civ || u.gx < 0) continue;
           const cap = fridaUnitStateByTurnUnit.get(`${currentTurn}:${ui}`);
           if (!cap) continue;
-          // Skip if binary considers unit dead (alive flag 0)
+          if (cap.owner !== civ) continue;
           if (cap.alive === 0) continue;
           newUnits[ui] = {
             ...u,
@@ -1224,11 +1250,29 @@ if (turns > 0) {
             gotoY: cap.gotoY,
             statusFlags: cap.statusFlags,
             damageTaken: Math.max(0, (u.damageTaken ?? 0) +
-                ((u.hp ?? 99) - cap.hp)),  // delta hp → damage
+                ((u.hp ?? 99) - cap.hp)),
           };
-          unitInjections++;
+          writes++;
         }
-        if (unitInjections > 0) {
+
+        // Step 2 (slice 7b): phantom cleanup using authoritative
+        // civ_turn_driver roster. Only runs when we have a roster
+        // for (turn, civ) — otherwise leave units alone (no risk
+        // of accidentally deleting humans whose binary doesn't AI).
+        const roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
+        if (roster) {
+          for (let ui = 0; ui < newUnits.length; ui++) {
+            const u = newUnits[ui];
+            if (!u || u.owner !== civ || u.gx < 0) continue;
+            if (roster.has(ui)) continue;
+            // v3 has a unit owned by `civ` at slot `ui`, but binary's
+            // roster doesn't include this slot. Phantom — disable.
+            newUnits[ui] = { ...u, gx: -1, gy: -1 };
+            phantoms++;
+          }
+        }
+
+        if (writes > 0 || phantoms > 0) {
           gameState = { ...gameState, units: newUnits };
         }
       }
