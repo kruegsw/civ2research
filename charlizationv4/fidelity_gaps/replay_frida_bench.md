@@ -1,5 +1,35 @@
 # --replay-frida benchmark results
 
+## Slice 7 unit-action injection: `game_20260424_224701`
+
+10,970 ai_unit_action captures (slice 7 firing extensively). All 5
+verified AI slices at 100% on this session.
+
+| N | bare | `--replay-frida` | Δ mismatches |
+|---|------|-------------------|---|
+| 2 (10→12) | 335/381 (87.9%) | **366/381 (96.1%)** | −31 |
+| 5 (10→15) | 319/433 (73.7%) | **385/407 (94.6%)** | −93 |
+| 9 (10→19) | 312/511 (61.1%) | **400/446 (89.7%)** | −154 |
+| 11 (10→21) | 310/519 (59.7%) | **365/467 (78.2%)** | −107 |
+| 13 (10→23) | 290/553 (52.4%) | 305/514 (59.3%) | −54 |
+| 19 (10→29) | 309/694 (44.5%) | 324/629 (51.5%) | −80 |
+| 23 (10→33) | 363/728 (49.9%) | 353/767 (46.0%) | +49 (regress) |
+| 33 (10→43) | 358/835 (42.9%) | 368/939 (39.2%) | +94 |
+| 37 (10→47) | 380/861 (44.1%) | 363/1004 (36.2%) | +160 |
+
+**Slice 7 doubles the effective fidelity range vs slice 6 alone**:
+- N=5 was 68.1% (slice 6 only) → **94.6%** (slice 6+7)
+- N=11 frida 78.2% > prior session's N=15 65.3%
+- New ceiling: N=11 still above 78%; clean regime extends to ~N=11
+
+Beyond N=23, structural drift compounds again (same pattern as
+prior cliff). Open questions:
+- Does slice 7 injection misapply to v3-only-created units?
+- Are there additional AI decisions beyond unit/city/research/govt
+  that drive late-game divergence (treaty/diplomacy)?
+
+---
+
 ## Fresh session w/ slice 6 city production: `game_20260424_212542`
 
 Run with `--no-v4-bridge` (v4 binary engine bridge had hang on civ 6
