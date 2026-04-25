@@ -33,12 +33,15 @@ for N in $Ns; do
   END_FILE=$(printf "%s/turn_%04d_80x50_deity.bin" "$DIR" "$END")
   if [ ! -f "$END_FILE" ]; then continue; fi
 
-  node dump-server-state.js "$START_FILE" --turns "$N" 2>/dev/null > /tmp/v4_bare.json &
+  # --no-v4-bridge: bypass v4 binary engine bridge (it can hang on
+  # specific civ-mid-game state; bridge gives slightly higher fidelity
+  # but bare-vs-frida comparison is unaffected by its absence).
+  node dump-server-state.js "$START_FILE" --turns "$N" --no-v4-bridge 2>/dev/null > /tmp/v4_bare.json &
   pid_bare=$!
   python snapshot-to-state-json.py "$END_FILE" > /tmp/real.json
   wait $pid_bare || true
 
-  node dump-server-state.js "$START_FILE" --turns "$N" --replay-frida "$TRACE" 2>/dev/null > /tmp/v4_frida.json
+  node dump-server-state.js "$START_FILE" --turns "$N" --no-v4-bridge --replay-frida "$TRACE" 2>/dev/null > /tmp/v4_frida.json
 
   bare=$(python state-diff.py /tmp/v4_bare.json /tmp/real.json 2>&1 | grep "Matched:" | tail -1)
   frida=$(python state-diff.py /tmp/v4_frida.json /tmp/real.json 2>&1 | grep "Matched:" | tail -1)
