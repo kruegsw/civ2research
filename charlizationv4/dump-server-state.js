@@ -1270,19 +1270,35 @@ if (turns > 0) {
         // civ_turn_driver roster. Only runs when we have a roster
         // for (turn, civ) — otherwise leave units alone (no risk
         // of accidentally deleting humans whose binary doesn't AI).
+        // Phantom cleanup: only run when v3 has STRICTLY MORE units
+        // owned by this civ than binary's roster contains. Slot-level
+        // matching can differ (v3 and binary assign new units to
+        // different slots independently), so deleting "v3-not-in-
+        // roster" can wrongly delete units that exist in both — just
+        // at different slot indices. Only delete the EXCESS count.
         const roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
         if (process.env.DEBUG_PHANTOM) {
           process.stderr.write(`[phantom] turn=${currentTurn} civ=${civ} roster=${roster ? roster.size : 'NONE'}\n`);
         }
         if (roster) {
+          // Count v3's alive units for this civ.
+          const v3Slots = [];
           for (let ui = 0; ui < newUnits.length; ui++) {
             const u = newUnits[ui];
-            if (!u || u.owner !== civ || u.gx < 0) continue;
-            if (roster.has(ui)) continue;
-            // v3 has a unit owned by `civ` at slot `ui`, but binary's
-            // roster doesn't include this slot. Phantom — disable.
-            newUnits[ui] = { ...u, gx: -1, gy: -1 };
-            phantoms++;
+            if (u && u.owner === civ && u.gx >= 0) v3Slots.push(ui);
+          }
+          const excess = v3Slots.length - roster.size;
+          if (excess > 0) {
+            // Delete `excess` units from highest slots not in roster.
+            // Iterating from highest slot prefers deleting recently-
+            // produced units (more likely phantoms from speculative
+            // production) over original snapshot units.
+            const candidates = v3Slots.filter(s => !roster.has(s)).sort((a,b) => b-a);
+            for (let i = 0; i < excess && i < candidates.length; i++) {
+              const ui = candidates[i];
+              newUnits[ui] = { ...newUnits[ui], gx: -1, gy: -1 };
+              phantoms++;
+            }
           }
         }
 
