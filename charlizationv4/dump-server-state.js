@@ -1953,21 +1953,18 @@ if (turns > 0) {
               }
               if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
               if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
-              // Override homeCity when the sniffer captured it. v3's
-              // production assigns homeCity by reducer logic; binary's
-              // assignment may differ (cities[] order, capture/rehome
-              // history). Sniffer captures the binary-authoritative
-              // value at unit+0x10. Without this, ~7/session homeCity
-              // mismatches (unit-homecity tag) cascade into upkeep,
-              // production, and yield validation.
-              if (action.homeCity != null && !ownerChanged) {
+              // Override homeCity when the sniffer captured it.
+              // Sniffer's value is authoritative regardless of whether
+              // owner changed — covers post-capture rehomes, mid-game
+              // city foundings that re-home older units, etc.
+              if (action.homeCity != null) {
                 patched.homeCity = action.homeCity;
                 patched.homeCityId = action.homeCity;
               }
-              // If owner changed, recompute homeCity since v3's
-              // assignment points to a city the new owner doesn't own.
-              // Use the city at the creation tile when possible.
-              if (ownerChanged) {
+              // Owner-changed fallback only when sniffer didn't capture
+              // homeCity — recompute since v3's assignment points to a
+              // city the new owner doesn't own.
+              if (ownerChanged && action.homeCity == null) {
                 const unitType = action.unitType ?? patched.type ?? 0;
                 if (unitType >= 16) {
                   patched.homeCity = 0xFF;
@@ -2495,8 +2492,14 @@ if (turns > 0) {
               // cycle). Synthesize a unit record from the event and
               // heuristics, then append it.
               const owner = action.owner;
+              // Prefer sniffer-captured homeCity (binary-authoritative)
+              // over heuristic first-city lookup. Critical for re-homed
+              // units where the city assigned by binary differs from
+              // owner's first city slot.
               let homeCityIdx = null;
-              if (owner != null && gameState.cities) {
+              if (action.homeCity != null) {
+                homeCityIdx = action.homeCity;
+              } else if (owner != null && gameState.cities) {
                 homeCityIdx = gameState.cities.findIndex(c =>
                   c && c.owner === owner && c.gx >= 0);
                 if (homeCityIdx < 0) homeCityIdx = null;
