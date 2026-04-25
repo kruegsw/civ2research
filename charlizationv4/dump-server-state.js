@@ -632,10 +632,18 @@ if (turns > 0) {
         //     bit 0x08 set. Replaying the observed state keeps v3 aligned
         //     without needing the "revert-unprocessed-civs" equivalent.
         if (ev.civ == null || ev.from == null || ev.to == null) return [];
-        const mask = 0x04 | 0x08;
+        const mask = 0x02 | 0x04 | 0x08;
         const changed = (ev.from ^ ev.to) & mask;
         if (!changed) return [];
         const actions = [];
+        if (changed & 0x02) {
+          // bit 0x02 (atWar). v3 recomputes this in end-turn from its
+          // treaty state, but the sniffer doesn't emit TREATY_CHANGED
+          // events for AI-vs-AI war declarations. Without replay, v3's
+          // treaty stays at peace, atWar stays clear, mismatches with
+          // binary's observed value. Replay the bit directly.
+          actions.push({ type: '__ATWAR_TOGGLE__', civ: ev.civ, set: !!(ev.to & 0x02) });
+        }
         if (changed & 0x04) {
           actions.push({ type: '__SENATE_TOGGLE__', civ: ev.civ, set: !!(ev.to & 0x04) });
         }
@@ -937,6 +945,18 @@ if (turns > 0) {
                 ...gameState,
                 civs: gameState.civs.map((c, i) =>
                   i === action.civ ? { ...c, stateFlags: action.flags } : c),
+              };
+              continue;
+            }
+            if (action.type === '__ATWAR_TOGGLE__') {
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) => {
+                  if (i !== action.civ) return c;
+                  const sf = c.stateFlags || 0;
+                  return { ...c,
+                    stateFlags: action.set ? (sf | 0x02) : (sf & ~0x02) };
+                }),
               };
               continue;
             }
@@ -2038,6 +2058,18 @@ if (turns > 0) {
                   ? { ...u, hpLost: action.to, damageTaken: action.to,
                       movesRemain: action.to }
                   : u),
+            };
+            continue;
+          }
+          if (action.type === '__ATWAR_TOGGLE__') {
+            gameState = {
+              ...gameState,
+              civs: gameState.civs.map((c, i) => {
+                if (i !== action.civ) return c;
+                const sf = c.stateFlags || 0;
+                return { ...c,
+                  stateFlags: action.set ? (sf | 0x02) : (sf & ~0x02) };
+              }),
             };
             continue;
           }
