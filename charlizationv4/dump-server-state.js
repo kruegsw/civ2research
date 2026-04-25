@@ -502,6 +502,11 @@ if (turns > 0) {
   // (turn, x, y, owner, type=0|1) tells us which uid actually died,
   // i.e. which settler founded.
   const foundingUidByEvent = new Map();
+  // Per-uid lifecycle: turn of first UNIT_CREATED and first UNIT_KILLED.
+  // Used to keep phantom-cleanup-via-roster from culling units the
+  // sniffer confirms are alive at currentTurn.
+  const unitCreatedTurns = new Map();
+  const unitKilledTurns = new Map();
   // Snapshot timestamps keyed by turn (ms into session). Populated
   // below from SNAPSHOT_DUMPED events. Used by the CITY_YIELD pass to
   // decide whether to use "From" fields (event fired after snapshot,
@@ -569,11 +574,22 @@ if (turns > 0) {
       // Build foundingUidByEvent map: scan UNIT_KILLED events for
       // settlers (type 0/1) and pair with same-(turn, x, y, owner)
       // CITY_FOUNDED. The killed settler is the founding one.
+      // Also build unitCreatedTurns / unitKilledTurns for lifecycle.
       for (const ev of allEvents) {
-        if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
-        if (ev.type !== 0 && ev.type !== 1) continue;
-        const key = `${ev.turn}:${ev.x}:${ev.y}:${ev.owner}`;
-        foundingUidByEvent.set(key, ev.uid);
+        if (ev.uid == null) continue;
+        if (ev.event === 'UNIT_CREATED') {
+          if (!unitCreatedTurns.has(ev.uid)) {
+            unitCreatedTurns.set(ev.uid, ev.turn ?? 0);
+          }
+        } else if (ev.event === 'UNIT_KILLED') {
+          if (!unitKilledTurns.has(ev.uid)) {
+            unitKilledTurns.set(ev.uid, ev.turn ?? 0);
+          }
+          if (ev.type === 0 || ev.type === 1) {
+            const key = `${ev.turn}:${ev.x}:${ev.y}:${ev.owner}`;
+            foundingUidByEvent.set(key, ev.uid);
+          }
+        }
       }
       // Retroactively synthesize UNIT_CREATED events for "orphan" uids:
       // ones that have UNIT_MOVED/UNIT_ORDER/UNIT_KILLED but no
@@ -636,6 +652,13 @@ if (turns > 0) {
       }
       if (synthesized > 0) {
         process.stderr.write(`[replay] Synthesized ${synthesized} UNIT_CREATED events for orphan uids (sniffer slot-reuse bug)\n`);
+        if (process.env.DEBUG_CITY_FOUNDED || process.env.DEBUG_PHANTOM) {
+          for (const [uid, firstEv] of seenOther) {
+            if (!seenCreated.has(uid)) {
+              process.stderr.write(`  orphan uid=${uid} first ev=${firstEv.event} turn=${firstEv.turn} slot=${firstEv.slot}\n`);
+            }
+          }
+        }
       }
       process.stderr.write(`[replay] Loaded ${Array.from(replayEventsByTurnCiv.values()).reduce((a, v) => a + v.length, 0)} events from ${replayPath}\n`);
     } catch (e) {
@@ -1571,7 +1594,28 @@ if (turns > 0) {
             // Iterating from highest slot prefers deleting recently-
             // produced units (more likely phantoms from speculative
             // production) over original snapshot units.
-            const candidates = v3Slots.filter(s => !roster.has(s)).sort((a,b) => b-a);
+            // EXCLUSION: skip uids that have a UNIT_CREATED before
+            // currentTurn AND no UNIT_KILLED yet — these are units
+            // confirmed alive in binary stream and shouldn't be culled
+            // even if they happen to land at a slot binary's roster
+            // doesn't enumerate (Frida roster snapshots between turns
+            // can miss transient slot occupancy).
+            const candidates = v3Slots.filter(s => {
+              if (roster.has(s)) return false;
+              const u = newUnits[s];
+              if (!u) return true;
+              const uid = u.id ?? u.sequenceId;
+              if (uid == null) return true;
+              // Confirmed alive iff sniffer recorded UNIT_CREATED but no UNIT_KILLED.
+              const created = unitCreatedTurns.get(uid);
+              const killed = unitKilledTurns.get(uid);
+              if (created != null && created <= currentTurn) {
+                if (killed == null || killed > currentTurn) {
+                  return false;  // confirmed alive — don't cull
+                }
+              }
+              return true;
+            }).sort((a,b) => b-a);
             for (let i = 0; i < excess && i < candidates.length; i++) {
               const ui = candidates[i];
               newUnits[ui] = { ...newUnits[ui], gx: -1, gy: -1 };
