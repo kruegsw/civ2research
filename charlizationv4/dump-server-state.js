@@ -2228,6 +2228,41 @@ if (turns > 0) {
             const existing = gameState.units.find(u => u &&
               (u.id === action.uid || u.sequenceId === action.uid));
             if (existing) {
+              // If saveIndex override would collide with another v3
+              // unit already at that slot AND the colliding occupant
+              // has a UNIT_KILLED event somewhere in the trace, evict
+              // it (it's a phantom). Pre-deferred phantom-kill ran
+              // already but only kills uids with UNIT_KILLED before
+              // the snapshot turn — late-killed phantoms can survive.
+              if (action.slot != null && existing.saveIndex !== action.slot) {
+                const occupant = gameState.units.find(u => u
+                  && u.gx >= 0 && u.saveIndex === action.slot
+                  && u.id !== action.uid && u.sequenceId !== action.uid);
+                if (occupant) {
+                  // Look for a UNIT_KILLED event for the occupant uid
+                  // anywhere in the replay stream — confirms it's a
+                  // phantom that should have been removed.
+                  const occUid = occupant.id ?? occupant.sequenceId;
+                  let phantom = false;
+                  for (const [, batch] of replayEventsByTurnCiv) {
+                    for (const e of batch) {
+                      if (e.event === 'UNIT_KILLED' && e.uid === occUid) {
+                        phantom = true; break;
+                      }
+                    }
+                    if (phantom) break;
+                  }
+                  if (phantom) {
+                    gameState = {
+                      ...gameState,
+                      units: gameState.units.map(u =>
+                        u === occupant
+                          ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+                          : u),
+                    };
+                  }
+                }
+              }
               // v3's production already created the unit record; patch
               // its position + captured/heuristic fields to match.
               gameState = {
@@ -2297,6 +2332,36 @@ if (turns > 0) {
               let usedSave = new Set();
               for (const u of gameState.units) {
                 if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
+              }
+              // If the captured slot is occupied by a phantom (occupant
+              // has a UNIT_KILLED event somewhere), evict so this new
+              // unit can claim the slot. Same pattern as the existing-
+              // branch eviction above.
+              if (action.slot != null && usedSave.has(action.slot)) {
+                const occupant = gameState.units.find(u => u
+                  && u.gx >= 0 && u.saveIndex === action.slot);
+                if (occupant) {
+                  const occUid = occupant.id ?? occupant.sequenceId;
+                  let phantom = false;
+                  for (const [, batch] of replayEventsByTurnCiv) {
+                    for (const e of batch) {
+                      if (e.event === 'UNIT_KILLED' && e.uid === occUid) {
+                        phantom = true; break;
+                      }
+                    }
+                    if (phantom) break;
+                  }
+                  if (phantom) {
+                    gameState = {
+                      ...gameState,
+                      units: gameState.units.map(u =>
+                        u === occupant
+                          ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+                          : u),
+                    };
+                    usedSave.delete(action.slot);
+                  }
+                }
               }
               let newSaveIndex = action.slot != null && !usedSave.has(action.slot)
                 ? action.slot : 0;
@@ -2371,6 +2436,37 @@ if (turns > 0) {
         }
       }
     };
+    // Pre-deferred phantom-kill: apply UNIT_KILLED events from any
+    // turn so saveIndex slots are freed before deferred UNIT_CREATED
+    // fires. Without this, when uid=X is captured at slot=Y but a
+    // phantom (binary already killed) sits at slot=Y in v3, the
+    // saveIndex override creates a duplicate slot — output sort by
+    // saveIndex picks the wrong unit.
+    {
+      const finalTurn = gameState.turn?.number ?? 0;
+      const killByUidPre = new Map();
+      for (const [key, batch] of replayEventsByTurnCiv) {
+        const [bucketTurn] = key.split(':').map(Number);
+        if (bucketTurn >= finalTurn) continue;
+        for (const ev of batch) {
+          if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
+          const prior = killByUidPre.get(ev.uid);
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            killByUidPre.set(ev.uid, ev);
+          }
+        }
+      }
+      gameState = {
+        ...gameState,
+        units: gameState.units.map(u => {
+          if (!u || u.gx < 0) return u;
+          const uid = u.id ?? u.sequenceId;
+          if (uid == null || !killByUidPre.has(uid)) return u;
+          return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+        }),
+      };
+    }
+
     applyBatch(deferredPostEvents);
   }
 
