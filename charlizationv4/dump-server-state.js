@@ -1276,7 +1276,13 @@ if (turns > 0) {
         // different slots independently), so deleting "v3-not-in-
         // roster" can wrongly delete units that exist in both — just
         // at different slot indices. Only delete the EXCESS count.
-        const roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
+        // Use latest roster ≤ currentTurn (Frida data has gaps).
+        let roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
+        if (!roster) {
+          for (let t = currentTurn - 1; t >= currentTurn - 5 && !roster; t--) {
+            roster = fridaUnitRosterByTurnCiv.get(`${t}:${civ}`);
+          }
+        }
         if (process.env.DEBUG_PHANTOM) {
           process.stderr.write(`[phantom] turn=${currentTurn} civ=${civ} roster=${roster ? roster.size : 'NONE'}\n`);
         }
