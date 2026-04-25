@@ -893,6 +893,12 @@ if (turns > 0) {
         // combat in v3 (see port_plan_48_combat_routing.md condition #1).
         if (ev.uid == null || ev.to == null) return [];
         return [{ type: '__UNIT_DAMAGE__', uid: ev.uid, to: ev.to }];
+      case 'UNIT_HOMECITY_CHANGED':
+        // Binary re-homes units on city founding/capture. UNIT_CREATED
+        // captures only the initial homeCity; this fires for later
+        // re-homes. Replay as direct SET on u.homeCity / u.homeCityId.
+        if (ev.uid == null || ev.to == null) return [];
+        return [{ type: '__UNIT_HOMECITY__', uid: ev.uid, to: ev.to }];
       case 'UNIT_GOTO_CHANGED':
         // Binary clears gotoX/gotoY when AI arrives at target or
         // re-targets without moving. v3 doesn't emit equivalent
@@ -1162,6 +1168,16 @@ if (turns > 0) {
                   u && (u.id === action.uid || u.sequenceId === action.uid)
                     ? { ...u, hpLost: action.to, damageTaken: action.to,
                         movesRemain: action.to }
+                    : u),
+              };
+              continue;
+            }
+            if (action.type === '__UNIT_HOMECITY__') {
+              gameState = {
+                ...gameState,
+                units: gameState.units.map(u =>
+                  u && (u.id === action.uid || u.sequenceId === action.uid)
+                    ? { ...u, homeCity: action.to, homeCityId: action.to }
                     : u),
               };
               continue;

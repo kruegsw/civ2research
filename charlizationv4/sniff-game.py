@@ -1580,6 +1580,18 @@ def emit_action_events(prev, curr, t0, events_path):
                            'event': 'UNIT_DAMAGE', 'slot': slot, 'uid': c_uid,
                            'owner': c.get('owner'),
                            'from': p.get('hp'), 'to': c.get('hp')})
+        # homeCity change (+0x10 byte). Binary re-homes units when
+        # cities are founded or captured — the existing UNIT_CREATED
+        # event captures the value at creation time but doesn't track
+        # subsequent re-homes. v3 needs this to keep homeCityId
+        # accurate for upkeep + production validation. Closes the
+        # remaining `unit-homecity` tag bucket (~28 mid-game).
+        if p.get('homeCity') != c.get('homeCity'):
+            events.append({'time_ms': round(ms, 1), 'turn': turn,
+                           'event': 'UNIT_HOMECITY_CHANGED',
+                           'slot': slot, 'uid': c_uid,
+                           'owner': c.get('owner'),
+                           'from': p.get('homeCity'), 'to': c.get('homeCity')})
         # Visibility mask change (civ+0x09 visMask byte — bitmask of
         # which civs have spotted this unit). Changes when another civ's
         # unit comes into sight range. Replay needs this because v3
