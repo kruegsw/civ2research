@@ -1793,11 +1793,27 @@ if (turns > 0) {
         for (const u of gameState.units) {
           if (u && u.gx >= 0 && u.saveIndex != null) usedSave.add(u.saveIndex);
         }
-        // Prefer the sniffer-captured slot if present; otherwise pick
-        // the lowest free slot to match binary's slot-reuse behavior.
-        let newSaveIndex = action.slot != null && !usedSave.has(action.slot)
-          ? action.slot : 0;
-        if (action.slot == null || usedSave.has(action.slot)) {
+        // If the sniffer-captured slot is occupied, the occupant is a
+        // phantom — a unit binary already killed but v3's per-civ
+        // UNIT_KILLED replay no-op'd because the unit was deferred to
+        // postWrap (chicken-and-egg). Evict the phantom by marking it
+        // dead so the new unit can claim its rightful slot. Without
+        // this, slot-reuse cascades shift all later units one position.
+        if (action.slot != null && usedSave.has(action.slot)) {
+          gameState = {
+            ...gameState,
+            units: gameState.units.map(u =>
+              (u && u.gx >= 0 && u.saveIndex === action.slot)
+                ? { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 }
+                : u),
+          };
+          usedSave.delete(action.slot);
+        }
+        // Prefer the sniffer-captured slot; otherwise pick lowest free.
+        let newSaveIndex;
+        if (action.slot != null && !usedSave.has(action.slot)) {
+          newSaveIndex = action.slot;
+        } else {
           newSaveIndex = 0;
           while (usedSave.has(newSaveIndex)) newSaveIndex++;
         }
