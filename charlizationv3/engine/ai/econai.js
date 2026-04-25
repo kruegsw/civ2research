@@ -72,6 +72,14 @@ function getTreaty(gameState, civA, civB) {
 function civHasTech(gameState, civSlot, techId) {
   if (techId < 0) return techId !== -2; // -1 = "no prereq" → always true; -2 = never
   if (techId >= NUM_ADVANCES) return false;
+  // Prefer Frida-captured knowsTechBytes (the binary's authoritative
+  // per-tech bitmask) when available, since v3's civTechs snapshot
+  // can drift mid-turn. Used for late-game bonus checks
+  // (Industrialization chain, University→Computers, Wonder rivalry).
+  const ktb = gameState.knowsTechBytes;
+  if (ktb && typeof ktb[techId] === 'number') {
+    return (ktb[techId] & (1 << civSlot)) !== 0;
+  }
   const techs = gameState.civTechs?.[civSlot];
   return techs ? techs.has(techId) : false;
 }
