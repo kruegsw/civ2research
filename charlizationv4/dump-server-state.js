@@ -73,7 +73,10 @@ const skipV4Bridge = args.includes('--no-v4-bridge');
 // research progress, tech completion) without replicating Civ2's AI.
 // Events are emitted by sniff-game.py's emit_action_events().
 function getFlagValue(name) {
-  const flagArg = args.find(a => a.startsWith(name));
+  // Match exact `--name` or `--name=val`. Previous prefix match
+  // accidentally matched `--replay-frida` for getFlagValue('--replay'),
+  // routing the wrong file to each parser.
+  const flagArg = args.find(a => a === name || a.startsWith(name + '='));
   if (!flagArg) return null;
   if (flagArg.includes('=')) return flagArg.split('=')[1];
   const idx = args.indexOf(flagArg);
@@ -527,11 +530,16 @@ if (turns > 0) {
         // Normal case: a Settler/Engineer at the tile founds the city.
         const units = state.units || [];
         const owner = ev.owner ?? ev.civ;
+        // v3 stores u.x = iso doubled-X (matches ev.x); u.gx = u.x >> 1 (game half-coord).
+        // ev.x in CITY_FOUNDED is the iso coord, so compare u.x not u.gx.
         const uIdx = units.findIndex(u =>
           u && u.owner === owner && u.gx >= 0
           && (u.type === 0 || u.type === 1)
-          && Math.floor(u.x / 2) === Math.floor(ev.x / 2)
+          && u.x === ev.x
           && u.y === ev.y);
+        if (process.env.DEBUG_CITY_FOUNDED) {
+          process.stderr.write(`[city-found] turn=${ev.turn} owner=${owner} ev.x=${ev.x},${ev.y} matchedUnit=${uIdx} ${ev.name}\n`);
+        }
         if (uIdx >= 0) {
           return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
         }
@@ -1122,6 +1130,39 @@ if (turns > 0) {
               };
               continue;
             }
+            // Synthetic __CITY_PLACE__ — fires when CITY_FOUNDED can't find
+            // the founding Settler in v3's unit roster (e.g. AI civ founded
+            // a city this turn but its settler is misaligned, killed, or
+            // never created in v3). Create the city record directly so
+            // downstream civs see the slot occupied. Mirrors the postWrap
+            // pre-pass handler at line ~1496 — without this, the action
+            // falls through to applyAction which rejects it, leaving v3
+            // missing the city for the rest of the simulation.
+            if (action.type === '__CITY_PLACE__') {
+              if (process.env.DEBUG_CITY_FOUNDED) {
+                process.stderr.write(`[city-place per-civ] turn=${ev.turn} ${action.name} at (${action.x},${action.y}) owner=${action.owner}\n`);
+              }
+              const newCity = {
+                name: action.name || '',
+                owner: action.owner,
+                originalOwner: action.owner,
+                size: 1,
+                gx: Math.floor(action.x / 2), gy: action.y,
+                cx: action.x, cy: action.y,
+                x: action.x, y: action.y,
+                foodInBox: 0, shieldsInBox: 0,
+                buildings: new Set(),
+                workedTiles: [],
+                specialists: [],
+                turnAge: 0,
+                itemInProduction: { type: 'unit', id: 2 },
+              };
+              gameState = {
+                ...gameState,
+                cities: [...(gameState.cities || []), newCity],
+              };
+              continue;
+            }
             // Synthetic __TECH_DISCOVERED__ — add to civTechs bitmask and
             // bump acquiredTechCount. Do NOT reset researchingTech or
             // researchProgress: the binary's post-discovery behavior is
@@ -1488,6 +1529,9 @@ if (turns > 0) {
       const actions = eventToActions(ev, gameState);
       for (const action of actions) {
         if (action.type === '__CITY_PLACE__') {
+          if (process.env.DEBUG_CITY_FOUNDED) {
+            process.stderr.write(`[city-place] turn=${ev.turn} ${action.name} at (${action.x},${action.y}) owner=${action.owner}\n`);
+          }
           // Advanced-tribe hut or other non-Settler city founding.
           // Create a new city record at the exact slot the sniffer saw.
           const newCity = {
