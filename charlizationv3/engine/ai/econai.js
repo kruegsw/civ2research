@@ -117,12 +117,32 @@ function civOwnsWonder(gameState, civSlot, wonderIdx) {
 }
 
 /**
- * Get the city index for a wonder, or -1 if not built / destroyed.
- * Port of FUN_00453e18.
+ * Get the city index for a wonder, or -1 if not built / destroyed /
+ * obsolete (any civ has researched the wonder's obsolete tech).
+ * Byte-exact port of FUN_00453e18 + FUN_00453da0:
+ *   if (FUN_00453da0(wonder) != 0) return -1;  // obsolete
+ *   else return DAT_00655BE6[wonder*2];        // city index
+ *
+ * Obsolescence: per FUN_00453da0, iterate civs 1..7; if any owns the
+ * wonder's obsolete tech (WONDER_OBSOLETE[w] >= 0), wonder is obsolete.
  */
 function getWonderCityIndex(gameState, wonderIdx) {
   const w = gameState.wonders?.[wonderIdx];
-  if (!w || w.cityIndex < 0 || w.destroyed) return -1;
+  if (!w || w.cityIndex == null || w.cityIndex < 0 || w.destroyed) return -1;
+  // Check obsolescence
+  const obsoleteTech = WONDER_OBSOLETE?.[wonderIdx];
+  if (obsoleteTech != null && obsoleteTech >= 0) {
+    const ktb = gameState.knowsTechBytes;
+    if (ktb && typeof ktb[obsoleteTech] === 'number') {
+      // Binary iterates civs 1..7. Mask out civ 0 (barbarians).
+      if ((ktb[obsoleteTech] & 0xFE) !== 0) return -1;
+    } else {
+      // Fall back to civTechs scan
+      for (let i = 1; i < 8; i++) {
+        if (gameState.civTechs?.[i]?.has(obsoleteTech)) return -1;
+      }
+    }
+  }
   return w.cityIndex;
 }
 
@@ -667,22 +687,26 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
     // Lines 6171-6183: For each wonder whose prereq matches techId:
     //   - If we already own it (and techId != Engineering=0x25=37): score -= 2
     //   - If another alive civ's city has it (the wonder is built by rival): score += 2
+    // Binary FUN_004bdb2c:6171-6183 iterates wonders; checks
+    //   (&DAT_0064ba28)[w] == techId — that's the OBSOLESCENCE tech
+    //   table, NOT the prereq table. v3 used to check WONDER_PREREQS
+    //   which fired wonder bonuses on prereq techs (wrong direction).
+    // Also: rival check uses humanPlayers (DAT_00655b0b), not
+    //   civsAlive — bonus only applies when the OTHER civ is human.
     for (let w = 0; w < NUM_WONDERS; w++) {
-      if (WONDER_PREREQS[w] === techId) {
-        // Do we already own this wonder?
-        if (civOwnsWonder(gameState, civSlot, w) && techId !== 37) {
-          // Already own it — slight penalty (we don't need the prereq as urgently)
-          // Decompiled: techId != 0x25 = 37 = Industrialization (Engineering in task desc)
-          score -= 2;
-        }
-        // Is this wonder built by a rival alive civ?
-        const wCityIdx = getWonderCityIndex(gameState, w);
-        if (wCityIdx >= 0) {
-          const wCity = gameState.cities?.[wCityIdx];
-          if (wCity && wCity.owner !== civSlot &&
-              (gameState.civsAlive & (1 << wCity.owner)) !== 0) {
-            score += 2;
-          }
+      if (WONDER_OBSOLETE[w] !== techId) continue;
+      // Self-owned penalty: -2 if civ owns wonder AND techId != 37
+      // (Engineering / Industrialization, which has its own logic).
+      if (civOwnsWonder(gameState, civSlot, w) && techId !== 37) {
+        score -= 2;
+      }
+      // Rival-owned bonus: +2 if wonder built and owner is HUMAN.
+      const wCityIdx = getWonderCityIndex(gameState, w);
+      if (wCityIdx >= 0) {
+        const wCity = gameState.cities?.[wCityIdx];
+        if (wCity && wCity.owner !== civSlot &&
+            ((gameState.humanPlayers ?? 0) & (1 << wCity.owner)) !== 0) {
+          score += 2;
         }
       }
     }

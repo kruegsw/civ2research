@@ -63,10 +63,20 @@ export function buildSav() {
   const magic = 'CIVILIZE';
   for (let i = 0; i < 8; i++) buf[i] = magic.charCodeAt(i);
 
-  // Wonders: 28 × uint16 at 0x010A — 0xFFFF = not built
+  // Wonders: 28 × uint16 at 0x010A. Source = _MEM[0x00655BE6 + i*2]
+  // (sniffer's WONDER_BASE). Format matches sav: 0xFFFF = not built,
+  // 0xFFEF = destroyed, else city array index. Previous code
+  // hardcoded all to 0xFFFF, blinding v3 to all wonder ownership —
+  // breaking canUseGovernment Statue of Liberty fallback, the
+  // calcTechValue wonder-rivalry bonus, and every wonder-aware
+  // game-end check.
+  // _MEM is rebased at MEM_BASE=0x61c068, so absolute address
+  // 0x00655BE6 maps to _MEM[0x00655BE6 - 0x61C068] = _MEM[0x39B7E].
+  const MEM_BASE = 0x61C068;
+  const WONDER_OFF = 0x00655BE6 - MEM_BASE;
   for (let i = 0; i < 28; i++) {
-    buf[0x010A + i * 2] = 0xFF;
-    buf[0x010A + i * 2 + 1] = 0xFF;
+    buf[0x010A + i * 2] = _MEM[WONDER_OFF + i * 2];
+    buf[0x010A + i * 2 + 1] = _MEM[WONDER_OFF + i * 2 + 1];
   }
 
   // Tech first discoverer: 100 bytes at 0x0042 — 0xFF = nobody
