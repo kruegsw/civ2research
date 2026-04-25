@@ -94,6 +94,12 @@ const replayPath = getFlagValue('--replay');
 // visible. Turn on for a fidelity ceiling measurement.
 const replayYields = args.includes('--replay-yields');
 
+// --replay-treasury: when set, ALL GOLD_CHANGED events (not just
+// hut-gold) replay as absolute treasury SETs. Mirrors --replay-yields
+// behavior — closes treasury-rounding mismatches at the cost of
+// hiding v3 tax/upkeep calc divergence. Default off.
+const replayTreasury = args.includes('--replay-treasury');
+
 // --skip-replay <EVENT_TYPE[,EVENT_TYPE...]>: drop these events from
 // replay so v3 must originate the decision itself. Used to validate
 // a ported AI slice — if v3's emitted events match the observed ones
@@ -840,6 +846,10 @@ if (turns > 0) {
           // post-wrap) and we don't want to double-apply.
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
                     reason: 'hut-gold' }];
+        }
+        if (replayTreasury) {
+          return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
+                    reason: 'replay-treasury' }];
         }
         return [];
       }
