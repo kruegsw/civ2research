@@ -2424,6 +2424,48 @@ if (turns > 0) {
     }
   }
 
+  // Final phantom-kill sweep. Some UNIT_KILLED events fire per-civ at
+  // a turn where the target uid hasn't been created in v3 yet (the
+  // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
+  // The kill silently no-ops at the time. Once postWrap creates the
+  // unit, no later UNIT_KILLED fires for it — so it lives forever as
+  // a "phantom" in v3's roster. Walk all UNIT_KILLED events from every
+  // turn and force-kill any uid still alive in v3 whose UNIT_KILLED
+  // fired before the postWrap turn (i.e. it was meant to be dead by
+  // now). Only events where the kill turn is strictly LESS than the
+  // current postWrap turn are applied — events at exactly postWrapTurn
+  // were handled by the dedicated UNIT_KILLED pre-pass earlier.
+  {
+    const killByUid = new Map();
+    for (const [, batch] of replayEventsByTurnCiv) {
+      for (const ev of batch) {
+        if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
+        const prior = killByUid.get(ev.uid);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          killByUid.set(ev.uid, ev);
+        }
+      }
+    }
+    let killed = 0;
+    const finalTurn = gameState.turn?.number ?? 0;
+    gameState = {
+      ...gameState,
+      units: gameState.units.map(u => {
+        if (!u || u.gx < 0) return u;
+        const uid = u.id ?? u.sequenceId;
+        if (uid == null) return u;
+        const killEv = killByUid.get(uid);
+        if (!killEv) return u;
+        if ((killEv.turn ?? 0) >= finalTurn) return u;
+        killed++;
+        return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      }),
+    };
+    if (killed > 0) {
+      process.stderr.write(`[replay] Final phantom-kill sweep: ${killed} units force-killed via UNIT_KILLED replay\n`);
+    }
+  }
+
   post = gameState;
 
   // Phantom-unit cleanup and nextUnitId ceiling both removed. They
