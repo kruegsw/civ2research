@@ -103,6 +103,44 @@ if (skipReplayTypes.size > 0) {
   process.stderr.write(`[replay] Skipping event types: ${[...skipReplayTypes].join(',')}\n`);
 }
 
+// Place a freshly-created city at its binary slot to keep v3's cities[]
+// index aligned with the snapshot. The binary stores cities densely up
+// to totalCities; when one is destroyed, the next CITY_FOUNDED reuses
+// that slot. Without this alignment v3 appends in event-replay order,
+// and state-diff (which compares index-by-index) cascades dozens of
+// per-city/per-unit slot mismatches even when content is correct.
+//
+// Strategy: take the most-recently-appended city, move it to the
+// targetIdx slot. If targetIdx exceeds current length, pad with
+// placeholder slots (size=0, owner=-1). If targetIdx slot is occupied
+// by a destroyed city (owner=-1), replace it. Otherwise the city
+// stays appended (defensive — shouldn't happen given event ordering).
+function placeCityAtSlot(state, targetIdx) {
+  if (targetIdx == null || targetIdx < 0) return state;
+  const cities = state.cities || [];
+  if (cities.length === 0) return state;
+  const newCity = cities[cities.length - 1];
+  const trimmed = cities.slice(0, -1);
+  const next = trimmed.slice();
+  while (next.length < targetIdx) {
+    next.push({ name: '', owner: -1, size: 0,
+                gx: -1, gy: -1, x: -1, y: -1, cx: -1, cy: -1,
+                placeholder: true });
+  }
+  if (next.length === targetIdx) {
+    next.push(newCity);
+  } else if (next.length > targetIdx) {
+    const occupant = next[targetIdx];
+    if (occupant && (occupant.owner === -1 || occupant.placeholder
+                     || occupant.size === 0)) {
+      next[targetIdx] = newCity;
+    } else {
+      next.push(newCity);
+    }
+  }
+  return { ...state, cities: next };
+}
+
 // --replay-frida <civ2_trace.log>: inject byte-exact AI decisions from
 // Frida captures. For each (turn, civSlot) where a binary AI function
 // was captured, use its retval/globals instead of v3's heuristic. This
@@ -541,7 +579,8 @@ if (turns > 0) {
           process.stderr.write(`[city-found] turn=${ev.turn} owner=${owner} ev.x=${ev.x},${ev.y} matchedUnit=${uIdx} ${ev.name}\n`);
         }
         if (uIdx >= 0) {
-          return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name }];
+          return [{ type: 'BUILD_CITY', unitIndex: uIdx, name: ev.name,
+                    cityIdx: ev.cityIdx }];
         }
         // Advanced tribe (hut-spawned city): no Settler involved. Civ2
         // transforms the hut directly into a size-1 city. v3's BUILD_CITY
@@ -1161,6 +1200,7 @@ if (turns > 0) {
                 ...gameState,
                 cities: [...(gameState.cities || []), newCity],
               };
+              gameState = placeCityAtSlot(gameState, action.cityIdx);
               continue;
             }
             // Synthetic __TECH_DISCOVERED__ — add to civTechs bitmask and
@@ -1193,6 +1233,10 @@ if (turns > 0) {
             try {
               const next = applyAction(gameState, mapBase, action, civ);
               if (next && next !== gameState) gameState = next;
+              // BUILD_CITY appends to cities[]; reorder to binary's slot.
+              if (action.type === 'BUILD_CITY' && action.cityIdx != null) {
+                gameState = placeCityAtSlot(gameState, action.cityIdx);
+              }
             } catch (e) {
               process.stderr.write(`[replay] ${ev.event} action failed: ${e.message}\n`);
             }
@@ -1553,6 +1597,7 @@ if (turns > 0) {
             ...gameState,
             cities: [...(gameState.cities || []), newCity],
           };
+          gameState = placeCityAtSlot(gameState, action.cityIdx);
           continue;
         }
         try {
@@ -1564,6 +1609,9 @@ if (turns > 0) {
           }
           const next = applyAction(gameState, mapBase, action, evCiv);
           if (next && next !== gameState) gameState = next;
+          if (action.type === 'BUILD_CITY' && action.cityIdx != null) {
+            gameState = placeCityAtSlot(gameState, action.cityIdx);
+          }
           if (savedActive !== evCiv) {
             gameState = { ...gameState,
               turn: { ...gameState.turn, activeCiv: savedActive } };
