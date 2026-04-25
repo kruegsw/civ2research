@@ -1,6 +1,35 @@
 # --replay-frida benchmark results
 
-Session: `game_20260424_142140` (80x50 Deity, v3 state turn 10 starting)
+## Fresh session w/ slice 6 city production: `game_20260424_212542`
+
+Run with `--no-v4-bridge` (v4 binary engine bridge had hang on civ 6
+mid-late game; bypass for fast iteration). Each benchmark ~1s.
+
+| N | bare | `--replay-frida` | Δ mismatches |
+|---|------|-------------------|---|
+| 2 | 336/376 (89.4%) | **364/376 (96.8%)** | −28 |
+| 5 | 249/402 (62.0%) | 256/376 (68.1%) | −33 |
+| 10 | 330/519 (63.6%) | **405/454 (89.2%)** | −141 |
+| 15 | 335/571 (58.7%) | **422/506 (83.4%)** | −152 |
+| 20 | 333/681 (48.9%) | 402/616 (65.3%) | −134 |
+| 25 | 327/754 (43.4%) | 392/676 (58.0%) | −143 |
+| 50 | 412/1041 (39.6%) | 421/1262 (33.4%) | +212 |
+
+**Slice 6 (city production injection) extends the effective range
+substantially**:
+- Prior session N=15 (no city-prod injection): 45.9%
+- Fresh session N=15 (with slice 6): **83.4%** — +37.5pp gain
+
+**N=50 backfires (frida 33.4% vs bare 39.6%)**: at very long ranges
+without unit AI injection, new units accumulate that v3 doesn't know
+how to move. Drift compounds.
+
+Sweet spot for `--replay-frida` is N=2-25 (96.8% to 58%). Beyond
+N=25, port additional AI slices (unit movement next).
+
+---
+
+## Original session: `game_20260424_142140` (80x50 Deity)
 
 | N (range) | bare v3 | `--replay-frida` | abs. mismatch delta |
 |-----------|---------|-------------------|---------------------|
