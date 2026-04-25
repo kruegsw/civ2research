@@ -62,11 +62,14 @@ const turnsArg = args.find(a => a.startsWith('--turns'));
 const turns = turnsArg
   ? parseInt(turnsArg.includes('=') ? turnsArg.split('=')[1] : args[args.indexOf(turnsArg) + 1])
   : 0;
-// --no-v4-bridge: skip v4 binary engine's per-civ yield recalc after each
-// END_TURN. Harness runs v3 reducer only. Useful for diagnosing whether
-// divergence is from v3's calc or from double-processing when v4-bridge
-// also runs.
-const skipV4Bridge = args.includes('--no-v4-bridge');
+// v4-bridge is OFF by default. The bridge ran FUN_00489553 (binary's
+// per-civ END_TURN processing) and overwrote 4 fields (city size,
+// foodInBox, shieldsInBox, treasury) with binary-byte-faithful values.
+// Audit (2026-04-25) found no v3-bug fixes embedded in the bridge JS
+// itself — just plumbing. The bridge hangs on FUN_00489553 in some
+// mid-game states. Use --v4-bridge to opt back in for diagnostic
+// comparison; --no-v4-bridge accepted for backwards compat.
+const skipV4Bridge = !args.includes('--v4-bridge');
 
 // --replay <events.jsonl>: apply captured AI actions through the reducer
 // between END_TURN calls. Lets us validate deterministic mechanics (yields,

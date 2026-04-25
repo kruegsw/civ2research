@@ -260,7 +260,14 @@ export function calcResearchCost(gameState, civSlot) {
   const techsSizeTotal = civTechs ? civTechs.size : 0;
   const totalTechs = Math.max(1, counterTotal || techsSizeTotal);
 
-  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain'));
+  // Difficulty may arrive as a number (0..5) or a string ('chieftain'..'deity').
+  // The numeric form (from sav/snapshot parser) was being silently treated as
+  // Chieftain because indexOf(5) returns -1 on the string array — making AI
+  // research costs 14 (Chieftain) instead of 10 (Deity), a ~40% inflation.
+  const diffRaw = gameState.difficulty;
+  const diffIdx = Math.max(0, typeof diffRaw === 'number'
+    ? Math.min(5, diffRaw)
+    : DIFFICULTY_KEYS.indexOf(diffRaw || 'chieftain'));
 
   // Binary FUN_004c2788: difficulty clamped to [0,4] (Deity treated as Emperor)
   // Human: clampedDiff * 2 + 6 (Chieftain=6 fast, Deity=14 slow)

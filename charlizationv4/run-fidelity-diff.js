@@ -46,6 +46,7 @@ const turnsFlag = turnsArg
       : args[args.indexOf(turnsArg) + 1])]
   : [];
 const noV4Flag = args.includes('--no-v4-bridge') ? ['--no-v4-bridge'] : [];
+const v4BridgeFlag = args.includes('--v4-bridge') ? ['--v4-bridge'] : [];
 const replayFridaArg = args.find(a => a.startsWith('--replay-frida'));
 const replayFridaFlag = replayFridaArg
   ? ['--replay-frida', (replayFridaArg.includes('=')
@@ -97,7 +98,7 @@ function run(cmd, argv, opts = {}) {
 // ── Side B: v4 server state ──
 console.error(`[1/3] Dumping v4 state from ${savPath}${turnsN > 0 ? ` (N=${turnsN} turns)` : ''} …`);
 const v4Out = run('node', [join(__dirname, 'dump-server-state.js'), savPath,
-  ...turnsFlag, ...replayFridaFlag, ...replayFlag, ...noV4Flag]);
+  ...turnsFlag, ...replayFridaFlag, ...replayFlag, ...noV4Flag, ...v4BridgeFlag]);
 writeFileSync(v4Json, v4Out);
 console.error(`      → ${v4Json} (${v4Out.length.toLocaleString()} bytes)`);
 
