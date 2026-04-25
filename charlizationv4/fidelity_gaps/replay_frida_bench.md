@@ -7,6 +7,11 @@ Session: `game_20260424_142140` (80x50 Deity, v3 state turn 10 starting)
 | N=2 (10→12) | 260/316 (82.3%) | 284/316 (**89.9%**) | **−24** |
 | N=5 (10→15) | 242/381 (63.5%) | 216/329 (65.7%) | **−26** |
 | N=10 (10→20) | 259/498 (52.0%) | 333/381 (**87.4%**) | **−192** |
+| N=15 (10→25) | 247/605 (40.8%) | 206/449 (45.9%) | **−115** |
+
+Capture coverage verified: trace data covers turns 0-79, so N=15 has
+full injection data available. The collapse is intrinsic, not a
+data-availability issue.
 
 ## Observations
 
@@ -49,15 +54,31 @@ civ processing. For future runs, either:
 
 ## What the data says about next priorities
 
-The mismatch deltas (−24, −26, **−192**) confirm `--replay-frida` is
-the highest-leverage fidelity tool we have. At N=10 it alone moves
-v3 from 52% to 87.4%. The remaining ~13% gap at N=10 is:
+The mismatch deltas (−24, −26, **−192**, −115) tell a clear story:
+`--replay-frida` is the highest-leverage fidelity tool we have, but
+its effective range is **~10 turns post-start**. After that, AI
+decisions we DON'T inject accumulate enough drift to drag fidelity
+back down toward bare-v3 levels.
 
-1. v3's mid-turn yield cache doesn't rework tiles mid-AI-turn
-2. v3's trade/treasury calc is ±1-10 off per civ per turn (compounds)
-3. unit goto-target path != binary (AI-move port needed)
+**Currently injected via --replay-frida:**
+- Tech research target (ai_research_pick)
+- Research cost globals (fun_research_cost)
+- Government switches (choose_government)
 
-**Unit AI is still the biggest remaining dividend** — unit-position
-mismatches cascade into FoW, visibility, trade routes. But
-`--replay-frida` at N=10 demonstrates the mechanics-fidelity ceiling
-is much higher than bare-v3 (52%) suggests when the AI is faithful.
+**NOT injected — drift sources at N>10:**
+1. **City production** (what each city builds) — biggest gap, drives
+   unit count divergence and shield economy
+2. **Unit movement** (which tile each unit moves to) — drives FoW,
+   trade routes, combat resolution
+3. **Rate changes** (sci/tax/lux balancing per turn) — drives
+   treasury/research drift
+4. **Treaty actions** (war declarations, peace, alliance)
+5. **Caravan / wonder rushing** — affects production timing
+
+**Path forward:**
+- Port additional AI slices in priority order: city production →
+  unit AI → rate balancer → treaties
+- Each new slice extends `--replay-frida`'s effective range, pushing
+  the N=10 ceiling out further before drift sets in
+- N=10 already at 87.4% proves the mechanics code is mostly correct;
+  the AI is what's diverging
