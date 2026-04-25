@@ -221,6 +221,18 @@ const TARGETS = [
   // run port, expect identical pick AND ending holdrand = rand_exit).
   { va: 0x004C09B0, name: 'ai_research_pick', args: 1, argNames: ['civSlot'],
     readRet: true, captureRand: true, captureResearchPickGlobals: true },
+  // FUN_00498e8b — AI city production picker (29400 bytes, too large to
+  // port directly). Captures the AI's chosen production item per city
+  // call so --replay-frida can inject into v3.cities[cityIdx].production.
+  // Return value encoding (matches city+0x39 byte):
+  //   0..0x3F  → unit type ID
+  //   0x40..0xFF → building/wonder (computed as 256 - retval)
+  //   99 (0x63) → "no change" sentinel
+  // param_2/param_3 are output ptrs the binary writes recommended unit
+  // and building indices into; for v3 we just need the int return.
+  { va: 0x00498E8B, name: 'ai_city_production_pick', args: 3,
+    argNames: ['cityIdx', 'unitOutPtr', 'buildingOutPtr'],
+    readRet: true, captureProductionPickGlobals: true },
   // FUN_004bdb2c — calcTechValue, called ~7× per ai_research_pick at
   // game start (once per can-research candidate) and then periodically
   // after tech completions. ~20-50 calls per captured session, low
@@ -574,6 +586,26 @@ function readResearchCostGlobals(base, civSlot) {
   } catch (_) { return null; }
 }
 
+// Capture context for FUN_00498e8b (AI city production pick). The
+// city's owner is at city+0x8 — needed so --replay-frida can route
+// the picked production to the right civ's end-turn injection. Also
+// capture the city's current production byte (city+0x39) at entry
+// for diagnostic purposes (helps identify "no change" vs "swap").
+function readProductionPickGlobals(base, cityIdx) {
+  if (cityIdx < 0 || cityIdx > 0xFF) return null;
+  try {
+    const CITY_BASE = 0x0064F340;
+    const CITY_STRIDE = 0x58;
+    const cBase = base.add(CITY_BASE - 0x00400000 + cityIdx * CITY_STRIDE);
+    return {
+      cityOwner: cBase.add(0x08).readS8(),
+      currentProduction: cBase.add(0x39).readS8(),  // signed byte
+      cityX: cBase.add(0x00).readS16(),  // for sanity-checking
+      cityY: cBase.add(0x02).readS16(),
+    };
+  } catch (_) { return null; }
+}
+
 // Read civ+0x15 (govt_type) for a specific civ. Used at choose_government
 // onLeave to detect what FUN_0055c69d switched to.
 function readCivGovt(base, civSlot) {
@@ -883,6 +915,11 @@ function attachHook(entry) {
         if (entry.captureResearchCostGlobals && msg.named && msg.named.civSlot != null) {
           msg.researchCostGlobals = readResearchCostGlobals(base, msg.named.civSlot);
         }
+        // FUN_00498e8b — AI city production pick. Capture city owner +
+        // current production for routing.
+        if (entry.captureProductionPickGlobals && msg.named && msg.named.cityIdx != null) {
+          msg.productionPickGlobals = readProductionPickGlobals(base, msg.named.cityIdx);
+        }
         // FUN_004bd2a3 globals: civ rates + per-city food/flags.
         if (entry.captureFoodStrategyGlobals && msg.named && msg.named.civSlot != null) {
           msg.foodStrategyGlobals = readFoodStrategyGlobals(base, msg.named.civSlot);
@@ -980,6 +1017,7 @@ const SLIM_HOOK_NAMES = new Set([
   'choose_government',
   'fun_research_cost',
   'fun_food_strategy',
+  'ai_city_production_pick',
   // Plus bare minimum for session context (turn boundaries):
   'civ_turn_driver',
   'mgl_active_civ_on',

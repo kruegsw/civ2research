@@ -112,13 +112,17 @@ if (skipReplayTypes.size > 0) {
 //   choose_government    → forces civ.government (if it changed)
 //
 // Builds a Map<`${turn}:${civSlot}`, {fridaGlobals...}>.
+// Also a separate Map<`${turn}:${cityIdx}`, productionByte> for city
+// production picks — keyed by cityIdx since that's what the binary
+// passes; the consumer routes by city.owner at injection time.
 const replayFridaPath = getFlagValue('--replay-frida');
 const fridaByTurnCiv = new Map();
+const fridaProductionByTurnCity = new Map();
 if (replayFridaPath && existsSync(replayFridaPath)) {
   process.stderr.write(`[replay-frida] Parsing ${replayFridaPath}…\n`);
   let fridaTurn = 0;
   let fridaPendingByFn = new Map();  // fn name → call payload
-  let nCost = 0, nPick = 0, nGovt = 0;
+  let nCost = 0, nPick = 0, nGovt = 0, nProd = 0;
   const lines = readFileSync(replayFridaPath, 'utf8').split(/\r?\n/);
   for (const line of lines) {
     if (!line) continue;
@@ -129,6 +133,32 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
       continue;
     }
     if (ev.source !== 'frida') continue;
+
+    // City-production picker is keyed by cityIdx, not civSlot. Route
+    // it to the city-keyed map and skip the civ-keyed bookkeeping.
+    if (ev.fn === 'ai_city_production_pick') {
+      const cityIdx = ev.named?.cityIdx ?? ev.args?.[0];
+      if (cityIdx == null) continue;
+      const cityKey = `${fridaTurn}:${cityIdx}`;
+      if (ev.kind === 'call') {
+        fridaPendingByFn.set('ai_city_production_pick:' + cityIdx, { ...ev, _cityKey: cityKey });
+      } else if (ev.kind === 'return') {
+        const call = fridaPendingByFn.get('ai_city_production_pick:' + cityIdx);
+        if (!call) continue;
+        fridaPendingByFn.delete('ai_city_production_pick:' + cityIdx);
+        // Keep the FIRST capture for this (turn, city) — binary may
+        // call multiple times per turn but the first sets production.
+        if (!fridaProductionByTurnCity.has(cityKey)) {
+          fridaProductionByTurnCity.set(cityKey, {
+            production: ev.retval,
+            owner: call.productionPickGlobals?.cityOwner,
+          });
+          nProd = (nProd ?? 0) + 1;
+        }
+      }
+      continue;
+    }
+
     const civSlot = ev.named?.civSlot ?? ev.args?.[0];
     if (civSlot == null) continue;
     const key = `${fridaTurn}:${civSlot}`;
@@ -165,6 +195,7 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
     }
   }
   process.stderr.write(`[replay-frida] Loaded ${fridaByTurnCiv.size} (turn,civ) keys: ${nCost} costs, ${nPick} picks, ${nGovt} govt switches\n`);
+  process.stderr.write(`[replay-frida] Loaded ${fridaProductionByTurnCity.size} (turn,city) production picks\n`);
 }
 
 // The parser post-processes a few raw bytes into friendly names.
@@ -1148,6 +1179,39 @@ if (turns > 0) {
       if (postEvents.length > 0) {
         process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
         deferredPostEvents.push(...postEvents);
+      }
+
+      // ── Frida city-production injection (post-END_TURN) ──
+      // For each of this civ's cities, if the binary captured an
+      // ai_city_production_pick for (currentTurn, cityIdx), override
+      // city.production. The capture is a signed byte matching
+      // city+0x39's encoding (0..0x3F = unit, otherwise building/wonder
+      // via 256-byte). v3's parser stores production as
+      // {type, id} so we convert.
+      if (fridaProductionByTurnCity.size > 0 && gameState.cities) {
+        const newCities = gameState.cities.slice();
+        let prodInjections = 0;
+        for (let ci = 0; ci < newCities.length; ci++) {
+          const city = newCities[ci];
+          if (!city || city.owner !== civ) continue;
+          const cap = fridaProductionByTurnCity.get(`${currentTurn}:${ci}`);
+          if (!cap || cap.production == null) continue;
+          // Sentinel 99/0x63 = "no change"; skip.
+          if (cap.production === 99) continue;
+          const byte = cap.production & 0xFF;  // unsigned for encoding
+          let newProd;
+          if (byte <= 0x3F) {
+            newProd = { type: 'unit', id: byte };
+          } else {
+            const buildId = 256 - byte;
+            newProd = { type: buildId >= 39 ? 'wonder' : 'building', id: buildId };
+          }
+          newCities[ci] = { ...city, production: newProd };
+          prodInjections++;
+        }
+        if (prodInjections > 0) {
+          gameState = { ...gameState, cities: newCities };
+        }
       }
 
       // ── Frida capture injection (post-END_TURN) ──
