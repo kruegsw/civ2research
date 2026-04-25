@@ -72,16 +72,20 @@ function getTreaty(gameState, civA, civB) {
 function civHasTech(gameState, civSlot, techId) {
   if (techId < 0) return techId !== -2; // -1 = "no prereq" → always true; -2 = never
   if (techId >= NUM_ADVANCES) return false;
-  // Prefer Frida-captured knowsTechBytes (the binary's authoritative
-  // per-tech bitmask) when available, since v3's civTechs snapshot
-  // can drift mid-turn. Used for late-game bonus checks
-  // (Industrialization chain, University→Computers, Wonder rivalry).
+  // Civ2 keeps tech ownership in TWO places that occasionally desync:
+  //   - Per-tech bitmask DAT_00655B82 (captured as knowsTechBytes)
+  //     — used by binary's noOneHas, strategic-goal, etc.
+  //   - Per-civ array civ+0x074 (FUN_004bd9f0 / civTechs)
+  //     — used by binary's canUseGovernment, civHasTech checks.
+  // Either being true means civ owns the tech. Return the OR so v3's
+  // checks match whichever path the binary took at the call site.
+  const civBit = 1 << civSlot;
   const ktb = gameState.knowsTechBytes;
-  if (ktb && typeof ktb[techId] === 'number') {
-    return (ktb[techId] & (1 << civSlot)) !== 0;
+  if (ktb && typeof ktb[techId] === 'number' && (ktb[techId] & civBit) !== 0) {
+    return true;
   }
   const techs = gameState.civTechs?.[civSlot];
-  return techs ? techs.has(techId) : false;
+  return !!(techs && techs.has(techId));
 }
 
 /**
@@ -177,13 +181,11 @@ export function canUseGovernment(gameState, civSlot, govtIndex) {
   };
   const reqTech = techPrereqs[govtIndex];
   if (reqTech == null) return false;
-  // Prefer captured knowsTechBytes (byte-exact with binary) over v3
-  // civTechs state which can drift mid-turn.
-  const ktb = gameState.knowsTechBytes;
-  const knowsTech = ktb
-    ? ((ktb[reqTech] ?? 0) & (1 << civSlot)) !== 0
-    : civHasTech(gameState, civSlot, reqTech);
-  if (knowsTech) return true;
+  // Use civHasTech — checks both knowsTechBytes and per-civ civTechs.
+  // Binary's case-N path here calls FUN_004bd9f0 which reads the per-
+  // civ array; that array sometimes leads DAT_00655B82 by 1 turn so
+  // checking either source is correct.
+  if (civHasTech(gameState, civSlot, reqTech)) return true;
   // Statue of Liberty grants all governments
   return civOwnsWonder(gameState, civSlot, STATUE_OF_LIBERTY);
 }

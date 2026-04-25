@@ -90,11 +90,26 @@ export function buildSav() {
   // calcResearchCost = baseCost * 0 = 0 → next tech completes on
   // first science drop. Breaks everything downstream.
   for (let i = 0; i < 100; i++) buf[0xA6 + i] = 0;
+  // Per-civ tech bitmask at civ_struct + 0x58 (13 bytes packed; tech
+  // N = byte (N>>3) bit (N&7)). Confirmed via FUN_004bd9f0 which is
+  // the binary's authoritative civHasTech check — reads
+  // (&DAT_0064c6f8)[civ*0x594 + (techId>>3)] & (1<<(techId&7)).
+  // (Earlier code read civ+0x074 which is a DIFFERENT field — likely
+  // tech_status_metadata, not ownership. Causes false-negative
+  // canUseGovernment for civs whose tech-bitmask is set but the
+  // legacy field is 0xFF.)
+  // _MEM is rebased at MEM_BASE (0x61C068).
+  const MEM_BASE2 = 0x61C068;
+  const CIV_BASE_ABS = 0x0064C6A0;  // civ 0
   for (let slot = 0; slot < NUM_CIVS; slot++) {
-    const techBase = DAT_0064c600 + slot * 0x594 + 0xA0 + 0x074;
-    for (let tech = 0; tech < 89; tech++) {
-      const status = _MEM[techBase + tech];
-      if (status !== 0xFF) buf[0xA6 + tech] |= (1 << slot);
+    // The DAT_0064c6f8 in FUN_004bd9f0 is offset +0x58 from civ_base.
+    const techBitsBase = CIV_BASE_ABS + slot * 0x594 + 0x58 - MEM_BASE2;
+    for (let tech = 0; tech < 100; tech++) {
+      const byte = _MEM[techBitsBase + (tech >> 3)];
+      if (byte === undefined) continue;
+      if ((byte & (1 << (tech & 7))) !== 0) {
+        buf[0xA6 + tech] |= (1 << slot);
+      }
     }
   }
 
