@@ -118,11 +118,16 @@ if (skipReplayTypes.size > 0) {
 const replayFridaPath = getFlagValue('--replay-frida');
 const fridaByTurnCiv = new Map();
 const fridaProductionByTurnCity = new Map();
+// Slice 7: per-unit AI action captures keyed by (turn, unitIdx).
+// Multiple captures per unit per turn are possible (binary may call
+// FUN_00538a29 multiple times during pathfinding); LAST capture wins
+// since that's the unit's final state.
+const fridaUnitStateByTurnUnit = new Map();
 if (replayFridaPath && existsSync(replayFridaPath)) {
   process.stderr.write(`[replay-frida] Parsing ${replayFridaPath}…\n`);
   let fridaTurn = 0;
   let fridaPendingByFn = new Map();  // fn name → call payload
-  let nCost = 0, nPick = 0, nGovt = 0, nProd = 0;
+  let nCost = 0, nPick = 0, nGovt = 0, nProd = 0, nUnit = 0;
   const lines = readFileSync(replayFridaPath, 'utf8').split(/\r?\n/);
   for (const line of lines) {
     if (!line) continue;
@@ -133,6 +138,18 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
       continue;
     }
     if (ev.source !== 'frida') continue;
+
+    // Slice 7: ai_unit_action keyed by unitIdx. Captured at exit
+    // (entry payload has activeUnitIdx; return payload has unitState).
+    if (ev.fn === 'ai_unit_action') {
+      if (ev.kind === 'return' && ev.unitIdx != null && ev.unitState) {
+        const k = `${fridaTurn}:${ev.unitIdx}`;
+        // Last-write wins (latest unit state is authoritative)
+        fridaUnitStateByTurnUnit.set(k, ev.unitState);
+        nUnit = (nUnit ?? 0) + 1;
+      }
+      continue;
+    }
 
     // City-production picker is keyed by cityIdx, not civSlot. Route
     // it to the city-keyed map and skip the civ-keyed bookkeeping.
@@ -196,6 +213,7 @@ if (replayFridaPath && existsSync(replayFridaPath)) {
   }
   process.stderr.write(`[replay-frida] Loaded ${fridaByTurnCiv.size} (turn,civ) keys: ${nCost} costs, ${nPick} picks, ${nGovt} govt switches\n`);
   process.stderr.write(`[replay-frida] Loaded ${fridaProductionByTurnCity.size} (turn,city) production picks\n`);
+  process.stderr.write(`[replay-frida] Loaded ${fridaUnitStateByTurnUnit.size} (turn,unit) unit-action states\n`);
 }
 
 // The parser post-processes a few raw bytes into friendly names.
@@ -1179,6 +1197,40 @@ if (turns > 0) {
       if (postEvents.length > 0) {
         process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
         deferredPostEvents.push(...postEvents);
+      }
+
+      // ── Frida unit-action injection (post-END_TURN) ──
+      // For each of this civ's alive units, if Frida captured an
+      // ai_unit_action call for (currentTurn, unitIdx), apply the
+      // captured final state to v3 (position, orders, moveSpent, hp,
+      // gotoX/Y, statusFlags). Last-write-wins per unit per turn.
+      if (fridaUnitStateByTurnUnit.size > 0 && gameState.units) {
+        const newUnits = gameState.units.slice();
+        let unitInjections = 0;
+        for (let ui = 0; ui < newUnits.length; ui++) {
+          const u = newUnits[ui];
+          if (!u || u.owner !== civ || u.gx < 0) continue;
+          const cap = fridaUnitStateByTurnUnit.get(`${currentTurn}:${ui}`);
+          if (!cap) continue;
+          // Skip if binary considers unit dead (alive flag 0)
+          if (cap.alive === 0) continue;
+          newUnits[ui] = {
+            ...u,
+            gx: cap.x,
+            gy: cap.y,
+            movesLeft: cap.movesRem,
+            order: cap.orders,
+            gotoX: cap.gotoX,
+            gotoY: cap.gotoY,
+            statusFlags: cap.statusFlags,
+            damageTaken: Math.max(0, (u.damageTaken ?? 0) +
+                ((u.hp ?? 99) - cap.hp)),  // delta hp → damage
+          };
+          unitInjections++;
+        }
+        if (unitInjections > 0) {
+          gameState = { ...gameState, units: newUnits };
+        }
       }
 
       // ── Frida city-production injection (post-END_TURN) ──

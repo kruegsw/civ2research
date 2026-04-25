@@ -233,6 +233,14 @@ const TARGETS = [
   { va: 0x00498E8B, name: 'ai_city_production_pick', args: 3,
     argNames: ['cityIdx', 'unitOutPtr', 'buildingOutPtr'],
     readRet: true, captureProductionPickGlobals: true },
+  // FUN_00538a29 — AI unit move/action master (44777 bytes). Per-unit:
+  // operates on DAT_00655afe (active unit index). Return value = 0 if
+  // unit didn't act, non-zero if it did. We hook at exit to capture
+  // the unit's final state after AI processing — position, orders,
+  // moveSpent, hp, statusFlags. --replay-frida injects these into
+  // v3 cities[civ]'s units after END_TURN.
+  { va: 0x00538A29, name: 'ai_unit_action', args: 0, argNames: [],
+    readRet: true, captureUnitActionGlobals: true },
   // FUN_004bdb2c — calcTechValue, called ~7× per ai_research_pick at
   // game start (once per can-research candidate) and then periodically
   // after tech completions. ~20-50 calls per captured session, low
@@ -586,6 +594,40 @@ function readResearchCostGlobals(base, civSlot) {
   } catch (_) { return null; }
 }
 
+// Capture FUN_00538a29 (ai unit action) context. The active unit
+// index is at DAT_00655afe (read at entry). At exit, read the unit's
+// state from memory: position, orders, moveSpent, hp, statusFlags.
+// Per Data_Structures.md unit struct (base 0x006560F0, stride 0x20):
+//   +0x00 x i16, +0x02 y i16, +0x04 statusFlags u16, +0x06 type u8,
+//   +0x07 owner i8, +0x08 movesRem u8, +0x0A hp u8, +0x0F orders u8,
+//   +0x12 gotoX i16, +0x14 gotoY i16, +0x1A aliveFlag i32
+function readActiveUnitIdx(base) {
+  try {
+    return base.add(0x00655AFE - 0x00400000).readU8();
+  } catch (_) { return null; }
+}
+function readUnitState(base, unitIdx) {
+  if (unitIdx < 0 || unitIdx > 0xFF) return null;
+  try {
+    const UNIT_BASE = 0x006560F0;
+    const UNIT_STRIDE = 0x20;
+    const u = base.add(UNIT_BASE - 0x00400000 + unitIdx * UNIT_STRIDE);
+    return {
+      x: u.readS16(),
+      y: u.add(0x02).readS16(),
+      statusFlags: u.add(0x04).readU16(),
+      type: u.add(0x06).readU8(),
+      owner: u.add(0x07).readS8(),
+      movesRem: u.add(0x08).readU8(),
+      hp: u.add(0x0A).readU8(),
+      orders: u.add(0x0F).readU8(),
+      gotoX: u.add(0x12).readS16(),
+      gotoY: u.add(0x14).readS16(),
+      alive: u.add(0x1A).readS32(),
+    };
+  } catch (_) { return null; }
+}
+
 // Capture context for FUN_00498e8b (AI city production pick). The
 // city's owner is at city+0x8 — needed so --replay-frida can route
 // the picked production to the right civ's end-turn injection. Also
@@ -920,6 +962,12 @@ function attachHook(entry) {
         if (entry.captureProductionPickGlobals && msg.named && msg.named.cityIdx != null) {
           msg.productionPickGlobals = readProductionPickGlobals(base, msg.named.cityIdx);
         }
+        // FUN_00538a29 — AI unit action. Read active unit index at
+        // entry; will read full unit state at exit (in onLeave).
+        if (entry.captureUnitActionGlobals) {
+          this._unitActionIdx = readActiveUnitIdx(base);
+          msg.activeUnitIdx = this._unitActionIdx;
+        }
         // FUN_004bd2a3 globals: civ rates + per-city food/flags.
         if (entry.captureFoodStrategyGlobals && msg.named && msg.named.civSlot != null) {
           msg.foodStrategyGlobals = readFoodStrategyGlobals(base, msg.named.civSlot);
@@ -979,6 +1027,12 @@ function attachHook(entry) {
           out.govtChosen = (afterGovt !== this._govtEntryVal) ? afterGovt : -1;
           out.govtEntryVal = this._govtEntryVal;
         }
+        // FUN_00538a29 unit-action exit: read the unit's final state
+        // so --replay-frida can apply it to v3.
+        if (this._traceEntry.captureUnitActionGlobals && this._unitActionIdx != null) {
+          out.unitIdx = this._unitActionIdx;
+          out.unitState = readUnitState(base, this._unitActionIdx);
+        }
         send(out);
       },
     });
@@ -1018,6 +1072,7 @@ const SLIM_HOOK_NAMES = new Set([
   'fun_research_cost',
   'fun_food_strategy',
   'ai_city_production_pick',
+  'ai_unit_action',
   // Plus bare minimum for session context (turn boundaries):
   'civ_turn_driver',
   'mgl_active_civ_on',
