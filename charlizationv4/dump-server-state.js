@@ -1745,6 +1745,17 @@ if (turns > 0) {
               }
               if (action.gotoX != null) { patched.gotoX = action.gotoX; patched.goToX = action.gotoX; }
               if (action.gotoY != null) { patched.gotoY = action.gotoY; patched.goToY = action.gotoY; }
+              // Override homeCity when the sniffer captured it. v3's
+              // production assigns homeCity by reducer logic; binary's
+              // assignment may differ (cities[] order, capture/rehome
+              // history). Sniffer captures the binary-authoritative
+              // value at unit+0x10. Without this, ~7/session homeCity
+              // mismatches (unit-homecity tag) cascade into upkeep,
+              // production, and yield validation.
+              if (action.homeCity != null && !ownerChanged) {
+                patched.homeCity = action.homeCity;
+                patched.homeCityId = action.homeCity;
+              }
               // If owner changed, recompute homeCity since v3's
               // assignment points to a city the new owner doesn't own.
               // Use the city at the creation tile when possible.
@@ -2210,6 +2221,15 @@ if (turns > 0) {
                   // if it differs (production picked a different slot
                   // than real Civ2's lowest-free at event time).
                   if (action.slot != null) patched.saveIndex = action.slot;
+                  // Override homeCity with the sniffer-captured value.
+                  // v3's production assigns homeCity by reducer logic;
+                  // binary's assignment may differ (cities[] order,
+                  // capture/rehome history). Without this, ~7/session
+                  // unit-homecity tag mismatches cascade.
+                  if (action.homeCity != null) {
+                    patched.homeCity = action.homeCity;
+                    patched.homeCityId = action.homeCity;
+                  }
                   return patched;
                 }),
               };
