@@ -25,8 +25,17 @@ import { cityHasBuilding, civHasWonder, cityHasWonder, hasWonderEffect, getGover
 // ── Per-tile yield functions ──
 
 function getTileResource(ter, gx, gy, mapBase) {
-  if (ter === 2 && mapBase.hasShield && mapBase.hasShield(gx, gy)) {
-    return { hasSpecial: false, specialIdx: 0, grasslandShield: true };
+  // Grassland: ONLY the shield variation. Don't fall through to the
+  // generic getResource path, which treats getResource()==2 as a
+  // "Resources" special with [+2 food, +1 shield] — that doesn't
+  // exist in Civ2. Step-diff against binary FUN_004E868F (game_20260425_222957
+  // fun_city_happiness for newly-founded city) showed v3's grassland
+  // worked tile yielding [2,1,1] vs binary's [0,0,1] when hasShield
+  // returns false: v3's bogus +1 shield was the SPECIAL_TOTAL[2][1]
+  // grassland-Resources entry firing on a non-shield tile.
+  if (ter === 2) {
+    const grasslandShield = !!(mapBase.hasShield && mapBase.hasShield(gx, gy));
+    return { hasSpecial: false, specialIdx: 0, grasslandShield };
   }
   const res = mapBase.getResource(gx, gy);
   if (res > 0 && res <= 2 && SPECIAL_TOTAL[ter] && SPECIAL_TOTAL[ter][res - 1]) {
