@@ -1421,6 +1421,15 @@ if (turns > 0) {
                 cities: [...(gameState.cities || []), newCity],
               };
               gameState = placeCityAtSlot(gameState, action.cityIdx);
+              // Cities reveal a radius-2 area for the founding civ.
+              // BUILD_CITY reducer does this; the synthetic must too,
+              // else the founding civ loses 5-9 newly-visible tiles
+              // → fow-count divergence on the founding turn.
+              try {
+                updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                  action.owner, Math.floor(action.x / 2), action.y,
+                  mapBase.wraps, 2);
+              } catch (_) { /* swallow */ }
               continue;
             }
             // Synthetic __TECH_DISCOVERED__ — add to civTechs bitmask and
@@ -1845,6 +1854,13 @@ if (turns > 0) {
             cities: [...(gameState.cities || []), newCity],
           };
           gameState = placeCityAtSlot(gameState, action.cityIdx);
+          // Cities reveal radius-2 area to the founding civ. Without
+          // this, fow-count drifts ~5/founding for that civ.
+          try {
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+              action.owner, Math.floor(action.x / 2), action.y,
+              mapBase.wraps, 2);
+          } catch (_) { /* swallow */ }
           continue;
         }
         try {
