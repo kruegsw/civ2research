@@ -107,6 +107,11 @@ def main():
                     help='Only attach AI-port-validation hooks (ai_research_pick, '
                          'ai_calc_tech_value, civ_turn_driver, mgl_active_civ_on). '
                          'Minimal Frida footprint; use for AI-port captures.')
+    ap.add_argument('--step-diff', action='store_true',
+                    help='Like --slim but adds the city-tick hooks (food, prod, '
+                         'happiness, upkeep, turn_sync) with state_in/state_out '
+                         'capture. Used for per-function v3 vs binary step-diff '
+                         'validation. ~5-7 calls per city per turn.')
     args = ap.parse_args()
 
     # Resolve session dir
@@ -167,6 +172,7 @@ def main():
     agent_src = (
         f"const ENABLE_HOT_HOOKS = {str(bool(args.hot)).lower()};\n"
         f"const SLIM_HOOKS = {str(bool(args.slim)).lower()};\n"
+        f"const STEP_DIFF_HOOKS = {str(bool(args.step_diff)).lower()};\n"
         + agent_src
     )
 

@@ -285,13 +285,13 @@ const TARGETS = [
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: City per-turn processing
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x004EBBDE, name: 'fun_city_food_tick',  args: 1, argNames: ['cityIdx'], readRet: true },
-  { va: 0x004EC3FE, name: 'fun_city_prod_tick',  args: 1, argNames: ['cityIdx'] },
-  { va: 0x004EA8E4, name: 'fun_city_happiness',  args: 1, argNames: ['cityIdx'], readRet: true },
+  { va: 0x004EBBDE, name: 'fun_city_food_tick',  args: 1, argNames: ['cityIdx'], readRet: true, captureCityState: true },
+  { va: 0x004EC3FE, name: 'fun_city_prod_tick',  args: 1, argNames: ['cityIdx'], captureCityState: true },
+  { va: 0x004EA8E4, name: 'fun_city_happiness',  args: 1, argNames: ['cityIdx'], readRet: true, captureCityState: true },
   { va: 0x004E7EB1, name: 'fun_city_food_helper',args: 2, argNames: ['cityIdx','unitCount'] },
-  { va: 0x004F0221, name: 'fun_building_upkeep', args: 1, argNames: ['cityIdx'] },
+  { va: 0x004F0221, name: 'fun_building_upkeep', args: 1, argNames: ['cityIdx'], captureCityState: true },
   { va: 0x004EC1C6, name: 'fun_assign_commodity',args: 2, argNames: ['cityIdx','unitType'] },
-  { va: 0x004F0A9C, name: 'fun_city_turn_sync',  args: 1, argNames: ['cityIdx'] },
+  { va: 0x004F0A9C, name: 'fun_city_turn_sync',  args: 1, argNames: ['cityIdx'], captureCityState: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 2: Main game loop internal phases
@@ -683,6 +683,53 @@ function readProductionPickGlobals(base, cityIdx) {
   } catch (_) { return null; }
 }
 
+// Read FULL city struct (88 bytes) for a given cityIdx as a hex string.
+// Used by per-function step-diff: capture city state at entry to a
+// city-tick function and at exit. v3 then runs its equivalent function
+// on the captured input and diffs the captured output. Pinpoints
+// per-function divergence (yield calc, support, happiness, growth)
+// instead of seeing only the cumulative end-of-turn delta.
+function readCityState(base, cityIdx) {
+  if (cityIdx < 0 || cityIdx > 0xFF) return null;
+  try {
+    const CITY_BASE = 0x0064F340;
+    const CITY_STRIDE = 0x58;
+    const cBase = base.add(CITY_BASE - 0x00400000 + cityIdx * CITY_STRIDE);
+    const bytes = cBase.readByteArray(CITY_STRIDE);
+    // Hex-encode for compactness (compresses well in the trace log).
+    const arr = new Uint8Array(bytes);
+    let hex = '';
+    for (let i = 0; i < arr.length; i++) {
+      hex += arr[i].toString(16).padStart(2, '0');
+    }
+    return hex;
+  } catch (_) { return null; }
+}
+
+// Read all live cities at once (for hooks that take a civSlot, not
+// a cityIdx — e.g. fun_per_civ_tick which iterates all of civ's cities).
+// Returns { idx: hex, ... } only for cities with size > 0.
+function readAllCityStates(base) {
+  try {
+    const CITY_BASE = 0x0064F340;
+    const CITY_STRIDE = 0x58;
+    const out = {};
+    for (let i = 0; i < 256; i++) {
+      const cBase = base.add(CITY_BASE - 0x00400000 + i * CITY_STRIDE);
+      const size = cBase.add(0x09).readU8();
+      if (size === 0) continue;
+      const bytes = cBase.readByteArray(CITY_STRIDE);
+      const arr = new Uint8Array(bytes);
+      let hex = '';
+      for (let k = 0; k < arr.length; k++) {
+        hex += arr[k].toString(16).padStart(2, '0');
+      }
+      out[i] = hex;
+    }
+    return out;
+  } catch (_) { return null; }
+}
+
 // Read civ+0x15 (govt_type) for a specific civ. Used at choose_government
 // onLeave to detect what FUN_0055c69d switched to.
 function readCivGovt(base, civSlot) {
@@ -1022,6 +1069,17 @@ function attachHook(entry) {
           this._civSlotForGovtExit = msg.named.civSlot;
           this._govtEntryVal = msg.chooseGovtGlobals?.civGovt;
         }
+        // captureCityState: per-function step-diff. At entry, snapshot
+        // the city struct (88 bytes hex) for the cityIdx arg. At exit,
+        // snapshot it again. v3's per-city-tick equivalent runs on the
+        // captured input; we compare byte-by-byte to the captured output.
+        // Pinpoints which city function diverges (food vs shield vs
+        // happiness vs upkeep) instead of seeing only the cumulative
+        // end-of-turn delta.
+        if (entry.captureCityState && msg.named && msg.named.cityIdx != null) {
+          msg.state_in = readCityState(base, msg.named.cityIdx);
+          this._cityIdxForExit = msg.named.cityIdx;
+        }
         // ai_research_pick: capture the full per-tech "who-knows"
         // array plus per-civ scoring globals so the port's internal
         // calcTechValue loop has byte-exact inputs for every
@@ -1052,7 +1110,8 @@ function attachHook(entry) {
         const needGovtExit = this._traceEntry.captureChooseGovtGlobals;
         const needRoster = this._traceEntry.captureUnitRoster;
         const needUnitAction = this._traceEntry.captureUnitActionGlobals;
-        if (!needRet && !needRand && !needGovtExit && !needRoster && !needUnitAction) return;
+        const needCityState = this._traceEntry.captureCityState;
+        if (!needRet && !needRand && !needGovtExit && !needRoster && !needUnitAction && !needCityState) return;
         const out = {
           kind: 'return',
           fn: this._traceEntry.name,
@@ -1074,6 +1133,12 @@ function attachHook(entry) {
         if (this._traceEntry.captureUnitActionGlobals && this._unitActionIdx != null) {
           out.unitIdx = this._unitActionIdx;
           out.unitState = readUnitState(base, this._unitActionIdx);
+        }
+        // captureCityState exit: snapshot city struct after function ran.
+        // Pair with state_in to get input/output for v3 step-diff.
+        if (this._traceEntry.captureCityState && this._cityIdxForExit != null) {
+          out.cityIdx = this._cityIdxForExit;
+          out.state_out = readCityState(base, this._cityIdxForExit);
         }
         // civ_turn_driver exit: capture authoritative roster of slots
         // owned by this civ. --replay-frida uses this set to delete
@@ -1113,6 +1178,10 @@ const slimHooks = (function() {
   try { return typeof SLIM_HOOKS !== 'undefined' && !!SLIM_HOOKS; }
   catch (_) { return false; }
 })();
+const stepDiffHooks = (function() {
+  try { return typeof STEP_DIFF_HOOKS !== 'undefined' && !!STEP_DIFF_HOOKS; }
+  catch (_) { return false; }
+})();
 
 const SLIM_HOOK_NAMES = new Set([
   'ai_research_pick',
@@ -1128,6 +1197,17 @@ const SLIM_HOOK_NAMES = new Set([
   'mgl_active_civ_on',
 ]);
 
+// STEP_DIFF mode = SLIM + city-tick hooks with state_in/state_out
+// capture. Used for per-function v3-vs-binary validation.
+const STEP_DIFF_HOOK_NAMES = new Set([
+  ...SLIM_HOOK_NAMES,
+  'fun_city_food_tick',
+  'fun_city_prod_tick',
+  'fun_city_happiness',
+  'fun_building_upkeep',
+  'fun_city_turn_sync',
+]);
+
 let attachedCount = 0;
 let skippedHot = 0;
 let skippedSlim = 0;
@@ -1136,7 +1216,10 @@ if (base) {
   const all = TARGETS.concat(CRT);
   for (const t of all) {
     if (t.hot && !enableHot) { skippedHot++; continue; }
-    if (slimHooks && !SLIM_HOOK_NAMES.has(t.name)) { skippedSlim++; continue; }
+    // Filter precedence: step-diff superset includes slim. If neither
+    // flag set, attach all (legacy "full" behavior).
+    if (stepDiffHooks && !STEP_DIFF_HOOK_NAMES.has(t.name)) { skippedSlim++; continue; }
+    else if (slimHooks && !stepDiffHooks && !SLIM_HOOK_NAMES.has(t.name)) { skippedSlim++; continue; }
     if (attachHook(t)) attachedCount++;
     else failedHooks.push(t.name);
   }
@@ -1144,7 +1227,7 @@ if (base) {
 
 send({ kind: 'ready', hooked: attachedCount, total: TARGETS.length + CRT.length,
        skipped_hot: skippedHot, skipped_slim: skippedSlim,
-       enableHot, slimHooks, failed: failedHooks });
+       enableHot, slimHooks, stepDiffHooks, failed: failedHooks });
 
 // ── Memory watchpoints (phase 2, optional) ───────────────────────────
 // Frida supports MemoryAccessMonitor for watching writes to specific
