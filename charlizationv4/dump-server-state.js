@@ -1023,6 +1023,14 @@ if (turns > 0) {
       .filter(u => u && u.gx >= 0)
       .flatMap(u => [u.id, u.sequenceId].filter(v => v != null))
   );
+  // Capture starting city count. Cities created during simulation
+  // (cityIdx >= startingCityCount) need a different treatment for
+  // production values: v3 doesn't run production for cities founded
+  // mid-turn (created via __CITY_PLACE__/postWrap, after the END_TURN
+  // loop). For those, apply the latest matching CITY_YIELD event so
+  // foodStored/shieldStored/tradeTotal match binary's snapshot.
+  const startingCityCount = (initResult.gameState.cities || [])
+    .filter(c => c && c.size > 0).length;
   // Target activeCiv for simulation stop: the human civ (matches
   // real Civ2 snapshot flow — user awaits input at activeCiv=human).
   // v3's `state.turn.activeCiv` is its own rotating "next-to-process"
@@ -2693,6 +2701,49 @@ if (turns > 0) {
     }
 
     applyBatch(deferredPostEvents);
+  }
+
+  // New-city CITY_YIELD pass: cities founded mid-simulation don't
+  // get production processing in v3 (created via __CITY_PLACE__ in
+  // postWrap, after END_TURN loop). Apply the latest matching
+  // CITY_YIELD event so their foodStored/shieldStored/tradeTotal
+  // match binary's snapshot. Always-on (unlike --replay-yields
+  // which is opt-in for ALL cities to mask v3 production calc).
+  {
+    const finalTurn = gameState.turn?.number ?? 0;
+    // Find latest CITY_YIELD per cityIdx in our sim window.
+    const latestYieldByCityIdx = new Map();
+    for (const [, batch] of cityYieldsByRawTurn) {
+      for (const ev of batch) {
+        if (ev.cityIdx == null) continue;
+        if ((ev.turn ?? 0) > finalTurn) continue;
+        const prior = latestYieldByCityIdx.get(ev.cityIdx);
+        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+          latestYieldByCityIdx.set(ev.cityIdx, ev);
+        }
+      }
+    }
+    let applied = 0;
+    gameState = {
+      ...gameState,
+      cities: gameState.cities.map((c, i) => {
+        if (!c || c.size <= 0) return c;
+        if (i < startingCityCount) return c;  // existing city — v3 calc owns
+        const ev = latestYieldByCityIdx.get(i);
+        if (!ev) return c;
+        applied++;
+        return {
+          ...c,
+          foodInBox: ev.foodBox ?? c.foodInBox ?? 0,
+          shieldsInBox: ev.shieldBox ?? c.shieldsInBox ?? 0,
+          netBaseTrade: ev.tradeNet ?? c.netBaseTrade ?? 0,
+          totalTrade: ev.totalTrade ?? c.totalTrade ?? 0,
+        };
+      }),
+    };
+    if (applied > 0) {
+      process.stderr.write(`[replay] New-city yield pass: ${applied} cities populated from CITY_YIELD\n`);
+    }
   }
 
   // CITY_YIELD dedicated pass — runs AFTER all other event handling.
