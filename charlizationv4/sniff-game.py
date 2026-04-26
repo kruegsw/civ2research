@@ -2074,6 +2074,41 @@ def main():
                     flush()
                     pending_dump = False
 
+            # Manual snapshot trigger via sentinel file. User runs
+            # `touch <session>/snap-now` from any terminal to force
+            # an immediate dump (e.g. mid-turn after founding a city
+            # or making a key move). The sniffer detects the file,
+            # dumps, and removes the sentinel.
+            sentinel = os.path.join(snap_dir, 'snap-now')
+            if os.path.exists(sentinel):
+                try:
+                    if (curr.get('mapWidth') or 0) and (curr.get('mapHeight') or 0):
+                        snap_ms = (time.perf_counter() - t0) * 1000
+                        fname = dump_snapshot(handle, snap_dir, curr['turn'] or 0,
+                                              curr['mapWidth'] or 0, curr['mapHeight'] or 0,
+                                              curr['difficulty'] or 0, t0=t0)
+                        log(f"[{snap_ms:10.1f}ms]  Snapshot (MANUAL, activeCiv={curr.get('activeCiv','?')}): {fname}")
+                        try:
+                            import json as _json
+                            with open(events_path, 'a', encoding='utf-8') as ef:
+                                ef.write(_json.dumps({
+                                    'time_ms': round(snap_ms, 1),
+                                    'turn': curr['turn'] or 0,
+                                    'event': 'SNAPSHOT_DUMPED',
+                                    'fname': fname,
+                                    'activeCiv': curr.get('activeCiv'),
+                                    'manual': True,
+                                }, separators=(',', ':')) + '\n')
+                        except Exception:
+                            pass
+                        flush()
+                except Exception as e:
+                    log(f"  [snap-now error: {e}]")
+                try:
+                    os.remove(sentinel)
+                except Exception:
+                    pass
+
             # Window/dialog polling (every 0.5s to avoid overhead)
             now_wp = time.perf_counter()
             if now_wp - last_win_poll > 0.5:

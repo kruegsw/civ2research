@@ -105,7 +105,7 @@ DIFF_NAMES = ['Chieftain','Warlord','Prince','King','Emperor','Deity']
 # ═══════════════════════════════════════════════════════════════════
 
 def parse_args():
-    out_path, label = None, None
+    out_path, label, to_session = None, None, False
     args = sys.argv[1:]
     i = 0
     while i < len(args):
@@ -113,14 +113,25 @@ def parse_args():
             out_path = args[i + 1]; i += 2
         elif args[i] == '--label' and i + 1 < len(args):
             label = args[i + 1]; i += 2
+        elif args[i] == '--to-session':
+            to_session = True; i += 1
         elif args[i] in ('-h', '--help'):
             print(__doc__); sys.exit(0)
         else:
             sys.stderr.write(f"Unknown arg: {args[i]}\n"); sys.exit(2)
-    return out_path, label
+    return out_path, label, to_session
+
+
+def newest_session(snapshot_root):
+    games = sorted(
+        [p for p in os.listdir(snapshot_root)
+         if os.path.isdir(os.path.join(snapshot_root, p)) and p.startswith('game_')],
+        key=lambda p: os.path.getmtime(os.path.join(snapshot_root, p)),
+    )
+    return os.path.join(snapshot_root, games[-1]) if games else None
 
 def main():
-    out_path, label = parse_args()
+    out_path, label, to_session = parse_args()
 
     pid = find_process('civ2.exe')
     if not pid:
@@ -132,8 +143,31 @@ def main():
     # 0x00655B04 is a different byte (observed always 0); real difficulty
     # lives at 0x00655B08 (verified in sav-from-mem.js + sniff-game.py).
     difficulty = ru8(handle, 0x00655b08) or 0
-    map_w = (ri16(handle, 0x006d1160) or 0) // 2
+    # mapWidth at 0x006d1160 is the DOUBLED-X width (80 for "80x50 maps").
+    # sniff-game.py uses this value directly in filenames; match that
+    # convention so manual snapshots and sniffer snapshots use the same
+    # turn_NNNN_<W>x<H>_<diff>.bin pattern.
+    map_w = ri16(handle, 0x006d1160) or 0
     map_h = ri16(handle, 0x006d1162) or 0
+
+    # --to-session: write into the active session dir using the same
+    # naming convention the sniffer uses (turn_NNNN_<W>x<H>_<diff>.bin).
+    # If a turn_NNNN file already exists, append a -manual suffix so
+    # we don't clobber the sniffer's snapshot.
+    session_dir = None
+    if to_session:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        snap_root = os.path.join(script_dir, 'snapshots')
+        session_dir = newest_session(snap_root)
+        if not session_dir:
+            sys.stderr.write("No active session under snapshots/.\n"); sys.exit(1)
+        diff_str = DIFF_NAMES[difficulty].lower() if difficulty < 6 else f'd{difficulty}'
+        base = f"turn_{turn:04d}_{map_w}x{map_h}_{diff_str}"
+        candidate = os.path.join(session_dir, f"{base}.bin")
+        if os.path.exists(candidate):
+            ts = datetime.now().strftime('%H%M%S')
+            candidate = os.path.join(session_dir, f"{base}-manual-{ts}.bin")
+        out_path = candidate
 
     # Determine output path
     if not out_path:
@@ -183,6 +217,27 @@ def main():
     print(f"Wrote {out_path}")
     print(f"  turn={turn}  map={map_w}x{map_h}  difficulty={diff_str}")
     print(f"  {len(regions_data)} regions, {total_bytes:,} bytes total")
+
+    # When --to-session, also append a SNAPSHOT_DUMPED event so live-diff
+    # detects the new file and runs the diff for it. Use wall-clock time
+    # since we don't know the sniffer's t0; live-diff doesn't strictly
+    # need session-relative timing.
+    if to_session and session_dir:
+        events_path = os.path.join(session_dir, 'events.jsonl')
+        try:
+            import json as _json
+            ts_ms = round(time.time() * 1000, 1)
+            with open(events_path, 'a', encoding='utf-8') as f:
+                f.write(_json.dumps({
+                    'time_ms': ts_ms,
+                    'turn': turn,
+                    'event': 'SNAPSHOT_DUMPED',
+                    'fname': os.path.basename(out_path),
+                    'manual': True,
+                }, separators=(',', ':')) + '\n')
+            print(f"  appended SNAPSHOT_DUMPED to events.jsonl")
+        except Exception as e:
+            print(f"  [warn] could not append event: {e}")
 
 if __name__ == '__main__':
     main()
