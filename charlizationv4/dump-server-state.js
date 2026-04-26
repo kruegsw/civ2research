@@ -2724,6 +2724,11 @@ if (turns > 0) {
       }
     }
     let applied = 0;
+    // Per-civ accumulators for sci/tax from new cities. v3's end-turn
+    // would have added these if the city existed during the loop;
+    // since it was created in postWrap, fold them in here.
+    const sciAccum = new Array(8).fill(0);
+    const taxAccum = new Array(8).fill(0);
     gameState = {
       ...gameState,
       cities: gameState.cities.map((c, i) => {
@@ -2732,6 +2737,10 @@ if (turns > 0) {
         const ev = latestYieldByCityIdx.get(i);
         if (!ev) return c;
         applied++;
+        if (c.owner != null && c.owner >= 0 && c.owner < 8) {
+          sciAccum[c.owner] += (ev.sciOut ?? 0);
+          taxAccum[c.owner] += (ev.taxOut ?? 0);
+        }
         return {
           ...c,
           foodInBox: ev.foodBox ?? c.foodInBox ?? 0,
@@ -2741,6 +2750,23 @@ if (turns > 0) {
         };
       }),
     };
+    // Apply accumulators to civs
+    if (sciAccum.some(v => v > 0) || taxAccum.some(v => v > 0)) {
+      gameState = {
+        ...gameState,
+        civs: gameState.civs.map((c, i) => {
+          if (!c) return c;
+          const sci = sciAccum[i] || 0;
+          const tax = taxAccum[i] || 0;
+          if (sci === 0 && tax === 0) return c;
+          return {
+            ...c,
+            researchProgress: (c.researchProgress ?? 0) + sci,
+            treasury: (c.treasury ?? 0) + tax,
+          };
+        }),
+      };
+    }
     if (applied > 0) {
       process.stderr.write(`[replay] New-city yield pass: ${applied} cities populated from CITY_YIELD\n`);
     }
@@ -3262,11 +3288,31 @@ const gameState = {
   // the replayed turn. Remove the input-clamp.
   totalUnits:    post
                    ? (() => {
+                     // Binary's totalUnits is mostly a HIGH WATER MARK
+                     // but with a partial drop-on-top-death rule:
+                     // drops by 1 when the unit AT slot (HWM-1) dies
+                     // (block_004E0000.c:769). So a single
+                     // dead-at-top unit reduces HWM, but a
+                     // dead-in-middle unit doesn't. v3 keeps dead
+                     // units in array, so naive max(saveIndex over
+                     // all) gives a too-high HWM when v3 created
+                     // more units than binary did during the turn.
+                     // Approximate: walk from highest saveIndex down,
+                     // skip alive units, drop one HWM per consecutive
+                     // dead-at-top.
                      let maxIdx = -1;
                      for (const u of (post.units || [])) {
-                       if (u && u.gx >= 0 && u.saveIndex != null && u.saveIndex > maxIdx) {
+                       if (u && u.saveIndex != null && u.saveIndex > maxIdx) {
                          maxIdx = u.saveIndex;
                        }
+                     }
+                     // Walk down from maxIdx, drop HWM for each
+                     // consecutive dead-at-top slot.
+                     while (maxIdx >= 0) {
+                       const u = (post.units || []).find(u =>
+                         u && u.saveIndex === maxIdx);
+                       if (!u || u.gx >= 0) break;  // alive at top, stop dropping
+                       maxIdx--;
                      }
                      return maxIdx + 1;
                    })()
