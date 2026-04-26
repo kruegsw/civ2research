@@ -678,9 +678,23 @@ if (turns > 0) {
     if (skipReplayTypes.has(ev.event)) return [];
     switch (ev.event) {
       case 'CITY_FOUNDED': {
+        // Skip if the city already exists in v3 state at this position.
+        // Sniffer snapshots dump AFTER quiet (post-AI cycle) so events
+        // with timestamps < snap_N time describe state already in snap_N.
+        // Re-applying CITY_FOUNDED would create a duplicate. Detected
+        // by matching (x, y, owner) against existing live cities.
+        const owner = ev.owner ?? ev.civ;
+        const existing = (state.cities || []).find(c =>
+          c && c.size > 0 && c.owner === owner
+          && c.cx === ev.x && c.cy === ev.y);
+        if (existing) {
+          if (process.env.DEBUG_CITY_FOUNDED) {
+            process.stderr.write(`[city-found] turn=${ev.turn} owner=${owner} ev.x=${ev.x},${ev.y} ${ev.name} — already exists, skipping\n`);
+          }
+          return [];
+        }
         // Normal case: a Settler/Engineer at the tile founds the city.
         const units = state.units || [];
-        const owner = ev.owner ?? ev.civ;
         // v3 stores u.x = iso doubled-X (matches ev.x); u.gx = u.x >> 1 (game half-coord).
         // ev.x in CITY_FOUNDED is the iso coord, so compare u.x not u.gx.
         // First try uid-specific lookup: a UNIT_KILLED event at same
