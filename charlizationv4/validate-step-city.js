@@ -112,6 +112,13 @@ function decodeCityStruct(hex, cityIdx) {
     shieldsInBox: dv.getInt16(0x1C, true),
     netBaseTrade: dv.getInt16(0x1E, true),
     productionByte: dv.getInt8(0x39),
+    // Per-turn yield breakdown (offsets 0x4A-0x55, written during city-tick)
+    workedTilesFood: dv.getInt16(0x4A, true),
+    workedTilesShield: dv.getInt16(0x4C, true),
+    workedTilesTrade: dv.getInt16(0x4E, true),
+    yield50: dv.getInt16(0x50, true),    // unknown semantic — investigate
+    yield52: dv.getInt16(0x52, true),    // unknown
+    yield54: dv.getInt16(0x54, true),    // unknown
   };
 }
 
@@ -184,7 +191,18 @@ if (!snapPath) {
 console.log(`Initializing v3 from ${snapPath}`);
 loadSnapshotIntoMem(snapPath);
 const parsed = Civ2Parser.parse(buildSav(), snapPath);
-const initResult = initFromSav(parsed);
+// Build a default seat list (mirrors validate-can-use-govt.js pattern).
+const savHumanPlayers = parsed.gameState?.humanPlayers ?? 0;
+const savCivsAlive = parsed.gameState?.civsAlive ?? 0;
+const aliveCivs = [];
+for (let i = 1; i < 8; i++) if (savCivsAlive & (1 << i)) aliveCivs.push(i);
+const seatList = [];
+for (let i = 0; i < 7; i++) {
+  const civSlot = i < aliveCivs.length ? aliveCivs[i] : (i + 1);
+  const isHuman = !!((1 << civSlot) & savHumanPlayers);
+  seatList.push({ seatIndex: i, name: `Civ${civSlot}`, ai: !isHuman });
+}
+const initResult = initFromSav(parsed, seatList);
 const baseState = initResult.gameState;
 const mapBase = initResult.mapBase;
 
@@ -220,6 +238,37 @@ function injectCityState(gameState, cityIdx, hex) {
     weLoveKingDay: !!(decoded.flags & 0x02),
   };
   return { ...gameState, cities };
+}
+
+// Always log a summary of binary's I/O for every captured call, even
+// when no v3 validator is wired yet. Shows which bytes the binary
+// changed during the function — useful for identifying which fields
+// each function owns.
+console.log('\nBinary I/O summary (bytes that changed):');
+for (const c of calls) {
+  const inDecoded = decodeCityStruct(c.state_in, c.cityIdx);
+  const outDecoded = decodeCityStruct(c.state_out, c.cityIdx);
+  if (!inDecoded || !outDecoded) continue;
+  const fields = ['size', 'foodInBox', 'shieldsInBox', 'netBaseTrade', 'productionByte', 'flags',
+                  'workedTilesFood', 'workedTilesShield', 'workedTilesTrade',
+                  'yield50', 'yield52', 'yield54'];
+  const changes = [];
+  for (const f of fields) {
+    if (inDecoded[f] !== outDecoded[f]) {
+      changes.push(`${f}: ${inDecoded[f]} → ${outDecoded[f]}`);
+    }
+  }
+  // Also raw byte-level diff (just count changed bytes + first few offsets)
+  const byteOffsets = [];
+  for (let i = 0; i < 0x58; i++) {
+    if (inDecoded.raw[i] !== outDecoded.raw[i]) byteOffsets.push(i);
+  }
+  const fieldStr = changes.length > 0 ? changes.join(', ') : '(no decoded-field changes)';
+  console.log(`  turn=${c.turn} ${c.fn}(cityIdx=${c.cityIdx})`);
+  console.log(`    fields: ${fieldStr}`);
+  if (byteOffsets.length > 0) {
+    console.log(`    raw bytes changed: ${byteOffsets.length} (offsets: ${byteOffsets.slice(0, 12).map(o => '0x' + o.toString(16)).join(', ')}${byteOffsets.length > 12 ? ', ...' : ''})`);
+  }
 }
 
 let processed = 0;
