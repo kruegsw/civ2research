@@ -2638,7 +2638,11 @@ if (turns > 0) {
       const killByUidPre = new Map();
       for (const [key, batch] of replayEventsByTurnCiv) {
         const [bucketTurn] = key.split(':').map(Number);
-        if (bucketTurn >= finalTurn) continue;
+        // Events at bucketTurn === finalTurn happened BEFORE the
+        // snapshot we're matching (routing puts them in finalTurn's
+        // bucket only if their time < snap_finalTurn). Include them.
+        // Earlier code used >=; that excluded valid same-turn kills.
+        if (bucketTurn > finalTurn) continue;
         for (const ev of batch) {
           if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
           const prior = killByUidPre.get(ev.uid);
@@ -3035,8 +3039,10 @@ if (turns > 0) {
       // Filter by routed bucket turn (same reason as position sweep):
       // events that happened AFTER the snapshot we're matching belong
       // in turn N+1's bucket and shouldn't kill units in this snapshot.
+      // Use `>` not `>=` so events at routedTurn === finalTurn (those
+      // captured BEFORE snap_finalTurn) are applied.
       const [bucketTurn] = key.split(':').map(Number);
-      if (bucketTurn >= finalTurn) continue;
+      if (bucketTurn > finalTurn) continue;
       for (const ev of batch) {
         if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
         const prior = killByUid.get(ev.uid);
