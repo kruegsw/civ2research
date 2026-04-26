@@ -1717,9 +1717,36 @@ if (turns > 0) {
       // the binary's actual pick so next turn's research accumulates
       // on the right target.
       //
+      // BUT: ai_research_pick is the binary's COMPUTATION of the next
+      // tech; the actual write to civ.techBeingResearched can happen
+      // later (e.g. during the next turn's begin-of-turn processing).
+      // If there's a sniffer RESEARCH_PICKED event for this civ routed
+      // to a LATER bucket, that event will drive the change at the
+      // correct time — applying the Frida pick now would set the field
+      // too early and mismatch the snapshot taken before the actual
+      // write.
+      //
       // Also override civ.government when choose_government switched.
       if (fridaSlot) {
+        let suppressResearchPick = false;
         if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0) {
+          // Look for a sniffer RESEARCH_PICKED for this civ at a
+          // later routedTurn — if present, defer to it.
+          for (const [key, batch] of replayEventsByTurnCiv) {
+            const [bucketTurn, bucketCiv] = key.split(':').map(Number);
+            if (bucketCiv !== civ || bucketTurn <= currentTurn) continue;
+            for (const ev of batch) {
+              if (ev.event === 'RESEARCH_PICKED' &&
+                  ev.techId === fridaSlot.researchPick) {
+                suppressResearchPick = true;
+                break;
+              }
+            }
+            if (suppressResearchPick) break;
+          }
+        }
+        if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0
+            && !suppressResearchPick) {
           const targetCiv = gameState.civs?.[civ];
           if (targetCiv) {
             const newCivs = gameState.civs.slice();
