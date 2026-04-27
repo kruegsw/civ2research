@@ -624,12 +624,37 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // 2531011) and returns the HIGH 15 bits, matching the binary's
   // `_rand()` calls in `FUN_00580341:775,782,791,798`. The high bits of
   // an LCG are uniformly distributed, so `% effAtk` is unbiased.
+  //
+  // RNG sourcing:
+  //   - opts.rngEnter (number): if provided, seed the LCG with this value
+  //     verbatim. Used by the fidelity harness when Frida has captured the
+  //     binary's holdrand at FUN_00580341 entry — combat outcomes then
+  //     match binary byte-for-byte.
+  //   - opts.useStateRng (SeededRNG): if provided, draw from this rng
+  //     instead of a local LCG. Used for autonomous play where the global
+  //     state.rng must remain in sync with the binary's call sequence.
+  //   - default: derive a deterministic seed from unit stats + extraSeed
+  //     (preserves replay-determinism without binary parity).
+  const stateRng = opts?.useStateRng;
+  // Default seed derivation. Used when neither rngEnter nor useStateRng
+  // is supplied. The `& 0x7FFFFFFF` mask intentionally matches prior v3
+  // behavior (preserves bit-for-bit reproducibility with existing replay
+  // determinism); the rngEnter path uses 32-bit unsigned to match the
+  // binary's holdrand exactly.
   let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp +
     (extraSeed || 0)) & 0x7FFFFFFF) || 1;
-  const rand = () => {
-    seed = (seed * 214013 + 2531011) & 0x7FFFFFFF;
-    return (seed >> 16) & 0x7FFF;
-  };
+  let useFullWidth = false;
+  if (opts?.rngEnter != null) {
+    seed = (opts.rngEnter >>> 0) || 1;
+    useFullWidth = true;
+  }
+  const rand = stateRng
+    ? (() => stateRng.next())
+    : (() => {
+        const next = Math.imul(seed, 214013) + 2531011;
+        seed = useFullWidth ? (next >>> 0) : (next & 0x7FFFFFFF);
+        return ((seed >>> 16) & 0x7FFF);
+      });
 
   const rounds = []; // true = attacker hit defender, false = defender hit attacker
   while (atkHp > 0 && defHp > 0) {
