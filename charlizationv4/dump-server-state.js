@@ -371,6 +371,8 @@ const parsed = Civ2Parser.parse(savBuf, savPath);
 let post = null;
 let turnsRan = 0;
 let endTurnStats = { ok: 0, rejected: 0, threw: 0, v4Bridge: 0 };
+// Hoisted so the output-assembly block (HWM tracker) can read events.
+const replayEventsByTurnCiv = new Map();
 if (turns > 0) {
   // Silence the engine's console.log noise during simulation so stdout
   // only contains the final JSON. Route engine chatter to stderr.
@@ -487,7 +489,7 @@ if (turns > 0) {
   //    recordings), fall back to the 200ms post-TURN_ADVANCED window.
   //    Imprecise; a single universal cutoff mismatches both ways.
   const LATE_EVENT_WINDOW_MS = 200;
-  const replayEventsByTurnCiv = new Map();
+  // replayEventsByTurnCiv hoisted to outer scope above.
   // CITY_YIELD events bucketed by raw ev.turn (not shifted routedTurn).
   // Late-event shift breaks yield routing because yields fire mid-turn
   // at unpredictable times relative to the snapshot — sometimes before,
@@ -563,6 +565,9 @@ if (turns > 0) {
             routedTurn = ev.turn + 1;
           }
         }
+        // Stamp the computed routedTurn on the event so downstream
+        // consumers (CITY_YIELD pass, HWM tracker) can filter by it.
+        ev._routedTurn = routedTurn;
         const key = `${routedTurn}:${c}`;
         if (!replayEventsByTurnCiv.has(key)) replayEventsByTurnCiv.set(key, []);
         replayEventsByTurnCiv.get(key).push(ev);
@@ -2739,11 +2744,15 @@ if (turns > 0) {
   {
     const finalTurn = gameState.turn?.number ?? 0;
     // Find latest CITY_YIELD per cityIdx in our sim window.
+    // Use routedTurn (event_time vs snapshot_time aware) so events
+    // fired AFTER the target snapshot are excluded — they describe
+    // post-snapshot state that shouldn't be folded into this turn.
     const latestYieldByCityIdx = new Map();
     for (const [, batch] of cityYieldsByRawTurn) {
       for (const ev of batch) {
         if (ev.cityIdx == null) continue;
-        if ((ev.turn ?? 0) > finalTurn) continue;
+        const effTurn = ev._routedTurn ?? ev.turn ?? 0;
+        if (effTurn > finalTurn) continue;
         const prior = latestYieldByCityIdx.get(ev.cityIdx);
         if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
           latestYieldByCityIdx.set(ev.cityIdx, ev);
@@ -3315,33 +3324,42 @@ const gameState = {
   // the replayed turn. Remove the input-clamp.
   totalUnits:    post
                    ? (() => {
-                     // Binary's totalUnits is mostly a HIGH WATER MARK
-                     // but with a partial drop-on-top-death rule:
-                     // drops by 1 when the unit AT slot (HWM-1) dies
-                     // (block_004E0000.c:769). So a single
-                     // dead-at-top unit reduces HWM, but a
-                     // dead-in-middle unit doesn't. v3 keeps dead
-                     // units in array, so naive max(saveIndex over
-                     // all) gives a too-high HWM when v3 created
-                     // more units than binary did during the turn.
-                     // Approximate: walk from highest saveIndex down,
-                     // skip alive units, drop one HWM per consecutive
-                     // dead-at-top.
-                     let maxIdx = -1;
-                     for (const u of (post.units || [])) {
-                       if (u && u.saveIndex != null && u.saveIndex > maxIdx) {
-                         maxIdx = u.saveIndex;
+                     // Binary's totalUnits is a HIGH WATER MARK with a
+                     // drop-on-top-death rule (block_004E0000.c:769):
+                     // when a unit AT slot (HWM-1) dies, HWM--. Slots
+                     // that died earlier (NOT at top-of-HWM) don't
+                     // trigger drops, so HWM can sit above the highest
+                     // alive slot.
+                     //
+                     // To replay this faithfully, walk lifecycle events
+                     // (UNIT_CREATED / UNIT_KILLED) in time order
+                     // starting from the input snapshot's HWM:
+                     //   UNIT_CREATED slot S: HWM = max(HWM, S+1)
+                     //   UNIT_KILLED slot S: if S == HWM-1, HWM--
+                     let hwm = parsed.gameState?.totalUnits ?? 0;
+                     const lifeEvents = [];
+                     for (const [, batch] of replayEventsByTurnCiv) {
+                       for (const ev of batch) {
+                         if ((ev.event === 'UNIT_CREATED' || ev.event === 'UNIT_KILLED')
+                             && ev.slot != null) {
+                           lifeEvents.push(ev);
+                         }
                        }
                      }
-                     // Walk down from maxIdx, drop HWM for each
-                     // consecutive dead-at-top slot.
-                     while (maxIdx >= 0) {
-                       const u = (post.units || []).find(u =>
-                         u && u.saveIndex === maxIdx);
-                       if (!u || u.gx >= 0) break;  // alive at top, stop dropping
-                       maxIdx--;
+                     lifeEvents.sort((a, b) => (a.time_ms ?? 0) - (b.time_ms ?? 0));
+                     // Filter to events that landed in our sim window:
+                     // routedTurn ≤ finalTurn (the turn we're matching).
+                     const finalSimTurn = post.turn?.number ?? 0;
+                     for (const ev of lifeEvents) {
+                       const rt = ev._routedTurn ?? ev.turn ?? 0;
+                       if (rt > finalSimTurn) continue;
+                       if (ev.event === 'UNIT_CREATED') {
+                         if (ev.slot + 1 > hwm) hwm = ev.slot + 1;
+                       } else if (ev.event === 'UNIT_KILLED') {
+                         if (ev.slot === hwm - 1) hwm--;
+                       }
                      }
-                     return maxIdx + 1;
+                     return hwm;
                    })()
                    : gs.totalUnits,
   totalCities:   post ? ((post.cities || []).filter(c => c && c.size > 0).length) : gs.totalCities,
