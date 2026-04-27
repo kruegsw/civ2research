@@ -101,21 +101,20 @@ export function getAvailableResearch(gameState, civSlot) {
  */
 function deriveResearchCostGlobals(gameState, civSlot) {
   const civ = gameState.civs?.[civSlot] ?? {};
-  // Leader slot: civ with max (acqTechCount + futureTechCount) among
-  // civs 1..7 that are alive. Ties go to lowest slot index (stable).
+  // Leader slot: binary FUN_004c2788 indexes civ struct via DAT_00655c20,
+  // which init_call_chain.md describes as "rank of best human civ" but
+  // is used as a civ-slot index in the cost calc (the binary's apparent
+  // quirk). Frida traces consistently capture leaderSlot = highest alive
+  // civ slot in the game (e.g. 7 for game_20260425_222957 with civ 7
+  // alive). Match that heuristic: walk 7..1 and pick first alive.
+  // This produces leaderAcq/Future matching what the binary's cost calc
+  // actually reads, even when the v3 max-acquiredTechCount picker
+  // (which was wrong) would pick a different civ.
   let leaderSlot = 0;
-  let leaderCombined = -1;
   const civs = gameState.civs || [];
   const alive = gameState.civsAlive ?? 0xFF;
-  for (let i = 1; i < 8; i++) {
-    if (!(alive & (1 << i))) continue;
-    const c = civs[i];
-    if (!c) continue;
-    const combined = (c.acquiredTechCount ?? 0) + (c.futureTechCount ?? 0);
-    if (combined > leaderCombined) {
-      leaderCombined = combined;
-      leaderSlot = i;
-    }
+  for (let i = 7; i >= 1; i--) {
+    if (alive & (1 << i)) { leaderSlot = i; break; }
   }
   const leader = civs[leaderSlot] ?? {};
   // Count tech entries with bA != -2 (unresearchable marker).
