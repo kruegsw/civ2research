@@ -573,6 +573,33 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     // warriors by 1 shield per build-cycle.
     newShields = newShields - cost;
 
+    // In replayMode for AI civs, the harness's UNIT_CREATED event
+    // replay is authoritative for unit creation (right slot, right
+    // uid). v3's own production-completion creates phantom units
+    // with mismatched slots/uids when v3's shield trajectory or
+    // production-item differs slightly from binary. Skip v3's unit
+    // creation for AI civs in replayMode — the shields still get
+    // deducted (newShields), CITY_YIELD replay overrides shieldsInBox
+    // anyway, and UNIT_CREATED replay creates the actual unit.
+    // Still apply the settler-consumes-pop size decrement (binary
+    // does this regardless of who creates the unit record).
+    const _humanPlayersGate = state.humanPlayers ?? 0xFF;
+    const _isAIOwnerGate = !((1 << activeCiv) & _humanPlayersGate);
+    if (state.replayMode && _isAIOwnerGate && item.type === 'unit') {
+      let _newSizeAI = null;
+      if (SETTLER_TYPES.has(item.id) && city.size > 1) {
+        _newSizeAI = city.size - 1;
+      }
+      return {
+        newShieldsInBox: newShields,
+        newBuildings: null,
+        completedItem,
+        newSize: _newSizeAI,
+        newWorked: null,
+        events,
+      };
+    }
+
     if (item.type === 'unit') {
       // ── Create unit ──
       // Determine veteran status:
