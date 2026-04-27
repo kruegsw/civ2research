@@ -1034,7 +1034,9 @@ if (turns > 0) {
         // Government-recovery one-off treasury writes (binary's
         // post-anarchy adjustment). Marked at load time when the
         // GOLD_CHANGED co-fires with recoveredFromRevolution:SET.
-        if (ev._replayGold === 'gov-recovery') {
+        // Env gate: DISABLE_GOV_RECOVERY_GOLD=1 (hardness audit).
+        if (ev._replayGold === 'gov-recovery'
+            && !process.env.DISABLE_GOV_RECOVERY_GOLD) {
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
                     reason: 'gov-recovery' }];
         }
@@ -1840,7 +1842,10 @@ if (turns > 0) {
       // write.
       //
       // Also override civ.government when choose_government switched.
-      if (fridaSlot) {
+      // Env gate: DISABLE_FRIDA_RESEARCH_PICK=1 disables the Frida
+      // ai_research_pick injection (hardness audit).
+      const _disableFridaPick = !!process.env.DISABLE_FRIDA_RESEARCH_PICK;
+      if (fridaSlot && !_disableFridaPick) {
         let suppressResearchPick = false;
         if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0) {
           // Look for a sniffer RESEARCH_PICKED for this civ at a
