@@ -591,10 +591,22 @@ if (turns > 0) {
         if (!flipped.includes('recoveredFromRevolution:SET')) continue;
         recoveryGoldKeys.add(`${ev.civ}:${ev.time_ms}`);
       }
+      // Also mark AI civ end-of-turn gold writes. These represent
+      // binary AI activity v3 doesn't simulate (rush-buy, disband
+      // refund, diplomatic gifts). The "end-of-turn" signal is:
+      // a GOLD_CHANGED whose time_ms is between snap[N] and snap[N+1]
+      // for some N — i.e., it captures the post-turn AI state. Mark
+      // for AI civs only; human civs go through v3's tax calc.
+      const humanMaskMark = parsed.gameState?.humanPlayers ?? 0;
       for (const ev of allEvents) {
         if (ev.event !== 'GOLD_CHANGED' || ev.civ == null) continue;
         if (recoveryGoldKeys.has(`${ev.civ}:${ev.time_ms}`)) {
           ev._replayGold = 'gov-recovery';
+          continue;
+        }
+        const isAI = !((1 << ev.civ) & humanMaskMark);
+        if (isAI) {
+          ev._replayGold = 'ai-end-turn';
         }
       }
 
@@ -1025,6 +1037,18 @@ if (turns > 0) {
         if (ev._replayGold === 'gov-recovery') {
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
                     reason: 'gov-recovery' }];
+        }
+        // AI civ end-of-turn gold writes captured by sniffer.
+        // The binary's AI does things v3 doesn't simulate (rush-buy,
+        // disband refunds, diplomatic gifts, etc.). For non-human
+        // civs, the sniffer-captured GOLD_CHANGED at routedTurn ==
+        // finalSimTurn is the authoritative end-state. Replay it as
+        // a TREASURY_SET, overriding v3's tax-only calc.
+        const humanMaskGC = parsed.gameState?.humanPlayers ?? 0;
+        const isAICivGC = !((1 << ev.civ) & humanMaskGC);
+        if (isAICivGC && ev._replayGold === 'ai-end-turn') {
+          return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
+                    reason: 'ai-end-turn' }];
         }
         if (replayTreasury) {
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
@@ -2842,15 +2866,23 @@ if (turns > 0) {
     // since it was created in postWrap, fold them in here.
     const sciAccum = new Array(8).fill(0);
     const taxAccum = new Array(8).fill(0);
+    const humanMaskCY = parsed.gameState?.humanPlayers ?? 0;
     gameState = {
       ...gameState,
       cities: gameState.cities.map((c, i) => {
         if (!c || c.size <= 0) return c;
-        if (i < startingCityCount) return c;  // existing city — v3 calc owns
+        const isNewCity = i >= startingCityCount;
+        const isAICity = c.owner != null && !((1 << c.owner) & humanMaskCY);
+        // Apply CITY_YIELD if (a) the city was created mid-sim (no v3
+        // production calc ran), or (b) it's an AI city (binary's AI
+        // does rush-buy and other gold/shield activity v3 doesn't
+        // simulate, so the binary's authoritative shieldBox is more
+        // reliable than v3's "current + shieldProd" estimate).
+        if (!isNewCity && !isAICity) return c;
         const ev = latestYieldByCityIdx.get(i);
         if (!ev) return c;
         applied++;
-        if (c.owner != null && c.owner >= 0 && c.owner < 8) {
+        if (isNewCity && c.owner != null && c.owner >= 0 && c.owner < 8) {
           sciAccum[c.owner] += (ev.sciOut ?? 0);
           taxAccum[c.owner] += (ev.taxOut ?? 0);
         }
