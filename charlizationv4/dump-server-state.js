@@ -1539,12 +1539,26 @@ if (turns > 0) {
       // ── Frida capture injection (pre-END_TURN) ──
       // When --replay-frida is active, slot the binary's authoritative
       // researchCostGlobals into state BEFORE end-turn runs. v3's
-      // calcResearchCostExact will read state.researchCostGlobals
-      // (set transiently per-civ) instead of deriving from v3 state —
-      // giving byte-exact tech completion timing.
+      // calcResearchCostExact reads state.researchCostGlobals.
+      //
+      // IMPORTANT: end-turn computes research cost for the NEXT civ
+      // (it processes the next civ's start-of-turn during the ending
+      // civ's END_TURN call). So we look up the Frida slot for the
+      // NEXT alive civ, not the current ending civ. Without this,
+      // civs whose research-cost calc happens during another civ's
+      // END_TURN fall through to deriveResearchCostGlobals (v3's
+      // approximation), producing the `ai-research-completion` and
+      // `research-rounding` known-gap mismatches.
+      let nextActiveCiv = civ;
+      for (let i = 0; i < 8; i++) {
+        nextActiveCiv = (nextActiveCiv + 1) % 8;
+        if (nextActiveCiv === 0) nextActiveCiv = 1;
+        if (gameState.civsAlive & (1 << nextActiveCiv)) break;
+      }
       const fridaSlot = fridaByTurnCiv.get(`${currentTurn}:${civ}`);
-      if (fridaSlot?.researchCost) {
-        gameState = { ...gameState, researchCostGlobals: fridaSlot.researchCost.globals };
+      const nextFridaSlot = fridaByTurnCiv.get(`${currentTurn}:${nextActiveCiv}`);
+      if (nextFridaSlot?.researchCost) {
+        gameState = { ...gameState, researchCostGlobals: nextFridaSlot.researchCost.globals };
       }
 
       // Zero out movesLeft for this civ's units so END_TURN validation passes
