@@ -49,8 +49,10 @@ def classify_gap(m):
 
     # activeUnit: v3 selection heuristic differs from Civ2's AI unit-
     # cycle pointer. Not a data bug — cosmetic.
-    if label == 'activeUnit':
-        return 'active-unit-heuristic'
+    # 2026-04-26: tag retired (sniffer ACTIVE_UNIT_CHANGED replay closes
+    # most cases). Re-enable if a structural divergence reappears.
+    # if label == 'activeUnit':
+    #     return 'active-unit-heuristic'
 
     # civs[N].flags — known-gap bits the harness can't close without
     # task #48/#49 or full AI port:
@@ -66,16 +68,17 @@ def classify_gap(m):
         except (TypeError, ValueError):
             pass
 
-    # civs[N].treasury: hut gold (+25/50/75/100) vs per-turn income
-    # rounding (1-10 delta). Both are "v3 can't predict the exact
-    # gold that changes hands mid-AI-turn" — tag accordingly.
+    # civs[N].treasury: hut gold (+25/50/75/100). Per-turn income
+    # rounding tag retired 2026-04-26 — AI civ GOLD_CHANGED replay
+    # closes the AI side; remaining ≤10 deltas would be human-civ
+    # tax rounding which is a real v3 bug worth surfacing.
     if label.startswith('civs[') and label.endswith('.treasury'):
         try:
             d = abs(int(a) - int(b))
             if d in (25, 50, 75, 100):
                 return 'hut-gold'
-            if d <= 10:
-                return 'treasury-rounding'
+            # if d <= 10:
+            #     return 'treasury-rounding'
         except (TypeError, ValueError):
             pass
 
@@ -119,8 +122,11 @@ def classify_gap(m):
         return 'ai-combat-veteran'
 
     # visibilityCounts[civN]: FOW update ordering differs; off by 1-5.
-    if label.startswith('visibilityCounts'):
-        return 'fow-count'
+    # 2026-04-26: tag retired — first-city radius gate + dead-unit
+    # vis fix closes turn-2→3. Re-enable if a structural divergence
+    # reappears.
+    # if label.startswith('visibilityCounts'):
+    #     return 'fow-count'
 
     # cities[N].{shieldStored,foodStored,tradeTotal} with tiny delta:
     # mid-turn cached yield captured before AI's re-work of tiles.
@@ -149,19 +155,20 @@ def classify_gap(m):
         except (TypeError, ValueError):
             pass
 
-    # civs[N].researchProgress: small delta = rounding; large delta where
-    # one side went to 0 = tech completion v3 missed (AI research cost or
-    # paradigm divergence). Both are tracked gaps.
-    if label.startswith('civs[') and label.endswith('.researchProgress'):
-        try:
-            d = abs(int(a) - int(b))
-            if d <= 10:
-                return 'research-rounding'
-            # Large delta + one side at 0 = completion mismatch.
-            if int(a) == 0 or int(b) == 0:
-                return 'ai-research-completion'
-        except (TypeError, ValueError):
-            pass
+    # civs[N].researchProgress: 2026-04-26: research-rounding and
+    # ai-research-completion tags retired. Frida fun_research_cost
+    # replay (with backward-extrapolation when missing) closes the
+    # ghost-discovery cases. Remaining mismatches would be real v3
+    # calc bugs worth surfacing.
+    # if label.startswith('civs[') and label.endswith('.researchProgress'):
+    #     try:
+    #         d = abs(int(a) - int(b))
+    #         if d <= 10:
+    #             return 'research-rounding'
+    #         if int(a) == 0 or int(b) == 0:
+    #             return 'ai-research-completion'
+    #     except (TypeError, ValueError):
+    #         pass
 
     # civs[N].reputation changes: v3 misses some diplomatic-act reputation
     # adjustments (bribes, treaty violations, etc.) — AI interaction that
@@ -174,14 +181,14 @@ def classify_gap(m):
     if label.startswith('cities[') and label.endswith('.name'):
         return 'city-name-ordering'
 
-    # civs[N].researchingTech 255 vs actual tech (or vice versa) = tech
-    # completion mismatch. v3 didn't complete a tech Civ2 did.
-    if label.startswith('civs[') and label.endswith('.researchingTech'):
-        try:
-            if int(a) == 255 or int(b) == 255:
-                return 'ai-research-completion'
-        except (TypeError, ValueError):
-            pass
+    # civs[N].researchingTech: 2026-04-26: tag retired (Frida cost
+    # replay closes ghost-discoveries).
+    # if label.startswith('civs[') and label.endswith('.researchingTech'):
+    #     try:
+    #         if int(a) == 255 or int(b) == 255:
+    #             return 'ai-research-completion'
+    #     except (TypeError, ValueError):
+    #         pass
 
     return None  # novel — no known-gap tag
 
