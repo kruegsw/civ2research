@@ -194,20 +194,32 @@ export function processPerCivTick(civSlot, state, mapBase) {
   // DAT_0064c6b6 (aiRandomSeed at +0x16) = rand() % 100
   // rand() % 3 == 0 toggles stateFlags bit 0x04 (senateOverride)
   //
-  // SKIPPED — RNG call-order parity not yet established. v3's AI code
-  // (diplomai, unitai, econai, barbarian spawn, etc.) draws RNG at
-  // different points than the binary, so the per-civ-tick's 2 draws
-  // would further desync the stream. The sniffer already replays bit
-  // 0x04 via FLAGS_CHANGED events (POST_END_TYPES in dump-server-state.js)
-  // and aiRandomSeed is not surfaced in state dumps, so leaving both
-  // alone is fidelity-neutral.
+  // RNG audit 2026-04-27 (game_20260427_191137): Frida captureRand on
+  // FUN_00560084 confirms binary draws exactly 2 rand values per AI
+  // civ at function entry, in this order. Restored.
   //
-  // When the RNG audit (task #49) establishes call-order parity, restore:
-  //   const r1 = draw(); const aiRandomSeed = r1 % 100;
-  //   const r2 = draw();
-  //   if ((r2 % 3) === 0) flags ^= 0x04;
-  //   ...commit aiRandomSeed and senateOverride...
+  // The harness still replays bit 0x04 via FLAGS_CHANGED events so v3's
+  // computed senateOverride is overridden on diff dumps — neutral. The
+  // important effect is rng.state advancement: 2 draws per AI civ × 7
+  // civs = 14 draws per turn, contributing to lock-step holdrand.
   const draw = () => state.rng ? state.rng.next() : Math.floor(Math.random() * 32768);
+  {
+    const r1 = draw();
+    const aiRandomSeed = r1 % 100;
+    const r2 = draw();
+    cloneCivsOnce();
+    civsMut[civSlot] = {
+      ...civsMut[civSlot],
+      aiRandomSeed,
+    };
+    if ((r2 % 3) === 0) {
+      flags ^= 0x04;
+      civsMut[civSlot] = {
+        ...civsMut[civSlot],
+        stateFlags: flags,
+      };
+    }
+  }
 
   // ── Step 4b (binary lines 50-52) — every 3 turns decrement patience ──
   // DAT_0064c6bf (patience at +0x1F) -= 1 if > 0 and (turn & 3) == 0.
