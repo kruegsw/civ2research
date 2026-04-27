@@ -2979,14 +2979,24 @@ if (turns > 0) {
     }
   }
 
-  // Human-civ treasury reconciliation: sum CITY_YIELD.taxOut for
-  // events fired between snap[N] and snap[N+1] for the human civ's
-  // cities. The sniffer's snap captures around yield ticks
-  // unpredictably (0/1/2 ticks per snap-pair); v3 always applies one
-  // tick per turn, drifting against snap state. Override the human
-  // civ's treasury to the input value + sum(taxOut in window). AI civs
-  // already get GOLD_CHANGED replay set via __TREASURY_SET__, so this
-  // pass intentionally targets only the human civ.
+  // Civ treasury+research reconciliation from sniffer events.
+  //
+  // The sniffer's snap captures around yield ticks unpredictably
+  // (0/1/2 ticks per snap-pair); v3 always applies one tick per
+  // turn, drifting against snap state.
+  //
+  // Treasury: use GOLD_CHANGED events (binary's actual net treasury
+  // changes — already accounts for maintenance, hut gold, AI rush-buy,
+  // gov-recovery, etc.). For HUMAN civ, take the LATEST GOLD_CHANGED
+  // in window as the absolute treasury value. (AI civs already
+  // covered by GOLD_CHANGED replay via __TREASURY_SET__.)
+  //
+  // Research progress: sum CITY_YIELD.sciOut for events that
+  // represent fresh yield ticks (foodIncreased OR shieldIncreased,
+  // skipping info-only and growth yields). Override researchProgress
+  // for ALL civs except those with TECH_DISCOVERED in the window
+  // (v3's overflow handling more reliable on completion turns).
+  //
   // Env gate: DISABLE_CIV_TREASURY_RECONCILE=1 (hardness audit).
   if (!process.env.DISABLE_CIV_TREASURY_RECONCILE) {
     const startTurn = (initResult.gameState.turn?.number ?? 0);
@@ -2994,36 +3004,40 @@ if (turns > 0) {
     const windowStart = snapshotTimeByTurn.get(startTurn);
     const windowEnd = snapshotTimeByTurn.get(targetTurn);
     const humanMaskTR = parsed.gameState?.humanPlayers ?? 0;
-    if (windowStart != null && windowEnd != null && humanMaskTR > 0) {
-      const taxAccumByCiv = new Array(8).fill(0);
+    if (windowStart != null && windowEnd != null) {
       const sciAccumByCiv = new Array(8).fill(0);
       const civHasYield = new Array(8).fill(false);
+      const latestGoldByCiv = new Array(8).fill(null);
       const civHadDiscovery = new Array(8).fill(false);
+      // Pass 1: CITY_YIELD events — accumulate sciOut per civ.
       for (const [, batch] of cityYieldsByRawTurn) {
         for (const ev of batch) {
           if (ev.time_ms == null || ev.time_ms <= windowStart
               || ev.time_ms > windowEnd) continue;
           if (ev.owner == null || ev.owner < 0 || ev.owner >= 8) continue;
-          // Skip yields that don't represent a fresh yield tick:
-          //   1. "info-only" yields at founding (foodBox == foodBoxFrom
-          //      AND shieldBox == shieldBoxFrom — both unchanged)
-          //   2. "growth" yields (foodBox < foodBoxFrom — city grew
-          //      and food box reset; the actual tax/sci production
-          //      from this turn is captured in a SEPARATE follow-up
-          //      yield event a few ms later)
-          // Real yield ticks have either food increase (food grew but
-          // didn't reset) or shield increase (production accumulated).
+          // Skip yields that don't represent a fresh yield tick.
+          // Real ticks have food OR shield increased.
           const foodIncreased = ev.foodBox > ev.foodBoxFrom;
           const shieldIncreased = ev.shieldBox > ev.shieldBoxFrom;
           if (!foodIncreased && !shieldIncreased) continue;
-          taxAccumByCiv[ev.owner] += (ev.taxOut ?? 0);
           sciAccumByCiv[ev.owner] += (ev.sciOut ?? 0);
           civHasYield[ev.owner] = true;
         }
       }
-      // Detect TECH_DISCOVERED events in window — discoveries reset
-      // researchProgress mid-turn, so v3's calc may be more accurate
-      // than our naive sum. Skip sci override for civs with discovery.
+      // Pass 2: GOLD_CHANGED events — find latest per civ (the binary's
+      // authoritative treasury value just before snap[N+1]).
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'GOLD_CHANGED' || ev.civ == null) continue;
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          const prior = latestGoldByCiv[ev.civ];
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            latestGoldByCiv[ev.civ] = ev;
+          }
+        }
+      }
+      // Pass 3: TECH_DISCOVERED events — skip sci override for these civs.
       for (const [, batch] of replayEventsByTurnCiv) {
         for (const ev of batch) {
           if (ev.event !== 'TECH_DISCOVERED') continue;
@@ -3036,22 +3050,24 @@ if (turns > 0) {
       gameState = {
         ...gameState,
         civs: gameState.civs.map((c, i) => {
-          if (!c || !civHasYield[i]) return c;
+          if (!c) return c;
           const inputC = inputCivs[i] || {};
           const inputTreasury = inputC.treasury ?? c.treasury ?? 0;
           const inputProgress = inputC.researchProgress ?? c.researchProgress ?? 0;
           const isHumanCiv = !!((1 << i) & humanMaskTR);
           const upd = { ...c };
-          // Treasury: only override for human civ. AI civs already
-          // handled by GOLD_CHANGED replay (set-to-absolute).
+          // Treasury override (human civ only — AI handled by replay):
+          //   - If GOLD_CHANGED in window: use latest .to value
+          //   - Else: keep input (no change captured by sniffer)
           if (isHumanCiv) {
-            upd.treasury = inputTreasury + taxAccumByCiv[i];
+            if (latestGoldByCiv[i]) {
+              upd.treasury = latestGoldByCiv[i].to;
+            } else {
+              upd.treasury = inputTreasury;
+            }
           }
-          // Research progress: override for ALL civs (both AI and
-          // human). No existing replay covers this — drift accumulates
-          // from yield-tick race. Skip if discovery in window
-          // (v3's overflow handling more reliable).
-          if (!civHadDiscovery[i]) {
+          // Research progress override (all civs except discovery cases):
+          if (civHasYield[i] && !civHadDiscovery[i]) {
             upd.researchProgress = inputProgress + sciAccumByCiv[i];
           }
           return upd;
