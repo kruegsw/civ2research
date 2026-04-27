@@ -1675,7 +1675,8 @@ if (turns > 0) {
       // matching becomes noise — but staying conservative avoids the
       // catastrophic failure mode (deleting human-civ units that have
       // no captures since binary doesn't AI-process humans).
-      if (fridaUnitStateByTurnUnit.size > 0 && gameState.units) {
+      if (fridaUnitStateByTurnUnit.size > 0 && gameState.units
+          && !process.env.DISABLE_FRIDA_UNIT_INJECTION) {
         const newUnits = gameState.units.slice();
         let writes = 0, phantoms = 0;
 
@@ -3325,7 +3326,7 @@ if (turns > 0) {
   // not its final position. Walk all UNIT_MOVED events for each uid,
   // pick the latest, and apply it. Only updates units still alive in
   // v3 (skips units killed by the phantom-kill sweep above).
-  {
+  if (!process.env.DISABLE_FINAL_POSITION_SWEEP) {
     const finalTurn = gameState.turn?.number ?? 0;
     const lastMoveByUid = new Map();
     for (const [key, batch] of replayEventsByTurnCiv) {
@@ -3379,7 +3380,7 @@ if (turns > 0) {
   // After postWrap creates the unit, no later UNIT_ORDER fires —
   // unit's order stays at default 0xFF (none) when binary has it
   // fortified or work-in-progress. Apply latest UNIT_ORDER per uid.
-  {
+  if (!process.env.DISABLE_FINAL_ORDER_SWEEP) {
     const finalTurn = gameState.turn?.number ?? 0;
     const lastOrderByUid = new Map();
     for (const [key, batch] of replayEventsByTurnCiv) {
@@ -3421,7 +3422,7 @@ if (turns > 0) {
   // binary when arrival or re-target happens; the per-tick event
   // captures these but per-civ replay misses them when uid doesn't
   // exist yet. Apply the latest goto state per uid.
-  {
+  if (!process.env.DISABLE_FINAL_GOTO_SWEEP) {
     const finalTurn = gameState.turn?.number ?? 0;
     const lastGotoByUid = new Map();
     for (const [key, batch] of replayEventsByTurnCiv) {
@@ -3469,7 +3470,7 @@ if (turns > 0) {
 
   // Final UNIT_DAMAGE / UNIT_STATUS_CHANGED / UNIT_MOVESPENT_CHANGED
   // sweep — same chicken-and-egg as position/order sweeps.
-  {
+  if (!process.env.DISABLE_FINAL_UNIT_FIELD_SWEEP) {
     const finalTurn = gameState.turn?.number ?? 0;
     const lastDmgByUid = new Map();
     const lastStatusByUid = new Map();
@@ -3518,7 +3519,8 @@ if (turns > 0) {
     }
   }
 
-  // Final phantom-kill sweep. Some UNIT_KILLED events fire per-civ at
+  // Final phantom-kill sweep — gated by DISABLE_FINAL_PHANTOM_KILL_SWEEP.
+  // Some UNIT_KILLED events fire per-civ at
   // a turn where the target uid hasn't been created in v3 yet (the
   // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
   // The kill silently no-ops at the time. Once postWrap creates the
@@ -3529,7 +3531,7 @@ if (turns > 0) {
   // now). Only events where the kill turn is strictly LESS than the
   // current postWrap turn are applied — events at exactly postWrapTurn
   // were handled by the dedicated UNIT_KILLED pre-pass earlier.
-  {
+  if (!process.env.DISABLE_FINAL_PHANTOM_KILL_SWEEP) {
     const finalTurn = gameState.turn?.number ?? 0;
     const killByUid = new Map();
     for (const [key, batch] of replayEventsByTurnCiv) {
