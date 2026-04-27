@@ -2920,6 +2920,59 @@ if (turns > 0) {
     applyBatch(deferredPostEvents);
   }
 
+  // Settler-consumes-pop pass: in real Civ2, building a Settlers (or
+  // Engineers, type 0/1) drops the producing city's size by 1. v3's
+  // cityturn intentionally skips this for AI civs in replayMode (see
+  // cityturn.js comment) because v3's itemInProduction is stale.
+  // The sniffer's UNIT_CREATED events authoritatively name the unit
+  // type and homeCity — walk them and apply the decrement here.
+  // Floor at size 1 (binary won't reduce below 1: settler cost gate).
+  // Skip cities that match a CITY_YIELD override of size (the harness
+  // doesn't currently override size from CITY_YIELD, so all our
+  // settler-create events are eligible).
+  {
+    const SETTLER_TYPES_HARNESS = new Set([0, 1]);
+    const humanMaskSettler = parsed.gameState?.humanPlayers ?? 0;
+    const startTurnSettler = (initResult.gameState.turn?.number ?? 0);
+    const finalTurnSettler = (gameState.turn?.number ?? 0);
+    const winStartS = snapshotTimeByTurn.get(startTurnSettler);
+    const winEndS = snapshotTimeByTurn.get(finalTurnSettler);
+    if (winStartS != null && winEndS != null) {
+      const settlersByCity = new Map();
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'UNIT_CREATED') continue;
+          if (ev.time_ms == null || ev.time_ms <= winStartS
+              || ev.time_ms > winEndS) continue;
+          if (!SETTLER_TYPES_HARNESS.has(ev.type)) continue;
+          if (ev.owner == null || ev.homeCity == null
+              || ev.homeCity < 0 || ev.homeCity === 0xFF) continue;
+          // Only AI civs (humans handled by v3's normal cityturn path).
+          const isHuman = !!((1 << ev.owner) & humanMaskSettler);
+          if (isHuman) continue;
+          settlersByCity.set(ev.homeCity, (settlersByCity.get(ev.homeCity) ?? 0) + 1);
+        }
+      }
+      if (settlersByCity.size > 0) {
+        let decremented = 0;
+        gameState = {
+          ...gameState,
+          cities: gameState.cities.map((c, i) => {
+            const n = settlersByCity.get(i);
+            if (!n || !c || c.size == null) return c;
+            const newSize = Math.max(1, c.size - n);
+            if (newSize === c.size) return c;
+            decremented++;
+            return { ...c, size: newSize };
+          }),
+        };
+        if (decremented > 0) {
+          process.stderr.write(`[replay] Settler-pop pass: ${decremented} cities had size decremented for AI-built settlers\n`);
+        }
+      }
+    }
+  }
+
   // New-city CITY_YIELD pass: cities founded mid-simulation don't
   // get production processing in v3 (created via __CITY_PLACE__ in
   // postWrap, after END_TURN loop). Apply the latest matching

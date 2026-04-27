@@ -586,15 +586,17 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     const _humanPlayersGate = state.humanPlayers ?? 0xFF;
     const _isAIOwnerGate = !((1 << activeCiv) & _humanPlayersGate);
     if (state.replayMode && _isAIOwnerGate && item.type === 'unit') {
-      let _newSizeAI = null;
-      if (SETTLER_TYPES.has(item.id) && city.size > 1) {
-        _newSizeAI = city.size - 1;
-      }
+      // Don't apply settler-consumes-pop here for AI civs in replayMode:
+      // v3's itemInProduction is often stale (AI suppressed), so we'd
+      // miss settlers when item.id is something else AND mistakenly
+      // decrement when item.id IS a settler but the binary built a
+      // different unit. The harness's UNIT_CREATED replay sees the
+      // real type and decrements home city size there.
       return {
         newShieldsInBox: newShields,
         newBuildings: null,
         completedItem,
-        newSize: _newSizeAI,
+        newSize: null,
         newWorked: null,
         events,
       };
