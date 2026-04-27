@@ -880,6 +880,9 @@ if (turns > 0) {
         // City razing is typically the result of a successful attack
         // on a size-1 city. Same as UNIT_KILLED: v3 combat path would
         // produce it. Accept diff noise until combat routing is done.
+        // (Tried adding __CITY_DESTROYED__ replay 2026-04-27 — caused
+        // regression because the destroyed-then-replaced pattern
+        // creates inconsistent state.)
         return [];
       case 'UNIT_CREATED': {
         // v3's END_TURN production creates the unit at its city tile,
@@ -2583,10 +2586,20 @@ if (turns > 0) {
           if (action.type === '__CITY_DESTROYED__') {
             const ci = action.cityIdx;
             if (ci == null) continue;
+            // Only mark dead if the city's name+owner+location matches
+            // the destroyed city. Otherwise v3's slot ci has a
+            // different city than binary's, and marking it dead would
+            // remove a valid v3 city.
+            const c = gameState.cities[ci];
+            if (!c || c.size <= 0) continue;
+            const matchOwner = action.owner == null || c.owner === action.owner;
+            const matchPos = (action.x == null || c.cx === action.x)
+                          && (action.y == null || c.cy === action.y);
+            if (!matchOwner || !matchPos) continue;
             gameState = {
               ...gameState,
-              cities: gameState.cities.map((c, i) =>
-                i === ci ? { ...c, size: 0, owner: -1, gx: -1, gy: -1 } : c),
+              cities: gameState.cities.map((cc, i) =>
+                i === ci ? { ...cc, size: 0, owner: -1, gx: -1, gy: -1 } : cc),
             };
             continue;
           }
@@ -3066,7 +3079,8 @@ if (turns > 0) {
               upd.treasury = inputTreasury;
             }
           }
-          // Research progress override (all civs except discovery cases):
+          // Research progress override (skip discovery cases —
+          // v3's overflow handling is more often correct than 0):
           if (civHasYield[i] && !civHadDiscovery[i]) {
             upd.researchProgress = inputProgress + sciAccumByCiv[i];
           }
