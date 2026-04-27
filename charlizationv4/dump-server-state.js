@@ -2916,18 +2916,26 @@ if (turns > 0) {
     // Env gate: DISABLE_AI_CITY_YIELD_REPLAY=1 disables AI-city
     // CITY_YIELD override for hardness audit (new-city pass still runs).
     const disableAICY = !!process.env.DISABLE_AI_CITY_YIELD_REPLAY;
+    // Env gate: DISABLE_HUMAN_CITY_YIELD_REPLAY=1 keeps v3's calc
+    // for human cities. By default we ALSO override human cities,
+    // because the sniffer's snap can capture "before yield" or
+    // "after yield" depending on poll race — leading to snap pairs
+    // that contain 0 or 2 yield ticks instead of 1. The latest
+    // CITY_YIELD event per cityIdx is authoritative for that snap.
+    const disableHumanCY = !!process.env.DISABLE_HUMAN_CITY_YIELD_REPLAY;
     gameState = {
       ...gameState,
       cities: gameState.cities.map((c, i) => {
         if (!c || c.size <= 0) return c;
         const isNewCity = i >= startingCityCount;
         const isAICity = c.owner != null && !((1 << c.owner) & humanMaskCY);
-        // Apply CITY_YIELD if (a) the city was created mid-sim (no v3
-        // production calc ran), or (b) it's an AI city (binary's AI
-        // does rush-buy and other gold/shield activity v3 doesn't
-        // simulate, so the binary's authoritative shieldBox is more
-        // reliable than v3's "current + shieldProd" estimate).
-        if (!isNewCity && (!isAICity || disableAICY)) return c;
+        const isHumanCity = !isAICity;
+        // Apply CITY_YIELD for: new cities (no v3 calc ran), AI cities
+        // (binary AI rush-buy etc.), and human cities (sniffer snap-
+        // timing race may capture 0 or 2 yield ticks per snap-pair).
+        const aiBlocked = isAICity && disableAICY;
+        const humanBlocked = isHumanCity && disableHumanCY;
+        if (!isNewCity && (aiBlocked || humanBlocked)) return c;
         const ev = latestYieldByCityIdx.get(i);
         if (!ev) return c;
         applied++;
