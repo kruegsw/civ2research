@@ -640,6 +640,7 @@ if (turns > 0) {
       // captures that have the bug.
       const seenCreated = new Set();
       const seenOther = new Map();  // uid -> first non-CREATED event
+      const seenNonKilled = new Set(); // uid has at least one non-KILLED, non-CREATED event
       for (const ev of allEvents) {
         if (ev.uid == null) continue;
         if (ev.event === 'UNIT_CREATED') seenCreated.add(ev.uid);
@@ -648,11 +649,20 @@ if (turns > 0) {
                   'UNIT_STATUS_CHANGED', 'UNIT_VIS_CHANGED',
                   'UNIT_MOVESPENT_CHANGED'].includes(ev.event)) {
           if (!seenOther.has(ev.uid)) seenOther.set(ev.uid, ev);
+          if (ev.event !== 'UNIT_KILLED') seenNonKilled.add(ev.uid);
         }
       }
       let synthesized = 0;
       for (const [uid, firstEv] of seenOther) {
         if (seenCreated.has(uid)) continue;
+        // Skip uids that only ever appear as UNIT_KILLED with no other
+        // activity — those are units that existed before our trace
+        // window opened (in the loaded .sav) and were killed inside the
+        // window. Synthesizing a UNIT_CREATED for them would resurrect
+        // a unit v3 had already removed, leaving a phantom in the array
+        // because the routing of the synth UNIT_CREATED (POST-end-turn)
+        // fires AFTER the UNIT_KILLED (PRE-end-turn) and is never undone.
+        if (!seenNonKilled.has(uid)) continue;
         // Synthesize a UNIT_CREATED at the position where the first
         // non-create event saw this uid. For UNIT_MOVED, use `to`
         // (the unit's actual position after the move is reported).
@@ -2457,6 +2467,19 @@ if (turns > 0) {
           }
           if (action.type === '__UNIT_CREATED_PLACE__') {
             if (preExistingUnitIds.has(action.uid)) continue;
+            // If this uid is killed within our finalTurn window, skip the
+            // create — it would resurrect a unit that real Civ2 already
+            // killed, AND its slot-override would evict the legitimate
+            // occupant of the slot (which real Civ2 reused for a later
+            // unit). Example: uid=143 created turn 82, killed turn 83;
+            // uid=147 created turn 83 reusing slot 10. Without this
+            // guard, deferred apply creates uid=143 at slot 10, evicting
+            // uid=147 (the unit that should be there).
+            {
+              const killEv = (typeof __killByUidForPost !== 'undefined')
+                ? __killByUidForPost.get(action.uid) : null;
+              if (killEv) continue;
+            }
             const existing = gameState.units.find(u => u &&
               (u.id === action.uid || u.sequenceId === action.uid));
             if (existing) {
@@ -2707,9 +2730,31 @@ if (turns > 0) {
           return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
         }),
       };
+      // Stash the kill map for the post-deferred re-kill pass below.
+      // Some uids are created BY the deferred batch (UNIT_CREATED at
+      // turn N-1 with time-after-snap_(N-1) → routed to bucket N) AND
+      // killed in the same window (UNIT_KILLED at turn N with time-
+      // before-snap_N → routed to bucket N pre-end). The pre-end kill
+      // fires first against an empty roster (no-op), then this pre-
+      // deferred kill misses the not-yet-created unit, then the
+      // deferred create lands and resurrects the unit. Re-running the
+      // kill pass after applyBatch closes that window.
+      var __killByUidForPost = killByUidPre;
     }
 
     applyBatch(deferredPostEvents);
+    // Post-deferred re-kill pass: see comment above.
+    if (typeof __killByUidForPost !== 'undefined' && __killByUidForPost.size > 0) {
+      gameState = {
+        ...gameState,
+        units: gameState.units.map(u => {
+          if (!u || u.gx < 0) return u;
+          const uid = u.id ?? u.sequenceId;
+          if (uid == null || !__killByUidForPost.has(uid)) return u;
+          return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+        }),
+      };
+    }
   }
 
   // Settler-consumes-pop pass: in real Civ2, building a Settlers (or
