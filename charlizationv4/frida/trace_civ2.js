@@ -1222,6 +1222,11 @@ const STEP_DIFF_HOOK_NAMES = new Set([
   'fun_city_happiness',
   'fun_building_upkeep',
   'fun_city_turn_sync',
+  // RNG-fidelity capture targets (combat resolver + per-civ tick).
+  // Both have captureRand:true so v3 ports can be seeded from the
+  // binary's holdrand at function entry.
+  'fun_combat_resolve',
+  'fun_per_civ_tick',
 ]);
 
 let attachedCount = 0;
