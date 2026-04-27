@@ -1594,51 +1594,7 @@ if (turns > 0) {
       };
       applyReplayBatch(preEvents);
 
-      // ── Frida capture injection (pre-END_TURN) ──
-      // When --replay-frida is active, slot the binary's authoritative
-      // researchCostGlobals into state BEFORE end-turn runs. v3's
-      // calcResearchCostExact reads state.researchCostGlobals.
-      //
-      // IMPORTANT: end-turn computes research cost for the NEXT civ
-      // (it processes the next civ's start-of-turn during the ending
-      // civ's END_TURN call). So we look up the Frida slot for the
-      // NEXT alive civ, not the current ending civ. Without this,
-      // civs whose research-cost calc happens during another civ's
-      // END_TURN fall through to deriveResearchCostGlobals (v3's
-      // approximation), producing the `ai-research-completion` and
-      // `research-rounding` known-gap mismatches.
-      let nextActiveCiv = civ;
-      for (let i = 0; i < 8; i++) {
-        nextActiveCiv = (nextActiveCiv + 1) % 8;
-        if (nextActiveCiv === 0) nextActiveCiv = 1;
-        if (gameState.civsAlive & (1 << nextActiveCiv)) break;
-      }
       const fridaSlot = fridaByTurnCiv.get(`${currentTurn}:${civ}`);
-      const nextFridaSlot = fridaByTurnCiv.get(`${currentTurn}:${nextActiveCiv}`);
-      const _disableFridaCost = !!process.env.DISABLE_FRIDA_RESEARCH_COST;
-      if (!_disableFridaCost && nextFridaSlot?.researchCost) {
-        gameState = { ...gameState, researchCostGlobals: nextFridaSlot.researchCost.globals };
-      } else if (!_disableFridaCost) {
-        // Frida didn't capture fun_research_cost for (currentTurn,
-        // nextActiveCiv) — likely because the binary cached the value
-        // and didn't recompute this turn. Walk back through earlier
-        // turns to find the most recent capture for this civ; if found,
-        // extrapolate techCounter (binary increments by 1 per turn).
-        // Without this, calcResearchCostExact falls through to v3's
-        // deriveResearchCostGlobals which can compute a too-low cost
-        // and trigger spurious tech "discoveries" v3 then resets.
-        for (let backTurn = currentTurn - 1; backTurn >= 0; backTurn--) {
-          const slot = fridaByTurnCiv.get(`${backTurn}:${nextActiveCiv}`);
-          if (slot?.researchCost) {
-            const baseGlobals = slot.researchCost.globals;
-            const extrapTechCounter = (baseGlobals.techCounter ?? 0)
-              + (currentTurn - backTurn);
-            gameState = { ...gameState,
-              researchCostGlobals: { ...baseGlobals, techCounter: extrapTechCounter } };
-            break;
-          }
-        }
-      }
 
       // Zero out movesLeft for this civ's units so END_TURN validation passes
       gameState = {
@@ -1848,53 +1804,12 @@ if (turns > 0) {
       }
 
       // ── Frida capture injection (post-END_TURN) ──
-      // If the binary's ai_research_pick captured a specific tech for
-      // this (turn, civ), override civ.techBeingResearched after
-      // end-turn. v3's end-turn resets to 0xFF when a tech completes
-      // AND doesn't pick a new one (runAiTurn disabled). This injects
-      // the binary's actual pick so next turn's research accumulates
-      // on the right target.
-      //
-      // BUT: ai_research_pick is the binary's COMPUTATION of the next
-      // tech; the actual write to civ.techBeingResearched can happen
-      // later (e.g. during the next turn's begin-of-turn processing).
-      // If there's a sniffer RESEARCH_PICKED event for this civ routed
-      // to a LATER bucket, that event will drive the change at the
-      // correct time — applying the Frida pick now would set the field
-      // too early and mismatch the snapshot taken before the actual
-      // write.
-      //
-      // Also override civ.government when choose_government switched.
-      // Env gate: DISABLE_FRIDA_RESEARCH_PICK=1 disables the Frida
-      // ai_research_pick injection (hardness audit).
-      const _disableFridaPick = !!process.env.DISABLE_FRIDA_RESEARCH_PICK;
-      if (fridaSlot && !_disableFridaPick) {
-        let suppressResearchPick = false;
-        if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0) {
-          // Look for a sniffer RESEARCH_PICKED for this civ at a
-          // later routedTurn — if present, defer to it.
-          for (const [key, batch] of replayEventsByTurnCiv) {
-            const [bucketTurn, bucketCiv] = key.split(':').map(Number);
-            if (bucketCiv !== civ || bucketTurn <= currentTurn) continue;
-            for (const ev of batch) {
-              if (ev.event === 'RESEARCH_PICKED' &&
-                  ev.techId === fridaSlot.researchPick) {
-                suppressResearchPick = true;
-                break;
-              }
-            }
-            if (suppressResearchPick) break;
-          }
-        }
-        if (fridaSlot.researchPick != null && fridaSlot.researchPick >= 0
-            && !suppressResearchPick) {
-          const targetCiv = gameState.civs?.[civ];
-          if (targetCiv) {
-            const newCivs = gameState.civs.slice();
-            newCivs[civ] = { ...targetCiv, techBeingResearched: fridaSlot.researchPick };
-            gameState = { ...gameState, civs: newCivs };
-          }
-        }
+      // Override civ.government when choose_government switched.
+      // The ai_research_pick override was removed: the sniffer's
+      // RESEARCH_PICKED event handles tech selection at the right
+      // time, and forcing it post-end-turn was mismatching the
+      // snapshot (net -16 mismatches when disabled across 180 turns).
+      if (fridaSlot) {
         if (fridaSlot.govtChosen != null && fridaSlot.govtChosen >= 0) {
           const targetCiv = gameState.civs?.[civ];
           if (targetCiv) {
