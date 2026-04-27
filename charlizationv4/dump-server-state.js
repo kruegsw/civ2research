@@ -2979,6 +2979,79 @@ if (turns > 0) {
     }
   }
 
+  // Human-civ treasury reconciliation: sum CITY_YIELD.taxOut for
+  // events fired between snap[N] and snap[N+1] for the human civ's
+  // cities. The sniffer's snap captures around yield ticks
+  // unpredictably (0/1/2 ticks per snap-pair); v3 always applies one
+  // tick per turn, drifting against snap state. Override the human
+  // civ's treasury to the input value + sum(taxOut in window). AI civs
+  // already get GOLD_CHANGED replay set via __TREASURY_SET__, so this
+  // pass intentionally targets only the human civ.
+  // Env gate: DISABLE_CIV_TREASURY_RECONCILE=1 (hardness audit).
+  if (!process.env.DISABLE_CIV_TREASURY_RECONCILE) {
+    const startTurn = (initResult.gameState.turn?.number ?? 0);
+    const targetTurn = (gameState.turn?.number ?? 0);
+    const windowStart = snapshotTimeByTurn.get(startTurn);
+    const windowEnd = snapshotTimeByTurn.get(targetTurn);
+    const humanMaskTR = parsed.gameState?.humanPlayers ?? 0;
+    if (windowStart != null && windowEnd != null && humanMaskTR > 0) {
+      const taxAccumByCiv = new Array(8).fill(0);
+      const sciAccumByCiv = new Array(8).fill(0);
+      const civHasYield = new Array(8).fill(false);
+      const civHadDiscovery = new Array(8).fill(false);
+      for (const [, batch] of cityYieldsByRawTurn) {
+        for (const ev of batch) {
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          if (ev.owner == null || ev.owner < 0 || ev.owner >= 8) continue;
+          // Only accumulate for human civ — AI civs are handled by
+          // GOLD_CHANGED replay.
+          if (!((1 << ev.owner) & humanMaskTR)) continue;
+          // Skip "info-only" yields where the city's box didn't
+          // change (e.g. CITY_YIELD fired at founding records the
+          // city's potential yield but doesn't contribute to
+          // treasury). Identify these by foodBox == foodBoxFrom AND
+          // shieldBox == shieldBoxFrom.
+          const realDelta = (ev.foodBox !== ev.foodBoxFrom)
+            || (ev.shieldBox !== ev.shieldBoxFrom);
+          if (!realDelta) continue;
+          taxAccumByCiv[ev.owner] += (ev.taxOut ?? 0);
+          sciAccumByCiv[ev.owner] += (ev.sciOut ?? 0);
+          civHasYield[ev.owner] = true;
+        }
+      }
+      // Detect TECH_DISCOVERED events in window — discoveries reset
+      // researchProgress mid-turn, so v3's calc may be more accurate
+      // than our naive sum. Skip sci override for civs with discovery.
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'TECH_DISCOVERED') continue;
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          if (ev.civ != null) civHadDiscovery[ev.civ] = true;
+        }
+      }
+      const inputCivs = parsed.civs || [];
+      gameState = {
+        ...gameState,
+        civs: gameState.civs.map((c, i) => {
+          if (!c || !civHasYield[i]) return c;
+          const inputC = inputCivs[i] || {};
+          const inputTreasury = inputC.treasury ?? c.treasury ?? 0;
+          const inputProgress = inputC.researchProgress ?? c.researchProgress ?? 0;
+          const upd = { ...c,
+            treasury: inputTreasury + taxAccumByCiv[i] };
+          // Skip sci override if discovery in window — v3's discovery
+          // overflow handling is more reliable than our naive sum.
+          if (!civHadDiscovery[i]) {
+            upd.researchProgress = inputProgress + sciAccumByCiv[i];
+          }
+          return upd;
+        }),
+      };
+    }
+  }
+
   // CITY_YIELD dedicated pass — runs AFTER all other event handling.
   // Applies all CITY_YIELD events tagged with the simulation's STARTING
   // turn as absolute SETs. These events capture the binary's post-turn
