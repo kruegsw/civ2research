@@ -576,6 +576,25 @@ if (turns > 0) {
           cityYieldsByRawTurn.get(ev.turn).push(ev);
         }
       }
+      // Mark GOLD_CHANGED events that should be replayed because they
+      // co-fire with a recoveredFromRevolution flag flip on the same
+      // civ. These are AI government-recovery treasury adjustments
+      // (binary writes a one-off gold value when exiting anarchy)
+      // that v3's reducer can't compute because runAiTurn is disabled.
+      const recoveryGoldKeys = new Set();
+      for (const ev of allEvents) {
+        if (ev.event !== 'FLAGS_CHANGED' || ev.civ == null) continue;
+        const flipped = ev.flipped || [];
+        if (!flipped.includes('recoveredFromRevolution:SET')) continue;
+        recoveryGoldKeys.add(`${ev.civ}:${ev.time_ms}`);
+      }
+      for (const ev of allEvents) {
+        if (ev.event !== 'GOLD_CHANGED' || ev.civ == null) continue;
+        if (recoveryGoldKeys.has(`${ev.civ}:${ev.time_ms}`)) {
+          ev._replayGold = 'gov-recovery';
+        }
+      }
+
       // Build foundingUidByEvent map: scan UNIT_KILLED events for
       // settlers (type 0/1) and pair with same-(turn, x, y, owner)
       // CITY_FOUNDED. The killed settler is the founding one.
@@ -996,6 +1015,13 @@ if (turns > 0) {
           // post-wrap) and we don't want to double-apply.
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
                     reason: 'hut-gold' }];
+        }
+        // Government-recovery one-off treasury writes (binary's
+        // post-anarchy adjustment). Marked at load time when the
+        // GOLD_CHANGED co-fires with recoveredFromRevolution:SET.
+        if (ev._replayGold === 'gov-recovery') {
+          return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
+                    reason: 'gov-recovery' }];
         }
         if (replayTreasury) {
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
