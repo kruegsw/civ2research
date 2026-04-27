@@ -3457,34 +3457,6 @@ if (turns > 0) {
       process.stderr.write(`[replay] Final position sweep: ${applied} units repositioned via last UNIT_MOVED\n`);
     }
 
-    // Visibility-reveal sweep: per-civ batches couldn't reveal tiles for
-    // moves whose unit didn't yet exist in v3 (UNIT_CREATED deferred to
-    // POST_END_TYPES); the final-position sweep above only patches the
-    // last position. To reveal *every* tile a civ's units visited
-    // during the window, walk all UNIT_MOVED events and call
-    // updateVisibility at each destination. Tile bits are idempotent
-    // so re-reveals are no-ops.
-    if (mapBase?.tileData) {
-      let revealed = 0;
-      for (const [key, batch] of replayEventsByTurnCiv) {
-        const [bucketTurn] = key.split(':').map(Number);
-        if (bucketTurn > finalTurn) continue;
-        for (const ev of batch) {
-          if (ev.event !== 'UNIT_MOVED' || !ev.to) continue;
-          if (ev.to[0] < 0 || ev.to[1] < 0) continue;
-          const owner = ev.owner ?? ev.civ;
-          if (owner == null) continue;
-          try {
-            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
-              owner, Math.floor(ev.to[0] / 2), ev.to[1], mapBase.wraps);
-            revealed++;
-          } catch (_) { /* swallow */ }
-        }
-      }
-      if (revealed > 0) {
-        process.stderr.write(`[replay] Visibility-reveal sweep: ${revealed} UNIT_MOVED reveals\n`);
-      }
-    }
   }
 
   // Final order-byte sweep. UNIT_ORDER events fire per-civ but the
