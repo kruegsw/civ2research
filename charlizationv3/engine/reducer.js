@@ -104,13 +104,24 @@ export function applyAction(prev, mapBase, action, civSlot) {
         newCity.hasMountain = hasMountain;
       }
 
-      // Binary FUN_0043f8b0: AI cities founded after turn 40 get bonus population.
-      // Formula: clamp((turn - 20) / 20, 2, 10)
+      // Binary create_city @ 0x43F8B0 lines 5671, 5674, 5690-5697:
+      // AI bonus pop only applies when ALL three conditions hold:
+      //   1. This is the founding civ's FIRST city (cityCount == 1)
+      //   2. The founding civ is NOT human
+      //   3. Turn > 40
+      // Formula: city.size = clamp((turn - 20) / 20, 2, 10)
+      // Earlier v3 code applied this to ALL AI cities (not just the
+      // first), causing AI's later-founded cities to incorrectly start
+      // at size 2+ (e.g. Slim Buttes founded turn 61 in
+      // game_20260425_205950 was at size 2 in v3 but size 1 in binary).
       const isAI = !((state.humanPlayers || 0) & (1 << unit.owner));
       const turnNum = state.turn?.number || 0;
-      if (isAI && turnNum > 40) {
+      if (isAI && turnNum > 40 && isFirstCity) {
         const bonusPop = Math.max(2, Math.min(10, Math.floor((turnNum - 20) / 20)));
         newCity.size = bonusPop;
+        // Binary lines 5695-5697: also grant buildings 4 (Temple),
+        // 5 (Marketplace), 6 (Library) free to the AI's first city.
+        buildings.add(4); buildings.add(5); buildings.add(6);
       }
 
       state.cities = [...prev.cities, newCity];
