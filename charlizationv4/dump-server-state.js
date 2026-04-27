@@ -3004,9 +3004,6 @@ if (turns > 0) {
           if (ev.time_ms == null || ev.time_ms <= windowStart
               || ev.time_ms > windowEnd) continue;
           if (ev.owner == null || ev.owner < 0 || ev.owner >= 8) continue;
-          // Only accumulate for human civ — AI civs are handled by
-          // GOLD_CHANGED replay.
-          if (!((1 << ev.owner) & humanMaskTR)) continue;
           // Skip yields that don't represent a fresh yield tick:
           //   1. "info-only" yields at founding (foodBox == foodBoxFrom
           //      AND shieldBox == shieldBoxFrom — both unchanged)
@@ -3043,10 +3040,17 @@ if (turns > 0) {
           const inputC = inputCivs[i] || {};
           const inputTreasury = inputC.treasury ?? c.treasury ?? 0;
           const inputProgress = inputC.researchProgress ?? c.researchProgress ?? 0;
-          const upd = { ...c,
-            treasury: inputTreasury + taxAccumByCiv[i] };
-          // Skip sci override if discovery in window — v3's discovery
-          // overflow handling is more reliable than our naive sum.
+          const isHumanCiv = !!((1 << i) & humanMaskTR);
+          const upd = { ...c };
+          // Treasury: only override for human civ. AI civs already
+          // handled by GOLD_CHANGED replay (set-to-absolute).
+          if (isHumanCiv) {
+            upd.treasury = inputTreasury + taxAccumByCiv[i];
+          }
+          // Research progress: override for ALL civs (both AI and
+          // human). No existing replay covers this — drift accumulates
+          // from yield-tick race. Skip if discovery in window
+          // (v3's overflow handling more reliable).
           if (!civHadDiscovery[i]) {
             upd.researchProgress = inputProgress + sciAccumByCiv[i];
           }
