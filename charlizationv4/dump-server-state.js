@@ -1659,117 +1659,18 @@ if (turns > 0) {
         deferredPostEvents.push(...filteredPostEvents);
       }
 
-      // ── Frida unit-action injection (post-END_TURN) ──
-      //
-      // For each unit slot v3 has owned by `civ`, look up the matching
-      // captured state and apply position/orders/moveSpent/etc.
-      // Conservative: do NOT delete v3 units missing from captures (the
-      // binary may not call ai_unit_action for every unit every turn,
-      // e.g. fortified or sentried units that don't move). Do NOT
-      // create v3 units from captures alone (slot may collide with a
-      // v3 unit owned by another civ; production paths handle creation
-      // via slice 6).
-      //
-      // Slot-aligned correctness only works to the extent that v3 and
-      // binary keep the same slot indices. Once they diverge, the
-      // matching becomes noise — but staying conservative avoids the
-      // catastrophic failure mode (deleting human-civ units that have
-      // no captures since binary doesn't AI-process humans).
-      if (fridaUnitStateByTurnUnit.size > 0 && gameState.units
-          && !process.env.DISABLE_FRIDA_UNIT_INJECTION) {
-        const newUnits = gameState.units.slice();
-        let writes = 0, phantoms = 0;
-
-        // Step 1: per-slot state update from ai_unit_action captures.
-        for (let ui = 0; ui < newUnits.length; ui++) {
-          const u = newUnits[ui];
-          if (!u || u.owner !== civ || u.gx < 0) continue;
-          const cap = fridaUnitStateByTurnUnit.get(`${currentTurn}:${ui}`);
-          if (!cap) continue;
-          if (cap.owner !== civ) continue;
-          if (cap.alive === 0) continue;
-          newUnits[ui] = {
-            ...u,
-            gx: cap.x,
-            gy: cap.y,
-            movesLeft: cap.movesRem,
-            order: cap.orders,
-            gotoX: cap.gotoX,
-            gotoY: cap.gotoY,
-            statusFlags: cap.statusFlags,
-            damageTaken: Math.max(0, (u.damageTaken ?? 0) +
-                ((u.hp ?? 99) - cap.hp)),
-          };
-          writes++;
-        }
-
-        // Step 2 (slice 7b): phantom cleanup using authoritative
-        // civ_turn_driver roster. Only runs when we have a roster
-        // for (turn, civ) — otherwise leave units alone (no risk
-        // of accidentally deleting humans whose binary doesn't AI).
-        // Phantom cleanup: only run when v3 has STRICTLY MORE units
-        // owned by this civ than binary's roster contains. Slot-level
-        // matching can differ (v3 and binary assign new units to
-        // different slots independently), so deleting "v3-not-in-
-        // roster" can wrongly delete units that exist in both — just
-        // at different slot indices. Only delete the EXCESS count.
-        // Use latest roster ≤ currentTurn (Frida data has gaps).
-        let roster = fridaUnitRosterByTurnCiv.get(`${currentTurn}:${civ}`);
-        if (!roster) {
-          for (let t = currentTurn - 1; t >= currentTurn - 5 && !roster; t--) {
-            roster = fridaUnitRosterByTurnCiv.get(`${t}:${civ}`);
-          }
-        }
-        if (process.env.DEBUG_PHANTOM) {
-          process.stderr.write(`[phantom] turn=${currentTurn} civ=${civ} roster=${roster ? roster.size : 'NONE'}\n`);
-        }
-        if (roster) {
-          // Count v3's alive units for this civ.
-          const v3Slots = [];
-          for (let ui = 0; ui < newUnits.length; ui++) {
-            const u = newUnits[ui];
-            if (u && u.owner === civ && u.gx >= 0) v3Slots.push(ui);
-          }
-          const excess = v3Slots.length - roster.size;
-          if (excess > 0) {
-            // Delete `excess` units from highest slots not in roster.
-            // Iterating from highest slot prefers deleting recently-
-            // produced units (more likely phantoms from speculative
-            // production) over original snapshot units.
-            // EXCLUSION: skip uids that have a UNIT_CREATED before
-            // currentTurn AND no UNIT_KILLED yet — these are units
-            // confirmed alive in binary stream and shouldn't be culled
-            // even if they happen to land at a slot binary's roster
-            // doesn't enumerate (Frida roster snapshots between turns
-            // can miss transient slot occupancy).
-            const candidates = v3Slots.filter(s => {
-              if (roster.has(s)) return false;
-              const u = newUnits[s];
-              if (!u) return true;
-              const uid = u.id ?? u.sequenceId;
-              if (uid == null) return true;
-              // Confirmed alive iff sniffer recorded UNIT_CREATED but no UNIT_KILLED.
-              const created = unitCreatedTurns.get(uid);
-              const killed = unitKilledTurns.get(uid);
-              if (created != null && created <= currentTurn) {
-                if (killed == null || killed > currentTurn) {
-                  return false;  // confirmed alive — don't cull
-                }
-              }
-              return true;
-            }).sort((a,b) => b-a);
-            for (let i = 0; i < excess && i < candidates.length; i++) {
-              const ui = candidates[i];
-              newUnits[ui] = { ...newUnits[ui], gx: -1, gy: -1 };
-              phantoms++;
-            }
-          }
-        }
-
-        if (writes > 0 || phantoms > 0) {
-          gameState = { ...gameState, units: newUnits };
-        }
-      }
+      // The Frida unit-action injection (slot-keyed per-unit state
+      // override + roster-based phantom cleanup) was removed: it was
+      // net -39262 mismatches across game_20260427_104752 (180
+      // turn-pairs, baseline 49905 → 10643 with it disabled). Once
+      // v3's unit array drifts from the binary's slot ordering
+      // (commonly within ~10 turns of any non-trivial replay), the
+      // slot-keyed state writes corrupt unrelated units — the binary's
+      // ai_unit_action(slot=N) capture lands on whatever unit happens
+      // to occupy v3's slot N, which is typically a different unit by
+      // mid-game. v3's per-civ event replay (UNIT_TELEPORT, UNIT_GOTO,
+      // UNIT_MOVESPENT, UNIT_STATUS, UNIT_DAMAGE) handles the same
+      // fields uid-keyed and stays correct under slot drift.
 
       // ── Frida city-production injection (post-END_TURN) ──
       // For each of this civ's cities, if the binary captured an
@@ -1778,7 +1679,8 @@ if (turns > 0) {
       // city+0x39's encoding (0..0x3F = unit, otherwise building/wonder
       // via 256-byte). v3's parser stores production as
       // {type, id} so we convert.
-      if (fridaProductionByTurnCity.size > 0 && gameState.cities) {
+      if (fridaProductionByTurnCity.size > 0 && gameState.cities
+          && !process.env.DISABLE_FRIDA_CITY_PRODUCTION_INJECTION) {
         const newCities = gameState.cities.slice();
         let prodInjections = 0;
         for (let ci = 0; ci < newCities.length; ci++) {
@@ -3519,54 +3421,13 @@ if (turns > 0) {
     }
   }
 
-  // Final phantom-kill sweep — gated by DISABLE_FINAL_PHANTOM_KILL_SWEEP.
-  // Some UNIT_KILLED events fire per-civ at
-  // a turn where the target uid hasn't been created in v3 yet (the
-  // matching UNIT_CREATED is in POST_END_TYPES, deferred to postWrap).
-  // The kill silently no-ops at the time. Once postWrap creates the
-  // unit, no later UNIT_KILLED fires for it — so it lives forever as
-  // a "phantom" in v3's roster. Walk all UNIT_KILLED events from every
-  // turn and force-kill any uid still alive in v3 whose UNIT_KILLED
-  // fired before the postWrap turn (i.e. it was meant to be dead by
-  // now). Only events where the kill turn is strictly LESS than the
-  // current postWrap turn are applied — events at exactly postWrapTurn
-  // were handled by the dedicated UNIT_KILLED pre-pass earlier.
-  if (!process.env.DISABLE_FINAL_PHANTOM_KILL_SWEEP) {
-    const finalTurn = gameState.turn?.number ?? 0;
-    const killByUid = new Map();
-    for (const [key, batch] of replayEventsByTurnCiv) {
-      // Filter by routed bucket turn (same reason as position sweep):
-      // events that happened AFTER the snapshot we're matching belong
-      // in turn N+1's bucket and shouldn't kill units in this snapshot.
-      // Use `>` not `>=` so events at routedTurn === finalTurn (those
-      // captured BEFORE snap_finalTurn) are applied.
-      const [bucketTurn] = key.split(':').map(Number);
-      if (bucketTurn > finalTurn) continue;
-      for (const ev of batch) {
-        if (ev.event !== 'UNIT_KILLED' || ev.uid == null) continue;
-        const prior = killByUid.get(ev.uid);
-        if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
-          killByUid.set(ev.uid, ev);
-        }
-      }
-    }
-    let killed = 0;
-    gameState = {
-      ...gameState,
-      units: gameState.units.map(u => {
-        if (!u || u.gx < 0) return u;
-        const uid = u.id ?? u.sequenceId;
-        if (uid == null) return u;
-        const killEv = killByUid.get(uid);
-        if (!killEv) return u;
-        killed++;
-        return { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
-      }),
-    };
-    if (killed > 0) {
-      process.stderr.write(`[replay] Final phantom-kill sweep: ${killed} units force-killed via UNIT_KILLED replay\n`);
-    }
-  }
+  // Final phantom-kill sweep was removed: it was net -297 mismatches
+  // across game_20260427_104752 (180 turn-pairs). It worked by
+  // force-killing uids that had a UNIT_KILLED event anywhere in the
+  // window — but post-Frida-injection-removal, v3's per-civ replay
+  // handles kills correctly via the UNIT_KILLED pre-pass and the
+  // synthesized UNIT_CREATED-then-KILLED for orphan uids. The blanket
+  // sweep over-killed units the binary still considered alive.
 
   post = gameState;
 
