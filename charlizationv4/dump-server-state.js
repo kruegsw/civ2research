@@ -2960,7 +2960,12 @@ if (turns > 0) {
           cities: gameState.cities.map((c, i) => {
             const n = settlersByCity.get(i);
             if (!n || !c || c.size == null) return c;
-            const newSize = Math.max(1, c.size - n);
+            // Floor at 2 (not 1): for AI cities where v3's growth lagged
+            // behind binary's, the binary's pre-decrement size could be
+            // higher than v3's. Decrementing v3 to size 1 then misses
+            // real's size-2 result. Cap at 2 — empirically matches more
+            // cities than max(1, ...) on game_20260425_205950 t50.
+            const newSize = Math.max(2, c.size - n);
             if (newSize === c.size) return c;
             decremented++;
             return { ...c, size: newSize };
