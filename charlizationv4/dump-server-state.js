@@ -371,8 +371,10 @@ const parsed = Civ2Parser.parse(savBuf, savPath);
 let post = null;
 let turnsRan = 0;
 let endTurnStats = { ok: 0, rejected: 0, threw: 0, v4Bridge: 0 };
-// Hoisted so the output-assembly block (HWM tracker) can read events.
+// Hoisted so the output-assembly block (HWM tracker, activeUnit
+// replay) can read events and timing info.
 const replayEventsByTurnCiv = new Map();
+const turnAdvancedTimeOuter = new Map();
 if (turns > 0) {
   // Silence the engine's console.log noise during simulation so stdout
   // only contains the final JSON. Route engine chatter to stderr.
@@ -528,6 +530,7 @@ if (turns > 0) {
           allEvents.push(ev);
           if (ev.event === 'TURN_ADVANCED' && ev.turn != null && ev.time_ms != null) {
             turnAdvancedTime.set(ev.turn, ev.time_ms);
+            turnAdvancedTimeOuter.set(ev.turn, ev.time_ms);
           }
           if (ev.event === 'SNAPSHOT_DUMPED' && ev.turn != null && ev.time_ms != null) {
             snapshotTime.set(ev.turn, ev.time_ms);
@@ -1592,8 +1595,19 @@ if (turns > 0) {
       // until the entire END_TURN loop has finished; at that point
       // every civ's trade has been computed with its pre-event rates.
       if (postEvents.length > 0) {
-        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${postEvents.length} events (deferred)\n`);
-        deferredPostEvents.push(...postEvents);
+        // GOLD_CHANGED with routedTurn ≤ initialTurn is a "warm-up"
+        // event whose effect is already in the input snapshot (e.g.
+        // gov-recovery treasury writes from previous turn). Re-applying
+        // it at the END of the sim would clobber v3's correct turn-N
+        // tax calc. Skip those.
+        const initialTurn = initResult.gameState.turn?.number ?? 0;
+        const filteredPostEvents = postEvents.filter(e => {
+          if (e.event !== 'GOLD_CHANGED') return true;
+          const rt = e._routedTurn ?? e.turn ?? 0;
+          return rt > initialTurn;
+        });
+        process.stderr.write(`[replay] turn ${currentTurn} civ ${civ} post: ${filteredPostEvents.length} events (deferred)\n`);
+        deferredPostEvents.push(...filteredPostEvents);
       }
 
       // ── Frida unit-action injection (post-END_TURN) ──
@@ -2098,6 +2112,20 @@ if (turns > 0) {
               return patched;
             }),
           };
+          // After overriding the existing unit's position to the
+          // sniffer-captured tile, reveal visibility there. v3's
+          // production placed the unit at the city tile and revealed
+          // visibility there; if the binary's unit landed elsewhere
+          // (post-creation AI move), the new position needs its own
+          // visibility reveal.
+          if (action.owner != null && action.x != null && action.y != null
+              && action.x >= 0 && mapBase?.tileData) {
+            try {
+              updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                action.owner, Math.floor(action.x / 2), action.y,
+                mapBase.wraps);
+            } catch (_) { /* swallow */ }
+          }
           prepassHandledUids.add(ev.uid);
           continue;
         }
@@ -2188,6 +2216,15 @@ if (turns > 0) {
           // left the counter stale.
           nextUnitId: Math.max(gameState.nextUnitId ?? 0, action.uid + 1),
         };
+        // Reveal visibility around the new unit (radius 1, like a
+        // moved unit). v3's reducer would do this on UNIT_MOVED but
+        // the synthetic create path skips it.
+        if (owner != null && mapBase?.tileData) {
+          try {
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+              owner, Math.floor(action.x / 2), action.y, mapBase.wraps);
+          } catch (_) { /* swallow */ }
+        }
         prepassHandledUids.add(ev.uid);
       }
     }
@@ -3301,6 +3338,31 @@ const gameState = {
     const raw = parsed.gameState?.selectedUnit ?? 0;
     const rawSigned = (raw | 0) > 32767 ? (raw - 65536) : raw;
     if (!post) return rawSigned;
+    // If sniffer ACTIVE_UNIT_CHANGED events are present, use them.
+    // Find the latest one with routedTurn ≤ finalSimTurn — that's the
+    // selectedUnit value at our target snapshot time. Avoids the
+    // mismatch between v3's heuristic (lowest-saveIndex active) and
+    // the binary's unit-cycle pointer (which can hold sentinel slots
+    // not in v3's alive-unit list). Race-condition note: when the
+    // snapshot is dumped during a transient -1 between the binary's
+    // turn-end clear and the next-turn auto-cycle, the latest event
+    // may overshoot the snapshot value — accepts as a residual gap.
+    const finalSimTurn = post.turn?.number ?? 0;
+    let latestActive = null;
+    for (const [, batch] of replayEventsByTurnCiv) {
+      for (const ev of batch) {
+        if (ev.event !== 'ACTIVE_UNIT_CHANGED') continue;
+        const rt = ev._routedTurn ?? ev.turn ?? 0;
+        if (rt > finalSimTurn) continue;
+        if (!latestActive || (ev.time_ms ?? 0) > (latestActive.time_ms ?? 0)) {
+          latestActive = ev;
+        }
+      }
+    }
+    if (latestActive && latestActive.to != null) {
+      const to = latestActive.to | 0;
+      return to > 32767 ? to - 65536 : to;
+    }
     const humanMask = parsed.gameState?.humanPlayers ?? 0;
     const humanCiv = (() => {
       for (let i = 1; i < 8; i++) if (humanMask & (1 << i)) return i;
