@@ -176,13 +176,29 @@ const TARGETS = [
   { va: 0x005B3D06, name: 'new_unit',    args: 4, argNames: ['type','owner','x','y'],
     readRet: true, backtrace: true, readCivAtOwner: true },
   { va: 0x0058C295, name: 'fun_unit_disband', args: 1, argNames: ['unitIdx'] },
-  { va: 0x00580341, name: 'fun_unit_kill',    args: 2, argNames: ['unitIdx','killerIdx'] },
+  // FUN_00580341 (15052 bytes) — combat resolver. Despite the legacy
+  // name `fun_unit_kill`, this is the binary's combat resolution
+  // function: takes attacker/defender unit indices, draws ~22 _rand()
+  // values across rounds + veteran promotion, kills the loser. v3's
+  // `combat.resolveCombat` already accepts opts.rngEnter (commit
+  // 4f4bd01) — the captured rand_enter here is what the v3 port must
+  // be seeded with for byte-parity outcomes.
+  { va: 0x00580341, name: 'fun_combat_resolve',    args: 2,
+    argNames: ['unitIdx','killerIdx'],
+    readRet: true, captureRand: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Per-civ turn tick (FUN_00560084 — the function v3 has
   // been trying to faithfully reproduce)
   // ═══════════════════════════════════════════════════════════════
-  { va: 0x00560084, name: 'fun_per_civ_tick',  args: 1, argNames: ['civSlot'] },
+  // captureRand: per-civ-tick draws 6 rand values per AI civ — the
+  // first two at lines 43/45 set aiRandomSeed and senateOverride,
+  // the rest gate intruder/diplomatic timer flags. v3's
+  // per-civ-tick.js currently SKIPS these draws (note at line ~199);
+  // the captured rand_enter lets the port restore them and validate
+  // the ending holdrand matches.
+  { va: 0x00560084, name: 'fun_per_civ_tick',  args: 1, argNames: ['civSlot'],
+    captureRand: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: RNG — critical for task #49
