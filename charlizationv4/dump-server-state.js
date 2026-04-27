@@ -3168,6 +3168,40 @@ if (turns > 0) {
         }),
       };
 
+      // Rate-change reconciliation: find the LATEST RATE_CHANGED per civ
+      // in window. Force-set sci/tax/lux. Critical for civ 0 (barbarian)
+      // — the per-civ batch loop iterates civs 1..7, skipping civ 0
+      // entirely, so its RATE_CHANGED events never reach the reducer.
+      // Sniffer-observed civ-0 rates can shift even though the engine
+      // never grants barbarians a normal turn (some init paths rewrite
+      // them at game start). Match the observed end-state.
+      const latestRateByCiv = new Array(8).fill(null);
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'RATE_CHANGED' || ev.civ == null) continue;
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          const prior = latestRateByCiv[ev.civ];
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            latestRateByCiv[ev.civ] = ev;
+          }
+        }
+      }
+      gameState = {
+        ...gameState,
+        civs: gameState.civs.map((c, i) => {
+          if (!c) return c;
+          const ev = latestRateByCiv[i];
+          if (!ev) return c;
+          const newSci = Math.round((ev.sci ?? 0) / 10);
+          const newTax = Math.round((ev.tax ?? 0) / 10);
+          const newLux = Math.round((ev.lux ?? 0) / 10);
+          if (c.scienceRate === newSci && c.taxRate === newTax) return c;
+          return { ...c, scienceRate: newSci, taxRate: newTax,
+                   luxuryRate: newLux };
+        }),
+      };
+
       // Research-target reconciliation: find the LATEST RESEARCH_PICKED
       // for each civ in window. If v3's techBeingResearched doesn't
       // match the binary's pick, force-set it. This closes the gap
