@@ -3007,14 +3007,18 @@ if (turns > 0) {
           // Only accumulate for human civ — AI civs are handled by
           // GOLD_CHANGED replay.
           if (!((1 << ev.owner) & humanMaskTR)) continue;
-          // Skip "info-only" yields where the city's box didn't
-          // change (e.g. CITY_YIELD fired at founding records the
-          // city's potential yield but doesn't contribute to
-          // treasury). Identify these by foodBox == foodBoxFrom AND
-          // shieldBox == shieldBoxFrom.
-          const realDelta = (ev.foodBox !== ev.foodBoxFrom)
-            || (ev.shieldBox !== ev.shieldBoxFrom);
-          if (!realDelta) continue;
+          // Skip yields that don't represent a fresh yield tick:
+          //   1. "info-only" yields at founding (foodBox == foodBoxFrom
+          //      AND shieldBox == shieldBoxFrom — both unchanged)
+          //   2. "growth" yields (foodBox < foodBoxFrom — city grew
+          //      and food box reset; the actual tax/sci production
+          //      from this turn is captured in a SEPARATE follow-up
+          //      yield event a few ms later)
+          // Real yield ticks have either food increase (food grew but
+          // didn't reset) or shield increase (production accumulated).
+          const foodIncreased = ev.foodBox > ev.foodBoxFrom;
+          const shieldIncreased = ev.shieldBox > ev.shieldBoxFrom;
+          if (!foodIncreased && !shieldIncreased) continue;
           taxAccumByCiv[ev.owner] += (ev.taxOut ?? 0);
           sciAccumByCiv[ev.owner] += (ev.sciOut ?? 0);
           civHasYield[ev.owner] = true;
