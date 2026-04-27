@@ -1590,6 +1590,26 @@ if (turns > 0) {
       const nextFridaSlot = fridaByTurnCiv.get(`${currentTurn}:${nextActiveCiv}`);
       if (nextFridaSlot?.researchCost) {
         gameState = { ...gameState, researchCostGlobals: nextFridaSlot.researchCost.globals };
+      } else {
+        // Frida didn't capture fun_research_cost for (currentTurn,
+        // nextActiveCiv) — likely because the binary cached the value
+        // and didn't recompute this turn. Walk back through earlier
+        // turns to find the most recent capture for this civ; if found,
+        // extrapolate techCounter (binary increments by 1 per turn).
+        // Without this, calcResearchCostExact falls through to v3's
+        // deriveResearchCostGlobals which can compute a too-low cost
+        // and trigger spurious tech "discoveries" v3 then resets.
+        for (let backTurn = currentTurn - 1; backTurn >= 0; backTurn--) {
+          const slot = fridaByTurnCiv.get(`${backTurn}:${nextActiveCiv}`);
+          if (slot?.researchCost) {
+            const baseGlobals = slot.researchCost.globals;
+            const extrapTechCounter = (baseGlobals.techCounter ?? 0)
+              + (currentTurn - backTurn);
+            gameState = { ...gameState,
+              researchCostGlobals: { ...baseGlobals, techCounter: extrapTechCounter } };
+            break;
+          }
+        }
       }
 
       // Zero out movesLeft for this civ's units so END_TURN validation passes
