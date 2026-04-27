@@ -435,6 +435,12 @@ if (turns > 0) {
     gameState.rng.state = globalThis.__SNAPSHOT_RAND_SEED >>> 0;
     process.stderr.write(`[rng] Seeded v3 SeededRNG from snapshot rand_seed: 0x${gameState.rng.state.toString(16).padStart(8, '0')}\n`);
   }
+  // Begin counting v3's rand draws so we can compare to the binary's draw
+  // count (derived from holdrand stepping between consecutive snapshots).
+  if (gameState.rng != null) {
+    gameState.rng.callCount = 0;
+    if (process.env.RNG_TRACE || globalThis.__RNG_TRACE) gameState.rng.traceEnabled = true;
+  }
 
   // When loading from a snapshot, read the real next_unit_sequence_id
   // (DAT_00627fd8) from _MEM and seed v3's state counter. Without this,
@@ -3465,6 +3471,14 @@ if (turns > 0) {
   console.log = origLog;
   process.stderr.write(`[N=${turns}] END_TURN stats: ${JSON.stringify(endTurnStats)}\n`);
   process.stderr.write(`[N=${turns}] Final turn: ${post.turn?.number ?? post.turnsPassed}\n`);
+  if (post?.rng?.callCount != null) {
+    process.stderr.write(`[rng] v3 rand calls: ${post.rng.callCount}; final state: 0x${(post.rng.state>>>0).toString(16).padStart(8,'0')}\n`);
+  }
+  if (post?.rng?.trace) {
+    for (const t of post.rng.trace) {
+      process.stderr.write(`[rng-trace] state=0x${(t.state>>>0).toString(16).padStart(8,'0')} caller=${t.caller}\n`);
+    }
+  }
 }
 
 // For output, prefer the post-turn gameState if available; otherwise

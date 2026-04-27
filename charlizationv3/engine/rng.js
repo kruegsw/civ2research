@@ -37,6 +37,14 @@ export class SeededRNG {
    */
   next() {
     this.state = (Math.imul(this.state, 214013) + 2531011) >>> 0;
+    if (this.callCount != null) this.callCount++;
+    if (this.traceEnabled) {
+      const stack = (new Error()).stack;
+      const lines = stack ? stack.split('\n') : [];
+      // Skip the Error/next frames; first meaningful caller is index 3
+      const caller = (lines[3] || '').trim();
+      (this.trace ||= []).push({ state: this.state, caller });
+    }
     return (this.state >>> 16) & 0x7FFF;
   }
 
