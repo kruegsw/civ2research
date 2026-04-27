@@ -1672,39 +1672,13 @@ if (turns > 0) {
       // UNIT_MOVESPENT, UNIT_STATUS, UNIT_DAMAGE) handles the same
       // fields uid-keyed and stays correct under slot drift.
 
-      // ── Frida city-production injection (post-END_TURN) ──
-      // For each of this civ's cities, if the binary captured an
-      // ai_city_production_pick for (currentTurn, cityIdx), override
-      // city.production. The capture is a signed byte matching
-      // city+0x39's encoding (0..0x3F = unit, otherwise building/wonder
-      // via 256-byte). v3's parser stores production as
-      // {type, id} so we convert.
-      if (fridaProductionByTurnCity.size > 0 && gameState.cities
-          && !process.env.DISABLE_FRIDA_CITY_PRODUCTION_INJECTION) {
-        const newCities = gameState.cities.slice();
-        let prodInjections = 0;
-        for (let ci = 0; ci < newCities.length; ci++) {
-          const city = newCities[ci];
-          if (!city || city.owner !== civ) continue;
-          const cap = fridaProductionByTurnCity.get(`${currentTurn}:${ci}`);
-          if (!cap || cap.production == null) continue;
-          // Sentinel 99/0x63 = "no change"; skip.
-          if (cap.production === 99) continue;
-          const byte = cap.production & 0xFF;  // unsigned for encoding
-          let newProd;
-          if (byte <= 0x3F) {
-            newProd = { type: 'unit', id: byte };
-          } else {
-            const buildId = 256 - byte;
-            newProd = { type: buildId >= 39 ? 'wonder' : 'building', id: buildId };
-          }
-          newCities[ci] = { ...city, production: newProd };
-          prodInjections++;
-        }
-        if (prodInjections > 0) {
-          gameState = { ...gameState, cities: newCities };
-        }
-      }
+      // The Frida city-production injection (slot-keyed
+      // ai_city_production_pick override) was removed: net 0
+      // mismatches on game_20260427_104752 (180 turn-pairs) and
+      // -2 on game_20260425_205950 (118 turn-pairs). v3's own
+      // production targeting via SET_CITY_PRODUCTION events plus
+      // the __CITY_PROD_SET__ replay action handles this without
+      // the slot-keyed injection.
 
       // ── Frida capture injection (post-END_TURN) ──
       // Override civ.government when choose_government switched.
