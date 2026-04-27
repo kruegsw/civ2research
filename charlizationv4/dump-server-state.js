@@ -551,6 +551,10 @@ if (turns > 0) {
           // Precise: compare event time to the tagged-turn snapshot time.
           // If the event fired AFTER that snapshot was captured, the
           // event's effect wasn't in the snapshot — route to turn+1.
+          // (A small tolerance was tested but the .bin-write-vs-event-
+          // emission offset is variable [observed 7.5ms IN, 8.3ms OUT
+          // across two pairs] — no safe constant works. Sub-10ms gap
+          // pairs that need this fix are documented residual.)
           const snapT = snapshotTime.get(ev.turn);
           if (snapT != null && ev.time_ms != null && ev.time_ms > snapT) {
             routedTurn = ev.turn + 1;
@@ -3725,9 +3729,14 @@ gameState.cities = (citiesSource || []).map((c, i) => ({
 // ── Wonders: 28 × i16 city IDs. parser exposes as `wonders` array. ──
 const wondersRaw = gs.wonders ?? gs.wonderCityIds ?? [];
 gameState.wonders = wondersRaw.slice(0, 28).map(w => {
-  // parser may return objects {cityId, status}; normalize to raw city-id int.
+  // parser returns { cityIndex, destroyed } objects (engine/parser.js:196).
+  // Normalize: not-built and destroyed both serialize as -1 to match
+  // the sniffer's empty-slot encoding; otherwise emit the city index.
   if (typeof w === 'number') return w;
-  if (w && typeof w === 'object') return w.cityId ?? w.raw ?? -1;
+  if (w && typeof w === 'object') {
+    if (w.destroyed) return -1;
+    return w.cityIndex ?? w.cityId ?? w.raw ?? -1;
+  }
   return -1;
 });
 
