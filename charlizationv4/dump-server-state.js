@@ -1502,13 +1502,20 @@ if (turns > 0) {
               };
               gameState = placeCityAtSlot(gameState, action.cityIdx);
               // Cities reveal a radius-2 area for the founding civ.
-              // BUILD_CITY reducer does this; the synthetic must too,
-              // else the founding civ loses 5-9 newly-visible tiles
-              // → fow-count divergence on the founding turn.
+              // Match binary create_city @ 0x43F8B0 line 5671:
+              // only reveal radius-2 spiral when this is the founding
+              // civ's FIRST city. Subsequent cities don't trigger
+              // spiral reveal in normal play.
               try {
-                updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
-                  action.owner, Math.floor(action.x / 2), action.y,
-                  mapBase.wraps, 2);
+                const _gxC = Math.floor(action.x / 2);
+                const _gyC = action.y;
+                const ownerCount = (gameState.cities || []).filter(c =>
+                  c && c.owner === action.owner && c.size > 0
+                  && !(c.gx === _gxC && c.gy === _gyC)).length;
+                if (ownerCount === 0) {
+                  updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                    action.owner, _gxC, _gyC, mapBase.wraps, 2);
+                }
               } catch (_) { /* swallow */ }
               continue;
             }
@@ -1986,12 +1993,19 @@ if (turns > 0) {
             cities: [...(gameState.cities || []), newCity],
           };
           gameState = placeCityAtSlot(gameState, action.cityIdx);
-          // Cities reveal radius-2 area to the founding civ. Without
-          // this, fow-count drifts ~5/founding for that civ.
+          // Match binary create_city @ 0x43F8B0 line 5671 first-city
+          // gate: only reveal radius-2 spiral when this is the founding
+          // civ's FIRST city.
           try {
-            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
-              action.owner, Math.floor(action.x / 2), action.y,
-              mapBase.wraps, 2);
+            const _gxC2 = Math.floor(action.x / 2);
+            const _gyC2 = action.y;
+            const ownerCount = (gameState.cities || []).filter(c =>
+              c && c.owner === action.owner && c.size > 0
+              && !(c.gx === _gxC2 && c.gy === _gyC2)).length;
+            if (ownerCount === 0) {
+              updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                action.owner, _gxC2, _gyC2, mapBase.wraps, 2);
+            }
           } catch (_) { /* swallow */ }
           continue;
         }
@@ -2275,10 +2289,19 @@ if (turns > 0) {
         if (tx < 0 || ty < 0) continue;
         // Skip if unit is already dead (UNIT_KILLED fired in pre-pre-
         // pass). Otherwise we'd revive a dead unit at the move's
-        // destination.
+        // destination. BUT still apply the visibility reveal — the
+        // unit walked there before dying, so the tiles were seen.
         const targetUnit = gameState.units.find(u => u &&
           (u.id === ev.uid || u.sequenceId === ev.uid));
-        if (targetUnit && targetUnit.gx < 0) continue;
+        if (targetUnit && targetUnit.gx < 0) {
+          if (ev.owner != null && mapBase?.tileData) {
+            try {
+              updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh,
+                ev.owner, Math.floor(tx / 2), ty, mapBase.wraps);
+            } catch (_) { /* swallow */ }
+          }
+          continue;
+        }
         // UNIT_MOVED events for AI civs (civ 4 etc. processing after
         // the cycle wrap) include an ongoing goto — reflected in the
         // snapshot's gotoX/gotoY fields matching the destination.

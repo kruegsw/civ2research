@@ -162,10 +162,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
-      // Binary FUN_0043f8b0 lines 5640-5643: ALWAYS updates visibility after founding.
-      // Cities reveal a radius-2 area for the founding civ.
-      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, unit.owner,
-        newCity.gx, newCity.gy, mapBase.wraps, 2);
+      // Binary create_city @ 0x43F8B0 line 5671: only reveal the
+      // radius-2 spiral when this is the founding civ's FIRST city
+      // (`if (civ.cityCount == 1)` check, where cityCount was just
+      // incremented). Subsequent cities don't trigger spiral reveal —
+      // their city tile remains visible to the founding civ via the
+      // settler's prior movement. Other civs only see the city via
+      // their own units, not the founding event itself.
+      const ownerCityCountBefore = prev.cities.filter(c =>
+        c && c.owner === unit.owner && c.size > 0).length;
+      if (ownerCityCountBefore === 0) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, unit.owner,
+          newCity.gx, newCity.gy, mapBase.wraps, 2);
+      }
 
       // Notify client
       state.cityFounded = { name: newCity.name, cityIndex: newCityIndex, civSlot };
