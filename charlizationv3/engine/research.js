@@ -102,20 +102,50 @@ export function getAvailableResearch(gameState, civSlot) {
 function deriveResearchCostGlobals(gameState, civSlot) {
   const civ = gameState.civs?.[civSlot] ?? {};
   // Leader slot: binary FUN_004c2788 indexes civ struct via DAT_00655c20,
-  // which init_call_chain.md describes as "rank of best human civ" but
-  // is used as a civ-slot index in the cost calc (the binary's apparent
-  // quirk). Frida traces consistently capture leaderSlot = highest alive
-  // civ slot in the game (e.g. 7 for game_20260425_222957 with civ 7
-  // alive). Match that heuristic: walk 7..1 and pick first alive.
-  // This produces leaderAcq/Future matching what the binary's cost calc
-  // actually reads, even when the v3 max-acquiredTechCount picker
-  // (which was wrong) would pick a different civ.
-  let leaderSlot = 0;
+  // which is computed by block_00480000.c:1010-1089 as a power-rank pass:
+  //   per-civ score = acquiredTechCount*3 + cityCount*8 + (treasury>>5)
+  //                 + building_modifier (skipped here as a first approx)
+  //   sort civs descending by score; assign rank values 7..0 (top→bot).
+  //   DAT_00655c22[civ]   = 8 - rank_position (rank value)
+  //   DAT_00655c2a[rank]  = civ slot at that rank
+  //   DAT_00655c20        = highest rank value where civ is human
+  // The cost calc then dereferences civs[DAT_00655c20] (binary's quirk:
+  // rank value used as a civ-slot index — happens to alias the actual
+  // leader slot when the human is the top-ranked civ).
   const civs = gameState.civs || [];
   const alive = gameState.civsAlive ?? 0xFF;
-  for (let i = 7; i >= 1; i--) {
-    if (alive & (1 << i)) { leaderSlot = i; break; }
+  const humanMask = gameState.humanPlayers ?? 0;
+  // Build (slot, score) for alive civs 1..7. Civ 0 = barbarian, skipped
+  // by the binary's score loop (block_00480000.c:1008).
+  const scored = [];
+  for (let i = 1; i < 8; i++) {
+    if (!(alive & (1 << i))) continue;
+    const c = civs[i] || {};
+    const acq = c.acquiredTechCount ?? 0;
+    const cityCount = c.cityCount ?? (Array.isArray(gameState.cities)
+      ? gameState.cities.filter(ct => ct && ct.owner === i && !ct.destroyed).length
+      : 0);
+    const treasury = c.treasury ?? 0;
+    const score = acq * 3 + cityCount * 8 + (treasury >> 5);
+    scored.push({ slot: i, score });
   }
+  // Sort descending by score; ties keep stable slot order (lower slot first).
+  scored.sort((a, b) => (b.score - a.score) || (a.slot - b.slot));
+  // Assign rank values 7..0 from top to bottom (binary uses 8 - position).
+  // Build reverse map and find best human rank.
+  const civAtRank = new Array(8).fill(0);
+  let bestHumanRank = 0;
+  for (let pos = 0; pos < scored.length; pos++) {
+    const rankVal = 7 - pos;  // top position → 7
+    if (rankVal < 0) break;
+    const slot = scored[pos].slot;
+    civAtRank[rankVal] = slot;
+    if (humanMask & (1 << slot)) {
+      if (rankVal > bestHumanRank) bestHumanRank = rankVal;
+    }
+  }
+  // Binary quirk: cost calc uses the rank value as a slot index.
+  let leaderSlot = bestHumanRank;
   const leader = civs[leaderSlot] ?? {};
   // Count tech entries with bA != -2 (unresearchable marker).
   let numDefinedTechs = 0;
