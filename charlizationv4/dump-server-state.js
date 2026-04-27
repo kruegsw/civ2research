@@ -785,6 +785,12 @@ if (turns > 0) {
         // hut/gift, or AI re-evaluates priorities). v3 must mirror the
         // clear — otherwise its techBeingResearched stays stale and
         // research progress accumulates on a phantom target.
+        //
+        // Try the standard SET_RESEARCH first (preserves rules.js
+        // validation for the common case where v3 has the same prereqs
+        // as the binary). If v3's civTechs diverges from the binary's,
+        // SET_RESEARCH silently no-ops; the harness then force-sets via
+        // __SET_RESEARCH__ at the post-batch reconciliation pass.
         if (ev.techId == null) return [];
         return [{ type: 'SET_RESEARCH', advanceId: ev.techId }];
       }
@@ -1221,6 +1227,20 @@ if (turns > 0) {
                   return { ...c,
                     stateFlags: action.set ? (sf | 0x08) : (sf & ~0x08) };
                 }),
+              };
+              continue;
+            }
+            if (action.type === '__SET_RESEARCH__') {
+              // Force-set techBeingResearched, bypassing rules.js prereq
+              // check. Binary picked this tech => binary thinks the civ
+              // has prereqs; v3's civTechs may legitimately diverge in
+              // replay mode (sniffer can't observe every tech grant),
+              // and the standard SET_RESEARCH path silently no-ops on
+              // validation failure, freezing progress at 255.
+              gameState = {
+                ...gameState,
+                civs: gameState.civs.map((c, i) =>
+                  i === action.civ ? { ...c, techBeingResearched: action.advanceId } : c),
               };
               continue;
             }
@@ -3094,6 +3114,43 @@ if (turns > 0) {
           return upd;
         }),
       };
+
+      // Research-target reconciliation: find the LATEST RESEARCH_PICKED
+      // for each civ in window. If v3's techBeingResearched doesn't
+      // match the binary's pick, force-set it. This closes the gap
+      // when SET_RESEARCH silently no-ops on prereq-validation failure
+      // (v3's civTechs may legitimately diverge from the binary's in
+      // long replays — sniffer's TECH_DISCOVERED replay only covers
+      // external grants).
+      const latestResearchPickByCiv = new Array(8).fill(null);
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'RESEARCH_PICKED' || ev.civ == null) continue;
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          const prior = latestResearchPickByCiv[ev.civ];
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            latestResearchPickByCiv[ev.civ] = ev;
+          }
+        }
+      }
+      let researchPickFixed = 0;
+      gameState = {
+        ...gameState,
+        civs: gameState.civs.map((c, i) => {
+          if (!c) return c;
+          const ev = latestResearchPickByCiv[i];
+          if (!ev) return c;
+          const targetTech = ev.techId;
+          if (targetTech == null) return c;
+          if ((c.techBeingResearched ?? 0xFF) === targetTech) return c;
+          researchPickFixed++;
+          return { ...c, techBeingResearched: targetTech };
+        }),
+      };
+      if (researchPickFixed > 0) {
+        process.stderr.write(`[replay] research-pick reconcile: ${researchPickFixed} civs force-synced to sniffer's latest pick\n`);
+      }
     }
   }
 
