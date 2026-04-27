@@ -3069,15 +3069,22 @@ if (turns > 0) {
           const inputProgress = inputC.researchProgress ?? c.researchProgress ?? 0;
           const isHumanCiv = !!((1 << i) & humanMaskTR);
           const upd = { ...c };
-          // Treasury override (human civ only — AI handled by replay):
+          // Treasury override:
           //   - If GOLD_CHANGED in window: use latest .to value
-          //   - Else: keep input (no change captured by sniffer)
-          if (isHumanCiv) {
-            if (latestGoldByCiv[i]) {
-              upd.treasury = latestGoldByCiv[i].to;
-            } else {
-              upd.treasury = inputTreasury;
-            }
+          //     (works for both AI and human civs)
+          //   - Else, for civs where v3 applied tax/maintenance during
+          //     end-turn (AI or human): keep input (no net change
+          //     captured by sniffer = binary's tax/maintenance balanced)
+          if (latestGoldByCiv[i]) {
+            upd.treasury = latestGoldByCiv[i].to;
+          } else if (isHumanCiv || civHasYield[i]) {
+            // No GOLD_CHANGED in window. For human civ, this happens
+            // when tax production is 0 (no cities with trade); use
+            // input. For AI civs, this happens when binary's net
+            // treasury change was 0 (tax balanced by maintenance);
+            // also use input. v3's calc may add tax without matching
+            // maintenance.
+            upd.treasury = inputTreasury;
           }
           // Research progress override (skip discovery cases —
           // v3's overflow handling is more often correct than 0):
