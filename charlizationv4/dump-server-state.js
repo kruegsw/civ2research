@@ -1044,9 +1044,11 @@ if (turns > 0) {
         // civs, the sniffer-captured GOLD_CHANGED at routedTurn ==
         // finalSimTurn is the authoritative end-state. Replay it as
         // a TREASURY_SET, overriding v3's tax-only calc.
+        // Env gate: DISABLE_AI_GOLD_REPLAY=1 disables for hardness audit.
         const humanMaskGC = parsed.gameState?.humanPlayers ?? 0;
         const isAICivGC = !((1 << ev.civ) & humanMaskGC);
-        if (isAICivGC && ev._replayGold === 'ai-end-turn') {
+        if (!process.env.DISABLE_AI_GOLD_REPLAY
+            && isAICivGC && ev._replayGold === 'ai-end-turn') {
           return [{ type: '__TREASURY_SET__', civ: ev.civ, value: ev.to,
                     reason: 'ai-end-turn' }];
         }
@@ -1588,9 +1590,10 @@ if (turns > 0) {
       }
       const fridaSlot = fridaByTurnCiv.get(`${currentTurn}:${civ}`);
       const nextFridaSlot = fridaByTurnCiv.get(`${currentTurn}:${nextActiveCiv}`);
-      if (nextFridaSlot?.researchCost) {
+      const _disableFridaCost = !!process.env.DISABLE_FRIDA_RESEARCH_COST;
+      if (!_disableFridaCost && nextFridaSlot?.researchCost) {
         gameState = { ...gameState, researchCostGlobals: nextFridaSlot.researchCost.globals };
-      } else {
+      } else if (!_disableFridaCost) {
         // Frida didn't capture fun_research_cost for (currentTurn,
         // nextActiveCiv) — likely because the binary cached the value
         // and didn't recompute this turn. Walk back through earlier
@@ -2910,6 +2913,9 @@ if (turns > 0) {
     const sciAccum = new Array(8).fill(0);
     const taxAccum = new Array(8).fill(0);
     const humanMaskCY = parsed.gameState?.humanPlayers ?? 0;
+    // Env gate: DISABLE_AI_CITY_YIELD_REPLAY=1 disables AI-city
+    // CITY_YIELD override for hardness audit (new-city pass still runs).
+    const disableAICY = !!process.env.DISABLE_AI_CITY_YIELD_REPLAY;
     gameState = {
       ...gameState,
       cities: gameState.cities.map((c, i) => {
@@ -2921,7 +2927,7 @@ if (turns > 0) {
         // does rush-buy and other gold/shield activity v3 doesn't
         // simulate, so the binary's authoritative shieldBox is more
         // reliable than v3's "current + shieldProd" estimate).
-        if (!isNewCity && !isAICity) return c;
+        if (!isNewCity && (!isAICity || disableAICY)) return c;
         const ev = latestYieldByCityIdx.get(i);
         if (!ev) return c;
         applied++;
@@ -3438,13 +3444,15 @@ const gameState = {
     // may overshoot the snapshot value — accepts as a residual gap.
     const finalSimTurn = post.turn?.number ?? 0;
     let latestActive = null;
-    for (const [, batch] of replayEventsByTurnCiv) {
-      for (const ev of batch) {
-        if (ev.event !== 'ACTIVE_UNIT_CHANGED') continue;
-        const rt = ev._routedTurn ?? ev.turn ?? 0;
-        if (rt > finalSimTurn) continue;
-        if (!latestActive || (ev.time_ms ?? 0) > (latestActive.time_ms ?? 0)) {
-          latestActive = ev;
+    if (!process.env.DISABLE_ACTIVE_UNIT_REPLAY) {
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'ACTIVE_UNIT_CHANGED') continue;
+          const rt = ev._routedTurn ?? ev.turn ?? 0;
+          if (rt > finalSimTurn) continue;
+          if (!latestActive || (ev.time_ms ?? 0) > (latestActive.time_ms ?? 0)) {
+            latestActive = ev;
+          }
         }
       }
     }
