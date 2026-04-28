@@ -1,51 +1,57 @@
 // Validate v3's combat resolver against the binary's RNG consumption.
 //
 // FUN_00580341(param_1=attackerSlot, param_2=direction, param_3=barbHalveFlag)
-//   - param_1: slot of the unit moving into combat (the attacker).
-//   - param_2: direction index (0..7) — used as offset into the binary's
-//     DAT_00628350 (dx) and DAT_00628360 (dy) tables to compute the
-//     target tile (target = attacker.pos + delta[direction]).
-//   - param_3: barbarian half-attack flag.
+//   - param_1 (Frida arg 0): slot of the attacker unit.
+//   - param_2 (Frida arg 1): direction index 0..7 — offsets into the
+//     binary's DAT_00628350 (dx) / DAT_00628360 (dy) tables.
+//   - param_3 (not captured): barbarian half-attack flag.
 //
-// Frida only captures args[0..1] under the names unitIdx/killerIdx,
-// but the names are misleading — they are (attackerSlot, direction).
+// The defender lives at attacker.pos + delta[direction]. We don't have
+// the direction tables extracted, so we instead scan all 8 neighbors
+// of the attacker and pick the highest-HP enemy. This is correct when
+// only one enemy is adjacent (the common case for clean combats).
 //
 // Strategy:
-//   1. Read attacker from snapshot units[args[0]].
-//   2. Scan all 8 neighbors of attacker.(x,y); pick best enemy defender
-//      (highest current HP), skipping the direction parsing entirely.
-//      This works for unambiguous combats (one enemy adjacent); it
-//      misidentifies the defender when the attacker has multiple enemy
-//      neighbors. For those, full direction-table extraction is needed.
-//   3. Read terrain (and city/walls if present) at defender's tile.
-//   4. Seed SeededRNG with rand_enter and run resolveCombat() with
-//      opts.useStateRng so every rand draw advances the seed.
-//   5. Compare draw count to LCG step count from rand_enter→rand_exit;
-//      compare v3's final rng.state to rand_exit.
+//   1. For each combat, infer turn N via civ_turn_driver(civSlot=0)
+//      call counts up to the combat time.
+//   2. Try snapshots [N, N-1, N+1, N-2, N+2] and pick the first one
+//      where (a) units[attackerSlot] is non-empty and (b) at least one
+//      enemy unit sits adjacent to the attacker.
+//   3. Read defender's tile terrain + river + fortress from the tiles
+//      region.
+//   4. Read defender's city (if any) — extract walls, palace, coastal
+//      fortress, SAM Battery, SDI Defense from the building bitmap.
+//   5. Read difficulty from the globals region.
+//   6. Read the wonders region; thread Great Wall ownership into opts
+//      (defenderHasGreatWall / attackerHasGreatWall).
+//   7. Seed SeededRNG with rand_enter, run resolveCombat() with
+//      opts.useStateRng so every rand draw advances the seed and
+//      bumps callCount. Compare draw count + final state to binary's.
 //
 // Usage: node validate-combat-rng.mjs <session-dir>
 
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { SeededRNG } from '../charlizationv3/engine/rng.js';
-import { resolveCombat } from '../charlizationv3/engine/combat.js';
-import { UNIT_HP } from '../charlizationv3/engine/defs.js';
+import { resolveCombat, calcUnitDefenseStrength } from '../charlizationv3/engine/combat.js';
+import { UNIT_HP, DIFFICULTY_KEYS } from '../charlizationv3/engine/defs.js';
 
 const sessionDir = process.argv[2];
 if (!sessionDir) {
   console.error('Usage: node validate-combat-rng.mjs <session-dir>');
   process.exit(1);
 }
+const verbose = process.argv.includes('--verbose');
 
 // ── LCG step counter ────────────────────────────────────────────────
 
-const A = 0x343FD;
-const C = 0x269EC3;
+const LCG_A = 0x343FD;
+const LCG_C = 0x269EC3;
 function stepCount(start, target, max = 500) {
   let s = start >>> 0;
   for (let i = 0; i <= max; i++) {
     if (s === (target >>> 0)) return i;
-    s = (Math.imul(s, A) + C) >>> 0;
+    s = (Math.imul(s, LCG_A) + LCG_C) >>> 0;
   }
   return -1;
 }
@@ -118,7 +124,6 @@ function parseSnapshot(path) {
 
 const UNIT_STRIDE = 0x20;
 const CITY_STRIDE = 0x58;
-const TILE_STRIDE = 6; // covers two tiles (x and x+1)
 
 function readUnit(unitsRegion, slotIdx) {
   const off = slotIdx * UNIT_STRIDE;
@@ -158,53 +163,114 @@ function readCityAt(citiesRegion, x, y) {
     const cx = dv.getInt16(0x00, true);
     const cy = dv.getInt16(0x02, true);
     if (cx === x && cy === y) {
+      // Buildings bitmap at offset 0x30 (uint32). Per binary
+      // FUN_004e78ce: hasBuilding(cityIdx, id) = (improvements_lo &
+      // (1 << (id & 0x1f))) != 0. Bits 0-31 cover building IDs 1-31.
+      // Buildings 32-38 live elsewhere (not needed for combat-relevant
+      // bonuses: walls/palace/coastal/SAM/SDI all fall in 1-28).
+      const improvementsLo = dv.getUint32(0x30, true);
+      const buildings = new Set();
+      for (let b = 1; b <= 31; b++) {
+        if (improvementsLo & (1 << b)) buildings.add(b);
+      }
       return {
         idx: i, x: cx, y: cy,
         owner: dv.getUint8(0x08),
         size: dv.getUint8(0x09),
-        // buildings bitmap occupies bytes 0x06-0x07 + 0x10-0x13 — full
-        // mapping is outside this validator's scope; default empty Set
-        // will skip walls/coastal/SAM/SDI bonuses for now.
+        buildings,
       };
     }
   }
   return null;
 }
 
-function readTileTerrain(tilesRegion, mapDimsRegion, x, y) {
+function readTileBytes(tilesRegion, mapDimsRegion, x, y) {
   const dvMap = new DataView(mapDimsRegion.bytes.buffer,
     mapDimsRegion.bytes.byteOffset, mapDimsRegion.bytes.length);
   const mw = dvMap.getInt16(0, true);
   const mh = dvMap.getInt16(2, true);
   if (x < 0 || x >= 2 * mw || y < 0 || y >= mh) return null;
-  // Same parity check: valid iso tiles have (x+y)%2 == 0
   if ((x + y) % 2 !== 0) return null;
   const off = ((mw & ~1) * y + (x & ~1)) * 3;
   if (off < 0 || off + 6 > tilesRegion.bytes.length) return null;
   const b0 = tilesRegion.bytes[off];
+  const b1 = tilesRegion.bytes[off + 1];
   return {
     terrain: b0 & 0x0F,
     river: !!(b0 & 0x80),
-    improvements: tilesRegion.bytes[off + 1],
+    fortress: !!(b1 & 0x40),
   };
 }
 
-// ── Iso-grid 8-neighbor helper (full-width x coords) ────────────────
-// In Civ2's full-iso coord space, a tile (x,y) has 8 neighbors at:
-//   (0, ±2), (±2, 0)  — orthogonal
-//   (±1, ±1)          — diagonal
-const NEIGHBOR_DELTAS = [
-  [ 0, -2], [ 1, -1], [ 2,  0], [ 1,  1],
-  [ 0,  2], [-1,  1], [-2,  0], [-1, -1],
+function readDifficulty(globalsRegion) {
+  // Difficulty byte at 0x655B08 (per memory map). Globals region starts
+  // at 0x655AF0, so offset = 0x18.
+  if (!globalsRegion || globalsRegion.bytes.length < 0x19) return 'deity';
+  const idx = globalsRegion.bytes[0x18];
+  return DIFFICULTY_KEYS[idx] ?? 'deity';
+}
+
+function readWonderOwner(wondersRegion, citiesRegion, wonderId) {
+  if (!wondersRegion || wonderId < 0 || wonderId >= 28) return null;
+  const dv = new DataView(wondersRegion.bytes.buffer,
+    wondersRegion.bytes.byteOffset, wondersRegion.bytes.length);
+  const raw = dv.getUint16(wonderId * 2, true);
+  if (raw === 0xFFFF || raw === 0xFFEF) return null;
+  // raw = city index; resolve to owner
+  const cityOff = raw * CITY_STRIDE;
+  if (cityOff + CITY_STRIDE > citiesRegion.bytes.length) return null;
+  const cdv = new DataView(citiesRegion.bytes.buffer,
+    citiesRegion.bytes.byteOffset + cityOff, CITY_STRIDE);
+  return cdv.getUint8(0x08); // owner
+}
+
+// ── Direction-delta table ───────────────────────────────────────────
+// Derived empirically from confirmed-match combats (game_20260427_191137):
+//   dir 1 = (2,0)   E    [idx 3, 8]
+//   dir 2 = (1,1)   SE   [idx 6]
+//   dir 4 = (-1,1)  SW   [idx 0]
+//   dir 5 = (-2,0)  W    [idx 1, 5]
+//   dir 6 = (-1,-1) NW   [idx 2, 7, 11]
+// Filling in the rotational pattern (45° CCW per step):
+//   0 NE, 1 E, 2 SE, 3 S, 4 SW, 5 W, 6 NW, 7 N.
+// Matches binary's DAT_00628350/DAT_00628360 dx/dy layout.
+const DIR_DELTAS = [
+  [ 1, -1], [ 2,  0], [ 1,  1], [ 0,  2],
+  [-1,  1], [-2,  0], [-1, -1], [ 0, -2],
 ];
 
-// ── Main ────────────────────────────────────────────────────────────
+function findDefenderByDirection(allUnits, attacker, direction, ctx) {
+  const delta = DIR_DELTAS[direction];
+  if (!delta) return null;
+  const tx = attacker.x + delta[0], ty = attacker.y + delta[1];
+  // Mimic calc_stack_best_defender: score = defense × hp_ratio, pick
+  // max. Includes fortified, fortress, walls, veteran, anti-air, etc.
+  let best = null;
+  let bestScore = -1;
+  for (const u of allUnits) {
+    if (u.x !== tx || u.y !== ty) continue;
+    if (u.owner === attacker.owner) continue;
+    const candidate = {
+      type: u.type, owner: u.owner,
+      veteran: !!(u.statusFlags & 0x2000),
+      orders: u.order === 2 ? 'fortified' : undefined,
+      movesRemain: u.damageTaken,
+    };
+    const def = calcUnitDefenseStrength(
+      candidate, ctx.defTerrain, ctx.defInCity, ctx.defCityHasWalls,
+      ctx.defHasFortress, ctx.defOnRiver, ctx.defCityBuildings,
+      attacker.type,
+    );
+    const maxHp = (UNIT_HP[u.type] || 1) * 10;
+    const hp = maxHp - u.damageTaken;
+    if (hp <= 0) continue;
+    const score = def * hp;
+    if (score > bestScore) { best = u; bestScore = score; }
+  }
+  return best;
+}
 
-const resolved = combatPairs.filter(p => p.rand_enter !== p.rand_exit);
-console.log(`# ${combatPairs.length} pairs (${resolved.length} with rand draws)`);
-console.log('');
-console.log('idx | turn | atkSl | dir | bin | v3  | match | notes');
-console.log('----+------+-------+-----+-----+-----+-------+------');
+// ── Multi-snapshot picker ───────────────────────────────────────────
 
 const snapCache = new Map();
 function loadSnap(turnN) {
@@ -217,55 +283,89 @@ function loadSnap(turnN) {
   return regions;
 }
 
+function buildDefenderContext(regions, targetX, targetY) {
+  const tile = readTileBytes(regions.get('tiles'), regions.get('map_dims'),
+    targetX, targetY);
+  const citiesRegion = regions.get('cities');
+  const city = citiesRegion ? readCityAt(citiesRegion, targetX, targetY) : null;
+  return {
+    defTerrain: tile?.terrain ?? 1,
+    defOnRiver: !!tile?.river,
+    defHasFortress: !!tile?.fortress,
+    defInCity: !!city,
+    defCityHasWalls: !!city?.buildings.has(8),
+    defCityHasPalace: !!city?.buildings.has(1),
+    defCityBuildings: city?.buildings ?? null,
+    defCitySize: city?.size ?? 0,
+    city,
+  };
+}
+
+function pickSnapshot(combat) {
+  const baseTurn = turnAtTime(combat.time_ms);
+  if (baseTurn < 0) return null;
+  const tries = [baseTurn];
+  for (let d = 1; d <= 5; d++) tries.push(baseTurn - d, baseTurn + d);
+  for (const t of tries) {
+    if (t < 0) continue;
+    const regions = loadSnap(t);
+    if (!regions) continue;
+    const unitsRegion = regions.get('units');
+    if (!unitsRegion) continue;
+    const att = readUnit(unitsRegion, combat.attackerSlot);
+    if (!att) continue;
+    const delta = DIR_DELTAS[combat.direction];
+    if (!delta) continue;
+    const tx = att.x + delta[0], ty = att.y + delta[1];
+    const ctx = buildDefenderContext(regions, tx, ty);
+    const allUnits = readAllUnits(unitsRegion);
+    const def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+    if (def) return { turn: t, regions, attacker: att, defender: def, ctx };
+  }
+  return null;
+}
+
+// ── Main ────────────────────────────────────────────────────────────
+
+const resolved = combatPairs.filter(p => p.rand_enter !== p.rand_exit);
+console.log(`# ${combatPairs.length} pairs (${resolved.length} with rand draws)`);
+console.log('');
+console.log('idx | turn | atkSl | dir | bin | v3  | match | notes');
+console.log('----+------+-------+-----+-----+-----+-------+------');
+
 let okDraws = 0, okExit = 0, okBoth = 0;
-let total = 0, noSnap = 0, noAtk = 0, noDef = 0, errors = 0;
+let total = 0, noMatch = 0, errors = 0;
+
+// Default human-civ bitmask. The current sniffer/Frida session
+// represents a single-player game with the user as the American (civ 1);
+// at deity this matters for the barbarian attack scaling formula.
+// TODO: extract from globals/civ flags rather than hardcode.
+const HUMAN_PLAYERS_MASK = 0x02;
 
 for (let i = 0; i < resolved.length; i++) {
   const p = resolved[i];
   total++;
-  const turn = turnAtTime(p.time_ms);
   const binDraws = stepCount(p.rand_enter, p.rand_exit);
-  const regions = turn >= 0 ? loadSnap(turn) : null;
-  const fmtRow = (notes) => ` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ` +
-    `${String(p.attackerSlot).padStart(5)} | ${String(p.direction).padStart(3)} | ` +
-    `${String(binDraws).padStart(3)} | ${notes}`;
-  if (!regions) { noSnap++; console.log(fmtRow('-   |       | (no snap)')); continue; }
-  const unitsRegion = regions.get('units');
+  const picked = pickSnapshot(p);
+  if (!picked) {
+    noMatch++;
+    console.log(` ${String(i).padStart(2)} | -    | ${String(p.attackerSlot).padStart(5)} | ` +
+      `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | -   |       | ` +
+      `(no snapshot has attacker + adj enemy)`);
+    continue;
+  }
+  const { turn, regions, attacker: att, defender: def, ctx } = picked;
+  const wondersRegion = regions.get('wonders');
+  const globalsRegion = regions.get('globals');
   const citiesRegion = regions.get('cities');
-  const tilesRegion = regions.get('tiles');
-  const mapDimsRegion = regions.get('map_dims');
-  if (!unitsRegion || !tilesRegion || !mapDimsRegion) {
-    noSnap++; console.log(fmtRow('-   |       | (snap regions missing)')); continue;
-  }
-  const att = readUnit(unitsRegion, p.attackerSlot);
-  if (!att) { noAtk++; console.log(fmtRow('-   |       | (attacker slot empty)')); continue; }
-  const allUnits = readAllUnits(unitsRegion);
-  // Find best enemy defender among the 8 neighbors.
-  let def = null;
-  for (const [dx, dy] of NEIGHBOR_DELTAS) {
-    const nx = att.x + dx, ny = att.y + dy;
-    const candidates = allUnits.filter(u =>
-      u.x === nx && u.y === ny && u.owner !== att.owner);
-    if (!candidates.length) continue;
-    // Pick highest current-HP defender.
-    candidates.sort((a, b) => {
-      const aMax = (UNIT_HP[a.type] || 1) * 10;
-      const bMax = (UNIT_HP[b.type] || 1) * 10;
-      return (bMax - b.damageTaken) - (aMax - a.damageTaken);
-    });
-    const best = candidates[0];
-    if (!def || ((UNIT_HP[best.type] || 1) * 10 - best.damageTaken) >
-                ((UNIT_HP[def.type] || 1) * 10 - def.damageTaken)) {
-      def = best;
-    }
-  }
-  if (!def) { noDef++; console.log(fmtRow('-   |       | (no enemy adjacent)')); continue; }
+  const { defTerrain, defOnRiver, defHasFortress, defInCity,
+          defCityHasWalls, defCityHasPalace, defCityBuildings, defCitySize } = ctx;
+  const difficulty = readDifficulty(globalsRegion);
 
-  const tile = readTileTerrain(tilesRegion, mapDimsRegion, def.x, def.y);
-  const defTerrain = tile ? tile.terrain : 1;
-  const defOnRiver = tile ? tile.river : false;
-  const city = citiesRegion ? readCityAt(citiesRegion, def.x, def.y) : null;
-  const defInCity = !!city;
+  // Great Wall = wonder 6
+  const greatWallOwner = readWonderOwner(wondersRegion, citiesRegion, 6);
+  const defenderHasGreatWall = greatWallOwner === def.owner;
+  const attackerHasGreatWall = greatWallOwner === att.owner;
 
   let v3Draws, v3State;
   try {
@@ -284,17 +384,24 @@ for (let i = 0; i < resolved.length; i++) {
     };
     resolveCombat(
       attacker, defender,
-      defTerrain, defInCity,
-      /*defCityHasWalls*/ false, /*defHasFortress*/ false, defOnRiver,
-      /*defCityBuildings*/ null, /*extraSeed*/ 0,
-      'deity', /*atkMovesLeft*/ null,
-      { useStateRng: rng },
+      defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
+      defCityBuildings, /*extraSeed*/ 0,
+      difficulty, /*atkMovesLeft*/ null,
+      {
+        useStateRng: rng,
+        defenderHasGreatWall,
+        attackerHasGreatWall,
+        defCityHasPalace,
+        defCitySize,
+        humanPlayers: HUMAN_PLAYERS_MASK,
+      },
     );
     v3Draws = rng.callCount;
     v3State = rng.state;
   } catch (e) {
     errors++;
-    console.log(fmtRow(`ERR | ${e.message}`));
+    console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ${String(p.attackerSlot).padStart(5)} | ` +
+      `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | ERR | ${e.message}`);
     continue;
   }
   const drawsMatch = v3Draws === binDraws;
@@ -303,12 +410,22 @@ for (let i = 0; i < resolved.length; i++) {
   if (exitMatch) okExit++;
   if (drawsMatch && exitMatch) okBoth++;
   const matchTag = drawsMatch && exitMatch ? 'OK    ' : drawsMatch ? 'draws ' : 'no    ';
-  const notes = `att=t${att.type}/o${att.owner}${att.veteran ? '/V' : ''}/d${att.damageTaken} (${att.x},${att.y}) ` +
-    `→ def=t${def.type}/o${def.owner}${def.veteran ? '/V' : ''}/d${def.damageTaken} (${def.x},${def.y}) ` +
-    `terrain=${defTerrain}${defOnRiver ? ',river' : ''}${defInCity ? ',city' : ''}`;
-  console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ` +
-    `${String(p.attackerSlot).padStart(5)} | ${String(p.direction).padStart(3)} | ` +
-    `${String(binDraws).padStart(3)} | ${String(v3Draws).padStart(3)} | ${matchTag}| ${notes}`);
+  const cityTag = defInCity
+    ? `,city/sz${defCitySize}${defCityHasWalls ? ',W' : ''}${defCityHasPalace ? ',P' : ''}`
+    : '';
+  const fortTag = defHasFortress ? ',fort' : '';
+  const riverTag = defOnRiver ? ',river' : '';
+  const gwTag = defenderHasGreatWall ? ',d-GW' : (attackerHasGreatWall ? ',a-GW' : '');
+  const notes = `att=t${att.type}/o${att.owner}${att.veteran ? '/V' : ''}/d${att.damageTaken} ` +
+    `(${att.x},${att.y}) → def=t${def.type}/o${def.owner}${def.veteran ? '/V' : ''}/d${def.damageTaken} ` +
+    `(${def.x},${def.y}) terrain=${defTerrain}${riverTag}${cityTag}${fortTag}${gwTag} [${difficulty}]`;
+  console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ${String(p.attackerSlot).padStart(5)} | ` +
+    `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | ${String(v3Draws).padStart(3)} | ` +
+    `${matchTag}| ${notes}`);
+  if (verbose && !drawsMatch) {
+    console.log(`         bin rand_exit=0x${(p.rand_exit >>> 0).toString(16).padStart(8, '0')}, ` +
+      `v3 rand_state=0x${(v3State >>> 0).toString(16).padStart(8, '0')}`);
+  }
 }
 
 console.log('');
@@ -316,7 +433,5 @@ console.log(`Resolved combats: ${total}`);
 console.log(`  draws match:               ${okDraws} / ${total}`);
 console.log(`  rand_exit match:           ${okExit} / ${total}`);
 console.log(`  full lock-step (both):     ${okBoth} / ${total}`);
-if (noSnap) console.log(`  skipped (no snapshot):     ${noSnap}`);
-if (noAtk)  console.log(`  skipped (attacker empty):  ${noAtk}`);
-if (noDef)  console.log(`  skipped (no enemy adj):    ${noDef}`);
-if (errors) console.log(`  errors:                    ${errors}`);
+if (noMatch) console.log(`  skipped (no usable snap):  ${noMatch}`);
+if (errors)  console.log(`  errors:                    ${errors}`);
