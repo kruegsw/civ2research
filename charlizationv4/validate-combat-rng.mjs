@@ -269,7 +269,10 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
     const hp = maxHp - u.damageTaken;
     if (hp <= 0) continue;
     const score = def * hp;
-    if (score > bestScore) { best = u; bestScore = score; }
+    // Match calcStackBestDefender's tiebreaker: >= so the later-iterated
+    // unit wins on a tie (tested case: Settler+Legion at same tile both
+    // score 80 — binary picks Legion, the higher-slot unit).
+    if (score >= bestScore) { best = u; bestScore = score; }
   }
   return best;
 }
