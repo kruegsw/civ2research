@@ -34,7 +34,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { SeededRNG } from '../charlizationv3/engine/rng.js';
 import { resolveCombat, calcUnitDefenseStrength } from '../charlizationv3/engine/combat.js';
-import { UNIT_HP, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, DIFFICULTY_KEYS } from '../charlizationv3/engine/defs.js';
+import { UNIT_HP, UNIT_DOMAIN, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, DIFFICULTY_KEYS } from '../charlizationv3/engine/defs.js';
 
 const sessionDir = process.argv[2];
 if (!sessionDir) {
@@ -84,6 +84,14 @@ for (const e of trace) {
       // Present iff the session was captured with the post-2026-04-27 PM
       // hook update; older sessions fall back to snapshot lookup.
       combatContext: pendingCall.combatContext || null,
+      // captureRandSequence (post-2026-04-28): per-call effective-strength
+      // returns from FUN_0057e2c3 / FUN_0057e33a, captured via temp
+      // listeners during this combat. Lets us pick the binary's actual
+      // defender (= last `def` call's unitIdx) bypassing scoring/tiebreaker
+      // ambiguity, and see binary's pre-pikeman defense value to localize
+      // strength-calc bugs.
+      effSequence: e.effSequence || null,
+      randSequence: e.randSequence || null,
     });
     pendingCall = null;
   }
@@ -247,13 +255,22 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
   const delta = DIR_DELTAS[direction];
   if (!delta) return null;
   const tx = attacker.x + delta[0], ty = attacker.y + delta[1];
-  // Mimic calc_stack_best_defender: score = defense × hp_ratio, pick
-  // max. Includes fortified, fortress, walls, veteran, anti-air, etc.
+  // Mimic calc_stack_best_defender (FUN_0057e6e2): scoring matches
+  // production v3 calcStackBestDefender — HP-RATIO weighting, not
+  // raw HP. Cross-type stacks (e.g., Settlers max=20 vs Sub max=10)
+  // would otherwise pick wrong unit.
   let best = null;
   let bestScore = -1;
   for (const u of allUnits) {
     if (u.x !== tx || u.y !== ty) continue;
     if (u.owner === attacker.owner) continue;
+    // Binary FUN_0057e6e2:5429 — skip land defenders on ocean tiles.
+    // Pinpointed via idx 149 (StealthFighter t32 attacking ocean stack
+    // of Settlers + Warriors + sea-domain t32): binary picks the only
+    // sea-domain defender. v3's validator was picking Settlers (highest
+    // raw HP × def) — wrong unit, wrong combat outcome.
+    const unitDomain = UNIT_DOMAIN[u.type] ?? 0;
+    if (ctx.defTerrain === 10 && unitDomain === 0) continue;
     const candidate = {
       type: u.type, owner: u.owner,
       veteran: !!(u.statusFlags & 0x2000),
@@ -268,7 +285,7 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
     const hp = maxHp - u.damageTaken;
     if (hp <= 0) continue;
-    const score = def * hp;
+    const score = Math.floor(def * hp / maxHp);
     // Match calcStackBestDefender's tiebreaker: >= so the later-iterated
     // unit wins on a tie (tested case: Settler+Legion at same tile both
     // score 80 — binary picks Legion, the higher-slot unit).
@@ -313,6 +330,19 @@ function buildDefenderContext(regions, targetX, targetY) {
 // it directly if present — bypasses snapshot timing entirely. Tile
 // terrain / city / fortress still come from the closest snapshot
 // (those don't change between turn boundaries).
+// When the Frida agent captured effSequence (post-2026-04-28), use it
+// as the authoritative defender source. The picked defender is the unit
+// FUN_0057e33a was called on TWICE (once during best-pick iteration,
+// once for the actual combat call after FUN_0057e6e2 returns). The
+// LAST def call is always the picked defender.
+function defenderSlotFromEffSequence(effSequence) {
+  if (!Array.isArray(effSequence) || effSequence.length === 0) return null;
+  for (let i = effSequence.length - 1; i >= 0; i--) {
+    if (effSequence[i].fn === 'def') return effSequence[i].unitIdx;
+  }
+  return null;
+}
+
 function pickFromCombatContext(combat) {
   const cc = combat.combatContext;
   if (!cc?.attacker) return null;
@@ -351,7 +381,17 @@ function pickFromCombatContext(combat) {
     statusFlags: n.statusFlags, type: n.type, owner: n.owner,
     movesLeft: n.movesRem, damageTaken: n.hp, order: n.orders,
   }));
-  const def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+  // Authoritative pick from effSequence when available — bypasses
+  // tiebreaker ambiguity between Frida's neighbors order and binary's
+  // stack iteration order.
+  const pickedSlot = defenderSlotFromEffSequence(combat.effSequence);
+  let def = null;
+  if (pickedSlot != null) {
+    def = allUnits.find(u => u.slot === pickedSlot);
+  }
+  if (!def) {
+    def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+  }
   if (!def) return null;
   return { turn, regions, attacker: att, defender: def, ctx, source: 'frida' };
 }
