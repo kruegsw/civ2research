@@ -116,8 +116,11 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   const terrainMul = TERRAIN_DEFENSE[terrain] ?? 2;
 
   // Base defense: (river_bonus + terrain_defense) × base_defense × 4
-  // Binary FUN_0057e33a:5343
-  const riverBonus = (onRiver && !inCity) ? 1 : 0;
+  // Binary FUN_0057e33a:5343 — `((*tile >> 7) + terrainDef) * base * 4`.
+  // The binary applies river +1 unconditionally; do not gate by inCity.
+  // Earlier v3 had `&& !inCity` which broke 6+ post-Frida combats (incl.
+  // idx 17 vet-vs-vet in Karakorum where v3 gave 31 draws vs bin 19).
+  const riverBonus = onRiver ? 1 : 0;
   let defense = (riverBonus + terrainMul) * defBase * 4;
 
   // ── Multiplier system (binary FUN_0057e33a:5344-5388) ──
