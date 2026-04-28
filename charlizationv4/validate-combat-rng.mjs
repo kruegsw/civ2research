@@ -473,8 +473,10 @@ for (let i = 0; i < resolved.length; i++) {
   const fortTag = defHasFortress ? ',fort' : '';
   const riverTag = defOnRiver ? ',river' : '';
   const gwTag = defenderHasGreatWall ? ',d-GW' : (attackerHasGreatWall ? ',a-GW' : '');
-  const notes = `att=t${att.type}/o${att.owner}${att.veteran ? '/V' : ''}/d${att.damageTaken} ` +
-    `(${att.x},${att.y}) → def=t${def.type}/o${def.owner}${def.veteran ? '/V' : ''}/d${def.damageTaken} ` +
+  const attVet = !!(att.statusFlags & 0x2000);
+  const defVet = !!(def.statusFlags & 0x2000);
+  const notes = `att=t${att.type}/o${att.owner}${attVet ? '/V' : ''}/d${att.damageTaken} ` +
+    `(${att.x},${att.y}) → def=t${def.type}/o${def.owner}${defVet ? '/V' : ''}/d${def.damageTaken} ` +
     `(${def.x},${def.y}) terrain=${defTerrain}${riverTag}${cityTag}${fortTag}${gwTag} [${difficulty}]`;
   console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ${String(p.attackerSlot).padStart(5)} | ` +
     `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | ${String(v3Draws).padStart(3)} | ` +
