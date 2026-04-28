@@ -591,6 +591,13 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   if (effAtk < 1) effAtk = 1;
   if (effDef < 1) effDef = 1;
 
+  // Debug hook for the RNG-fidelity harness: lets find-eff-modifier.mjs
+  // pin effAtk/effDef to specific values to brute-force which combination
+  // reproduces the binary's rand_exit on off-by-N combats.
+  if (opts?.effAtkOverride != null) effAtk = opts.effAtkOverride | 0;
+  if (opts?.effDefOverride != null) effDef = opts.effDefOverride | 0;
+  if (opts?.outEff) { opts.outEff.effAtk = effAtk; opts.outEff.effDef = effDef; }
+
   // Current HP — movesRemain is already in internal HP scale (UNIT_HP * 10)
   let atkHp = atkMaxHp - (attacker.movesRemain || 0);
   let defHp = defMaxHp - (defender.movesRemain || 0);

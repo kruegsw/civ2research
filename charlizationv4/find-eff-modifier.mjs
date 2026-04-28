@@ -1,47 +1,43 @@
-// Validate v3's combat resolver against the binary's RNG consumption.
+// Brute-force search for the off-by-N effective-strength bug in v3 combat.
 //
-// FUN_00580341(param_1=attackerSlot, param_2=direction, param_3=barbHalveFlag)
-//   - param_1 (Frida arg 0): slot of the attacker unit.
-//   - param_2 (Frida arg 1): direction index 0..7 — offsets into the
-//     binary's DAT_00628350 (dx) / DAT_00628360 (dy) tables.
-//   - param_3 (not captured): barbarian half-attack flag.
+// The combat-RNG validator currently lock-steps 91/101 combats byte-equal
+// against Civ2's binary. The remaining 8 split into:
+//   - 2 captured before captureCombatContext landed (slot reuse)
+//   - 6 with full Frida context but off-by-N round counts
 //
-// The defender lives at attacker.pos + delta[direction]. We don't have
-// the direction tables extracted, so we instead scan all 8 neighbors
-// of the attacker and pick the highest-HP enemy. This is correct when
-// only one enemy is adjacent (the common case for clean combats).
+// For idx 28 (Horsemen vs Warriors, river forest, no city) the binary
+// produces 37 draws / rand_exit=0xaecf3fd8; v3 produces 39 / 0xe6008d12.
+// Brute-forcing showed v3's `effDef=12, effAtk=16` reach the binary's
+// rand_exit when changed to `effDef=13` OR `effAtk=15`. Static reading
+// of FUN_00580341 didn't reveal which modifier accounts for that ±1.
 //
-// Strategy:
-//   1. For each combat, infer turn N via civ_turn_driver(civSlot=0)
-//      call counts up to the combat time.
-//   2. Try snapshots [N, N-1, N+1, N-2, N+2] and pick the first one
-//      where (a) units[attackerSlot] is non-empty and (b) at least one
-//      enemy unit sits adjacent to the attacker.
-//   3. Read defender's tile terrain + river + fortress from the tiles
-//      region.
-//   4. Read defender's city (if any) — extract walls, palace, coastal
-//      fortress, SAM Battery, SDI Defense from the building bitmap.
-//   5. Read difficulty from the globals region.
-//   6. Read the wonders region; thread Great Wall ownership into opts
-//      (defenderHasGreatWall / attackerHasGreatWall).
-//   7. Seed SeededRNG with rand_enter, run resolveCombat() with
-//      opts.useStateRng so every rand draw advances the seed and
-//      bumps callCount. Compare draw count + final state to binary's.
+// This tool perturbs (effAtk, effDef) over a grid for each off-by-N
+// combat and reports which perturbations reproduce the binary's
+// rand_exit. Looking across all six should expose the common pattern.
 //
-// Usage: node validate-combat-rng.mjs <session-dir>
+// Usage: node find-eff-modifier.mjs <session-dir>
+//        node find-eff-modifier.mjs <session-dir> --idx=28
+//        node find-eff-modifier.mjs <session-dir> --range=4   (default 3)
 
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { SeededRNG } from '../charlizationv3/engine/rng.js';
 import { resolveCombat, calcUnitDefenseStrength } from '../charlizationv3/engine/combat.js';
-import { UNIT_HP, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, DIFFICULTY_KEYS } from '../charlizationv3/engine/defs.js';
+import { UNIT_HP, UNIT_ATK, UNIT_DEF, UNIT_FP, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, DIFFICULTY_KEYS } from '../charlizationv3/engine/defs.js';
 
 const sessionDir = process.argv[2];
 if (!sessionDir) {
-  console.error('Usage: node validate-combat-rng.mjs <session-dir>');
+  console.error('Usage: node find-eff-modifier.mjs <session-dir> [--idx=N] [--range=R]');
   process.exit(1);
 }
-const verbose = process.argv.includes('--verbose');
+const onlyIdx = (() => {
+  const a = process.argv.find(s => s.startsWith('--idx='));
+  return a ? parseInt(a.slice(6), 10) : null;
+})();
+const RANGE = (() => {
+  const a = process.argv.find(s => s.startsWith('--range='));
+  return a ? parseInt(a.slice(8), 10) : 3;
+})();
 
 // ── LCG step counter ────────────────────────────────────────────────
 
@@ -56,7 +52,7 @@ function stepCount(start, target, max = 500) {
   return -1;
 }
 
-// ── Trace parsing + turn anchoring ──────────────────────────────────
+// ── Trace parsing ───────────────────────────────────────────────────
 
 const trace = readFileSync(join(sessionDir, 'civ2_trace.log'), 'utf-8')
   .split('\n').filter(Boolean).map(l => {
@@ -80,9 +76,6 @@ for (const e of trace) {
       rand_enter: pendingCall.rand_enter,
       rand_exit: e.rand_exit,
       retval: e.retval,
-      // Frida's pre-combat struct dump (added with captureCombatContext).
-      // Present iff the session was captured with the post-2026-04-27 PM
-      // hook update; older sessions fall back to snapshot lookup.
       combatContext: pendingCall.combatContext || null,
     });
     pendingCall = null;
@@ -96,7 +89,7 @@ function turnAtTime(t) {
   return n;
 }
 
-// ── CIV2SNAP parser ─────────────────────────────────────────────────
+// ── CIV2SNAP parser (copied verbatim from validate-combat-rng.mjs) ──
 
 function parseSnapshot(path) {
   const buf = new Uint8Array(readFileSync(path));
@@ -124,8 +117,6 @@ function parseSnapshot(path) {
   return regions;
 }
 
-// ── Field readers ───────────────────────────────────────────────────
-
 const UNIT_STRIDE = 0x20;
 const CITY_STRIDE = 0x58;
 
@@ -147,7 +138,6 @@ function readUnit(unitsRegion, slotIdx) {
     order: dv.getUint8(0x0F),
   };
 }
-
 function readAllUnits(unitsRegion) {
   const out = [];
   const count = Math.floor(unitsRegion.bytes.length / UNIT_STRIDE);
@@ -157,7 +147,6 @@ function readAllUnits(unitsRegion) {
   }
   return out;
 }
-
 function readCityAt(citiesRegion, x, y) {
   const count = Math.floor(citiesRegion.bytes.length / CITY_STRIDE);
   for (let i = 0; i < count; i++) {
@@ -167,27 +156,17 @@ function readCityAt(citiesRegion, x, y) {
     const cx = dv.getInt16(0x00, true);
     const cy = dv.getInt16(0x02, true);
     if (cx === x && cy === y) {
-      // Buildings bitmap at offset 0x30 (uint32). Per binary
-      // FUN_004e78ce: hasBuilding(cityIdx, id) = (improvements_lo &
-      // (1 << (id & 0x1f))) != 0. Bits 0-31 cover building IDs 1-31.
-      // Buildings 32-38 live elsewhere (not needed for combat-relevant
-      // bonuses: walls/palace/coastal/SAM/SDI all fall in 1-28).
       const improvementsLo = dv.getUint32(0x30, true);
       const buildings = new Set();
       for (let b = 1; b <= 31; b++) {
         if (improvementsLo & (1 << b)) buildings.add(b);
       }
-      return {
-        idx: i, x: cx, y: cy,
-        owner: dv.getUint8(0x08),
-        size: dv.getUint8(0x09),
-        buildings,
-      };
+      return { idx: i, x: cx, y: cy,
+        owner: dv.getUint8(0x08), size: dv.getUint8(0x09), buildings };
     }
   }
   return null;
 }
-
 function readTileBytes(tilesRegion, mapDimsRegion, x, y) {
   const dvMap = new DataView(mapDimsRegion.bytes.buffer,
     mapDimsRegion.bytes.byteOffset, mapDimsRegion.bytes.length);
@@ -199,45 +178,26 @@ function readTileBytes(tilesRegion, mapDimsRegion, x, y) {
   if (off < 0 || off + 6 > tilesRegion.bytes.length) return null;
   const b0 = tilesRegion.bytes[off];
   const b1 = tilesRegion.bytes[off + 1];
-  return {
-    terrain: b0 & 0x0F,
-    river: !!(b0 & 0x80),
-    fortress: !!(b1 & 0x40),
-  };
+  return { terrain: b0 & 0x0F, river: !!(b0 & 0x80), fortress: !!(b1 & 0x40) };
 }
-
 function readDifficulty(globalsRegion) {
-  // Difficulty byte at 0x655B08 (per memory map). Globals region starts
-  // at 0x655AF0, so offset = 0x18.
   if (!globalsRegion || globalsRegion.bytes.length < 0x19) return 'deity';
   const idx = globalsRegion.bytes[0x18];
   return DIFFICULTY_KEYS[idx] ?? 'deity';
 }
-
 function readWonderOwner(wondersRegion, citiesRegion, wonderId) {
   if (!wondersRegion || wonderId < 0 || wonderId >= 28) return null;
   const dv = new DataView(wondersRegion.bytes.buffer,
     wondersRegion.bytes.byteOffset, wondersRegion.bytes.length);
   const raw = dv.getUint16(wonderId * 2, true);
   if (raw === 0xFFFF || raw === 0xFFEF) return null;
-  // raw = city index; resolve to owner
   const cityOff = raw * CITY_STRIDE;
   if (cityOff + CITY_STRIDE > citiesRegion.bytes.length) return null;
   const cdv = new DataView(citiesRegion.bytes.buffer,
     citiesRegion.bytes.byteOffset + cityOff, CITY_STRIDE);
-  return cdv.getUint8(0x08); // owner
+  return cdv.getUint8(0x08);
 }
 
-// ── Direction-delta table ───────────────────────────────────────────
-// Derived empirically from confirmed-match combats (game_20260427_191137):
-//   dir 1 = (2,0)   E    [idx 3, 8]
-//   dir 2 = (1,1)   SE   [idx 6]
-//   dir 4 = (-1,1)  SW   [idx 0]
-//   dir 5 = (-2,0)  W    [idx 1, 5]
-//   dir 6 = (-1,-1) NW   [idx 2, 7, 11]
-// Filling in the rotational pattern (45° CCW per step):
-//   0 NE, 1 E, 2 SE, 3 S, 4 SW, 5 W, 6 NW, 7 N.
-// Matches binary's DAT_00628350/DAT_00628360 dx/dy layout.
 const DIR_DELTAS = [
   [ 1, -1], [ 2,  0], [ 1,  1], [ 0,  2],
   [-1,  1], [-2,  0], [-1, -1], [ 0, -2],
@@ -247,10 +207,7 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
   const delta = DIR_DELTAS[direction];
   if (!delta) return null;
   const tx = attacker.x + delta[0], ty = attacker.y + delta[1];
-  // Mimic calc_stack_best_defender: score = defense × hp_ratio, pick
-  // max. Includes fortified, fortress, walls, veteran, anti-air, etc.
-  let best = null;
-  let bestScore = -1;
+  let best = null, bestScore = -1;
   for (const u of allUnits) {
     if (u.x !== tx || u.y !== ty) continue;
     if (u.owner === attacker.owner) continue;
@@ -269,15 +226,10 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
     const hp = maxHp - u.damageTaken;
     if (hp <= 0) continue;
     const score = def * hp;
-    // Match calcStackBestDefender's tiebreaker: >= so the later-iterated
-    // unit wins on a tie (tested case: Settler+Legion at same tile both
-    // score 80 — binary picks Legion, the higher-slot unit).
     if (score >= bestScore) { best = u; bestScore = score; }
   }
   return best;
 }
-
-// ── Multi-snapshot picker ───────────────────────────────────────────
 
 const snapCache = new Map();
 function loadSnap(turnN) {
@@ -308,17 +260,10 @@ function buildDefenderContext(regions, targetX, targetY) {
   };
 }
 
-// Frida's combatContext gives us pre-combat attacker struct + every
-// unit in the 9-tile target window, captured at function entry. Use
-// it directly if present — bypasses snapshot timing entirely. Tile
-// terrain / city / fortress still come from the closest snapshot
-// (those don't change between turn boundaries).
 function pickFromCombatContext(combat) {
   const cc = combat.combatContext;
   if (!cc?.attacker) return null;
   const baseTurn = turnAtTime(combat.time_ms);
-  // Find any nearby snapshot for tile/city info (terrain rarely
-  // changes mid-turn; cities are static unless captured/destroyed).
   const tries = [baseTurn];
   for (let d = 1; d <= 5; d++) tries.push(baseTurn - d, baseTurn + d);
   let regions = null, turn = baseTurn;
@@ -331,10 +276,8 @@ function pickFromCombatContext(combat) {
     slot: cc.attackerIdx,
     x: cc.attacker.x, y: cc.attacker.y,
     statusFlags: cc.attacker.statusFlags,
-    type: cc.attacker.type,
-    owner: cc.attacker.owner,
-    movesLeft: cc.attacker.movesRem,
-    damageTaken: cc.attacker.hp,
+    type: cc.attacker.type, owner: cc.attacker.owner,
+    movesLeft: cc.attacker.movesRem, damageTaken: cc.attacker.hp,
     order: cc.attacker.orders,
   };
   const delta = DIR_DELTAS[combat.direction];
@@ -345,7 +288,6 @@ function pickFromCombatContext(combat) {
     : { defTerrain: 1, defOnRiver: false, defHasFortress: false,
         defInCity: false, defCityHasWalls: false, defCityHasPalace: false,
         defCityBuildings: null, defCitySize: 0, city: null };
-  // Map Frida neighbor structs into the validator's unit shape.
   const allUnits = (cc.neighbors || []).map(n => ({
     slot: n.slot, x: n.x, y: n.y,
     statusFlags: n.statusFlags, type: n.type, owner: n.owner,
@@ -357,9 +299,6 @@ function pickFromCombatContext(combat) {
 }
 
 function pickSnapshot(combat) {
-  // Prefer Frida's pre-combat capture when available — it can't be
-  // wrong on slot identity/HP/position because it reads at the binary's
-  // function entry, not at a turn boundary.
   const fromFrida = pickFromCombatContext(combat);
   if (fromFrida) return fromFrida;
   const baseTurn = turnAtTime(combat.time_ms);
@@ -385,123 +324,143 @@ function pickSnapshot(combat) {
   return null;
 }
 
-// ── Main ────────────────────────────────────────────────────────────
+// ── Single-combat run helper ────────────────────────────────────────
 
-const resolved = combatPairs.filter(p => p.rand_enter !== p.rand_exit);
-console.log(`# ${combatPairs.length} pairs (${resolved.length} with rand draws)`);
-console.log('');
-console.log('idx | turn | atkSl | dir | bin | v3  | match | notes');
-console.log('----+------+-------+-----+-----+-----+-------+------');
-
-let okDraws = 0, okExit = 0, okBoth = 0;
-let total = 0, noMatch = 0, errors = 0;
-
-// Default human-civ bitmask. The current sniffer/Frida session
-// represents a single-player game with the user as the American (civ 1);
-// at deity this matters for the barbarian attack scaling formula.
-// TODO: extract from globals/civ flags rather than hardcode.
 const HUMAN_PLAYERS_MASK = 0x02;
 
-for (let i = 0; i < resolved.length; i++) {
-  const p = resolved[i];
-  total++;
-  const binDraws = stepCount(p.rand_enter, p.rand_exit);
-  const picked = pickSnapshot(p);
-  if (!picked) {
-    noMatch++;
-    console.log(` ${String(i).padStart(2)} | -    | ${String(p.attackerSlot).padStart(5)} | ` +
-      `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | -   |       | ` +
-      `(no snapshot has attacker + adj enemy)`);
-    continue;
-  }
-  const { turn, regions, attacker: att, defender: def, ctx } = picked;
+function runCombat(picked, p, override) {
+  const { regions, attacker: att, defender: def, ctx } = picked;
   const wondersRegion = regions.get('wonders');
   const globalsRegion = regions.get('globals');
   const citiesRegion = regions.get('cities');
   const { defTerrain, defOnRiver, defHasFortress, defInCity,
           defCityHasWalls, defCityHasPalace, defCityBuildings, defCitySize } = ctx;
   const difficulty = readDifficulty(globalsRegion);
-
-  // Great Wall = wonder 6
   const greatWallOwner = readWonderOwner(wondersRegion, citiesRegion, 6);
   const defenderHasGreatWall = greatWallOwner === def.owner;
   const attackerHasGreatWall = greatWallOwner === att.owner;
-
-  let v3Draws, v3State;
-  try {
-    const rng = new SeededRNG(p.rand_enter);
-    rng.callCount = 0;
-    const attacker = {
-      type: att.type, owner: att.owner,
-      veteran: !!(att.statusFlags & 0x2000),
-      movesRemain: att.damageTaken, gx: att.x, gy: att.y,
-    };
-    const defender = {
-      type: def.type, owner: def.owner,
-      veteran: !!(def.statusFlags & 0x2000),
-      movesRemain: def.damageTaken,
-      orders: def.order === 2 ? 'fortified' : undefined,
-    };
-    // Per binary FUN_00580341:108-110, fractional-MP attack penalty is
-    // unconditional in resolve mode: effAtk *= min(movesLeft, MM) / MM.
-    // Frida's `movesRem` field is actually movesUSED (unit struct byte
-    // 0x08 = moves used this turn — see FUN_005b2c3d). Convert to
-    // remaining and thread it through.
-    const movesUsed = att.movesLeft;
-    const maxInternalMoves = (UNIT_MOVE_POINTS[att.type] || 1) * MOVEMENT_MULTIPLIER;
-    const atkMovesLeft = Math.max(0, maxInternalMoves - movesUsed);
-    resolveCombat(
-      attacker, defender,
-      defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
-      defCityBuildings, /*extraSeed*/ 0,
-      difficulty, atkMovesLeft,
-      {
-        useStateRng: rng,
-        defenderHasGreatWall,
-        attackerHasGreatWall,
-        defCityHasPalace,
-        defCitySize,
-        humanPlayers: HUMAN_PLAYERS_MASK,
-      },
-    );
-    v3Draws = rng.callCount;
-    v3State = rng.state;
-  } catch (e) {
-    errors++;
-    console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ${String(p.attackerSlot).padStart(5)} | ` +
-      `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | ERR | ${e.message}`);
-    continue;
+  const rng = new SeededRNG(p.rand_enter);
+  rng.callCount = 0;
+  const attacker = {
+    type: att.type, owner: att.owner,
+    veteran: !!(att.statusFlags & 0x2000),
+    movesRemain: att.damageTaken, gx: att.x, gy: att.y,
+  };
+  const defender = {
+    type: def.type, owner: def.owner,
+    veteran: !!(def.statusFlags & 0x2000),
+    movesRemain: def.damageTaken,
+    orders: def.order === 2 ? 'fortified' : undefined,
+  };
+  const outEff = {};
+  const opts = {
+    useStateRng: rng,
+    defenderHasGreatWall, attackerHasGreatWall,
+    defCityHasPalace, defCitySize,
+    humanPlayers: HUMAN_PLAYERS_MASK,
+    outEff,
+  };
+  if (override) {
+    if (override.effAtk != null) opts.effAtkOverride = override.effAtk;
+    if (override.effDef != null) opts.effDefOverride = override.effDef;
   }
-  const drawsMatch = v3Draws === binDraws;
-  const exitMatch = (v3State >>> 0) === (p.rand_exit >>> 0);
-  if (drawsMatch) okDraws++;
-  if (exitMatch) okExit++;
-  if (drawsMatch && exitMatch) okBoth++;
-  const matchTag = drawsMatch && exitMatch ? 'OK    ' : drawsMatch ? 'draws ' : 'no    ';
-  const cityTag = defInCity
-    ? `,city/sz${defCitySize}${defCityHasWalls ? ',W' : ''}${defCityHasPalace ? ',P' : ''}`
-    : '';
-  const fortTag = defHasFortress ? ',fort' : '';
-  const riverTag = defOnRiver ? ',river' : '';
-  const gwTag = defenderHasGreatWall ? ',d-GW' : (attackerHasGreatWall ? ',a-GW' : '');
-  const attVet = !!(att.statusFlags & 0x2000);
-  const defVet = !!(def.statusFlags & 0x2000);
-  const notes = `att=t${att.type}/o${att.owner}${attVet ? '/V' : ''}/d${att.damageTaken} ` +
-    `(${att.x},${att.y}) → def=t${def.type}/o${def.owner}${defVet ? '/V' : ''}/d${def.damageTaken} ` +
-    `(${def.x},${def.y}) terrain=${defTerrain}${riverTag}${cityTag}${fortTag}${gwTag} [${difficulty}]`;
-  console.log(` ${String(i).padStart(2)} | ${String(turn).padStart(4)} | ${String(p.attackerSlot).padStart(5)} | ` +
-    `${String(p.direction).padStart(3)} | ${String(binDraws).padStart(3)} | ${String(v3Draws).padStart(3)} | ` +
-    `${matchTag}| ${notes}`);
-  if (verbose && !drawsMatch) {
-    console.log(`         bin rand_exit=0x${(p.rand_exit >>> 0).toString(16).padStart(8, '0')}, ` +
-      `v3 rand_state=0x${(v3State >>> 0).toString(16).padStart(8, '0')}`);
-  }
+  const movesUsed = att.movesLeft;
+  const maxInternalMoves = (UNIT_MOVE_POINTS[att.type] || 1) * MOVEMENT_MULTIPLIER;
+  const atkMovesLeft = Math.max(0, maxInternalMoves - movesUsed);
+  resolveCombat(
+    attacker, defender,
+    defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
+    defCityBuildings, /*extraSeed*/ 0,
+    difficulty, atkMovesLeft, opts,
+  );
+  return { draws: rng.callCount, state: rng.state >>> 0,
+           baselineEffAtk: outEff.effAtk, baselineEffDef: outEff.effDef };
 }
 
+// ── Main: scan all combats, run baseline, sweep mismatches ──────────
+
+const resolved = combatPairs.filter(p => p.rand_enter !== p.rand_exit);
+
+console.log(`# session: ${sessionDir}`);
+console.log(`# resolved combats: ${resolved.length}, range=±${RANGE}`);
 console.log('');
-console.log(`Resolved combats: ${total}`);
-console.log(`  draws match:               ${okDraws} / ${total}`);
-console.log(`  rand_exit match:           ${okExit} / ${total}`);
-console.log(`  full lock-step (both):     ${okBoth} / ${total}`);
-if (noMatch) console.log(`  skipped (no usable snap):  ${noMatch}`);
-if (errors)  console.log(`  errors:                    ${errors}`);
+
+const offByN = [];
+for (let i = 0; i < resolved.length; i++) {
+  if (onlyIdx != null && i !== onlyIdx) continue;
+  const p = resolved[i];
+  const binDraws = stepCount(p.rand_enter, p.rand_exit);
+  const picked = pickSnapshot(p);
+  if (!picked) continue;
+  let baseline;
+  try { baseline = runCombat(picked, p, null); } catch { continue; }
+  const exitMatch = baseline.state === (p.rand_exit >>> 0);
+  const drawsMatch = baseline.draws === binDraws;
+  if (exitMatch && drawsMatch) continue; // already lock-step
+  offByN.push({ idx: i, p, picked, binDraws, baseline });
+}
+
+console.log(`# off-by-N combats: ${offByN.length}`);
+console.log('');
+
+const targetExit = (p) => p.rand_exit >>> 0;
+
+// Count each (da, dd) pattern's occurrence across all combats
+const patternHits = new Map();
+
+for (const item of offByN) {
+  const { idx, p, picked, binDraws, baseline } = item;
+  const att = picked.attacker, def = picked.defender, ctx = picked.ctx;
+  const attVet = !!(att.statusFlags & 0x2000);
+  const defVet = !!(def.statusFlags & 0x2000);
+  const cityTag = ctx.defInCity
+    ? `,city/sz${ctx.defCitySize}${ctx.defCityHasWalls ? ',W' : ''}${ctx.defCityHasPalace ? ',P' : ''}`
+    : '';
+  const fortTag = ctx.defHasFortress ? ',fort' : '';
+  const riverTag = ctx.defOnRiver ? ',river' : '';
+  console.log(`──── idx ${idx} ─────────────────────────────────────────`);
+  console.log(`  att=t${att.type}/o${att.owner}${attVet ? '/V' : ''}/d${att.damageTaken} ` +
+    `(${att.x},${att.y}) → def=t${def.type}/o${def.owner}${defVet ? '/V' : ''}/d${def.damageTaken} ` +
+    `(${def.x},${def.y}) terrain=${ctx.defTerrain}${riverTag}${cityTag}${fortTag}`);
+  console.log(`  unit-base: atk[t${att.type}]=${UNIT_ATK[att.type]} def[t${def.type}]=${UNIT_DEF[def.type]} ` +
+    `fp_a=${UNIT_FP[att.type]} fp_d=${UNIT_FP[def.type]} hp_a=${UNIT_HP[att.type]} hp_d=${UNIT_HP[def.type]}`);
+  console.log(`  v3 baseline: effAtk=${baseline.baselineEffAtk} effDef=${baseline.baselineEffDef} ` +
+    `draws=${baseline.draws} (bin=${binDraws}) state=0x${baseline.state.toString(16).padStart(8,'0')} ` +
+    `(bin=0x${targetExit(p).toString(16).padStart(8,'0')})`);
+
+  // Sweep grid around v3's baseline.
+  const baseAtk = baseline.baselineEffAtk;
+  const baseDef = baseline.baselineEffDef;
+  const matches = [];
+  for (let da = -RANGE; da <= RANGE; da++) {
+    for (let dd = -RANGE; dd <= RANGE; dd++) {
+      if (da === 0 && dd === 0) continue;
+      const eA = baseAtk + da, eD = baseDef + dd;
+      if (eA < 1 || eD < 1) continue;
+      let r;
+      try { r = runCombat(picked, p, { effAtk: eA, effDef: eD }); }
+      catch { continue; }
+      if (r.state === targetExit(p) && r.draws === binDraws) {
+        matches.push({ da, dd, eA, eD });
+      }
+    }
+  }
+  if (matches.length === 0) {
+    console.log(`  NO match within ±${RANGE} grid`);
+  } else {
+    for (const m of matches) {
+      const tag = `da=${m.da >= 0 ? '+' : ''}${m.da},dd=${m.dd >= 0 ? '+' : ''}${m.dd}`;
+      console.log(`  match: effAtk=${m.eA} effDef=${m.eD}  (${tag})`);
+      patternHits.set(tag, (patternHits.get(tag) || 0) + 1);
+    }
+  }
+  console.log('');
+}
+
+if (offByN.length > 1) {
+  console.log('──── pattern frequency across all off-by-N combats ────');
+  const sorted = [...patternHits.entries()].sort((a, b) => b[1] - a[1]);
+  for (const [tag, count] of sorted) {
+    console.log(`  ${tag.padEnd(14)} ${count}/${offByN.length}`);
+  }
+}
