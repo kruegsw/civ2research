@@ -183,9 +183,16 @@ const TARGETS = [
   // `combat.resolveCombat` already accepts opts.rngEnter (commit
   // 4f4bd01) — the captured rand_enter here is what the v3 port must
   // be seeded with for byte-parity outcomes.
+  // captureCombatContext: emits attacker struct + every alive unit on
+  // attacker.tile and 8-neighbors AT FUNCTION ENTRY so the v3
+  // validator (validate-combat-rng.mjs) can reconstruct pre-combat
+  // state even when the slot was reused mid-turn or the unit was
+  // born+killed between dumps. Frida's argNames here are misleading —
+  // param_1 is attackerSlot, param_2 is direction (0..7) into the
+  // binary's DAT_00628350/DAT_00628360 dx/dy tables.
   { va: 0x00580341, name: 'fun_combat_resolve',    args: 2,
     argNames: ['unitIdx','killerIdx'],
-    readRet: true, captureRand: true },
+    readRet: true, captureRand: true, captureCombatContext: true },
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Per-civ turn tick (FUN_00560084 — the function v3 has
@@ -679,6 +686,57 @@ function readUnitState(base, unitIdx) {
   } catch (_) { return null; }
 }
 
+// Capture context for FUN_00580341 (combat resolve). The Frida snapshot
+// runs at end-of-turn, so when an attacker slot is reused mid-turn
+// (e.g. Settler at slot 41 dies in turn N, barb Horsemen spawned at
+// slot 41, attacks before turn-end snapshot) the validator sees a
+// post-combat slot and can't reconstruct pre-combat HP/position.
+// This emits the attacker's full struct AT FUNCTION ENTRY plus every
+// unit on the 9-tile target window (attacker tile + 8 neighbors), so
+// the lock-step validator has the exact pre-combat state regardless
+// of when the next snapshot was taken.
+function readCombatContext(base, attackerIdx) {
+  if (attackerIdx < 0 || attackerIdx > 0xFF) return null;
+  try {
+    const att = readUnitState(base, attackerIdx);
+    if (!att) return { attackerIdx, attacker: null, neighbors: [] };
+    // Iso-grid 8 neighbors (matches DAT_00628350/DAT_00628360 deltas)
+    const DELTAS = [
+      [ 1, -1], [ 2,  0], [ 1,  1], [ 0,  2],
+      [-1,  1], [-2,  0], [-1, -1], [ 0, -2],
+    ];
+    const targets = new Set();
+    targets.add(`${att.x},${att.y}`);
+    for (const [dx, dy] of DELTAS) targets.add(`${att.x + dx},${att.y + dy}`);
+    // Walk units array, snapshot any unit whose (x,y) lands in our
+    // 9-tile window. Bounded by the same DAT_00655B16 unit count used
+    // in readCivUnitRoster.
+    const UNIT_BASE = 0x006560F0;
+    const UNIT_STRIDE = 0x20;
+    const DAT_00655B16 = 0x00655B16;
+    const count = base.add(DAT_00655B16 - 0x00400000).readU16();
+    const neighbors = [];
+    for (let i = 0; i < count; i++) {
+      const u = base.add(UNIT_BASE - 0x00400000 + i * UNIT_STRIDE);
+      const alive = u.add(0x1A).readS32();
+      if (alive === 0) continue;
+      const x = u.readS16();
+      const y = u.add(0x02).readS16();
+      if (!targets.has(`${x},${y}`)) continue;
+      neighbors.push({
+        slot: i, x, y,
+        statusFlags: u.add(0x04).readU16(),
+        type: u.add(0x06).readU8(),
+        owner: u.add(0x07).readS8(),
+        movesRem: u.add(0x08).readU8(),
+        hp: u.add(0x0A).readU8(),
+        orders: u.add(0x0F).readU8(),
+      });
+    }
+    return { attackerIdx, attacker: att, neighbors };
+  } catch (_) { return null; }
+}
+
 // Capture context for FUN_00498e8b (AI city production pick). The
 // city's owner is at city+0x8 — needed so --replay-frida can route
 // the picked production to the right civ's end-turn injection. Also
@@ -1012,6 +1070,14 @@ function attachHook(entry) {
         // identical outputs.
         if (entry.captureRand) {
           msg.rand_enter = readHoldrand(base);
+        }
+        // FUN_00580341 — combat resolve. Emit pre-combat attacker
+        // struct + all units in the 9-tile target window so the v3
+        // lock-step validator doesn't depend on between-turn snapshots
+        // for slot identity / damage / position.
+        if (entry.captureCombatContext && args[0] != null) {
+          const attackerIdx = args[0].toInt32() & 0xFF;
+          msg.combatContext = readCombatContext(base, attackerIdx);
         }
         // Read globals FUN_004bdb2c depends on (strategic goal,
         // free-tech goal, scenario flags, alive mask). Without these

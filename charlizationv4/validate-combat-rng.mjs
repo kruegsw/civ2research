@@ -80,6 +80,10 @@ for (const e of trace) {
       rand_enter: pendingCall.rand_enter,
       rand_exit: e.rand_exit,
       retval: e.retval,
+      // Frida's pre-combat struct dump (added with captureCombatContext).
+      // Present iff the session was captured with the post-2026-04-27 PM
+      // hook update; older sessions fall back to snapshot lookup.
+      combatContext: pendingCall.combatContext || null,
     });
     pendingCall = null;
   }
@@ -301,7 +305,60 @@ function buildDefenderContext(regions, targetX, targetY) {
   };
 }
 
+// Frida's combatContext gives us pre-combat attacker struct + every
+// unit in the 9-tile target window, captured at function entry. Use
+// it directly if present — bypasses snapshot timing entirely. Tile
+// terrain / city / fortress still come from the closest snapshot
+// (those don't change between turn boundaries).
+function pickFromCombatContext(combat) {
+  const cc = combat.combatContext;
+  if (!cc?.attacker) return null;
+  const baseTurn = turnAtTime(combat.time_ms);
+  // Find any nearby snapshot for tile/city info (terrain rarely
+  // changes mid-turn; cities are static unless captured/destroyed).
+  const tries = [baseTurn];
+  for (let d = 1; d <= 5; d++) tries.push(baseTurn - d, baseTurn + d);
+  let regions = null, turn = baseTurn;
+  for (const t of tries) {
+    if (t < 0) continue;
+    const r = loadSnap(t);
+    if (r && r.get('tiles') && r.get('map_dims')) { regions = r; turn = t; break; }
+  }
+  const att = {
+    slot: cc.attackerIdx,
+    x: cc.attacker.x, y: cc.attacker.y,
+    statusFlags: cc.attacker.statusFlags,
+    type: cc.attacker.type,
+    owner: cc.attacker.owner,
+    movesLeft: cc.attacker.movesRem,
+    damageTaken: cc.attacker.hp,
+    order: cc.attacker.orders,
+  };
+  const delta = DIR_DELTAS[combat.direction];
+  if (!delta) return null;
+  const tx = att.x + delta[0], ty = att.y + delta[1];
+  const ctx = regions
+    ? buildDefenderContext(regions, tx, ty)
+    : { defTerrain: 1, defOnRiver: false, defHasFortress: false,
+        defInCity: false, defCityHasWalls: false, defCityHasPalace: false,
+        defCityBuildings: null, defCitySize: 0, city: null };
+  // Map Frida neighbor structs into the validator's unit shape.
+  const allUnits = (cc.neighbors || []).map(n => ({
+    slot: n.slot, x: n.x, y: n.y,
+    statusFlags: n.statusFlags, type: n.type, owner: n.owner,
+    movesLeft: n.movesRem, damageTaken: n.hp, order: n.orders,
+  }));
+  const def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+  if (!def) return null;
+  return { turn, regions, attacker: att, defender: def, ctx, source: 'frida' };
+}
+
 function pickSnapshot(combat) {
+  // Prefer Frida's pre-combat capture when available — it can't be
+  // wrong on slot identity/HP/position because it reads at the binary's
+  // function entry, not at a turn boundary.
+  const fromFrida = pickFromCombatContext(combat);
+  if (fromFrida) return fromFrida;
   const baseTurn = turnAtTime(combat.time_ms);
   if (baseTurn < 0) return null;
   const tries = [baseTurn];
@@ -320,7 +377,7 @@ function pickSnapshot(combat) {
     const ctx = buildDefenderContext(regions, tx, ty);
     const allUnits = readAllUnits(unitsRegion);
     const def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
-    if (def) return { turn: t, regions, attacker: att, defender: def, ctx };
+    if (def) return { turn: t, regions, attacker: att, defender: def, ctx, source: 'snap' };
   }
   return null;
 }
