@@ -65,6 +65,10 @@ for (const e of trace) {
         rand_exit: e.rand_exit,
         retval: e.retval,
         combatContext: pendingCall.combatContext || null,
+        // captureRandSequence (post-2026-04-28): per-rand sequence +
+        // calc_atk/def_strength returns captured during this combat.
+        randSequence: e.randSequence || null,
+        effSequence: e.effSequence || null,
       });
     }
     pendingCall = null;
@@ -158,6 +162,29 @@ function runRounds(effAtk, effDef, label) {
   console.log(`# rounds=${rounds} draws=${draws} match=${lcg.state() === (combat.rand_exit >>> 0)}`);
   console.log('');
   return { rounds, draws, finalState: lcg.state() };
+}
+
+// ── Frida-captured sequences (post-2026-04-28 sessions) ────────────
+
+if (combat.effSequence && combat.effSequence.length) {
+  console.log('# binary FUN_0057e2c3/FUN_0057e33a calls during this combat:');
+  for (const e of combat.effSequence) {
+    if (e.fn === 'atk') {
+      console.log(`#   calc_atk_strength(unit=${e.unitIdx}) → ${e.val}`);
+    } else {
+      console.log(`#   calc_def_strength(unit=${e.unitIdx}, flag=${e.flag}, atkIdx=${e.atkIdx}) → ${e.val}`);
+    }
+  }
+  console.log('');
+}
+
+if (combat.randSequence && combat.randSequence.length) {
+  console.log(`# binary _rand sequence (${combat.randSequence.length} calls):`);
+  for (let i = 0; i < combat.randSequence.length; i++) {
+    const r = combat.randSequence[i];
+    console.log(`#   [${String(i).padStart(2)}] val=${String(r.val).padStart(5)}  state_after=0x${(r.state >>> 0).toString(16).padStart(8, '0')}`);
+  }
+  console.log('');
 }
 
 // Default: run with --eff=A,D if provided, else baseline 16/54 (idx 80

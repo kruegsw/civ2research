@@ -190,9 +190,17 @@ const TARGETS = [
   // born+killed between dumps. Frida's argNames here are misleading —
   // param_1 is attackerSlot, param_2 is direction (0..7) into the
   // binary's DAT_00628350/DAT_00628360 dx/dy tables.
+  // captureRandSequence: install temp Interceptor on _rand at function
+  // entry to capture EVERY rand call's retval + post-call holdrand.
+  // Detached at exit and emitted as msg.randSequence on the return event.
+  // Used by trace-combat-rounds.mjs to pinpoint the exact round where
+  // v3's effAtk/effDef diverge from binary (idx 80 needs effDef=57; v3
+  // computes 54; +3 source not visible from static FUN_00580341 read).
   { va: 0x00580341, name: 'fun_combat_resolve',    args: 2,
     argNames: ['unitIdx','killerIdx'],
-    readRet: true, captureRand: true, captureCombatContext: true },
+    readRet: true, captureRand: true, captureCombatContext: true,
+    captureRandSequence: true },
+
 
   // ═══════════════════════════════════════════════════════════════
   // TIER 1: Per-civ turn tick (FUN_00560084 — the function v3 has
@@ -1079,6 +1087,53 @@ function attachHook(entry) {
           const attackerIdx = args[0].toInt32() & 0xFF;
           msg.combatContext = readCombatContext(base, attackerIdx);
         }
+        // captureRandSequence: install temp Interceptors on _rand,
+        // FUN_0057e2c3 (calc_atk_strength), FUN_0057e33a (calc_def_strength)
+        // for the duration of this combat. Lets the validator see binary's
+        // EXACT pre/post-modifier strength values + every rand consumed.
+        // Detached at onLeave; emitted on the return event. Limited to
+        // FUN_00580341's execution → no global hot-hook overhead.
+        if (entry.captureRandSequence) {
+          this._randSeq = [];
+          this._effSeq = [];
+          this._tempListeners = [];
+          const seqRef = this._randSeq;
+          const effRef = this._effSeq;
+          try {
+            const randAddr = base.add(0x005F2280 - 0x00400000);
+            this._tempListeners.push(Interceptor.attach(randAddr, {
+              onLeave(retval) {
+                seqRef.push({
+                  val: retval.toInt32() & 0x7FFF,
+                  state: readHoldrand(base),
+                });
+              },
+            }));
+            const atkAddr = base.add(0x0057E2C3 - 0x00400000);
+            this._tempListeners.push(Interceptor.attach(atkAddr, {
+              onEnter(args) { this._unit = args[0].toInt32() & 0xFF; },
+              onLeave(retval) {
+                effRef.push({ fn: 'atk', unitIdx: this._unit,
+                              val: retval.toInt32() });
+              },
+            }));
+            const defAddr = base.add(0x0057E33A - 0x00400000);
+            this._tempListeners.push(Interceptor.attach(defAddr, {
+              onEnter(args) {
+                this._unit = args[0].toInt32() & 0xFF;
+                this._flag = args[1].toInt32();
+                this._atkIdx = args[2].toInt32();
+              },
+              onLeave(retval) {
+                effRef.push({ fn: 'def', unitIdx: this._unit,
+                              flag: this._flag, atkIdx: this._atkIdx,
+                              val: retval.toInt32() });
+              },
+            }));
+          } catch (e) {
+            msg.randSeqErr = String(e);
+          }
+        }
         // Read globals FUN_004bdb2c depends on (strategic goal,
         // free-tech goal, scenario flags, alive mask). Without these
         // the v3 port can't reproduce binary's scoring.
@@ -1189,11 +1244,12 @@ function attachHook(entry) {
         if (!this._traceEntry) return;
         const needRet = this._traceEntry.readRet;
         const needRand = this._traceEntry.captureRand;
+        const needRandSeq = this._traceEntry.captureRandSequence;
         const needGovtExit = this._traceEntry.captureChooseGovtGlobals;
         const needRoster = this._traceEntry.captureUnitRoster;
         const needUnitAction = this._traceEntry.captureUnitActionGlobals;
         const needCityState = this._traceEntry.captureCityState;
-        if (!needRet && !needRand && !needGovtExit && !needRoster && !needUnitAction && !needCityState) return;
+        if (!needRet && !needRand && !needRandSeq && !needGovtExit && !needRoster && !needUnitAction && !needCityState) return;
         const out = {
           kind: 'return',
           fn: this._traceEntry.name,
@@ -1202,6 +1258,21 @@ function attachHook(entry) {
         };
         if (needRet) out.retval = readArg(retval);
         if (needRand) out.rand_exit = readHoldrand(base);
+        // captureRandSequence: detach all temp listeners (rand,
+        // calc_atk_strength, calc_def_strength) and emit captured
+        // sequences. effSequence shows the binary's actual pre-pikeman
+        // def value — diff against v3's calcUnitDefenseStrength to
+        // pinpoint idx-80-class +N mysteries.
+        if (needRandSeq && this._tempListeners) {
+          for (const l of this._tempListeners) {
+            try { l.detach(); } catch (_) { /* ignore */ }
+          }
+          out.randSequence = this._randSeq || [];
+          out.effSequence = this._effSeq || [];
+          this._tempListeners = null;
+          this._randSeq = null;
+          this._effSeq = null;
+        }
         if (needGovtExit && this._civSlotForGovtExit != null) {
           const afterGovt = readCivGovt(base, this._civSlotForGovtExit);
           // Binary signal: if govt changed during the call, that's the
