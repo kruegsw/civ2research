@@ -20,6 +20,7 @@ import {
 
 import { computeAiData, hasWonderEffect } from './data.js';
 import { checkSpaceRaceCapability } from '../spaceship.js';
+import { getTreatyFlags } from '../diplomacy.js';
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -78,26 +79,31 @@ function popcount(x) {
  * the civ doesn't have the tech to support it or special rules apply.
  */
 function getBuildingMaintenance(gameState, civ, buildingId) {
+  // Port of binary FUN_004f00f0 (block_004F0000.c:6, 305 bytes).
   let cost = IMPROVE_MAINTENANCE[buildingId] ?? 0;
 
-  // Barracks (building 2): reduced cost at low difficulty, bonus for Gunpowder(35)
+  // Barracks (building 2): reduced cost at low difficulty, bumped for
+  // Gunpowder/Mobile-Warfare tier upgrades.
   if (buildingId === 2) {
     const diff = getDifficultyIndex(gameState, civ);
     if (diff < 2 && cost > 0) cost--;
-    if (hasTech(gameState, civ, 35)) cost++;  // Gunpowder tech check (0x23 = 35)
-    // Additional check: walk the barracks obsolescence chain to find latest tech
-    // Approximation: check if civ has Mobile Warfare (53) — the last barracks upgrade
+    if (hasTech(gameState, civ, 35)) cost++;  // Gunpowder (0x23)
+    // Approximation of binary's obsolescence-chain walk back from
+    // tech 53 (Mobile Warfare) following prereqs until a flag byte is
+    // non-zero. v3 just checks Mobile Warfare directly — close enough
+    // until we have a per-tech "barracks-tier" flag.
     if (hasTech(gameState, civ, 53)) cost++;
   }
 
-  // If maintenance is 1 and civ has Adam Smith's Trading Co. (wonder 17),
-  // cost becomes 0
+  // Adam Smith's Trading Co. (wonder 17): cost-1 buildings are free.
   if (cost === 1) {
     if (hasWonderEffect(gameState, civ, 17)) cost = 0;
   }
 
-  // Emperor difficulty: Temple(4), Colosseum(14), Cathedral(11) are free
-  if (cost > 0 && getDifficultyIndex(gameState, civ) === 4) {
+  // Binary line 40: under Fundamentalism (govt == 4) Temple(4),
+  // Cathedral(11), and Colosseum(14) are free. NOT difficulty 4
+  // (Emperor) — earlier comment had this wrong.
+  if (cost > 0 && getGovtIndex(gameState, civ) === 4) {
     if (buildingId === 4 || buildingId === 14 || buildingId === 11) cost = 0;
   }
 
@@ -479,116 +485,106 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Assessment 4: Diplomacy (FUN_004bcfcf)
+// Assessment 4: Diplomacy (FUN_004bcfcf — block_004B0000.c:5804, 724 bytes)
 //
-// Returns 1-7 indicating diplomatic priority:
-//   1 = no contacted civs (isolated)
-//   2 = few contacts, early government, no alliances, no provocation
-//   3 = doesn't have key diplomatic tech
-//   4 = government >= monarchy AND (all contacts hate us, or advanced govt)
-//   5 = embassy intelligence but no advantage
-//   6 = standard diplomatic position
-//   7 = good intelligence, not all enemies
+// Returns 1-7 indicating diplomatic priority. Decision tree (binary):
+//   1 = no contacts (local_8 == 0)
+//   2 = post-tech-gate fallback: few contacts, low reputation, no
+//       alliances, no provocation flag, low rank
+//   3 = doesn't have diplomatic tech (Espionage if threat=2, else Writing)
+//   4 = reputation >= 3, OR (reputation > 1 AND all-contacts-at-war)
+//   5 = limited viewing visibility — embassy intel partial
+//   6 = standard / no flag-0x80 set / fallback in viewer-rich tree
+//   7 = healthy: visibility AND not all-at-war
 //
 // param_2 (threatLevel): 0,1=low/medium, 2=high
 // ═══════════════════════════════════════════════════════════════════
 
 export function assessDiplomacy(civSlot, threatLevel, aiData, gameState) {
-  // Treaty flag analysis
-  // Original accesses raw treaty flag bytes. We approximate with our treaty system.
-  let contactCount = 0;   // civs we have contact with (treaty bit 1)
-  let allianceCount = 0;  // civs we're allied with (treaty bit 8)
-  let hatredCount = 0;    // civs that hate us (treaty bit 0x20 ≈ at war)
-  let visibleCivs = 0;    // civs we can see (embassy, or human has wonders)
+  // Binary lines 5816-5837: per-civ counts. Iterates ALL c=1..7 (skipping
+  // only c==param_1 — does NOT gate on civsAlive).
+  let contactCount = 0;   // local_8: byte+0 bit 0x01 = CONTACT
+  let allianceCount = 0;  // local_10: byte+0 bit 0x08 = ALLIANCE
+  let warCount = 0;       // local_14: byte+1 bit 0x20 = bit 13 = 0x2000 = WAR
+  let visibleCount = 0;   // local_1c: viewing has EMBASSY with c, OR viewing
+                          //           has UN (24) / Marco Polo (9)
+
+  // Binary's DAT_006d1da0 = "viewing civ" (single human in normal play).
+  // Use lowest-bit human player; default to civSlot if none (headless).
+  const humanMask = gameState.humanPlayers || 0;
+  let viewingCiv = 0;
+  for (let i = 0; i < 8; i++) {
+    if (humanMask & (1 << i)) { viewingCiv = i; break; }
+  }
+  const viewingHasUN = viewingCiv > 0 && hasWonderEffect(gameState, viewingCiv, 24);
+  const viewingHasMP = viewingCiv > 0 && hasWonderEffect(gameState, viewingCiv, 9);
 
   for (let c = 1; c < 8; c++) {
     if (c === civSlot) continue;
-    if (!(aiData.civsAlive & (1 << c))) continue;
-
-    const treaty = getTreaty(gameState, civSlot, c);
-
-    // Contact: any treaty other than initial no-contact
-    // In our system, if a treaty entry exists, contact has been made
-    const key = civSlot < c ? `${civSlot}-${c}` : `${c}-${civSlot}`;
-    if (gameState.treaties?.[key]) {
-      contactCount++;
-    }
-
-    // Alliance check
-    if (treaty === 'alliance') allianceCount++;
-
-    // Hatred check (at war)
-    if (treaty === 'war' && gameState.treaties?.[key]) {
-      // Only count as hatred if we actually have contact (treaty entry exists)
-      hatredCount++;
-    }
-
-    // Visibility: embassy flag, or wonders (Marco Polo, United Nations)
-    // L.4: Use actual embassy tracking from aiData instead of wonder-only approximation
-    if ((aiData.embassyFlags && aiData.embassyFlags[civSlot]?.[c]) ||
-        hasWonderEffect(gameState, civSlot, 24) ||  // United Nations (wonder 0x18)
-        hasWonderEffect(gameState, civSlot, 9)) {    // Marco Polo (wonder 9)
-      visibleCivs++;
-    }
+    const flagsAB = getTreatyFlags(gameState, civSlot, c);
+    if (flagsAB & 0x01) contactCount++;          // CONTACT
+    if (flagsAB & 0x08) allianceCount++;         // ALLIANCE
+    if (flagsAB & 0x2000) warCount++;            // WAR (byte+1 bit 0x20)
+    // Viewing-civ EMBASSY (byte+0 bit 0x80) OR viewing has UN/MP.
+    const flagsViewC = viewingCiv > 0
+      ? getTreatyFlags(gameState, viewingCiv, c) : 0;
+    if ((flagsViewC & 0x80) || viewingHasUN || viewingHasMP) visibleCount++;
   }
 
-  // Decision 1: no contacts → isolated
+  // Binary line 5838: no contacts → isolated.
   if (contactCount === 0) return 1;
 
-  // Key diplomatic tech depends on threat level:
-  //   threat 2: tech 0x1b (27 = Espionage)
-  //   else:     tech 0x58 (88 = Writing)
-  const diploTech = (threatLevel === 2) ? 27 : 88;
+  // Binary lines 5842-5847: pick diplomatic tech.
+  const diploTech = (threatLevel === 2) ? 0x1b : 0x58;
 
-  // Decision 3: doesn't have the diplomatic tech
+  // Binary lines 5848-5851: missing diplomatic tech → 3.
   if (!hasTech(gameState, civSlot, diploTech)) return 3;
 
-  // Complex conditions for decision 2 vs 4-7:
-  // Original: if contacts < 2 OR government > despotism OR has alliances
-  //           OR (civ attribs & 0x100) OR powerRank > 6
-  const govtIdx = getGovtIndex(gameState, civSlot);
-  // L.4: Use actual provocation tracking from aiData (sneak attack / border intrusion flags)
-  // Original: DAT_0064c6a0 & 0x100 — nuke talk / provocation flag
-  let provoked = false;
-  if (aiData.provocationFlags) {
-    for (let c = 1; c < 8; c++) {
-      if (c === civSlot) continue;
-      if (aiData.provocationFlags[civSlot]?.[c]) { provoked = true; break; }
-    }
+  // Binary lines 5852-5854: outer "rich tree" gate.
+  //   contacts < 2 OR reputation > 1 OR alliances > 0
+  //   OR (civ.flags & 0x100) OR rank > 6
+  // civ.reputation maps to byte at +0x1E (parser.js:455 reads savBuf[off+30]).
+  // civ.stateFlags is the u16 at +0x00 (parser.js:289).
+  const civ = gameState.civs?.[civSlot] || {};
+  const reputation = civ.reputation ?? 0;
+  const stateFlags = civ.stateFlags ?? 0;
+  const rank = aiData.powerRank?.[civSlot] ?? 3;
+
+  const outerGate = contactCount < 2 || reputation > 1 || allianceCount !== 0 ||
+                    (stateFlags & 0x100) !== 0 || rank > 6;
+
+  if (!outerGate) {
+    // Binary line 5876-5878: post-tech-gate fallback.
+    return 2;
   }
 
-  if (contactCount < 2 || govtIdx > 1 || allianceCount > 0 ||
-      provoked || aiData.powerRank[civSlot] > 6) {
-    // More nuanced decisions
-    if (govtIdx >= 3) {
-      // Communism or higher: return 4 (focus on internal politics)
-      return 4;
-    }
-    // Government < communism (anarchy, despotism, monarchy)
-    if (hatredCount === contactCount && govtIdx > 1) {
-      // All contacts hate us AND we're past despotism → 4
-      return 4;
-    }
-    // Check if we have embassy intelligence (DAT_0064c6a0 & 0x80)
-    // L.4: visibleCivs now includes actual embassy tracking
-    if (visibleCivs === 0) {
-      // No intelligence → 6 (standard)
-      return 6;
-    }
-    if (visibleCivs === 0 || (hatredCount === contactCount && visibleCivs < contactCount)) {
-      // Limited intelligence → 5
-      return 5;
-    }
-    if (hatredCount === contactCount) {
-      // All contacts are enemies → 6
-      return 6;
-    }
-    // Good intelligence, not all enemies → 7
-    return 7;
+  // Binary lines 5855-5874: rank-tree dispatch on reputation.
+  if (reputation >= 3) {
+    // Binary line 5872-5873: high reputation → 4 (no further branching).
+    return 4;
   }
 
-  // Few contacts, early government, no alliances, no provocation → 2
-  return 2;
+  // Binary lines 5856-5870: reputation < 3, fine-grained decision.
+  if (warCount === contactCount && reputation > 1) {
+    // Binary line 5856-5857: all contacts at war AND reputation > 1 → 4.
+    return 4;
+  }
+  if ((stateFlags & 0x80) === 0) {
+    // Binary line 5859-5860: civ.flags bit 0x80 not set → 6.
+    return 6;
+  }
+  if (visibleCount === 0 ||
+      (warCount === contactCount && visibleCount < contactCount)) {
+    // Binary line 5862-5863: no viewer visibility OR partial visibility +
+    // all-at-war → 5.
+    return 5;
+  }
+  if (warCount === contactCount) {
+    // Binary line 5865-5866: all-at-war but enough visibility → 6.
+    return 6;
+  }
+  // Binary line 5868-5869: healthy → 7.
+  return 7;
 }
 
 // ═══════════════════════════════════════════════════════════════════
