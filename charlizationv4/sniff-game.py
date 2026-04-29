@@ -137,6 +137,14 @@ SNAPSHOT_REGIONS = [
     # gameplay-relevant flag bytes (0x0C, 0x0D, 0x0F, 0x10, 0x12, 0x13).
     ('game_flags', 0x00655adc, 0x14),
     ('globals',  0x00655af0, 0x40),               # key globals (turn, difficulty, etc.)
+    # Unit type stats table — 60 entries × 20 bytes = 1200 bytes. Required
+    # for scenario-correct combat calc: per-type flagsA (offset 4), flagsB
+    # (offset 5), domain (offset 9). v3's hardcoded UNIT_NEGATES_WALLS /
+    # UNIT_AIR_INTERCEPTOR / UNIT_DOMAIN are stock-RULES values; .scn files
+    # can override these. Without this region the validator falls back to
+    # the stock sets and mismatches scenario-only flags (e.g. game
+    # 20260428_181426 idx 26 — t9 walls bypass not in stock RULES).
+    ('unit_types', UNIT_TYPE_BASE, 60 * UNIT_TYPE_STRIDE),
     ('units',    UNIT_BASE,  512 * UNIT_STRIDE),   # all units (16KB)
     ('cities',   CITY_BASE,  256 * CITY_STRIDE),   # all cities (22KB)
     ('civs',     CIV_BASE,   8 * CIV_STRIDE),      # all civs (11KB)

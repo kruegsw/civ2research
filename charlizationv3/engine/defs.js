@@ -280,6 +280,14 @@ export const UNIT_DESTROYED_AFTER_ATTACK = new Set([44, 45]); // Cruise Missile,
 // Units that negate city walls
 export const UNIT_NEGATES_WALLS = new Set([26]); // Howitzer
 
+// Air-domain units with interceptor flag (flagsA & 0x10 in unit_type_stats).
+// Triggers air-vs-air interception bonus in defense calc when defending in
+// a city against another air attacker. Per stock RULES.TXT: Fighter and
+// Stealth Fighter (both have role=3 "intercept" + flagsA bit 4 set).
+// Verified empirically: bin effDef=96 idx 5 game_20260428_181426
+// (Bomber→Fighter in Paris) only matches with mult=8 air-vs-air branch.
+export const UNIT_AIR_INTERCEPTOR = new Set([27, 30]); // Fighter, Stealth Fighter
+
 // Units with pikeman defense bonus (double defense vs mounted/horse units)
 // From RULES.TXT flags bit 13 (0x2000)
 export const UNIT_PIKEMAN_BONUS = new Set([6]); // Pikemen

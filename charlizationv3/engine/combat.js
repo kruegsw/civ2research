@@ -41,6 +41,7 @@ import {
   UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
   UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS, UNIT_ANTI_AIR,
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
+  UNIT_AIR_INTERCEPTOR,
 } from './defs.js';
 import { hasWonderEffect, civHasWonder } from './utils.js';
 
@@ -111,8 +112,34 @@ export function sumStackProperty(state, gx, gy, owner, mode) {
  * @returns {number} effective defense value (fixed-point integer)
  */
 export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFortress, onRiver, cityBuildings, attackerType, gameState) {
-  const defBase = UNIT_DEF[unit.type] || 1;
-  const defDomain = UNIT_DOMAIN[unit.type] ?? 0;
+  // Scenario unit-type stats override (from snapshot's `unit_types` region).
+  // Each entry: { flagsA, flagsB, domain }. .scn files can change these
+  // (e.g. flag 0x40 = negates walls, flag 0x10 = air interceptor / missile).
+  // Without this, hardcoded stock-RULES sets are used.
+  const utOvr = gameState?.unitTypeStats;
+  const utLookup = (t) => (utOvr && t != null && t >= 0) ? utOvr[t] : null;
+  const isNegatesWalls = (t) => {
+    const o = utLookup(t);
+    return o ? (o.flagsA & 0x40) !== 0 : UNIT_NEGATES_WALLS.has(t);
+  };
+  const isInterceptorType = (t) => {
+    const o = utLookup(t);
+    return o ? (o.flagsA & 0x10) !== 0 : UNIT_AIR_INTERCEPTOR.has(t);
+  };
+  const isMissileType = (t) => {
+    const o = utLookup(t);
+    return o ? (o.flagsB & 0x10) !== 0 : UNIT_DESTROYED_AFTER_ATTACK.has(t);
+  };
+  const domainOf = (t, fallback) => {
+    const o = utLookup(t);
+    return o ? o.domain : (UNIT_DOMAIN[t] ?? fallback);
+  };
+
+  // Use ?? not || so genuine def=0 units (Diplomat, Spy, Missiles) keep
+  // their 0 base — binary respects it, giving effDef=0 (idx 8 of session
+  // game_20260428_204217: t46 Diplomat → bin effDef=0, v3 was 8).
+  const defBase = UNIT_DEF[unit.type] ?? 1;
+  const defDomain = domainOf(unit.type, 0);
   const terrainMul = TERRAIN_DEFENSE[terrain] ?? 2;
 
   // Base defense: (river_bonus + terrain_defense) × base_defense × 4
@@ -127,9 +154,12 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   // Binary uses an OVERRIDE-based multiplier, NOT multiplicative stacking.
   // mult starts at 2. Each check SETS mult to a higher value if applicable.
   // At the end: defense = defense * mult / 2.
-  // So mult=2 → 1x, mult=3 → 1.5x, mult=4 → 2x, mult=6 → 3x.
-  const atkDomain = (attackerType != null && attackerType >= 0) ? (UNIT_DOMAIN[attackerType] ?? 0) : -1;
+  // So mult=2 → 1x, mult=3 → 1.5x, mult=4 → 2x, mult=6 → 3x, mult=8 → 4x.
+  const atkDomain = (attackerType != null && attackerType >= 0) ? domainOf(attackerType, 0) : -1;
   let mult = 2;
+  // Set true when air-vs-air interception fires — skips the walls block and
+  // the "def_domain != 0 → mult = 2" reset (binary uses `goto LAB_0057e694`).
+  let airInterceptApplied = false;
 
   // Line 5345-5348: Fortified land unit → mult = 3
   if (unit.orders === 'fortified' && defDomain === 0) {
@@ -140,22 +170,38 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   // Denied if attacker is air domain or has negates-walls flag
   if (hasFortress && !inCity && defDomain === 0) {
     if (attackerType == null || attackerType < 0 ||
-        (atkDomain !== 1 && !UNIT_NEGATES_WALLS.has(attackerType))) {
+        (atkDomain !== 1 && !isNegatesWalls(attackerType))) {
       mult = 4;
     }
   }
 
+  if (inCity && attackerType != null && attackerType >= 0) {
+    // Line 5360-5372: Air-vs-air interception. Defender is in a city, is air
+    // domain with interceptor flag (flagsA & 0x10), attacker is air domain
+    // and not a missile (flagsB & 0x10 == 0). mult shifts up:
+    //   mult <<= 2 (×4 → 8) when attacker is NOT itself an interceptor
+    //   mult <<= 1 (×2 → 4) when both sides are interceptors
+    // Bypasses walls AND the def_domain != 0 reset via goto LAB_0057e694.
+    if (defDomain === 1 && atkDomain === 1 &&
+        isInterceptorType(unit.type) && !isMissileType(attackerType)) {
+      mult = isInterceptorType(attackerType) ? (mult << 1) : (mult << 2);
+      airInterceptApplied = true;
+    }
+  }
+
   // Line 5374-5384: City Walls / Great Wall → mult = 6
-  // Only for ground-domain defenders vs ground-domain attackers
-  if (inCity && hasWalls && defDomain === 0) {
+  // Only for ground-domain defenders vs ground-domain attackers.
+  // Skipped when air-vs-air interception fired (binary goto bypassed walls).
+  if (!airInterceptApplied && inCity && hasWalls && defDomain === 0) {
     if (attackerType == null || attackerType < 0 ||
-        (atkDomain === 0 && !UNIT_NEGATES_WALLS.has(attackerType))) {
+        (atkDomain === 0 && !isNegatesWalls(attackerType))) {
       mult = 6;
     }
   }
 
-  // Line 5387-5388: Non-land defenders get mult reset to 2
-  if (defDomain !== 0) {
+  // Line 5387-5388: Non-land defenders get mult reset to 2.
+  // Skipped when air-vs-air interception fired (the `goto` jumps past it).
+  if (!airInterceptApplied && defDomain !== 0) {
     mult = 2;
   }
 
@@ -359,8 +405,8 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
  *             treatyViolation: boolean }}
  */
 export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty, atkMovesLeft, opts) {
-  const atkBase = UNIT_ATK[attacker.type] || 1;
-  const defBase = UNIT_DEF[defender.type] || 1;
+  const atkBase = UNIT_ATK[attacker.type] ?? 1;
+  const defBase = UNIT_DEF[defender.type] ?? 1;
 
   let atkMaxHp = (UNIT_HP[attacker.type] || 1) * 10;
   let defMaxHp = (UNIT_HP[defender.type] || 1) * 10;
@@ -383,6 +429,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const humanPlayers = opts?.humanPlayers ?? 0xFF; // default: all human
   const defenderReputation = opts?.defenderReputation ?? 100;
   const singleRoundCombat = opts?.singleRoundCombat || false;
+  // Scenario unit-type stats — forwarded into calcUnitDefenseStrength so
+  // .scn files override hardcoded UNIT_NEGATES_WALLS / UNIT_AIR_INTERCEPTOR
+  // / UNIT_DOMAIN sets (which are stock-RULES values).
+  const unitTypeStats = opts?.unitTypeStats || null;
 
   // ── Special interaction: Air attack vs unarmed ships ──────────
   // Ported from FUN_00580341 lines 124-129: role 3 (air attack) vs
@@ -429,7 +479,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // This includes terrain, river, fortification, fortress, walls,
   // Coastal Fortress, SAM Battery, SDI, and veteran bonus.
   // We do NOT re-apply those multipliers here (binary applies them once).
-  let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type);
+  let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type, unitTypeStats ? { unitTypeStats } : undefined);
 
   // ── Pikeman bonus vs mounted units (flagsB 0x04) ──────────────
   // Binary FUN_00580341 lines 130-140: defender with pikeman flag gets
@@ -665,6 +715,17 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
         seed = useFullWidth ? (next >>> 0) : (next & 0x7FFFFFFF);
         return ((seed >>> 16) & 0x7FFF);
       });
+
+  // ── Sneak-attack popularity rand (FUN_00580341:346) ──────────
+  // When attacker breaks a peace/ceasefire AND the attacker's government
+  // is "popular" (gov > 4 = Republic or Democracy), the binary makes one
+  // pre-combat rand call for a popularity dip check (rand % 100).
+  // The rand result is checked against the defender's reputation, but the
+  // outcome doesn't affect combat — only the rand consumption matters for
+  // RNG lock-step.
+  if (opts?.sneakAttackPopularityCheck) {
+    rand();
+  }
 
   const rounds = []; // true = attacker hit defender, false = defender hit attacker
   while (atkHp > 0 && defHp > 0) {

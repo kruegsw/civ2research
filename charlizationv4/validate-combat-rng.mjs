@@ -96,6 +96,24 @@ for (const e of trace) {
     pendingCall = null;
   }
 }
+// Discover the absolute turn numbers of available snapshot files. The
+// validator passes "turn-pair index" (0-based, derived from civ_turn_driver
+// event ordering) into loadSnap; without this map, loadSnap(0) looks for
+// `turn_0000_*.bin` which doesn't exist when sessions start mid-game (e.g.
+// game_20260428_204217 captures turns 205-209). Map the relative index to
+// the actual filename turn.
+const _snapAbsTurns = (() => {
+  try {
+    const files = readdirSync(sessionDir).filter(f =>
+      /^turn_\d+_.*\.bin$/.test(f));
+    return files.map(f => parseInt(f.match(/^turn_(\d+)_/)[1], 10))
+      .sort((a, b) => a - b);
+  } catch { return []; }
+})();
+function absTurn(relIdx) {
+  if (relIdx < 0 || relIdx >= _snapAbsTurns.length) return relIdx;
+  return _snapAbsTurns[relIdx];
+}
 function turnAtTime(t) {
   let n = -1;
   for (let i = 0; i < turnMarks.length; i++) {
@@ -156,6 +174,66 @@ function readUnit(unitsRegion, slotIdx) {
   };
 }
 
+// Parse the snapshot's `unit_types` region (60 entries × 20 bytes,
+// captured at base 0x0064B1B8). Per cross-checking FUN_0057e33a:
+// real-record offset 4 = flagsA, offset 5 = flagsB, offset 9 = domain.
+// Returns null if region missing (older captures) — combat.js falls
+// back to hardcoded UNIT_NEGATES_WALLS / UNIT_AIR_INTERCEPTOR / UNIT_DOMAIN.
+function parseUnitTypeStats(region) {
+  if (!region) return null;
+  const STRIDE = 0x14;
+  const count = Math.floor(region.bytes.length / STRIDE);
+  const out = new Array(count);
+  for (let i = 0; i < count; i++) {
+    const o = i * STRIDE;
+    out[i] = {
+      flagsA: region.bytes[o + 0x04],
+      flagsB: region.bytes[o + 0x05],
+      domain: region.bytes[o + 0x09],
+    };
+  }
+  return out;
+}
+
+// Sidecar fallback for older captures missing the `unit_types` region.
+// `dump-unit-types.py` writes JSON into one of these locations (preferred
+// first): <session-dir>/unit_types.json, or charlizationv4/unit_types.json.
+// The user runs the dumper while civ2.exe has the same scenario loaded;
+// we then have scenario-correct flagsA/flagsB/domain.
+let _sidecarCache = null;
+function loadSidecarUnitTypes() {
+  if (_sidecarCache !== null) return _sidecarCache || null;
+  const candidates = [
+    join(sessionDir, 'unit_types.json'),
+    join(import.meta.dirname || '.', 'unit_types.json'),
+  ];
+  for (const path of candidates) {
+    try {
+      const data = JSON.parse(readFileSync(path, 'utf-8'));
+      if (Array.isArray(data?.types)) {
+        const out = new Array(data.types.length);
+        for (const t of data.types) {
+          out[t.type] = { flagsA: t.flagsA, flagsB: t.flagsB, domain: t.domain };
+        }
+        console.log(`# Loaded unit_types sidecar: ${path}`);
+        _sidecarCache = out;
+        return out;
+      }
+    } catch (_) { /* not present */ }
+  }
+  _sidecarCache = false;
+  return null;
+}
+
+// Resolve unit_type_stats for a snapshot: prefer the in-snapshot region,
+// else the JSON sidecar (only useful for older captures where civ2.exe
+// can be re-launched with the same scenario to dump the runtime table).
+function resolveUnitTypes(regions) {
+  const fromSnap = regions ? parseUnitTypeStats(regions.get('unit_types')) : null;
+  if (fromSnap) return fromSnap;
+  return loadSidecarUnitTypes();
+}
+
 function readAllUnits(unitsRegion) {
   const out = [];
   const count = Math.floor(unitsRegion.bytes.length / UNIT_STRIDE);
@@ -175,15 +253,20 @@ function readCityAt(citiesRegion, x, y) {
     const cx = dv.getInt16(0x00, true);
     const cy = dv.getInt16(0x02, true);
     if (cx === x && cy === y) {
-      // Buildings bitmap at offset 0x30 (uint32). Per binary
-      // FUN_004e78ce: hasBuilding(cityIdx, id) = (improvements_lo &
-      // (1 << (id & 0x1f))) != 0. Bits 0-31 cover building IDs 1-31.
-      // Buildings 32-38 live elsewhere (not needed for combat-relevant
-      // bonuses: walls/palace/coastal/SAM/SDI all fall in 1-28).
-      const improvementsLo = dv.getUint32(0x30, true);
+      // Buildings bitmap at offset 0x34..0x38 (5 bytes packed, 8 IDs
+      // per byte). Combat code (FUN_0057e33a's walls check) calls
+      // FUN_0043d20a → FUN_005ae3bf which maps id → (byteIdx = id >> 3,
+      // bitMask = 1 << (id & 7)) and reads byte at city[0x34 + byteIdx].
+      // Earlier we read 0x30 (per stale Civ2_City_Struct.md doc) — that
+      // location is actually worker-tile bitmasks, NOT buildings.
+      // sniff-game.py's parser already uses 0x34 (line 374-384, 418).
+      // This was the source of multiple "walls present per v3 / no walls
+      // per binary" mismatches in late-game combats (idx 1-4, 24).
       const buildings = new Set();
-      for (let b = 1; b <= 31; b++) {
-        if (improvementsLo & (1 << b)) buildings.add(b);
+      for (let id = 1; id < 40; id++) {
+        const byteIdx = id >> 3;
+        const mask = 1 << (id & 7);
+        if (citiesRegion.bytes[off + 0x34 + byteIdx] & mask) buildings.add(id);
       }
       return {
         idx: i, x: cx, y: cy,
@@ -222,6 +305,86 @@ function readDifficulty(globalsRegion) {
   return DIFFICULTY_KEYS[idx] ?? 'deity';
 }
 
+// Detect FUN_00580341's war-state branch (lines 280-386) for sneak-attack
+// effects. Returns { applies, popularityCheck }.
+//   applies         → true when binary doubles effAtk (line 384: local_a0<<1)
+//   popularityCheck → true when binary makes the pre-combat rand call (line
+//                     346) for the popularity-dip check; gated on
+//                     attacker.gov > 4 (Republic / Democracy).
+//
+// Direct condition decode from FUN_00580341:280 is unreliable because turn
+// snapshots are only at turn boundaries — we can't see the exact pre-combat
+// civ-relations state for individual mid-turn combats. Instead, we infer
+// sneak attack by comparing snapshots: if a civ-pair's relations transition
+// from "peace" (rel1 & 0x40 == 0) to "war declared" (rel1 & 0x40 set)
+// between turn N and turn N+1, the FIRST combat between them in turn N is
+// the sneak attack that declared war.
+//
+// `firstSneakCombatKeys` (computed once per session) is the set of
+// "atkOwner-defOwner-turn" keys that should fire sneak. After the first
+// combat for that pair in that turn, the rest treat as already-at-war.
+let _sneakCacheCombatTurn = null;
+function getSneakCombatKeys() {
+  if (_sneakCacheCombatTurn) return _sneakCacheCombatTurn;
+  const used = new Set();
+  _sneakCacheCombatTurn = used;
+  const HDR = 0xA0, STRIDE = 0x594;
+  // For each consecutive snapshot pair, find civ pairs whose war-declared
+  // bit (byte 1, bit 6 = 0x40 of relation) flipped on.
+  for (let t = 0; t < _snapAbsTurns.length - 1; t++) {
+    const cur = loadSnap(_snapAbsTurns[t]);
+    const nxt = loadSnap(_snapAbsTurns[t + 1]);
+    if (!cur || !nxt) continue;
+    const c1 = cur.get('civs'), c2 = nxt.get('civs');
+    if (!c1 || !c2) continue;
+    for (let civA = 1; civA < 8; civA++) {
+      for (let civB = 1; civB < 8; civB++) {
+        if (civA === civB) continue;
+        const off = HDR + civB * STRIDE + 0x20 + civA * 4 + 1; // civB.rel[civA].byte1
+        if (off >= c1.bytes.length || off >= c2.bytes.length) continue;
+        const before = c1.bytes[off];
+        const after = c2.bytes[off];
+        // war-declared bit transitioned from clear → set
+        if ((before & 0x40) === 0 && (after & 0x40) !== 0) {
+          // civA attacked civB → first combat in turn _snapAbsTurns[t]
+          // marks (civA, civB) for sneak.
+          used.add(`${civA}-${civB}-${_snapAbsTurns[t]}`);
+        }
+      }
+    }
+  }
+  return used;
+}
+const _sneakCombatPairUsed = new Set();
+function detectSneakAttack(regions, atkOwner, defOwner, snapTurn) {
+  const r = { applies: false, popularityCheck: false };
+  if (atkOwner == null || defOwner == null) return r;
+  if (atkOwner === 0 || defOwner === 0) return r;
+  if (atkOwner === defOwner) return r;
+  const civs = regions ? regions.get('civs') : null;
+  if (!civs) return r;
+  const HDR = 0xA0, STRIDE = 0x594;
+  // war-declaration must happen during the turn that contains this combat.
+  // snapTurn is the turn N+1 the validator loaded; the actual combat turn
+  // is snapTurn - 1.
+  const combatTurn = snapTurn - 1;
+  const sneakKeys = getSneakCombatKeys();
+  const key = `${atkOwner}-${defOwner}-${combatTurn}`;
+  // Use only the FIRST combat for that pair in that turn. We track which
+  // (pair,turn) combinations we've already consumed.
+  const consumeKey = `consumed-${key}`;
+  if (sneakKeys.has(key) && !_sneakCombatPairUsed.has(consumeKey)) {
+    _sneakCombatPairUsed.add(consumeKey);
+    r.applies = true;
+    const atkBase = HDR + atkOwner * STRIDE;
+    if (atkBase + 0x16 <= civs.bytes.length) {
+      const atkGov = civs.bytes[atkBase + 0x15];
+      if (atkGov > 4) r.popularityCheck = true;
+    }
+  }
+  return r;
+}
+
 function readWonderOwner(wondersRegion, citiesRegion, wonderId) {
   if (!wondersRegion || wonderId < 0 || wonderId >= 28) return null;
   const dv = new DataView(wondersRegion.bytes.buffer,
@@ -251,7 +414,7 @@ const DIR_DELTAS = [
   [-1,  1], [-2,  0], [-1, -1], [ 0, -2],
 ];
 
-function findDefenderByDirection(allUnits, attacker, direction, ctx) {
+function findDefenderByDirection(allUnits, attacker, direction, ctx, unitTypeStats) {
   const delta = DIR_DELTAS[direction];
   if (!delta) return null;
   const tx = attacker.x + delta[0], ty = attacker.y + delta[1];
@@ -280,7 +443,7 @@ function findDefenderByDirection(allUnits, attacker, direction, ctx) {
     const def = calcUnitDefenseStrength(
       candidate, ctx.defTerrain, ctx.defInCity, ctx.defCityHasWalls,
       ctx.defHasFortress, ctx.defOnRiver, ctx.defCityBuildings,
-      attacker.type,
+      attacker.type, unitTypeStats ? { unitTypeStats } : undefined,
     );
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
     const hp = maxHp - u.damageTaken;
@@ -346,12 +509,28 @@ function defenderSlotFromEffSequence(effSequence) {
 function pickFromCombatContext(combat) {
   const cc = combat.combatContext;
   if (!cc?.attacker) return null;
+  // Detect the pre-2026-04-28 Frida slot truncation bug: combatContext was
+  // built with attackerIdx & 0xFF, so for slots >= 256 it captured the
+  // wrong unit's struct. args[0] (= combat.attackerSlot) is NOT truncated.
+  // When they disagree by exactly the 0xFF mask, fall through to snapshot.
+  const realSlot = combat.attackerSlot >>> 0;
+  const ccSlot = (cc.attackerIdx >>> 0);
+  if (realSlot !== ccSlot && (realSlot & 0xFF) === ccSlot) return null;
   const baseTurn = turnAtTime(combat.time_ms);
-  // Find any nearby snapshot for tile/city info (terrain rarely
-  // changes mid-turn; cities are static unless captured/destroyed).
-  const tries = [baseTurn];
-  for (let d = 1; d <= 5; d++) tries.push(baseTurn - d, baseTurn + d);
-  let regions = null, turn = baseTurn;
+  // Snapshots are captured at start-of-turn (after settle from turn-change
+  // events), so turn N's snap reflects end-of-turn-(N-1) state. A combat
+  // at turn N happens DURING turn N's processing — by which point
+  // mid-turn tile changes (Settler completes fortress/irrigation, city
+  // founded, pollution cleared) may have applied. Prefer turn N+1's snap
+  // for tile/city state (it captures end-of-turn-N), falling back to
+  // turn N or earlier. Fixed idx 203 (fortress at (62,18) built mid-turn
+  // 132 by AI Settler — only visible in turn 133's snapshot).
+  // Translate relative turn-pair index → absolute snapshot turn so loadSnap
+  // finds turn_NNNN_*.bin even when the session starts mid-game.
+  const baseAbs = absTurn(baseTurn);
+  const tries = [baseAbs + 1, baseAbs];
+  for (let d = 1; d <= 5; d++) tries.push(baseAbs - d, baseAbs + d + 1);
+  let regions = null, turn = baseAbs;
   for (const t of tries) {
     if (t < 0) continue;
     const r = loadSnap(t);
@@ -375,6 +554,29 @@ function pickFromCombatContext(combat) {
     : { defTerrain: 1, defOnRiver: false, defHasFortress: false,
         defInCity: false, defCityHasWalls: false, defCityHasPalace: false,
         defCityBuildings: null, defCitySize: 0, city: null };
+  // Override city fields with Frida's per-combat city capture when
+  // present. Snapshots are start-of-turn so they miss mid-turn captures
+  // (which can destroy walls). The cities array in combatContext is
+  // captured at FUN_00580341 entry — exact pre-combat state.
+  if (Array.isArray(cc.cities) && cc.cities.length) {
+    const cityHere = cc.cities.find(c => c.x === tx && c.y === ty);
+    if (cityHere) {
+      const buildings = new Set(cityHere.buildings);
+      ctx.defInCity = true;
+      ctx.defCityHasWalls = buildings.has(8);
+      ctx.defCityHasPalace = buildings.has(1);
+      ctx.defCityBuildings = buildings;
+      ctx.defCitySize = cityHere.size;
+    } else {
+      // Frida saw the 9-tile window and there's no city at the target
+      // tile — overrides any stale snapshot reading.
+      ctx.defInCity = false;
+      ctx.defCityHasWalls = false;
+      ctx.defCityHasPalace = false;
+      ctx.defCityBuildings = null;
+      ctx.defCitySize = 0;
+    }
+  }
   // Map Frida neighbor structs into the validator's unit shape.
   const allUnits = (cc.neighbors || []).map(n => ({
     slot: n.slot, x: n.x, y: n.y,
@@ -390,7 +592,8 @@ function pickFromCombatContext(combat) {
     def = allUnits.find(u => u.slot === pickedSlot);
   }
   if (!def) {
-    def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+    def = findDefenderByDirection(allUnits, att, combat.direction, ctx,
+      resolveUnitTypes(regions));
   }
   if (!def) return null;
   return { turn, regions, attacker: att, defender: def, ctx, source: 'frida' };
@@ -404,8 +607,9 @@ function pickSnapshot(combat) {
   if (fromFrida) return fromFrida;
   const baseTurn = turnAtTime(combat.time_ms);
   if (baseTurn < 0) return null;
-  const tries = [baseTurn];
-  for (let d = 1; d <= 5; d++) tries.push(baseTurn - d, baseTurn + d);
+  const baseAbs = absTurn(baseTurn);
+  const tries = [baseAbs];
+  for (let d = 1; d <= 5; d++) tries.push(baseAbs - d, baseAbs + d);
   for (const t of tries) {
     if (t < 0) continue;
     const regions = loadSnap(t);
@@ -419,7 +623,8 @@ function pickSnapshot(combat) {
     const tx = att.x + delta[0], ty = att.y + delta[1];
     const ctx = buildDefenderContext(regions, tx, ty);
     const allUnits = readAllUnits(unitsRegion);
-    const def = findDefenderByDirection(allUnits, att, combat.direction, ctx);
+    const def = findDefenderByDirection(allUnits, att, combat.direction, ctx,
+      resolveUnitTypes(regions));
     if (def) return { turn: t, regions, attacker: att, defender: def, ctx, source: 'snap' };
   }
   return null;
@@ -455,9 +660,9 @@ for (let i = 0; i < resolved.length; i++) {
     continue;
   }
   const { turn, regions, attacker: att, defender: def, ctx } = picked;
-  const wondersRegion = regions.get('wonders');
-  const globalsRegion = regions.get('globals');
-  const citiesRegion = regions.get('cities');
+  const wondersRegion = regions ? regions.get('wonders') : null;
+  const globalsRegion = regions ? regions.get('globals') : null;
+  const citiesRegion = regions ? regions.get('cities') : null;
   const { defTerrain, defOnRiver, defHasFortress, defInCity,
           defCityHasWalls, defCityHasPalace, defCityBuildings, defCitySize } = ctx;
   const difficulty = readDifficulty(globalsRegion);
@@ -490,6 +695,21 @@ for (let i = 0; i < resolved.length; i++) {
     const movesUsed = att.movesLeft;
     const maxInternalMoves = (UNIT_MOVE_POINTS[att.type] || 1) * MOVEMENT_MULTIPLIER;
     const atkMovesLeft = Math.max(0, maxInternalMoves - movesUsed);
+    // Sneak-attack detection from snapshot civ relations.
+    // Binary FUN_00580341:280-386 takes the war-state branch when the
+    // attacker is breaking a peace/ceasefire. That branch (a) doubles
+    // effAtk and (b) makes one pre-combat rand call for popularity-dip
+    // when attacker's gov > 4 (Republic/Democracy).
+    // Sneak attack is opt-in via env var. The snapshot-diff heuristic
+    // (war-bit transitions across turn boundaries + first-combat-per-pair)
+    // closes idx 3 of game_20260428_204217 cleanly but produces both false
+    // positives and false negatives on longer sessions where civs declare
+    // war multiple times. v3's `sneakAttackPopularityCheck` port is
+    // correct; reliable per-combat detection requires Frida to capture
+    // the binary's bVar18 flag at FUN_00580341 entry, not a snapshot diff.
+    const sneak = process.env.VALIDATE_SNEAK
+      ? detectSneakAttack(regions, att.owner, def.owner, turn)
+      : { applies: false, popularityCheck: false };
     resolveCombat(
       attacker, defender,
       defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
@@ -502,6 +722,9 @@ for (let i = 0; i < resolved.length; i++) {
         defCityHasPalace,
         defCitySize,
         humanPlayers: HUMAN_PLAYERS_MASK,
+        unitTypeStats: resolveUnitTypes(regions),
+        sneakAttack: sneak.applies,
+        sneakAttackPopularityCheck: sneak.popularityCheck,
       },
     );
     v3Draws = rng.callCount;
@@ -535,6 +758,43 @@ for (let i = 0; i < resolved.length; i++) {
   if (verbose && !drawsMatch) {
     console.log(`         bin rand_exit=0x${(p.rand_exit >>> 0).toString(16).padStart(8, '0')}, ` +
       `v3 rand_state=0x${(v3State >>> 0).toString(16).padStart(8, '0')}`);
+  }
+  // Effective-strength diagnostic: when bin captured atk/def calls, compare
+  // last atk and last def return values to v3's locally-computed strengths.
+  // This pinpoints which side has the calc gap (mismatch in effAtk vs effDef).
+  if (!drawsMatch && Array.isArray(p.effSequence) && p.effSequence.length) {
+    let lastAtk = null, lastDef = null;
+    for (let k = p.effSequence.length - 1; k >= 0; k--) {
+      const e = p.effSequence[k];
+      if (!lastDef && e.fn === 'def') lastDef = e;
+      if (!lastAtk && e.fn === 'atk') lastAtk = e;
+      if (lastAtk && lastDef) break;
+    }
+    const v3DefCandidate = {
+      type: def.type, owner: def.owner,
+      veteran: !!(def.statusFlags & 0x2000),
+      movesRemain: def.damageTaken,
+      orders: def.order === 2 ? 'fortified' : undefined,
+    };
+    const v3Def = calcUnitDefenseStrength(
+      v3DefCandidate, defTerrain, defInCity, defCityHasWalls,
+      defHasFortress, defOnRiver, defCityBuildings, att.type,
+      { unitTypeStats: resolveUnitTypes(regions) },
+    );
+    const binDef = lastDef ? lastDef.val : null;
+    const binAtk = lastAtk ? lastAtk.val : null;
+    const tags = [];
+    if (defInCity) tags.push('city');
+    if (defCityHasWalls) tags.push('walls');
+    if (defHasFortress) tags.push('fort');
+    if (defOnRiver) tags.push('river');
+    if (def.order === 2) tags.push('fortified');
+    if (def.statusFlags & 0x2000) tags.push('vet');
+    const ctxStr = tags.length ? `[${tags.join(',')}]` : '[-]';
+    console.log(`         effDef bin=${binDef} v3=${v3Def}` +
+      (binAtk != null ? ` | effAtk bin=${binAtk}` : '') +
+      ` | def slot=${lastDef?.unitIdx} flag=${lastDef?.flag} atkIdx=${lastDef?.atkIdx} ` +
+      `${ctxStr} terr=${defTerrain} ord=${def.order} t=${def.type}`);
   }
 }
 

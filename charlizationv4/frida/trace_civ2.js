@@ -673,7 +673,9 @@ function readActiveUnitIdx(base) {
   } catch (_) { return null; }
 }
 function readUnitState(base, unitIdx) {
-  if (unitIdx < 0 || unitIdx > 0xFF) return null;
+  // Civ2 supports unit slots beyond 255 (sniffer has seen up to ~500).
+  // Earlier 0xFF cap silently dropped late-game high-slot units.
+  if (unitIdx < 0 || unitIdx > 0xFFFF) return null;
   try {
     const UNIT_BASE = 0x006560F0;
     const UNIT_STRIDE = 0x20;
@@ -704,7 +706,10 @@ function readUnitState(base, unitIdx) {
 // the lock-step validator has the exact pre-combat state regardless
 // of when the next snapshot was taken.
 function readCombatContext(base, attackerIdx) {
-  if (attackerIdx < 0 || attackerIdx > 0xFF) return null;
+  // Civ2 unit slots are 16-bit; DAT_00655B16 (count) is uint16.
+  // Cap at 0xFFFF, NOT 0xFF — earlier 0xFF cap silently dropped any
+  // slot >= 256 and Frida built combatContext around the wrong unit.
+  if (attackerIdx < 0 || attackerIdx > 0xFFFF) return null;
   try {
     const att = readUnitState(base, attackerIdx);
     if (!att) return { attackerIdx, attacker: null, neighbors: [] };
@@ -741,7 +746,40 @@ function readCombatContext(base, attackerIdx) {
         orders: u.add(0x0F).readU8(),
       });
     }
-    return { attackerIdx, attacker: att, neighbors };
+    // Capture city state at the attacker's 9-tile window, AT COMBAT TIME.
+    // Snapshot regions are taken at start-of-turn, but cities can be
+    // captured mid-turn; capture often destroys walls (binary FUN_*).
+    // Without a per-combat city dump the validator reads stale walls
+    // from the start-of-turn snap and overestimates effDef. Pinpointed
+    // via game_20260428_181426 idx 26: Amsterdam captured by civ 3
+    // before idx 26's combat; snap shows walls=YES, post-capture had
+    // walls cleared → bin effDef=48, v3 144.
+    const CITY_BASE = 0x0064F340;
+    const CITY_STRIDE = 0x58;
+    const DAT_00655B18 = 0x00655B18; // total city count
+    const cityCount = base.add(DAT_00655B18 - 0x00400000).readU16();
+    const cities = [];
+    for (let i = 0; i < cityCount; i++) {
+      const c = base.add(CITY_BASE - 0x00400000 + i * CITY_STRIDE);
+      const cx = c.readS16();
+      const cy = c.add(0x02).readS16();
+      if (!targets.has(`${cx},${cy}`)) continue;
+      // 5 packed building bytes at city+0x34..0x38, per FUN_005ae3bf
+      // (id → byteIdx = id>>3, bitMask = 1<<(id&7)).
+      const buildings = [];
+      for (let id = 1; id < 40; id++) {
+        const byteIdx = id >> 3;
+        const mask = 1 << (id & 7);
+        if (c.add(0x34 + byteIdx).readU8() & mask) buildings.push(id);
+      }
+      cities.push({
+        idx: i, x: cx, y: cy,
+        owner: c.add(0x08).readU8(),
+        size: c.add(0x12).readU8(),
+        buildings,
+      });
+    }
+    return { attackerIdx, attacker: att, neighbors, cities };
   } catch (_) { return null; }
 }
 
@@ -1084,7 +1122,8 @@ function attachHook(entry) {
         // lock-step validator doesn't depend on between-turn snapshots
         // for slot identity / damage / position.
         if (entry.captureCombatContext && args[0] != null) {
-          const attackerIdx = args[0].toInt32() & 0xFF;
+          // 16-bit slot index — masking & 0xFF mistruncated slots >= 256.
+          const attackerIdx = args[0].toInt32() & 0xFFFF;
           msg.combatContext = readCombatContext(base, attackerIdx);
         }
         // captureRandSequence: install temp Interceptors on _rand,
@@ -1111,7 +1150,7 @@ function attachHook(entry) {
             }));
             const atkAddr = base.add(0x0057E2C3 - 0x00400000);
             this._tempListeners.push(Interceptor.attach(atkAddr, {
-              onEnter(args) { this._unit = args[0].toInt32() & 0xFF; },
+              onEnter(args) { this._unit = args[0].toInt32() & 0xFFFF; },
               onLeave(retval) {
                 effRef.push({ fn: 'atk', unitIdx: this._unit,
                               val: retval.toInt32() });
@@ -1120,7 +1159,7 @@ function attachHook(entry) {
             const defAddr = base.add(0x0057E33A - 0x00400000);
             this._tempListeners.push(Interceptor.attach(defAddr, {
               onEnter(args) {
-                this._unit = args[0].toInt32() & 0xFF;
+                this._unit = args[0].toInt32() & 0xFFFF;
                 this._flag = args[1].toInt32();
                 this._atkIdx = args[2].toInt32();
               },
