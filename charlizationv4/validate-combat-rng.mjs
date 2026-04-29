@@ -760,6 +760,7 @@ for (let i = 0; i < resolved.length; i++) {
     } else {
       sneak = { applies: false, popularityCheck: false };
     }
+    const outEff = {};
     resolveCombat(
       attacker, defender,
       defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
@@ -775,8 +776,10 @@ for (let i = 0; i < resolved.length; i++) {
         unitTypeStats: resolveUnitTypes(regions),
         sneakAttack: sneak.applies,
         sneakAttackPopularityCheck: sneak.popularityCheck,
+        outEff,
       },
     );
+    p._v3Eff = outEff;
     v3Draws = rng.callCount;
     v3State = rng.state;
   } catch (e) {
@@ -841,10 +844,14 @@ for (let i = 0; i < resolved.length; i++) {
     if (def.order === 2) tags.push('fortified');
     if (def.statusFlags & 0x2000) tags.push('vet');
     const ctxStr = tags.length ? `[${tags.join(',')}]` : '[-]';
+    const v3Atk = p._v3Eff?.effAtk;
+    const hpFp = p._v3Eff
+      ? ` | hp ${p._v3Eff.atkMaxHp}/${p._v3Eff.defMaxHp} fp ${p._v3Eff.atkFp}/${p._v3Eff.defFp}`
+      : '';
     console.log(`         effDef bin=${binDef} v3=${v3Def}` +
-      (binAtk != null ? ` | effAtk bin=${binAtk}` : '') +
+      (binAtk != null ? ` | effAtk bin=${binAtk}${v3Atk != null ? ` v3=${v3Atk}` : ''}` : '') +
       ` | def slot=${lastDef?.unitIdx} flag=${lastDef?.flag} atkIdx=${lastDef?.atkIdx} ` +
-      `${ctxStr} terr=${defTerrain} ord=${def.order} t=${def.type}`);
+      `${ctxStr} terr=${defTerrain} ord=${def.order} t=${def.type}${hpFp}`);
   }
 }
 

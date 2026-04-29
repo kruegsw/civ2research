@@ -499,16 +499,34 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // (mounted units: Horsemen, Knights, Crusaders, Dragoons, Cavalry, etc.)
   // Check: calc_unit_movement_points(atk) == COSMIC_MULTIPLIER * 2
   // Binary FUN_00580341:138: also requires attacker maxHP == 10 (raw HP value of 1)
-  if (UNIT_PIKEMAN_BONUS.has(defender.type) && atkDomain === 0 &&
+  // WW1 scenario reuses stock type IDs for non-pikemen units, so the
+  // hardcoded UNIT_PIKEMAN_BONUS set false-positives. When utStats is
+  // present, prefer flagsB & 0x04 from the runtime table.
+  // Same for the attacker's mounted check — use scenario hp byte (already
+  // ×10) when present rather than stock UNIT_HP[type].
+  const defIsPikeman = defUt
+    ? (defUt.flagsB & 0x04) !== 0
+    : UNIT_PIKEMAN_BONUS.has(defender.type);
+  const atkRawHp10 = atkUt && atkUt.hp != null
+    ? atkUt.hp === 10
+    : (UNIT_HP[attacker.type] || 1) === 1;
+  if (defIsPikeman && atkDomain === 0 &&
       (UNIT_MOVE_POINTS[attacker.type] || 0) === 2 &&
-      (UNIT_HP[attacker.type] || 1) === 1) {
+      atkRawHp10) {
     effDef += effDef >> 1; // ×1.5 defense
   }
 
   // ── B.2: Anti-air defense bonus vs air/missiles (flagsB 0x20) ──
   // Any unit with anti-air flag gets ×3 defense vs non-missile air, ×5 vs missiles.
-  if (UNIT_ANTI_AIR.has(defender.type) && atkDomain === 1) {
-    if (UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) {
+  // Scenario flagsB & 0x20 takes precedence over hardcoded UNIT_ANTI_AIR.
+  const defIsAntiAir = defUt
+    ? (defUt.flagsB & 0x20) !== 0
+    : UNIT_ANTI_AIR.has(defender.type);
+  const atkIsMissile = atkUt
+    ? (atkUt.flagsB & 0x10) !== 0
+    : UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type);
+  if (defIsAntiAir && atkDomain === 1) {
+    if (atkIsMissile) {
       effDef *= 5; // ×5 vs missiles (cruise missile, nuclear missile)
     } else {
       effDef *= 3; // ×3 vs normal air units (fighters, bombers, helicopters)
@@ -658,7 +676,11 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // reproduces the binary's rand_exit on off-by-N combats.
   if (opts?.effAtkOverride != null) effAtk = opts.effAtkOverride | 0;
   if (opts?.effDefOverride != null) effDef = opts.effDefOverride | 0;
-  if (opts?.outEff) { opts.outEff.effAtk = effAtk; opts.outEff.effDef = effDef; }
+  if (opts?.outEff) {
+    opts.outEff.effAtk = effAtk; opts.outEff.effDef = effDef;
+    opts.outEff.atkMaxHp = atkMaxHp; opts.outEff.defMaxHp = defMaxHp;
+    opts.outEff.atkFp = atkFp; opts.outEff.defFp = defFp;
+  }
 
   // Current HP — movesRemain is already in internal HP scale (UNIT_HP * 10)
   let atkHp = atkMaxHp - (attacker.movesRemain || 0);
