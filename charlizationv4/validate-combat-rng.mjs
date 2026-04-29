@@ -175,10 +175,20 @@ function readUnit(unitsRegion, slotIdx) {
 }
 
 // Parse the snapshot's `unit_types` region (60 entries × 20 bytes,
-// captured at base 0x0064B1B8). Per cross-checking FUN_0057e33a:
-// real-record offset 4 = flagsA, offset 5 = flagsB, offset 9 = domain.
+// captured at base 0x0064B1B8). Per cross-checking FUN_0057e33a /
+// FUN_0057e2c3 / FUN_00580341:
+//   offset 0x04 = flagsA   (negate-walls bit 0x40, interceptor bit 0x10)
+//   offset 0x05 = flagsB   (missile bit 0x10, pikeman bit 0x04)
+//   offset 0x09 = domain   (0=ground 1=air 2=sea)
+//   offset 0x0C = attack
+//   offset 0x0D = defense
+//   offset 0x0E = hp       (already ×10 — RULES.TXT value × 10)
+//   offset 0x0F = fp
+// Scenarios (e.g. WW1) override atk/def/hp/fp; without these the v3
+// engine uses stock UNIT_ATK/UNIT_DEF/UNIT_HP/UNIT_FP and miscounts
+// every combat by 2-4× on effDef.
 // Returns null if region missing (older captures) — combat.js falls
-// back to hardcoded UNIT_NEGATES_WALLS / UNIT_AIR_INTERCEPTOR / UNIT_DOMAIN.
+// back to hardcoded sets.
 function parseUnitTypeStats(region) {
   if (!region) return null;
   const STRIDE = 0x14;
@@ -190,6 +200,10 @@ function parseUnitTypeStats(region) {
       flagsA: region.bytes[o + 0x04],
       flagsB: region.bytes[o + 0x05],
       domain: region.bytes[o + 0x09],
+      atk:    region.bytes[o + 0x0C],
+      def:    region.bytes[o + 0x0D],
+      hp:     region.bytes[o + 0x0E],
+      fp:     region.bytes[o + 0x0F],
     };
   }
   return out;
@@ -213,7 +227,10 @@ function loadSidecarUnitTypes() {
       if (Array.isArray(data?.types)) {
         const out = new Array(data.types.length);
         for (const t of data.types) {
-          out[t.type] = { flagsA: t.flagsA, flagsB: t.flagsB, domain: t.domain };
+          out[t.type] = {
+            flagsA: t.flagsA, flagsB: t.flagsB, domain: t.domain,
+            atk: t.atk, def: t.def, hp: t.hp, fp: t.fp,
+          };
         }
         console.log(`# Loaded unit_types sidecar: ${path}`);
         _sidecarCache = out;

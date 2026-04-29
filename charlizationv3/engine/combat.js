@@ -113,9 +113,9 @@ export function sumStackProperty(state, gx, gy, owner, mode) {
  */
 export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFortress, onRiver, cityBuildings, attackerType, gameState) {
   // Scenario unit-type stats override (from snapshot's `unit_types` region).
-  // Each entry: { flagsA, flagsB, domain }. .scn files can change these
-  // (e.g. flag 0x40 = negates walls, flag 0x10 = air interceptor / missile).
-  // Without this, hardcoded stock-RULES sets are used.
+  // Each entry: { flagsA, flagsB, domain, atk, def, hp, fp }. Scenarios
+  // (e.g. WW1) override stock RULES; without this, hardcoded UNIT_DEF /
+  // UNIT_NEGATES_WALLS / UNIT_AIR_INTERCEPTOR / UNIT_DOMAIN are used.
   const utOvr = gameState?.unitTypeStats;
   const utLookup = (t) => (utOvr && t != null && t >= 0) ? utOvr[t] : null;
   const isNegatesWalls = (t) => {
@@ -138,7 +138,9 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   // Use ?? not || so genuine def=0 units (Diplomat, Spy, Missiles) keep
   // their 0 base — binary respects it, giving effDef=0 (idx 8 of session
   // game_20260428_204217: t46 Diplomat → bin effDef=0, v3 was 8).
-  const defBase = UNIT_DEF[unit.type] ?? 1;
+  // Scenario `def` byte overrides stock UNIT_DEF when present.
+  const defOvr = utLookup(unit.type);
+  const defBase = (defOvr && defOvr.def != null) ? defOvr.def : (UNIT_DEF[unit.type] ?? 1);
   const defDomain = domainOf(unit.type, 0);
   const terrainMul = TERRAIN_DEFENSE[terrain] ?? 2;
 
@@ -405,18 +407,29 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
  *             treatyViolation: boolean }}
  */
 export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty, atkMovesLeft, opts) {
-  const atkBase = UNIT_ATK[attacker.type] ?? 1;
-  const defBase = UNIT_DEF[defender.type] ?? 1;
+  // Scenario unit-type stats override (e.g. WW1.scn). Each entry:
+  // { flagsA, flagsB, domain, atk, def, hp, fp }. When present these
+  // shadow the stock UNIT_ATK / UNIT_DEF / UNIT_HP / UNIT_FP arrays —
+  // critical because scenarios commonly retune combat stats and v3
+  // would otherwise be off by 2-4× on every effDef calc.
+  const utStats = opts?.unitTypeStats || null;
+  const utLookup = (t) => (utStats && t != null && t >= 0) ? utStats[t] : null;
+  const atkUt = utLookup(attacker.type);
+  const defUt = utLookup(defender.type);
+  const atkBase = (atkUt && atkUt.atk != null) ? atkUt.atk : (UNIT_ATK[attacker.type] ?? 1);
+  const defBase = (defUt && defUt.def != null) ? defUt.def : (UNIT_DEF[defender.type] ?? 1);
 
-  let atkMaxHp = (UNIT_HP[attacker.type] || 1) * 10;
-  let defMaxHp = (UNIT_HP[defender.type] || 1) * 10;
-  let atkFp = UNIT_FP[attacker.type] || 1;
-  let defFp = UNIT_FP[defender.type] || 1;
+  // hp byte in the runtime table is already RULES.TXT value × 10
+  // (binary stores it pre-multiplied); no extra ×10 when override is set.
+  let atkMaxHp = (atkUt && atkUt.hp != null) ? atkUt.hp : (UNIT_HP[attacker.type] || 1) * 10;
+  let defMaxHp = (defUt && defUt.hp != null) ? defUt.hp : (UNIT_HP[defender.type] || 1) * 10;
+  let atkFp = (atkUt && atkUt.fp != null) ? atkUt.fp : (UNIT_FP[attacker.type] || 1);
+  let defFp = (defUt && defUt.fp != null) ? defUt.fp : (UNIT_FP[defender.type] || 1);
 
-  const atkDomain = UNIT_DOMAIN[attacker.type] ?? 0;
-  const defDomain = UNIT_DOMAIN[defender.type] ?? 0;
+  const atkDomain = (atkUt && atkUt.domain != null) ? atkUt.domain : (UNIT_DOMAIN[attacker.type] ?? 0);
+  const defDomain = (defUt && defUt.domain != null) ? defUt.domain : (UNIT_DOMAIN[defender.type] ?? 0);
   const atkRole = UNIT_ROLE[attacker.type] ?? 0;
-  const defAtk = UNIT_ATK[defender.type] || 0;
+  const defAtk = (defUt && defUt.atk != null) ? defUt.atk : (UNIT_ATK[defender.type] || 0);
 
   // Extract options
   const amphibious = opts?.amphibious || false;
@@ -429,10 +442,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const humanPlayers = opts?.humanPlayers ?? 0xFF; // default: all human
   const defenderReputation = opts?.defenderReputation ?? 100;
   const singleRoundCombat = opts?.singleRoundCombat || false;
-  // Scenario unit-type stats — forwarded into calcUnitDefenseStrength so
-  // .scn files override hardcoded UNIT_NEGATES_WALLS / UNIT_AIR_INTERCEPTOR
-  // / UNIT_DOMAIN sets (which are stock-RULES values).
-  const unitTypeStats = opts?.unitTypeStats || null;
+  // utStats already extracted at top of function; alias for downstream
+  // calcUnitDefenseStrength forwarding.
+  const unitTypeStats = utStats;
 
   // ── Special interaction: Air attack vs unarmed ships ──────────
   // Ported from FUN_00580341 lines 124-129: role 3 (air attack) vs
