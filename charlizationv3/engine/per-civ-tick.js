@@ -59,6 +59,7 @@
 
 import { TF, getTreatyFlags, setTreatyFlags } from './diplomacy.js';
 import { hasWonderEffect } from './utils.js';
+import { aiTechTradeNegotiation, aiPeaceYearEncounter } from './ai/diplomai.js';
 
 // Bit constants not already exposed by diplomacy.js.
 // (TF already covers CONTACT=0x1, CEASEFIRE=0x2, PEACE=0x4, ALLIANCE=0x8,
@@ -222,10 +223,9 @@ export function processPerCivTick(civSlot, state, mapBase) {
   }
 
   // ── Step 4b (binary lines 50-52) — every 3 turns decrement patience ──
-  // DAT_0064c6bf (patience at +0x1F) -= 1 if > 0 and (turn & 3) == 0.
-  // (The binary uses `(short)turn % 3 == 0` which matches `turn & 3 == 0`
-  // modulo sign-edge turns; the seeded turn counter is always ≥ 0.)
-  if ((turnNumber & 3) === 0 && (civ.patience || 0) > 0) {
+  // DAT_0064c6bf (patience at +0x1F) -= 1 if > 0 and turn % 3 == 0.
+  // Binary line 50: `(int)(short)DAT_00655af8 % 3 == 0` — modulo, NOT bitmask.
+  if ((turnNumber % 3) === 0 && (civ.patience || 0) > 0) {
     cloneCivsOnce();
     civsMut[civSlot] = {
       ...civsMut[civSlot],
@@ -330,10 +330,18 @@ export function processPerCivTick(civSlot, state, mapBase) {
               const peaceYearBit = !!(state.peaceYearFlag);
 
               if (peaceBit && peaceYearBit) {
-                // Binary line 156: FUN_0055d8d8(civ, other, 0, 0)
-                // TODO(binary): full FUN_0055d8d8 port.
-                const evt = diploPeaceYearStub(state, civSlot, other);
-                if (evt) events.push(evt);
+                // Binary line 156: FUN_0055d8d8(civ, other, 0, 0).
+                // Full port — entry treaty bits, both-peaceful gate, tech
+                // trade, sign-peace / form-or-cancel-alliance / declare-war
+                // state mutations (binary lines 5656-5919). The helper
+                // mutates the canonical treaty store via addTreatyFlag /
+                // clearTreatyFlag (bidirectional) and setTreatyFlags (one-
+                // way). Pick up the post-call state for civSlot→other
+                // wholesale — the helper's writes are the authoritative
+                // result, superseding the EVERY_TURN_CLEAR_MASK + 32-turn
+                // clears applied above.
+                aiPeaceYearEncounter(state, civSlot, other);
+                newFlagsAB = getTreatyFlags(state, civSlot, other);
               } else if ((newFlagsAB & TF.CONTACT) !== 0 &&
                          (flagsAB & TF.INTRUDER) !== 0 &&
                          (flagsBA & 0x800) === 0 /* WAR_STARTED opposite */ &&
@@ -351,9 +359,8 @@ export function processPerCivTick(civSlot, state, mapBase) {
               }
             } else {
               // Binary line 160-161: FUN_0055d1e2(civ, other)
-              // Alliance maintenance / attitude refresh.
-              // TODO(binary): full FUN_0055d1e2 port.
-              allianceMaintenanceStub(state, civSlot, other);
+              // AI tech trade negotiation (allied pair).
+              aiTechTradeNegotiation(state, civSlot, other, civSlot);
             }
 
             // Binary lines 162-168: if CONTACT && !INTRUDER_opposite,
@@ -378,7 +385,7 @@ export function processPerCivTick(civSlot, state, mapBase) {
                    (flagsAB & TF.PERIODIC_10) === 0) {
           // Binary lines 173-177: off-cycle (every 8 turns not overlapping 16)
           // run FUN_0055d1e2 for alliances.
-          allianceMaintenanceStub(state, civSlot, other);
+          aiTechTradeNegotiation(state, civSlot, other, civSlot);
         }
       }
     }
@@ -392,16 +399,17 @@ export function processPerCivTick(civSlot, state, mapBase) {
   // ── Step 6 (binary lines 181-214) — AI final housekeeping ──
   // Only runs for AI civs (not human). Emits per-other-civ war-
   // notification messages to other humans in the game (broadcastLevel>2
-  // gated), and calls FUN_0055f7d1 (per-civ global reputation refresh).
+  // gated), and calls FUN_0055f7d1 — the AI MILITARY AID handler that
+  // gifts units between allied civs when one is being outpowered in war.
   //
-  // Since v3 runs single-human (or headless) games, the broadcast paths
-  // are no-ops. We still call the port's equivalent of FUN_0055f7d1:
-  // global rank / score aggregation that end-turn.js already does at
-  // cycle boundary (line 117 powerRanking). Skip — already covered.
+  // FUN_0055f7d1 is ported as `considerMilitaryAid` in diplomai.js but
+  // is invoked from the action-path (`generateDiplomaticActions`) rather
+  // than directly from per-civ-tick — the v3 reducer expects GIFT_UNIT
+  // actions to flow through validateAction, not direct mutations.
   //
-  // Binary lines 199-213 (final local_14 loop): more broadcast messaging
-  // when broadcastLevel > 2. No state effect in single-human mode.
-  // TODO(binary): broadcast-level popup events.
+  // Binary lines 199-213 (final local_14 loop): per-civ broadcast
+  // messaging when broadcastLevel > 2. No state effect in single-human
+  // mode. TODO(binary): broadcast-level popup events.
 
   return events;
 }
@@ -532,29 +540,6 @@ function setLastContactTurnDirect(state, civA, civB, value) {
 function isHumanLookup(civSlot, state) {
   const mask = state.humanPlayers || 0;
   return !!(mask & (1 << civSlot));
-}
-
-/**
- * Stub for FUN_0055d8d8 — "peace year bonus" handler.
- * Runs at 16-turn intervals when both civs are at peace and global
- * peace-year flag is set. Emits attitude / score events.
- *
- * TODO(binary): full port of block_00550000.c:5473 (~600 bytes). For
- * now we only emit the event. State effect is minor (attitude +1/-1).
- */
-function diploPeaceYearStub(state, civA, civB) {
-  return null;
-}
-
-/**
- * Stub for FUN_0055d1e2 — "alliance maintenance" handler.
- * Called every 8-16 turns for allied pairs to refresh attitudes and
- * mutual-defense tracking.
- *
- * TODO(binary): full port of block_00550000.c:5321 (~150 bytes).
- */
-function allianceMaintenanceStub(state, civA, civB) {
-  // no-op for now
 }
 
 /**

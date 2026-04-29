@@ -19,10 +19,9 @@
 
 import { validateAction } from '../rules.js';
 import {
-  UNIT_ATK, UNIT_DEF,
+  UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_DOMAIN,
   DIFFICULTY_KEYS,
-  ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
-  UNIT_PREREQS, UNIT_ROLE,
+  ADVANCE_PREREQS,
   IMPROVE_PREREQS, GOVT_TECH_PREREQS, GOVT_INDEX,
   GOVERNMENT_NAMES,
   LEADER_PERSONALITY as LEADER_PERSONALITY_3,
@@ -30,7 +29,7 @@ import {
 import { hasWonderEffect, civHasWonder } from '../utils.js';
 import {
   calcAttitudeScore,
-  TF, getTreatyFlags, addTreatyFlag, clearTreatyFlag,
+  TF, getTreatyFlags, setTreatyFlags, addTreatyFlag, clearTreatyFlag,
   DIPLO_EVENTS, fireDiplomacyEvent,
   declareWar as diplomacyDeclareWar,
   signCeasefire, signPeaceTreaty, formAlliance,
@@ -38,8 +37,10 @@ import {
   getAttitudeLevel, isHostile, isFriendly,
   calcPatienceThreshold, getPatience,
   shouldBetrayTreaty, wouldEnableWonder,
-  calcTributeDemand,
+  calcTributeDemand, shouldProvoke,
 } from '../diplomacy.js';
+import { calcTechValue } from './econai.js';
+import { grantAdvance, handleTechDiscovery } from '../research.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
 // Indexed by rulesCivNumber (0-20). Each entry: [expansionism, militarism]
@@ -109,7 +110,8 @@ function getPersonality(gameState, civSlot) {
 }
 
 /**
- * Get attitude of civSlot toward targetCiv (-100 to +100).
+ * Get hostility byte of civSlot toward targetCiv (0..100).
+ * 0 = Worshipful (most friendly); 100 = Furious (most hostile).
  */
 function getAttitude(gameState, civSlot, targetCiv) {
   const civ = gameState.civs?.[civSlot];
@@ -118,8 +120,14 @@ function getAttitude(gameState, civSlot, targetCiv) {
 }
 
 /**
- * Modify attitude of civSlot toward targetCiv by delta.
- * Clamps to [-100, +100]. Returns the ADJUST_ATTITUDE action.
+ * Modify civSlot's attitude byte toward targetCiv by `delta`.
+ *
+ * Convention: the attitude byte is HOSTILITY 0..100 (binary +0x40+target).
+ *   delta > 0 → MORE hostile (toward Furious / 100).
+ *   delta < 0 → MORE friendly (toward Worshipful / 0).
+ * The reducer clamps the result to [0, 100].
+ *
+ * Returns an ADJUST_ATTITUDE action.
  */
 function makeAttitudeAction(civSlot, targetCiv, delta) {
   return { type: 'ADJUST_ATTITUDE', civSlot, targetCiv, delta };
@@ -171,23 +179,20 @@ function countWars(gameState, civSlot) {
 
 /**
  * Classify greeting tone based on attitude value.
- * Port of FUN_0045705e greeting branch (~3540-3560):
- *   attitude < 4  → hostile
- *   attitude < 26 → guarded
- *   attitude < 50 → neutral
- *   attitude < 74 → friendly
- *   attitude >= 74 → enthusiastic
- *
- * Binary attitude is on a 0-100 scale (not -100 to +100).
+ * Attitude byte is HOSTILITY (0=Worshipful, 100=Furious). Tones map by level:
+ *   level 1 (Worshipful)         → 'enthusiastic'
+ *   level 2-3 (Enthusiastic/Cordial) → 'friendly'
+ *   level 4 (Receptive)          → 'neutral'
+ *   level 5-6 (Neutral/Uncooperative) → 'guarded'
+ *   level >= 7 (Icy/Furious)     → 'hostile'
  */
 function getGreetingTone(attitude) {
-  // Use the 9-level attitude scale from diplomacy.js for consistent grading
   const level = getAttitudeLevel(attitude);
-  if (level <= 1) return 'hostile';      // Enraged / Furious
-  if (level <= 3) return 'guarded';      // Annoyed / Uncooperative
-  if (level === 4) return 'neutral';     // Neutral
-  if (level <= 6) return 'friendly';     // Cordial / Polite
-  return 'enthusiastic';                  // Enthusiastic / Worshipful
+  if (level <= 1) return 'enthusiastic'; // Worshipful
+  if (level <= 3) return 'friendly';     // Enthusiastic / Cordial
+  if (level === 4) return 'neutral';     // Receptive
+  if (level <= 6) return 'guarded';      // Neutral / Uncooperative
+  return 'hostile';                       // Icy / Furious
 }
 
 /**
@@ -202,80 +207,6 @@ function isHumanCiv(gameState, civSlot) {
     return false;
   }
   return civSlot === 1;
-}
-
-/**
- * Count the depth of a tech in the prerequisite tree (0 = no prereqs).
- * Cached per call via a Map to avoid redundant recursion.
- * Port of FUN_004bdaa5 recursive prereq walk.
- */
-function techPrereqDepth(techId, cache) {
-  if (techId < 0 || techId >= 89) return 0;
-  if (cache.has(techId)) return cache.get(techId);
-  // Mark visited to prevent cycles
-  cache.set(techId, 0);
-  const prereqs = ADVANCE_PREREQS[techId];
-  if (!prereqs) { cache.set(techId, 0); return 0; }
-  let maxDepth = 0;
-  for (const pid of prereqs) {
-    if (pid >= 0 && pid < 89) {
-      maxDepth = Math.max(maxDepth, 1 + techPrereqDepth(pid, cache));
-    }
-  }
-  cache.set(techId, maxDepth);
-  return maxDepth;
-}
-
-/**
- * Compute a tech's valuation score for diplomacy.
- * O.1: techs valued by prereq chain depth x military/economic utility.
- *
- * From FUN_004bdb2c (calcTechValue):
- *   value = baseCost * (1 + prereqDepth/4) * utilityMultiplier
- *
- * utilityMultiplier:
- *   - Enables a military unit (ATK >= 3): x2
- *   - Enables a building/wonder: x1.5
- *   - Enables a government: x2
- *   - AI_INTEREST flag: x1.5
- *   - Modern era (epoch 3): x1.25
- */
-function valueTech(techId, civSlot, gameState) {
-  if (techId < 0 || techId >= 89) return 0;
-  const depthCache = new Map();
-  const depth = techPrereqDepth(techId, depthCache);
-  const epoch = ADVANCE_EPOCH[techId] ?? 0;
-
-  let baseValue = 5 + depth * 2;
-
-  // Check if tech enables a military unit
-  for (let ut = 0; ut < (UNIT_PREREQS?.length ?? 0); ut++) {
-    if (UNIT_PREREQS[ut] === techId) {
-      const atk = UNIT_ATK[ut] || 0;
-      if (atk >= 3) { baseValue *= 2; break; }
-      if ((UNIT_ROLE[ut] ?? 0) <= 1) { baseValue *= 1.5; break; }
-    }
-  }
-
-  // Check if tech enables a building
-  if (IMPROVE_PREREQS) {
-    for (let bi = 0; bi < IMPROVE_PREREQS.length; bi++) {
-      if (IMPROVE_PREREQS[bi] === techId) { baseValue *= 1.3; break; }
-    }
-  }
-
-  // Check if tech enables a government
-  for (const govtName of Object.keys(GOVT_TECH_PREREQS)) {
-    if (GOVT_TECH_PREREQS[govtName] === techId) { baseValue *= 2; break; }
-  }
-
-  // AI interest flag
-  if (ADVANCE_AI_INTEREST[techId]) baseValue *= 1.5;
-
-  // Modern era bonus
-  if (epoch === 3) baseValue *= 1.25;
-
-  return Math.floor(baseValue);
 }
 
 /**
@@ -309,10 +240,10 @@ function valueCity(city, gameState) {
  * Evaluate a demand and decide whether to accept.
  * O.1: Different thresholds for tech, gold, map demands.
  *
- * From FUN_0045705e:
- *   Tech demand: accept if attitude > 50 (neutral+) or demander 2x stronger
- *   Gold demand: accept if attitude > 26 (guarded+) and affordable
- *   Map demand:  accept if attitude > 0 (not hostile)
+ * From FUN_0045705e (under hostility convention: low byte = friendly):
+ *   Tech demand: accept if hostility < 50 (neutral+) or demander 2x stronger
+ *   Gold demand: accept if hostility < 74 (guarded+) and affordable
+ *   Map demand:  accept if hostility < 100 (anything but Furious)
  *   Treaty:      see treaty-specific thresholds
  */
 function evaluateDemand(civSlot, fromCiv, demandType, demandValue, gameState, continentData) {
@@ -324,25 +255,25 @@ function evaluateDemand(civSlot, fromCiv, demandType, demandValue, gameState, co
 
   switch (demandType) {
     case 'tech': {
-      // Accept if friendly (attitude > 50) or they're 2x stronger
-      if (attitude > 50) return true;
+      // Accept if friendly (hostility < 50) or they're 2x stronger
+      if (attitude < 50) return true;
       if (powerRatio > 2.0) return true;
-      // Peaceful leaders give tech more readily
-      if (personality.militarism < 0 && attitude > 25) return true;
+      // Peaceful leaders give tech more readily (anything friendlier than Furious)
+      if (personality.militarism < 0 && attitude < 75) return true;
       return false;
     }
     case 'gold': {
       const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
       const pain = valueGold(demandValue, treasury);
-      // Accept if not too painful and attitude is at least guarded
-      if (attitude > 0 && pain < 30) return true;
+      // Accept if not too painful and not maxed-out hostile
+      if (attitude < 100 && pain < 30) return true;
       // Accept if they're much stronger
       if (powerRatio > 2.0 && pain < 60) return true;
       return false;
     }
     case 'map': {
-      // Maps are cheap to share — accept if not hostile
-      if (attitude > -25) return true;
+      // Maps are cheap to share — accept unless very hostile
+      if (attitude < 80) return true;
       return false;
     }
     default:
@@ -608,14 +539,16 @@ export function checkAllianceViolations(state, mapBase, aiCiv) {
       if (roll === 0) {
         // Tolerance check failed — declare war
         actions.push({ type: 'DECLARE_WAR', targetCiv: other });
-        actions.push(makeAttitudeAction(aiCiv, other, -100));
+        // Max hostility: attitude byte is 0..100 hostility (100=furious).
+        actions.push(makeAttitudeAction(aiCiv, other, +100));
 
         fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATE, aiCiv, other, {
           reason: 'alliance_violation',
         });
       } else {
-        // Tolerance check passed — just reduce attitude significantly
-        actions.push(makeAttitudeAction(aiCiv, other, -30));
+        // Tolerance check passed — bump hostility (positive delta on
+        // hostility byte = more hostile per binary convention).
+        actions.push(makeAttitudeAction(aiCiv, other, +30));
       }
 
       // Clear the violation flag regardless
@@ -705,8 +638,8 @@ export function processIntrusionEscalation(state, mapBase, aiCiv) {
           borderScore,
         });
       }
-      // Attitude penalty for intrusion during peace
-      actions.push(makeAttitudeAction(aiCiv, other, -3));
+      // Hostility bump for intrusion during peace (positive delta = more hostile).
+      actions.push(makeAttitudeAction(aiCiv, other, +3));
     } else if (treaty === 'ceasefire') {
       if (intruderCount > 0) {
         fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATORS, aiCiv, other, {
@@ -717,12 +650,12 @@ export function processIntrusionEscalation(state, mapBase, aiCiv) {
           borderScore,
         });
       }
-      // Harsher attitude penalty during ceasefire
-      actions.push(makeAttitudeAction(aiCiv, other, -5));
+      // Harsher hostility bump during ceasefire (+ = more hostile).
+      actions.push(makeAttitudeAction(aiCiv, other, +5));
     } else {
-      // No treaty (uncontacted or bare contact) — direct war consideration
-      // Stronger attitude penalty; shouldDeclareWar will pick this up
-      actions.push(makeAttitudeAction(aiCiv, other, -8));
+      // No treaty (uncontacted or bare contact) — direct war consideration.
+      // Strongest hostility bump; shouldDeclareWar will pick this up.
+      actions.push(makeAttitudeAction(aiCiv, other, +8));
     }
   }
 
@@ -734,104 +667,149 @@ export function processIntrusionEscalation(state, mapBase, aiCiv) {
 /**
  * Consider gifting a military unit to an allied civ that is losing a war.
  *
- * Port of FUN_0055d8d8 military aid path:
- *   - For each allied civ at war: if ally is weaker than their enemy
- *   - Find a non-civilian unit in one of AI's cities
- *   - Score: defense + attack*2 (prefer offensive units)
- *   - Transfer the unit to the ally
- *   - Gate: only consider if AI has 5+ military units, once per turn
+ * Faithful port of FUN_0055f7d1 (block_00550000.c:5982, 2222 bytes).
+ *
+ * Algorithm:
+ *   1. Count `local_14` = number of civs we are AT WAR with.
+ *   2. For each allied civ `ally` (our diplo[ally] & 0x08):
+ *      Gate: ally has ≤ our military_power, OR we have no wars.
+ *      For each civ `enemy` that ally is at war with (their diplo[enemy]
+ *      bit 0x2000 = WAR), with peer-flag (bit 0x200) AND
+ *      ally's military_power ≤ enemy's, AND enemy's powerRank ≥ ally's:
+ *        a. Find best military unit in OUR cities scoring:
+ *             score = (atk*2 + def) * (hp / maxHp)
+ *           Filter: tile threat byte == 4, OR == 5 AND no wars (local_14==0).
+ *        b. Find an undefended ally city (no land defender).
+ *        c. Gift the unit to that ally city.
+ *      One gift per ally, one ally per call.
  *
  * @param {object} state - game state
  * @param {object} mapBase - map data with accessors
- * @param {number} aiCiv - AI civ considering aid
- * @returns {Array<object>} actions generated
+ * @param {number} aiCiv - AI civ considering aid (param_1 in binary)
+ * @returns {Array<object>} GIFT_UNIT actions
  */
 export function considerMilitaryAid(state, mapBase, aiCiv) {
   const actions = [];
 
   if (!state.civs || !state.units) return actions;
 
-  // Gate: only consider if AI has 5+ military units
-  let milUnitCount = 0;
-  for (const u of state.units) {
-    if (!u || u.owner !== aiCiv || u.gx < 0) continue;
-    const atk = UNIT_ATK[u.type] || 0;
-    const def = UNIT_DEF[u.type] || 0;
-    if (atk > 0 || def > 1) milUnitCount++;
+  // Binary lines 6004-6008: local_14 = number of war partners.
+  // (&DAT_0064c6c1)[other*4 + ourCiv*0x594] & 0x20 = byte+1 bit 0x20 of
+  // diplo word = bit 13 = TF.WAR (0x2000).
+  let local_14 = 0;
+  for (let other = 1; other < 8; other++) {
+    if (other === aiCiv) continue;
+    const f = getTreatyFlags(state, aiCiv, other);
+    if (f & TF.WAR) local_14++;
   }
-  if (milUnitCount < 5) return actions;
 
-  let aided = false;
+  // Aggregate military power for each civ (binary: civ + 0x6E).
+  const militaryPower = new Array(8).fill(0);
+  for (let i = 1; i < 8; i++) militaryPower[i] = calcMilitaryStrength(state, i);
 
+  // Binary lines 6009-6135: for each ally, scan their war partners.
   for (let ally = 1; ally < 8; ally++) {
-    if (ally === aiCiv || aided) continue;
+    if (ally === aiCiv) continue;
     if (!(state.civsAlive & (1 << ally))) continue;
-    if (getTreaty(state, aiCiv, ally) !== 'alliance') continue;
+    // Binary 6014: ALLIANCE bit (0x08) of our diplo[ally].
+    const flagsToAlly = getTreatyFlags(state, aiCiv, ally);
+    if ((flagsToAlly & TF.ALLIANCE) === 0) continue;
+    // Binary 6015-6016: ally.military_power <= our.military_power
+    //                    OR local_14 == 0.
+    if (militaryPower[ally] > militaryPower[aiCiv] && local_14 !== 0) continue;
 
-    // Check if ally is at war with someone
-    let allyEnemy = -1;
-    let allyEnemyStr = 0;
-    for (let e = 1; e < 8; e++) {
-      if (e === ally || e === aiCiv) continue;
-      if (!(state.civsAlive & (1 << e))) continue;
-      if (getTreaty(state, ally, e) !== 'war') continue;
-      if (!haveContact(state, ally, e)) continue;
-      const eStr = calcMilitaryStrength(state, e);
-      if (eStr > allyEnemyStr) {
-        allyEnemyStr = eStr;
-        allyEnemy = e;
+    // Inner loop 6017-6023: find an enemy that ally is at war with.
+    for (let enemy = 1; enemy < 8; enemy++) {
+      if (enemy === aiCiv || enemy === ally) continue;
+      if (!(state.civsAlive & (1 << enemy))) continue;
+      const allyToEnemy = getTreatyFlags(state, ally, enemy);
+      // Binary 6019: bit 0x20 of byte+1 = TF.WAR (0x2000).
+      if ((allyToEnemy & TF.WAR) === 0) continue;
+      // Binary 6020: bit 0x02 of byte+1 = bit 9 = 0x200 ("recently
+      // declared" / "war started by them" tracking flag).
+      if ((allyToEnemy & 0x200) === 0) continue;
+      // Binary 6021-6022: enemy.military_power >= ally.military_power.
+      if (militaryPower[ally] > militaryPower[enemy]) continue;
+      // Binary 6023: enemy's power rank ≥ ally's.
+      // (state.powerRanks is the v3 equivalent of DAT_00655c22.)
+      const ranks = state.powerRanks || [];
+      const allyRank = ranks[ally] ?? 3;
+      const enemyRank = ranks[enemy] ?? 3;
+      if (enemyRank < allyRank) continue;
+
+      // Binary lines 6024-6049: find best unit in OUR cities.
+      // Must be in a city we own; score = (atk*2 + def) * hp_ratio.
+      let bestUnit = -1;
+      let bestScore = 0;
+      const ourCities = [];
+      for (const c of (state.cities || [])) {
+        if (c && c.owner === aiCiv && c.size > 0 && c.gx >= 0) ourCities.push(c);
       }
-    }
-    if (allyEnemy < 0) continue;
-
-    // Check if ally is weaker than their enemy
-    const allyStr = calcMilitaryStrength(state, ally);
-    if (allyStr >= allyEnemyStr) continue;
-
-    // Collect AI cities (to find units stationed in cities)
-    const aiCityPositions = new Set();
-    if (state.cities) {
-      for (const c of state.cities) {
-        if (c && c.owner === aiCiv && c.size > 0 && c.gx >= 0) {
-          aiCityPositions.add(c.gy * mapBase.mw + c.gx);
+      const ourCityPos = new Set(ourCities.map(c => c.gy * mapBase.mw + c.gx));
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (!u || u.owner !== aiCiv || u.gx < 0) continue;
+        // Binary 6029: cVar < 2 — non-civilian (role byte). We use atk/def.
+        const atk = UNIT_ATK[u.type] || 0;
+        const def = UNIT_DEF[u.type] || 0;
+        if (atk === 0 && def <= 1) continue;
+        // Binary 6030: domain == 0 (land unit) — `(&DAT_0064b1c1)[type*0x14]`.
+        if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
+        // Must be in one of our cities (binary requires city to be the unit's
+        // location AND no enemy unit on tile via FUN_004087c0).
+        const tileIdx = u.gy * mapBase.mw + u.gx;
+        if (!ourCityPos.has(tileIdx)) continue;
+        // Binary 6042: hp_ratio = thunk_FUN_005b29aa(unit) — typically
+        // unit_health / unit_type_max_health. v3 stores damage in hpLost.
+        const maxHp = (UNIT_HP[u.type] ?? 10);
+        const hpRatio = Math.max(0, (maxHp - (u.hpLost || 0))) / maxHp;
+        const score = (def + atk * 2) * hpRatio;
+        if (score > bestScore) {
+          bestScore = score;
+          bestUnit = ui;
         }
       }
-    }
+      if (bestUnit < 0) continue;
 
-    // Find best non-civilian unit in one of AI's cities
-    let bestUnit = -1;
-    let bestScore = 0;
-    for (let ui = 0; ui < state.units.length; ui++) {
-      const u = state.units[ui];
-      if (!u || u.owner !== aiCiv || u.gx < 0) continue;
-      const atk = UNIT_ATK[u.type] || 0;
-      const def = UNIT_DEF[u.type] || 0;
-      if (atk === 0 && def <= 1) continue; // skip non-combat
-
-      // Must be in one of our cities
-      const tileIdx = u.gy * mapBase.mw + u.gx;
-      if (!aiCityPositions.has(tileIdx)) continue;
-
-      const score = def + atk * 2;
-      if (score > bestScore) {
-        bestScore = score;
-        bestUnit = ui;
+      // Binary lines 6052-6128: find an UNDEFENDED ally city to send unit to.
+      // Binary checks `(&DAT_0064f344)[city*0x58] & 0x80` (founded flag),
+      // and that the city's continent matches local_2c's threat region,
+      // and `FUN_005b4c63(x, y, ally)` returns 0 (no defender).
+      let targetAllyCity = -1;
+      for (let ci = 0; ci < (state.cities?.length || 0); ci++) {
+        const c = state.cities[ci];
+        if (!c || c.owner !== ally || c.size <= 0 || c.gx < 0) continue;
+        // Undefended check: no land military unit on the tile.
+        const tileIdx = c.gy * mapBase.mw + c.gx;
+        let hasDefender = false;
+        for (const u of state.units) {
+          if (!u || u.owner !== ally || u.gx < 0) continue;
+          const ut = u.gy * mapBase.mw + u.gx;
+          if (ut !== tileIdx) continue;
+          const def = UNIT_DEF[u.type] || 0;
+          if (def >= 1) { hasDefender = true; break; }
+        }
+        if (hasDefender) continue;
+        targetAllyCity = ci;
+        break;
       }
-    }
+      if (targetAllyCity < 0) continue;
 
-    if (bestUnit >= 0) {
       actions.push({
         type: 'GIFT_UNIT',
         unitIndex: bestUnit,
         fromCiv: aiCiv,
         toCiv: ally,
+        toCityIndex: targetAllyCity,
       });
-      aided = true;
+      // Binary terminates after one gift via "return" in the inner block.
+      return actions;
     }
   }
 
   return actions;
 }
+
 
 // ── Per-Continent Military Analysis ─────────────────────────────
 // Port of the continent-based strength comparison from FUN_0055cbd5.
@@ -1007,206 +985,37 @@ function evaluateMilitaryBalance(civSlot, targetCiv, continentData, gameState) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 2. shouldDeclareWar — Port of FUN_0055cbd5
+// 3. shouldProposePeace — Port of FUN_0055d8d8 peace gate (lines 5667-5676)
 //
-// Original function checks:
-//   - Alliance constraints (0x08 treaty flag = alliance)
-//   - Third-party alliances that would be violated
-//   - Per-continent military dominance ratio
-//   - Leader patience (DAT_006554f8[rulesCivNumber])
-//   - Number of existing war fronts
-//   - Random factor
+// Binary gate (AND of both sides): peace proposed iff each civ EITHER
+//   - cannot declare war (FUN_0055cbd5 returns 0), or
+//   - holds Great Wall (wonder 6), or
+//   - holds United Nations (wonder 24 = 0x18), or
+//   - is a Republic/Democracy (govt > 4) AND no WAR_STARTED toward the other.
+// Also gated by every-4-turn contact-pair cadence.
 // ═══════════════════════════════════════════════════════════════════
 
-function shouldDeclareWar(civSlot, targetCiv, continentData, gameState) {
-  const treaty = getTreaty(gameState, civSlot, targetCiv);
-  if (treaty === 'war') return false; // already at war
-
-  const personality = getPersonality(gameState, civSlot);
-  const difficulty = getDifficultyIndex(gameState, civSlot);
-
-  // Peaceful leaders (militarism -1) avoid declaring war unless provoked
-  // This maps to the patience check in FUN_0055cbd5 line ~5240:
-  //   if patience[us] < patience[them] → return 0 (don't declare)
-  if (personality.militarism < 0) return false;
-
-  // Count existing wars — FUN_0055cbd5 at ~5244-5260 iterates all civs
-  // and counts active wars, alliances, and third-party considerations
-  const warCount = countWars(gameState, civSlot);
-
-  // Don't open more than 2 fronts (from decompiled: local_c threshold)
-  if (warCount > 2) return false;
-
-  // Aggressive leaders tolerate one more front
-  const maxFronts = personality.militarism > 0 ? 3 : 2;
-  if (warCount >= maxFronts) return false;
-
-  // Alliance constraint: if we're allied with civA, and civA is allied
-  // with targetCiv, don't declare war on targetCiv.
-  // Port of FUN_0055cbd5 at ~5222-5238:
-  //   for each third civ: if allied with us AND allied with target
-  //   AND third civ is stronger → return 0
-  if (treaty === 'alliance') {
-    // Breaking an alliance to declare war is a separate decision
-    return false;
-  }
-
-  const civs = gameState.civs;
-  if (civs) {
-    for (let k = 1; k < civs.length; k++) {
-      if (k === civSlot || k === targetCiv) continue;
-      if (!(gameState.civsAlive & (1 << k))) continue;
-
-      const ourTreaty = getTreaty(gameState, civSlot, k);
-      const theirTreaty = getTreaty(gameState, targetCiv, k);
-
-      // If we're allied with k, and k is allied with targetCiv,
-      // declaring war would damage our alliance with k
-      if (ourTreaty === 'alliance' && theirTreaty === 'alliance') {
-        return false;
-      }
-
-      // FUN_0055cbd5 ~5252-5258: if third civ is allied with both us
-      // and the target, AND third civ is stronger than both, don't start war
-      if (ourTreaty === 'alliance' && theirTreaty !== 'war') {
-        const thirdStr = calcMilitaryStrength(gameState, k);
-        const ourStr = calcMilitaryStrength(gameState, civSlot);
-        if (thirdStr > ourStr) return false;
-      }
-    }
-  }
-
-  // Per-continent military comparison
-  const balance = evaluateMilitaryBalance(civSlot, targetCiv, continentData, gameState);
-
-  // Must share at least one continent (proximity check)
-  if (balance.sharedContinents === 0) return false;
-
-  // Need military dominance on at least one shared continent
-  // FUN_0055cbd5 ~5282-5298: compares total strength ratio with
-  // a threshold derived from (local_c - patience + 4)
-  if (balance.dominantCount === 0) return false;
-
-  // Overall strength check: our shared strength must exceed theirs
-  // factored by the war front count penalty
-  const strengthRatio = balance.ourSharedStrength /
-                        Math.max(balance.theirSharedStrength, 1);
-
-  // FUN_0055cbd5 line ~5298: (local_1c << 2) / local_24 < (local_c - patience + 4)
-  // Translating: we need 4x strength advantage minus patience offset
-  // Simplified: need strengthRatio > (2.0 - 0.5 * militarism)
-  const requiredRatio = 2.0 - 0.5 * personality.militarism;
-  if (strengthRatio < requiredRatio) return false;
-
-  // Higher difficulty AI is more willing to declare war
-  // FUN_0055cbd5 uses difficulty indirectly through patience tables
-  const difficultyBonus = difficulty * 0.05; // 0.0 to 0.25
-
-  // Random check: 30% base chance, modified by personality and difficulty
-  // The original uses `_rand()` checks scattered throughout; we simplify
-  // to a single probabilistic gate per turn
-  const warChance = 0.2 + 0.1 * personality.militarism + difficultyBonus;
-  if ((gameState.rng ? gameState.rng.random() : Math.random()) > warChance) return false;
-
-  return true;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// 3. shouldProposePeace — Port of FUN_0055d8d8 peace path
-//
-// From the decompiled main diplomacy function, peace is proposed when:
-//   - Currently at war
-//   - FUN_0055cbd5 returns 0 (can't sustain war) for BOTH sides
-//   - OR one side has wonder protection (Great Wall / United Nations)
-//   - OR patience threshold exceeded (long war)
-//   - Contact frequency: (turn + civ1 + civ2) % 4 == 0 OR first contact
-// ═══════════════════════════════════════════════════════════════════
-
-function shouldProposePeace(civSlot, targetCiv, continentData, gameState) {
+function shouldProposePeace(civSlot, targetCiv, gameState, mapBase) {
   const treaty = getTreaty(gameState, civSlot, targetCiv);
   if (treaty !== 'war') return false; // only propose peace when at war
 
-  const personality = getPersonality(gameState, civSlot);
+  // Cadence: every 4 turns per pair (binary line 5663)
   const turnNumber = gameState.turn?.number ?? 0;
-  const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
-
-  // Contact frequency gate from FUN_0055d8d8 ~5663:
-  //   (DAT_00655af8 + param_2 + param_1 & 3) == 0
-  // This means diplomacy runs every 4 turns per pair
   if ((turnNumber + civSlot + targetCiv) % 4 !== 0) return false;
 
-  const balance = evaluateMilitaryBalance(civSlot, targetCiv, continentData, gameState);
-  const ourTotal = calcMilitaryStrength(gameState, civSlot);
-  const theirTotal = calcMilitaryStrength(gameState, targetCiv);
-  const strengthRatio = ourTotal / Math.max(theirTotal, 1);
+  // Per-civ pacifism check (binary "can civ X declare war / does X have shield")
+  const peaceful = (civA, civB) => {
+    if (!shouldDeclareWarFull(gameState, mapBase, civA, civB)) return true;
+    if (hasWonderEffect(gameState, civA, 6)) return true;   // Great Wall
+    if (hasWonderEffect(gameState, civA, 24)) return true;  // United Nations
+    // govt > 4 (Republic/Democracy) AND no WAR_STARTED toward the other
+    const govtIdx = GOVT_INDEX[gameState.civs?.[civA]?.government] ?? 1;
+    const flagsAB = getTreatyFlags(gameState, civA, civB);
+    if (govtIdx > 4 && !(flagsAB & TF.WAR_STARTED)) return true;
+    return false;
+  };
 
-  // Great Wall (wonder 6) / United Nations (wonder 24) provide diplomatic shield
-  // From FUN_0055d8d8 ~5668-5676: hasWonder(target, 6) or hasWonder(target, 0x18)
-  // forces peace consideration even if militarily strong
-  const targetHasGreatWall = hasWonderEffect(gameState, targetCiv, 6);
-  const targetHasUN = hasWonderEffect(gameState, targetCiv, 24);
-  const weHaveGreatWall = hasWonderEffect(gameState, civSlot, 6);
-  const weHaveUN = hasWonderEffect(gameState, civSlot, 24);
-
-  // FUN_0055d8d8 ~5668: if FUN_0055cbd5 returns 0 (can't declare war)
-  // for BOTH sides, they make peace. Approximate this:
-  let shouldPeace = false;
-
-  // Their military > 1.5x ours on shared continents — we're losing
-  if (balance.weakCount > 0 && balance.dominantCount === 0) {
-    shouldPeace = true;
-  }
-
-  // Overall strength deficit
-  if (strengthRatio < 0.67) {
-    shouldPeace = true;
-  }
-
-  // Treasury very low — can't sustain war
-  // From FUN_0045705e: treasury checks against tribute thresholds
-  if (treasury < 50) {
-    shouldPeace = true;
-  }
-
-  // Peaceful leaders propose peace more readily
-  if (personality.militarism < 0 && strengthRatio < 1.2) {
-    shouldPeace = true;
-  }
-
-  // Long war without advantage (approximate: use turn parity check)
-  // FUN_0055d8d8 ~5510-5514: checks if more than 15 turns since last contact
-  // We approximate with war front fatigue
-  const warCount = countWars(gameState, civSlot);
-  if (warCount > 1 && strengthRatio < 1.5) {
-    shouldPeace = true;
-  }
-
-  // Wonder-protected targets — forcing peace
-  if (targetHasGreatWall || targetHasUN) {
-    shouldPeace = true;
-  }
-
-  // Don't propose if we clearly dominate — FUN_0055cbd5 would return 1
-  // meaning we SHOULD be fighting
-  if (balance.dominantCount > 0 && balance.weakCount === 0 && strengthRatio > 2.0) {
-    // Unless we have Great Wall/UN forcing pacifism
-    if (!weHaveGreatWall && !weHaveUN) {
-      shouldPeace = false;
-    }
-  }
-
-  // Aggressive leaders are less willing to propose peace
-  if (personality.militarism > 0 && strengthRatio > 1.0) {
-    shouldPeace = false;
-  }
-
-  // Don't propose peace to civs with very negative attitude (< -50)
-  const attitude = getAttitude(gameState, civSlot, targetCiv);
-  if (attitude < -50 && strengthRatio > 0.8) {
-    shouldPeace = false;
-  }
-
-  return shouldPeace;
+  return peaceful(civSlot, targetCiv) && peaceful(targetCiv, civSlot);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1367,18 +1176,14 @@ function shouldBreakAlliance(civSlot, targetCiv, gameState) {
 // ═══════════════════════════════════════════════════════════════════
 
 function processFirstContact(civSlot, targetCiv, gameState) {
-  // If no treaties object exists, there's nothing to check
-  if (!gameState.treaties) return null;
+  // Binary FUN_0055d8d8 lines 5656-5660: gate on CONTACT bit (0x01) of
+  // the treaty flag word — first contact iff CONTACT not yet set in either
+  // direction. v3 mirrors flags both ways via addTreatyFlag, so checking
+  // one side suffices.
+  const flags = getTreatyFlags(gameState, civSlot, targetCiv);
+  if (flags & TF.CONTACT) return null;
 
-  const key = civSlot < targetCiv ? `${civSlot}-${targetCiv}` : `${targetCiv}-${civSlot}`;
-  const current = gameState.treaties[key];
-
-  // If there's already a treaty entry, this isn't first contact
-  if (current !== undefined) return null;
-
-  // First contact: propose ceasefire
-  // In original Civ2, first contact always establishes ceasefire
-  // unless scenario flags override this
+  // First contact: propose ceasefire (binary writes 0x401 = CONTACT|CEASEFIRE).
   return { type: 'PROPOSE_TREATY', targetCiv, treaty: 'ceasefire' };
 }
 
@@ -1391,10 +1196,10 @@ function processFirstContact(civSlot, targetCiv, gameState) {
  *
  * O.1 Full Negotiation State Machine:
  *   1. Determine greeting tone from attitude
- *   2. Evaluate proposal type with attitude-based thresholds
- *   3. For alliance: attitude > 74 required
- *   4. For peace:    attitude > 50 OR military weakness
- *   5. For ceasefire: attitude > 26 OR multi-front war
+ *   2. Evaluate proposal type with attitude-based thresholds (hostility byte)
+ *   3. For alliance: hostility < 26 required (friendly tier)
+ *   4. For peace:    hostility < 50 OR military weakness
+ *   5. For ceasefire: hostility < 100 OR multi-front war
  *   6. If rejected, generate counter-offer
  *
  * Ported from FUN_0045705e attitude scoring with full thresholds.
@@ -1425,17 +1230,18 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
     if ((p.treaty === 'alliance' || p.treaty === 'peace') && isReputationTooLow(gameState, p.from)) {
       accept = false;
     } else if (p.treaty === 'alliance') {
-      // O.1 Treaty evaluation: alliance if attitude > 74
-      if (attitude > 74) accept = true;
-      // Also accept if we share enemies and are relatively weak
-      if (attitude > 50 && warCount > 0 && ratio < 1.0) accept = true;
+      // Hostility convention: low byte = friendly. Alliance needs friendly.
+      // Alliance if hostility < 26 (Worshipful/Enthusiastic tier)
+      if (attitude < 26) accept = true;
+      // Also accept if we share enemies and are relatively weak (and not too hostile)
+      if (attitude < 50 && warCount > 0 && ratio < 1.0) accept = true;
       // Enthusiastic greeting → always consider
       if (tone === 'enthusiastic') accept = true;
       // Hostile/guarded → never accept alliance
       if (tone === 'hostile' || tone === 'guarded') accept = false;
     } else if (p.treaty === 'peace') {
-      // O.1 Treaty evaluation: peace if attitude > 50
-      if (attitude > 50) accept = true;
+      // Peace if hostility < 50 (anything friendlier than half-hostile)
+      if (attitude < 50) accept = true;
       // Accept if they're stronger or roughly equal
       if (ratio < 1.5) accept = true;
       if (warCount > 1) accept = true;
@@ -1445,11 +1251,11 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
       if (ratio > 2.0 && balance.dominantCount > 0 && personality.militarism > 0) {
         accept = false;
       }
-      // Hostile tone halves willingness (FUN_0045705e attitude < 4)
+      // Hostile tone halves willingness
       if (tone === 'hostile' && ratio > 0.8) accept = false;
     } else {
-      // Ceasefire: attitude > 26 OR multi-front pressure
-      if (attitude > 0) accept = true;
+      // Ceasefire: accept unless hostility maxed (Furious-only refusal)
+      if (attitude < 100) accept = true;
       if (ratio < 1.5) accept = true;
       if (warCount > 1) accept = true;
       if (balance.weakCount > 0) accept = true;
@@ -1464,11 +1270,13 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
     const err = validateAction(gameState, mapBase, action, civSlot);
     if (!err) {
       actions.push(action);
-      // O.1: Attitude adjustment on accept/reject
+      // O.1: Attitude adjustment on accept/reject. Convention: high
+      // attitude byte = hostile, low = friendly. Accept warms relations
+      // (negative delta toward 0). Reject sours them (positive delta).
       if (accept) {
-        actions.push(makeAttitudeAction(civSlot, p.from, +10));
+        actions.push(makeAttitudeAction(civSlot, p.from, -10));
       } else {
-        actions.push(makeAttitudeAction(civSlot, p.from, -5));
+        actions.push(makeAttitudeAction(civSlot, p.from, +5));
         // O.1: Counter-offer on rejection
         const counter = generateCounterOffer(civSlot, p.from, 'treaty', gameState);
         if (counter) {
@@ -1541,13 +1349,13 @@ function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
     const err = validateAction(gameState, mapBase, action, civSlot);
     if (!err) {
       actions.push(action);
-      // O.1: Attitude changes
+      // O.1: Attitude changes. Convention: high byte = hostile.
       if (accept) {
-        // Paying tribute slightly increases their view of us
-        actions.push(makeAttitudeAction(d.from, civSlot, +5));
+        // Paying tribute warms their view of us → reduce hostility.
+        actions.push(makeAttitudeAction(d.from, civSlot, -5));
       } else {
-        // Rejection worsens relations
-        actions.push(makeAttitudeAction(d.from, civSlot, -10));
+        // Rejection sours relations → bump hostility.
+        actions.push(makeAttitudeAction(d.from, civSlot, +10));
         // O.1: Counter-offer on rejection
         const counter = generateCounterOffer(civSlot, d.from, 'gold', gameState);
         if (counter) {
@@ -1625,7 +1433,7 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
         let bestVal = 0;
         for (const tid of weCanGive) {
           if (wouldEnableWonder(gameState, other, tid)) continue;
-          const val = valueTech(tid, other, gameState);
+          const val = calcTechValue(other, tid, gameState, mapBase);
           if (val > bestVal) { bestVal = val; bestTech = tid; }
         }
         if (bestTech < 0) continue; // all tradable techs blocked by wonder check
@@ -1640,7 +1448,7 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
           let theirBest = theyCanGive[0];
           let theirBestVal = 0;
           for (const tid of theyCanGive) {
-            const val = valueTech(tid, civSlot, gameState);
+            const val = calcTechValue(civSlot, tid, gameState, mapBase);
             if (val > theirBestVal) { theirBestVal = val; theirBest = tid; }
           }
           actions.push({
@@ -1662,9 +1470,9 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       // Both must have something to give
       if (weCanGive.length === 0 || theyCanGive.length === 0) continue;
 
-      // Check attitude — need at least neutral relations
+      // Check attitude — skip if very hostile (won't trade with hated civ)
       const attitude = getAttitude(gameState, civSlot, other);
-      if (attitude < 0) continue;
+      if (attitude > 75) continue;
 
       // Evaluate mutual benefit: pick techs of similar value
       // Gap 48: Skip techs that would enable unbuilt wonders for the recipient
@@ -1672,7 +1480,7 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       let ourBestVal = 0;
       for (const tid of weCanGive) {
         if (wouldEnableWonder(gameState, other, tid)) continue;
-        const val = valueTech(tid, other, gameState);
+        const val = calcTechValue(other, tid, gameState, mapBase);
         if (val > ourBestVal) { ourBestVal = val; ourBestTech = tid; }
       }
 
@@ -1680,7 +1488,7 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       let theirBestVal = 0;
       for (const tid of theyCanGive) {
         if (wouldEnableWonder(gameState, civSlot, tid)) continue;
-        const val = valueTech(tid, civSlot, gameState);
+        const val = calcTechValue(civSlot, tid, gameState, mapBase);
         if (val > theirBestVal) { theirBestVal = val; theirBestTech = tid; }
       }
 
@@ -1708,9 +1516,10 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       });
       traded = true;
 
-      // Improve attitudes after successful trade
-      actions.push(makeAttitudeAction(civSlot, other, +5));
-      actions.push(makeAttitudeAction(other, civSlot, +5));
+      // Improve attitudes after successful trade — both directions.
+      // Friendlier = lower hostility byte → negative delta.
+      actions.push(makeAttitudeAction(civSlot, other, -5));
+      actions.push(makeAttitudeAction(other, civSlot, -5));
 
       if (debugLog) {
         const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
@@ -1771,13 +1580,17 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
       // 3. Not already allied
       const targetTreaty = getTreaty(gameState, civSlot, target);
       if (targetTreaty === 'alliance') continue;
-      // 4. Attitude > alliance proposal gate (tolerance - attitude < 6)
+      // 4. Attitude must be friendly tier (hostility byte low). Apply
+      //    leader tolerance as a small bias: tolerant leaders (+1) accept
+      //    slightly higher hostility, intolerant (-1) require more friendliness.
+      //    Base gate: hostility level <= 3 (Worshipful/Enthusiastic/Cordial).
       const attitude = getAttitude(gameState, civSlot, target);
       const aiCivData = gameState.civs?.[civSlot];
       const rcn = aiCivData?.rulesCivNumber ?? 0;
       const pers3 = LEADER_PERSONALITY_3[rcn] || [0, 0, 0];
       const tolerance = pers3[2] ?? 0;
-      if (tolerance - attitude >= 6) continue;
+      const allianceLevel = getAttitudeLevel(attitude); // 1=Worshipful .. 8=Furious
+      if (allianceLevel - tolerance > 3) continue;
       // 5. Target is not at war with us
       if (targetTreaty === 'war' && haveContact(gameState, civSlot, target)) continue;
       // 6. Target is not barbarian
@@ -1794,7 +1607,8 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) {
         actions.push(action);
-        actions.push(makeAttitudeAction(civSlot, target, +5));
+        // Proactive alliance proposal warms our view of target → friendlier (negative delta).
+        actions.push(makeAttitudeAction(civSlot, target, -5));
         if (debugLog) {
           const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
           const tgtName = gameState.civs?.[target]?.name || `Civ ${target}`;
@@ -1848,9 +1662,9 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
         // Only propose if combined strength exceeds enemy strength
         if (combinedStr < biggestEnemyStr * 0.9) continue;
 
-        // Check attitude — need at least neutral
+        // Check attitude — skip if too hostile to seek alliance (hostility > 60)
         const attitude = getAttitude(gameState, civSlot, ally);
-        if (attitude < -10) continue;
+        if (attitude > 60) continue;
 
         // Skip if our reputation is too low (ally won't trust us)
         if (isReputationTooLow(gameState, civSlot)) continue;
@@ -1865,7 +1679,8 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
         const err = validateAction(gameState, mapBase, action, civSlot);
         if (!err) {
           actions.push(action);
-          actions.push(makeAttitudeAction(civSlot, ally, +15));
+          // HELPME alliance proposal warms our view of would-be ally (negative delta).
+          actions.push(makeAttitudeAction(civSlot, ally, -15));
 
           // O.3: Offer gold incentive if we have surplus
           const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
@@ -1951,7 +1766,8 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
           const err = validateAction(gameState, mapBase, action, civSlot);
           if (!err) {
             actions.push(action);
-            actions.push(makeAttitudeAction(civSlot, ally, +10));
+            // Crusade alliance warms relations with co-attacker (negative delta).
+            actions.push(makeAttitudeAction(civSlot, ally, -10));
             if (debugLog) {
               const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
               const allyName = gameState.civs?.[ally]?.name || `Civ ${ally}`;
@@ -2033,7 +1849,8 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
       if (i === civSlot) continue;
       if (!(gameState.civsAlive & (1 << i))) continue;
       if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) {
-        actions.push(makeAttitudeAction(civSlot, i, -Math.ceil(patienceDecrement)));
+        // Patience decrement = bump hostility toward war enemy
+        actions.push(makeAttitudeAction(civSlot, i, +Math.ceil(patienceDecrement)));
       }
     }
   }
@@ -2119,15 +1936,15 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
       // Ally is at war with someone we have peace/alliance with
       if (allyThirdTreaty === 'war' && haveContact(gameState, ally, third) &&
           (ourThirdTreaty === 'peace' || ourThirdTreaty === 'alliance')) {
-        // Small attitude penalty toward violating ally
-        actions.push(makeAttitudeAction(civSlot, ally, -3));
+        // Small attitude penalty toward violating ally → bump hostility
+        actions.push(makeAttitudeAction(civSlot, ally, +3));
       }
     }
   }
 
-  // ── O.4: 32-turn periodic attitude drift toward neutral ──
-  // Port of FUN_0055d8d8 ~5507-5509: every 32 turns, attitudes
-  // drift 1 point toward 0 (forgiveness / forgetting)
+  // ── O.4: 32-turn periodic hostility decay (forgetting) ──
+  // Every 32 turns, hostility byte drifts 1 point toward 0 (Worshipful).
+  // Hostility byte is non-negative; drift only applies if att > 0.
   if (turnNumber > 0 && turnNumber % 32 === 0) {
     for (let i = 1; i < 8; i++) {
       if (i === civSlot) continue;
@@ -2135,8 +1952,6 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
       const att = getAttitude(gameState, civSlot, i);
       if (att > 0) {
         actions.push(makeAttitudeAction(civSlot, i, -1));
-      } else if (att < 0) {
-        actions.push(makeAttitudeAction(civSlot, i, +1));
       }
     }
   }
@@ -2150,7 +1965,8 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
       if (getTreaty(gameState, civSlot, i) !== 'ceasefire') continue;
 
       const attitude = getAttitude(gameState, civSlot, i);
-      if (attitude > 25) {
+      // Upgrade ceasefire→peace when hostility is below half (friendly tier).
+      if (attitude < 50) {
         // Skip if our reputation is too low (target won't trust us)
         if (isReputationTooLow(gameState, civSlot)) continue;
         const hasPending = gameState.treatyProposals?.some(
@@ -2173,7 +1989,7 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
   }
 
   // ── O.4: 8-turn periodic ceasefire expiration warning ──
-  // After 8 turns of ceasefire with negative attitude, consider war
+  // After 8 turns of ceasefire with hostile attitude (byte > 75), consider war
   if (turnNumber > 0 && turnNumber % 8 === 0) {
     const personality = getPersonality(gameState, civSlot);
     for (let i = 1; i < 8; i++) {
@@ -2182,9 +1998,10 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
       if (getTreaty(gameState, civSlot, i) !== 'ceasefire') continue;
 
       const attitude = getAttitude(gameState, civSlot, i);
-      // Hostile attitude + aggressive personality → ceasefire may expire into war
-      if (attitude < -25 && personality.militarism > 0) {
-        actions.push(makeAttitudeAction(civSlot, i, -5));
+      // Hostile attitude + aggressive personality → ceasefire may expire into war.
+      // Under hostility convention high byte = hostile, so trigger above 75.
+      if (attitude > 75 && personality.militarism > 0) {
+        actions.push(makeAttitudeAction(civSlot, i, +5));
       }
     }
   }
@@ -2298,8 +2115,8 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
   // O.5: Border intrusion detection
   const { intruders, intruderCivs } = detectBorderIntrusions(gameState, mapBase, civSlot);
   for (const intruderCiv of intruderCivs) {
-    // Each intrusion worsens attitude by -5 (cumulative)
-    actions.push(makeAttitudeAction(civSlot, intruderCiv, -5));
+    // Each intrusion worsens attitude → bump hostility +5 (cumulative)
+    actions.push(makeAttitudeAction(civSlot, intruderCiv, +5));
     if (debugLog) {
       const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
       const intName = gameState.civs?.[intruderCiv]?.name || `Civ ${intruderCiv}`;
@@ -2313,7 +2130,7 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     if (borderScore > 0) {
       // Scale attitude penalty by border score (1 per 3 border score points)
       const scorePenalty = Math.min(10, Math.floor(borderScore / 3));
-      actions.push(makeAttitudeAction(civSlot, intruderCiv, -scorePenalty));
+      actions.push(makeAttitudeAction(civSlot, intruderCiv, +scorePenalty));
       if (debugLog && scorePenalty > 0) {
         const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
         const intName = gameState.civs?.[intruderCiv]?.name || `Civ ${intruderCiv}`;
@@ -2336,11 +2153,12 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     const attitude = getAttitude(gameState, civSlot, other);
 
     // D.4: Binary 15-phase attitude recalibration (every 4 turns)
+    // calcAttitudeScore returns positive=friendly, negative=hostile (-10..+10).
+    // Hostility byte is the OPPOSITE: 0=friendly, 100=hostile. Negate.
     const turnNum = gameState.turn?.number || 0;
     if ((turnNum & 3) === 0) {
       const binaryScore = calcAttitudeScore(gameState, civSlot, other);
-      // Map binary score (-10..+10 range) to attitude scale (0-100)
-      const targetAttitude = Math.max(0, Math.min(100, 50 + binaryScore * 5));
+      const targetAttitude = Math.max(0, Math.min(100, 50 - binaryScore * 5));
       // Nudge current attitude toward binary target (smooth convergence)
       const diff = targetAttitude - attitude;
       if (Math.abs(diff) > 5) {
@@ -2348,48 +2166,50 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
       }
     }
 
+    // Hostility convention: positive delta = MORE hostile, negative = friendlier.
     // ── O.5: Personality modifiers ──
-    // Militarist leaders distrust everyone slightly
-    if (personality.militarism > 0) attDelta -= 1;
-    // Expansionist leaders dislike civs with more cities
+    // Militarist leaders distrust everyone slightly → bump hostility
+    if (personality.militarism > 0) attDelta += 1;
+    // Expansionist leaders dislike civs with more cities → bump hostility
     const theirCities = countCities(gameState, other);
     if (personality.expansionism > 0 && theirCities > ourCities) {
-      attDelta -= 2;
+      attDelta += 2;
     }
-    // Peaceful leaders slowly warm to non-enemies
+    // Peaceful leaders slowly warm to non-enemies → reduce hostility
     if (personality.militarism < 0 && treaty !== 'war') {
-      attDelta += 1;
+      attDelta -= 1;
     }
 
     // ── O.5: Military threat assessment ──
     const theirStr = calcMilitaryStrength(gameState, other);
     if (theirStr > ourStr * 2 && treaty !== 'alliance') {
       // Much stronger civ → fear-based hostility
-      attDelta -= 3;
+      attDelta += 3;
     } else if (ourStr > theirStr * 3 && treaty !== 'war') {
       // We're much stronger → mild contempt
-      attDelta -= 1;
+      attDelta += 1;
     }
 
-    // ── O.5: Alliance strength bonus ──
+    // ── O.5: Alliance strength bonus (allies warm up over time) ──
     if (treaty === 'alliance') {
-      // Allies get +3 per turn (up to cap)
-      if (attitude < 80) attDelta += 3;
+      // Allies cool down 3/turn, but stop once Worshipful (hostility 0)
+      if (attitude > 20) attDelta -= 3;
     }
 
     // ── O.5: Peace treaty warmth ──
     if (treaty === 'peace') {
-      if (attitude < 50) attDelta += 1;
+      // Drift toward friendly while still hostile
+      if (attitude > 0) attDelta -= 1;
     }
 
     // ── O.5: Wonder effects on attitude ──
-    // Eiffel Tower (wonder 20): other civs view us more favorably
+    // Eiffel Tower (wonder 20): other civs view us more favorably → friendlier
     if (hasWonderEffect(gameState, civSlot, 20)) {
-      attDelta += 2;
+      attDelta -= 2;
     }
-    // Women's Suffrage (wonder 21): stability bonus, others respect
+    // Women's Suffrage (wonder 21): stability bonus, others respect → friendlier
     if (hasWonderEffect(gameState, civSlot, 21)) {
-      attDelta += 1;
+      attDelta -= 1;
     }
 
     // ── O.5: Spaceship race detection ──
@@ -2398,9 +2218,9 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
       const ss = gameState.spaceships[other];
       if ((ss.structural || 0) > 0 || (ss.fuel || 0) > 0 || (ss.propulsion || 0) > 0
           || (ss.habitation || 0) > 0 || (ss.lifeSupport || 0) > 0 || (ss.solarPanel || 0) > 0) {
-        // They're building a spaceship — racing → hostile
-        attDelta -= 5;
-        if (debugLog && attitude > -20) {
+        // They're building a spaceship — racing → bump hostility
+        attDelta += 5;
+        if (debugLog && attitude < 80) {
           const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
           const otherName = gameState.civs?.[other]?.name || `Civ ${other}`;
           debugLog.push(`DIPLO: ${civName} grows hostile toward ${otherName} (spaceship race)`);
@@ -2410,27 +2230,26 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     // Also check raw spaceship structural count (from parser data)
     const otherCiv = gameState.civs?.[other];
     if (otherCiv?.spaceshipStructural > 0) {
-      attDelta -= 3;
+      attDelta += 3;
     }
 
     // ── O.5: Espionage scandal ──
-    // If other civ was caught spying on us (provocation flag),
-    // major attitude penalty
+    // If other civ was caught spying on us (provocation flag) → bump hostility
     const dKey = civSlot < other ? `${civSlot}-${other}` : `${other}-${civSlot}`;
     const diplo = gameState.diplomacy?.[dKey];
     if (diplo?.sneak) {
-      attDelta -= 8;
+      attDelta += 8;
     }
 
     // ── O.5: Shared enemy bonus ──
-    // If we and other are both at war with the same civ, attitude improves
+    // If we and other are both at war with the same civ, attitudes warm
     for (let third = 1; third < 8; third++) {
       if (third === civSlot || third === other) continue;
       if (!(gameState.civsAlive & (1 << third))) continue;
       const ourWar = getTreaty(gameState, civSlot, third) === 'war' && haveContact(gameState, civSlot, third);
       const theirWar = getTreaty(gameState, other, third) === 'war' && haveContact(gameState, other, third);
       if (ourWar && theirWar) {
-        attDelta += 2;
+        attDelta -= 2;
         break; // only count once
       }
     }
@@ -2464,43 +2283,82 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
  * @returns {boolean} true if war should be declared
  */
 export function shouldDeclareWarFull(state, mapBase, aiCiv, targetCiv) {
-  // Fast-path: if target attacked us (WAR_STARTED flag toward us), return true
-  const flagsTowardUs = getTreatyFlags(state, targetCiv, aiCiv);
-  if (flagsTowardUs & TF.WAR_STARTED) return true;
-
   const treaty = getTreaty(state, aiCiv, targetCiv);
   if (treaty === 'war') return false; // already at war
   if (treaty === 'alliance') return false; // won't break alliance here
 
-  // Third-party deterrent: scan all alive civs allied with target;
-  // if any have stronger military than us, return false
+  // Binary FUN_0055cbd5 line 5220: if WAR_STARTED toward target, fall through to "yes".
+  // (v3 uses symmetric addTreatyFlag, so direction is moot.)
+  const flagsToTarget = getTreatyFlags(state, aiCiv, targetCiv);
+  if (flagsToTarget & TF.WAR_STARTED) return true;
+  // Binary line 5221: if VENDETTA toward target, fall through to "yes".
+  if (flagsToTarget & TF.VENDETTA) return true;
+
+  // Binary FUN_0055cbd5 lines 5222-5238: third-party deterrent.
+  // For each alive third civ k: if a hostile interaction is possible AND k
+  // is stronger than the would-be opponent AND k is not allied with that
+  // opponent, return false (focus on k instead of opening another front).
   const ourStr = calcMilitaryStrength(state, aiCiv);
+  const targetStr = calcMilitaryStrength(state, targetCiv);
   for (let k = 1; k < 8; k++) {
     if (k === aiCiv || k === targetCiv) continue;
     if (!(state.civsAlive & (1 << k))) continue;
-    if (getTreaty(state, targetCiv, k) !== 'alliance') continue;
-    const allyStr = calcMilitaryStrength(state, k);
-    if (allyStr > ourStr) return false;
-  }
-
-  // Power ranking comparison: if target's power rank > ours + 2, return false
-  const ourRank = state.civs?.[aiCiv]?.powerRank ?? 3;
-  const theirRank = state.civs?.[targetCiv]?.powerRank ?? 3;
-  if (theirRank > ourRank + 2) return false;
-
-  // Ally scoring: count our allies, each adds +1; shared enemy adds +2
-  let allyScore = 0;
-  for (let k = 1; k < 8; k++) {
-    if (k === aiCiv || k === targetCiv) continue;
-    if (!(state.civsAlive & (1 << k))) continue;
-    if (getTreaty(state, aiCiv, k) === 'alliance') {
-      allyScore += 1;
-      // Shared enemy bonus: if our ally is also at war with target
-      if (getTreaty(state, k, targetCiv) === 'war' && haveContact(state, k, targetCiv)) {
-        allyScore += 2;
-      }
+    const kStr = calcMilitaryStrength(state, k);
+    // Branch A: we can provoke k AND k stronger than target AND k not allied with target
+    if (shouldProvoke(state, aiCiv, k) && kStr > targetStr &&
+        getTreaty(state, k, targetCiv) !== 'alliance') {
+      return false;
+    }
+    // Branch B: target can provoke k AND k stronger than us AND we not allied with k
+    if (shouldProvoke(state, targetCiv, k) && kStr > ourStr &&
+        getTreaty(state, aiCiv, k) !== 'alliance') {
+      return false;
     }
   }
+
+  // Binary FUN_0055cbd5 line 5240: if our power rank < target's, return false.
+  // DAT_0064c7a5 byte at civ struct +0x105 (per-civ rank/age byte). v3 uses
+  // powerRank as the closest equivalent.
+  const ourRank = state.civs?.[aiCiv]?.powerRank ?? 3;
+  const theirRank = state.civs?.[targetCiv]?.powerRank ?? 3;
+  if (ourRank < theirRank) return false;
+
+  // Binary FUN_0055cbd5 lines 5244-5278: complications/restraints score.
+  // Higher complications → harder to justify declaring war. NOT an ally
+  // score (earlier v3 labeling was inverted).
+  let complications = 0;
+  const turnNum = state.turn?.number ?? 0;
+  for (let k = 1; k < 8; k++) {
+    if (k === aiCiv || k === targetCiv) continue;
+    const kAlive = !!(state.civsAlive & (1 << k));
+
+    // (1) shouldProvoke us → k: +1 (already-hostile third party)
+    if (shouldProvoke(state, aiCiv, k)) complications += 1;
+
+    if (!kAlive) continue;
+
+    const usAlliedK = getTreaty(state, aiCiv, k) === 'alliance';
+    const targetAlliedK = getTreaty(state, targetCiv, k) === 'alliance';
+    const kFlagsToTarget = getTreatyFlags(state, k, targetCiv);
+
+    // (2) us AND target both allied with k: +1 (mediator), +2 if k stronger than both
+    if (usAlliedK && targetAlliedK) {
+      complications += 1;
+      const kRank = state.civs?.[k]?.powerRank ?? 3;
+      if (ourRank < kRank && theirRank < kRank) complications += 1; // total +2
+    }
+    // (3) us allied k AND k at war with target: -1 (we have a fighting friend)
+    if (usAlliedK && (kFlagsToTarget & TF.WAR)) complications -= 1;
+    // (4) k rank == 7 AND turn > 199 AND k at war with target: -1 (top-tier ally
+    //     of attrition is already weakening target)
+    const kRankCheck = state.civs?.[k]?.powerRank ?? 3;
+    if (kRankCheck === 7 && turnNum > 199 && (kFlagsToTarget & TF.WAR)) {
+      complications -= 1;
+    }
+  }
+  // (5) !shouldProvoke(us, target): +1 (target not currently provokable — harder
+  //     to justify aggression).
+  if (!shouldProvoke(state, aiCiv, targetCiv)) complications += 1;
 
   // Continent strength: approximate from unit counts near shared cities
   const continentData = computeContinentData(state, mapBase);
@@ -2524,27 +2382,199 @@ export function shouldDeclareWarFull(state, mapBase, aiCiv, targetCiv) {
     theirStrength = calcMilitaryStrength(state, targetCiv);
   }
 
-  // Leader patience
-  const patience = state.civs?.[aiCiv]?.patience ?? 2;
+  // Binary line 5299: militarism byte from leader personality
+  // (DAT_006554f8 indexed by rulesCivNumber, NOT runtime per-civ patience).
+  const aiCivData = state.civs?.[aiCiv];
+  const rcn = aiCivData?.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY_3[rcn] || [0, 0, 0];
+  const militarism = personality[1] ?? 0;
 
-  // Final formula: (ourStrength << 2) / (theirStrength + theirDefense) < (allyScore - patience + 4)
-  // If the left side is LESS than the right side, we are strong enough to declare war.
-  // (Higher allyScore or lower patience makes the threshold easier to meet.)
+  // Binary final formula (line 5298):
+  //   if ((ourStrength << 2) / theirStrength < (complications - militarism + 4))
+  //     return 0 (don't declare)
+  //   else return 1
+  // Aggressive leaders (militarism > 0) need less strength advantage.
   const denominator = Math.max(theirStrength + theirDefense, 1);
   const lhs = (ourStrength << 2) / denominator;
-  const rhs = allyScore - patience + 4;
+  const rhs = complications - militarism + 4;
 
-  // The formula says: declare war when lhs >= rhs (we have sufficient strength ratio)
-  // The original binary: if (lhs < rhs) return false — meaning we need lhs >= rhs
   return lhs >= rhs;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AI_TECH_TRADE — aiTechTradeNegotiation
+//
+// Faithful port of FUN_0055d1e2 @ 0x0055D1E2 (block_00550000.c:5321).
+// Called by FUN_00560084 per-civ tick on every-16-turn boundary when
+// the pair is allied (or every-8-turn alliance-only off-cycle). Iterates
+// all 100 techs and finds the best tech each civ doesn't have but the
+// other does (calcTechValue + rand()%3 noise). Behaviour:
+//   - Both directions found → mutual swap (no diplomatic flag set).
+//   - Only one direction wants → allied-only one-way gift, gated by
+//     ALLIANCE bit + tech-lead difference + once-per-cycle TF flag.
+// Returns true if any tech changed hands.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * AI tech trade negotiation between two civs.
+ *
+ * Port of FUN_0055d1e2(int param_1, int param_2).
+ *
+ * @param {object} state - mutable game state
+ * @param {number} param_1 - first civ in the trade
+ * @param {number} param_2 - second civ in the trade
+ * @param {number} runningCiv - the AI civ whose tick is invoking this
+ *                              (DAT_00655c31 in the binary)
+ * @returns {boolean} true if a trade or gift occurred
+ */
+export function aiTechTradeNegotiation(state, param_1, param_2, runningCiv) {
+  // Binary line 5342: scenario flag gate — skip body when both bits set.
+  // DAT_00655af0 & 0x80 (scenario flag), DAT_0064bc60 & 0x20 (no-tech-trade).
+  // v3 doesn't model scenario flags; default = run body.
+  const scenarioFlags = state.scenarioFlags || 0;
+  const cosmicFlags = state.cosmicFlags || 0;
+  if ((scenarioFlags & 0x80) !== 0 && (cosmicFlags & 0x20) !== 0) return false;
+
+  // Binary lines 5343-5353: bVar1 = "running AI civ outpaces the pair in
+  // tech count" override (lets late-game leaders give one-sided gifts).
+  // True only if: running-civ alive, difficulty > 0, ≥5 cities, turn ≥ 201,
+  // and running-civ has strictly more techs than both param_1 and param_2.
+  let bVar1 = false;
+  {
+    const civsAlive = state.civsAlive || 0;
+    const aliveBit = (1 << runningCiv) & civsAlive;
+    const difficulty = state.difficulty ?? 0;
+    const turnNumber = state.turn?.number || 0;
+    const runningCities = countCivCities(state, runningCiv);
+    const tcRunning = state.civTechCounts?.[runningCiv] ?? state.civTechs?.[runningCiv]?.size ?? 0;
+    const tcA = state.civTechCounts?.[param_1] ?? state.civTechs?.[param_1]?.size ?? 0;
+    const tcB = state.civTechCounts?.[param_2] ?? state.civTechs?.[param_2]?.size ?? 0;
+    if (aliveBit !== 0 && difficulty !== 0 && runningCities >= 5 && turnNumber >= 0xc9
+        && tcRunning > tcA && tcRunning > tcB) {
+      bVar1 = true;
+    }
+  }
+
+  // Binary lines 5354-5381: tech selection loop.
+  // local_10 bitmask: 1 = found tech for param_1 to receive (best in local_20),
+  //                   2 = found tech for param_2 to receive (best in local_24).
+  let local_10 = 0;
+  let local_14 = 0; // best score for param_1's receive
+  let local_18 = 0; // best score for param_2's receive
+  let local_20 = -1;
+  let local_24 = -1;
+
+  for (let t = 0; t < 100; t++) {
+    // Binary line 5355: skip techs disabled in tree (both prereqs == -2).
+    const prereqs = ADVANCE_PREREQS[t];
+    if (!prereqs) continue;
+    if (prereqs[0] === -2 && prereqs[1] === -2) continue;
+
+    const aHas = civHasTechBoth(state, param_1, t);
+    const bHas = civHasTechBoth(state, param_2, t);
+
+    if (!aHas && bHas) {
+      // param_1 doesn't know it, param_2 does → potential receive for param_1.
+      const r = drawRand(state);
+      const v = calcTechValue(param_1, t, state, null) + (r % 3);
+      if ((local_10 & 1) === 0 || local_14 < v) {
+        local_20 = t;
+        local_10 |= 1;
+        local_14 = v;
+      }
+    } else if (aHas && !bHas) {
+      // Symmetric: param_2 doesn't know, param_1 does → potential receive for param_2.
+      const r = drawRand(state);
+      const v = calcTechValue(param_2, t, state, null) + (r % 3);
+      if ((local_10 & 2) === 0 || local_18 < v) {
+        local_24 = t;
+        local_10 |= 2;
+        local_18 = v;
+      }
+    }
+  }
+
+  // Binary lines 5382-5407: outcome dispatch.
+  if (local_10 === 3) {
+    // Mutual trade — swap. No diplomatic flag set.
+    grantTechFromCiv(state, param_1, local_20, param_2);
+    grantTechFromCiv(state, param_2, local_24, param_1);
+    return true;
+  }
+
+  if (local_10 === 1) {
+    // Only param_1 wants. Gate: ALLIANCE bit AND
+    //   (param_1.techCount + 2*(6 - difficulty) < param_2.techCount  OR  bVar1)
+    //   AND TRIBUTE_DEMANDED bit (0x40000) currently CLEAR (once per cycle).
+    const flagsAB = getTreatyFlags(state, param_1, param_2);
+    if ((flagsAB & TF.ALLIANCE) === 0) return false;
+    if ((flagsAB & TF.TRIBUTE_DEMANDED) !== 0) return false;
+    const tcA = state.civTechCounts?.[param_1] ?? state.civTechs?.[param_1]?.size ?? 0;
+    const tcB = state.civTechCounts?.[param_2] ?? state.civTechs?.[param_2]?.size ?? 0;
+    const difficulty = state.difficulty ?? 0;
+    const techGap = tcA + (6 - difficulty) * 2 < tcB;
+    if (!techGap && !bVar1) return false;
+
+    addTreatyFlag(state, param_1, param_2, TF.TRIBUTE_DEMANDED);
+    grantTechFromCiv(state, param_1, local_20, param_2);
+    return true;
+  }
+
+  if (local_10 === 2) {
+    // Symmetric: only param_2 wants. Gate uses flagsBA (reversed pair).
+    const flagsBA = getTreatyFlags(state, param_2, param_1);
+    if ((flagsBA & TF.ALLIANCE) === 0) return false;
+    if ((flagsBA & TF.TRIBUTE_DEMANDED) !== 0) return false;
+    const tcA = state.civTechCounts?.[param_1] ?? state.civTechs?.[param_1]?.size ?? 0;
+    const tcB = state.civTechCounts?.[param_2] ?? state.civTechs?.[param_2]?.size ?? 0;
+    const difficulty = state.difficulty ?? 0;
+    const techGap = tcB + (6 - difficulty) * 2 < tcA;
+    if (!techGap && !bVar1) return false;
+
+    addTreatyFlag(state, param_1, param_2, TF.TRIBUTE_DEMANDED);
+    grantTechFromCiv(state, param_2, local_24, param_1);
+    return true;
+  }
+
+  return false;
+}
+
+// ── helpers used by aiTechTradeNegotiation ──
+
+function civHasTechBoth(state, civSlot, techId) {
+  const civBit = 1 << civSlot;
+  const ktb = state.knowsTechBytes;
+  if (ktb && typeof ktb[techId] === 'number' && (ktb[techId] & civBit) !== 0) return true;
+  const techs = state.civTechs?.[civSlot];
+  return !!(techs && techs.has(techId));
+}
+
+function countCivCities(state, civSlot) {
+  if (!state.cities) return 0;
+  let n = 0;
+  for (const c of state.cities) {
+    if (c && c.owner === civSlot && (c.gx == null || c.gx >= 0)) n++;
+  }
+  return n;
+}
+
+function drawRand(state) {
+  return state.rng ? state.rng.next() : Math.floor(Math.random() * 32768);
+}
+
+function grantTechFromCiv(state, receiverSlot, techId, giverSlot) {
+  if (techId < 0 || techId >= ADVANCE_PREREQS.length) return;
+  grantAdvance(state, receiverSlot, techId, giverSlot);
+  handleTechDiscovery(state, receiverSlot, techId);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // AI_VS_AI_DIPLOMACY — processAiVsAiDiplomacy
 //
-// Port of FUN_0055d1e2: AI-to-AI treaty progression/regression.
-// Runs every 4 turns per pair. Escalates through ceasefire → peace
-// → alliance based on attitude, or declares war on low attitude.
+// Treaty escalation heuristic (NOT a binary port — the binary's actual
+// AI-vs-AI treaty work happens inside FUN_0055d8d8). Runs every 4 turns
+// per pair. Escalates through ceasefire → peace → alliance based on
+// attitude, or declares war on low attitude.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -2575,25 +2605,27 @@ function processAiVsAiDiplomacy(state, mapBase, aiCiv, otherAiCiv) {
     return events;
   }
 
+  // Attitude is HOSTILITY: 0=Worshipful (friendly), 100=Furious (hostile).
+  // Cooperation escalates when hostility is LOW; war is provoked when hostility is HIGH.
   if (treaty === 'war') {
-    // If at war and attitude > 40: attempt ceasefire
-    if (attitude > 40) {
+    // If at war and hostility < 60: less hostile → attempt ceasefire
+    if (attitude < 60) {
       const result = signCeasefire(state, aiCiv, otherAiCiv);
       events.push(...result.events);
     }
   } else if (treaty === 'ceasefire') {
-    // If ceasefire and attitude > 60: attempt peace
-    if (attitude > 60) {
+    // If ceasefire and hostility < 40: friendlier → attempt peace
+    if (attitude < 40) {
       const result = signPeaceTreaty(state, aiCiv, otherAiCiv);
       events.push(...result.events);
     }
   } else if (treaty === 'peace') {
-    if (attitude > 80) {
-      // If peace and attitude > 80: attempt alliance
+    if (attitude < 20) {
+      // If peace and hostility < 20: very friendly → attempt alliance
       const result = formAlliance(state, mapBase, aiCiv, otherAiCiv);
       events.push(...result.events);
-    } else if (attitude < 20) {
-      // If peace and attitude < 20: spontaneous war check
+    } else if (attitude > 80) {
+      // If peace and hostility > 80: very hostile → spontaneous war check
       if (shouldDeclareWarFull(state, mapBase, aiCiv, otherAiCiv)) {
         const result = diplomacyDeclareWar(state, mapBase, aiCiv, otherAiCiv);
         events.push(...result.events);
@@ -2615,58 +2647,91 @@ function processAiVsAiDiplomacy(state, mapBase, aiCiv, otherAiCiv) {
 /**
  * Process a request for an AI civ to join a war alongside an ally.
  *
+ * Faithful port of FUN_0055d685 (block_00550000.c:5418, 595 bytes).
+ *
+ * Binary signature: FUN_0055d685(p1, p2, p3) with
+ *   p1 = us (the civ receiving the request)
+ *   p2 = enemyCiv (the civ to potentially declare war on)
+ *   p3 = allyCiv  (the civ asking us for help)
+ *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map data with accessors
- * @param {number} aiCiv - AI civ being asked to join
- * @param {number} allyCiv - civ requesting help
- * @param {number} enemyCiv - civ to declare war on
+ * @param {number} aiCiv - AI civ being asked to join (p1)
+ * @param {number} allyCiv - civ requesting help (p3)
+ * @param {number} enemyCiv - civ to declare war on (p2)
  * @returns {Array<object>} events generated
  */
 export function processJoinWar(state, mapBase, aiCiv, allyCiv, enemyCiv) {
   const events = [];
 
-  // Binary FUN_0055d685: outer check — already at war/pending with ally?
-  const flagsToAlly = getTreatyFlags(state, allyCiv, aiCiv);
-  if (flagsToAlly & (TF.WAR | TF.ALLIANCE)) return events; // already committed
+  // Binary line 5428: outer gate — flags[us][enemy] & (WAR|ALLIANCE) == 0.
+  // We must be NEITHER at war NOR allied with the proposed enemy.
+  const flagsUsToEnemy = getTreatyFlags(state, aiCiv, enemyCiv);
+  if (flagsUsToEnemy & (TF.WAR | TF.ALLIANCE)) return events;
 
-  // Binary Branch 1: check if enemy has pending join flag (0x20)
-  const flagsFromEnemy = getTreatyFlags(state, enemyCiv, aiCiv);
-  const hasPendingJoin = !!(flagsFromEnemy & 0x20);
-
-  if (!hasPendingJoin) {
-    // Binary Branch 1a: if BOTH relationships have peace flag (0x10),
-    // set pending join flag (0x20) on both.
-    const peaceWithAlly = !!(getTreatyFlags(state, allyCiv, aiCiv) & 0x10);
-    const peaceWithEnemy = !!(getTreatyFlags(state, enemyCiv, aiCiv) & 0x10);
-    if (peaceWithAlly && peaceWithEnemy) {
-      // Set pending join flag on both relationships
-      addTreatyFlag(state, allyCiv, aiCiv, 0x20);
-      addTreatyFlag(state, enemyCiv, aiCiv, 0x20);
+  // Binary line 5429: check flags[ally][enemy] byte+1 bit 0x20 = bit 13 = WAR.
+  // i.e. asker must be at war with the proposed enemy.
+  const flagsAllyToEnemy = getTreatyFlags(state, allyCiv, enemyCiv);
+  if ((flagsAllyToEnemy & TF.WAR) === 0) {
+    // Binary lines 5430-5435: asker is NOT at war with enemy.
+    // If BOTH us and asker have VENDETTA toward enemy, set INTRUDER on
+    // the two outbound directions (us→enemy and asker→enemy). Binary
+    // mutates `flags[p1][p2] |= 0x20` and `flags[p3][p2] |= 0x20` —
+    // these are ONE-WAY writes (the binary does not also set INTRUDER
+    // on flags[enemy][us] / flags[enemy][asker]). Using `addTreatyFlag`
+    // here would be bidirectional and incorrectly tag `enemy` as having
+    // INTRUDER intent toward us, biasing downstream AI gates.
+    const usVendetta = !!(flagsUsToEnemy & TF.VENDETTA);
+    const allyVendetta = !!(flagsAllyToEnemy & TF.VENDETTA);
+    if (usVendetta && allyVendetta) {
+      setTreatyFlags(state, aiCiv, enemyCiv,
+        getTreatyFlags(state, aiCiv, enemyCiv) | TF.INTRUDER);
+      setTreatyFlags(state, allyCiv, enemyCiv,
+        getTreatyFlags(state, allyCiv, enemyCiv) | TF.INTRUDER);
     }
     return events; // no war triggered yet — pending only
   }
 
   // Binary Branch 2: pending join flag exists — may trigger war
-  // Human player gate: 6-turn contact check + difficulty random rejection
-  const isHuman = !!((state.humanPlayers || 0) & (1 << aiCiv));
-  if (isHuman) {
-    const peaceWithAlly = !!(getTreatyFlags(state, allyCiv, aiCiv) & 0x10);
-    if (!peaceWithAlly) {
-      // Time gate: less than 6 turns of contact → reject
-      const contactTurn = state.treatyTurns?.[`${Math.min(aiCiv, allyCiv)}-${Math.max(aiCiv, allyCiv)}`] ?? 0;
-      const turnNum = state.turn?.number || 0;
-      if (turnNum - contactTurn < 6) return events;
-
-      // Difficulty-based rejection: AI level < 7 → 2/3 chance reject
-      const rank = state.civs?.[aiCiv]?.powerRank ?? 3;
-      if (rank < 7) {
+  // Binary lines 5440-5451: human-enemy gate.
+  // If `enemy` is HUMAN, AI applies extra rejection criteria so it
+  // doesn't gang up on humans recklessly.
+  const enemyIsHuman = !!((state.humanPlayers || 0) & (1 << enemyCiv));
+  if (enemyIsHuman) {
+    // VENDETTA shortcut (line 5441): if we have vendetta toward enemy,
+    // skip the extra checks — declare immediately.
+    const usVendetta = !!(flagsUsToEnemy & TF.VENDETTA);
+    const turnNumber = state.turn?.number || 0;
+    if (!usVendetta) {
+      // Recent contact check (line 5442-5443):
+      //   lastContact[enemy][us] - currentTurn < 6 → reject.
+      // v3 stores the table as civs[civ].lastContactTurns[other] (mirrors
+      // binary's DAT_0064ca82[civ*0x594 + other*2]).
+      const lastContact = state.civs?.[enemyCiv]?.lastContactTurns?.[aiCiv] ?? 0;
+      if (lastContact - turnNumber < 6) return events;
+      // Power-rank rejection (lines 5446-5448):
+      //   if powerRank[enemy] < 7 AND rand() % 3 != 0 → reject.
+      const enemyRank = state.powerRanks?.[enemyCiv] ?? 3;
+      if (enemyRank < 7) {
         const rng = state.rng;
-        if (rng ? (rng.nextInt(3) !== 0) : (Math.random() > 0.34)) return events;
+        const r = rng ? rng.nextInt(3) : Math.floor(Math.random() * 3);
+        if (r !== 0) return events;
       }
+    }
+    // Binary lines 5450-5451: update lastContact[enemy][us] and
+    // lastContact[enemy][ally] = currentTurn.
+    const enemyCiv_ = state.civs?.[enemyCiv];
+    if (enemyCiv_) {
+      const arr = [...(enemyCiv_.lastContactTurns || new Array(8).fill(0))];
+      arr[aiCiv] = turnNumber;
+      arr[allyCiv] = turnNumber;
+      state.civs = [...state.civs];
+      state.civs[enemyCiv] = { ...enemyCiv_, lastContactTurns: arr };
     }
   }
 
-  // Trigger war: declare war on enemy
+  // Binary lines 5453-5460: emit JOINWAR popup (UI in binary, event in v3),
+  // then declare war p1 → p2 (FUN_00467825 with WAR bit 0x2000).
   const warResult = diplomacyDeclareWar(state, mapBase, aiCiv, enemyCiv, allyCiv);
   events.push(...warResult.events);
 
@@ -2676,6 +2741,194 @@ export function processJoinWar(state, mapBase, aiCiv, allyCiv, enemyCiv) {
   });
 
   return events;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_0055d8d8 — peace-year encounter (full state-mutating port)
+//
+// Binary block_00550000.c:5479 (7326 bytes). Invoked from per-civ-tick
+// FUN_00560084 line 156 when both civs are at peace, no alliance, and
+// the global peace-year flag is set, every 16 turns. The function has
+// three large UI dialog paths (PARLEY/WARNING/SIGN popups, lines
+// 5494-5655) which are inert in headless mode plus the AI-AI
+// orchestration body at 5661-5921. This port covers the full body's
+// state mutations — entry treaty bits, both-peaceful gate, tech-trade
+// invocation, sign-peace, alliance form/cancel via shared-enemy
+// search, and war declaration. UI dialog paths are skipped.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Faithful port of FUN_0055d8d8 — peace-year diplomatic encounter.
+ *
+ * Mutates treaty flags + may invoke aiTechTradeNegotiation /
+ * processJoinWar. Returns null (binary signature is void).
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civA  - first civ (binary param_1)
+ * @param {number} civB  - second civ (binary param_2)
+ */
+export function aiPeaceYearEncounter(state, civA, civB) {
+  // Binary lines 5494-5499: early returns on barbarian / turn-zero.
+  if (civA === 0 || civB === 0) return null;
+  const turnNumber = state.turn?.number ?? 0;
+  if (turnNumber === 0) return null;
+
+  // Binary line 5503: scenario gate (DAT_00627670 + FUN_004fbe84) — passthrough.
+  // Binary lines 5506-5655: UI dialog paths skipped.
+
+  // Binary lines 5656-5660: ALWAYS-RUN bidirectional treaty-bit writes.
+  const flagsEntry = getTreatyFlags(state, civA, civB);
+  const firstContact = (flagsEntry & TF.CONTACT) === 0;
+  if (firstContact) {
+    // RECENT_CONTACT (0x4000) bidir — line 5657.
+    addTreatyFlag(state, civA, civB, TF.RECENT_CONTACT);
+  }
+  // bVar6 in the binary captures `!CONTACT` here (line 5659) and is reused
+  // below as the cadence-override "first contact" override.
+  // Line 5660: bidir set CONTACT | PERIODIC_10.
+  addTreatyFlag(state, civA, civB, TF.PERIODIC_10 | TF.CONTACT);
+
+  // Binary lines 5661-5666: outer gate.
+  //   1) p1 NOT human AND p2 NOT human — already true: per-civ-tick wires
+  //      this only for AI-AI pairs.
+  //   2) (turn + p1 + p2) & 3 == 0 OR firstContact (line 5663).
+  //   3) Scenario civ-3/civ-1 gate (lines 5664-5666) — passthrough.
+  if (((turnNumber + civA + civB) & 3) !== 0 && !firstContact) return null;
+
+  // Binary lines 5667-5676: both-peaceful gate.
+  //   peaceful(us, them) iff:
+  //     shouldDeclareWar(us, them) == 0
+  //     OR them has Great Wall (wonder 6) or UN (wonder 24)
+  //     OR us.govt > 4 AND no WAR_STARTED toward them
+  const peaceful = (us, them) => {
+    if (!shouldDeclareWarFull(state, null, us, them)) return true;
+    if (civHasWonder(state, them, 6) || civHasWonder(state, them, 24)) return true;
+    const usGovt = GOVT_INDEX[state.civs?.[us]?.government] ?? 1;
+    const flagsUs = getTreatyFlags(state, us, them);
+    if (usGovt > 4 && !(flagsUs & TF.WAR_STARTED)) return true;
+    return false;
+  };
+
+  if (peaceful(civA, civB) && peaceful(civB, civA)) {
+    // Binary line 5677: tech trade between the pair.
+    aiTechTradeNegotiation(state, civA, civB, civA);
+
+    const flagsAB = getTreatyFlags(state, civA, civB);
+    if ((flagsAB & TF.PEACE) === 0) {
+      // Binary lines 5678-5743: NOT yet at PEACE — sign peace.
+      // (Binary lines 5679-5742 are dialog popups; line 5743 sets PEACE bidir.)
+      // This path is dead under per-civ-tick wiring (which gates on PEACE bit
+      // already set), but ported for direct callers / future wiring.
+      addTreatyFlag(state, civA, civB, TF.PEACE);
+    } else {
+      // Binary lines 5745-5865: already at PEACE — alliance form/cancel.
+      const alreadyAllied = (flagsAB & TF.ALLIANCE) !== 0;
+      const rankA = state.civs?.[civA]?.powerRank ?? 3;
+      const rankB = state.civs?.[civB]?.powerRank ?? 3;
+      // Binary lines 5746-5755: rank-7 special case flags.
+      let rankSeven = false;       // bVar1 in binary
+      let alliedActive = alreadyAllied; // bVar6 in binary
+      if (rankA === 7 && rankB > 3) { alliedActive = false; rankSeven = true; }
+      if (rankB === 7 && rankA > 3) { alliedActive = false; rankSeven = true; }
+
+      const humanMask = state.humanPlayers || 0;
+      // Binary uses DAT_00655b08 != 0 = "not Chieftain". v3 stores
+      // difficulty as either string or 0/index; treat any truthy value as
+      // "not Chieftain" with the existing diplomai.js convention (?? 0).
+      const difficultyNonZero = !!(state.difficulty ?? 0) &&
+        state.difficulty !== 'chieftain';
+
+      // Binary lines 5757-5793: third-party shared-enemy / mediator search.
+      let chosenAlly = -1;          // local_2c
+      let alliedThirdCount = 0;     // local_14
+      let chosenViaRankSeven = false; // bVar2
+
+      for (let k = 1; k < 8; k++) {
+        if (k === civA || k === civB) continue;
+        const flagsAK = getTreatyFlags(state, civA, k);
+        const flagsBK = getTreatyFlags(state, civB, k);
+        const kAlliedEither = (flagsAK & TF.ALLIANCE) !== 0 ||
+                              (flagsBK & TF.ALLIANCE) !== 0;
+        if (!kAlliedEither) {
+          // Binary lines 5764-5771: rank-7 mediator special case.
+          // bVar2 = (humanMask&k) AND rank[k]==7 AND difficulty>0
+          //         AND civ[k].score>=5 AND turn>=0xc9.
+          const rankK = state.civs?.[k]?.powerRank ?? 3;
+          const scoreK = state.civs?.[k]?.score ?? 0;
+          const kIsHuman = ((1 << k) & humanMask) !== 0;
+          chosenViaRankSeven = kIsHuman && rankK === 7 && difficultyNonZero &&
+                               scoreK >= 5 && turnNumber >= 0xc9;
+          if (chosenViaRankSeven) { chosenAlly = k; break; }
+
+          if (difficultyNonZero) {
+            if (alliedActive) {
+              // Binary lines 5774-5780: already-allied pair looks for any k
+              // where neither side is at PEACE with k.
+              if (!(flagsAK & TF.PEACE) && !(flagsBK & TF.PEACE)) {
+                chosenAlly = k; break;
+              }
+            } else if (!rankSeven &&
+                       shouldProvoke(state, civA, k) && rankA <= rankK &&
+                       shouldProvoke(state, civB, k) && rankB <= rankK) {
+              // Binary lines 5782-5786: not-yet-allied pair looks for a
+              // shared provokable target stronger than both of us.
+              chosenAlly = k; break;
+            }
+          }
+        } else {
+          alliedThirdCount += 1;
+        }
+      }
+
+      // Binary lines 5794-5798: scenario civ-6/civ-7 special case (skip).
+
+      // Binary lines 5799-5818: cancel alliance branch decision.
+      // The threshold compares civ[DAT_00655b03] +0x1E byte against
+      // alliedThirdCount. DAT_00655b03 is the per-civ-tick "active" civ
+      // (== civA in our wiring) and +0x1E is a per-civ tolerance/score
+      // byte. Use civA's powerRank as the closest available proxy.
+      const activeRank = state.civs?.[civA]?.powerRank ?? 3;
+      if (chosenAlly < 1 ||
+          ((!chosenViaRankSeven || activeRank < alliedThirdCount) &&
+           alliedThirdCount !== 0 && !alliedActive)) {
+        // Binary line 5817: bidir clear ALLIANCE bit.
+        if (alreadyAllied) {
+          clearTreatyFlag(state, civA, civB, TF.ALLIANCE);
+        }
+      } else {
+        // Binary lines 5819-5864: form / maintain alliance branch.
+        if (!alreadyAllied) {
+          // Binary lines 5849-5851: process JOIN_WAR with the new ally
+          // against the partner's enemies. Binary gates this on dialog
+          // visibility (UI gate at 5822-5830); we always run for state
+          // mutation parity in headless.
+          processJoinWar(state, null, civA, chosenAlly, civB);
+          processJoinWar(state, null, civB, chosenAlly, civA);
+          // Binary lines 5853-5860: human-only INTRUDER/0x10000 set on
+          // third party — dead in headless (humanMask&k == 0). Skipped.
+        }
+        // Binary line 5863: bidir set ALLIANCE.
+        addTreatyFlag(state, civA, civB, TF.ALLIANCE);
+      }
+    }
+  } else if (((getTreatyFlags(state, civA, civB) & TF.WAR) === 0) || firstContact) {
+    // Binary lines 5867-5919: war declaration branch.
+    // Lines 5868-5912 are popup-gated UI (skipped in headless).
+    // Line 5913: bidir clear PEACE.
+    clearTreatyFlag(state, civA, civB, TF.PEACE);
+    // Line 5914: bidir set 0x2000 = WAR.
+    addTreatyFlag(state, civA, civB, TF.WAR);
+    // Lines 5915-5918: VENDETTA → WAR_STARTED transition. Binary clears
+    // VENDETTA bidir then sets WAR_STARTED ONE-WAY (raw |= on civA→civB).
+    const f2 = getTreatyFlags(state, civA, civB);
+    if (f2 & TF.VENDETTA) {
+      clearTreatyFlag(state, civA, civB, TF.VENDETTA);
+      setTreatyFlags(state, civA, civB,
+                     getTreatyFlags(state, civA, civB) | TF.WAR_STARTED);
+    }
+  }
+
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2758,8 +3011,9 @@ export function evaluateCeasefireProposal(state, aiCiv, proposerCiv) {
     }
   }
 
-  // Attitude threshold: accept if attitude > 30
-  if (attitude > 30) {
+  // Hostility convention: low byte = friendly. Accept ceasefire if hostility
+  // is anything less than "mostly hostile" (< 70).
+  if (attitude < 70) {
     return { accept: true };
   }
 
@@ -2786,7 +3040,9 @@ export function evaluateNegotiationChoice(state, aiCiv, targetCiv, proposalType)
   switch (proposalType) {
     case 'alliance': {
       const attitude = getAttitude(state, aiCiv, targetCiv);
-      if (attitude <= 70) {
+      // Hostility convention: alliance requires LOW hostility (friendly).
+      // Reject unless hostility < 30 (Worshipful/Enthusiastic/Cordial tier).
+      if (attitude >= 30) {
         return { accept: false, counterOffer: 'peace' };
       }
       // Check we're not at war with target's allies
@@ -2861,7 +3117,8 @@ function checkProvocationConditions(gameState, mapBase, civSlot) {
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) {
         actions.push(action);
-        actions.push(makeAttitudeAction(civSlot, other, -30));
+        // Provocation → hostility bump
+        actions.push(makeAttitudeAction(civSlot, other, +30));
         // Clear the flags after acting on them
         if (flags & TF.INTRUDER) clearTreatyFlag(gameState, civSlot, other, TF.INTRUDER);
         if (flags & TF.HOSTILITY) clearTreatyFlag(gameState, civSlot, other, TF.HOSTILITY);
@@ -2877,7 +3134,8 @@ function checkProvocationConditions(gameState, mapBase, civSlot) {
 // Item 6: SPONTANEOUS_WAR — break peace when conditions are met
 //
 // If peace treaty exists, not allied, military power > 5,
-// and attitude < 26: break peace and declare war.
+// and hostility byte is high (isHostile, level > 4 = raw > ~61):
+// break peace and declare war.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -2927,8 +3185,8 @@ export function checkSpontaneousWar(state, aiCiv, targetCiv) {
 // ═══════════════════════════════════════════════════════════════════
 // Item 7: ALLIANCE_BREAK_THRESHOLD — break alliance under conditions
 //
-// Break if: attitude < 76, military power > ally's * 2, no shared war.
-// Action: cancel alliance, set treaty to peace.
+// Break if: hostility byte is at least Receptive (not friendly tier 1-3),
+// military power > ally's * 2, no shared war. Cancel alliance → peace.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -3038,8 +3296,8 @@ function applyScenarioOverrides(gameState, civSlot, debugLog) {
 
     // Force war declaration
     actions.push({ type: 'DECLARE_WAR', targetCiv: target });
-    // Set attitude to maximum hostility
-    actions.push(makeAttitudeAction(civSlot, target, -100));
+    // Bump attitude byte to maximum hostility (+100 → clamps to 100 = furious).
+    actions.push(makeAttitudeAction(civSlot, target, +100));
 
     if (debugLog) {
       const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
@@ -3126,14 +3384,15 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const err = validateAction(gameState, mapBase, firstContactAction, civSlot);
           if (!err) {
             actions.push(firstContactAction);
-            // Set initial attitude based on leader personalities
+            // Set initial attitude based on leader personalities.
+            // Hostility convention: friendlier = NEGATIVE delta, wary = POSITIVE.
             const ourPers = getPersonality(gameState, civSlot);
             const theirPers = getPersonality(gameState, i);
             let initialDelta = 0;
-            if (ourPers.militarism < 0) initialDelta += 10;        // we're peaceful
-            if (theirPers.militarism < 0) initialDelta += 5;       // they're peaceful
+            if (ourPers.militarism < 0) initialDelta -= 10;        // we're peaceful → friendlier
+            if (theirPers.militarism < 0) initialDelta -= 5;       // they're peaceful → friendlier
             if (ourPers.militarism > 0 && theirPers.militarism > 0) {
-              initialDelta -= 10; // two aggressive civs start wary
+              initialDelta += 10; // two aggressive civs start wary → bump hostility
             }
             if (initialDelta !== 0) {
               actions.push(makeAttitudeAction(civSlot, i, initialDelta));
@@ -3149,15 +3408,16 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
       }
 
       // 2a. War declarations (most impactful)
-      // Only one war declaration per turn (from FUN_0055d8d8 behavior)
-      if (!declaredWar && shouldDeclareWar(civSlot, i, continentData, gameState)) {
+      // Only one war declaration per turn (from FUN_0055d8d8 behavior).
+      // Faithful port: delegate to shouldDeclareWarFull (FUN_0055cbd5).
+      if (!declaredWar && shouldDeclareWarFull(gameState, mapBase, civSlot, i)) {
         const action = { type: 'DECLARE_WAR', targetCiv: i };
         const err = validateAction(gameState, mapBase, action, civSlot);
         if (!err) {
           actions.push(action);
-          // War declaration worsens attitudes
-          actions.push(makeAttitudeAction(civSlot, i, -40));
-          actions.push(makeAttitudeAction(i, civSlot, -40));
+          // War declaration worsens attitudes → bump hostility both ways
+          actions.push(makeAttitudeAction(civSlot, i, +40));
+          actions.push(makeAttitudeAction(i, civSlot, +40));
           declaredWar = true;
           if (debugLog) {
             const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
@@ -3177,7 +3437,8 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const err = validateAction(gameState, mapBase, spontAction, civSlot);
           if (!err) {
             actions.push(spontAction);
-            actions.push(makeAttitudeAction(civSlot, i, -30));
+            // Spontaneous war → bump hostility
+            actions.push(makeAttitudeAction(civSlot, i, +30));
             declaredWar = true;
             if (debugLog) {
               const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
@@ -3193,7 +3454,7 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
       if (onCooldown) continue;
 
       // 2b. Peace proposals (urgent if losing)
-      if (shouldProposePeace(civSlot, i, continentData, gameState)) {
+      if (shouldProposePeace(civSlot, i, gameState, mapBase)) {
         // Skip if our reputation is too low (target won't trust us)
         if (isReputationTooLow(gameState, civSlot)) continue;
         // Don't propose if already have a pending proposal
@@ -3215,8 +3476,8 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
             const err = validateAction(gameState, mapBase, action, civSlot);
             if (!err) {
               actions.push(action);
-              // Grovel: offer a large attitude bonus (desperate for peace)
-              actions.push(makeAttitudeAction(civSlot, i, +40));
+              // Grovel: large warming gesture (desperate for peace) → friendlier
+              actions.push(makeAttitudeAction(civSlot, i, -40));
               if (debugLog) {
                 const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
                 const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
@@ -3229,8 +3490,8 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
             const err = validateAction(gameState, mapBase, action, civSlot);
             if (!err) {
               actions.push(action);
-              // Peace proposal improves attitude
-              actions.push(makeAttitudeAction(civSlot, i, +20));
+              // Peace proposal improves attitude → friendlier
+              actions.push(makeAttitudeAction(civSlot, i, -20));
               if (debugLog) {
                 const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
                 const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
