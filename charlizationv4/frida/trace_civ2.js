@@ -779,7 +779,62 @@ function readCombatContext(base, attackerIdx) {
         buildings,
       });
     }
-    return { attackerIdx, attacker: att, neighbors, cities };
+    // Capture the diplomatic-state bytes that FUN_00580341:280 reads to
+    // decide peace-branch vs war-branch (sneak attack). Snapshot turn
+    // boundaries can't tell us the exact pre-combat civ-relations state
+    // for individual mid-turn combats — sneak-attack fires for the FIRST
+    // combat that breaks treaty, but the snapshot at turn N+1 already
+    // reflects post-war bits, masking the transition.
+    //
+    // Bytes captured (per binary's reads):
+    //   rel0    = (&DAT_0064c6c0)[uVar7*4 + uVar12*0x594]
+    //           = defender_civ.relations[attacker_civ].byte0
+    //   rel1    = (&DAT_0064c6c1)[uVar7*4 + uVar12*0x594] (same entry, byte 1)
+    //   revRel0 = (&DAT_0064c6c0)[uVar12*4 + uVar7*0x594]
+    //           = attacker_civ.relations[defender_civ].byte0
+    //   aliveMask = DAT_00655B0B (1 byte, alive-civ bitmask)
+    //   atkGov  = (&DAT_0064c6b5)[uVar7*0x594] = attacker_civ.byte[0x15]
+    //   defOwner = uVar12 = defender owner
+    //
+    // The validator re-evaluates FUN_00580341:280's IF on these exact
+    // bytes (no snapshot inference). If the IF is FALSE, war-branch
+    // fires: effAtk *= 2 (line 384), and atkGov > 4 adds 1 pre-combat
+    // rand call (line 346 popularity-dip).
+    const CIV_BASE = 0x0064C6A0;
+    const CIV_STRIDE = 0x594;
+    const REL_OFFSET = 0x20;  // relations array within civ struct
+    const GOV_OFFSET = 0x15;  // government_type within civ struct
+    const DAT_00655B0B = 0x00655B0B;
+    let diplomacy = null;
+    try {
+      const atkOwner = att.owner;
+      const defOwner = neighbors.length ? null : null; // resolved below
+      // We don't know which neighbor the binary will pick — capture for
+      // every neighbor's owner so the validator can index by picked def.
+      // Plus the attacker's own civ context (gov, alive bit).
+      const aliveMask = base.add(DAT_00655B0B - 0x00400000).readU8();
+      const atkBase = base.add(CIV_BASE - 0x00400000 + atkOwner * CIV_STRIDE);
+      const atkGov = atkBase.add(GOV_OFFSET).readU8();
+      const perDef = {};
+      const seenOwners = new Set([atkOwner]);
+      for (const n of neighbors) {
+        if (n.owner === atkOwner || seenOwners.has(n.owner)) continue;
+        if (n.owner < 0 || n.owner >= 8) continue;
+        seenOwners.add(n.owner);
+        const dBase = base.add(CIV_BASE - 0x00400000 + n.owner * CIV_STRIDE);
+        // defender_civ.relations[atkOwner].bytes[0..1]
+        const defRel = dBase.add(REL_OFFSET + atkOwner * 4);
+        const rel0 = defRel.readU8();
+        const rel1 = defRel.add(1).readU8();
+        // attacker_civ.relations[defOwner].byte[0]
+        const revRel = atkBase.add(REL_OFFSET + n.owner * 4);
+        const revRel0 = revRel.readU8();
+        perDef[n.owner] = { rel0, rel1, revRel0 };
+      }
+      diplomacy = { atkOwner, atkGov, aliveMask, perDef };
+    } catch (_) { /* best-effort */ }
+
+    return { attackerIdx, attacker: att, neighbors, cities, diplomacy };
   } catch (_) { return null; }
 }
 

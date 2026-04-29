@@ -385,6 +385,37 @@ function detectSneakAttack(regions, atkOwner, defOwner, snapTurn) {
   return r;
 }
 
+// Re-evaluate FUN_00580341:280 IF condition with Frida-captured bytes.
+// `diplomacy` shape (from trace_civ2.js readCombatContext):
+//   { atkOwner, atkGov, aliveMask, perDef: { [civOwner]: { rel0, rel1, revRel0 } } }
+// IF (peace branch) condition (line 280-285):
+//   condA = (1 << defOwner) & aliveMask == 0
+//   inner = (rel0 & 6) == 0
+//           && ( ((rel0 & 1) == 0 && (revRel0 & 0x40) == 0)
+//                || (rel1 & 0x20) != 0 )
+//   peace = condA || inner
+// War-branch fires when peace == FALSE.
+function sneakFromDiplomacy(diplomacy, defOwner) {
+  const r = { applies: false, popularityCheck: false };
+  if (!diplomacy || defOwner == null || defOwner === 0) return r;
+  if (diplomacy.atkOwner === 0 || diplomacy.atkOwner === defOwner) return r;
+  const entry = diplomacy.perDef ? diplomacy.perDef[defOwner] : null;
+  if (!entry) return r;
+  const { rel0, rel1, revRel0 } = entry;
+  const condA = (((1 << (defOwner & 0x1F)) & diplomacy.aliveMask) === 0);
+  const A = (rel0 & 6) === 0;
+  const B = (rel0 & 1) === 0;
+  const C = (revRel0 & 0x40) === 0;
+  const D = (rel1 & 0x20) !== 0;
+  const inner = A && ((B && C) || D);
+  const peaceBranch = condA || inner;
+  if (!peaceBranch) {
+    r.applies = true;
+    if (diplomacy.atkGov > 4) r.popularityCheck = true;
+  }
+  return r;
+}
+
 function readWonderOwner(wondersRegion, citiesRegion, wonderId) {
   if (!wondersRegion || wonderId < 0 || wonderId >= 28) return null;
   const dv = new DataView(wondersRegion.bytes.buffer,
@@ -700,16 +731,18 @@ for (let i = 0; i < resolved.length; i++) {
     // attacker is breaking a peace/ceasefire. That branch (a) doubles
     // effAtk and (b) makes one pre-combat rand call for popularity-dip
     // when attacker's gov > 4 (Republic/Democracy).
-    // Sneak attack is opt-in via env var. The snapshot-diff heuristic
-    // (war-bit transitions across turn boundaries + first-combat-per-pair)
-    // closes idx 3 of game_20260428_204217 cleanly but produces both false
-    // positives and false negatives on longer sessions where civs declare
-    // war multiple times. v3's `sneakAttackPopularityCheck` port is
-    // correct; reliable per-combat detection requires Frida to capture
-    // the binary's bVar18 flag at FUN_00580341 entry, not a snapshot diff.
-    const sneak = process.env.VALIDATE_SNEAK
-      ? detectSneakAttack(regions, att.owner, def.owner, turn)
-      : { applies: false, popularityCheck: false };
+    // Sneak attack: prefer Frida's combatContext.diplomacy bytes
+    // (captured AT FUN_00580341 entry — exact pre-combat state) over the
+    // snapshot-diff heuristic. Diplomacy field landed 2026-04-28 PM;
+    // older captures fall back to heuristic only when VALIDATE_SNEAK=1.
+    let sneak;
+    if (p.combatContext?.diplomacy) {
+      sneak = sneakFromDiplomacy(p.combatContext.diplomacy, def.owner);
+    } else if (process.env.VALIDATE_SNEAK) {
+      sneak = detectSneakAttack(regions, att.owner, def.owner, turn);
+    } else {
+      sneak = { applies: false, popularityCheck: false };
+    }
     resolveCombat(
       attacker, defender,
       defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
