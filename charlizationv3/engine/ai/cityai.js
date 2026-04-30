@@ -224,8 +224,9 @@ function tileYield(gx, gy, mapBase) {
 }
 
 /**
- * Compute potential yield if the tile were improved (for city site scoring).
- * Estimates what yields COULD be if irrigation/mining were added.
+ * Compute potential BFC tile yield assuming the tile is optimally improved
+ * (either irrigation OR mining, whichever scores higher — these are mutually
+ * exclusive in Civ2). Used for city site scoring of NON-center BFC tiles.
  */
 function potentialTileYield(gx, gy, mapBase) {
   const terrain = mapBase.getTerrain(gx, gy);
@@ -236,7 +237,7 @@ function potentialTileYield(gx, gy, mapBase) {
   let shields = base[1];
   let trade = base[2];
 
-  // Special resources
+  // Special resources override base.
   const res = mapBase.getResource(gx, gy);
   if (res > 0 && SPECIAL_TOTAL[terrain]) {
     const specIdx = res - 1;
@@ -248,20 +249,72 @@ function potentialTileYield(gx, gy, mapBase) {
     }
   }
 
-  // Potential irrigation bonus (if terrain supports it)
-  if (CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0 && res === 0) {
-    food += IRRIGATION_BONUS[terrain] || 0;
-  }
-
-  // Potential mining bonus (only if terrain prefers mining over irrigation)
-  if (CAN_MINE[terrain] && MINING_TURNS[terrain] > 0 && res === 0) {
-    // Hills/mountains benefit more from mining than irrigation
-    if (terrain === 4 || terrain === 5 || terrain === 7) {
-      shields += MINING_BONUS[terrain] || 0;
+  // Pick the better of irrigation OR mining (mutually exclusive). Weight
+  // matches the city-site scoring weight (food×3 vs shields×2) so the
+  // settler prefers whichever improvement contributes more to the site.
+  if (res === 0) {
+    const canIrr = CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0;
+    const canMine = CAN_MINE[terrain] && MINING_TURNS[terrain] > 0 &&
+                    (terrain === 4 || terrain === 5 || terrain === 7);
+    const irrFoodBonus = canIrr ? (IRRIGATION_BONUS[terrain] || 0) : 0;
+    const mineShieldBonus = canMine ? (MINING_BONUS[terrain] || 0) : 0;
+    if (irrFoodBonus * 3 >= mineShieldBonus * 2) {
+      food += irrFoodBonus;
+    } else {
+      shields += mineShieldBonus;
     }
   }
 
-  // Rivers add +1 trade
+  // Rivers add +1 trade.
+  if (mapBase.hasRiver(gx, gy)) trade += 1;
+
+  return [food, shields, trade];
+}
+
+/**
+ * Compute the city-CENTER tile yield using Civ2's center-tile rules:
+ *   - Auto-irrigation effect: terrain with IRRIGATION_BONUS gets the food
+ *     bonus regardless of improvement state (matches production.js
+ *     calcTileFood `imp.irrigation || isCenter` gate).
+ *   - Minimum 1 shield (matches production.js calcTileShields `isCenter
+ *     && shields === 0` gate).
+ *   - No mining bonus (city center never auto-mines).
+ *   - Rivers add +1 trade.
+ *
+ * Without this distinction, scoring `potentialTileYield(centerHill)` would
+ * over-credit hills by stacking both irrigation and mining bonuses on a
+ * tile that can in reality only have one. With this helper, a hill center
+ * scores 2/1/0 (food/shields/trade) instead of 2/3/0 — keeping grassland
+ * (3/1/0) preferred over hills as a city site, matching Civ2 norms.
+ */
+function centerTileYield(gx, gy, mapBase) {
+  const terrain = mapBase.getTerrain(gx, gy);
+  if (terrain < 0 || terrain > 10) return [0, 0, 0];
+
+  const base = TERRAIN_BASE[terrain];
+  let food = base[0];
+  let shields = base[1];
+  let trade = base[2];
+
+  const res = mapBase.getResource(gx, gy);
+  if (res > 0 && SPECIAL_TOTAL[terrain]) {
+    const specIdx = res - 1;
+    const spec = SPECIAL_TOTAL[terrain][specIdx];
+    if (spec) {
+      food = spec[0];
+      shields = spec[1];
+      trade = spec[2];
+    }
+  }
+
+  // Auto-irrigation effect on land tiles that support irrigation.
+  if (terrain !== 10 && IRRIGATION_BONUS[terrain]) {
+    food += IRRIGATION_BONUS[terrain];
+  }
+
+  // City center minimum 1 shield.
+  if (shields === 0) shields = 1;
+
   if (mapBase.hasRiver(gx, gy)) trade += 1;
 
   return [food, shields, trade];
@@ -512,7 +565,13 @@ function evaluateCitySite(gx, gy, gameState, mapBase, civSlot) {
     const t = mapBase.getTerrain(wgx, tgy);
     if (t === 10) { hasCoast = true; continue; }
 
-    const [f, s, tr] = potentialTileYield(wgx, tgy, mapBase);
+    // CITY_RADIUS_DOUBLED[20] = [0,0] is the candidate's own tile (the
+    // city CENTER if founded here). Use center-tile yield rules — auto-
+    // irrigation but no mining — so hill centers don't beat grassland on
+    // shields-from-mining double-credit.
+    const [f, s, tr] = (ri === 20)
+      ? centerTileYield(wgx, tgy, mapBase)
+      : potentialTileYield(wgx, tgy, mapBase);
     yieldScore += f * 3 + s * 2 + tr;
   }
 
