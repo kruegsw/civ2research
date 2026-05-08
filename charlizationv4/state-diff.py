@@ -43,7 +43,10 @@ CATEGORY_SEVERITY = {
 # a short tag string if it matches a known-cause pattern, else None.
 # The tag lets the summary separate "novel mismatches worth fixing"
 # from "expected gaps tied to a tracked task".
-def classify_gap(m):
+import re
+_CITY_IDX_RE = re.compile(r'^cities\[(\d+)\]\.')
+
+def classify_gap(m, ctx=None):
     label = m.get('label', '')
     a, b = m.get('a'), m.get('b')
 
@@ -133,6 +136,9 @@ def classify_gap(m):
     # Large shieldStored delta (>10) = production completion v3 missed —
     # AI's auto-switch of production item mid-turn, happens when v3's
     # civilDisorder calc on post-growth size blocks production.
+    # 2026-04-29: split out city-founding-timing — if size differs at
+    # the same slot, the yield disparity is downstream of v3 founding
+    # the city in a different turn (size=0 = freshly-founded signature).
     if label.startswith('cities[') and any(label.endswith('.' + f)
         for f in ('shieldStored', 'foodStored', 'tradeTotal')):
         try:
@@ -140,6 +146,10 @@ def classify_gap(m):
             if label.endswith('.shieldStored') and d > 10:
                 return 'ai-production-completion'
             if d <= 10:
+                if ctx and ctx.get('city_size_diff'):
+                    midx = _CITY_IDX_RE.match(label)
+                    if midx and int(midx.group(1)) in ctx['city_size_diff']:
+                        return 'city-founding-timing'
                 return 'mid-turn-yield-cache'
         except (TypeError, ValueError):
             pass
@@ -329,11 +339,24 @@ def main():
           f"({len(mismatches)} mismatches)")
     print("=" * 60)
 
+    # Build classifier context: city slots where size differs are the
+    # city-founding-timing signature (downstream yield diffs come from
+    # the city being a turn older/younger in v3, not formula error).
+    cities_a = ga.get('cities', [])
+    cities_b = gb.get('cities', [])
+    city_size_diff = set()
+    for i in range(min(len(cities_a), len(cities_b))):
+        sa = cities_a[i].get('size')
+        sb = cities_b[i].get('size')
+        if sa != sb and sa is not None and sb is not None:
+            city_size_diff.add(i)
+    ctx = {'city_size_diff': city_size_diff}
+
     # Classify each mismatch by known-gap tag.
     novel = []
     by_tag = {}
     for m in mismatches:
-        tag = classify_gap(m)
+        tag = classify_gap(m, ctx)
         m['tag'] = tag
         if tag is None:
             novel.append(m)

@@ -1293,7 +1293,7 @@ if (turns > 0) {
                 ...gameState,
                 units: gameState.units.map(u =>
                   u && (u.id === action.uid || u.sequenceId === action.uid)
-                    ? { ...u, hpLost: action.to, damageTaken: action.to,
+                    ? { ...u, damageTaken: action.to,
                         movesRemain: action.to }
                     : u),
               };
@@ -2297,7 +2297,7 @@ if (turns > 0) {
               ...gameState,
               units: gameState.units.map(u =>
                 u && (u.id === action.uid || u.sequenceId === action.uid)
-                  ? { ...u, hpLost: action.to, damageTaken: action.to,
+                  ? { ...u, damageTaken: action.to,
                       movesRemain: action.to }
                   : u),
             };
@@ -2866,6 +2866,47 @@ if (turns > 0) {
     // that contain 0 or 2 yield ticks instead of 1. The latest
     // CITY_YIELD event per cityIdx is authoritative for that snap.
     const disableHumanCY = !!process.env.DISABLE_HUMAN_CITY_YIELD_REPLAY;
+    // Build a "fingerprint" index for slot-shift recovery: when an event's
+    // cityIdx points at a city whose owner doesn't match event.owner (slot
+    // re-shuffled between event-time and snapshot-time, e.g., Babylon
+    // inserted at slot 4 mid-turn shifts later slots), find the matching
+    // city by (owner, size, sizeFrom, foodBoxFrom, shieldBoxFrom).
+    const matchEventToCity = (ev, cities) => {
+      // Cheap path: cityIdx slot owner matches. Don't check foodBoxFrom
+      // here — the event's "from" values are mid-turn-binary snapshots,
+      // not the input-snapshot foodInBox we have. Owner alignment is
+      // enough when slots haven't shifted.
+      const direct = cities[ev.cityIdx];
+      if (direct && direct.size > 0 && direct.owner === ev.owner) {
+        return ev.cityIdx;
+      }
+      // Slot-shift fallback: search by owner + sizeFrom (best near-unique
+      // discriminator without coords). Only triggers when the cityIdx
+      // points to a city of the wrong owner — which happens when the
+      // binary inserted/removed a city mid-turn, shifting later slots.
+      let bestIdx = -1, bestScore = -1;
+      for (let j = 0; j < cities.length; j++) {
+        const cc = cities[j];
+        if (!cc || cc.size <= 0) continue;
+        if (cc.owner !== ev.owner) continue;
+        let score = 1;  // owner match
+        if (ev.sizeFrom != null && cc.size === ev.sizeFrom) score += 4;
+        if (ev.foodBoxFrom != null && (cc.foodInBox ?? 0) === ev.foodBoxFrom) score += 3;
+        if (ev.shieldBoxFrom != null && (cc.shieldsInBox ?? 0) === ev.shieldBoxFrom) score += 3;
+        if (score > bestScore) { bestScore = score; bestIdx = j; }
+      }
+      // Require sizeFrom + at least one box-from match (score >= 8). The
+      // weaker owner+sizeFrom (=5) was matching mid-turn slot-shift events
+      // to unrelated cities — e.g., t175→176 routing cityIdx=33 owner=1
+      // sizeFrom=4 to St. Petersburg (size=4) and corrupting its yield.
+      return bestScore >= 8 ? bestIdx : -1;
+    };
+    // Resolve each event's target slot (with fallback) before applying.
+    const evToSlot = new Map();
+    for (const [origIdx, ev] of latestYieldByCityIdx) {
+      const target = matchEventToCity(ev, gameState.cities);
+      if (target >= 0) evToSlot.set(target, ev);
+    }
     gameState = {
       ...gameState,
       cities: gameState.cities.map((c, i) => {
@@ -2879,15 +2920,25 @@ if (turns > 0) {
         const aiBlocked = isAICity && disableAICY;
         const humanBlocked = isHumanCity && disableHumanCY;
         if (!isNewCity && (aiBlocked || humanBlocked)) return c;
-        const ev = latestYieldByCityIdx.get(i);
+        const ev = evToSlot.get(i);
         if (!ev) return c;
         applied++;
         if (isNewCity && c.owner != null && c.owner >= 0 && c.owner < 8) {
           sciAccum[c.owner] += (ev.sciOut ?? 0);
           taxAccum[c.owner] += (ev.taxOut ?? 0);
         }
+        // Apply ev.size when present, >0, AND ev.sizeFrom aligns with
+        // v3's current size (event was emitted from a state matching ours).
+        // Otherwise the event is stale — applying its size regresses cities
+        // where v3 has progressed past the event's snapshot. Closes
+        // growth-vs-settler at the t106 Madrid-style cases without
+        // regressing AI-civ-spawning windows like t175-180.
+        const sizeMatchable = ev.size != null && ev.size > 0
+          && (ev.sizeFrom == null || ev.sizeFrom === c.size);
+        const nextSize = sizeMatchable ? ev.size : c.size;
         return {
           ...c,
+          size: nextSize,
           foodInBox: ev.foodBox ?? c.foodInBox ?? 0,
           shieldsInBox: ev.shieldBox ?? c.shieldsInBox ?? 0,
           netBaseTrade: ev.tradeNet ?? c.netBaseTrade ?? 0,
@@ -2939,7 +2990,21 @@ if (turns > 0) {
   if (!process.env.DISABLE_CIV_TREASURY_RECONCILE) {
     const startTurn = (initResult.gameState.turn?.number ?? 0);
     const targetTurn = (gameState.turn?.number ?? 0);
-    const windowStart = snapshotTimeByTurn.get(startTurn);
+    // Fallback for first turn: events.jsonl may not have a SNAPSHOT_DUMPED
+    // entry for the very first turn (sniffer started post-launch). Use
+    // TURN_ADVANCED time of startTurn+1 as a tight upper bound on the
+    // input-snapshot capture time, then bracket the window manually:
+    // anything before that is "pre-input", anything <= snap[targetTurn]
+    // is "in window". When even that fallback is missing, default to 0
+    // (events from the very start of the trace count as in-window).
+    let windowStart = snapshotTimeByTurn.get(startTurn);
+    if (windowStart == null) {
+      // Subtract 1ms so events at exactly turnAdvancedTime[startTurn+1]
+      // (e.g., turn-end FLAGS_CHANGED that share the TURN_ADVANCED
+      // timestamp) pass the strict `time_ms > windowStart` check.
+      const fallback = turnAdvancedTimeOuter.get(startTurn + 1);
+      windowStart = fallback != null ? fallback - 1 : 0;
+    }
     const windowEnd = snapshotTimeByTurn.get(targetTurn);
     const humanMaskTR = parsed.gameState?.humanPlayers ?? 0;
     if (windowStart != null && windowEnd != null) {
@@ -2948,19 +3013,29 @@ if (turns > 0) {
       const latestGoldByCiv = new Array(8).fill(null);
       const civHadDiscovery = new Array(8).fill(false);
       // Pass 1: CITY_YIELD events — accumulate sciOut per civ.
+      // Dedupe: each yield tick fires TWO events (food-tick then
+      // shield-tick), both carrying the same sciOut for the city. Adding
+      // both double-counts. Take the LATEST event per cityIdx in window
+      // — its sciOut represents this-tick's contribution.
+      const latestYieldPerCity = new Map();
       for (const [, batch] of cityYieldsByRawTurn) {
         for (const ev of batch) {
           if (ev.time_ms == null || ev.time_ms <= windowStart
               || ev.time_ms > windowEnd) continue;
+          if (ev.cityIdx == null) continue;
           if (ev.owner == null || ev.owner < 0 || ev.owner >= 8) continue;
-          // Skip yields that don't represent a fresh yield tick.
-          // Real ticks have food OR shield increased.
           const foodIncreased = ev.foodBox > ev.foodBoxFrom;
           const shieldIncreased = ev.shieldBox > ev.shieldBoxFrom;
           if (!foodIncreased && !shieldIncreased) continue;
-          sciAccumByCiv[ev.owner] += (ev.sciOut ?? 0);
-          civHasYield[ev.owner] = true;
+          const prior = latestYieldPerCity.get(ev.cityIdx);
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            latestYieldPerCity.set(ev.cityIdx, ev);
+          }
         }
+      }
+      for (const ev of latestYieldPerCity.values()) {
+        sciAccumByCiv[ev.owner] += (ev.sciOut ?? 0);
+        civHasYield[ev.owner] = true;
       }
       // Pass 2: GOLD_CHANGED events — find latest per civ (the binary's
       // authoritative treasury value just before snap[N+1]).
@@ -3051,6 +3126,43 @@ if (turns > 0) {
           if (c.scienceRate === newSci && c.taxRate === newTax) return c;
           return { ...c, scienceRate: newSci, taxRate: newTax,
                    luxuryRate: newLux };
+        }),
+      };
+
+      // Civ stateFlags reconciliation: the in-loop FLAGS_CHANGED replay
+      // applies events tagged with a turn — but events fire in the
+      // BINARY at times that may be AFTER the snapshot capture (e.g.,
+      // bit 0x04 senateOverride toggle happens at start of next civ's
+      // tick, which can fire post-snapshot). Restore the authoritative
+      // value: if there's a FLAGS_CHANGED in window [windowStart,
+      // windowEnd], use its .to. Otherwise, use the input value
+      // (input snapshot's stateFlags before any in-loop replay
+      // perturbed it). Closes ~50-100mm of civs[i].flags drift.
+      const latestFlagsByCiv = new Array(8).fill(null);
+      for (const [, batch] of replayEventsByTurnCiv) {
+        for (const ev of batch) {
+          if (ev.event !== 'FLAGS_CHANGED' || ev.civ == null) continue;
+          if (ev.time_ms == null || ev.time_ms <= windowStart
+              || ev.time_ms > windowEnd) continue;
+          const prior = latestFlagsByCiv[ev.civ];
+          if (!prior || (ev.time_ms ?? 0) > (prior.time_ms ?? 0)) {
+            latestFlagsByCiv[ev.civ] = ev;
+          }
+        }
+      }
+      gameState = {
+        ...gameState,
+        civs: gameState.civs.map((c, i) => {
+          if (!c) return c;
+          const ev = latestFlagsByCiv[i];
+          const inputFlags = inputCivs[i]?.stateFlags;
+          let target;
+          if (ev && ev.to != null) target = ev.to;
+          else if (inputFlags != null) target = inputFlags;
+          else return c;
+          const cur = c.stateFlags ?? c.flags ?? 0;
+          if (cur === target) return c;
+          return { ...c, stateFlags: target, flags: target };
         }),
       };
 
@@ -3433,7 +3545,7 @@ if (turns > 0) {
         const dEv = lastDmgByUid.get(uid);
         if (dEv && (u.movesRemain ?? 0) !== dEv.to) {
           patched = { ...patched, movesRemain: dEv.to,
-                      damageTaken: dEv.to, hpLost: dEv.to };
+                      damageTaken: dEv.to };
           dmg++;
         }
         const sEv = lastStatusByUid.get(uid);

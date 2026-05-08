@@ -562,12 +562,18 @@ function readChooseGovtGlobals(base, civSlot) {
   } catch (_) { return null; }
 }
 
-// Capture globals FUN_004bd2a3 (food strategy classifier).
+// Capture globals FUN_004bd2a3 (city-stability classifier — misnamed
+// "food strategy" historically; actually checks happy vs unhappy).
 // Reads civ+0x13 (sci), +0x14 (tax), +0x15 (govt), DAT_00655aee (pre-
-// clear), DAT_00655b18 (city count), and per-city bytes:
-//   city+0x0: flags (bit 1 = disorder-ish, bit 2 = flag2)
-//   city+0x4e: food supply
-//   city+0x4f: food demand
+// clear), DAT_00655b18 (city count), and per-city bytes per binary
+// FUN_004bd2a3 (block_004B0000.c:5890):
+//   city+0x04: flags (uint32 — binary reads byte 0x04 bits 0x01/0x02)
+//   city+0x52: happy_citizens (signed byte)
+//   city+0x53: unhappy_citizens (signed byte)
+// Previously this function read city+0x4e/0x4f as foodSupply/foodDemand
+// — those offsets are actually `trade_output` (short), not food. The
+// binary's per-city loop checks `happy < unhappy` (civil disorder),
+// not food deficits. Fixed 2026-04-29.
 function readFoodStrategyGlobals(base, civSlot) {
   try {
     const CIV_BASE = 0x0064C6A0;
@@ -580,15 +586,15 @@ function readFoodStrategyGlobals(base, civSlot) {
     const cities = [];
     for (let i = 0; i < cityCount; i++) {
       const cBase = base.add(CITY_BASE - 0x00400000 + i * CITY_STRIDE);
-      const cityFlags = cBase.readU32();        // city+0x0 (4-byte flags)
-      if (cityFlags === 0) continue;             // city slot empty
-      const owner = cBase.add(0x08).readS8();    // city+0x8 = owner per memory
+      const cityId = cBase.add(0x54).readU32();  // city+0x54 = city_id (alive bit)
+      if (cityId === 0) continue;                 // city slot empty
+      const owner = cBase.add(0x08).readS8();     // city+0x8 = owner per memory
       if (owner !== civSlot) continue;
       cities.push({
         idx: i,
-        flags: cityFlags,
-        foodSupply: cBase.add(0x4e).readS8(),
-        foodDemand: cBase.add(0x4f).readS8(),
+        flags: cBase.add(0x04).readU32(),         // city+0x04 = full 4-byte flags
+        happy: cBase.add(0x52).readS8(),          // happy_citizens
+        unhappy: cBase.add(0x53).readS8(),        // unhappy_citizens
       });
     }
     return {
