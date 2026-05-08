@@ -100,6 +100,12 @@ export const UNLOAD_TRANSPORT = 'UNLOAD_TRANSPORT';
 //   { type: 'UNLOAD_TRANSPORT', unitIndex }
 //   Unload all passengers from a transport ship at current tile.
 
+export const GIFT_UNIT = 'GIFT_UNIT';
+//   { type: 'GIFT_UNIT', unitIndex, fromCiv, toCiv, toCityIndex }
+//   AI military aid: transfer a unit's ownership to an allied civ
+//   and place it at the recipient's city tile.
+//   Port of FUN_0055f7d1 lines 6066-6076.
+
 export const BRIBE_UNIT = 'BRIBE_UNIT';
 //   { type: 'BRIBE_UNIT', unitIndex, targetIndex }
 //   Diplomat/Spy bribes an enemy unit. Always succeeds (unless Democracy).

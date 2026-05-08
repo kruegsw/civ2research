@@ -1017,6 +1017,19 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
+    case 'GIFT_UNIT': {
+      const { unitIndex: gUi, toCiv, toCityIndex } = action;
+      if (gUi == null || toCiv == null || toCityIndex == null) return 'Missing GIFT_UNIT fields';
+      const gu = gameState.units?.[gUi];
+      if (!gu) return 'Unit not found';
+      if (gu.owner !== civSlot) return 'Not your unit';
+      if (toCiv < 0 || toCiv > 7) return 'Invalid recipient civ';
+      if (toCiv === civSlot) return 'Cannot gift to self';
+      const gc = gameState.cities?.[toCityIndex];
+      if (!gc || gc.owner !== toCiv || gc.size <= 0) return 'Invalid recipient city';
+      return null;
+    }
+
     default:
       return `Unknown action type: ${action.type}`;
   }

@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, START_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER, SET_HOME_CITY, UNLOAD_TRANSPORT } from './actions.js';
+import { MOVE_UNIT, END_TURN, START_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER, SET_HOME_CITY, UNLOAD_TRANSPORT, GIFT_UNIT } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
 import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
@@ -1469,6 +1469,34 @@ export function applyAction(prev, mapBase, action, civSlot) {
       if (shCity >= 0) {
         state.units[shUi] = { ...shUnit, homeCityId: shCity };
       }
+      break;
+    }
+
+    case GIFT_UNIT: {
+      // Port of FUN_0055f7d1 lines 6066-6076. Transfer ownership of a
+      // unit to an allied civ and place it on that ally's city tile.
+      const { unitIndex: gUi, toCiv, toCityIndex } = action;
+      const gUnit = state.units[gUi];
+      const gCity = state.cities?.[toCityIndex];
+      if (!gUnit || gUnit.gx < 0 || !gCity || gCity.size <= 0) break;
+      // Owner change + rehome to recipient's city + relocate to city tile.
+      // Clear orders (binary line 6072 zeros a flag byte; in v3 the
+      // closest equivalent is wiping any sentry/fortify state so the
+      // ally can re-task it immediately).
+      state.units[gUi] = {
+        ...gUnit,
+        owner: toCiv,
+        homeCityId: toCityIndex,
+        gx: gCity.gx,
+        gy: gCity.gy,
+        orders: 'none',
+        movesLeft: 0,
+      };
+      state.turnEvents = state.turnEvents || [];
+      state.turnEvents.push({
+        type: 'giftUnit', fromCiv: civSlot, toCiv,
+        unitIndex: gUi, cityIndex: toCityIndex,
+      });
       break;
     }
 
