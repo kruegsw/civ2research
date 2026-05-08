@@ -4,12 +4,12 @@
 
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ROLE, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP, DIFFICULTY_KEYS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel, isZOCBlocked } from '../movement.js';
-import { updateVisibility } from '../visibility.js';
+import { updateVisibility, updateUnitVisMask, discoverUnitsInLOS } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect, refreshCityTileOwnership } from '../utils.js';
 import { grantAdvance, getAvailableResearch } from '../research.js';
 import { dispatchEvents, EVENT_UNIT_KILLED } from '../events.js';
-import { declareWar as diplomacyDeclareWar, getTreatyFlags, TF } from '../diplomacy.js';
+import { declareWar as diplomacyDeclareWar, getTreatyFlags, addTreatyFlag, TF } from '../diplomacy.js';
 
 import { makeUnit, killUnit, captureCity, checkCivElimination, discoverContacts, checkSenateVeto, getCityName, assignInitialWorkers, radiusTileCoords } from './helpers.js';
 import { getBarbUnitType } from './barbarians.js';
@@ -546,6 +546,14 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       state.diplomacy = { ...state.diplomacy, [dKey]: { ...(state.diplomacy[dKey] || {}), sneak: true, sneakTurn: turnNum_ } };
     }
 
+    // Binary FUN_00580000:279: set treaty flag bit 0x200 (combat-occurred
+    // tracker, "war was declared" — sticky until peace clears it via
+    // PEACE_CLEARS mask). Used by FUN_0055f7d1 (military aid) gate to
+    // distinguish active wars from purely diplomatic war states.
+    if (civSlot !== 0 && defCivSlot !== 0 && civSlot !== defCivSlot) {
+      addTreatyFlag(state, civSlot, defCivSlot, 0x200);
+    }
+
     // ── Submarine retreat handling ──
     if (result.submarineRetreated) {
       // Submarine retreats with damage — neither side destroyed
@@ -661,6 +669,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Update visibility at new positions
       if (unit.gx >= 0) {
         updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+        updateUnitVisMask(unit, mapBase);
+        discoverUnitsInLOS(state, civSlot, mapBase, unit.gx, unit.gy, 2);
         discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
       }
       return;
@@ -1043,6 +1053,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Update visibility
       if (unit.gx >= 0) {
         updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+        updateUnitVisMask(unit, mapBase);
+        discoverUnitsInLOS(state, civSlot, mapBase, unit.gx, unit.gy, 2);
         discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
       }
       return;
@@ -1061,6 +1073,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Update visibility
       if (unit.gx >= 0) {
         updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+        updateUnitVisMask(unit, mapBase);
+        discoverUnitsInLOS(state, civSlot, mapBase, unit.gx, unit.gy, 2);
         discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
       }
       return;
@@ -1249,6 +1263,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
   // Update visibility for this civ around new position
   if (unit.gx >= 0) {
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+    updateUnitVisMask(unit, mapBase);
+    discoverUnitsInLOS(state, civSlot, mapBase, unit.gx, unit.gy, 2);
     // Check for first contact — land units and diplomats only (not ships)
     // Binary: contact requires meeting on land, not just proximity at sea
     const unitDomain = UNIT_DOMAIN[unit.type] ?? 0;

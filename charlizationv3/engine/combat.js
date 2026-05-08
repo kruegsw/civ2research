@@ -491,7 +491,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // This includes terrain, river, fortification, fortress, walls,
   // Coastal Fortress, SAM Battery, SDI, and veteran bonus.
   // We do NOT re-apply those multipliers here (binary applies them once).
-  let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type, unitTypeStats ? { unitTypeStats } : undefined);
+  // Great Wall acts as City Walls for all friendly cities — OR it into hasWalls.
+  const effHasWalls = defCityHasWalls || (defInCity && defenderHasGreatWall);
+  let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, effHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type, unitTypeStats ? { unitTypeStats } : undefined);
 
   // ── Pikeman bonus vs mounted units (flagsB 0x04) ──────────────
   // Binary FUN_00580341 lines 130-140: defender with pikeman flag gets

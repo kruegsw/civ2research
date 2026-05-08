@@ -811,7 +811,11 @@ const Civ2Parser = {
 
       const style = (civs && civs[owner] && civs[owner].style) || 0;
 
-      if (name && size > 0) {
+      if (name) {
+        // Load freshly-founded (size=0) cities too — they need to occupy
+        // their slot index for diff alignment with binary's cities array.
+        // The previous size>0 filter dropped freshly-founded cities and
+        // shifted all later slots up by one, causing apparent yield drift.
         cities.push({
           // Backward-compatible fields
           name, cx, cy, gx: cx >> 1, gy: cy,

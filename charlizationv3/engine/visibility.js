@@ -180,6 +180,76 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
   }
 }
 
+/**
+ * Update unit's per-civ "seen-by-civs" bitmask (struct +0x09) from the
+ * tile visibility at the unit's current position.
+ *
+ * Binary FUN_004274a6 / FUN_00485c15 / FUN_005351aa pattern:
+ *   visMask |= tile.visibility & ~(1 << owner)
+ * The owner's own bit is excluded — civs that have *seen* the unit, not
+ * including the unit's own civ which trivially knows about it.
+ * Bits are monotonic between resets; reset to 0 happens on unit death or
+ * ownership change at the call site (not here).
+ *
+ * Implementation note: v3's parser stores byte +0x09 in `unit.hpLost`
+ * (historical field-name swap; see parser.js:617). The harness's
+ * __UNIT_VIS__ replay writes to `unit.visibility`. dump-server-state
+ * emits `visibility: u.visibility ?? u.hpLost`. We write both so the
+ * dump sees our value regardless of which path is sampled, and so a
+ * later __UNIT_VIS__ event still wins (since it overwrites .visibility).
+ *
+ * @param {object} unit - unit with gx/gy and owner
+ * @param {object} mapData - tile data accessor: needs tileData[] and mw
+ */
+export function updateUnitVisMask(unit, mapData) {
+  if (!unit || unit.gx == null || unit.gx < 0 || unit.gy == null || unit.gy < 0) return;
+  if (!mapData || !mapData.tileData) return;
+  const mw = mapData.mw;
+  const idx = unit.gy * mw + unit.gx;
+  const tile = mapData.tileData[idx];
+  if (!tile) return;
+  const tileVis = tile.visibility || 0;
+  const ownerBit = unit.owner != null ? (1 << unit.owner) : 0;
+  const cur = unit.visibility ?? unit.hpLost ?? 0;
+  const next = cur | (tileVis & ~ownerBit);
+  unit.visibility = next;
+  unit.hpLost = next;
+}
+
+/**
+ * Discover-units sweep: when civ `civSlot` moves a unit and reveals new
+ * tiles via updateVisibility, any enemy units now in those revealed tiles
+ * get civ's bit OR'd into their visMask. Implements the binary's
+ * "scan_units_in_los" pass (callers of FUN_004274a6).
+ *
+ * @param {object} state - game state with units[]
+ * @param {number} civSlot - the civ doing the looking
+ * @param {object} mapData - tile data accessor with tileData[] and mw
+ * @param {number} gx, gy - center of the unit's new position (half-x, y)
+ * @param {number} radius - LOS radius (default 2 = unit's standard sight)
+ */
+export function discoverUnitsInLOS(state, civSlot, mapData, gx, gy, radius = 2) {
+  if (!state?.units || !mapData?.tileData) return;
+  const civBit = 1 << civSlot;
+  const r = radius;
+  for (const u of state.units) {
+    if (!u || u.gx == null || u.gx < 0) continue;
+    if (u.owner === civSlot) continue;
+    const dx = Math.abs(u.gx - gx);
+    const dy = Math.abs(u.gy - gy);
+    if (dx > r || dy > r) continue;
+    // Confirm the tile is actually visible to civSlot (LOS already
+    // OR'd by updateVisibility before this sweep runs).
+    const idx = u.gy * mapData.mw + u.gx;
+    const tile = mapData.tileData[idx];
+    if (!tile || !((tile.visibility || 0) & civBit)) continue;
+    const cur = u.visibility ?? u.hpLost ?? 0;
+    const next = cur | civBit;
+    u.visibility = next;
+    u.hpLost = next;
+  }
+}
+
 import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR, UNIT_DOMAIN, UNIT_ATK as UNIT_ATK_VIS } from './defs.js';
 
 /**
