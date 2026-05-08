@@ -79,24 +79,19 @@ export const ATTITUDE_THRESHOLDS = {
 };
 
 // ── D.4a: Attitude Level ────────────────────────────────────────
-// Convert a raw attitude score to a discrete level 0-8.
-// Level names: 0=Enraged, 1=Furious, 2=Annoyed, 3=Uncooperative,
-//   4=Neutral, 5=Cordial, 6=Polite, 7=Enthusiastic, 8=Worshipful
-const ATTITUDE_BRACKETS = [
-  [  0, 0], // <0 → 0 (Enraged)
-  [ 10, 1], // 0-10 → 1 (Furious)
-  [ 25, 2], // 11-25 → 2 (Annoyed)
-  [ 38, 3], // 26-38 → 3 (Uncooperative)
-  [ 61, 4], // 39-61 → 4 (Neutral)
-  [ 74, 5], // 62-74 → 5 (Cordial)
-  [ 89, 6], // 75-89 → 6 (Polite)
-  [ 99, 7], // 90-99 → 7 (Enthusiastic)
-];
+// Convert a raw attitude score (0..100, where 0 = max friendly and
+// 100 = max hostile/hatred) to a discrete level 0-8.
+// Per archive/call_graphs/deep_dive_diplomacy_espionage.md and
+// FUN_00456f20(_, _, 100) call sites ("max hatred"), the byte is a
+// HOSTILITY counter — higher = more hostile. Level numbers follow
+// the byte: low level = low byte = friendly tier.
+// Level names: 0=sentinel(<0), 1=Worshipful, 2=Enthusiastic,
+//   3=Cordial, 4=Receptive, 5=Neutral, 6=Uncooperative, 7=Icy, 8=Furious
 
 /**
  * Map a raw attitude score to a discrete level 0-8.
- * @param {number} rawScore
- * @returns {number} 0 (Enraged) through 8 (Worshipful)
+ * @param {number} rawScore — 0..100 hostility byte
+ * @returns {number} 1 (Worshipful) through 8 (Furious); 0 = invalid/<0 sentinel.
  */
 export function getAttitudeLevel(rawScore) {
   if (rawScore < 0)   return 0;
@@ -110,11 +105,11 @@ export function getAttitudeLevel(rawScore) {
   return 8;
 }
 
-/** Returns true if the attitude level is hostile (< Neutral). */
-export function isHostile(level) { return level < 4; }
+/** Returns true if the attitude level is hostile (> Neutral). High byte = hostile. */
+export function isHostile(level) { return level > 4; }
 
-/** Returns true if the attitude level is friendly (> Neutral). */
-export function isFriendly(level) { return level > 4; }
+/** Returns true if the attitude level is friendly (< Neutral). Low byte = friendly. */
+export function isFriendly(level) { return level < 4 && level > 0; }
 
 /** Convert string treaty status to flag bits. */
 export function statusToFlags(status) {
@@ -323,12 +318,40 @@ function ensureDiplomacy(state, civA, civB) {
   return key;
 }
 
-/** Get attitude of civSlot toward targetCiv. */
-function getAttitude(state, civSlot, targetCiv) {
+/**
+ * Get attitude of civSlot toward targetCiv (raw 0..100 byte).
+ * Port of binary FUN_00467904: `return DAT_0064c6e0[civSlot*0x594 + targetCiv]`
+ * — i.e., the attitudes[8] array at offset +0x40 of the civ struct.
+ */
+export function getAttitude(state, civSlot, targetCiv) {
   return state.civs?.[civSlot]?.attitudes?.[targetCiv] ?? 0;
 }
 
-/** Modify attitude of civSlot toward targetCiv by delta, clamped [-100, 100]. */
+/**
+ * Set attitude of civSlot toward targetCiv (clamped to 0..100).
+ * Port of binary FUN_00467933 (lines 1499-1510 of block_00460000.c):
+ *   uVar1 = thunk_FUN_005adfa0(param_3, 0, 100);
+ *   (&DAT_0064c6e0)[param_1*0x594 + param_2] = uVar1;
+ * The binary also has a UI-sync gate on DAT_00655b02 / DAT_006c31a9 /
+ * DAT_006d1da0 (skip writes for remote-observer multiplayer slot);
+ * v3 is headless so we always write.
+ */
+export function setAttitude(state, civSlot, targetCiv, value) {
+  if (!state.civs?.[civSlot]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  if (!Array.isArray(civ.attitudes)) {
+    const old = civ.attitudes;
+    civ.attitudes = [0, 0, 0, 0, 0, 0, 0, 0];
+    if (old) for (const [k, v] of Object.entries(old)) civ.attitudes[+k] = v;
+  } else {
+    civ.attitudes = [...civ.attitudes];
+  }
+  civ.attitudes[targetCiv] = Math.max(0, Math.min(100, value | 0));
+  state.civs[civSlot] = civ;
+}
+
+/** Modify attitude of civSlot toward targetCiv by delta, clamped [0, 100]. */
 export function adjustAttitude(state, civSlot, targetCiv, delta) {
   if (!state.civs?.[civSlot]) return;
   state.civs = [...state.civs];
@@ -2717,9 +2740,11 @@ export function attemptCivRespawn(state, mapBase) {
  */
 export function calcPatienceThreshold(state, aiCiv, targetCiv) {
   let patience = 2;
-  const attitude = getAttitude(state, aiCiv, targetCiv); // 0-100 scale
-  if (attitude < 25) patience += 1;   // hostile: more patient (higher threshold)
-  if (attitude > 60) patience -= 1;   // friendly: less patient (lower threshold)
+  const attitude = getAttitude(state, aiCiv, targetCiv); // 0..100 (0=friendly, 100=hostile)
+  // Binary FUN_00456f8b: low byte → +1, high byte → -1.
+  // Convention: 0 = max friendly = more patience; 100 = max hostile = less patience.
+  if (attitude < 25) patience += 1;   // friendly: more patience (longer fuse)
+  if (attitude > 60) patience -= 1;   // hostile: less patience (shorter fuse)
   if (civHasWonder(state, aiCiv, 20)) patience += 1; // Eiffel Tower / Statue of Liberty
   const flags = getTreatyFlags(state, aiCiv, targetCiv);
   if (flags & TF.PEACE) patience += 1;
@@ -2742,23 +2767,26 @@ export function calcPatienceThreshold(state, aiCiv, targetCiv) {
 /**
  * Check if hostile interaction is allowed against a target civ.
  *
- * Binary ref: FUN_00467af0 (should_declare_war, block_00460000.c)
- *   (1) if WAR flag already set → return true (allow continued war actions)
- *   (2) if ALLIANCE → return false
- *   (3) if CONTACT only (no PEACE) AND attitude > 49 → return true
- *   (4) otherwise → false
+ * Faithful port of binary FUN_00467af0 (block_00460000.c:1610, 191 bytes):
+ *   if (byte+1 & 0x20)  != 0  → return true   // WAR already set
+ *   else if (byte+0 & 0x08)  != 0 → return false // ALLIANCE
+ *   else if ((byte+0 & 0x05) == 1) → return attitude > 49
+ *                                              // CONTACT set, PEACE clear;
+ *                                              // CEASEFIRE bit (0x02) is
+ *                                              // NOT examined.
+ *   else return false
+ *
+ * `byte+0 & 0x05 == 1` means bit 0 (CONTACT) set and bit 2 (PEACE) clear.
+ * It deliberately does NOT exclude CEASEFIRE (0x02) — under a ceasefire
+ * the AI may still posture as hostile at attitude > 49.
  */
 export function shouldProvoke(state, aiCiv, targetCiv) {
   const flags = getTreatyFlags(state, aiCiv, targetCiv);
-  // (1) Already at war: always allow hostile actions
-  if (flags & TF.WAR) return true;
-  // (2) Allied: never provoke
-  if (flags & TF.ALLIANCE) return false;
-  // (3) Contact only (no peace/ceasefire) + hostile attitude
-  const attitude = getAttitude(state, aiCiv, targetCiv);
-  if (attitude <= 49) return false;
-  return (flags & TF.CONTACT) !== 0 &&
-         !(flags & (TF.CEASEFIRE | TF.PEACE));
+  if (flags & TF.WAR) return true;        // (1) WAR
+  if (flags & TF.ALLIANCE) return false;  // (2) ALLIANCE
+  // (3) (byte+0 & 5) == 1 → CONTACT set, PEACE clear, CEASEFIRE indifferent.
+  if ((flags & (TF.CONTACT | TF.PEACE)) !== TF.CONTACT) return false;
+  return getAttitude(state, aiCiv, targetCiv) > 49;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2769,21 +2797,33 @@ export function shouldProvoke(state, aiCiv, targetCiv) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Determine a civ's tech era for diplomacy modifiers.
- * Binary FUN_00568861: checks specific tech pairs.
+ * Determine a civ's tech era for AI diplomacy/strategy modifiers.
+ *
+ * Faithful port of binary FUN_00568861 (block_00560000.c:2248, 136 bytes):
+ *   if (FUN_004bd9f0(civ, 5) && FUN_004bd9f0(civ, 0x18)) return 2;
+ *   if (FUN_004bd9f0(civ, 0x3c) && FUN_004bd9f0(civ, 0x26)) return 1;
+ *   return 0;
+ *
+ * Tech IDs in v3's `defs.js` (verified against ADVANCE_NAMES):
+ *   5    = Automobile          → Era 2 component A
+ *   0x18 = 24 = Electronics    → Era 2 component B
+ *   0x3c = 60 = Philosophy     → Era 1 component A
+ *   0x26 = 38 = Invention      → Era 1 component B
+ *
+ * Earlier comments here mislabeled tech 5 as "Electricity" and tech 24
+ * as "Future Tech"; both were wrong (Future Tech is 0x59 = 89, special-
+ * cased separately in FUN_004bd9f0). Logic was always correct against
+ * the binary; comments now match.
  *
  * @param {object} state - game state
  * @param {number} civSlot - civ to evaluate
- * @returns {number} 0=ancient, 1=industrial, 2=modern
+ * @returns {number} 0=base, 1=Philosophy+Invention era, 2=Automobile+Electronics era
  */
 export function getTechEra(state, civSlot) {
   const techs = state.civTechs?.[civSlot];
   if (!techs) return 0;
-  // Modern: has Electricity (5) AND Future Tech (24 = 0x18)
-  if (techs.has(5) && techs.has(24)) return 2;
-  // Industrial: has Automobile (60 = 0x3C) AND Chemistry (38 = 0x26)
-  if (techs.has(60) && techs.has(38)) return 1;
-  // Ancient
+  if (techs.has(5)  && techs.has(24)) return 2;  // Automobile + Electronics
+  if (techs.has(60) && techs.has(38)) return 1;  // Philosophy + Invention
   return 0;
 }
 

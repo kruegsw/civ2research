@@ -711,43 +711,54 @@ export function checkSenateVeto(state, mapBase, attackerCiv, defenderCiv) {
     }
   }
 
-  // ── Binary FUN_0055bef9: Reputation-based senate veto ──────────
-  // threshold = base + (target_attitude × 15), clamped to [0, 75]
-  // base = 0 default, 25 if VENDETTA flag, 50 if target has UN wonder
-  // If attacker reputation < threshold → senate ALLOWS war
-  // Republic: additional flag check; Democracy: always blocks
+  // ── Binary FUN_0055bef9: senate veto ──────────────────────────
+  // Faithful port of block_00550000.c lines 4864-4895:
+  //   base = 0; if (treaty[us][them] byte+1 & 0x10) base = 25  // CAPTURE_VENDETTA (0x1000)
+  //   if (us OWNS UN [wonder 24]) base = 50
+  //   threshold = clamp(base + civ.reputation * 15, 0, 75)
+  //   if (civ.aiRandomSeed < threshold) return 0  // senate roll bypasses
+  //   if (govt < Democracy) return civ.flags & 0x04 ? 1 : 0
+  //   return 1  // Democracy always vetoes
+  //
+  // The "aiRandomSeed" is civ struct +0x16, set once per per-civ-tick to
+  // rand() % 100 — captured in v3 by per-civ-tick.js step 4a.
   let base = 0;
 
-  // VENDETTA flag check (treaty byte bit 0x10)
+  // CAPTURE_VENDETTA (treaty byte+1 bit 0x10 = TF.CAPTURE_VENDETTA = 0x1000)
+  // Direction: attacker→defender (binary `(&DAT_0064c6c1)[param_1*0x594 + param_2*4]`).
   const treatyFlags = state.treatyFlags;
   if (treatyFlags) {
     const fKey = attackerCiv < defenderCiv
       ? `${attackerCiv}-${defenderCiv}` : `${defenderCiv}-${attackerCiv}`;
     const flags = treatyFlags[fKey] || 0;
-    if (flags & 0x10) base = 25; // CAPTURE_VENDETTA
+    if (flags & 0x1000) base = 25; // CAPTURE_VENDETTA
   }
 
-  // UN wonder (wonder 24) on TARGET civ increases threshold to 50
-  if (hasWonderEffect(state, defenderCiv, 24)) {
+  // United Nations (wonder 24) owned by ATTACKER raises threshold.
+  // Binary: `iVar2 = FUN_00453e51(param_1, 0x18)` with param_1 = attacker.
+  if (hasWonderEffect(state, attackerCiv, 24)) {
     base = 50;
   }
 
-  // Target civ's attitude toward attacker (0-100 scale, higher = more hostile)
-  const targetAttitude = state.civAttitudes?.[defenderCiv]?.[attackerCiv] ?? 0;
-  const threshold = Math.max(0, Math.min(75, base + targetAttitude * 15));
-
-  // Attacker's reputation (0-100, higher = more trustworthy)
+  // Attacker's reputation byte (civ struct +0x1E, 0..100).
   const attackerRep = state.civs?.[attackerCiv]?.reputation ?? 100;
+  const threshold = Math.max(0, Math.min(75, base + attackerRep * 15));
 
-  let blocked = false;
-  if (attackerRep < threshold) {
-    // Reputation too low — senate allows war (player is untrustworthy anyway)
+  // Attacker's per-turn senate roll byte (civ struct +0x16, rand()%100,
+  // set in per-civ-tick step 4a). Treat missing as 0 (== always bypassed).
+  const senateRoll = state.civs?.[attackerCiv]?.aiRandomSeed ?? 0;
+
+  let blocked;
+  if (senateRoll < threshold) {
+    // Senate roll bypasses veto.
     blocked = false;
-  } else if (govt === 'democracy') {
-    // Democracy: senate always blocks
-    blocked = true;
+  } else if (govt === 'republic') {
+    // Republic: veto only when senateOverride flag (bit 0x04) is set.
+    const civ = state.civs?.[attackerCiv];
+    const flag = civ?.senateOverride ?? !!((civ?.stateFlags ?? 0) & 0x04);
+    blocked = !!flag;
   } else {
-    // Republic: senate blocks (binary checks civ flag 0x04)
+    // Democracy: senate always vetoes when roll fails.
     blocked = true;
   }
 

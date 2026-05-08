@@ -510,13 +510,19 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       setTreatyFlags(state, capturerCivSlot, oldOwner,
         attackerFlags | TF.NUCLEAR_ATTACK);
 
-      // Set victim's attitude toward attacker to max hostility
-      if (state.civs?.[oldOwner]?.attitudes) {
+      // Set victim's attitude toward attacker to max hostility.
+      // Binary FUN_00456f20(_, _, 100) — confirmed in
+      // archive/call_graphs/deep_dive_diplomacy_espionage.md as
+      // "maximum hatred". Convention: 100 = max hostile, 0 = max friendly.
+      // Earlier code wrote -100 (out-of-range, broke getAttitudeLevel).
+      if (state.civs?.[oldOwner]) {
         if (!state.civs) state.civs = [];
         state.civs = [...state.civs];
         const victimCiv = { ...state.civs[oldOwner] };
-        const attitudes = { ...(victimCiv.attitudes || {}) };
-        attitudes[capturerCivSlot] = -100; // max hostility
+        const attitudes = Array.isArray(victimCiv.attitudes)
+          ? [...victimCiv.attitudes]
+          : [0, 0, 0, 0, 0, 0, 0, 0];
+        attitudes[capturerCivSlot] = 100; // max hatred on 0..100 scale
         victimCiv.attitudes = attitudes;
         state.civs[oldOwner] = victimCiv;
       }

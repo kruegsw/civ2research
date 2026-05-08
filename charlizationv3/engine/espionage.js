@@ -457,16 +457,16 @@ export function handleEspionageIncident(state, mapBase, attackerCiv, defenderCiv
   const key = attackerCiv < defenderCiv ? `${attackerCiv}-${defenderCiv}` : `${defenderCiv}-${attackerCiv}`;
   const treaty = state.treaties[key];
 
-  // No contact: just lower attitude
+  // No contact: bump hostility (+ delta = more hostile per binary convention).
   if (!treaty || treaty === 'war') {
-    adjustAttitudeHelper(state, defenderCiv, attackerCiv, -20);
+    adjustAttitudeHelper(state, defenderCiv, attackerCiv, +20);
     return;
   }
 
   // At peace or ceasefire: significant diplomatic fallout
   if (treaty === 'peace' || treaty === 'ceasefire' || treaty === 'alliance') {
-    // Lower attitude significantly
-    adjustAttitudeHelper(state, defenderCiv, attackerCiv, -30);
+    // Significant hostility bump (+ delta = more hostile).
+    adjustAttitudeHelper(state, defenderCiv, attackerCiv, +30);
 
     // Record incident
     if (!state.diplomacy) state.diplomacy = {};
@@ -540,7 +540,8 @@ function adjustAttitudeHelper(state, civSlot, targetCiv, delta) {
     civ.attitudes = [...civ.attitudes];
   }
   const cur = civ.attitudes[targetCiv] ?? 0;
-  civ.attitudes[targetCiv] = Math.max(-100, Math.min(100, cur + delta));
+  // Clamp to [0, 100] — the binary's hostility byte is unsigned 0..100.
+  civ.attitudes[targetCiv] = Math.max(0, Math.min(100, cur + delta));
   state.civs[civSlot] = civ;
 }
 
