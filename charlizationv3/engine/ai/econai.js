@@ -66,19 +66,28 @@ function getTreaty(gameState, civA, civB) {
 
 /**
  * Check if civ has a specific tech.
- * Port of FUN_004bd9f0 (simplified — we don't need the bitmask walk,
- * since civTechs is already a Set).
+ * Faithful port of binary FUN_004bd9f0 (block_004B0000.c:5974, 181 bytes):
+ *   if (tech == -2)   return 0;        // explicit "never has" sentinel
+ *   if (tech < 0)     return 1;        // -1 etc → "no prereq" sentinel
+ *   if (tech == 0x59) return 0;        // future tech (89) — special-cased
+ *   if (tech >= 100)  return 0;        // out of range
+ *   if (civ < 1)      return 0;        // barbarians never know tech
+ *   else: read per-civ techsKnown bit at civ+0x58 + (tech>>3) & (1<<(tech&7))
+ *
+ * Note: binary reads ONLY the per-civ array (DAT_0064c6f8 = civ+0x58),
+ * not the global per-tech bitmask DAT_00655B82. The two normally agree
+ * but can desync within a tick (e.g., grantAdvance writes both). We
+ * still OR with knowsTechBytes here because v3's tick ordering can
+ * differ; downstream callers (canUseGovernment, etc.) prefer the
+ * either-source-true semantics.
  */
-function civHasTech(gameState, civSlot, techId) {
-  if (techId < 0) return techId !== -2; // -1 = "no prereq" → always true; -2 = never
-  if (techId >= NUM_ADVANCES) return false;
-  // Civ2 keeps tech ownership in TWO places that occasionally desync:
-  //   - Per-tech bitmask DAT_00655B82 (captured as knowsTechBytes)
-  //     — used by binary's noOneHas, strategic-goal, etc.
-  //   - Per-civ array civ+0x074 (FUN_004bd9f0 / civTechs)
-  //     — used by binary's canUseGovernment, civHasTech checks.
-  // Either being true means civ owns the tech. Return the OR so v3's
-  // checks match whichever path the binary took at the call site.
+export function civHasTech(gameState, civSlot, techId) {
+  if (techId === -2) return false;          // explicit never sentinel
+  if (techId < 0)    return true;           // -1, etc. → "no prereq"
+  if (techId === 0x59) return false;        // future tech — binary returns 0
+  if (techId >= NUM_ADVANCES) return false; // out of range
+  if (civSlot < 1) return false;            // barbarians
+
   const civBit = 1 << civSlot;
   const ktb = gameState.knowsTechBytes;
   if (ktb && typeof ktb[techId] === 'number' && (ktb[techId] & civBit) !== 0) {
@@ -86,6 +95,34 @@ function civHasTech(gameState, civSlot, techId) {
   }
   const techs = gameState.civTechs?.[civSlot];
   return !!(techs && techs.has(techId));
+}
+
+/**
+ * Check if a civ can research a given tech right now.
+ *
+ * Faithful port of FUN_004bfdbe (block_004B0000.c:6987, 156 bytes):
+ *   1. Tech is enabled in the scenario (binary checks DAT_00627689[t*0x10],
+ *      a per-tech flag byte). v3 uses ADVANCE_PREREQS[t] presence as the
+ *      enabled-flag — vanilla MGE has every tech enabled and the prereqs
+ *      table covers all 100 entries, so they agree. In RULES.TXT scenarios
+ *      that disable specific techs the entries get prereqs `[-2, -2]`,
+ *      which makes both gates 2/3 fail (civHasTech(-2) → false), so the
+ *      effect carries through.
+ *   2. Civ does NOT already know the tech.
+ *   3. Both prereqs are known (negative prereq IDs other than -2 are
+ *      treated as "no prereq needed" → satisfied).
+ */
+export function canResearch(gameState, civSlot, techId) {
+  if (techId < 0 || techId >= NUM_ADVANCES) return false;
+  const prereqs = ADVANCE_PREREQS[techId];
+  if (!prereqs) return false;
+  // (2) Already known
+  if (civHasTech(gameState, civSlot, techId)) return false;
+  // (3) Both prereqs known (or negative-sentinel "no prereq")
+  const [p1, p2] = prereqs;
+  if (!civHasTech(gameState, civSlot, p1)) return false;
+  if (!civHasTech(gameState, civSlot, p2)) return false;
+  return true;
 }
 
 /**
@@ -722,10 +759,12 @@ export function calcTechValue(civSlot, techId, gameState, mapBase) {
   if (techId === aqueductTech || techId === sewerTech) {
     const maxCity = largestCitySize(gameState, civSlot);
     const threshold = (techId === aqueductTech) ? AQUEDUCT_THRESHOLD : SEWER_THRESHOLD;
+    if (dbg) { dbgBreakdown.aqSewer_maxCity = maxCity; dbgBreakdown.aqSewer_threshold = threshold; }
     if (maxCity >= threshold) {
       score += 2;
     }
   }
+  if (dbg) dbgBreakdown.after_aqSewer = score;
 
   // ── Exploration/Expansion bonus ──
   // Lines 6206-6216: If leaderPersonality >= 0 AND civ has University tech (85=0x55):
@@ -1185,69 +1224,76 @@ export function balanceRates(gameState, mapBase, civSlot) {
  * @returns {object|null} REVOLUTION action or null
  */
 /**
- * foodStrategy — byte-exact port of FUN_004bd2a3.
+ * foodStrategy — faithful port of FUN_004bd2a3 (block_004B0000.c:5890,
+ * 770 bytes). Despite the historical v3 name "foodStrategy", binary
+ * FUN_004bd2a3 actually classifies CITY STABILITY based on
+ * happy vs unhappy citizen counts — not food supply/demand.
  *
- * Returns a 1-6 enum classifying the civ's overall food/stability
- * state, used by downstream AI strategy (not yet ported). Inputs come
- * from gameState.foodStrategyGlobals (Frida capture):
- *   civSci, civTax, civGovt, dat655aee, cities[{flags, foodSupply, foodDemand}]
+ * Returns a 1-6 enum used by downstream AI strategy. Inputs come from
+ * gameState.foodStrategyGlobals (Frida capture, fields renamed
+ * 2026-04-29):
+ *   civSci, civTax, civGovt, dat655aee, cities[{flags, happy, unhappy}]
  *
- * Return values (per decompiled block_004B0000.c:5940-5963):
- *   1: food deficits AND bVar1 (rate-slack OK) AND flag1-deficit-city AND democracy
- *   2: food deficits AND !bVar1
- *   3: food deficits AND bVar1 AND (no flag1-deficit OR non-democracy)
- *   4: no deficits AND !bVar1
- *   5: no deficits AND bVar1 AND no flag2 cities
- *   6: no deficits AND bVar1 AND has flag2 city
+ * Return values (per binary lines 5940-5963):
+ *   1: disorder AND rate-slack OK AND celebrating-disorder city AND Democracy
+ *   2: disorder AND !rate-slack
+ *   3: disorder AND rate-slack AND (no celebrating-disorder OR non-Dem)
+ *   4: no disorder AND !rate-slack
+ *   5: no disorder AND rate-slack AND no flag2 cities
+ *   6: no disorder AND rate-slack AND has flag2 city
  *
- * bVar1: "civ can afford to shift rates". Computed differently based on
- *   whether civ is in a government that caps sci+tax at 10 (non-republic/dem)
- *   vs one that allows more slack.
+ * "rate-slack" (bVar1): "civ can afford to shift rates". Computed
+ * differently for non-Republic/Democracy vs Republic/Democracy.
+ *
+ * Backwards-compat: if a captured payload still has the legacy
+ * foodSupply/foodDemand field shape (pre-2026-04-29 sessions), fall
+ * back to those fields and treat `foodSupply < foodDemand` as the
+ * disorder gate. This is wrong but matches what the captured data
+ * encoded; the validator's match-rate is meaningless for those rows.
  */
 export function foodStrategy(gameState, civSlot) {
   const g = gameState.foodStrategyGlobals;
   if (!g) return 0;
 
-  const pre_dat655aee_bit2 = (g.dat655aee & 4) !== 0;
-  let foodDeficitCount = 0;         // local_10
-  let flag1DeficitCount = 0;        // local_c: subset with flag bit 1
-  let foodBalancedCount = 0;        // local_18
-  let flag2Count = 0;               // local_14
+  let disorderCount = 0;            // local_10: cities with happy < unhappy
+  let celebDisorderCount = 0;       // local_c: subset with city.flags bit 0x01 (WLOTK)
+  let balancedCount = 0;            // local_18: cities with happy == unhappy
+  let flag2Count = 0;               // local_14: cities with city.flags bit 0x02
 
   for (const c of g.cities) {
-    // Line 5911: side effect (not reproduced — FUN_004eb4ed call)
-    // Line 5914-5918: food deficit
-    if (c.foodSupply < c.foodDemand) {
-      foodDeficitCount++;
-      if ((c.flags & 1) !== 0) flag1DeficitCount++;
-    } else if (c.foodSupply === c.foodDemand) {
-      foodBalancedCount++;
+    // Binary line 5914-5918: happy < unhappy → disorder; if also bit 0x01
+    // (WLOTK/celebrating set, e.g. carry-over from prior turn), bump
+    // celebDisorderCount.
+    const happy   = c.happy   ?? c.foodSupply ?? 0;
+    const unhappy = c.unhappy ?? c.foodDemand ?? 0;
+    if (happy < unhappy) {
+      disorderCount++;
+      if ((c.flags & 0x01) !== 0) celebDisorderCount++;
+    } else if (happy === unhappy) {
+      balancedCount++;
     }
-    // Line 5923-5925: flag bit 2
-    if ((c.flags & 2) !== 0) flag2Count++;
+    // Binary line 5923-5925: flag bit 0x02 → flag2 (civil disorder bit)
+    if ((c.flags & 0x02) !== 0) flag2Count++;
   }
 
-  // bVar1 computation (lines 5928-5939)
-  let bVar1;
+  // bVar1 = "rate slack" (lines 5928-5939)
+  let rateSlack;
   if (g.civGovt < 5) {
-    bVar1 = true;
-    // Specific "stable" case: no deficits, some balanced, no flag2,
-    // AND sci+tax exactly 10
-    if (foodDeficitCount === 0 && foodBalancedCount !== 0 &&
+    rateSlack = true;
+    if (disorderCount === 0 && balancedCount !== 0 &&
         flag2Count === 0 && (g.civSci + g.civTax === 10)) {
-      bVar1 = false;
+      rateSlack = false;
     }
   } else {
-    // Republic/Democracy: bVar1 = (sci+tax < 9) — i.e., rate slack exists
-    bVar1 = (g.civSci + g.civTax) < 9;
+    rateSlack = (g.civSci + g.civTax) < 9;
   }
 
-  // Return tree (lines 5940-5963)
-  if (foodDeficitCount === 0) {
-    if (bVar1) return (flag2Count === 0) ? 5 : 6;
+  // Return tree (binary lines 5940-5963)
+  if (disorderCount === 0) {
+    if (rateSlack) return (flag2Count === 0) ? 5 : 6;
     return 4;
-  } else if (bVar1) {
-    if (flag1DeficitCount === 0 || g.civGovt !== 6) return 3;
+  } else if (rateSlack) {
+    if (celebDisorderCount === 0 || g.civGovt !== 6) return 3;
     return 1;
   }
   return 2;
