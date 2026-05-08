@@ -12,7 +12,7 @@
 import {
   ADVANCE_PREREQS, ADVANCE_NAMES, COSMIC_TECH_MULTIPLIER, DIFFICULTY_KEYS,
   UNIT_PREREQS, UNIT_OBSOLETE, UNIT_NAMES,
-  UNIT_ROLE, UNIT_CARRY_CAP,
+  UNIT_ROLE, UNIT_CARRY_CAP, UNIT_DOMAIN, UNIT_DEF,
   WONDER_OBSOLETE, WONDER_NAMES, IMPROVE_MAINTENANCE,
   GOVERNMENT_NAMES,
 } from './defs.js';
@@ -438,6 +438,42 @@ export function grantAdvance(state, civSlot, advanceId, sourceCiv) {
   state.civTechCounts = [...state.civTechCounts];
   state.civTechCounts[civSlot] = state.civTechs[civSlot].size;
 
+  // Mirror binary FUN_004bf05b lines 6734-6736: if the civ was
+  // researching the tech we're granting (e.g. via tech-trade or hut),
+  // clear techBeingResearched so the AI re-picks next turn.
+  if (state.civs?.[civSlot]?.techBeingResearched === advanceId) {
+    state.civs = [...state.civs];
+    state.civs[civSlot] = { ...state.civs[civSlot], techBeingResearched: 0xFF };
+  }
+
+  // Mirror binary FUN_004bf05b line 6751: increment civ's persistent
+  // acquiredTechCount byte (+0x10). Gated in binary by DAT_00655af8
+  // (active-gameplay flag); all v3 grantAdvance call sites are
+  // gameplay-time (city capture, hut, tech-trade, research completion,
+  // espionage), so we always increment.
+  if (state.civs?.[civSlot]) {
+    state.civs = [...state.civs];
+    const cur = state.civs[civSlot];
+    state.civs[civSlot] = {
+      ...cur,
+      acquiredTechCount: ((cur.acquiredTechCount ?? 0) + 1) & 0xff,
+    };
+  }
+
+  // Mirror binary FUN_004bf05b lines 6745-6748: maintain global
+  // per-tech bitmask DAT_00655B82 (one byte per tech, civ-bit per
+  // discoverer). v3 reads this from Frida snapshots; without writing
+  // it on grant, calcTechValue's noOneHas bonus stays inflated for
+  // techs everyone now has, biasing AI tech selection.
+  // Future-tech (>=89 = 0x59) is stored only in futureTechCounts and
+  // does not get a per-tech bitmask entry.
+  if (advanceId < 0x59) {
+    if (!state.knowsTechBytes) state.knowsTechBytes = {};
+    state.knowsTechBytes = { ...state.knowsTechBytes };
+    const prev = state.knowsTechBytes[advanceId] || 0;
+    state.knowsTechBytes[advanceId] = prev | (1 << civSlot);
+  }
+
   // (#169) Track tech source: which civ provided each tech
   if (sourceCiv != null && sourceCiv >= 0) {
     if (!state.techSources) state.techSources = {};
@@ -485,10 +521,19 @@ export function handleTechDiscovery(state, civSlot, techId) {
   const events = [];
 
   // ── Future tech handling ──
+  // Binary FUN_004bf05b line 6738 increments civ +0x11 (futureTechCount byte).
   if (techId >= FUTURE_TECH_ID) {
     if (!state.futureTechCounts) state.futureTechCounts = new Array(8).fill(0);
     state.futureTechCounts = [...state.futureTechCounts];
     state.futureTechCounts[civSlot]++;
+    if (state.civs?.[civSlot]) {
+      state.civs = [...state.civs];
+      const cur = state.civs[civSlot];
+      state.civs[civSlot] = {
+        ...cur,
+        futureTechCount: ((cur.futureTechCount ?? 0) + 1) & 0xff,
+      };
+    }
     events.push({
       type: 'futureTech', civSlot,
       count: state.futureTechCounts[civSlot],
@@ -622,6 +667,16 @@ export function upgradeUnitsForTech(state, civSlot, techId) {
 
     const unitTypeId = u.type;
     let obsoleteTech = UNIT_OBSOLETE[unitTypeId];
+
+    // Binary FUN_004be6ba lines 6465-6469: pre-Gunpowder naval unit override.
+    // Binary domain 1 = naval (v3 convention has air=1, sea=2 — swapped).
+    // If naval AND unit's def < UNIT_DEF[7] (Musketeers' def = 3) AND civ
+    // has Gunpowder → obsolete tech overridden to Gunpowder.
+    if ((UNIT_DOMAIN[unitTypeId] ?? 0) === 2 &&
+        (UNIT_DEF[unitTypeId] || 0) < (UNIT_DEF[7] || 3) &&
+        techs.has(TECH_GUNPOWDER)) {
+      obsoleteTech = TECH_GUNPOWDER;
+    }
 
     // If obsoleteTech < 0, this unit type is never obsolete
     if (obsoleteTech < 0) continue;
@@ -773,8 +828,24 @@ export function checkGovernmentRevolution(state, civSlot, techId) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Trigger a Golden Age for a civ: pick a random city weighted by size
- * (Palace city doubles weight) and grant it a WeLoveKingDay bonus.
+ * Trigger a Golden Age for a civ — faithful port of FUN_004bee56
+ * (block_004B0000.c:6609, 379 bytes).
+ *
+ * Binary algorithm (NOT weighted-cumulative-random; one rand per city):
+ *   chosen = -1; bestScore = 0
+ *   for each in-use city:
+ *     if owner != civSlot: continue
+ *     weight = city.size                              (signed byte → int)
+ *     if FUN_0043d20a(city, 1) (has Palace): weight <<= 1
+ *     if (weight <= 1) roll = 0
+ *     else            roll = rand() % weight
+ *     score = roll + 1
+ *     if (bestScore <= score) { chosen = ci; bestScore = score; }
+ *
+ * Tie-break is "<=" so the LAST tied city wins (binary's `local_c <= local_1c+1`
+ * triggers reassignment on equality). Earlier v3 used a single weighted pick
+ * (1 rand total); the binary consumes 1 rand per non-trivial city — matters
+ * for RNG lock-step.
  *
  * @param {object} state - mutable game state
  * @param {number} civSlot
@@ -783,37 +854,42 @@ export function checkGovernmentRevolution(state, civSlot, techId) {
 export function triggerGoldenAge(state, civSlot) {
   if (!state.cities) return null;
 
-  // Build weighted list of cities owned by this civ
-  const candidates = [];
-  let totalWeight = 0;
+  let chosen = -1;
+  let bestScore = 0;
+
   for (let ci = 0; ci < state.cities.length; ci++) {
     const city = state.cities[ci];
-    if (city.owner !== civSlot || city.size <= 0) continue;
-    let weight = city.size;
-    // Palace (building 1) doubles weight
-    if (city.buildings?.has(1)) weight *= 2;
-    candidates.push({ ci, weight });
-    totalWeight += weight;
-  }
+    // Binary line 6625: alive-bit check (DAT_0064f394 = city_id at +0x54 != 0).
+    // v3's city array holds alive entries; treat null/undefined as empty slot.
+    if (!city) continue;
+    // Binary line 6626: owner gate.
+    if (city.owner !== civSlot) continue;
 
-  if (candidates.length === 0) return null;
+    // Binary line 6627: size at +0x01 (signed char). For freshly-founded
+    // cities (size=0) and size-1 cities, weight stays ≤1 → roll=0 path.
+    let weight = city.size | 0;
+    // Binary line 6628-6631: Palace doubles via shift-left (FUN_0043d20a(ci, 1)).
+    if (city.buildings?.has(1)) weight <<= 1;
 
-  // Pick a random city weighted by size
-  const roll = state.rng
-    ? state.rng.nextInt(totalWeight)
-    : Math.floor(Math.random() * totalWeight);
-  let accum = 0;
-  let chosen = candidates[0].ci;
-  for (const c of candidates) {
-    accum += c.weight;
-    if (roll < accum) {
-      chosen = c.ci;
-      break;
+    let roll;
+    // Binary line 6632-6638: if (weight==1 || weight<1) roll=0; else roll=rand()%weight.
+    if (weight <= 1) {
+      roll = 0;
+    } else {
+      roll = state.rng ? state.rng.nextInt(weight) : Math.floor(Math.random() * weight);
+    }
+    const score = roll + 1;
+    // Binary line 6639-6642: `<=` tie-break — last tied city wins.
+    if (bestScore <= score) {
+      chosen = ci;
+      bestScore = score;
     }
   }
 
-  // Binary FUN_004bee56: notification only — WLTKD is determined by happiness calc,
-  // not set directly by this function
+  if (chosen < 0) return null;
+
+  // Binary lines 6645-6651: emit GOLDENAGE popup (UI in binary, event in v3).
+  // FUN_004c4240 plays the goldenage sound — pure UI, omitted.
   return { type: 'goldenAge', civSlot, cityIndex: chosen };
 }
 

@@ -5,7 +5,7 @@
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, UNIT_DEF, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS, DIFFICULTY_KEYS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
-import { updateVisibility } from '../visibility.js';
+import { updateVisibility, updateUnitVisMask } from '../visibility.js';
 import { ORDER_BYTES } from '../order-bytes.js';
 import { calcCityTrade, calcShieldProduction, calcGrossFood, calcGrossTrade, calcTradeCorruption, calcTradeDistribution } from '../production.js';
 import { cityHasBuilding, hasWonderEffect, markCitySeenByCiv } from '../utils.js';
@@ -767,6 +767,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
+  // ── Unit visMask: NOT a blanket sweep. ──────────────────────────
+  // Binary FUN_004274a6 family ORs tile.visibility into unit.visMask only
+  // when the unit MOVES (or is created/combats); stationary units retain
+  // their prior visMask. A blanket end-of-civ-turn OR over-bits because
+  // tile +0x04 is "ever explored," which sets civ N's bit on any tile civ
+  // N has ever seen — not "civ N currently has LOS." Per-move hook at
+  // move-unit.js handles this correctly.
+
   // ── Famine elimination check: if a city was destroyed by famine, check if civ is eliminated ──
   checkCivElimination(state, activeCiv);
 
@@ -1057,7 +1065,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       if (process.env.DEBUG_RESEARCH) {
         console.error(`[tech-debug] civ ${activeCiv} tech=${techId} prog=${civ.researchProgress} cost=${cost} sciAdd=${civSciTotal} techCount=${state.civTechs?.[activeCiv]?.size}`);
       }
-      if ((civ.researchProgress || 0) >= cost) {
+      // Binary FUN_004C2B73 line 1053-1057: if civ.stateFlags & 0x20 (free
+      // research bit, set by Philosophy first-discoverer), grant the current
+      // research target unconditionally (regardless of beaker progress) and
+      // clear the bit. The Philosophy bonus path uses this mechanism — it
+      // sets the bit on discovery, and the next research tick auto-completes
+      // whatever the civ was researching.
+      const freeBit = !!(civ.philosophyBonus);
+      if ((civ.researchProgress || 0) >= cost || freeBit) {
         // handleTechDiscovery may mutate state.civs[activeCiv].treasury
         // (e.g., barracks refund on Gunpowder/Automobile at research.js:329).
         // Capture pre-value so we can apply JUST the delta to the local
@@ -1068,7 +1083,14 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         // mismatches on game_20260420_221438.
         const preTreasury = state.civs[activeCiv]?.treasury ?? 0;
         grantAdvance(state, activeCiv, techId);
-        civ.researchProgress = Math.max(0, civ.researchProgress - cost);
+        // Binary line 832: progress reset to 0 on completion.
+        // (v3 historically used overflow but freeBit path ALWAYS resets to 0.)
+        if (freeBit) {
+          civ.researchProgress = 0;
+          civ.philosophyBonus = false;
+        } else {
+          civ.researchProgress = Math.max(0, civ.researchProgress - cost);
+        }
         // Reset techBeingResearched to 0xFF. Empirically the sniffer-
         // captured snapshot AFTER discovery usually has researchingTech
         // == 0xFF (11 of 12 observed cases in the 84-pair suite). The
@@ -1087,6 +1109,23 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         // the civTaxTotal from line 939. See preTreasury capture above.
         const postTreasury = state.civs[activeCiv]?.treasury ?? preTreasury;
         civ.treasury = (civ.treasury || 0) + (postTreasury - preTreasury);
+        // Merge other state mutations from handleTechDiscovery (e.g.
+        // philosophyBonus on Philosophy first-discoverer) into the local
+        // civ clone so they survive `state.civs[activeCiv] = civ` below.
+        // Treasury is already explicitly handled above.
+        const stateCiv = state.civs[activeCiv];
+        if (stateCiv) {
+          for (const key of Object.keys(stateCiv)) {
+            if (key === 'treasury') continue;
+            if (key === 'researchProgress') continue;
+            if (key === 'techBeingResearched') continue;
+            if (!(key in civ) || civ[key] === undefined) {
+              civ[key] = stateCiv[key];
+            }
+          }
+          // Preserve booleans-set-true that handleTechDiscovery owns.
+          if (stateCiv.philosophyBonus) civ.philosophyBonus = stateCiv.philosophyBonus;
+        }
         if (state.scenarioEvents && state.scenarioEvents.length > 0) {
           dispatchEvents(state, mapBase, EVENT_RECEIVED_TECH, { civSlot: activeCiv, techId });
         }
